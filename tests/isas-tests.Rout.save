@@ -1,8 +1,10 @@
 
-R Under development (unstable) (2016-03-14 r70327) -- "Unsuffered Consequences"
-Copyright (C) 2016 The R Foundation for Statistical Computing
+This is rho 0.43-3.0.2, based on:
+R Under development (unstable) (2019-09-13 r2b5e73a425) -- "Frisbee Sailing"
+Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
+Rho Copyright (C) 2008-14 Andrew R. Runnalls.  Rho like
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
@@ -15,6 +17,8 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
+Rho is not part of the R project, so please do not report bugs
+via r-bugs or the R website; instead refer to the Rho website.
 > .proctime00 <- proc.time()
 > 
 > isall.equal <- function(x,y)
@@ -1329,8 +1333,7 @@ IS: [1] TRUE
 [1] TRUE
 > res <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error')) report(is.numeric_version(res))
 [1] TRUE
 > res <- try(as.ordered( x ), silent = TRUE)
@@ -1338,8 +1341,7 @@ In lapply(strsplit(x[ok], "[.-]"), as.integer) :
 [1] TRUE
 > res <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error')) report(is.package_version(res))
 [1] TRUE
 > res <- try(as.pairlist( x ), silent = TRUE)
@@ -1450,8 +1452,7 @@ IS: [1] TRUE
 IS: [1] TRUE
 > res <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error'))
 +    report({if(is.numeric_version(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -1463,8 +1464,7 @@ In lapply(strsplit(x[ok], "[.-]"), as.integer) :
 [1] TRUE
 > res <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error'))
 +    report({if(is.package_version(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -1568,8 +1568,7 @@ IS: [1] TRUE
 [1] TRUE
 > f <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 >   if(!inherits(f, 'try-error')) report(identical(f, as.numeric_version( f )))
 [1] TRUE
 > f <- try(as.octmode( x ), silent = TRUE)
@@ -1579,8 +1578,7 @@ In lapply(strsplit(x[ok], "[.-]"), as.integer) :
 [1] TRUE
 > f <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In lapply(strsplit(x[ok], "[.-]"), as.integer) :
-  NAs introduced by coercion to integer range
+In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 >   if(!inherits(f, 'try-error')) report(identical(f, as.package_version( f )))
 [1] TRUE
 > f <- try(as.pairlist( x ), silent = TRUE)
@@ -2312,8 +2310,7 @@ IS: [1] TRUE
 > if(!inherits(res, 'try-error')) report(is.qr(res))
 > res <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In doTryCatch(return(expr), name, parentenv, handler) :
-  out-of-range values treated as 0 in coercion to raw
+In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 > if(!inherits(res, 'try-error')) report(is.raw(res))
 [1] TRUE
 > res <- try(as.symbol( x ), silent = TRUE)
@@ -2436,8 +2433,7 @@ Error: x are not all TRUE
 +    } else   !isall.equal(x, res)})
 > res <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In doTryCatch(return(expr), name, parentenv, handler) :
-  out-of-range values treated as 0 in coercion to raw
+In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 > if(!inherits(res, 'try-error'))
 +    report({if(is.raw(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -2537,8 +2533,7 @@ Error: x is not TRUE
 >   if(!inherits(f, 'try-error')) report(identical(f, as.qr( f )))
 > f <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In doTryCatch(return(expr), name, parentenv, handler) :
-  out-of-range values treated as 0 in coercion to raw
+In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 >   if(!inherits(f, 'try-error')) report(identical(f, as.raw( f )))
 [1] TRUE
 > f <- try(as.single( x ), silent = TRUE)
@@ -2568,6 +2563,6 @@ In as.dist.default(x) : non-square matrix
 > f <- try(as.ts( x ), silent = TRUE)
 >   if(!inherits(f, 'try-error')) report(identical(f, as.ts( f )))
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  0.137 0.005 0.141 0 0 
+Time elapsed:  0.348 0.012 0.361 0 0 
 > 
 > 

@@ -10,7 +10,7 @@ subdir = tests/testr
 testr_dir = $(top_srcdir)/src/extra/testr
 testcase_dir = $(testr_dir)/filtered-test-suite
 
-R = $(top_builddir)/bin/R --vanilla --quiet
+R = LANGUAGE=en LC_ALL=C $(top_builddir)/bin/R --vanilla --quiet
 
 include $(top_builddir)/Makeconf
 

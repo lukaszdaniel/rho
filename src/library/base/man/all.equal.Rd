@@ -25,7 +25,7 @@
 all.equal(target, current, \dots)
 
 \method{all.equal}{numeric}(target, current,
-          tolerance = .Machine$double.eps ^ 0.5, scale = NULL,
+          tolerance = sqrt(.Machine$double.eps), scale = NULL,
           \dots, check.attributes = TRUE)
 
 \method{all.equal}{list}(target, current, \dots,

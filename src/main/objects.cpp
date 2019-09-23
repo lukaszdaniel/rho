@@ -1113,6 +1113,7 @@ static SEXP get_this_generic(RObject* const* args, int num_args);
 SEXP attribute_hidden do_standardGeneric(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP arg, value, fdef; R_stdGen_ptr_t ptr = R_get_standardGeneric_ptr();
+    call->check1arg("f");
 
     if(!ptr) {
 	Rf_warningcall(call,
@@ -1125,7 +1126,6 @@ SEXP attribute_hidden do_standardGeneric(/*const*/ Expression* call, const Built
 	Rf_errorcall(call,
 		  _("argument to 'standardGeneric' must be a non-empty character string"));
 
-    call->check1arg("f");
     arg = args[0];
 
     PROTECT(fdef = get_this_generic(args, num_args));

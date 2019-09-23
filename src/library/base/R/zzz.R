@@ -121,6 +121,7 @@ assign("is.single", function(x) NULL, envir = .ArgsEnv)
 assign("is.symbol", function(x) NULL, envir = .ArgsEnv)
 assign("isS4", function(object) NULL, envir = .ArgsEnv)
 assign("list", function(...) NULL, envir = .ArgsEnv)
+assign("provenance", function(...) NULL, envir = .ArgsEnv)
 assign("lazyLoadDBfetch", function(key, file, compressed, hook) NULL,
        envir = .ArgsEnv)
 assign("missing", function(x) NULL, envir = .ArgsEnv)

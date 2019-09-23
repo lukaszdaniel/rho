@@ -134,7 +134,7 @@ void ArgMatcher::unusedArgsError(const SuppliedList& supplied_list)
 	 rit != supplied_list.rend(); ++rit) {
 	const SuppliedData& supplied_data = *rit;
 	RObject* value = supplied_data.value;
-	if (value->sexptype() == PROMSXP)
+	if (value != nullptr && value->sexptype() == PROMSXP)
 	    value = const_cast<RObject*>(PREXPR(value));
 	unused_list = PairList::cons(value, unused_list, supplied_data.tag);
     }
@@ -148,8 +148,8 @@ void ArgMatcher::unusedArgsError(const ConsCell* unused_list)
 	argstrv(static_cast<StringVector*>(
 		    Rf_deparse1line(
 			const_cast<ConsCell*>(unused_list), FALSE)));
-    // '+ 4' is to remove 'list' from 'list(badTag1, ...' :
-    const char* errdetails = (*argstrv)[0]->c_str() + 4;
+    // '+ 8' is to remove 'pairlist' from 'pairlist(badTag1, ...' :
+    const char* errdetails = (*argstrv)[0]->c_str() + 8;
     Rf_error(_("unused argument(s) %s"), errdetails);
 }
 

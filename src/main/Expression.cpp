@@ -96,7 +96,7 @@ FunctionBase* Expression::getFunction(Environment* env) const
     } else {
 	RObject* val = Evaluator::evaluate(head, env);
 	if (!FunctionBase::isA(val))
-	    Rf_error(_("attempt to apply non-function"));
+	    Rf_error(_("attempt to apply non-function in getFunction"));
 	return static_cast<FunctionBase*>(val);
     }
 }

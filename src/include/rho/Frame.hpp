@@ -110,7 +110,6 @@ namespace rho {
 #ifdef PROVENANCE_TRACKING
 		m_provenance = nullptr;
 #endif
-		m_argument_id = 0;
 	    }
 
 	    /** @brief Represent this Binding as a PairList element.
@@ -178,9 +177,8 @@ namespace rho {
 	     * result in the destruction of this Binding object.
 	     */
 	    RObject* forcedValue() const {
-                if (m_value == argumentTag()
-		    || (m_value && m_value->sexptype() == PROMSXP)) {
-		    return forcedValueSlow().first;
+                if (m_value && m_value->sexptype() == PROMSXP) {
+                  return forcedValueSlow().first;
 		}
 		return m_value;
 	    }
@@ -209,8 +207,7 @@ namespace rho {
 	     * result in the destruction of this Binding object.
 	     */
 	    std::pair<RObject*, bool> forcedValue2() const {
-		if (m_value == argumentTag()
-		    || (m_value && m_value->sexptype() == PROMSXP)) {
+		if (m_value && m_value->sexptype() == PROMSXP) {
 		    return forcedValueSlow();
 		}
 		return std::make_pair(m_value, false);
@@ -315,7 +312,6 @@ namespace rho {
 	    {
 		if (m_frame)
 		    m_frame->monitorRead(*this);
-                ensureArgumentsAreBoxed();
 		return m_value;
 	    }
 
@@ -407,12 +403,6 @@ namespace rho {
 	     */
 	    RObject* unforcedValue() const;
 
-            //* @brief Is the value bound to the symbol a promise?
-            bool isPromise() const {
-              return m_value == argumentTag()
-                  || (m_value && m_value->sexptype() == PROMSXP);
-            }
-
 	    /** @brief Auxiliary function to Frame::visitReferents().
 	     *
 	     * This function conducts a visitor to those objects
@@ -428,31 +418,13 @@ namespace rho {
 
 	    Frame* m_frame;
 	    const Symbol* m_symbol;
-	    mutable GCEdge<> m_value;
+	    GCEdge<> m_value;
 #ifdef PROVENANCE_TRACKING
 	    GCEdge<const Provenance> m_provenance;
 #endif
 	    unsigned char m_origin;
 	    bool m_active;
 	    bool m_locked;
-            // Bindings to default arguments are represented using a PromiseData
-            // stored in the frame.  In this case, m_value is set to
-            // argumentTag() and m_argument_id is set to the slot number of the
-            // data.
-            unsigned char m_argument_id;
-
-	    static Symbol* argumentTag() {
-                static GCRoot<Symbol> tag = Symbol::createUnnamedSymbol();
-		return tag;
-	    }
-
-            void ensureArgumentsAreBoxed() const {
-		if (m_value == argumentTag()) {
-                    boxArgument();
-		}
-	    }
-
-	    void boxArgument() const;
 
 	    std::pair<RObject*, bool> forcedValueSlow() const;
 	    void assignSlow(RObject* new_value, Origin origin);
@@ -482,26 +454,6 @@ namespace rho {
 #ifdef PROVENANCE_TRACKING
 		m_provenance = nullptr;
 #endif
-	    }
-
-	    /** @brief Define the object to which this Binding's
-	     *         Symbol is bound.
-	     *
-	     * Raises an error if the Binding is locked or active.
-	     *
-	     * @param argument_id The slot id of the promise data in the parent
-	     *          frame to which this Binding's Symbol is now to be
-	     *          bound.
-	     *
-	     * @param origin Origin of the newly assigned value.
-	     *
-	     * @param quiet Don't trigger monitor.
-	     */
-	    void setValueToArgument(unsigned char argument_id,
-                                    Origin origin = EXPLICIT,
-                                    bool quiet = false) {
-                m_argument_id = argument_id;
-		setValue(argumentTag(), origin, quiet);
 	    }
 	};  // Frame::Binding
 
@@ -662,9 +614,6 @@ namespace rho {
 	/** @brief Call a function for all of a Frame object's Bindings.
 	 */
 	void modifyBindings(std::function<void(Binding*)> f);
-
-        void addDefaultArgument(const Symbol* symbol, const RObject* expression,
-                                Environment* env, int frame_location = -1);
 
 	/** @brief Call arguments wrapped in Promises.
 	 *
@@ -961,6 +910,7 @@ namespace rho {
 	// to bindings.
 	Binding* m_bindings;
 	GCEdge<const FrameDescriptor> m_descriptor;
+
 	// The size of the m_bindings array.
 	unsigned char m_bindings_size;
         // The number of currently used elements in the m_bindings array.
@@ -972,12 +922,6 @@ namespace rho {
 	bool m_no_special_symbols      : 1;
 	mutable bool m_read_monitored  : 1;
 	mutable bool m_write_monitored : 1;
-
-        // The default arguments that were added by the argument matching.
-        std::vector<PromiseData> m_default_arglist;
-
-        friend class ArgMatcher;
-        friend class ArgMatchCache;
 
 	// Used to store any bindings that don't fit in m_bindings.
 	// Usually this is nullptr.
@@ -992,10 +936,6 @@ namespace rho {
 	// The arguments that were passed in to the closure.
 	ArgList m_promised_args;
 	GCEdge<const PairList> m_promised_args_protect;
-
-        std::pair<RObject*, bool> argumentValue(unsigned char argument_id) const;
-
-        Promise* argumentValueAsPromise(unsigned char promiseId) const;
 
         // Declared private to ensure that Frame objects are created
 	// only using 'new':

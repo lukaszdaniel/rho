@@ -214,8 +214,9 @@ public:
     	    // Create a value bound to Symbol::missingArgument()
     	    m_target_env->frame()->obtainBinding(formal.symbol);
 	} else {
-            m_target_env->frame()->addDefaultArgument(
-                formal.symbol, formal.default_value, m_target_env);
+	    RObject* value = new Promise(formal.default_value, m_target_env);
+	    m_target_env->frame()->bind(formal.symbol, value,
+					Frame::Binding::DEFAULTED);
 	}
     }
 

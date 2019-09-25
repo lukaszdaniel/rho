@@ -3,8 +3,10 @@
 x <- structure(pi, class="testit")
 xx <- structure("OK", class="testOK")
 
+except <- c("!=", "*", "/", "%/%", "%%", "^", "<", "<=", "==", ">", ">=", "seq.int")
 for(f in ls(.GenericArgsEnv, all.names=TRUE))
 {
+    if (f %in% except) next
     cat("testing S3 generic '", f, "'\n", sep="")
     method <- paste(f, "testit", sep=".")
     if(f %in% "seq.int") {

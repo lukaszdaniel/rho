@@ -165,10 +165,10 @@ Rdiff <- function(from, to, useDiff = FALSE, forEx = FALSE,
         ## In error and warning messages, the location of the error may be reported
         ## differently by CR and rho, and this may in turn give differences
         ## in line breaking within these messages.  Ignore such differences:
-        broken <- grep("^(([[:digit:]]+: )?In|Error in) .* : ?$", txt)
-        txt[broken] <- paste(txt[broken], txt[broken + 1])
-        if (length(broken)) txt <- txt[-(broken + 1)]
-        txt <- sub("^(([[:digit:]]+: )?In|Error in) .* :[[:space:]]*", "\\1 ? : ", txt)
+        #broken <- grep("^(([[:digit:]]+: )?In|Error in) .* : ?$", txt)
+        #txt[broken] <- paste(txt[broken], txt[broken + 1])
+        #if (length(broken)) txt <- txt[-(broken + 1)]
+        #txt <- sub("^(([[:digit:]]+: )?In|Error in) .* :[[:space:]]*", "\\1 ? : ", txt)
         ## regularize fancy quotes.  First UTF-8 ones:
         txt <- .canonicalize_quotes(txt)
         if(.Platform$OS.type == "windows") {

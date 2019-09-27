@@ -923,6 +923,7 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
 		  INTEGER(ans)[0] = i + 1; break;
 	      }
 	  break; }
+	default: error(_("invalid type")); break;
       }
     }
     else { // regular case

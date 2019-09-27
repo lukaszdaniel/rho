@@ -157,7 +157,7 @@ static Rboolean csum(Rcomplex *x, R_xlen_t n, Rcomplex *value, Rboolean narm)
 
     return updated;
 }
-
+
 static Rboolean imin(int *x, R_xlen_t n, int *value, Rboolean narm)
 {
     int s = 0 /* -Wall */;
@@ -296,7 +296,7 @@ static Rboolean smax(SEXP x, SEXP *value, Rboolean narm)
     vmaxset(vmax);
     return updated;
 }
-
+
 static Rboolean iprod(int *x, R_xlen_t n, double *value, Rboolean narm)
 {
     LDOUBLE s = 1.0;
@@ -361,7 +361,7 @@ static Rboolean cprod(Rcomplex *x, R_xlen_t n, Rcomplex *value, Rboolean narm)
 
     return updated;
 }
-
+
 
 attribute_hidden
 SEXP fixup_NaRm(SEXP args)
@@ -803,7 +803,7 @@ SEXP attribute_hidden do_range(SEXP call, SEXP op, SEXP args, SEXP env)
     UNPROTECT(2);
     return(ans);
 }
-
+
 // which.min(x) : The index (starting at 1), of the first min(x) in x
 // which.max(x) : The index (starting at 1), of the first max(x) in x
 SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
@@ -873,6 +873,8 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 		}
 	}
     }
+    break;
+    default: error(_("invalid type")); break;
     } // switch()
 
 

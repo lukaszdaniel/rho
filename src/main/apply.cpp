@@ -188,6 +188,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		case RAWSXP:  RAW(ans)    [i] = RAW    (val)[0]; break;
 		case STRSXP:  SET_STRING_ELT(ans, i, STRING_ELT(val, 0)); break;
 		case VECSXP:  SET_VECTOR_ELT(ans, i, VECTOR_ELT(val, 0)); break;
+		default: error(_("invalid type")); break;
 		}
 	    } else { // commonLen > 1 (typically, or == 0) :
 		switch (commonType) {
@@ -214,6 +215,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    for (int j = 0; j < commonLen; j++)
 			SET_VECTOR_ELT(ans, common_len_offset + j, VECTOR_ELT(val, j));
 		    break;
+		default: error(_("invalid type")); break;
 		}
 		common_len_offset += commonLen;
 	    }

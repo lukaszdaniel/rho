@@ -1038,6 +1038,8 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 		    return;
 		}
 		if (nalast) hi -= numna; else lo += numna;
+		break;
+	    default: error(_("invalid type")); break;
 	    }
     }
 
@@ -1177,6 +1179,8 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 		    return;
 		}
 		if (nalast) hi -= numna; else lo += numna;
+		break;
+	    default: error(_("invalid type")); break;
 	    }
     }
 

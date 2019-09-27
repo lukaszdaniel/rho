@@ -28,23 +28,18 @@
 # include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
 #include <Internal.h>
 #include <Rversion.h>
 
 void attribute_hidden PrintGreeting(void)
 {
-    char buf[384];
-
-    // To facilitate automated tests, make sure that when lines
-    // containing the string "rho" are grepped out, you are left with
-    // the standard R greeting.
+    char buf[500];
 
     Rprintf("\n");
-    Rprintf("This is rho 0.43-3.0.2, based on:\n");
-    PrintVersion_part_1(buf, 384);
+    PrintVersion_part_1(buf, 500);
     Rprintf("%s\n", buf);
-    Rprintf(_("Rho Copyright (C) 2008-14 Andrew R. Runnalls.  Rho like\n"));
+    Rprintf("Rho is not part of the R project, so please do not report bugs\nvia r-bugs or the R website - instead refer to the author.\n\n");
     Rprintf(_("R is free software and comes with ABSOLUTELY NO WARRANTY.\n\
 You are welcome to redistribute it under certain conditions.\n\
 Type 'license()' or 'licence()' for distribution details.\n\n"));
@@ -54,9 +49,6 @@ Type 'contributors()' for more information and\n\
     Rprintf(_("Type 'demo()' for some demos, 'help()' for on-line help, or\n\
 'help.start()' for an HTML browser interface to help.\n\
 Type 'q()' to quit R.\n\n"));
-    Rprintf(_("Rho is not part of the R project, so please "
-	      "do not report bugs\nvia r-bugs or the R website; "
-	      "instead refer to the Rho website.\n"));
 }
 
 SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
@@ -64,8 +56,8 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     SEXP value, names;
     char buf[128];
 
-    PROTECT(value = allocVector(VECSXP,14));
-    PROTECT(names = allocVector(STRSXP,14));
+    PROTECT(value = allocVector(VECSXP,15));
+    PROTECT(names = allocVector(STRSXP,15));
 
     SET_STRING_ELT(names, 0, mkChar("platform"));
     SET_VECTOR_ELT(value, 0, mkString(R_PLATFORM));
@@ -90,18 +82,22 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     SET_VECTOR_ELT(value, 8, mkString(R_MONTH));
     SET_STRING_ELT(names, 9, mkChar("day"));
     SET_VECTOR_ELT(value, 9, mkString(R_DAY));
-    SET_STRING_ELT(names, 10, mkChar("git rev"));
+    SET_STRING_ELT(names, 10, mkChar("svn rev"));
+
+    snprintf(buf, 128, "%d", R_SVN_BASEREVISION);
+    SET_VECTOR_ELT(value, 10, mkString(buf));
+    SET_STRING_ELT(names, 11, mkChar("git rev"));
 
     snprintf(buf, 128, "%s", R_GIT_REVISION);
-    SET_VECTOR_ELT(value, 10, mkString(buf));
-    SET_STRING_ELT(names, 11, mkChar("language"));
-    SET_VECTOR_ELT(value, 11, mkString("R"));
+    SET_VECTOR_ELT(value, 11, mkString(buf));
+    SET_STRING_ELT(names, 12, mkChar("language"));
+    SET_VECTOR_ELT(value, 12, mkString("R"));
 
     PrintVersionString(buf, 128);
-    SET_STRING_ELT(names, 12, mkChar("version.string"));
-    SET_VECTOR_ELT(value, 12, mkString(buf));
-    SET_STRING_ELT(names, 13, mkChar("nickname"));
-    SET_VECTOR_ELT(value, 13, mkString(R_NICK));
+    SET_STRING_ELT(names, 13, mkChar("version.string"));
+    SET_VECTOR_ELT(value, 13, mkString(buf));
+    SET_STRING_ELT(names, 14, mkChar("nickname"));
+    SET_VECTOR_ELT(value, 14, mkString(R_NICK));
 
     setAttrib(value, R_NamesSymbol, names);
     UNPROTECT(2);
@@ -122,19 +118,37 @@ void attribute_hidden PrintVersion(char *s, size_t len)
 
 void attribute_hidden PrintVersionString(char *s, size_t len)
 {
+    if(R_SVN_BASEREVISION <= 0) {// 'svn info' failed in ../../Makefile.in
+	snprintf(s, len, "R version %s.%s %s (%s-%s-%s)",
+		R_MAJOR, R_MINOR, R_STATUS, R_BASEYEAR, R_BASEMONTH, R_BASEDAY);
+    } else if(strlen(R_STATUS) == 0) {
+	snprintf(s, len, "R version %s.%s (%s-%s-%s)",
+		R_MAJOR, R_MINOR, R_BASEYEAR, R_BASEMONTH, R_BASEDAY);
+    } else if(strcmp(R_STATUS, "Under development (unstable)") == 0) {
+	snprintf(s, len, "R %s (%s-%s-%s r%d)",
+		R_STATUS, R_BASEYEAR, R_BASEMONTH, R_BASEDAY, R_SVN_BASEREVISION);
+    } else {
+	snprintf(s, len, "R version %s.%s %s (%s-%s-%s r%d)",
+		R_MAJOR, R_MINOR, R_STATUS, R_BASEYEAR, R_BASEMONTH, R_BASEDAY,
+		R_SVN_BASEREVISION);
+    }
+}
+
+void attribute_hidden PrintRhoVersionString(char *s, size_t len)
+{
     std::string git_revision = R_GIT_REVISION;
     if (git_revision == "unknown" || git_revision == "") {
         // 'git log' failed in ../../Makefile.in
-	snprintf(s, len, "R version %s.%s %s (%s-%s-%s)",
+	snprintf(s, len, "Rho version %s.%s %s (%s-%s-%s)",
 		R_MAJOR, R_MINOR, R_STATUS, R_YEAR, R_MONTH, R_DAY);
     } else if(strlen(R_STATUS) == 0) {
-	snprintf(s, len, "R version %s.%s (%s-%s-%s)",
+	snprintf(s, len, "Rho version %s.%s (%s-%s-%s)",
 		R_MAJOR, R_MINOR, R_YEAR, R_MONTH, R_DAY);
     } else if(strcmp(R_STATUS, "Under development (unstable)") == 0) {
-	snprintf(s, len, "R %s (%s-%s-%s r%s)",
+	snprintf(s, len, "Rho %s (%s-%s-%s r%s)",
 		R_STATUS, R_YEAR, R_MONTH, R_DAY, R_GIT_REVISION);
     } else {
-	snprintf(s, len, "R version %s.%s %s (%s-%s-%s r%s)",
+	snprintf(s, len, "Rho version %s.%s %s (%s-%s-%s r%s)",
 		R_MAJOR, R_MINOR, R_STATUS, R_YEAR, R_MONTH, R_DAY,
 		R_GIT_REVISION);
     }
@@ -144,15 +158,18 @@ void attribute_hidden PrintVersion_part_1(char *s, size_t len)
 {
 #define SPRINTF_2(_FMT, _OBJ) snprintf(tmp, 128, _FMT, _OBJ); strcat(s, tmp)
     char tmp[128];
-
-    PrintVersionString(s, len);
+    PrintRhoVersionString(s, len);
+    strcat(s, " -- \"R(C) -> Rho(C++)\"\n");
+    strcat(s, "Rho Copyright (C) 2008-2014 Andrew R. Runnalls\n\n");
+    
+    PrintVersionString(tmp, len);
     if(strlen(R_NICK) != 0) {
 	char nick[128];
 	snprintf(nick, 128, " -- \"%s\"", R_NICK);
-	strcat(s, nick);
+	strcat(tmp, nick);
     }
-    SPRINTF_2("\nCopyright (C) %s The R Foundation for Statistical Computing\n",
-	      R_YEAR);
+    strcat(s, tmp);
+    SPRINTF_2("\nCopyright (C) %s The R Foundation for Statistical Computing\n", R_YEAR);
 /*  strcat(s, "ISBN 3-900051-07-0\n");  */
     SPRINTF_2("Platform: %s", R_PLATFORM);
     if(strlen(R_ARCH)) { SPRINTF_2("/%s", R_ARCH); }

@@ -1,10 +1,14 @@
 
-This is rho 0.43-3.0.2, based on:
-R Under development (unstable) (2019-09-13 r2b5e73a425) -- "Frisbee Sailing"
+Rho Under development (unstable) (2019-09-23 r1a9b9589ce) -- "R(C) -> Rho(C++)"
+Rho Copyright (C) 2008-2014 Andrew R. Runnalls
+
+R Under development (unstable) (2016-03-14 r70327) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
-Rho Copyright (C) 2008-14 Andrew R. Runnalls.  Rho like
+Rho is not part of the R project, so please do not report bugs
+via r-bugs or the R website - instead refer to the author.
+
 R is free software and comes with ABSOLUTELY NO WARRANTY.
 You are welcome to redistribute it under certain conditions.
 Type 'license()' or 'licence()' for distribution details.
@@ -17,8 +21,6 @@ Type 'demo()' for some demos, 'help()' for on-line help, or
 'help.start()' for an HTML browser interface to help.
 Type 'q()' to quit R.
 
-Rho is not part of the R project, so please do not report bugs
-via r-bugs or the R website; instead refer to the Rho website.
 > ## For examples skipped in testing because they need recommended packages.
 > 
 > ## This is skipped entirely on a Unix-alike if recommended packages are,

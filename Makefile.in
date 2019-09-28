@@ -35,8 +35,7 @@ config.status: $(srcdir)/configure
 # rho always rebuilds aclocal.m4 if autoconf needs to be run.  This
 # saves having to enumerate here all the m4 files as dependencies of
 # aclocal.m4
-$(srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(srcdir)/configure.ac $(CONFIGURE_DEPENDENCIES) \
-                     $(srcdir)/acinclude.m4
+$(srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(srcdir)/configure.ac $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(ACLOCAL) -Im4 && $(AUTOCONF)
 
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
@@ -160,7 +159,7 @@ distclean: clean
 	-@rm -rf libconftest.dSYM
 	-@rm -f Makeconf Makefile Makefile.bak Makefrag.* \
 	  config.cache config.log config.status libtool stamp-java \
-	  $(ACLOCAL_M4) acinclude.m4 $(distdir).tar.gz
+	  $(ACLOCAL_M4) $(distdir).tar.gz
 maintainer-clean: distclean
 	@$(ECHO) "This command is intended for maintainers to use; it"
 	@$(ECHO) "deletes files that may need special rules to rebuild"

@@ -526,6 +526,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	    case RAWSXP:
 		printRawMatrix    (x, i * b, use_nr, nr, nc, dn0, dn1, rn, cn, do_ij);
 		break;
+		default: error(_("invalid type")); break;
 	    }
 	    Rprintf("\n");
 	}

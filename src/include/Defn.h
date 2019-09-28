@@ -634,6 +634,7 @@ LibExtern SEXP R_LogicalNAValue INI_as(NULL);
 # define PrintVersion		Rf_PrintVersion
 # define PrintVersion_part_1	Rf_PrintVersion_part_1
 # define PrintVersionString    	Rf_PrintVersionString
+# define PrintRhoVersionString  Rf_PrintRhoVersionString
 # define PrintWarnings		Rf_PrintWarnings
 # define RealFromComplex	Rf_RealFromComplex
 # define RealFromInteger	Rf_RealFromInteger
@@ -842,6 +843,8 @@ void Rf_PrintValueRec(SEXP, SEXP);
 void Rf_PrintVersion(char *, size_t len);
 void PrintVersion_part_1(char *, size_t len);
 void Rf_PrintVersionString(char *, size_t len);
+void Rf_PrintRhoVersionString(char *, size_t len);
+
 void Rf_PrintWarnings(void);
 
 void process_site_Renviron(void);

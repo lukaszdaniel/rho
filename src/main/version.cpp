@@ -93,7 +93,7 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     SET_STRING_ELT(names, 12, mkChar("language"));
     SET_VECTOR_ELT(value, 12, mkString("R"));
 
-    PrintVersionString(buf, 128);
+    PrintRhoVersionString(buf, 128);
     SET_STRING_ELT(names, 13, mkChar("version.string"));
     SET_VECTOR_ELT(value, 13, mkString(buf));
     SET_STRING_ELT(names, 14, mkChar("nickname"));

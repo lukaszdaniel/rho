@@ -342,7 +342,7 @@ struct _DevDesc {
     /*
      * device_Mode is called whenever the graphics engine
      * starts drawing (mode=1) or stops drawing (mode=0)
-     * GMode (in graphics.c) also says that 
+     * GMode (in graphics.cpp) also says that 
      * mode = 2 (graphical input on) exists.
      * The device is not required to do anything
      * An example is ...
@@ -762,19 +762,6 @@ struct _DevDesc {
 #define R_TRANWHITE     (R_RGBA(255, 255, 255, 0))
 
 
-/* used in various devices */
-
-#define curDevice		Rf_curDevice
-#define killDevice		Rf_killDevice
-#define ndevNumber		Rf_ndevNumber
-#define NewFrameConfirm		Rf_NewFrameConfirm
-#define nextDevice		Rf_nextDevice
-#define NoDevices		Rf_NoDevices
-#define NumDevices		Rf_NumDevices
-#define prevDevice		Rf_prevDevice
-#define selectDevice		Rf_selectDevice
-#define AdobeSymbol2utf8	Rf_AdobeSymbol2utf8
-
 /* Properly declared version of devNumber */
 int ndevNumber(pDevDesc );
 
@@ -857,7 +844,7 @@ LibExtern Rboolean mbcslocale;
 #endif
 
 /* Useful for devices: translates Adobe symbol encoding to UTF-8 */
-extern void *AdobeSymbol2utf8(char*out, const char *in, size_t nwork);
+extern void *Rf_AdobeSymbol2utf8(char*out, const char *in, size_t nwork);
 int Rf_AdobeSymbol2ucs2(int n);  // arr 2008/07/10
 /* Translates Unicode point to UTF-8 */
 extern size_t Rf_ucstoutf8(char *s, const unsigned int c);

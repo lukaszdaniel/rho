@@ -264,17 +264,6 @@ typedef struct {
                         /* (for fit-to-window resizing in Windows) */
 } GPar;
 
-/* always remap private functions */
-#define copyGPar		Rf_copyGPar
-#define FixupCol		Rf_FixupCol
-#define FixupLty		Rf_FixupLty
-#define FixupLwd		Rf_FixupLwd
-#define FixupVFont		Rf_FixupVFont
-#define GInit			Rf_GInit
-#define labelformat		Rf_labelformat
-#define ProcessInlinePars	Rf_ProcessInlinePars
-#define recordGraphicOperation	Rf_recordGraphicOperation
-
 /* NOTE: during replays, call == R_NilValue;
    ----  the following adds readability: */
 Rboolean GRecording(SEXP, pGEDevDesc);
@@ -304,15 +293,12 @@ SEXP labelformat(SEXP);
 /*
  * Function to generate an R_GE_gcontext from Rf_gpptr info
  *
- * from graphics.c, used in plot.c, plotmath.c
+ * from graphics.cpp, used in plot.cpp, plotmath.cpp
  */
 void gcontextFromGP(pGEcontext gc, pGEDevDesc dd);
 
-/* From base.c */
-#define gpptr Rf_gpptr
-#define dpptr Rf_dpptr
-GPar* Rf_gpptr(pGEDevDesc dd);
-GPar* Rf_dpptr(pGEDevDesc dd);
+GPar* gpptr(pGEDevDesc dd);
+GPar* dpptr(pGEDevDesc dd);
 
 #ifdef __cplusplus
 }

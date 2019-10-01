@@ -38,15 +38,6 @@
 extern "C" {
 #endif
 
-#define formatRaw           Rf_formatRaw
-#define EncodeElement       Rf_EncodeElement
-#define EncodeElement0      Rf_EncodeElement0
-#define EncodeEnvironment   Rf_EncodeEnvironment
-#define printArray          Rf_printArray
-#define printMatrix         Rf_printMatrix
-#define printNamedVector    Rf_printNamedVector
-#define printVector         Rf_printVector
-
 typedef struct {
     int width;
     int na_width;

@@ -294,9 +294,7 @@ typedef GEDevDesc* pGEDevDesc;
 void setDisplayList(pGEDevDesc dev, SEXP newDisplayList);
 void saveSnapshot(pGEDevDesc dev, SEXP newSnapshot);
 
-/* functions from devices.c for use by graphics devices */
 
-#define desc2GEDesc		Rf_desc2GEDesc
 /* map DevDesc to enclosing GEDevDesc */
 pGEDevDesc desc2GEDesc(pDevDesc dd);
 int GEdeviceNumber(pGEDevDesc);
@@ -336,14 +334,11 @@ double toDeviceHeight(double value, GEUnit from, pGEDevDesc dd);
  *
  *  COLOUR CODE is concerned with the internals of R colour representation
  *
- *  From colors.c, used in par.c, grid/src/gpar.c
+ *  From colors.cpp, used in par.cpp, grid/src/gpar.c
  */
 
 typedef unsigned int rcolor;
 
-#define RGBpar			Rf_RGBpar
-#define RGBpar3			Rf_RGBpar3
-#define col2name                Rf_col2name
 
 /* Convert an element of a R colour specification (which might be a
    number or a string) into an internal colour specification. */
@@ -482,7 +477,7 @@ void R_GE_rasterRotate(unsigned int *sraster, int w, int h, double angle,
 
 
 /*
- * From plotmath.c
+ * From plotmath.cpp
  */
 double GEExpressionWidth(SEXP expr,
 			 const pGEcontext gc, pGEDevDesc dd);
@@ -495,20 +490,20 @@ void GEMathText(double x, double y, SEXP expr,
 		double xc, double yc, double rot,
 		const pGEcontext gc, pGEDevDesc dd);
 /*
- * (End from plotmath.c)
+ * (End from plotmath.cpp)
  */
 
 /*
- * From plot3d.c : used in package clines
+ * From plot3d.cpp : used in package clines
  */
 SEXP GEcontourLines(double *x, int nx, double *y, int ny,
 		    double *z, double *levels, int nl);
 /*
- * (End from plot3d.c)
+ * (End from plot3d.cpp)
  */
 
 /*
- * From vfonts.c
+ * From vfonts.cpp
  */
 double R_GE_VStrWidth(const char *s, cetype_t enc, const pGEcontext gc, pGEDevDesc dd);
 
@@ -517,7 +512,7 @@ void R_GE_VText(double x, double y, const char * const s, cetype_t enc,
 		double x_justify, double y_justify, double rotation,
 		const pGEcontext gc, pGEDevDesc dd);
 /*
- * (End from vfonts.c)
+ * (End from vfonts.cpp)
  */
 
 /* Also in Graphics.h */
@@ -538,11 +533,10 @@ void GEonExit(void);
 void GEnullDevice(void);
 
 
-/* From ../../main/plot.c, used by ../../library/grid/src/grid.c : */
+/* From ../../main/plot.cpp, used by ../../library/grid/src/grid.c : */
 #define CreateAtVector		Rf_CreateAtVector
 SEXP CreateAtVector(double*, double*, int, Rboolean);
-/* From ../../main/graphics.c, used by ../../library/grDevices/src/axis_scales.c : */
-#define GAxisPars 		Rf_GAxisPars
+/* From ../../main/graphics.cp, used by ../../library/grDevices/src/axis_scales.c : */
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis);
 
 #ifdef __cplusplus

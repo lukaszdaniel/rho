@@ -171,7 +171,7 @@ Rf_IntegerFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
-    if (x != R_NaString && !Rf_isBlankString(CHAR(x))) { /* ASCII */
+    if (x != R_NaString && !isBlankString(CHAR(x))) { /* ASCII */
 	xdouble = R_strtod(CHAR(x), &endp); /* ASCII */
 	if (isBlankString(endp)) {
 #ifdef _R_pre_Version_3_3_0
@@ -1722,7 +1722,7 @@ SEXP attribute_hidden do_typeof(/*const*/ Expression* call, const BuiltInFunctio
 }
 
 /* Define many of the <primitive> "is.xxx" functions :
-   Note that  Rf_isNull, Rf_isNumeric, etc are defined in util.c or ../include/Rinlinedfuns.h
+   Note that  Rf_isNull, Rf_isNumeric, etc are defined in util.cpp or ../include/Rinlinedfuns.h
 */
 SEXP attribute_hidden do_is(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {

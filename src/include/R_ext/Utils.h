@@ -43,22 +43,11 @@ using std::size_t;
 # endif
 #endif
 
-#define revsort       Rf_revsort
-#define iPsort        Rf_iPsort
-#define rPsort        Rf_rPsort
-#define cPsort        Rf_cPsort
-#define IndexWidth    Rf_IndexWidth
-#define setIVector    Rf_setIVector
-#define setRVector    Rf_setRVector
-#define StringFalse   Rf_StringFalse
-#define StringTrue    Rf_StringTrue
-#define isBlankString Rf_isBlankString
-
 #ifdef  __cplusplus
 extern "C" {
 #endif
 
-/* ../../main/sort.c : */
+/* ../../main/sort.cpp : */
 void	R_isort(int*, int);
 void	R_rsort(double*, int);
 void	R_csort(Rcomplex*, int);
@@ -68,7 +57,7 @@ void	iPsort(int*,    int, int);
 void	rPsort(double*, int, int);
 void	cPsort(Rcomplex*, int, int);
 
-/* ../../main/qsort.c : */
+/* ../../main/qsort.cpp : */
 /* dummy renamed to II to avoid problems with g++ on Solaris */
 void R_qsort    (double *v,         size_t i, size_t j);
 void R_qsort_I  (double *v, int *II, int i, int j);
@@ -79,7 +68,7 @@ void F77_NAME(qsort4)(double *v, int *indx, int *ii, int *jj);
 void F77_NAME(qsort3)(double *v,            int *ii, int *jj);
 #endif
 
-/* ../../main/util.c  and others : */
+/* ../../main/util.cpp  and others : */
 const char *R_ExpandFileName(const char *);
 void	setIVector(int*, int, int);
 void	setRVector(double*, int, double);

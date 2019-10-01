@@ -66,9 +66,6 @@ typedef struct clpconn {
     Rboolean warned;
 } *Rclpconn;
 
-#define init_con	Rf_init_con
-#define con_pushback	Rf_con_pushback
-
 int Rconn_fgetc(Rconnection con);
 int Rconn_ungetc(int c, Rconnection con);
 int Rconn_getline(Rconnection con, char *buf, int bufsize);
@@ -88,8 +85,6 @@ int getActiveSink(int n);
 void con_pushback(Rconnection con, Rboolean newLine, char *line);
 
 int Rsockselect(int nsock, int *insockfd, int *ready, int *write, double timeout);
-
-#define set_iconv Rf_set_iconv
 void set_iconv(Rconnection con);
 
 #ifdef __cplusplus

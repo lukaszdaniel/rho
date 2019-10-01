@@ -60,64 +60,6 @@ typedef enum {
 } GUnit;
 
 
-#define currentFigureLocation	Rf_currentFigureLocation
-#define GArrow			Rf_GArrow
-#define GBox			Rf_GBox
-#define GCheckState		Rf_GCheckState
-#define GCircle			Rf_GCircle
-#define GClip			Rf_GClip
-#define GClipPolygon		Rf_GClipPolygon
-#define GConvert		Rf_GConvert
-#define GConvertX		Rf_GConvertX
-#define GConvertXUnits		Rf_GConvertXUnits
-#define GConvertY		Rf_GConvertY
-#define GConvertYUnits		Rf_GConvertYUnits
-#define GExpressionHeight	Rf_GExpressionHeight
-#define GExpressionWidth	Rf_GExpressionWidth
-#define GForceClip		Rf_GForceClip
-#define GLine			Rf_GLine
-#define GLocator		Rf_GLocator
-#define GMapUnits		Rf_GMapUnits
-#define GMapWin2Fig		Rf_GMapWin2Fig
-#define GMathText		Rf_GMathText
-#define GMetricInfo		Rf_GMetricInfo
-#define GMMathText		Rf_GMMathText
-#define GMode			Rf_GMode
-#define GMtext			Rf_GMtext
-#define GNewPlot		Rf_GNewPlot
-#define GPath   		Rf_GPath
-#define GPolygon		Rf_GPolygon
-#define GPolyline		Rf_GPolyline
-#define GPretty			Rf_GPretty
-#define GRect			Rf_GRect
-#define GRaster			Rf_GRaster
-#define GReset			Rf_GReset
-#define GRestore		Rf_GRestore
-#define GRestorePars		Rf_GRestorePars
-#define GSavePars		Rf_GSavePars
-#define GScale			Rf_GScale
-#define GSetState		Rf_GSetState
-#define GSetupAxis		Rf_GSetupAxis
-#define GStrHeight		Rf_GStrHeight
-#define GStrWidth		Rf_GStrWidth
-#define GSymbol			Rf_GSymbol
-#define GText			Rf_GText
-#define GVStrHeight		Rf_GVStrHeight
-#define GVStrWidth		Rf_GVStrWidth
-#define GVText			Rf_GVText
-
-#define xDevtoNDC		Rf_xDevtoNDC
-#define xDevtoNFC		Rf_xDevtoNFC
-#define xDevtoNPC		Rf_xDevtoNPC
-#define xDevtoUsr		Rf_xDevtoUsr
-#define xNPCtoUsr		Rf_xNPCtoUsr
-#define yDevtoNDC		Rf_yDevtoNDC
-#define yDevtoNFC		Rf_yDevtoNFC
-#define yDevtoNPC		Rf_yDevtoNPC
-#define yDevtoUsr		Rf_yDevtoUsr
-#define yNPCtoUsr		Rf_yNPCtoUsr
-
-
 /*-------------------------------------------------------------------
  *
  *  GPAR FUNCTIONS are concerned with operations on the

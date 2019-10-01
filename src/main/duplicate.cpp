@@ -142,7 +142,7 @@ void attribute_hidden reset_duplicate_counter(void)
 }
 #endif
 
-SEXP duplicate(SEXP s){
+SEXP Rf_duplicate(SEXP s){
     if (!s) return nullptr;
     GCStackRoot<> srt(s);
 #ifdef R_PROFILING
@@ -153,12 +153,12 @@ SEXP duplicate(SEXP s){
     return t;
 }
 
-SEXP shallow_duplicate(SEXP s) {
+SEXP Rf_shallow_duplicate(SEXP s) {
     // TODO(kmillar): implement shallow duplicates.
     return duplicate(s);
 }
 
-SEXP lazy_duplicate(SEXP s) {
+SEXP Rf_lazy_duplicate(SEXP s) {
     switch (TYPEOF(s)) {
     case NILSXP:
     case SYMSXP:
@@ -240,7 +240,7 @@ Rboolean R_cycle_detected(SEXP s, SEXP child) {
 
 /*****************/
 
-void copyVector(SEXP s, SEXP t)
+void Rf_copyVector(SEXP s, SEXP t)
 {
     SEXPTYPE sT = TYPEOF(s), tT = TYPEOF(t);
     if (sT != tT)
@@ -274,7 +274,7 @@ void copyVector(SEXP s, SEXP t)
     }
 }
 
-void copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
+void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
 {
     SEXP pt, tmp;
     int i, j, nr, nc;
@@ -309,7 +309,7 @@ void copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
     }
 }
 
-void copyMatrix(SEXP s, SEXP t, Rboolean byrow)
+void Rf_copyMatrix(SEXP s, SEXP t, Rboolean byrow)
 {
     int nr = nrows(s), nc = ncols(s);
     R_xlen_t nt = XLENGTH(t);

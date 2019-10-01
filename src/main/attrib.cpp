@@ -149,7 +149,7 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
     return att;
 }
 
-SEXP getAttrib(SEXP vec, SEXP name)
+SEXP Rf_getAttrib(SEXP vec, SEXP name)
 {
     if (!vec) return nullptr;
     if(TYPEOF(vec) == CHARSXP)
@@ -210,7 +210,7 @@ SEXP do_copyDFattr(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 
 
 /* 'name' should be 1-element STRSXP or SYMSXP */
-SEXP setAttrib(SEXP vec, SEXP name, SEXP val)
+SEXP Rf_setAttrib(SEXP vec, SEXP name, SEXP val)
 {
     PROTECT(vec);
     PROTECT(name);
@@ -257,7 +257,7 @@ SEXP setAttrib(SEXP vec, SEXP name, SEXP val)
 /* the output.	Note that the Dim and Names attributes */
 /* should have been assigned elsewhere. */
 
-void copyMostAttrib(SEXP inp, SEXP ans)
+void Rf_copyMostAttrib(SEXP inp, SEXP ans)
 {
     SEXP s;
 
@@ -278,7 +278,7 @@ void copyMostAttrib(SEXP inp, SEXP ans)
 }
 
 /* version that does not preserve ts information, for subsetting */
-void copyMostAttribNoTs(SEXP inp, SEXP ans)
+void Rf_copyMostAttribNoTs(SEXP inp, SEXP ans)
 {
     SEXP s;
 
@@ -364,7 +364,7 @@ static void NORET badtsp(void)
 }
 
 attribute_hidden
-SEXP tspgets(SEXP vec, SEXP val)
+SEXP Rf_tspgets(SEXP vec, SEXP val)
 {
     double start, end, frequency;
     int n;
@@ -444,7 +444,7 @@ SEXP attribute_hidden do_comment(/*const*/ Expression* call, const BuiltInFuncti
     return getAttrib(x_, R_CommentSymbol);
 }
 
-SEXP classgets(SEXP vec, SEXP klass)
+SEXP Rf_classgets(SEXP vec, SEXP klass)
 {
     if (isNull(klass) || isString(klass)) {
 	int ncl = length(klass);
@@ -690,7 +690,7 @@ static SEXP createDefaultClass(SEXP part1, SEXP part2, SEXP part3)
 }
 
 attribute_hidden
-void InitS3DefaultTypes()
+void Rf_InitS3DefaultTypes()
 {
     for(int type = 0; type < MAX_NUM_SEXPTYPE; type++) {
 	SEXP part2 = R_NilValue;
@@ -833,7 +833,7 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
     return object;
 }
 
-SEXP namesgets(SEXP vec, SEXP val)
+SEXP Rf_namesgets(SEXP vec, SEXP val)
 {
     int i;
     SEXP s, rval, tval;
@@ -950,7 +950,7 @@ static SEXP dimnamesgets1(SEXP val1)
 }
 
 
-SEXP dimnamesgets(SEXP vec, SEXP val)
+SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
 {
     SEXP dims, top, newval;
     int i, k;
@@ -1047,7 +1047,7 @@ SEXP attribute_hidden do_dimgets(/*const*/ Expression* call, const BuiltInFuncti
     return x;
 }
 
-SEXP dimgets(SEXP vec, SEXP val)
+SEXP Rf_dimgets(SEXP vec, SEXP val)
 {
     int i, ndim;
     R_xlen_t len, total;
@@ -1455,7 +1455,7 @@ SEXP attribute_hidden do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
 /* the dimnames for matrices and arrays in a standard form. */
 
 /* NB: this may return R_alloc-ed rn and dn */
-void GetMatrixDimnames(SEXP x, SEXP *rl, SEXP *cl,
+void Rf_GetMatrixDimnames(SEXP x, SEXP *rl, SEXP *cl,
 		       const char **rn, const char **cn)
 {
     SEXP dimnames = getAttrib(x, R_DimNamesSymbol);
@@ -1483,7 +1483,7 @@ void GetMatrixDimnames(SEXP x, SEXP *rl, SEXP *cl,
 }
 
 
-SEXP GetArrayDimnames(SEXP x)
+SEXP Rf_GetArrayDimnames(SEXP x)
 {
     return getAttrib(x, R_DimNamesSymbol);
 }
@@ -1545,7 +1545,7 @@ static SEXP set_data_part(SEXP obj,  SEXP rhs) {
     return(val);
 }
 
-SEXP S3Class(SEXP obj)
+SEXP Rf_S3Class(SEXP obj)
 {
     if(!s_dot_S3Class) init_slot_handling();
     return getAttrib(obj, s_dot_S3Class);

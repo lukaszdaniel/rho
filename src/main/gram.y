@@ -199,11 +199,11 @@ static int 	processLineDirective(int*);
 /* These routines allocate constants */
 
 static SEXP	mkComplex(const char *);
-SEXP		mkFalse(void);
+SEXP		Rf_mkFalse(void);
 static SEXP     mkFloat(const char *);
 static SEXP 	mkInt(const char *); 
 static SEXP	mkNA(void);
-SEXP		mkTrue(void);
+SEXP		Rf_mkTrue(void);
 
 /* Internal lexer / parser state variables */
 
@@ -1842,12 +1842,12 @@ static SEXP mkNA(void)
 }
 
 attribute_hidden
-SEXP mkTrue(void)
+SEXP Rf_mkTrue(void)
 {
     return ScalarLogical(TRUE);
 }
 
-SEXP mkFalse(void)
+SEXP Rf_mkFalse(void)
 {
     return ScalarLogical(FALSE);
 }
@@ -2583,7 +2583,7 @@ static int SpecialValue(int c)
 
 /* return 1 if name is a valid name 0 otherwise */
 attribute_hidden
-int isValidName(const char *name)
+int Rf_isValidName(const char *name)
 {
     const char *p = name;
     int i;

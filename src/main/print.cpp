@@ -97,7 +97,7 @@ RObject* getNaStringNoQuote() {
 /* Used in X11 module for dataentry */
 /* NB this is called by R.app even though it is in no public header, so
    alter there if you alter this */
-void PrintDefaults(void)
+void Rf_PrintDefaults(void)
 {
     R_print.na_string = NA_STRING;
     R_print.na_string_noquote = getNaStringNoQuote();
@@ -696,7 +696,7 @@ static void PrintSpecial(SEXP s)
 
  * This is the "dispatching" function for  print.default()
  */
-void attribute_hidden PrintValueRec(SEXP s, SEXP env)
+void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 {
     SEXP t;
 
@@ -960,9 +960,9 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 
 
 /* Print an S-expression using (possibly) local options.
-   This is used for auto-printing from main.c */
+   This is used for auto-printing from main.cpp */
 
-void attribute_hidden PrintValueEnv(SEXP s, SEXP env)
+void attribute_hidden Rf_PrintValueEnv(SEXP s, SEXP env)
 {
     PrintDefaults();
     tagbuf[0] = '\0';
@@ -1011,7 +1011,7 @@ void attribute_hidden PrintValueEnv(SEXP s, SEXP env)
 
 /* Print an S-expression using global options */
 
-void PrintValue(SEXP s)
+void Rf_PrintValue(SEXP s)
 {
     PrintValueEnv(s, R_GlobalEnv);
 }
@@ -1025,7 +1025,7 @@ void R_PV(SEXP s)
 }
 
 
-void attribute_hidden CustomPrintValue(SEXP s, SEXP env)
+void attribute_hidden Rf_CustomPrintValue(SEXP s, SEXP env)
 {
     tagbuf[0] = '\0';
     PrintValueRec(s, env);

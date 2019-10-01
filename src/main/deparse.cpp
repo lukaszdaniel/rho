@@ -185,7 +185,7 @@ SEXP attribute_hidden do_deparse(/*const*/ Expression* call, const BuiltInFuncti
     return ca1;
 }
 
-SEXP deparse1(SEXP call, Rboolean abbrev, int opts)
+SEXP Rf_deparse1(SEXP call, Rboolean abbrev, int opts)
 {
     Rboolean backtick = TRUE;
     return deparse1WithCutoff(call, abbrev, DEFAULT_Cutoff, backtick,
@@ -208,7 +208,7 @@ namespace rho {
 	
 /* used for language objects in print() */
 attribute_hidden
-SEXP deparse1w(SEXP call, Rboolean abbrev, int opts)
+SEXP Rf_deparse1w(SEXP call, Rboolean abbrev, int opts)
 {
     Rboolean backtick = TRUE;
     return deparse1WithCutoff(call, abbrev, R_print.cutoff, backtick,
@@ -286,7 +286,7 @@ static SEXP deparse1WithCutoff(SEXP call, Rboolean abbrev, int cutoff,
 /* This is needed in terms.formula, where we must be able */
 /* to deparse a term label into a single line of text so */
 /* that it can be reparsed correctly */
-SEXP deparse1line(SEXP call, Rboolean abbrev)
+SEXP Rf_deparse1line(SEXP call, Rboolean abbrev)
 {
     SEXP temp;
     Rboolean backtick=TRUE;
@@ -322,7 +322,7 @@ SEXP deparse1line(SEXP call, Rboolean abbrev)
     return(temp);
 }
 
-SEXP attribute_hidden deparse1s(SEXP call)
+SEXP attribute_hidden Rf_deparse1s(SEXP call)
 {
    SEXP temp;
    Rboolean backtick=TRUE;

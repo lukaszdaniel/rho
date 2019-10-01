@@ -101,11 +101,11 @@ extern "C" {
      * Note that the gap of 11 and 12 below is because of
      * the withdrawal of native "factor" and "ordered" types.
      *
-     *			--> TypeTable[] in ../main/util.c for  typeof()
+     *			--> TypeTable[] in ../main/util.cpp for  typeof()
      */
 
     /*  These exact numeric values are seldom used, but they are, e.g., in
-     *  ../main/subassign.c
+     *  ../main/subassign.cpp
      */
 
     /** @enum SEXPTYPE
@@ -199,7 +199,7 @@ extern "C" {
 #endif
 	;
 
-/* These are also used with the write barrier on, in attrib.c and util.c */
+/* These are also used with the write barrier on, in attrib.cpp and util.cpp */
 #define TYPE_BITS 5
 #define MAX_NUM_SEXPTYPE (1<<TYPE_BITS)
 
@@ -561,7 +561,7 @@ typedef struct R_allocator R_allocator_t;
 /* Other Internally Used Functions, excluding those which are inline-able*/
 
 char * Rf_acopy_string(const char *);
-void Rf_addMissingVarsToNewEnv(SEXP, SEXP);
+//void Rf_addMissingVarsToNewEnv(SEXP, SEXP); //rho
 SEXP Rf_alloc3DArray(SEXPTYPE, int, int, int);
 SEXP Rf_allocArray(SEXPTYPE, SEXP);
 SEXP Rf_allocFormalsList2(SEXP sym1, SEXP sym2);
@@ -576,7 +576,7 @@ SEXP Rf_allocSExp(SEXPTYPE);
 SEXP Rf_allocVector3(SEXPTYPE, R_xlen_t, void*);
 R_xlen_t Rf_any_duplicated(SEXP x, Rboolean from_last);
 R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last);
-SEXP Rf_applyClosure(SEXP, SEXP, SEXP, SEXP, SEXP);
+//SEXP Rf_applyClosure(SEXP, SEXP, SEXP, SEXP, SEXP); //rho
 SEXP Rf_arraySubscript(int, SEXP, SEXP, SEXP (*)(SEXP,SEXP),
                        SEXP (*)(SEXP, int), SEXP);
 SEXP Rf_classgets(SEXP, SEXP);
@@ -614,9 +614,9 @@ SEXP Rf_GetRowNames(SEXP);
 void Rf_gsetVar(SEXP, SEXP, SEXP);
 SEXP Rf_install(const char *);
 SEXP Rf_installChar(SEXP);
-SEXP Rf_installDDVAL(int i);
+//SEXP Rf_installDDVAL(int i); //rho
 SEXP Rf_installS3Signature(const char *, const char *);
-Rboolean Rf_isFree(SEXP);
+//Rboolean Rf_isFree(SEXP); //rho
 Rboolean Rf_isOrdered(SEXP);
 Rboolean Rf_isUnmodifiedSpecSym(SEXP sym, SEXP env);
 Rboolean Rf_isUnordered(SEXP);
@@ -635,7 +635,7 @@ int Rf_ncols(SEXP);
 int Rf_nrows(SEXP);
 SEXP Rf_nthcdr(SEXP, int);
 
-// ../main/character.c :
+// ../main/character.cpp :
 typedef enum {Bytes, Chars, Width} nchar_type;
 int R_nchar(SEXP string, nchar_type type_,
 	    Rboolean allowNA, Rboolean keepNA, const char* msg_name);
@@ -646,7 +646,7 @@ void Rf_PrintValue(SEXP);
 #ifndef INLINE_PROTECT
 SEXP Rf_protect(SEXP);
 #endif
-void Rf_readS3VarsFromFrame(SEXP, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*);
+//void Rf_readS3VarsFromFrame(SEXP, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*); //rho
 SEXP Rf_setAttrib(SEXP, SEXP, SEXP);
 void Rf_setSVector(SEXP*, int, SEXP);
 void Rf_setVar(SEXP, SEXP, SEXP);
@@ -767,7 +767,7 @@ Rboolean R_BindingIsActive(SEXP sym, SEXP env);
 Rboolean R_HasFancyBindings(SEXP rho);
 
 
-/* ../main/errors.c : */
+/* ../main/errors.cpp : */
 /* needed for R_load/savehistory handling in front ends */
 #if defined(__GNUC__) && __GNUC__ >= 3
 void Rf_errorcall(SEXP, const char *, ...) __attribute__((noreturn));
@@ -854,14 +854,14 @@ void R_InitConnInPStream(R_inpstream_t stream,  Rconnection con,
 void R_Serialize(SEXP s, R_outpstream_t ops);
 SEXP R_Unserialize(R_inpstream_t ips);
 
-/* slot management (in attrib.c) */
+/* slot management (in attrib.cpp) */
 SEXP R_do_slot(SEXP obj, SEXP name);
 SEXP R_do_slot_assign(SEXP obj, SEXP name, SEXP value);
 int R_has_slot(SEXP obj, SEXP name);
-/* S3-S4 class (inheritance), attrib.c */
+/* S3-S4 class (inheritance), attrib.cpp */
 SEXP R_S4_extends(SEXP klass, SEXP useTable);
 
-/* class definition, new objects (objects.c) */
+/* class definition, new objects (objects.cpp) */
 SEXP R_do_MAKE_CLASS(const char *what);
 SEXP R_getClassDef  (const char *what);
 SEXP R_getClassDef_R(SEXP what);
@@ -878,8 +878,8 @@ void R_PreserveObject(SEXP);
 void R_ReleaseObject(SEXP);
 
 /* Shutdown actions */
-void R_dot_Last(void);		/* in main.c */
-void R_RunExitFinalizers(void);	/* in memory.c */
+void R_dot_Last(void);		/* in main.cpp */
+void R_RunExitFinalizers(void);	/* in memory.cpp */
 
 /* Replacements for popen and system */
 #ifdef HAVE_POPEN

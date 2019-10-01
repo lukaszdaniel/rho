@@ -72,9 +72,9 @@ static R_INLINE int integerOneIndex(int i, R_xlen_t len, SEXP call)
     return indx;
 }
 
-/* Utility used (only in) do_subassign2_dflt(), i.e. "[[<-" in ./subassign.c : */
+/* Utility used (only in) do_subassign2_dflt(), i.e. "[[<-" in ./subassign.cpp : */
 R_xlen_t attribute_hidden
-OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
+Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
 	 int pos, SEXP call)
 {
     SEXP names;
@@ -162,7 +162,7 @@ OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
 
 /* used here and in subset.c and subassign.c */
 R_xlen_t attribute_hidden
-get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
+Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 {
 /* Get a single index for the [[ and [[<- operators.
    Checks that only one index is being selected.
@@ -360,7 +360,7 @@ vectorIndex(SEXP x, SEXP thesub, int start, int stop, int pok, SEXP call,
 */
 
 
-SEXP attribute_hidden mat2indsub(SEXP dims, SEXP s, SEXP call)
+SEXP attribute_hidden Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 {
     int nrs = nrows(s);
     R_xlen_t NR = nrs;
@@ -451,7 +451,7 @@ to an integer matrix by matching against the dimnames of x. NA values
 in any row of i propagate to the result.  Unmatched entries result in
 a subscript out of bounds error.  */
 
-SEXP attribute_hidden strmat2intmat(SEXP s, SEXP dnamelist, SEXP call)
+SEXP attribute_hidden Rf_strmat2intmat(SEXP s, SEXP dnamelist, SEXP call)
 {
     /* XXX: assumes all args are protected */
     int nr = nrows(s), i, j, v;
@@ -692,7 +692,7 @@ typedef SEXP AttrGetter(SEXP x, SEXP data);
 typedef SEXP (*StringEltGetter)(SEXP x, int i);
 
 SEXP
-arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
+Rf_arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
 	       StringEltGetter strg, SEXP x)
 {
     return int_arraySubscript(dim, s, dims, x, R_NilValue);
@@ -707,7 +707,7 @@ arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
 */
 
 SEXP attribute_hidden
-makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
+Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
 {
     if (! (isVector(x) || isList(x) || isLanguage(x))) {
 	ECALL(call, _("subscripting on non-vector"));

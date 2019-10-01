@@ -32,7 +32,7 @@
 #include <Internal.h>
 #include <Rversion.h>
 
-void attribute_hidden PrintGreeting(void)
+void attribute_hidden Rf_PrintGreeting(void)
 {
     char buf[500];
 
@@ -104,7 +104,7 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     return value;
 }
 
-void attribute_hidden PrintVersion(char *s, size_t len)
+void attribute_hidden Rf_PrintVersion(char *s, size_t len)
 {
     PrintVersion_part_1(s, len);
 
@@ -116,7 +116,7 @@ void attribute_hidden PrintVersion(char *s, size_t len)
 	   "http://www.gnu.org/licenses/.\n");
 }
 
-void attribute_hidden PrintVersionString(char *s, size_t len)
+void attribute_hidden Rf_PrintVersionString(char *s, size_t len)
 {
     if(R_SVN_BASEREVISION <= 0) {// 'svn info' failed in ../../Makefile.in
 	snprintf(s, len, "R version %s.%s %s (%s-%s-%s)",
@@ -134,7 +134,7 @@ void attribute_hidden PrintVersionString(char *s, size_t len)
     }
 }
 
-void attribute_hidden PrintRhoVersionString(char *s, size_t len)
+void attribute_hidden Rf_PrintRhoVersionString(char *s, size_t len)
 {
     std::string git_revision = R_GIT_REVISION;
     if (git_revision == "unknown" || git_revision == "") {

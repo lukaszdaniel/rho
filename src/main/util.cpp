@@ -71,7 +71,7 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar);
 /* Many small functions are included from ../include/Rinlinedfuns.h */
 
 attribute_hidden
-Rboolean tsConform(SEXP x, SEXP y)
+Rboolean Rf_tsConform(SEXP x, SEXP y)
 {
     if ((x = getAttrib(x, R_TspSymbol)) != R_NilValue &&
 	(y = getAttrib(y, R_TspSymbol)) != R_NilValue) {
@@ -86,7 +86,7 @@ Rboolean tsConform(SEXP x, SEXP y)
     return FALSE;
 }
 
-int nrows(SEXP s)
+int Rf_nrows(SEXP s)
 {
     SEXP t;
     if (isVector(s) || isList(s)) {
@@ -102,7 +102,7 @@ int nrows(SEXP s)
 }
 
 
-int ncols(SEXP s)
+int Rf_ncols(SEXP s)
 {
     SEXP t;
     if (isVector(s) || isList(s)) {
@@ -122,7 +122,7 @@ int ncols(SEXP s)
 #ifdef UNUSED
 const static char type_msg[] = "invalid type passed to internal function\n";
 
-void internalTypeCheck(SEXP call, SEXP s, SEXPTYPE type)
+void Rf_internalTypeCheck(SEXP call, SEXP s, SEXPTYPE type)
 {
     if (TYPEOF(s) != type) {
 	if (call)
@@ -149,7 +149,7 @@ const static char * const falsenames[] = {
     RHO_NO_CAST(char *) nullptr,
 };
 
-SEXP asChar(SEXP x)
+SEXP Rf_asChar(SEXP x)
 {
 	if (isVectorAtomic(x) && XLENGTH(x) >= 1) {
 	    int w, d, e, wi, di, ei;
@@ -189,14 +189,14 @@ SEXP asChar(SEXP x)
     return NA_STRING;
 }
 
-Rboolean isUnordered(SEXP s)
+Rboolean Rf_isUnordered(SEXP s)
 {
     return Rboolean(TYPEOF(s) == INTSXP
 		    && inherits(s, "factor")
 		    && !inherits(s, "ordered"));
 }
 
-Rboolean isOrdered(SEXP s)
+Rboolean Rf_isOrdered(SEXP s)
 {
     return Rboolean(TYPEOF(s) == INTSXP
 		    && inherits(s, "factor")
@@ -243,7 +243,7 @@ TypeTable[] = {
 };
 
 
-SEXPTYPE str2type(const char *s)
+SEXPTYPE Rf_str2type(const char *s)
 {
     int i;
     for (i = 0; TypeTable[i].str; i++) {
@@ -271,7 +271,7 @@ static int findTypeInTypeTable(SEXPTYPE t)
 
 // called from main.c
 attribute_hidden
-void InitTypeTables(void) {
+void Rf_InitTypeTables(void) {
 
     /* Type2Table */
     for (int type = 0; type < MAX_NUM_SEXPTYPE; type++) {
@@ -299,7 +299,7 @@ void InitTypeTables(void) {
     }
 }
 
-SEXP type2str_nowarn(SEXPTYPE t) /* returns a CHARSXP */
+SEXP Rf_type2str_nowarn(SEXPTYPE t) /* returns a CHARSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rcharName;
@@ -308,7 +308,7 @@ SEXP type2str_nowarn(SEXPTYPE t) /* returns a CHARSXP */
     return R_NilValue;
 }
 
-SEXP type2str(SEXPTYPE t) /* returns a CHARSXP */
+SEXP Rf_type2str(SEXPTYPE t) /* returns a CHARSXP */
 {
     SEXP s = type2str_nowarn(t);
     if (s != R_NilValue) {
@@ -320,7 +320,7 @@ SEXP type2str(SEXPTYPE t) /* returns a CHARSXP */
     return mkChar(buf);
 }
 
-SEXP type2rstr(SEXPTYPE t) /* returns a STRSXP */
+SEXP Rf_type2rstr(SEXPTYPE t) /* returns a STRSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rstrName;
@@ -331,7 +331,7 @@ SEXP type2rstr(SEXPTYPE t) /* returns a STRSXP */
     return R_NilValue; /* for -Wall */
 }
 
-const char *type2char(SEXPTYPE t) /* returns a char* */
+const char *Rf_type2char(SEXPTYPE t) /* returns a char* */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	const char * res = Type2Table[t].cstrName;
@@ -344,7 +344,7 @@ const char *type2char(SEXPTYPE t) /* returns a char* */
 }
 
 #ifdef UNUSED
-SEXP NORET type2symbol(SEXPTYPE t)
+SEXP NORET Rf_type2symbol(SEXPTYPE t)
 {
     if (t >= 0 && t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rsymName;
@@ -448,7 +448,7 @@ Rboolean isBlankString(const char *s)
     return TRUE;
 }
 
-Rboolean StringBlank(SEXP x)
+Rboolean Rf_StringBlank(SEXP x)
 {
     if (x == R_NilValue) return TRUE;
     else return RHOCONSTRUCT(Rboolean, CHAR(x)[0] == '\0');
@@ -474,8 +474,8 @@ Rboolean StringFalse(const char *name)
     return FALSE;
 }
 
-/* used in bind.c and options.c */
-SEXP attribute_hidden EnsureString(SEXP s)
+/* used in bind.cpp and options.cpp */
+SEXP attribute_hidden Rf_EnsureString(SEXP s)
 {
     switch(TYPEOF(s)) {
     case SYMSXP:
@@ -534,7 +534,7 @@ void attribute_hidden Expression::check1arg(const char *formal) const
 }
 
 
-SEXP nthcdr(SEXP s, int n)
+SEXP Rf_nthcdr(SEXP s, int n)
 {
     if (isList(s) || isLanguage(s) || isFrame(s) || TYPEOF(s) == DOTSXP ) {
 	while( n-- > 0 ) {
@@ -576,7 +576,7 @@ void attribute_hidden setRVector(double * vec, int len, double val)
 }
 
 /* unused in R, in Rinternals.h */
-void setSVector(SEXP * vec, int len, SEXP val)
+void Rf_setSVector(SEXP * vec, int len, SEXP val)
 {
     for (int i = 0; i < len; i++) vec[i] = val;
 }
@@ -1146,7 +1146,7 @@ SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFu
     return x;
 }
 
-SEXP attribute_hidden markKnown(const char *s, SEXP ref)
+SEXP attribute_hidden Rf_markKnown(const char *s, SEXP ref)
 {
     cetype_t ienc = CE_NATIVE;
     if(ENC_KNOWN(ref)) {
@@ -1156,7 +1156,7 @@ SEXP attribute_hidden markKnown(const char *s, SEXP ref)
     return mkCharCE(s, ienc);
 }
 
-Rboolean strIsASCII(const char *str)
+Rboolean Rf_strIsASCII(const char *str)
 {
     const char *p;
     for(p = str; *p; p++)
@@ -1181,7 +1181,7 @@ int attribute_hidden utf8clen(char c)
 /* These return the result in wchar_t, but does assume
    wchar_t is UCS-2/4 and so are for internal use only */
 size_t attribute_hidden
-utf8toucs(wchar_t *wc, const char *s)
+Rf_utf8toucs(wchar_t *wc, const char *s)
 {
     unsigned int byte;
     wchar_t local, *w;
@@ -1243,7 +1243,7 @@ utf8toucs(wchar_t *wc, const char *s)
 }
 
 size_t
-utf8towcs(wchar_t *wc, const char *s, size_t n)
+Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 {
     ssize_t m, res = 0;
     const char *t;
@@ -1292,7 +1292,7 @@ static size_t Rwcrtomb(char *s, const wchar_t wc)
 }
 
 attribute_hidden // but used in windlgs
-size_t wcstoutf8(char *s, const wchar_t *wc, size_t n)
+size_t Rf_wcstoutf8(char *s, const wchar_t *wc, size_t n)
 {
     ssize_t m, res=0;
     char *t;
@@ -1317,7 +1317,7 @@ size_t wcstoutf8(char *s, const wchar_t *wc, size_t n)
 
 
 /* A version that reports failure as an error */
-size_t Mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
+size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
 {
     size_t used;
 
@@ -1512,9 +1512,9 @@ void F77_SYMBOL(rchkusr)(void)
 }
 
 /* Return a copy of a string using memory from R_alloc.
-   NB: caller has to manage R_alloc stack.  Used in platform.c
+   NB: caller has to manage R_alloc stack.  Used in platform.cpp
 */
-char *acopy_string(const char *in)
+char *Rf_acopy_string(const char *in)
 {
     char *out;
     size_t len = strlen(in);

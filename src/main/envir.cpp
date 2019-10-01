@@ -260,7 +260,7 @@ void Rf_InitGlobalEnv()
   (and applydefine only works for unhashed environments, so not base).
 */
 
-void attribute_hidden unbindVar(SEXP symbol, SEXP rho)
+void attribute_hidden Rf_unbindVar(SEXP symbol, SEXP rho)
 {
     if (rho == R_BaseNamespace)
 	error(_("cannot unbind in the base namespace"));
@@ -333,7 +333,7 @@ Rboolean R_GetVarLocMISSING(R_varloc_t vl)
 
 // doGet is used in connection with user databases, currently
 // (2009-01-18) unimplemented in rho.
-SEXP findVarInFrame3(SEXP rho, SEXP symbol, Rboolean /*doGet*/)
+SEXP Rf_findVarInFrame3(SEXP rho, SEXP symbol, Rboolean /*doGet*/)
 {
     Environment* env = downcast_to_env(rho);
     Symbol* sym = SEXP_downcast<Symbol*>(symbol);
@@ -346,7 +346,7 @@ SEXP findVarInFrame3(SEXP rho, SEXP symbol, Rboolean /*doGet*/)
     return R_UnboundValue;
 }
 
-SEXP findVarInFrame(SEXP rho, SEXP symbol)
+SEXP Rf_findVarInFrame(SEXP rho, SEXP symbol)
 {
     return findVarInFrame3(rho, symbol, TRUE);
 }
@@ -360,7 +360,7 @@ SEXP findVarInFrame(SEXP rho, SEXP symbol)
 
 */
 
-SEXP findVar(SEXP symbol, SEXP rho)
+SEXP Rf_findVar(SEXP symbol, SEXP rho)
 {
     auto env = downcast_to_env(rho);
     if (!env)
@@ -411,7 +411,7 @@ namespace {
 }
 
 SEXP attribute_hidden
-findVar1(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits)
+Rf_findVar1(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -519,7 +519,7 @@ static int ddVal(SEXP symbol)
 */
 
 attribute_hidden
-SEXP ddfindVar(SEXP symbol, SEXP rho)
+SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
 {
     int i;
     SEXP vl;
@@ -583,7 +583,7 @@ SEXP dynamicfindVar(SEXP symbol, ClosureContext *cptr)
   This could call findVar1.  NB: they behave differently on failure.
 */
 
-SEXP findFun(SEXP symbol, SEXP rho)
+SEXP Rf_findFun(SEXP symbol, SEXP rho)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -604,7 +604,7 @@ SEXP findFun(SEXP symbol, SEXP rho)
 
 */
 
-void defineVar(SEXP symbol, SEXP value, SEXP rho)
+void Rf_defineVar(SEXP symbol, SEXP value, SEXP rho)
 {
     if (rho == R_EmptyEnv)
 	error(_("cannot assign values in the empty environment"));
@@ -633,7 +633,7 @@ void defineVar(SEXP symbol, SEXP value, SEXP rho)
 
 */
 
-void setVar(SEXP symbol, SEXP value, SEXP rho)
+void Rf_setVar(SEXP symbol, SEXP value, SEXP rho)
 {
     Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -655,7 +655,7 @@ void setVar(SEXP symbol, SEXP value, SEXP rho)
 
 */
 
-void gsetVar(SEXP symbol, SEXP value, SEXP rho)
+void Rf_gsetVar(SEXP symbol, SEXP value, SEXP rho)
 {
     GCStackRoot<> valrt(value);
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
@@ -2071,7 +2071,7 @@ SEXP attribute_hidden do_topenv(SEXP call, SEXP op, SEXP args, SEXP rho) {
     return topenv(target, envir);
 }
 
-Rboolean attribute_hidden isUnmodifiedSpecSym(SEXP sym, SEXP rho) {
+Rboolean attribute_hidden Rf_isUnmodifiedSpecSym(SEXP sym, SEXP rho) {
     Symbol* symbol = SEXP_downcast<Symbol*>(sym);
     Environment* env = SEXP_downcast<Environment*>(rho);
 

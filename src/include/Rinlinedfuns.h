@@ -129,7 +129,7 @@ INLINE_FUN void R_Reprotect(SEXP s, PROTECT_INDEX i)
    defined in dstruct.cpp. */
 
 /* TODO: a  Length(.) {say} which is  length() + dispatch (S3 + S4) if needed
-         for one approach, see do_seq_along() in ../main/seq.c
+         for one approach, see do_seq_along() in ../main/seq.cpp
 */
 R_len_t Rf_length(SEXP s);
 
@@ -142,7 +142,7 @@ INLINE_FUN SEXP Rf_allocVector(SEXPTYPE type, R_xlen_t length)
     return Rf_allocVector3(type, length, NULL);
 }
 
-/* from list.c */
+/* from list.cpp */
 /* Return a dotted pair with the given CAR and CDR. */
 /* The (R) TAG slot on the cell is set to NULL. */
 
@@ -283,7 +283,7 @@ INLINE_FUN SEXP Rf_lang6(SEXP s, SEXP t, SEXP u, SEXP v, SEXP w, SEXP x)
     return s;
 }
 
-/* from util.c */
+/* from util.cpp */
 
 /* Check to see if the arrays "x" and "y" have the identical extents */
 
@@ -301,7 +301,7 @@ INLINE_FUN Rboolean Rf_conformable(SEXP x, SEXP y)
     return TRUE;
 }
 
-/* NOTE: R's inherits() is based on inherits3() in ../main/objects.c
+/* NOTE: R's inherits() is based on inherits3() in ../main/objects.cpp
  * Here, use char / CHAR() instead of the slower more general translateChar()
  */
 INLINE_FUN Rboolean Rf_inherits(SEXP s, const char *name)
@@ -574,7 +574,7 @@ INLINE_FUN Rboolean Rf_isVectorizable(SEXP s)
 }
 
 
-/** @fn SEXP mkNamed(SEXPTYPE TYP, const char **names)
+/** @fn SEXP Rf_mkNamed(SEXPTYPE TYP, const char **names)
  *
  * @brief Create a named vector of type TYP
  *
@@ -586,7 +586,7 @@ INLINE_FUN Rboolean Rf_isVectorizable(SEXP s)
  *
  * @return (pointer to a) named vector of type TYP
  */
-INLINE_FUN SEXP mkNamed(SEXPTYPE TYP, const char **names)
+INLINE_FUN SEXP Rf_mkNamed(SEXPTYPE TYP, const char **names)
 {
     SEXP ans, nms;
     R_xlen_t i, n;
@@ -616,7 +616,7 @@ INLINE_FUN SEXP Rf_mkString(const char *s)
 
 /* index of a given C string in (translated) R string vector  */
 INLINE_FUN int
-stringPositionTr(SEXP string, const char *translatedElement) {
+Rf_stringPositionTr(SEXP string, const char *translatedElement) {
 
     int slen = LENGTH(string);
     int i;

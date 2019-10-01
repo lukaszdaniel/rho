@@ -81,12 +81,15 @@ extern int R_HistorySize;	/* Size of the history file */
 extern int R_RestoreHistory;	/* restore the history file? */
 extern char *R_Home;		    /* Root of the R tree */
 
+#ifndef R_NO_REMAP
 # define jump_to_toplevel	Rf_jump_to_toplevel
 # define mainloop		Rf_mainloop
 # define onintr			Rf_onintr
+#endif /* R_NO_REMAP */
+
 void NORET jump_to_toplevel(void);
-void mainloop(void);
-void onintr(void);
+void Rf_mainloop(void);
+void Rf_onintr(void);
 
 void process_site_Renviron(void);
 void process_system_Renviron(void);

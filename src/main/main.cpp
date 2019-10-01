@@ -1165,7 +1165,7 @@ void run_Rmainloop(void)
     end_Rmainloop(); /* must go here */
 }
 
-void mainloop(void)
+void Rf_mainloop(void)
 {
     Evaluator evalr;
     setup_Rmainloop();

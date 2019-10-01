@@ -141,7 +141,7 @@ void R_CheckUserInterrupt(void)
     R_RunPendingFinalizers();
 }
 
-void onintr()
+void Rf_onintr()
 {
     if (R_interrupts_suspended) {
 	R_interrupts_pending = 1;
@@ -164,7 +164,7 @@ void onintr()
    These do far more processing than is allowed in a signal handler ....
 */
 
-RETSIGTYPE attribute_hidden onsigusr1(int dummy)
+RETSIGTYPE attribute_hidden Rf_onsigusr1(int dummy)
 {
     if (R_interrupts_suspended) {
 	/**** ought to save signal and handle after suspend */
@@ -192,7 +192,7 @@ RETSIGTYPE attribute_hidden onsigusr1(int dummy)
 }
 
 
-RETSIGTYPE attribute_hidden onsigusr2(int dummy)
+RETSIGTYPE attribute_hidden Rf_onsigusr2(int dummy)
 {
     inError = 1;
 
@@ -389,7 +389,7 @@ static void warningcall_dflt(SEXP call, const char *format,...)
     va_end(ap);
 }
 
-void warningcall(SEXP call, const char *format, ...)
+void Rf_warningcall(SEXP call, const char *format, ...)
 {
     va_list(ap);
     va_start(ap, format);
@@ -397,7 +397,7 @@ void warningcall(SEXP call, const char *format, ...)
     va_end(ap);
 }
 
-void warningcall_immediate(SEXP call, const char *format, ...)
+void Rf_warningcall_immediate(SEXP call, const char *format, ...)
 {
     va_list(ap);
 
@@ -409,7 +409,7 @@ void warningcall_immediate(SEXP call, const char *format, ...)
 }
 
 attribute_hidden
-void PrintWarnings(void)
+void Rf_PrintWarnings(void)
 {
     int i;
     char *header;
@@ -697,7 +697,7 @@ static void NORET errorcall_dflt(SEXP call, const char *format,...)
     va_end(ap);
 }
 
-void NORET errorcall(SEXP call, const char *format,...)
+void NORET Rf_errorcall(SEXP call, const char *format,...)
 {
     va_list(ap);
 

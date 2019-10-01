@@ -1615,7 +1615,7 @@ SEXP attribute_hidden do_strtoi(/*const*/ Expression* call, const BuiltInFunctio
 /* creates a new STRSXP which is a suffix of string, starting
    with given index; the result is returned unprotected  */
 
-SEXP attribute_hidden stringSuffix(SEXP string, int fromIndex) {
+SEXP attribute_hidden Rf_stringSuffix(SEXP string, int fromIndex) {
 
     int origLen = LENGTH(string);
     int newLen = origLen - fromIndex;

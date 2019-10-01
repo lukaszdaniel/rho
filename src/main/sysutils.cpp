@@ -728,7 +728,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
     return ans;
 }
 
-cetype_t getCharCE(SEXP x)
+cetype_t Rf_getCharCE(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
 	error(_("'%s' must be called on a CHARSXP"), "getCharCE");
@@ -906,7 +906,7 @@ next_char:
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-const char *translateChar(SEXP x)
+const char *Rf_translateChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
 	error(_("'%s' must be called on a CHARSXP"), "translateChar");
@@ -926,7 +926,7 @@ const char *translateChar(SEXP x)
     return p;
 }
 
-SEXP installTrChar(SEXP x)
+SEXP Rf_installTrChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
 	error(_("'%s' must be called on a CHARSXP"), "installTrChar");
@@ -944,7 +944,7 @@ SEXP installTrChar(SEXP x)
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-const char *translateChar0(SEXP x)
+const char *Rf_translateChar0(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
 	error(_("'%s' must be called on a CHARSXP"), "translateChar0");
@@ -954,7 +954,7 @@ const char *translateChar0(SEXP x)
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-const char *translateCharUTF8(SEXP x)
+const char *Rf_translateCharUTF8(SEXP x)
 {
     void *obj;
     const char *inbuf, *ans = CHAR(x);
@@ -1114,7 +1114,7 @@ next_char:
 #include <R_ext/GraphicsEngine.h>
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-const char *reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst)
+const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst)
 {
     void * obj;
     const char *inbuf;
@@ -1467,7 +1467,7 @@ static const char UNICODE[] = "UCS-4LE";
 #endif
 
 /* used in gram.c and devX11.c */
-size_t ucstomb(char *s, const unsigned int wc)
+size_t Rf_ucstomb(char *s, const unsigned int wc)
 {
     vector<char> bufv(MB_CUR_MAX+1);
     char* buf = &bufv[0];
@@ -1523,7 +1523,7 @@ size_t ucstomb(char *s, const unsigned int wc)
 
 /* used in plot.c for non-UTF-8 MBCS */
 size_t attribute_hidden
-mbtoucs(unsigned int *wc, const char *s, size_t n)
+Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
 {
     unsigned int  wcs[2];
     char     buf[16];
@@ -1558,7 +1558,7 @@ mbtoucs(unsigned int *wc, const char *s, size_t n)
 }
 
 /* made available for use in graphics devices */
-size_t ucstoutf8(char *s, const unsigned int wc)
+size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 {
     char     buf[16];
     void    *cd = nullptr ;
@@ -1655,7 +1655,7 @@ extern char * mkdtemp (char *template);
 # include <ctype.h>
 #endif
 
-void attribute_hidden InitTempDir()
+void attribute_hidden Rf_InitTempDir()
 {
     char *tmp, tmp1[PATH_MAX+11], *p;
     RHOCONST char* tm;

@@ -490,7 +490,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
     }
 
 /* used in scan() */
-SEXP duplicated(SEXP x, Rboolean from_last)
+SEXP Rf_duplicated(SEXP x, Rboolean from_last)
 {
     SEXP ans;
     int *v, nmax = NA_INTEGER;
@@ -549,7 +549,7 @@ static SEXP Duplicated(SEXP x, Rboolean from_last, int nmax)
 }
 
 /* simpler version of the above : return 1-based index of first, or 0 : */
-R_xlen_t any_duplicated(SEXP x, Rboolean from_last)
+R_xlen_t Rf_any_duplicated(SEXP x, Rboolean from_last)
 {
     R_xlen_t result = 0;
     int nmax = NA_INTEGER;
@@ -613,7 +613,7 @@ static SEXP duplicated3(SEXP x, SEXP incomp, Rboolean from_last, int nmax)
 }
 
 /* return (1-based) index of first duplication, or 0 : */
-R_xlen_t any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
+R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
 {
     int j, m = Rf_length(incomp), nmax = NA_INTEGER;
 
@@ -971,7 +971,7 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
     return ans;
 }
 
-SEXP matchE(SEXP itable, SEXP ix, int nmatch, SEXP env)
+SEXP Rf_matchE(SEXP itable, SEXP ix, int nmatch, SEXP env)
 {
     return match5(itable, ix, nmatch, nullptr, env);
 }

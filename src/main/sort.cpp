@@ -100,7 +100,7 @@ bool String::Comparator::operator()(const String* l,
 		Rboolean(m_na_last)) < 0;
 }
 
-Rboolean isUnsorted(SEXP x, Rboolean strictly)
+Rboolean Rf_isUnsorted(SEXP x, Rboolean strictly)
 {
     R_xlen_t n, i;
 
@@ -249,7 +249,7 @@ void R_csort(Rcomplex *x, int n)
 
 
 /* used in platform.c */
-void attribute_hidden ssort(StringVector* sv, int n)
+void attribute_hidden Rf_ssort(StringVector* sv, int n)
 {
     StringVector& x(*sv);
     String* v;
@@ -457,7 +457,7 @@ static void ssort2(StringVector* sv, R_xlen_t n, Rboolean decreasing)
 }
 
 /* The meat of sort.int() */
-void sortVector(SEXP s, Rboolean decreasing)
+void Rf_sortVector(SEXP s, Rboolean decreasing)
 {
     R_xlen_t n = XLENGTH(s);
     if (n >= 2 && (decreasing || isUnsorted(s, FALSE)))

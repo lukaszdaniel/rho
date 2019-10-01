@@ -96,7 +96,7 @@
 #endif
 
 extern "C"
-double currentTime(void)
+double Rf_currentTime(void)
 {
     double ans = NA_REAL;
 

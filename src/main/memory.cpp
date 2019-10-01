@@ -255,7 +255,7 @@ static void gc_end_timing(void)
 /* InitMemory : Initialise the memory to be used in R. */
 /* This includes: stack space, node space and vector space */
 
-void InitMemory()
+void Rf_InitMemory()
 {
     GCManager::setMonitors(gc_start_timing, gc_end_timing);
     GCManager::setReporting(R_Verbose ? &std::cerr : nullptr);
@@ -278,7 +278,7 @@ void InitMemory()
   (This is useful in cases where the entire valuelist is already
   named--namelist can then be R_NilValue.)
 */
-SEXP NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
+SEXP Rf_NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
 {
     SEXP v = valuelist;
     SEXP n = namelist;
@@ -300,7 +300,7 @@ SEXP NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
 /* Allocate a vector object (and also list-like objects).
 */
 
-SEXP allocVector3(SEXPTYPE type, R_xlen_t length, void*)
+SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
 {
     SEXP s = nullptr;  // -Wall
 
@@ -393,23 +393,23 @@ static SEXP allocFormalsList(int nargs, ...) {
 }
 
 
-SEXP allocFormalsList2(SEXP sym1, SEXP sym2) {
+SEXP Rf_allocFormalsList2(SEXP sym1, SEXP sym2) {
     return allocFormalsList(2, sym1, sym2);
 }
 
-SEXP allocFormalsList3(SEXP sym1, SEXP sym2, SEXP sym3) {
+SEXP Rf_allocFormalsList3(SEXP sym1, SEXP sym2, SEXP sym3) {
     return allocFormalsList(3, sym1, sym2, sym3);
 }
 
-SEXP allocFormalsList4(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4) {
+SEXP Rf_allocFormalsList4(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4) {
     return allocFormalsList(4, sym1, sym2, sym3, sym4);
 }
 
-SEXP allocFormalsList5(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5) {
+SEXP Rf_allocFormalsList5(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5) {
     return allocFormalsList(5, sym1, sym2, sym3, sym4, sym5);
 }
 
-SEXP allocFormalsList6(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5, SEXP sym6) {
+SEXP Rf_allocFormalsList6(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5, SEXP sym6) {
     return allocFormalsList(6, sym1, sym2, sym3, sym4, sym5, sym6);
 }
 
@@ -646,7 +646,7 @@ R_FreeStringBufferL(R_StringBuffer *buf)
 
 /* this has NA_STRING = NA_STRING */
 attribute_hidden
-int Seql(SEXP a, SEXP b)
+int Rf_Seql(SEXP a, SEXP b)
 {
     /* The only case where pointer comparisons do not suffice is where
       we have two strings in different encodings (which must be

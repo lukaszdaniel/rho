@@ -723,8 +723,8 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
 /* (if it is vectorizable). We could probably be fairly */
 /* clever with memory here if we wanted to. */
 
-/* used in connections.c */
-SEXP xlengthgets(SEXP x, R_xlen_t len)
+/* used in connections.cpp */
+SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 {
     R_xlen_t lenx, i;
     SEXP rval, names, xnames, t;
@@ -817,7 +817,7 @@ SEXP xlengthgets(SEXP x, R_xlen_t len)
 }
 
 /* public older version */
-SEXP lengthgets(SEXP x, R_len_t len)
+SEXP Rf_lengthgets(SEXP x, R_len_t len)
 {
     return xlengthgets(x, R_xlen_t( len));
 }

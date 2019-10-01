@@ -116,13 +116,13 @@ static SEXP makeErrorCall(SEXP fun)
     return call;
 }
 
-SEXP GetOption(SEXP tag, SEXP rho)
+SEXP Rf_GetOption(SEXP tag, SEXP rho)
 {
     return GetOption1(tag);
 }
 
 
-SEXP GetOption1(SEXP tag)
+SEXP Rf_GetOption1(SEXP tag)
 {
     SEXP opt = SYMVALUE(Options());
     if (!isList(opt)) error(_("corrupted options list"));
@@ -130,7 +130,7 @@ SEXP GetOption1(SEXP tag)
     return CAR(opt);
 }
 
-int GetOptionWidth(void)
+int Rf_GetOptionWidth(void)
 {
     int w;
     w = asInteger(GetOption1(install("width")));
@@ -141,7 +141,7 @@ int GetOptionWidth(void)
     return w;
 }
 
-int GetOptionDigits(void)
+int Rf_GetOptionDigits(void)
 {
     int d;
     d = asInteger(GetOption1(install("digits")));
@@ -153,7 +153,7 @@ int GetOptionDigits(void)
 }
 
 attribute_hidden
-int GetOptionCutoff(void)
+int Rf_GetOptionCutoff(void)
 {
     int w;
     w = asInteger(GetOption1(install("deparse.cutoff")));
@@ -245,7 +245,7 @@ int attribute_hidden R_SetOptionWarn(int w)
 /* Note that options are stored as a dotted pair list */
 /* This is barely historical, but is also useful. */
 
-void attribute_hidden InitOptions(void)
+void attribute_hidden Rf_InitOptions(void)
 {
     SEXP val, v;
     char *p;

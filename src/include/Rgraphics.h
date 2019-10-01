@@ -124,7 +124,7 @@ typedef enum {
  *  entire set of graphics parameters for a device
  *  (e.g., initialisation, saving, and restoring)
  *
- *  From graphics.c, used in plot.c.
+ *  From graphics.cpp, used in plot.cpp.
  */
 
 /* Reset the current graphical parameters from the default ones: */
@@ -140,7 +140,7 @@ void GRestorePars(pGEDevDesc);
  *  DEVICE STATE FUNCTIONS are concerned with getting and setting
  *  the current state of the device;  is it ready to be drawn into?
  *
- *  From graphics.c, used in plot.c.
+ *  From graphics.cpp, used in plot.cpp.
  */
 
 /* has plot.new been called yet? */
@@ -160,7 +160,7 @@ void GSetState(int, pGEDevDesc);
  *  version of the function is responsible for calling GConvert to get
  *  the location into device coordinates.
  *
- *  From graphics.c, used in plot.c.
+ *  From graphics.cpp, used in plot.cpp.
  */
 
 
@@ -205,7 +205,7 @@ double GStrWidth(const char *, cetype_t, GUnit, pGEDevDesc);
 void GText(double, double, int, const char *, cetype_t, double, double, double,
 	   pGEDevDesc);
 
-/* From plotmath.c, used in plot.c */
+/* From plotmath.cpp, used in plot.cpp */
 void GMathText(double, double, int, SEXP, double, double, double, pGEDevDesc);
 void GMMathText(SEXP, int, double, int, double, int, double, pGEDevDesc);
 
@@ -216,7 +216,7 @@ void GMMathText(SEXP, int, double, int, double, int, double, pGEDevDesc);
  *  using the graphical primitives (i.e., they are generic - NOT
  *  device-specific).
  *
- *  From graphics.c, used in plot.c.
+ *  From graphics.cpp, used in plot.cpp.
  */
 
 /* Draw a line from (x1,y1) to (x2,y2) with an arrow head
@@ -227,13 +227,13 @@ void GArrow(double, double, double, double, int, double, double, int, pGEDevDesc
 void GBox(int, pGEDevDesc);
 /* Return a "nice" min, max and number of intervals for a given
  * range on a linear or _log_ scale, respectively: */
-void GPretty(double*, double*, int*); /* used in plot3d.c */
+void GPretty(double*, double*, int*); /* used in plot3d.cpp */
 /* Draw text in margins. */
 void GMtext(const char *, cetype_t, int, double, int, double, int, double, pGEDevDesc);
 /* Draw one of the predefined symbols (circle, square, diamond, ...) */
 void GSymbol(double, double, int, int, pGEDevDesc);
 
-/* From plotmath.c, used in plot.c */
+/* From plotmath.cpp, used in plot.cpp */
 double GExpressionHeight(SEXP, GUnit, pGEDevDesc);
 double GExpressionWidth(SEXP, GUnit, pGEDevDesc);
 
@@ -244,7 +244,7 @@ double GExpressionWidth(SEXP, GUnit, pGEDevDesc);
  *  TRANSFORMATIONS are concerned with converting locations between
  *  coordinate systems and dimensions between different units.
  *
- *  From graphics.c, used in par.c, plot.c, plot3d.c
+ *  From graphics.cpp, used in par.cpp, plot.cpp, plot3d.cpp
  */
 
 /* Convert an R unit (e.g., "user") into an internal unit (e.g., USER)> */

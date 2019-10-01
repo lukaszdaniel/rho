@@ -52,7 +52,7 @@ extern int R_ReplDLLdo1(void);
 
 void R_setStartTime(void);  /* 2007/06/11 arr: also prototyped in Rinterface.h */
 extern void R_RunExitFinalizers(void);
-extern void CleanEd(void);
+extern void Rf_CleanEd(void);
 extern void Rf_KillAllDevices(void);
 LibExtern int R_DirtyImage;
 extern void R_CleanTempDir(void);

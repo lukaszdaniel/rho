@@ -676,7 +676,7 @@ void	drawall(void);
 int	peekevent(void);
 void	waitevent(void);
 int	doevent(void);
-void	mainloop(void);
+void	Rf_mainloop(void);
 
 int	execapp(char *cmd);
 

@@ -357,7 +357,7 @@ void killDevice(int devNum)
 /* Used by front-ends via R_CleanUp to shutdown all graphics devices
    at the end of a session. Not the same as graphics.off(), and leaves
    .Devices and .Device in an invalid state. */
-void KillAllDevices(void)
+void Rf_KillAllDevices(void)
 {
     /* Avoid lots of activation followed by removal of devices
        while (R_NumDevices > 1) killDevice(R_CurrentDevice);
@@ -520,7 +520,7 @@ pGEDevDesc GEcreateDevDesc(pDevDesc dev)
 }
 
 
-void attribute_hidden InitGraphics(void)
+void attribute_hidden Rf_InitGraphics(void)
 {
     R_Devices[0] = &nullDevice;
     active[0] = TRUE;

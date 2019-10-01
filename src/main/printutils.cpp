@@ -148,7 +148,7 @@ const char *EncodeInteger(int x, int w)
 }
 
 attribute_hidden
-const char *EncodeRaw(Rbyte x, const char * prefix)
+const char *Rf_EncodeRaw(Rbyte x, const char * prefix)
 {
     static char buff[10];
     sprintf(buff, "%s%02x", prefix, x);
@@ -284,7 +284,7 @@ static const char
     return out;
 }
 
-SEXP attribute_hidden StringFromReal(double x, int *warn)
+SEXP attribute_hidden Rf_StringFromReal(double x, int *warn)
 {
     int w, d, e;
     formatReal(&x, 1, &w, &d, &e, 0);
@@ -294,7 +294,7 @@ SEXP attribute_hidden StringFromReal(double x, int *warn)
 
 
 attribute_hidden
-const char *EncodeReal2(double x, int w, int d, int e)
+const char *Rf_EncodeReal2(double x, int w, int d, int e)
 {
     static char buff[NB];
     char fmt[20];
@@ -535,7 +535,7 @@ int Rstrlen(SEXP s, int quote)
  */
 
 attribute_hidden
-const char *EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
+const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 {
     int b, b0, i, j, cnt;
     const char *p; char *q, buf[11];
@@ -840,7 +840,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 /* EncodeChar is a simple wrapper for EncodeString
    called by error messages to display CHARSXP values */
 //attribute_hidden
-const char *EncodeChar(SEXP x)
+const char *Rf_EncodeChar(SEXP x)
 {
     return EncodeString(x, 0, 0, Rprt_adj_left);
 }

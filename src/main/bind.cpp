@@ -610,8 +610,8 @@ static SEXP NewName(SEXP base, SEXP tag, int seqno)
     return ans;
 }
 
-/* also used in coerce.c */
-SEXP attribute_hidden ItemName(SEXP names, R_xlen_t i)
+/* also used in coerce.cpp */
+SEXP attribute_hidden Rf_ItemName(SEXP names, R_xlen_t i)
 {
   /* return  names[i]  if it is a character (>= 1 char), or NULL otherwise */
     if (names != R_NilValue &&

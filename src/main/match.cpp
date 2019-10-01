@@ -58,7 +58,7 @@
 
 using namespace rho;
 
-/* used in subscript.c and subassign.c */
+/* used in subscript.cpp and subassign.cpp */
 Rboolean Rf_NonNullStringMatch(SEXP s, SEXP t)
 {
     /* "" or NA string matches nothing */

@@ -102,28 +102,28 @@ void attribute_hidden Rf_CoercionWarning(int warn)
 }
 
 int attribute_hidden
-LogicalFromInteger(int x, int *warn)
+Rf_LogicalFromInteger(int x, int *warn)
 {
     return (x == NA_INTEGER) ?
 	NA_LOGICAL : (x != 0);
 }
 
 int attribute_hidden
-LogicalFromReal(double x, int *warn)
+Rf_LogicalFromReal(double x, int *warn)
 {
     return ISNAN(x) ?
 	NA_LOGICAL : (x != 0);
 }
 
 int attribute_hidden
-LogicalFromComplex(Rcomplex x, int *warn)
+Rf_LogicalFromComplex(Rcomplex x, int *warn)
 {
     return (ISNAN(x.r) || ISNAN(x.i)) ?
 	NA_LOGICAL : (x.r != 0 || x.i != 0);
 }
 
 int attribute_hidden
-LogicalFromString(SEXP x, int *warn)
+Rf_LogicalFromString(SEXP x, int *warn)
 {
     if (x != R_NaString) {
 	if (StringTrue(CHAR(x))) return 1;
@@ -199,14 +199,14 @@ Rf_IntegerFromString(SEXP x, int *warn)
 }
 
 double attribute_hidden
-RealFromLogical(int x, int *warn)
+Rf_RealFromLogical(int x, int *warn)
 {
     return (x == NA_LOGICAL) ?
 	NA_REAL : x;
 }
 
 double attribute_hidden
-RealFromInteger(int x, int *warn)
+Rf_RealFromInteger(int x, int *warn)
 {
     if (x == NA_INTEGER)
 	return NA_REAL;
@@ -215,7 +215,7 @@ RealFromInteger(int x, int *warn)
 }
 
 double attribute_hidden
-RealFromComplex(Rcomplex x, int *warn)
+Rf_RealFromComplex(Rcomplex x, int *warn)
 {
     if (ISNAN(x.r) || ISNAN(x.i))
 	return NA_REAL;
@@ -227,7 +227,7 @@ RealFromComplex(Rcomplex x, int *warn)
 }
 
 double attribute_hidden
-RealFromString(SEXP x, int *warn)
+Rf_RealFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
@@ -242,7 +242,7 @@ RealFromString(SEXP x, int *warn)
 }
 
 Rcomplex attribute_hidden
-ComplexFromLogical(int x, int *warn)
+Rf_ComplexFromLogical(int x, int *warn)
 {
     Rcomplex z;
     if (x == NA_LOGICAL) {
@@ -257,7 +257,7 @@ ComplexFromLogical(int x, int *warn)
 }
 
 Rcomplex attribute_hidden
-ComplexFromInteger(int x, int *warn)
+Rf_ComplexFromInteger(int x, int *warn)
 {
     Rcomplex z;
     if (x == NA_INTEGER) {
@@ -272,7 +272,7 @@ ComplexFromInteger(int x, int *warn)
 }
 
 Rcomplex attribute_hidden
-ComplexFromReal(double x, int *warn)
+Rf_ComplexFromReal(double x, int *warn)
 {
     Rcomplex z;
 #ifdef PRE_R_3_3_0
@@ -291,7 +291,7 @@ ComplexFromReal(double x, int *warn)
 }
 
 Rcomplex attribute_hidden
-ComplexFromString(SEXP x, int *warn)
+Rf_ComplexFromString(SEXP x, int *warn)
 {
     double xr, xi;
     Rcomplex z;
@@ -457,31 +457,31 @@ static SEXP coerceToLogical(SEXP v)
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = LogicalFromInteger(INTEGER(v)[i], &warn);
+	    LOGICAL(ans)[i] = Rf_LogicalFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = LogicalFromReal(REAL(v)[i], &warn);
+	    LOGICAL(ans)[i] = Rf_LogicalFromReal(REAL(v)[i], &warn);
 	}
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = LogicalFromComplex(COMPLEX(v)[i], &warn);
+	    LOGICAL(ans)[i] = Rf_LogicalFromComplex(COMPLEX(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = LogicalFromString(STRING_ELT(v, i), &warn);
+	    LOGICAL(ans)[i] = Rf_LogicalFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = LogicalFromInteger(int(RAW(v)[i]), &warn);
+	    LOGICAL(ans)[i] = Rf_LogicalFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:
@@ -551,31 +551,31 @@ static SEXP coerceToReal(SEXP v)
     case LGLSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = RealFromLogical(LOGICAL(v)[i], &warn);
+	    REAL(ans)[i] = Rf_RealFromLogical(LOGICAL(v)[i], &warn);
 	}
 	break;
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = RealFromInteger(INTEGER(v)[i], &warn);
+	    REAL(ans)[i] = Rf_RealFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = RealFromComplex(COMPLEX(v)[i], &warn);
+	    REAL(ans)[i] = Rf_RealFromComplex(COMPLEX(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = RealFromString(STRING_ELT(v, i), &warn);
+	    REAL(ans)[i] = Rf_RealFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = RealFromInteger(int(RAW(v)[i]), &warn);
+	    REAL(ans)[i] = Rf_RealFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:
@@ -598,31 +598,31 @@ static SEXP coerceToComplex(SEXP v)
     case LGLSXP:
 	for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = ComplexFromLogical(LOGICAL(v)[i], &warn);
+	    COMPLEX(ans)[i] = Rf_ComplexFromLogical(LOGICAL(v)[i], &warn);
 	}
 	break;
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = ComplexFromInteger(INTEGER(v)[i], &warn);
+	    COMPLEX(ans)[i] = Rf_ComplexFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = ComplexFromReal(REAL(v)[i], &warn);
+	    COMPLEX(ans)[i] = Rf_ComplexFromReal(REAL(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = ComplexFromString(STRING_ELT(v, i), &warn);
+	    COMPLEX(ans)[i] = Rf_ComplexFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = ComplexFromInteger(int(RAW(v)[i]), &warn);
+	    COMPLEX(ans)[i] = Rf_ComplexFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:
@@ -1332,7 +1332,7 @@ SEXP attribute_hidden do_asCharacterFactor(Expression* call, const BuiltInFuncti
     return Rf_asCharacterFactor(x);
 }
 
-/* used in attrib.c, eval.c and unique.c */
+/* used in attrib.cpp, eval.cpp and unique.cpp */
 SEXP Rf_asCharacterFactor(SEXP x)
 {
     SEXP ans;
@@ -1589,20 +1589,20 @@ int Rf_asLogical(SEXP x)
 	case LGLSXP:
 	    return LOGICAL(x)[0];
 	case INTSXP:
-	    return LogicalFromInteger(INTEGER(x)[0], &warn);
+	    return Rf_LogicalFromInteger(INTEGER(x)[0], &warn);
 	case REALSXP:
-	    return LogicalFromReal(REAL(x)[0], &warn);
+	    return Rf_LogicalFromReal(REAL(x)[0], &warn);
 	case CPLXSXP:
-	    return LogicalFromComplex(COMPLEX(x)[0], &warn);
+	    return Rf_LogicalFromComplex(COMPLEX(x)[0], &warn);
 	case STRSXP:
-	    return LogicalFromString(STRING_ELT(x, 0), &warn);
+	    return Rf_LogicalFromString(STRING_ELT(x, 0), &warn);
 	case RAWSXP:
-	    return LogicalFromInteger(int(RAW(x)[0]), &warn);
+	    return Rf_LogicalFromInteger(int(RAW(x)[0]), &warn);
 	default:
 	    UNIMPLEMENTED_TYPE("asLogical", x);
 	}
     } else if(TYPEOF(x) == CHARSXP) {
-	    return LogicalFromString(x, &warn);
+	    return Rf_LogicalFromString(x, &warn);
     }
     return NA_LOGICAL;
 }
@@ -1648,28 +1648,28 @@ double Rf_asReal(SEXP x)
     if (Rf_isVectorAtomic(x) && XLENGTH(x) >= 1) {
 	switch (TYPEOF(x)) {
 	case LGLSXP:
-	    res = RealFromLogical(LOGICAL(x)[0], &warn);
+	    res = Rf_RealFromLogical(LOGICAL(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return res;
 	case INTSXP:
-	    res = RealFromInteger(INTEGER(x)[0], &warn);
+	    res = Rf_RealFromInteger(INTEGER(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return res;
 	case REALSXP:
 	    return REAL(x)[0];
 	case CPLXSXP:
-	    res = RealFromComplex(COMPLEX(x)[0], &warn);
+	    res = Rf_RealFromComplex(COMPLEX(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return res;
 	case STRSXP:
-	    res = RealFromString(STRING_ELT(x, 0), &warn);
+	    res = Rf_RealFromString(STRING_ELT(x, 0), &warn);
 	    Rf_CoercionWarning(warn);
 	    return res;
 	default:
 	    UNIMPLEMENTED_TYPE("asReal", x);
 	}
     } else if(TYPEOF(x) == CHARSXP) {
-	res = RealFromString(x, &warn);
+	res = Rf_RealFromString(x, &warn);
 	Rf_CoercionWarning(warn);
 	return res;
     }
@@ -1684,28 +1684,28 @@ Rcomplex Rf_asComplex(SEXP x)
     if (Rf_isVectorAtomic(x) && XLENGTH(x) >= 1) {
 	switch (TYPEOF(x)) {
 	case LGLSXP:
-	    z = ComplexFromLogical(LOGICAL(x)[0], &warn);
+	    z = Rf_ComplexFromLogical(LOGICAL(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return z;
 	case INTSXP:
-	    z = ComplexFromInteger(INTEGER(x)[0], &warn);
+	    z = Rf_ComplexFromInteger(INTEGER(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return z;
 	case REALSXP:
-	    z = ComplexFromReal(REAL(x)[0], &warn);
+	    z = Rf_ComplexFromReal(REAL(x)[0], &warn);
 	    Rf_CoercionWarning(warn);
 	    return z;
 	case CPLXSXP:
 	    return COMPLEX(x)[0];
 	case STRSXP:
-	    z = ComplexFromString(STRING_ELT(x, 0), &warn);
+	    z = Rf_ComplexFromString(STRING_ELT(x, 0), &warn);
 	    Rf_CoercionWarning(warn);
 	    return z;
 	default:
 	    UNIMPLEMENTED_TYPE("asComplex", x);
 	}
     } else if(TYPEOF(x) == CHARSXP) {
-	z = ComplexFromString(x, &warn);
+	z = Rf_ComplexFromString(x, &warn);
 	Rf_CoercionWarning(warn);
 	return z;
     }

@@ -33,7 +33,8 @@
 #include "rho/ListVector.hpp"
 #include "rho/ExpressionVector.hpp"
 #include "rho/String.hpp"
-#include "Rinternals.h"
+#include <Rinternals.h>
+#include <Localization.h>
 
 using namespace rho;
 

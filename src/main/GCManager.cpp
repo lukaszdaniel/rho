@@ -35,7 +35,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include "Defn.h"
+#include <Defn.h>
 #include "R_ext/Print.h"
 #include "rho/GCNode.hpp"
 #include "rho/WeakRef.hpp"

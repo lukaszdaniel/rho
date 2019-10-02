@@ -33,6 +33,7 @@
 #include "rho/UnaryFunction.hpp"
 #include "rho/VectorBase.hpp"
 #include "rho/errors.hpp"
+#include <Localization.h>
 
 namespace rho {
    /** @brief Services to support common operations on R vectors and arrays.

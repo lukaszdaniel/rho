@@ -33,6 +33,7 @@
 
 #define NEED_CONNECTION_PSTREAMS
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
 #include <Fileio.h>

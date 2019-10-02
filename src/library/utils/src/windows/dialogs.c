@@ -30,7 +30,7 @@
 #undef ERROR
 #include <R_ext/RS.h> /* for Calloc */
 
-#include "win-nls.h"
+#include <Localization.h>
 #include "rui.h"
 
 #include "Startup.h"

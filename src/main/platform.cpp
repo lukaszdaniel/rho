@@ -45,6 +45,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <Rinterface.h>
 #include <Fileio.h>

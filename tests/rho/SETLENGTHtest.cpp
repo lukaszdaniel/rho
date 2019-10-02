@@ -32,7 +32,7 @@
 
 #include "rho/GCStackRoot.hpp"
 #include "rho/StringVector.hpp"
-#include "Defn.h"
+#include <Defn.h>
 
 using namespace std;
 using namespace rho;

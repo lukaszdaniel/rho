@@ -27,13 +27,13 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "win-nls.h"
+#include <Localization.h>
 
 #include <wchar.h>
 #include <rlocale.h>
 
 #define R_USE_SIGNALS 1
-#include "Defn.h"
+#include <Defn.h>
 #include <Internal.h>
 #include "Print.h"
 #include <Rinternals.h>

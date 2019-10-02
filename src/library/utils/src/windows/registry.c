@@ -22,10 +22,10 @@
 #include <config.h>
 #endif
 
-#include "win-nls.h"
+#include <Localization.h>
 
 
-#include "Defn.h"
+#include <Defn.h>
 /* Mingw-w64 defines this to be 0x0502 */
 #ifndef _WIN32_WINNT
 # define _WIN32_WINNT 0x0502 /* for KEY_WOW64_64KEY */

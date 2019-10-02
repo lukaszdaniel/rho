@@ -26,7 +26,7 @@
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
 #undef _
 #ifdef ENABLE_NLS
 #include <libintl.h>

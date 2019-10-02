@@ -49,6 +49,7 @@
 #endif
 
 #include <Rmath.h> // Rexp10
+#include <Localization.h>
 
 // to get tm_zone, tm_gmtoff defined in glibc.
 // some other header, e.g. math.h, might define the macro.
@@ -116,6 +117,7 @@ extern char *tzname[2];
 
 #include <stdlib.h> /* for setenv or putenv */
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 
 #include <vector>

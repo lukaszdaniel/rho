@@ -28,6 +28,7 @@
  */
 
 #include "rho/ArgList.hpp"
+#include <Localization.h>
 
 #include <list>
 #include "rho/DottedArgs.hpp"

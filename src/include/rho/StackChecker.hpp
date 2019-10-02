@@ -32,7 +32,7 @@
 #ifndef RHO_STACKDEPTH_HPP
 #define RHO_STACKDEPTH_HPP
 
-#include "Defn.h"
+#include <Defn.h>
 
 namespace rho {
 

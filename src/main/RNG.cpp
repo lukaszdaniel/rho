@@ -30,6 +30,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <R_ext/Random.h>
 #include <S.h>

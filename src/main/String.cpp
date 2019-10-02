@@ -28,6 +28,7 @@
  */
 
 #include "rho/String.hpp"
+#include <Localization.h>
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>

@@ -27,6 +27,8 @@
  * From w_drawprim.h
  */
 
+#include <Localization.h>
+
 #define         MAXNUMPTS       25000
 
 /*

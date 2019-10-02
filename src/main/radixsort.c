@@ -27,6 +27,7 @@
 #define USE_RINTERNALS
 #include "rho/StringVector.hpp"
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 
 // gs = groupsizes e.g.23, 12, 87, 2, 1, 34,...

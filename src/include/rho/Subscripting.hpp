@@ -38,6 +38,7 @@
 #include "rho/RealVector.hpp"
 #include "rho/StringVector.hpp"
 #include "rho/Symbol.hpp"
+#include <Localization.h>
 
 namespace rho {
    /** @brief Services to support R subscripting operations.

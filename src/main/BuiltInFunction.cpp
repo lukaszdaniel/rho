@@ -31,7 +31,7 @@
 #include "rho/BuiltInFunction.hpp"
 
 #include <cstdarg>
-#include "Internal.h"
+#include <Internal.h>
 #include "rho/ArgList.hpp"
 #include "rho/FunctionContext.hpp"
 #include "rho/PlainContext.hpp"
@@ -41,8 +41,9 @@
 #include "rho/String.hpp"
 #include "rho/Symbol.hpp"
 #include "rho/errors.hpp"
-#include "R_ext/Print.h"
-#include "Defn.h"
+#include <R_ext/Print.h>
+#include <Defn.h>
+#include <Localization.h>
 
 using namespace rho;
 
@@ -187,13 +188,13 @@ void BuiltInFunction::badArgumentCountError(int nargs, int arity,
 {
     if (viaDotInternal())
 	Rf_error(
-	    ngettext("%d argument passed to .Internal(%s) which requires %d",
+	    n_("%d argument passed to .Internal(%s) which requires %d",
 		     "%d arguments passed to .Internal(%s) which requires %d",
 		     nargs),
 	    nargs, name(), arity);
     else
 	Rf_errorcall(const_cast<Expression*>(call),
-		      ngettext("%d argument passed to '%s' which requires %d",
+		      n_("%d argument passed to '%s' which requires %d",
 			       "%d arguments passed to '%s' which requires %d",
 			       nargs),
 		     nargs, name(), arity);

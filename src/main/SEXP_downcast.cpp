@@ -30,7 +30,7 @@
 #include "rho/SEXP_downcast.hpp"
 
 #include <cstdlib>
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 
 using namespace std;

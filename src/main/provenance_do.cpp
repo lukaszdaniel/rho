@@ -48,7 +48,8 @@
 #include "rho/Provenance.hpp"
 
 // Try to get rid of this:
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 
 using namespace std;
 using namespace rho;

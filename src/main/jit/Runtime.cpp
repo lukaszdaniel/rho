@@ -29,7 +29,7 @@
 #include "rho/jit/Globals.hpp"
 #include "rho/jit/TypeBuilder.hpp"
 #include "rho/RObject.hpp"
-#include "Defn.h"
+#include <Defn.h>
 #include "Rinternals.h"
 
 #include "RuntimeImpl.cpp"

@@ -35,7 +35,7 @@
 
 #include <cstdlib>
 #include <iostream>
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 #include "Rinternals.h"
 #include "rho/Expression.hpp"

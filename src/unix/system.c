@@ -41,6 +41,7 @@
 
 #define R_USE_SIGNALS 1
 #include <Defn.h>
+#include <Localization.h>
 
 #include <locale.h>
 

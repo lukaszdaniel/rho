@@ -30,6 +30,7 @@
 #define R_NO_REMAP
 
 #include "rho/ArgMatcher.hpp"
+#include <Localization.h>
 
 #include "rho/ArgList.hpp"
 #include "rho/DottedArgs.hpp"

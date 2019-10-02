@@ -50,6 +50,7 @@
 #include "rho/RawVector.hpp"
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <R_ext/GraphicsEngine.h> /* GEDevDesc, GEgetDevice */
 #include <R_ext/Rdynload.h>

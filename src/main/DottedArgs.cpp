@@ -29,7 +29,7 @@
 
 #include "rho/DottedArgs.hpp"
 
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 
 using namespace std;

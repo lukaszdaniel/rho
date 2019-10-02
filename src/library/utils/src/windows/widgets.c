@@ -29,7 +29,7 @@
 #include <rui.h> // RConsole
 #include <windows.h>
 
-#include "win-nls.h"
+#include <Localization.h>
 
 static window wselect;
 static button bFinish, bCancel;

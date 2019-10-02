@@ -32,6 +32,7 @@
 #include "rho/RAllocStack.hpp"
 #include "rho/RealVector.hpp"
 #include "rho/Subscripting.hpp"
+#include <Localization.h>
 
 using namespace rho;
 

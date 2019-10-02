@@ -33,6 +33,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 
 /* This is remapped */

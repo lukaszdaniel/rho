@@ -40,8 +40,9 @@
 
 #include <numeric>  // For accumulate.
 
-#include "Defn.h"
-#include "Print.h"
+#include <Defn.h>
+#include <Localization.h>
+#include <Print.h>
 
 #include <numeric>
 #include <stdlib.h> /* for div() */
@@ -407,7 +408,7 @@ void printMatrix(SEXP x, int offset, SEXP dim, int quote, int right,
     }
 #ifdef ENABLE_NLS
     if(r_pr < r) // number of formats must be consistent here
-	Rprintf(ngettext(" [ reached getOption(\"max.print\") -- omitted %d row ]\n",
+	Rprintf(n_(" [ reached getOption(\"max.print\") -- omitted %d row ]\n",
 			 " [ reached getOption(\"max.print\") -- omitted %d rows ]\n",
 			 r - r_pr),
 		r - r_pr);

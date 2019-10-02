@@ -30,6 +30,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <float.h>  /* for DBL_MAX */
 #include <Rmath.h>

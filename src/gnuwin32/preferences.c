@@ -39,7 +39,7 @@
 #include <config.h>
 #endif
 
-#include "win-nls.h"
+#include <Localization.h>
 
 #ifdef Win32
 #define USE_MDI 1

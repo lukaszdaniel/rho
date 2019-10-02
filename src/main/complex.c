@@ -58,7 +58,7 @@
 
 // #include <Internal.h>
 #include <Rmath.h>
-
+#include <Localization.h>
 #include "arithmetic.h"		/* complex_*  */
 #include <complex.h>
 #include <R_ext/Itermacros.h>

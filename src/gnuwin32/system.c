@@ -31,7 +31,8 @@
 #endif
 
 #define R_USE_SIGNALS 1
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 #include <R_ext/Riconv.h>
 #include "Fileio.h"
 #include "graphapp/ga.h"
@@ -54,8 +55,6 @@
 #include "run.h"
 #include "Startup.h"
 #include <stdlib.h>		/* for exit */
-
-#include "win-nls.h"
 
 void R_CleanTempDir(void);		/* from platform.c */
 void editorcleanall(void);                  /* from editor.c */

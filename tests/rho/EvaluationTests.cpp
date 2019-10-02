@@ -30,7 +30,7 @@
 #include "rho/Expression.hpp"
 #include "rho/Frame.hpp"
 #include "rho/ListVector.hpp"
-#include "Defn.h"
+#include <Defn.h>
 #include "Parse.h"
 
 #undef parse

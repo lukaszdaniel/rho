@@ -28,6 +28,7 @@
 #include <config.h>
 #endif
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include "rho/ExpressionVector.hpp"
 /* -> Rinternals.h which exports R_compute_identical() */

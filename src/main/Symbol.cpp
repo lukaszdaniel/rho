@@ -33,7 +33,7 @@
 #include "rho/Symbol.hpp"
 
 #include <sstream>
-#include "localization.h"
+#include <Localization.h>
 #include "boost/regex.hpp"
 #include "R_ext/Error.h"
 #include "rho/Environment.hpp"

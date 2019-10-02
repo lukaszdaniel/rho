@@ -35,8 +35,8 @@
 #include "rho/RObject.hpp"
 #include "rho/StackChecker.hpp"
 #include "rho/Symbol.hpp"
-#include "Defn.h"
-
+#include <Defn.h>
+#include <Localization.h>
 /*
  * This file contains functions that are available in the runtime module.
  * It gets compiled into LLVM bytecode as part of the compilation process, and

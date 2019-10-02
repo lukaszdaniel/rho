@@ -37,12 +37,12 @@
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
-#include "win-nls.h"
+#include <Localization.h>
 
 #include <Defn.h>
 
 /* R user interface based on GraphApp */
-#include "Defn.h"
+#include <Defn.h>
 #undef append /* defined by graphapp/internal.h */
 #include <stdio.h>
 #undef DEBUG /* needed for mingw-runtime 2.0 */

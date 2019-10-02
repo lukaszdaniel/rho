@@ -32,6 +32,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 
 #include "rho/Browser.hpp"

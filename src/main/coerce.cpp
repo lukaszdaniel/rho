@@ -41,6 +41,7 @@
 #define NINTERRUPT 10000000
 
 #include <Defn.h> /*-- Maybe modularize into own Coerce.h ..*/
+#include <Localization.h>
 #include <Internal.h>
 #include <float.h> /* for DBL_DIG */
 #define R_MSG_mode	_("invalid 'mode' argument")

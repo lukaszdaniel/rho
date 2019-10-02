@@ -31,6 +31,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include "basedecl.h"
 #include "rho/ArgMatcher.hpp"

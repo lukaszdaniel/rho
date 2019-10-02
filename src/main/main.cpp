@@ -45,14 +45,15 @@
 #include <string.h>
 
 #define __MAIN__
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
-#include "Rinterface.h"
-#include "IOStuff.h"
-#include "Fileio.h"
-#include "Parse.h"
-#include "Rembedded.h"
-#include "Startup.h"
+#include <Rinterface.h>
+#include <IOStuff.h>
+#include <Fileio.h>
+#include <Parse.h>
+#include <Rembedded.h>
+#include <Startup.h>
 #include "basedecl.h"
 
 #include <locale.h>

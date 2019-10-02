@@ -25,7 +25,7 @@
 
 #include "rho/GCRoot.hpp"
 #include "rho/LogicalVector.hpp"
-#include "Defn.h"
+#include <Defn.h>
 
 using namespace rho;
 

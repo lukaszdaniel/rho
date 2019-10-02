@@ -34,7 +34,7 @@
 #define RHO_ERRORS_H
 
 #include "R_ext/Error.h"
-#include "localization.h"
+#include <Localization.h>
 #include "rho/RObject.hpp"
 
 extern "C" {

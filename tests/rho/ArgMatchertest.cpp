@@ -37,7 +37,7 @@
 #include "boost/regex.hpp"
 
 // For Rf_InitOptions():
-#include "Defn.h"
+#include <Defn.h>
 
 // Inclusion of Defn.h must precede this:
 #include "Rinterface.h"

@@ -35,7 +35,7 @@
 #include <iostream>
 #include <typeinfo>
 #include "R_ext/Error.h"
-#include "localization.h"
+#include <Localization.h>
 #include "rho/BuiltInFunction.hpp"
 #include "rho/FunctionBase.hpp"
 #include "rho/Frame.hpp"

@@ -30,6 +30,7 @@
 #endif
 
 #include <Defn.h> /* => Utils.h with the protos from here; Rinternals.h */
+#include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
 #include <R_ext/RS.h>  /* for Calloc/Free */

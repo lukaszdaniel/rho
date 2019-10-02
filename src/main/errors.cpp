@@ -38,6 +38,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 /* -> Errormsg.h */
 #include <Startup.h> /* rather cleanup ..*/
@@ -431,7 +432,7 @@ void Rf_PrintWarnings(void)
     /* use try-catch to restore inPrintWarnings if there is
        an exit */
     try {
-	header = ngettext("Warning message:", "Warning messages:", 
+	header = n_("Warning message:", "Warning messages:", 
 			  R_CollectWarnings);
 	if( R_CollectWarnings == 1 ) {
 	    REprintf("%s\n", header);
@@ -495,7 +496,7 @@ void Rf_PrintWarnings(void)
 	    }
 	} else {
 	    if (R_CollectWarnings < R_nwarnings)
-		REprintf(ngettext("There was %d warning (use warnings() to see it)", 
+		REprintf(n_("There was %d warning (use warnings() to see it)", 
 				  "There were %d warnings (use warnings() to see them)", 
 				  R_CollectWarnings), 
 			 R_CollectWarnings);

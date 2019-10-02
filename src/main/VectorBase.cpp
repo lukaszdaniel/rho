@@ -35,6 +35,7 @@
 #include "rho/StringVector.hpp"
 #include "rho/Symbol.hpp"
 #include "rho/errors.hpp"
+#include <Localization.h>
 
 using namespace rho;
 

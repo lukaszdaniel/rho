@@ -29,7 +29,7 @@
 
 #include "rho/Frame.hpp"
 
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 #include "rho/Evaluator.hpp"
 #include "rho/FunctionBase.hpp"

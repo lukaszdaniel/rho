@@ -23,6 +23,7 @@
  */
 
 #include "rho/StackChecker.hpp"
+#include <Localization.h>
 
 namespace rho {
 

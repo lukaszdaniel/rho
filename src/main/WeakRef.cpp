@@ -40,6 +40,7 @@
 #include "rho/ProtectStack.hpp"
 #include "rho/WeakRef.hpp"
 #include "rho/errors.hpp"
+#include <Localization.h>
 
 using namespace std;
 using namespace rho;

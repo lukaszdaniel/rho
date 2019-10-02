@@ -24,22 +24,23 @@
  *  https://www.R-project.org/Licenses/
  *
  *
- *  See ./printutils.c	 for general remarks on Printing
+ *  See ./printutils.cpp	 for general remarks on Printing
  *                       and the Encode.. utils.
  *
- *  See ./format.c	 for the  format_Foo_  functions.
+ *  See ./format.cpp	 for the  format_Foo_  functions.
  */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 
 #define imax2(x, y) ((x < y) ? y : x)
 
-#include "Print.h"
+#include <Print.h>
 #include "RBufferUtils.h"
 #include <vector>
 

@@ -42,6 +42,7 @@
 # define __LIBM_PRIVATE
 #endif
 #include <Defn.h>		/*-> Arith.h -> math.h */
+#include <Localization.h>
 #ifdef __OpenBSD__
 # undef __LIBM_PRIVATE
 #endif
@@ -991,7 +992,7 @@ SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
     Expression* call2 = new Expression(CAR(call), arglist);
     int n = arglist.size();
     if (n != 1 && n != 2)
-        error(ngettext("%d argument passed to '%s' which requires 1 or 2 arguments",
+        error(n_("%d argument passed to '%s' which requires 1 or 2 arguments",
                        "%d arguments passed to '%s'which requires 1 or 2 arguments", n),
               n, PRIMNAME(op));
 

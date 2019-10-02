@@ -65,6 +65,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Rmath.h>
 #include <Print.h>
 #include <R_ext/RS.h>

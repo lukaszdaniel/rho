@@ -30,7 +30,7 @@
 #include "rho/GCStackRoot.hpp"
 #include "rho/AddressSanitizer.hpp"
 #include "rho/GCStackFrameBoundary.hpp"
-#include "Defn.h"
+#include <Defn.h>
 #include "gc.h"
 
 #include <cstdlib>

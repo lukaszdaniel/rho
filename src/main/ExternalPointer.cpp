@@ -29,7 +29,7 @@
 
 #include "rho/ExternalPointer.hpp"
 
-#include "localization.h"
+#include <Localization.h>
 #include "rho/GCStackRoot.hpp"
 
 using namespace std;

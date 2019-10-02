@@ -30,7 +30,7 @@
 #include "rho/PairList.hpp"
 
 #include <iostream>
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 
 using namespace std;

@@ -36,6 +36,7 @@
 
 #include <R_ext/RS.h>
 #include <Defn.h> /* => Utils.h with the protos from here */
+#include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
 

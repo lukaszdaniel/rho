@@ -31,6 +31,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <ctype.h> /* for toupper */
 
 #include "Lapack.h"

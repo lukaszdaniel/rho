@@ -81,6 +81,7 @@ abbreviate chartr make.names strtrim tolower toupper give error.
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <errno.h>
 #include <R_ext/RS.h>  /* for Calloc/Free */
@@ -114,7 +115,7 @@ SEXP attribute_hidden do_nzchar(/*const*/ Expression* call, const BuiltInFunctio
     // checkArity(op, args);  .Primitive()  &  may have 1 or 2 args now
     if (num_args < 1 || num_args > 2)
 	errorcall(call,
-		  ngettext("%d argument passed to '%s' which requires %d to %d",
+		  n_("%d argument passed to '%s' which requires %d to %d",
 			   "%d arguments passed to '%s' which requires %d to %d",
 			   (unsigned long) num_args),
 		  num_args, op->name(), 1, 2);

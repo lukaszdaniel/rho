@@ -30,6 +30,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 
 #include <R_ext/Random.h>
 #include <R_ext/RS.h>		/* for Calloc() */

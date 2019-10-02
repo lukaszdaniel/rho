@@ -29,7 +29,8 @@
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 #include "rho/Closure.hpp"
 #include "rho/Environment.hpp"
 #include "rho/GCStackRoot.hpp"

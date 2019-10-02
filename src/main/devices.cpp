@@ -38,6 +38,7 @@
 #endif
 
 #include <Defn.h>
+#include <Localization.h>
 #include <Internal.h>
 #include <Graphics.h>
 #include <GraphicsBase.h>

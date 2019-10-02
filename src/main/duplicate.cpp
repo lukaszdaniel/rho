@@ -29,7 +29,7 @@
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
 #include "duplicate.h"
 
 #include "rho/DottedArgs.hpp"

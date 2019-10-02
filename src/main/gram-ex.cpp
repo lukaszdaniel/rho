@@ -35,7 +35,7 @@
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
 #include "Fileio.h"
 
 attribute_hidden

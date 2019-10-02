@@ -50,7 +50,8 @@
 #include <config.h>
 #endif
 
-#include "Defn.h"
+#include <Defn.h>
+#include <Localization.h>
 #include "rho/ArgMatcher.hpp"
 #include "rho/DottedArgs.hpp"
 #include "rho/FunctionContext.hpp"

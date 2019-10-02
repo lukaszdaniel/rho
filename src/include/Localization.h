@@ -24,32 +24,31 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file localization.h
+/** @file Localization.h
  * @brief Macro definitions relating to localization.
  */
 
-#ifndef LOCALIZATION_H_
-#define LOCALIZATION_H_
+#ifndef LOCALIZATION_H
+#define LOCALIZATION_H
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #ifdef ENABLE_NLS
-#include <libintl.h>
-#ifdef Win32
-#define _(String) libintl_gettext (String)
-#undef gettext /* needed for graphapp */
-#else
-#define _(String) gettext (String)
-#endif
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-#define P_(StringS, StringP, N) ngettext (StringS, StringP, N)
+ #include <libintl.h>
+ #define _(String) dgettext("R", String)
+ #define n_(String, StringP, N) dngettext("R", String, StringP, N)
+ #define gettext_noop(String) String
+ #define N_(String) gettext_noop (String)
+ #define G_(String) dgettext("RGui", String)
+ #define GN_(String) gettext_noop (String)
 #else /* not NLS */
-#define _(String) (String)
-#define N_(String) String
-#define P_(String, StringP, N) (N > 1 ? StringP: String)
+ #define _(String) (String)
+ #define n_(String, StringP, N) (N > 1 ? StringP: String)
+ #define N_(String) String
+ #define G_(String) (String)
+ #define GN_(String) String
 #endif
 
-#endif /* LOCALIZATION_H_ */
+#endif /* LOCALIZATION_H */

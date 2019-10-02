@@ -1016,25 +1016,6 @@ void set_rl_word_breaks(const char *str);
 /* From localecharset.cpp */
 extern const char *locale2charset(const char *);
 
-/* Localization */
-
-#ifndef NO_NLS
-# ifdef ENABLE_NLS
-#  include <libintl.h>
-#  ifdef Win32
-#   define _(String) libintl_gettext (String)
-#   undef gettext /* needed for graphapp */
-#  else
-#   define _(String) gettext (String)
-#  endif
-#  define gettext_noop(String) String
-#  define N_(String) gettext_noop (String)
-#  else /* not NLS */
-#  define _(String) (String)
-#  define N_(String) String
-#  define ngettext(String, StringP, N) (N > 1 ? StringP: String)
-# endif
-#endif
 
 /* Macros for suspending interrupts: also in GraphicsDevice.h */
 #define BEGIN_SUSPEND_INTERRUPTS do { \

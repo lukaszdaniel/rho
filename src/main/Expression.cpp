@@ -34,7 +34,7 @@
 #include <boost/preprocessor.hpp>
 
 #include "R_ext/Error.h"
-#include "localization.h"
+#include <Localization.h>
 #include "rho/ArgList.hpp"
 #include "rho/ArgMatcher.hpp"
 #include "rho/BuiltInFunction.hpp"

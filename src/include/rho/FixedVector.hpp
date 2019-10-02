@@ -284,7 +284,7 @@ namespace rho {
 // ***** Implementation of non-inlined members *****
 
 #include <algorithm>
-#include "localization.h"
+#include <Localization.h>
 #include "R_ext/Error.h"
 
 template <typename T, SEXPTYPE ST>

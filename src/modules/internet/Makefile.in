@@ -52,6 +52,7 @@ Makefile: $(srcdir)/Makefile.in \
 	@cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 Makedeps: Makefile $(DEPENDS)
+	@cat $(DEPENDS) >> Makefile
 	@touch $@
 
 R: Makedeps
@@ -78,7 +79,7 @@ uninstall:
 
 mostlyclean: clean
 clean:
-	@-rm -rf .libs _libs
+	@-rm -Rf .libs _libs
 	@-rm -f Makedeps *.d *.o *.a *.lo *.la *$(SHLIB_EXT)
 distclean: clean
 	@-rm -f Makefile
@@ -93,4 +94,5 @@ distdir: $(DISTFILES)
 	    || cp -p $(srcdir)/$${f} $(distdir)/$${f}; \
 	done
 
-include $(DEPENDS)
+## Automagically generated dependencies:
+

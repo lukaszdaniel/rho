@@ -55,7 +55,7 @@ DISTFILES = Makefile.in $(RHO_HPPS)
 TIMESTAMPS = $(RHO_HPPS:.hpp=.ts)
 
 CLEANFILES = stamp-R $(TIMESTAMPS)
-DISTCLEANFILES = Makefile config.hpp
+DISTCLEANFILES = Makefile
 
 .SUFFIXES:
 .SUFFIXES: .hpp .ts

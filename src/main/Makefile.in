@@ -179,6 +179,7 @@ Makefile: $(srcdir)/Makefile.in \
 	@cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 Makedeps: Makefile $(DEPENDS)
+	@cat $(DEPENDS) >> Makefile
 	@touch $@
 
 ## This target has been changed to ensure that R.bin and libR get
@@ -312,4 +313,5 @@ distdir: $(DISTFILES)
 	    || cp -p $(srcdir)/$${f} $(distdir)/$${f}; \
 	done
 
-include $(DEPENDS)
+## Automagically generated dependencies:
+

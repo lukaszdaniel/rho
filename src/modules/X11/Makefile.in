@@ -27,7 +27,7 @@ R_HOME = $(top_builddir)
 include $(top_builddir)/Makeconf
 
 ## When compiling rbitmap.c it is essential that we find the
-## png.h matching BITMAP_LIBS.  Since /opt/X11 on OS X contains libpng
+## png.h matching BITMAP_LIBS.  Since /opt/X11 on macOS contains libpng
 ## and we might want our own version, we give priority to BITMAP_*
 ALL_CPPFLAGS = @BITMAP_CPPFLAGS@ $(R_XTRA_CPPFLAGS) $(X_CFLAGS) @CAIROX11_CPPFLAGS@ \
   -I$(top_srcdir)/src/library/grDevices/src/cairo $(CPPFLAGS) $(DEFS)
@@ -36,8 +36,8 @@ ALL_CXXFLAGS = $(ALL_CXXFLAGS_LO)
 ALL_X_LIBS = $(X_PRE_LIBS) @CAIROX11_LIBS@ $(X_LIBS) $(X_EXTRA_LIBS)
 
 SOURCES_C = devX11.c rotated.c rbitmap.c 
-DEPENDS = $(SOURCES_C:.c=.d) dataentry.d
-OBJECTS = $(SOURCES_C:.c=.o) dataentry.o
+DEPENDS = $(SOURCES_C:.c=.d)
+OBJECTS = $(SOURCES_C:.c=.o)
 DE_SOURCES = dataentry.cpp
 DE_OBJECTS = $(DE_SOURCES:.cpp=.o)
 HEADERS = bitmap.h devX11.h rotated.h rlogo_icon.h
@@ -58,10 +58,11 @@ all: R
 
 Makefile: $(srcdir)/Makefile.in \
   $(top_builddir)/config.status \
-  $(SOURCES_C) dataentry.cpp
+  $(SOURCES_C)
 	@cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 Makedeps: Makefile $(DEPENDS)
+	@cat $(DEPENDS) >> Makefile
 	@touch $@
 
 R: Makedeps
@@ -92,7 +93,7 @@ uninstall:
 
 mostlyclean: clean
 clean:
-	@-rm -rf .libs _libs
+	@-rm -Rf .libs _libs
 	@-rm -f Makedeps *.d *.o *.a *.lo *.la *$(SHLIB_EXT)
 distclean: clean
 	@-rm -f Makefile
@@ -107,5 +108,5 @@ distdir: $(DISTFILES)
 	    || cp -p $(srcdir)/$${f} $(distdir)/$${f}; \
 	done
 
-include $(DEPENDS)
+## Automagically generated dependencies:
 

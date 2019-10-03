@@ -37,16 +37,9 @@ all: Makefile R
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
-R: Makefile include
-	$(MAKE) $(SUBDIRS)
+R: Makefile
 
-$(SUBDIRS):
-	cd $@ && $(MAKE) R
-
-main : unix appl nmath extra
-library : main modules scripts
-
-install install-strip TAGS info dvi dist check docs:
+install install-strip TAGS info dvi dist check R docs:
 	@for d in $(SUBDIRS); do \
 	  (cd $${d} && $(MAKE) $@) || exit 1; \
 	done
@@ -79,5 +72,3 @@ distdir: $(DISTFILES)
 	      | (cd $(distdir); $(TAR) -x -f -)) \
 	    || exit 1; \
 	done
-
-.PHONY: $(SUBDIRS)

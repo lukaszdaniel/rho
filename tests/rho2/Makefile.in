@@ -34,4 +34,4 @@ clean:
 distclean: clean
 	rm -f Makefile
 
-include $(depends)
+maintainer-clean: distclean

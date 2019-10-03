@@ -55,6 +55,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(SOURCES_C)
 	@cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 Makedeps: Makefile $(DEPENDS)
+	@cat $(DEPENDS) >> Makefile
 	@touch $@
 
 R: Makedeps
@@ -72,7 +73,7 @@ cmplxblas.o: $(top_srcdir)/src/extra/blas/cmplxblas.f
 
 mostlyclean: clean
 clean:
-	@-rm -rf .libs _libs
+	@-rm -Rf .libs _libs
 	@-rm -f Makedeps *.d *.o *.a *.lo *.la stamp-lo $(Rblas_la)
 
 distclean: clean
@@ -88,4 +89,5 @@ distdir: $(DISTFILES)
 	    || cp -p $(srcdir)/$${f} $(distdir)/$${f}; \
 	done
 
-include $(DEPENDS)
+## Automagically generated dependencies:
+

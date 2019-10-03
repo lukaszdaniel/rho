@@ -21,6 +21,8 @@ Makefile : $(srcdir)/Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 clean:
-
+	rm -f *.log
 distclean: clean
 	rm -f Makefile
+
+maintainer-clean: distclean

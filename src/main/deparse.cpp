@@ -1328,7 +1328,7 @@ static void print2buff(const char *strng, LocalParseData *d)
  * are produced which are not valid complex literals.
  */
 
-#define NB 1000  /* Same as printutils.c */
+#define NB 1000  /* Same as printutils.cpp */
 static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
 {
     int w, d, e, wi, di, ei;
@@ -1342,8 +1342,8 @@ static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
     strcpy(Re, EncodeReal0(x.r, w, d, e, "."));
     strcpy(Im, EncodeReal0(x.i, wi, di, ei, "."));
 
-    snprintf(buff, NB, "complex(real=%s, imaginary=%s)", Re, Im);
-    buff[NB-1] = '\0';
+    snprintf(buff, 2*NB+25, "complex(real=%s, imaginary=%s)", Re, Im);
+    buff[2*NB+25-1] = '\0';
     return buff;
 }
 

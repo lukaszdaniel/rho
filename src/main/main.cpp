@@ -1466,8 +1466,8 @@ Rf_addTaskCallback(R_ToplevelCallback cb, void *data,
     }
 
     if(!name) {
-	char buf[10];
-	snprintf(buf, 10, "%d", which+1);
+	char buf[11];
+	snprintf(buf, 11, "%d", which+1);
 	el->name = strdup(buf);
     } else
 	el->name = strdup(name);

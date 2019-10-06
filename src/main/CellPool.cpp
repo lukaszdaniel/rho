@@ -140,7 +140,7 @@ void CellPool::initialize(size_t dbls_per_cell, size_t cells_per_superblock)
     m_admin = new Admin(dbls_per_cell, cells_per_superblock);
 }
 
-CellPool::Cell* CellPool::seekMemory() throw (std::bad_alloc)
+CellPool::Cell* CellPool::seekMemory()
 {
 #if _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
     void* memblock;

@@ -27,7 +27,7 @@
 /* Internal header, not installed */
 
 /* this header is always to be included from others.
-   It is only called if COMPILING_R is defined (in util.c) or
+   It is only called if COMPILING_R is defined (in util.cpp) or
    from GNU C systems.
 
    There are different conventions for inlining across compilation units.
@@ -121,7 +121,7 @@ INLINE_FUN void R_Reprotect(SEXP s, PROTECT_INDEX i)
 }
 #endif /* INLINE_PROTECT */
 
-/* from dstruct.c */
+/* from dstruct.cpp */
 
 /*  length - length of objects  */
 

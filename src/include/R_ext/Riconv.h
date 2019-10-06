@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-/* from sysutils.c */
+/* from sysutils.cpp */
 #undef Riconv_open
 #undef Riconv
 #undef Riconv_close

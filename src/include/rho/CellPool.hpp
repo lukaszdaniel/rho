@@ -81,7 +81,7 @@ namespace rho {
 	 *
 	 * @throws bad_alloc if a cell cannot be allocated.
 	 */
-	void* allocate() throw (std::bad_alloc)
+	void* allocate()
 	{
 	    if (!m_free_cells)
 		m_free_cells = seekMemory();
@@ -218,7 +218,7 @@ namespace rho {
 
 	// Allocates a new superblock and returns a pointer to the
 	// first free cell in it.
-	Cell* seekMemory() throw (std::bad_alloc);
+	Cell* seekMemory();
     };
 }
 

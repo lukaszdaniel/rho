@@ -729,7 +729,7 @@ static void process_request_(void *ptr)
 			send_response(c->sock, hs, strlen(hs));
 		    }
 		}
-		sprintf(buf, "\r\nContent-length: %u\r\n\r\n", LENGTH(y));
+		sprintf(buf, "\r\nContent-length: %lu\r\n\r\n", LENGTH(y));
 		send_response(c->sock, buf, strlen(buf));
 		if (c->method != METHOD_HEAD)
 		    send_response(c->sock, (char*) cs, LENGTH(y));

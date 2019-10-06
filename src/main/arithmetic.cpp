@@ -292,7 +292,7 @@ static R_INLINE SEXP ScalarValue2(SEXP x, SEXP y)
 
 /* Unary and Binary Operators */
 
-RObject* attribute_hidden do_arith(/*const*/ Expression* call,
+RObject* do_arith(/*const*/ Expression* call,
 				   const BuiltInFunction* op_,
 				   int num_args,
 				   ...)

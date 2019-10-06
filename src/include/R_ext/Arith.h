@@ -43,7 +43,7 @@
 extern "C" {
 #endif
 
-/* implementation of these : ../../main/arithmetic.c */
+/* implementation of these : ../../main/arithmetic.cpp */
 LibExtern double R_NaN;		/* IEEE NaN */
 LibExtern double R_PosInf;	/* IEEE Inf */
 LibExtern double R_NegInf;	/* IEEE -Inf */
@@ -72,7 +72,7 @@ int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
    hence the workaround.  This code also appears in Rmath.h
 */
 #ifdef __cplusplus
-  int R_isnancpp(double); /* in arithmetic.c */
+  int R_isnancpp(double); /* in arithmeti.cpp */
 #  define ISNAN(x)     R_isnancpp(x)
 #else
 #  define ISNAN(x)     (isnan(x)!=0)

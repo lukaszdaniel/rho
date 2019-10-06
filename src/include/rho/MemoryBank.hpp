@@ -53,7 +53,7 @@ namespace rho {
 	 *
 	 * @throws bad_alloc if a cell cannot be allocated.
 	 */
-	static void* allocate(size_t bytes) throw (std::bad_alloc) HOT_FUNCTION;
+	static void* allocate(size_t bytes) HOT_FUNCTION;
 
 	/** @brief Number of blocks currently allocated.
 	 *

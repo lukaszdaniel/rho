@@ -106,7 +106,7 @@ PairList* PairList::clone() const
     return new PairList(*this);
 }
 
-PairList* PairList::make(size_t sz) throw (std::bad_alloc)
+PairList* PairList::make(size_t sz)
 {
     PairList* ans = nullptr;
     while (sz--)

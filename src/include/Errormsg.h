@@ -39,7 +39,7 @@
 #ifndef ERRORMSG_H
 #define ERRORMSG_H
 
-/* Used in ../main/sub*.c */
+/* Used in ../main/sub*.cpp */
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +51,7 @@ extern "C" {
  *---- ================================= ----*/
 
 /* ---> Handling & I18n 
- * via ErrorMessage() and WarningMessage() in ../../main/errors.c */
+ * via ErrorMessage() and WarningMessage() in ../../main/errors.cpp */
 
 typedef enum {
     /* Argument list length and type errors */

@@ -63,7 +63,7 @@ void Rdqagi(integr_fn f, void *ex, double *bound, int *inf,
 	    int *limit, int *lenw, int *last,
 	    int *iwork, double *work);
 
-/* main/optim.c */
+/* main/optim.cpp */
 typedef double optimfn(int, double *, void *);
 typedef void optimgr(int, double *, double *, void *);
 

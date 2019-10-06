@@ -101,7 +101,7 @@ void MemoryBank::adjustFreedSize(size_t original, size_t actual)
 #endif
 }
 
-void* MemoryBank::allocate(size_t bytes) throw (std::bad_alloc)
+void* MemoryBank::allocate(size_t bytes)
 {
     notifyAllocation(bytes);
     void* p;

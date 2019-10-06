@@ -1174,7 +1174,7 @@ SEXP attribute_hidden do_break(SEXP call, SEXP op, SEXP args, SEXP rho)
     return propagateBailout(lbo);
 }
 
-RObject* attribute_hidden do_paren(Expression* call,
+RObject* do_paren(Expression* call,
 				   const BuiltInFunction* op,
 				   RObject* x_)
 {

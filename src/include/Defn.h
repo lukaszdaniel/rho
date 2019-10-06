@@ -1017,14 +1017,6 @@ void set_rl_word_breaks(const char *str);
 extern const char *locale2charset(const char *);
 
 
-/* Macros for suspending interrupts: also in GraphicsDevice.h */
-#define BEGIN_SUSPEND_INTERRUPTS do { \
-    Rboolean __oldsusp__ = R_interrupts_suspended; \
-    R_interrupts_suspended = TRUE;
-#define END_SUSPEND_INTERRUPTS R_interrupts_suspended = __oldsusp__; \
-    if (R_interrupts_pending && ! R_interrupts_suspended) \
-        Rf_onintr(); \
-} while(0)
 
 
 /* 

@@ -128,7 +128,7 @@ R_size_t R_Decode2Long(char *p, int *ierr)
 
 /* There is no documented (or enforced) limit on 'w' here,
    so use snprintf */
-#define NB 1000
+#define NB 1000 /* Same as deparse.cpp */
 const char *EncodeLogical(int x, int w)
 {
     static char buff[NB];
@@ -334,7 +334,7 @@ const char
 *EncodeComplex(Rcomplex x, int wr, int dr, int er, int wi, int di, int ei,
 	       const char *dec)
 {
-    static char buff[NB];
+    static char buff[NB+2];
     char Re[NB];
     const char *Im, *tmp;
     int flagNegIm = 0;
@@ -362,9 +362,9 @@ const char
 	if ( (flagNegIm = (x.i < 0)) ) x.i = -x.i;
 	if(y.i == 0.) Im = EncodeReal0(y.i, wi, di, ei, dec);
 	else Im = EncodeReal0(x.i, wi, di, ei, dec);
-	snprintf(buff, NB, "%s%s%si", Re, flagNegIm ? "-" : "+", Im);
+	snprintf(buff, NB+2, "%s%s%si", Re, flagNegIm ? "-" : "+", Im);
     }
-    buff[NB-1] = '\0';
+    buff[NB+2-1] = '\0';
     return buff;
 }
 

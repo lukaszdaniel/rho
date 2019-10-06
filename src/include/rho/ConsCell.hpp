@@ -489,7 +489,7 @@ namespace rho {
 	 * @param sz Number of elements required in the list.  If
 	 *           zero, the function returns a null pointer.
 	 */
-	static PairList* make(size_t sz) throw (std::bad_alloc);
+	static PairList* make(size_t sz);
 
 	/** @brief Create a PairList from values in an array.
 	 *

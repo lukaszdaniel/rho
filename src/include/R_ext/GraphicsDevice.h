@@ -383,7 +383,7 @@ struct _DevDesc {
      * If "fill" is NA_INTEGER don't fill the polygon
      * An example is ...
      *
-     * static void X11_Polygon(int n, double *x, double *y,
+     * static void X11_Polygon(int n, const double *x, const double *y,
      *                         const pGEcontext gc,
      *                         pDevDesc dd);
      *
@@ -401,7 +401,7 @@ struct _DevDesc {
      * and y values.
      * An example is ...
      *
-     * static void X11_Polyline(int n, double *x, double *y,
+     * static void X11_Polyline(int n, const double *x, const double *y,
      *                          const pGEcontext gc,
      *                          pDevDesc dd);
      *

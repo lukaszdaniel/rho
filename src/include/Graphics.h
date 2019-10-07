@@ -37,6 +37,9 @@
 #define R_GRAPHICS 1
 #include <Rgraphics.h> /* RUnit */
 
+/* ../main/devices.cpp, used in memory.cpp, gnuwin32/extra.c */
+#define R_MaxDevices 64
+
 /* base.c, graphics.c, par.c */
 #define MAX_LAYOUT_ROWS 200
 #define MAX_LAYOUT_COLS 200

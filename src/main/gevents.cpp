@@ -46,7 +46,7 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
-#include <R_ext/GraphicsEngine.h>
+#include <Graphics.h>
 #include <R_ext/Print.h>
 
 static const char * mouseHandlers[] =

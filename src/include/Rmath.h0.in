@@ -69,21 +69,6 @@ double  Rlog1p(double);
 #endif
 
 
-	/* Undo SGI Madness */
-
-#ifdef __sgi
-# ifdef ftrunc
-#  undef ftrunc
-# endif
-# ifdef qexp
-#  undef qexp
-# endif
-# ifdef qgamma
-#  undef qgamma
-# endif
-#endif
-
-
 /* ----- The following constants and entry points are part of the R API ---- */
 
 /* 30 Decimal-place constants */
@@ -92,120 +77,139 @@ double  Rlog1p(double);
 /* SVID & X/Open Constants */
 /* Names from Solaris math.h */
 
+/* usually in math.h, but not with strict C99 compliance */
+//echo 'scale=48; 4*a(1)' | bc -l
+#ifndef M_PI
+#define M_PI 3.141592653589793238462643383279502884197169399372
+#endif
+
+//echo 'scale=32; e(1)' | bc -l
 #ifndef M_E
 #define M_E		2.718281828459045235360287471353	/* e */
 #endif
 
+//echo 'scale=32; l(e(1))/l(2)' | bc -l
 #ifndef M_LOG2E
 #define M_LOG2E		1.442695040888963407359924681002	/* log2(e) */
 #endif
 
+//echo 'scale=32; l(e(1))/l(10)' | bc -l
 #ifndef M_LOG10E
 #define M_LOG10E	0.434294481903251827651128918917	/* log10(e) */
 #endif
 
+//echo 'scale=32; l(2)' | bc -l
 #ifndef M_LN2
 #define M_LN2		0.693147180559945309417232121458	/* ln(2) */
 #endif
 
+//echo 'scale=32; l(10)' | bc -l
 #ifndef M_LN10
 #define M_LN10		2.302585092994045684017991454684	/* ln(10) */
 #endif
 
-#ifndef M_PI
-#define M_PI		3.141592653589793238462643383280	/* pi */
-#endif
-
+//echo 'scale=32; 8*a(1)' | bc -l
 #ifndef M_2PI
 #define M_2PI		6.283185307179586476925286766559	/* 2*pi */
 #endif
 
+//echo 'scale=32; 2*a(1)' | bc -l
 #ifndef M_PI_2
 #define M_PI_2		1.570796326794896619231321691640	/* pi/2 */
 #endif
 
+//echo 'scale=32; a(1)' | bc -l
 #ifndef M_PI_4
 #define M_PI_4		0.785398163397448309615660845820	/* pi/4 */
 #endif
 
+//echo 'scale=32; 1/(4*a(1))' | bc -l
 #ifndef M_1_PI
 #define M_1_PI		0.318309886183790671537767526745	/* 1/pi */
 #endif
 
+//echo 'scale=32; 1/(2*a(1))' | bc -l
 #ifndef M_2_PI
 #define M_2_PI		0.636619772367581343075535053490	/* 2/pi */
 #endif
 
+//echo 'scale=32; 1/sqrt(a(1))' | bc -l
 #ifndef M_2_SQRTPI
 #define M_2_SQRTPI	1.128379167095512573896158903122	/* 2/sqrt(pi) */
 #endif
 
+//echo 'scale=32; sqrt(2)' | bc -l
 #ifndef M_SQRT2
 #define M_SQRT2		1.414213562373095048801688724210	/* sqrt(2) */
 #endif
 
+//echo 'scale=32; 1/sqrt(2)' | bc -l
 #ifndef M_SQRT1_2
 #define M_SQRT1_2	0.707106781186547524400844362105	/* 1/sqrt(2) */
 #endif
 
 /* R-Specific Constants */
 
+//echo 'scale=32; sqrt(3)' | bc -l
 #ifndef M_SQRT_3
 #define M_SQRT_3	1.732050807568877293527446341506	/* sqrt(3) */
 #endif
 
+//echo 'scale=32; sqrt(32)' | bc -l
 #ifndef M_SQRT_32
 #define M_SQRT_32	5.656854249492380195206754896838	/* sqrt(32) */
 #endif
 
+//echo 'scale=32; l(2)/l(10)' | bc -l
 #ifndef M_LOG10_2
 #define M_LOG10_2	0.301029995663981195213738894724	/* log10(2) */
 #endif
 
+//echo 'scale=32; sqrt(4*a(1))' | bc -l
 #ifndef M_SQRT_PI
 #define M_SQRT_PI	1.772453850905516027298167483341	/* sqrt(pi) */
 #endif
 
+//echo 'scale=32; 1/sqrt(8*a(1))' | bc -l
 #ifndef M_1_SQRT_2PI
 #define M_1_SQRT_2PI	0.398942280401432677939946059934	/* 1/sqrt(2pi) */
 #endif
 
+//echo 'scale=32; sqrt(1/(2*a(1)))' | bc -l
 #ifndef M_SQRT_2dPI
 #define M_SQRT_2dPI	0.797884560802865355879892119869	/* sqrt(2/pi) */
 #endif
 
 
+//echo 'scale=32; l(8*a(1))/l(e(1))' | bc -l
 #ifndef M_LN_2PI
 #define M_LN_2PI	1.837877066409345483560659472811	/* log(2*pi) */
 #endif
 
+//echo 'scale=32; l(sqrt(4*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_PI
 #define M_LN_SQRT_PI	0.572364942924700087071713675677	/* log(sqrt(pi))
 								   == log(pi)/2 */
 #endif
 
+//echo 'scale=32; l(sqrt(8*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_2PI
 #define M_LN_SQRT_2PI	0.918938533204672741780329736406	/* log(sqrt(2*pi))
 								 == log(2*pi)/2 */
 #endif
 
+//echo 'scale=32; l(sqrt(2*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_PId2
 #define M_LN_SQRT_PId2	0.225791352644727432363097614947	/* log(sqrt(pi/2))
 								   == log(pi/2)/2 */
 #endif
 
 
-#ifdef MATHLIB_STANDALONE
-# ifndef R_EXT_BOOLEAN_H_
-/* "copy-paste" R_ext/Boolean.h if not already included: */
- #define R_EXT_BOOLEAN_H_
- #undef FALSE
- #undef TRUE
- typedef enum { FALSE = 0, TRUE } Rboolean;
-# endif
-#else
-# include <R_ext/Boolean.h>
+#ifndef M_EC
+#define M_EC            0.57721566490153286060651209008240243104215933593992 /* euler's constant */
 #endif
+
+# include <R_ext/Boolean.h>
 
 
 #if !defined(MATHLIB_STANDALONE) && !defined(R_NO_REMAP_RMATH)
@@ -638,19 +642,11 @@ double  logspace_sub(double logx, double logy);
 
 /* ----------------- Private part of the header file ------------------- */
 
-	/* old-R Compatibility */
-
-#ifdef OLD_RMATH_COMPAT
-# define snorm	norm_rand
-# define sunif	unif_rand
-# define sexp	exp_rand
-#endif
-
 #if defined(MATHLIB_STANDALONE) && !defined(MATHLIB_PRIVATE_H)
 /* second is defined by nmath.h */
 
 /* If isnan is a macro, as C99 specifies, the C++
-   math header will undefine it. This happens on OS X */
+   math header will undefine it. This happens on macOS */
 # ifdef __cplusplus
   int R_isnancpp(double); /* in mlutils.c */
 #  define ISNAN(x)     R_isnancpp(x)

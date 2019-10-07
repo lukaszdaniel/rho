@@ -48,19 +48,8 @@
 #ifndef DEFN_H_
 #define DEFN_H_
 
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-# define attribute_visible __attribute__ ((visibility ("default")))
-# define attribute_hidden __attribute__ ((visibility ("hidden")))
-#else
-# define attribute_visible
-# define attribute_hidden
-#endif
+#include <R_ext/Visibility.h>
 
-/* In CR, extern0 is defined as attribute_hidden if this file is
- * #included from main.cpp, and as extern otherwise.  In rho it always
- * maps to extern attribute_hidden.
- */
-# define extern0 extern attribute_hidden
 
 #define MAXELTSIZE 8192 /* Used as a default for string buffer sizes,
 			   and occasionally as a limit. */
@@ -101,27 +90,30 @@ Rcomplex Rf_ComplexFromReal(double, int*);
 #include <Rinternals.h>		/*-> Arith.h, Boolean.h, Complex.h, Error.h,
 				  Memory.h, PrtUtil.h, Utils.h */
 #undef CALLED_FROM_DEFN_H
-extern0 SEXP	R_CommentSymbol;    /* "comment" */
-extern0 SEXP	R_DotEnvSymbol;     /* ".Environment" */
-extern0 SEXP	R_ExactSymbol;	    /* "exact" */
-extern0 SEXP	R_RecursiveSymbol;  /* "recursive" */
-extern0 SEXP	R_WholeSrcrefSymbol;   /* "wholeSrcref" */
-extern0 SEXP	R_TmpvalSymbol;     /* "*tmp*" */
-extern0 SEXP	R_UseNamesSymbol;   /* "use.names" */
-extern0 SEXP	R_ColonSymbol;         /* ":" */
-//extern0 SEXP	R_DoubleColonSymbol;   /* "::" */
-//extern0 SEXP	R_TripleColonSymbol;   /* ":::" */
-extern0 SEXP    R_ConnIdSymbol;  /* "conn_id" */
-extern0 SEXP    R_DevicesSymbol;  /* ".Devices" */
+/*
+ Below variables are defined in src/include/rho/PredefinedSymbols.hpp
+*/
+extern attribute_hidden SEXP	R_CommentSymbol;    /* "comment" */
+extern attribute_hidden SEXP	R_DotEnvSymbol;     /* ".Environment" */
+extern attribute_hidden SEXP	R_ExactSymbol;	    /* "exact" */
+extern attribute_hidden SEXP	R_RecursiveSymbol;  /* "recursive" */
+extern attribute_hidden SEXP	R_WholeSrcrefSymbol;   /* "wholeSrcref" */
+extern attribute_hidden SEXP	R_TmpvalSymbol;     /* "*tmp*" */
+extern attribute_hidden SEXP	R_UseNamesSymbol;   /* "use.names" */
+extern attribute_hidden SEXP	R_ColonSymbol;         /* ":" */
+//extern attribute_hidden SEXP	R_DoubleColonSymbol;   /* "::" */
+//extern attribute_hidden SEXP	R_TripleColonSymbol;   /* ":::" */
+extern attribute_hidden SEXP    R_ConnIdSymbol;  /* "conn_id" */
+extern attribute_hidden SEXP    R_DevicesSymbol;  /* ".Devices" */
 
-extern0 SEXP    R_dot_Methods;  /* ".Methods" */
-extern0 SEXP    R_dot_Group;  /* ".Group" */
-extern0 SEXP    R_dot_Class;  /* ".Class" */
-extern0 SEXP    R_dot_GenericCallEnv;  /* ".GenericCallEnv" */
-extern0 SEXP    R_dot_GenericDefEnv;  /* ".GenericDefEnv" */
+extern attribute_hidden SEXP    R_dot_Methods;  /* ".Methods" */
+extern attribute_hidden SEXP    R_dot_Group;  /* ".Group" */
+extern attribute_hidden SEXP    R_dot_Class;  /* ".Class" */
+extern attribute_hidden SEXP    R_dot_GenericCallEnv;  /* ".GenericCallEnv" */
+extern attribute_hidden SEXP    R_dot_GenericDefEnv;  /* ".GenericDefEnv" */
 
 
-#include "Errormsg.h"
+#include <Errormsg.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -359,72 +351,65 @@ typedef enum {
 
 #include <R_ext/libextern.h>
 
-/* In CR, if this file is included from main.cpp, 'INI_as(v)' expands to
- * '= v', and 'extern0' expands to 'attribute_hidden'; otherwise
- * 'INI_as(v)' expands to nothing and 'extern0' expands to 'extern'.
- */
-# define INI_as(v)
-#define extern0 extern attribute_hidden
-
 LibExtern SEXP  R_SrcfileSymbol;    /* "srcfile" */
 LibExtern SEXP  R_SrcrefSymbol;     /* "srcref" */
 
 
-LibExtern Rboolean R_interrupts_suspended INI_as(FALSE);
-LibExtern int R_interrupts_pending INI_as(0);
+LibExtern Rboolean R_interrupts_suspended;
+LibExtern int R_interrupts_pending;
 
 /* R Home Directory */
 LibExtern char *R_Home;		    /* Root of the R tree */
 
 /* Memory Management */
-extern0 R_size_t R_VSize  INI_as(R_VSIZE);/* Initial size of the heap */
-extern0 int	R_Is_Running;	    /* for Windows memory manager */
+extern attribute_hidden R_size_t R_VSize;/* Initial size of the heap */
+extern attribute_hidden int	R_Is_Running;	    /* for Windows memory manager */
 
 /* Evaluation Environment */
 extern Rboolean R_Visible;	    /* Value visibility flag */
-extern0 int	R_EvalDepth	INI_as(0);	/* Evaluation recursion depth */
-extern0 int	R_BrowseLines	INI_as(0);	/* lines/per call in browser */
+extern attribute_hidden int	R_EvalDepth;	/* Evaluation recursion depth */
+extern attribute_hidden int	R_BrowseLines;	/* lines/per call in browser */
 
-extern0 Rboolean R_KeepSource	INI_as(FALSE);	/* options(keep.source) */
-extern0 Rboolean R_CBoundsCheck	INI_as(FALSE);	/* options(CBoundsCheck) */
-extern0 int	R_WarnLength	INI_as(1000);	/* Error/warning max length */
-extern0 int	R_nwarnings	INI_as(50);
-extern uintptr_t R_CStackLimit	INI_as((uintptr_t)-1);	/* C stack limit */
-extern uintptr_t R_OldCStackLimit INI_as((uintptr_t)0); /* Old value while 
+extern attribute_hidden Rboolean R_KeepSource;	/* options(keep.source) */
+extern attribute_hidden Rboolean R_CBoundsCheck;	/* options(CBoundsCheck) */
+extern attribute_hidden int	R_WarnLength;	/* Error/warning max length */
+extern attribute_hidden int	R_nwarnings;
+extern uintptr_t R_CStackLimit;	/* C stack limit */
+extern uintptr_t R_OldCStackLimit; /* Old value while 
 							   handling overflow */
-extern uintptr_t R_CStackStart	INI_as((uintptr_t)-1);	/* Initial stack address */
-extern int	R_CStackDir	INI_as(1);	/* C stack direction */
+extern uintptr_t R_CStackStart;	/* Initial stack address */
+extern int	R_CStackDir;	/* C stack direction */
 
 /* File Input/Output */
-LibExtern Rboolean R_Interactive INI_as(TRUE);	/* TRUE during interactive use*/
-extern0 Rboolean R_Quiet	INI_as(FALSE);	/* Be as quiet as possible */
-extern Rboolean  R_Slave	INI_as(FALSE);	/* Run as a slave process */
-extern0 Rboolean R_Verbose	INI_as(FALSE);	/* Be verbose */
+LibExtern Rboolean R_Interactive;	/* TRUE during interactive use*/
+extern attribute_hidden Rboolean R_Quiet;	/* Be as quiet as possible */
+extern Rboolean  R_Slave;	/* Run as a slave process */
+extern attribute_hidden Rboolean R_Verbose;	/* Be verbose */
 /* extern int	R_Console; */	    /* Console active flag */
 /* IoBuffer R_ConsoleIob; : --> ./IOStuff.h */
 /* R_Consolefile is used in the internet module */
-extern FILE*	R_Consolefile	INI_as(NULL);	/* Console output file */
-extern FILE*	R_Outputfile	INI_as(NULL);	/* Output file */
-extern0 int	R_ErrorCon	INI_as(2);	/* Error connection */
-LibExtern char *R_TempDir	INI_as(NULL);	/* Name of per-session dir */
-extern0 char   *Sys_TempDir	INI_as(NULL);	/* Name of per-session dir
+extern FILE*	R_Consolefile;	/* Console output file */
+extern FILE*	R_Outputfile;	/* Output file */
+extern attribute_hidden int	R_ErrorCon;	/* Error connection */
+LibExtern char *R_TempDir;	/* Name of per-session dir */
+extern attribute_hidden char   *Sys_TempDir;	/* Name of per-session dir
 						   if set by R itself */
-extern0 char	R_StdinEnc[31]  INI_as("");	/* Encoding assumed for stdin */
+extern attribute_hidden char	R_StdinEnc[31];	/* Encoding assumed for stdin */
 
 /* Objects Used In Parsing  */
-LibExtern int	R_ParseError	INI_as(0); /* Line where parse error occurred */
-extern0 int	R_ParseErrorCol;    /* Column of start of token where parse error occurred */
-extern0 SEXP	R_ParseErrorFile;   /* Source file where parse error was seen.  Either a
+LibExtern int	R_ParseError; /* Line where parse error occurred */
+extern attribute_hidden int	R_ParseErrorCol;    /* Column of start of token where parse error occurred */
+extern attribute_hidden SEXP	R_ParseErrorFile;   /* Source file where parse error was seen.  Either a
 				       STRSXP or (when keeping srcrefs) a SrcFile ENVSXP */
 #define PARSE_ERROR_SIZE 256	    /* Parse error messages saved here */
-LibExtern char	R_ParseErrorMsg[PARSE_ERROR_SIZE] INI_as("");
+LibExtern char	R_ParseErrorMsg[PARSE_ERROR_SIZE];
 #define PARSE_CONTEXT_SIZE 256	    /* Recent parse context kept in a circular buffer */
-LibExtern char	R_ParseContext[PARSE_CONTEXT_SIZE] INI_as("");
-LibExtern int	R_ParseContextLast INI_as(0); /* last character in context buffer */
+LibExtern char	R_ParseContext[PARSE_CONTEXT_SIZE];
+LibExtern int	R_ParseContextLast; /* last character in context buffer */
 LibExtern int	R_ParseContextLine; /* Line in file of the above */
 
 /* Image Dump/Restore */
-extern int	R_DirtyImage	INI_as(1);	/* Current image dirty */
+extern int	R_DirtyImage;	/* Current image dirty */
 
 /* History */
 LibExtern char *R_HistoryFile;	/* Name of the history file */
@@ -433,55 +418,55 @@ LibExtern int	R_RestoreHistory;	/* restore the history file? */
 extern void 	R_setupHistory(void);
 
 /* Warnings/Errors */
-extern0 int	R_CollectWarnings INI_as(0);	/* the number of warnings */
+extern attribute_hidden int	R_CollectWarnings;	/* the number of warnings */
 #ifdef __cplusplus
   extern rho::GCRoot<rho::ListVector> R_Warnings;  /* the warnings and their calls */
 #endif
-extern0 int	R_ShowErrorMessages INI_as(1);	/* show error messages? */
-extern0 Rboolean R_warn_partial_match_dollar INI_as(FALSE);
-extern0 Rboolean R_warn_partial_match_attr INI_as(FALSE);
-extern0 Rboolean R_ShowWarnCalls INI_as(FALSE);
-extern0 Rboolean R_ShowErrorCalls INI_as(FALSE);
-extern0 int	R_NShowCalls INI_as(50);
+extern attribute_hidden int	R_ShowErrorMessages;	/* show error messages? */
+extern attribute_hidden Rboolean R_warn_partial_match_dollar;
+extern attribute_hidden Rboolean R_warn_partial_match_attr;
+extern attribute_hidden Rboolean R_ShowWarnCalls;
+extern attribute_hidden Rboolean R_ShowErrorCalls;
+extern attribute_hidden int	R_NShowCalls;
 
-LibExtern Rboolean utf8locale  INI_as(FALSE);  /* is this a UTF-8 locale? */
-LibExtern Rboolean mbcslocale  INI_as(FALSE);  /* is this a MBCS locale? */
-extern0   Rboolean latin1locale INI_as(FALSE); /* is this a Latin-1 locale? */
+LibExtern Rboolean utf8locale;  /* is this a UTF-8 locale? */
+LibExtern Rboolean mbcslocale;  /* is this a MBCS locale? */
+extern attribute_hidden   Rboolean latin1locale; /* is this a Latin-1 locale? */
 #ifdef Win32
-LibExtern unsigned int localeCP  INI_as(1252); /* the locale's codepage */
-extern0   Rboolean WinUTF8out  INI_as(FALSE);  /* Use UTF-8 for output */
-extern0   void WinCheckUTF8(void);
+LibExtern unsigned int localeCP; /* the locale's codepage */
+extern attribute_hidden   Rboolean WinUTF8out;  /* Use UTF-8 for output */
+extern attribute_hidden   void WinCheckUTF8(void);
 #endif
 
-extern const char* OutDec	INI_as(".");  /* decimal point used for output */
-extern0 Rboolean R_DisableNLinBrowser	INI_as(FALSE);
-extern0 char R_BrowserLastCommand	INI_as('n');
+extern const char* OutDec;  /* decimal point used for output */
+extern attribute_hidden Rboolean R_DisableNLinBrowser;
+extern attribute_hidden char R_BrowserLastCommand;
 
 /* Initialization of the R environment when it is embedded */
 extern int Rf_initEmbeddedR(int argc, char **argv);
 
 /* GUI type */
 
-extern const char	*R_GUIType	INI_as("unknown");
-extern Rboolean R_isForkedChild		INI_as(FALSE); /* was this forked? */
+extern const char	*R_GUIType;
+extern Rboolean R_isForkedChild; /* was this forked? */
 
-extern0 double cpuLimit			INI_as(-1.0);
-extern0 double cpuLimit2	       	INI_as(-1.0);
-extern0 double cpuLimitValue		INI_as(-1.0);
-extern0 double elapsedLimit		INI_as(-1.0);
-extern0 double elapsedLimit2		INI_as(-1.0);
-extern0 double elapsedLimitValue       	INI_as(-1.0);
+extern attribute_hidden double cpuLimit;
+extern attribute_hidden double cpuLimit2;
+extern attribute_hidden double cpuLimitValue;
+extern attribute_hidden double elapsedLimit;
+extern attribute_hidden double elapsedLimit2;
+extern attribute_hidden double elapsedLimitValue;
 
 void resetTimeLimits(void);
 
-extern0 int R_jit_enabled INI_as(0);
-extern0 int R_compile_pkgs INI_as(0);
+extern attribute_hidden int R_jit_enabled;
+extern attribute_hidden int R_compile_pkgs;
 extern SEXP R_cmpfun(SEXP);
 extern void R_init_jit_enabled(void);
 extern void R_initAsignSymbols(void);
 
-LibExtern int R_num_math_threads INI_as(1);
-LibExtern int R_max_num_math_threads INI_as(1);
+LibExtern int R_num_math_threads;
+LibExtern int R_max_num_math_threads;
 
 /* Pointer  type and utilities for dispatch in the methods package */
 typedef SEXP (*R_stdGen_ptr_t)(SEXP, SEXP, SEXP); /* typedef */
@@ -498,7 +483,7 @@ SEXP R_primitive_methods(SEXP op);
 SEXP R_primitive_generic(SEXP op);
 
 /* smallest decimal exponent, needed in format.cpp, set in Init_R_Machine */
-extern0 int R_dec_min_exponent		INI_as(-308);
+extern attribute_hidden int R_dec_min_exponent;
 
 /* structure for caching machine accuracy values */
 typedef struct {
@@ -508,23 +493,17 @@ typedef struct {
 
 LibExtern AccuracyInfo R_AccuracyInfo;
 
-extern unsigned int max_contour_segments INI_as(25000);
+extern unsigned int max_contour_segments;
 
 /* used in package utils */
-extern Rboolean known_to_be_latin1 INI_as(FALSE);
-extern0 Rboolean known_to_be_utf8 INI_as(FALSE);
+extern Rboolean known_to_be_latin1;
+extern attribute_hidden Rboolean known_to_be_utf8;
 
 /* pre-allocated boolean values */
-LibExtern SEXP R_TrueValue INI_as(NULL);
-LibExtern SEXP R_FalseValue INI_as(NULL);
-LibExtern SEXP R_LogicalNAValue INI_as(NULL);
+LibExtern SEXP R_TrueValue;
+LibExtern SEXP R_FalseValue;
+LibExtern SEXP R_LogicalNAValue;
 
-#ifdef __MAIN__
-# undef extern
-# undef extern0
-# undef LibExtern
-#endif
-#undef INI_as
 
 #define checkArity(a,b) Rf_checkArityCall(a,b,call)
 
@@ -905,8 +884,6 @@ void R_SetMaxNSize(R_size_t);
 R_size_t R_Decode2Long(char *p, int *ierr);
 void R_SetPPSize(R_size_t);
 
-/* ../main/devices.cpp, used in memory.cpp, gnuwin32/extra.c */
-#define R_MaxDevices 64
 
 /* ../../main/printutils.cpp : */
 typedef enum {

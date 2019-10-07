@@ -346,9 +346,9 @@ SEXP countfields(SEXP args)
     if (isString(quotes)) {
 	const char *sc = translateChar(STRING_ELT(quotes, 0));
 	if (strlen(sc)) data.quoteset = strdup(sc);
-	else data.quoteset = "";
+	else data.quoteset = (char *)"";
     } else if (isNull(quotes))
-	data.quoteset = "";
+	data.quoteset = (char *)"";
     else
 	error(_("invalid quote symbol set"));
 
@@ -828,9 +828,9 @@ SEXP readtablehead(SEXP args)
     if (isString(quotes)) {
 	const char *sc = translateChar(STRING_ELT(quotes, 0));
 	if (strlen(sc)) data.quoteset = strdup(sc);
-	else data.quoteset = "";
+	else data.quoteset = (char *)"";
     } else if (isNull(quotes))
-	data.quoteset = "";
+	data.quoteset = (char *)"";
     else
 	error(_("invalid quote symbol set"));
 

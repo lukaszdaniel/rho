@@ -703,10 +703,6 @@ const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst);
 #define error_return(msg)	{ Rf_error(msg);	   return R_NilValue; }
 #define errorcall_return(cl,msg){ Rf_errorcall(cl, msg);   return R_NilValue; }
 
-#ifdef __MAIN__
-#undef extern
-#undef LibExtern
-#endif
 
 /* Calling a function with arguments evaluated */
 SEXP R_forceAndCall(SEXP e, int n, SEXP rho);
@@ -1114,7 +1110,7 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 SEXP	 Rf_lcons(SEXP cr, SEXP tl);
 Rboolean Rf_isVector(SEXP);
 
-#if defined(CALLED_FROM_DEFN_H) && !defined(__MAIN__) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) ))
+#if defined(CALLED_FROM_DEFN_H) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) ))
 #include "Rinlinedfuns.h"
 #else
 /* need remapped names here for use with R_NO_REMAP */
@@ -1181,7 +1177,7 @@ void R_ProtectWithIndex(SEXP, PROTECT_INDEX *);
 void R_Reprotect(SEXP, PROTECT_INDEX);
 # endif
 SEXP R_FixupRHS(SEXP x, SEXP y);
-#endif
+#endif /* not: defined(CALLED_FROM_DEFN_H) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) )) */
 
 #ifdef USE_RINTERNALS
 void* DATAPTR(SEXP x);

@@ -148,6 +148,13 @@ INLINE_FUN SEXP Rf_allocVector(SEXPTYPE type, R_xlen_t length)
 
 
 /* Get the i-th element of a list */
+    /** @brief i-th element of a list.
+     *
+     * @param list SEXP object.
+     * @param i i-th element of that object.
+     *
+     * @return i-th element.
+     */
 INLINE_FUN SEXP Rf_elt(SEXP list, int i)
 {
     int j;

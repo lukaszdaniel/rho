@@ -49,10 +49,6 @@ LibExtern double R_PosInf;	/* IEEE Inf */
 LibExtern double R_NegInf;	/* IEEE -Inf */
 LibExtern double R_NaReal;	/* NA_REAL: IEEE */
 LibExtern int	 R_NaInt;	/* NA_INTEGER:= INT_MIN currently */
-#ifdef __MAIN__
-#undef extern
-#undef LibExtern
-#endif
 
 #define NA_LOGICAL	R_NaInt
 #define NA_INTEGER	R_NaInt

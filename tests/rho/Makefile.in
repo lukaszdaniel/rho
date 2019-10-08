@@ -48,7 +48,7 @@ unit_test_sources = \
 	SetTypeofTests.cpp \
 	SubassignTests.cpp \
 	VisibilityTests.cpp \
-	@BUILD_LLVM_JIT_TRUE@ MCJITMemoryManagerTests.cpp
+	# @BUILD_LLVM_JIT_TRUE@ MCJITMemoryManagerTests.cpp
 
 UNIT_TEST_OBJECTS = $(unit_test_sources:.cpp=.o)
 

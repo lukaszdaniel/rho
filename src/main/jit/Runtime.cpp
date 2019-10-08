@@ -179,8 +179,7 @@ void emitMaybeCheckForUserInterrupt(Compiler* compiler)
 Type* exceptionInfoType(Compiler* compiler)
 {
     return llvm::StructType::get(compiler->getType<void*>(),
-				 compiler->getType<int32_t>(),
-				 nullptr);
+				 compiler->getType<int32_t>());
 }
 
 Function* getExceptionPersonalityFunction(Compiler* compiler) {

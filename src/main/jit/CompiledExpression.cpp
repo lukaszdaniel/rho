@@ -60,7 +60,8 @@ CompiledExpression::CompiledExpression(const Closure* closure)
 
     // Create a module to compile the code in.  MCJIT requires that each
     // separate invocation of the JIT compiler uses its own module.
-    llvm::LLVMContext& context = llvm::getGlobalContext();
+    static llvm::LLVMContext MyGlobalContext;
+    llvm::LLVMContext& context = MyGlobalContext;
     std::unique_ptr<Module> module = Runtime::createModule(context);
 
     // Create a function with signature RObject* (*f)(Environment* environment)
@@ -70,7 +71,7 @@ CompiledExpression::CompiledExpression(const Closure* closure)
 	"anonymous_function", // TODO: give it a useful name
 	module.get());
 
-    Value* environment = &*(function->getArgumentList().begin());
+    Value* environment = &*(function->args().begin());
     environment->setName("environment");
 
     // Setup the compiler and generate code.

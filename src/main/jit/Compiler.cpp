@@ -130,7 +130,7 @@ std::vector<llvm::Value*> Compiler::castFunctionArguments(
     // Upcast any arguments that require it.
     std::vector<llvm::Value*> type_checked_args;
     int i = 0;
-    for (const llvm::Argument& argument : function->getArgumentList()) {
+    for (const llvm::Argument& argument : function->args()) {
 	type_checked_args.push_back(
 	    // TODO(kmillar): these really ought to be upcasts,
 	    //   in which case we can statically check that the cast is valid.

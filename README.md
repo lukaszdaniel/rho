@@ -1,10 +1,7 @@
-# Development on Rho has been suspended indefinitely.
-## If you are interested in resuming development, please contact kmillar@google.com
-
 <img src="doc/html/rho_logo.png?raw=true" alt="Rho logo" width="130" height="100"/>
 
-[![Build Status](https://travis-ci.org/rho-devel/rho.svg?branch=master)](https://travis-ci.org/rho-devel/rho)
-[![Coverage Status](https://img.shields.io/codecov/c/github/rho-devel/rho/master.svg)](https://codecov.io/github/rho-devel/rho?branch=master)
+[![Build Status](https://travis-ci.org/lukaszdaniel/rho.svg?branch=master)](https://travis-ci.org/lukaszdaniel/rho)
+[![Coverage Status](https://img.shields.io/codecov/c/github/lukaszdaniel/rho/master.svg)](https://codecov.io/github/lukaszdaniel/rho?branch=master)
 
 # Rho
 
@@ -23,8 +20,7 @@ Compiling rho requires a GCC or Clang compiler with C++ 11 support and fortran s
    * pcre >= 8.10
    * libedit
 
-Compilation of the LLVM JIT requires clang 3.4 or later and the matching
-version of the LLVM library (except building on clang 3.7 is currently broken).
+Compilation of the LLVM JIT requires clang 7 and the matching version of the LLVM library.
 
 Rho has been tested to compile on both Linux and Mac OSX systems.
 
@@ -79,7 +75,7 @@ folder is in your home directory you will need to add `~/homebrew/include` and
 ## Notable Known Issues
 
 * Currently rho doesn't support packages that contain native code that uses the `USE_RINTERNALS` macro.  This includes Rcpp, rJava, data.table, xts and all the packages that depend on them.
-* Our testing on different platforms is currently very limited.  We currently test on Ubuntu trusty with gcc 4.9, gcc 5.3, gcc 6.1, clang 3.5, clang 3.6 and clang 3.8, so those should always work.  OSX and other linux distros are also supported, but aren't regularly tested.
+* Our testing on different platforms is currently very limited.  We currently test on Ubuntu bionic with gcc 7.4 and clang 7, so those should always work.  OSX and other linux distros are also supported, but aren't regularly tested.
 
 ## Rho Discussion Mailing List.
 

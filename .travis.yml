@@ -57,27 +57,27 @@ matrix:
             - gfortran-7=7.4.*
       env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 LLVM_CONFIG=/usr/bin/llvm-config-7 CPPFLAGS="-DNO_CELLPOOLS" CFLAGS="-g -O2 -fsanitize=address" CXXFLAGS="${CFLAGS}" MAIN_LDFLAGS="${CFLAGS}"
 
-    # With undefined behaviour sanitizer enabled.  Use the most recent
-    # supported verison of clang, to get the best error detection.
-    - compiler: clang
-      addons:
-        apt:
-          sources:
-            - sourceline: "deb http://llvm.org/apt/bionic/ llvm-toolchain-bionic-7 main"
-          packages:
-            - gfortran
-            - automake
-            - perl
-            - libboost-all-dev
-            - zlib1g-dev
-            - libbz2-dev
-            - liblzma-dev
-            - libpcre3-dev
-            - libedit-dev
-            - libomp-dev
-            - clang-7
-            - llvm-7-dev
-      env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 LLVM_CONFIG=/usr/bin/llvm-config-7 UBSAN_OPTIONS="print_stacktrace=1 suppressions=`pwd`/.ubsan_suppressions" CFLAGS="-g -O2 -fsanitize=undefined" CXXFLAGS="${CFLAGS}" MAIN_LDFLAGS="${CFLAGS}"
+    # # With undefined behaviour sanitizer enabled.  Use the most recent
+    # # supported verison of clang, to get the best error detection.
+    # - compiler: clang
+    #   addons:
+    #     apt:
+    #       sources:
+    #         - sourceline: "deb http://llvm.org/apt/bionic/ llvm-toolchain-bionic-7 main"
+    #       packages:
+    #         - gfortran
+    #         - automake
+    #         - perl
+    #         - libboost-all-dev
+    #         - zlib1g-dev
+    #         - libbz2-dev
+    #         - liblzma-dev
+    #         - libpcre3-dev
+    #         - libedit-dev
+    #         - libomp-dev
+    #         - clang-7
+    #         - llvm-7-dev
+    #   env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 LLVM_CONFIG=/usr/bin/llvm-config-7 UBSAN_OPTIONS="print_stacktrace=1 suppressions=`pwd`/.ubsan_suppressions" CFLAGS="-g -O2 -fsanitize=undefined" CXXFLAGS="${CFLAGS}" MAIN_LDFLAGS="${CFLAGS}"
 
   allow_failures:
     - env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 LLVM_CONFIG=/usr/bin/llvm-config-7

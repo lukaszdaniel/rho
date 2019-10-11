@@ -161,7 +161,7 @@ attribute_hidden int    R_EvalDepth     = 0; 	/* Evaluation recursion depth */
 attribute_hidden int	R_BrowseLines	= 0;	/* lines/per call in browser */
 attribute_hidden Rboolean R_KeepSource	= FALSE;	/* options(keep.source) */
 attribute_hidden Rboolean R_CBoundsCheck = FALSE;	/* options(CBoundsCheck) */
-attribute_hidden int	R_WarnLength	= 1000;	/* Error/warning max length */
+attribute_hidden size_t	R_WarnLength	= 1000;	/* Error/warning max length */
 attribute_hidden int    R_nwarnings     = 50;
 attribute_hidden int	R_CStackDir	= 1;	/* C stack direction */
 attribute_hidden Rboolean R_WarnEscapes  = TRUE;   /* Warn on unrecognized escapes */
@@ -887,7 +887,7 @@ void setup_Rmainloop(void)
     if(R_CStackLimit > 100000000U)
 	R_CStackLimit = (uintptr_t)-1;
     /* make sure we have enough head room to handle errors */
-    if(R_CStackLimit != -1)
+    if(R_CStackLimit != (uintptr_t)-1)
 	R_CStackLimit = (uintptr_t)(0.95 * R_CStackLimit);
 
     InitConnections(); /* needed to get any output at all */

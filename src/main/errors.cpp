@@ -258,7 +258,7 @@ void warning(const char *format, ...)
     char buf[BUFSIZE], *p;
     FunctionContext *c = FunctionContext::innermost();
 
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     Rvsnprintf(buf, min(BUFSIZE, R_WarnLength+1), format, ap);
     va_end(ap);
@@ -383,7 +383,7 @@ static void vwarningcall_dflt(SEXP call, const char *format, va_list ap)
 
 static void warningcall_dflt(SEXP call, const char *format,...)
 {
-    va_list(ap);
+    va_list ap;
 
     va_start(ap, format);
     vwarningcall_dflt(call, format, ap);
@@ -392,7 +392,7 @@ static void warningcall_dflt(SEXP call, const char *format,...)
 
 void Rf_warningcall(SEXP call, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     vsignalWarning(call, format, ap);
     va_end(ap);
@@ -400,7 +400,7 @@ void Rf_warningcall(SEXP call, const char *format, ...)
 
 void Rf_warningcall_immediate(SEXP call, const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
 
     immediateWarning = 1;
     va_start(ap, format);
@@ -691,7 +691,7 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 
 static void NORET errorcall_dflt(SEXP call, const char *format,...)
 {
-    va_list(ap);
+    va_list ap;
 
     va_start(ap, format);
     verrorcall_dflt(call, format, ap);
@@ -700,7 +700,7 @@ static void NORET errorcall_dflt(SEXP call, const char *format,...)
 
 void NORET Rf_errorcall(SEXP call, const char *format,...)
 {
-    va_list(ap);
+    va_list ap;
 
     va_start(ap, format);
     vsignalError(call, format, ap);
@@ -731,7 +731,7 @@ void error(const char *format, ...)
     char buf[BUFSIZE];
     FunctionContext *c = FunctionContext::innermost();
 
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     Rvsnprintf(buf, min(BUFSIZE, R_WarnLength), format, ap);
     va_end(ap);
@@ -1170,7 +1170,7 @@ void NORET ErrorMessage(SEXP call, int which_error, ...)
 {
     int i;
     char buf[BUFSIZE];
-    va_list(ap);
+    va_list ap;
 
     i = 0;
     while(ErrorDB[i].code != ERROR_UNKNOWN) {
@@ -1190,7 +1190,7 @@ void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
 {
     int i;
     char buf[BUFSIZE];
-    va_list(ap);
+    va_list ap;
 
     i = 0;
     while(WarningDB[i].code != WARNING_UNKNOWN) {

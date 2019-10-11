@@ -459,14 +459,15 @@ do_startsWith(Expression* call, const BuiltInFunction* op,
 
 
 static void
-substrset(char *buf, const char *const str, cetype_t ienc, int sa, int so)
+substrset(char *buf, const char *const str, cetype_t ienc, size_t sa, size_t so)
 {
     /* Replace the substring buf[sa:so] by str[] */
-    int i, in = 0, out = 0;
+    //int i;
+	size_t in = 0, out = 0;
 
     if (ienc == CE_UTF8) {
-	for (i = 1; i < sa; i++) buf += utf8clen(*buf);
-	for (i = sa; i <= so && in < strlen(str); i++) {
+	for (size_t i = 1; i < sa; i++) buf += utf8clen(*buf);
+	for (size_t i = sa; i <= so && in < strlen(str); i++) {
 	    in +=  utf8clen(str[in]);
 	    out += utf8clen(buf[out]);
 	    if (!str[in]) break;
@@ -474,23 +475,23 @@ substrset(char *buf, const char *const str, cetype_t ienc, int sa, int so)
 	if (in != out) memmove(buf+in, buf+out, strlen(buf+out)+1);
 	memcpy(buf, str, in);
     } else if (ienc == CE_LATIN1 || ienc == CE_BYTES) {
-	in = int( strlen(str));
+	in = strlen(str);
 	out = so - sa + 1;
 	memcpy(buf + sa - 1, str, (in < out) ? in : out);
     } else {
 	/* This cannot work for stateful encodings */
 	if (mbcslocale) {
-	    for (i = 1; i < sa; i++) buf += Mbrtowc(nullptr, buf, MB_CUR_MAX, nullptr);
+	    for (size_t i = 1; i < sa; i++) buf += Mbrtowc(nullptr, buf, MB_CUR_MAX, nullptr);
 	    /* now work out how many bytes to replace by how many */
-	    for (i = sa; i <= so && in < strlen(str); i++) {
-		in += int( Mbrtowc(nullptr, str+in, MB_CUR_MAX, nullptr));
-		out += int( Mbrtowc(nullptr, buf+out, MB_CUR_MAX, nullptr));
+	    for (size_t i = sa; i <= so && in < strlen(str); i++) {
+		in += Mbrtowc(nullptr, str+in, MB_CUR_MAX, nullptr);
+		out += Mbrtowc(nullptr, buf+out, MB_CUR_MAX, nullptr);
 		if (!str[in]) break;
 	    }
 	    if (in != out) memmove(buf+in, buf+out, strlen(buf+out)+1);
 	    memcpy(buf, str, in);
 	} else {
-	    in = int( strlen(str));
+	    in = strlen(str);
 	    out = so - sa + 1;
 	    memcpy(buf + sa - 1, str, (in < out) ? in : out);
 	}
@@ -541,7 +542,7 @@ SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFun
 	    ss = CHAR(el);
 	    slen = strlen(ss);
 	    if (start < 1) start = 1;
-	    if (stop > slen) stop = int( slen); /* SBCS optimization */
+	    if (stop > int(slen)) stop = int(slen); /* SBCS optimization */
 	    if (start > stop) {
 		/* just copy element across */
 		SET_STRING_ELT(s, i, STRING_ELT(x, i));
@@ -617,9 +618,10 @@ static void mystrcpy(char *dest, const char *src)
     memmove(dest, src, strlen(src)+1);
 }
 
-static SEXP stripchars(const char * const inchar, int minlen, int usecl)
+static SEXP stripchars(const char * const inchar, size_t minlen, int usecl)
 {
-    int i, j, nspace = 0;
+    int i, j;
+	size_t nspace = 0;
     char *s = cbuff.data;
 
     /* The R wrapper removed leading and trailing spces */
@@ -683,7 +685,7 @@ static SEXP stripchars(const char * const inchar, int minlen, int usecl)
 
 donesc:
     {  // remove internal spaces as required
-	int upper = (int) strlen(s);
+	size_t upper = strlen(s);
 	if (upper > minlen)
 	    for (i = upper - 1; i > 0; i--)
 		if (isspace((int)s[i]))
@@ -723,9 +725,10 @@ static void mywcscpy(wchar_t *dest, const wchar_t *src)
     memmove(dest, src, sizeof(wchar_t) * (wcslen(src)+1));
 }
 
-static SEXP wstripchars(const wchar_t * const inchar, int minlen, int usecl)
+static SEXP wstripchars(const wchar_t * const inchar, size_t minlen, int usecl)
 {
-    int i, j, nspace = 0;
+    int i, j;
+	size_t nspace = 0;
     wchar_t *wc = (wchar_t *)cbuff.data;
 
     mywcscpy(wc, inchar);
@@ -779,13 +782,13 @@ static SEXP wstripchars(const wchar_t * const inchar, int minlen, int usecl)
 donewsc:
 
     {
-	int upper = (int) wcslen(wc);
+	size_t upper = wcslen(wc);
 	if (upper > minlen)
 	    for (i = upper - 1; i > 0; i--)
 		if (iswspace((int)wc[i])) mywcscpy(wc + i, wc + i + 1);
     }
 
-    int nb = (int) wcstoutf8(NULL, wc, 0);
+    size_t nb = Rf_wcstoutf8(NULL, wc, 0);
     char *cbuf = CallocCharBuf(nb+1);
     wcstoutf8(cbuf, wc, nb + 1);
     SEXP ans = mkCharCE(cbuf, CE_UTF8);
@@ -799,7 +802,7 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
 
     if (!isString(x))
 	error(_("the first argument must be a character vector"));
-    int minlen = asInteger(minlength_);
+    int minlen = Rf_asInteger(minlength_);
     if (minlen == NA_INTEGER)
 	error(_("invalid '%s' argument"), "minlength");
     int usecl = asLogical(use_classes_);
@@ -817,7 +820,7 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
 	else {
 	    const char *s = CHAR(el);
 	    if (strIsASCII(s)) {
-		if(strlen(s) > minlen) {
+		if(int(strlen(s)) > minlen) {
 		    R_AllocStringBuffer(strlen(s)+1, &cbuff);
 		    SET_STRING_ELT(ans, i, stripchars(s, minlen, usecl));
 		} else SET_STRING_ELT(ans, i, el);

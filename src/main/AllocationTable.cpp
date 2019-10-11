@@ -102,7 +102,7 @@ void rho::AllocationTable::eraseSingleKey(uintptr_t pointer, size_t key) {
   // We don't have precondition ensuring the key is in the table before trying
   // to delete, so we can rely on always finding the key. A fatal error is
   // generated if the key is not found.
-  for (int i = 0; i < m_num_buckets;
+  for (unsigned int i = 0; i < m_num_buckets;
       hash = probeFunc(hash, i),
       m_num_erase_collisions += 1,
       i += 1) {
@@ -123,7 +123,7 @@ void rho::AllocationTable::eraseSingleKey(uintptr_t pointer, size_t key) {
 rho::AllocationTable::Allocation* rho::AllocationTable::search(
     uintptr_t candidate) const {
   size_t hash = pointerHash(candidate);
-  for (int i = 0; i < m_num_buckets;
+  for (unsigned int i = 0; i < m_num_buckets;
       hash = probeFunc(hash, i),
       m_num_search_collisions += 1,
       i += 1) {
@@ -157,7 +157,7 @@ void rho::AllocationTable::resize(unsigned new_alloctable_bits) {
       && "can not shrink this table");
   AllocationTable new_table(new_alloctable_bits);
   // Build new table.
-  for (int i = 0; i < m_num_buckets; ++i) {
+  for (unsigned int i = 0; i < m_num_buckets; ++i) {
     const Allocation& bucket = m_buckets[i];
     if (!bucket.isEmpty() && !bucket.isDeleted() && bucket.isFirst()) {
       // This is the initial hash bucket for the corresponding allocation.
@@ -177,7 +177,7 @@ void rho::AllocationTable::resize(unsigned new_alloctable_bits) {
 
 void rho::AllocationTable::applyToAllAllocations(
     std::function<void(void*)> fun) const {
-  for (int i = 0; i < m_num_buckets; ++i) {
+  for (unsigned int i = 0; i < m_num_buckets; ++i) {
     Allocation& bucket = m_buckets[i];
     if (!bucket.isEmpty() && !bucket.isDeleted()) {
       if (bucket.isFirst()) {
@@ -202,9 +202,9 @@ void rho::AllocationTable::applyToAllAllocations(
 void rho::AllocationTable::printSummary() const {
   printf("Allocation Table Summary:\n");
   int size = 0;
-  for (int i = 0; i < m_num_buckets; i += 16) {
+  for (unsigned int i = 0; i < m_num_buckets; i += 16) {
     int count = 0;
-    for (int j = 0; j < 16 && i + j < m_num_buckets; ++j) {
+    for (unsigned int j = 0; j < 16 && i + j < m_num_buckets; ++j) {
       Allocation& bucket = m_buckets[i + j];
       if (!bucket.isEmpty() && !bucket.isDeleted()) {
         count += 1;

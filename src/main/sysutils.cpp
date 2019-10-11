@@ -819,7 +819,8 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
     void * obj;
     const char *inbuf;
     char *outbuf;
-    size_t inb, outb, res;
+    size_t inb, outb;
+    int res;
 
     if(ttype == NT_FROM_LATIN1) {
 	if(!latin1_obj) {
@@ -861,7 +862,7 @@ top_of_loop:
     Riconv (obj, NULL, NULL, &outbuf, &outb);
 next_char:
     /* Then convert input  */
-    res = Riconv(obj, &inbuf , &inb, &outbuf, &outb);
+    res = int(Riconv(obj, &inbuf , &inb, &outbuf, &outb));
     if(res == -1 && errno == E2BIG) {
 	R_AllocStringBuffer(2*cbuff->bufsize, cbuff);
 	goto top_of_loop;

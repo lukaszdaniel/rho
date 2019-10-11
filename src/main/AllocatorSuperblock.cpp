@@ -227,8 +227,8 @@ void rho::AllocatorSuperblock::applyToBlocks(std::function<void(void*)> fun)
   unsigned block_size = blockSize();
   unsigned num_blocks =
       (superblockSize() - s_superblock_header_size) / block_size;
-  unsigned bitset_entries = (num_blocks + 63) / 64;
-  for (int i = 0; i < bitset_entries; ++i) {
+  unsigned int bitset_entries = (num_blocks + 63) / 64;
+  for (unsigned int i = 0; i < bitset_entries; ++i) {
     if (m_free[i] != ~0ull) {
       for (int index = 0; index < 64; ++index) {
         if (!(m_free[i] & (uint64_t{1} << index))) {
@@ -261,8 +261,8 @@ void rho::AllocatorSuperblock::printSummary() const {
       (superblockSize() - s_superblock_header_size) / blockSize();
   printf("Superblock Summary (blocksize=%d, num block=%d):\n",
       blockSize(), superblockSize());
-  unsigned bitset_entries = (superblock_size + 63) / 64;
-  for (int i = 0; i < bitset_entries; ++i) {
+  unsigned int bitset_entries = (superblock_size + 63) / 64;
+  for (unsigned int i = 0; i < bitset_entries; ++i) {
     int num_free = 0;
     for (int index = 0; index < 64; ++index) {
       if (m_free[i] & (uint64_t{1} << index)) {

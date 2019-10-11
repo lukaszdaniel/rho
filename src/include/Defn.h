@@ -372,7 +372,7 @@ extern attribute_hidden int	R_BrowseLines;	/* lines/per call in browser */
 
 extern attribute_hidden Rboolean R_KeepSource;	/* options(keep.source) */
 extern attribute_hidden Rboolean R_CBoundsCheck;	/* options(CBoundsCheck) */
-extern attribute_hidden int	R_WarnLength;	/* Error/warning max length */
+extern attribute_hidden size_t	R_WarnLength;	/* Error/warning max length */
 extern attribute_hidden int	R_nwarnings;
 extern uintptr_t R_CStackLimit;	/* C stack limit */
 extern uintptr_t R_OldCStackLimit; /* Old value while 

@@ -156,7 +156,7 @@ FrameDescriptor::FrameDescriptor(std::initializer_list<const Symbol*> formals,
 
 int FrameDescriptor::getLocation(const Symbol* symbol) const
 {
-    for (int i = 0; i < m_local_vars.size(); ++i) {
+    for (size_t i = 0; i < m_local_vars.size(); ++i) {
 	if (m_local_vars[i] == symbol) {
 	    return i;
 	}

@@ -135,17 +135,17 @@ void VectorBase::decreaseSizeInPlace(size_type)
 }
 
 // The error messages here match those used by CR (as of 3.0.2),
-// including the malformed unit abbreviations.
+// not including the malformed unit abbreviations.
 void VectorBase::tooBig(std::size_t bytes)
 {
     double dsize = double(bytes)/1024.0;
     if (dsize > 1024.0*1024.0)
-	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f Gb"),
+	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f GB"),
 		     dsize/1024.0/1024.0);
     if (dsize > 1024.0)
-	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f Mb"),
+	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f MB"),
 		     dsize/1024.0);
-    Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f Kb"), dsize);
+    Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f KB"), dsize);
 }
 		     
 // Rf_allocVector is still in memory.cpp (for the time being).

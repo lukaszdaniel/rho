@@ -67,7 +67,7 @@ void R_GetStackLimits();
 
 void* GCStackRootBase::getStackBase()
 {
-    if (R_CStackStart == -1) {
+    if (R_CStackStart == (uintptr_t)-1) {
 	R_GetStackLimits();
     }
     return reinterpret_cast<void*>(R_CStackStart);

@@ -627,7 +627,7 @@ static SEXP cache_class(const char *class_str, SEXP klass)
 static SEXP S4_extends(SEXP klass, bool use_tab) {
     static Symbol* s_extends = nullptr, *s_extendsForS3 = nullptr;
     SEXP e, val; const char *class_str;
-    const void *vmax;
+    const void *vmax = nullptr;
     if(use_tab) vmax = vmaxget();
     if(!s_extends) {
 	s_extends= Symbol::obtain("extends");

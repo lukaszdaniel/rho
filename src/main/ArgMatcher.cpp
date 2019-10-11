@@ -163,7 +163,7 @@ void ArgMatcher::matchWithCache(const ArgList& supplied,
 				MatchCallback* callback,
 				const ArgMatchCache* matching) const
 {
-    for (int findex = 0; findex < m_formal_data.size(); findex++) {
+    for (size_t findex = 0; findex < m_formal_data.size(); findex++) {
 	const FormalData& fdata = m_formal_data[findex];
 	int sindex = matching->getSindex(findex);
 	if (sindex >= 0) {
@@ -356,7 +356,7 @@ ArgMatchCache::ArgMatchCache(int num_formals, const ArgList& args)
 bool ArgMatchCache::arglistTagsMatch(const ArgList& args) const {
   if (m_tags.size() != args.size())
       return false;
-  for (int index = 0; index < m_tags.size(); ++index) {
+  for (size_t index = 0; index < m_tags.size(); ++index) {
       if (m_tags[index] != args.getTag(index))
 	    return false;
     }
@@ -420,7 +420,7 @@ void ArgMatcher::matchByPosition(const ArgList& supplied,
     const size_t num_formals
 	= m_dots_position == -1 ? m_formal_data.size() : m_dots_position;
     unsigned int supplied_index = 0;
-    unsigned int formals_index = 0;
+    size_t formals_index = 0;
     ArgList::const_iterator s = supplied.getArgs().begin();
     const ArgList::const_iterator end = supplied.getArgs().end();
     for ( ;
@@ -432,7 +432,7 @@ void ArgMatcher::matchByPosition(const ArgList& supplied,
     }
     // Set unmatched arguments to their default values.
     for (; formals_index < m_formal_data.size(); ++formals_index) {
-	if (formals_index != m_dots_position)
+	if (int(formals_index) != m_dots_position)
 	    callback->defaultValue(m_formal_data[formals_index]);
     }
 
@@ -555,7 +555,7 @@ void ArgMatcher::match(const ArgList& supplied,
 		    callback->matchedArgument(fdata, supplied_data.index,
 					      supplied_data.value);
 		    supplied_list.erase(slit++);
-		} else if (findex != m_dots_position) {
+		} else if (int(findex) != m_dots_position) {
 		    callback->defaultValue(fdata);
 		}
 	    }

@@ -317,7 +317,7 @@ void* rho::FixedVector<T, ST>::allocate(size_type sz)
 
     try {
 	return GCNode::operator new(blocksize + headersize - sizeof(T));
-    } catch (std::bad_alloc) {
+    } catch (std::bad_alloc& e) {
 	tooBig(blocksize);
 	return nullptr;
     }

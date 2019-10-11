@@ -511,7 +511,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return x;
     }
     SEXP subs = CDR(args);
-    int nsubs = Rf_length(subs);
+    size_t nsubs = Rf_length(subs);
 
     /* Here coerce pair-based objects into generic vectors. */
     /* All subsetting takes place on the generic vector form. */
@@ -550,7 +550,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	size_t ndim = dims->size();
 	// Check for single matrix subscript:
 	if (nsubs == 1 && isMatrix(sub1)
-	    && isArray(ax) && ncols(sub1) == ndim)
+	    && isArray(ax) && Rf_ncols(sub1) == int(ndim))
 	    ans = VectorSubset(ax, sub1, call);
 	else if (ndim == nsubs)  // regular array subscripting, inc. 1-dim
 	    ans = ArraySubset(ax, subs, call, drop);

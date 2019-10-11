@@ -64,7 +64,7 @@ public:
     // Here we mark all bitset entries as free so that we don't have to do
     // precise range checking while iterating over currently allocated blocks
     // when the number of blocks is not evenly divisible by 64.
-    for (int i = 0; i < bitset_entries; ++i) {
+    for (unsigned int i = 0; i < bitset_entries; ++i) {
       m_free[i] = ~0ull;
     }
   }

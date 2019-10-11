@@ -374,7 +374,7 @@ static SEXP allocFormalsList(int nargs, ...) {
     SEXP res = R_NilValue;
     SEXP n;
     int i;
-    va_list(syms);
+    va_list syms;
     va_start(syms, nargs);
 
     for(i = 0; i < nargs; i++) {

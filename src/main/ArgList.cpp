@@ -57,7 +57,7 @@ PairList* ArgList::append(RObject* value, const RObject* tag,
 }
 
 void ArgList::evaluateToArray(Environment* env,
-			      int num_args, RObject** evaluated_args,
+			      unsigned int num_args, RObject** evaluated_args,
 			      MissingArgHandling allow_missing) const
 {
     assert(allow_missing != MissingArgHandling::Drop);
@@ -184,7 +184,7 @@ RObject* ArgList::get(int position) const {
     return cell ? cell->car() : nullptr;
 }
 
-void ArgList::set(int position, RObject* value) {
+void ArgList::set(size_t position, RObject* value) {
     assert(position < size());
     auto cell = mutable_list()->begin();
     std::advance(cell, position);
@@ -199,7 +199,7 @@ const RObject* ArgList::getTag(int position) const {
     return cell ? cell->tag() : nullptr;
 }
 
-void ArgList::setTag(int position, const Symbol* tag) {
+void ArgList::setTag(size_t position, const Symbol* tag) {
     assert(position < size());
     auto cell = mutable_list()->begin();
     std::advance(cell, position);
@@ -235,7 +235,7 @@ void ArgList::stripTags()
     }
 }
 
-void ArgList::erase(int pos) {
+void ArgList::erase(size_t pos) {
     assert(pos < size());
     if (pos == 0) {
         m_list = mutable_list()->tail();

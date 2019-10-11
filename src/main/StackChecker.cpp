@@ -37,7 +37,7 @@ unsigned int StackChecker::s_depth_limit = 5000;
 
 void StackChecker::checkAvailableStackSpace(size_t required_bytes)
 {
-    if (R_CStackLimit == -1)
+    if (R_CStackLimit == (uintptr_t)-1)
 	return;
 
     char dummy;

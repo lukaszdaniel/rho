@@ -69,7 +69,8 @@ valid_utf8(const char *string, size_t length) // R change int->size_t
     const char *p;
 
     for (p = string; length-- > 0; p++) {
-	int ab, c, d;
+	int c, d;
+	size_t ab;
 	c = (unsigned char)*p;
 	if (c < 128) continue;                /* ASCII character */
 	if (c < 0xc0) return 1;               /* Isolated 10xx xxxx byte */

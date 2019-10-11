@@ -228,7 +228,8 @@ static PROTECT_INDEX srindex;
 
 static int mbcs_get_next(int c, wchar_t *wc)
 {
-    int i, res, clen = 1; char s[9];
+    int res; char s[9];
+	size_t clen = 1;
     mbstate_t mb_st;
 
     s[0] = (char) c;
@@ -240,7 +241,7 @@ static int mbcs_get_next(int c, wchar_t *wc)
     }
     if(utf8locale) {
 	clen = utf8clen((char) c);
-	for(i = 1; i < clen; i++) {
+	for(size_t i = 1; i < clen; i++) {
 	    s[i] = (char) xxgetc();
 	    if(s[i] == R_EOF) error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
 	}
@@ -261,7 +262,7 @@ static int mbcs_get_next(int c, wchar_t *wc)
 	    s[clen++] = (char) c;
 	} /* we've tried enough, so must be complete or invalid by now */
     }
-    for(i = clen - 1; i > 0; i--) xxungetc(s[i]);
+    for(size_t i = clen - 1; i > 0; i--) xxungetc(s[i]);
     return clen;
 }
 
@@ -485,7 +486,7 @@ cr	:					{ EatLines = 1; }
    We need up to one MBCS-worth */
 #define DECLARE_YYTEXT_BUFP(bp) char *bp = yytext ;
 #define YYTEXT_PUSH(c, bp) do { \
-    if ((bp) - yytext >= sizeof(yytext) - 1){ \
+    if ((bp) - yytext >= int(sizeof(yytext)) - 1){ \
 		error(_("input buffer overflow at line %d"), ParseState.xxlineno); \
 	} \
     *(bp)++ = ((char)c);			\
@@ -2069,7 +2070,7 @@ static int SkipComment(void)
         // Comments can be any length; we only record the ones that fit in yytext.
         if (doSave) {
             YYTEXT_PUSH(c, yyp);
-            doSave = RHOCONSTRUCT(Rboolean, (yyp - yytext) < sizeof(yytext) - 2);
+            doSave = RHOCONSTRUCT(Rboolean, (yyp - yytext) < int(sizeof(yytext)) - 2);
         }
  	_last_column = ParseState.xxcolno ;
 	_last_parsed = ParseState.xxparseno ;

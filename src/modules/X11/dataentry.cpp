@@ -113,7 +113,7 @@ typedef struct {
     int text_offset;
     int nboxchars;
     int xmaxused, ymaxused;
-    char labform[12];
+    char labform[14];
     Rboolean isEditor;
     Atom prot;
 } destruct, *DEstruct;

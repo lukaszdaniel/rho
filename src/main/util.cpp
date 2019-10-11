@@ -270,7 +270,7 @@ static int findTypeInTypeTable(SEXPTYPE t)
     return -1;
 }
 
-// called from main.c
+// called from main.cpp
 attribute_hidden
 void Rf_InitTypeTables(void) {
 
@@ -563,7 +563,7 @@ SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction
 }
 
 
-/* formerly used in subscript.c, in Utils.h */
+/* formerly used in subscript.cpp, in Utils.h */
 void attribute_hidden setIVector(int * vec, int len, int val)
 {
     for (int i = 0; i < len; i++) vec[i] = val;
@@ -1276,13 +1276,13 @@ static const unsigned int utf8_table2[] = { 0, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc};
 static size_t Rwcrtomb(char *s, const wchar_t wc)
 {
     size_t i, j;
-    unsigned int cvalue = static_cast<unsigned int>( wc);
+    unsigned int cvalue = static_cast<unsigned int>(wc);
     char buf[10], *b;
 
     b = s ? s : buf;
     if(cvalue == 0) {*b = 0; return 0;}
     for (i = 0; i < RHOCONSTRUCT(int, sizeof(utf8_table1)/sizeof(int)); i++)
-	if (RHOCONSTRUCT(int, cvalue) <= utf8_table1[i]) break;
+	if (static_cast<unsigned int>(cvalue) <= utf8_table1[i]) break;
     b += i;
     for (j = i; j > 0; j--) {
 	*b-- = char( (0x80 | (cvalue & 0x3f)));
@@ -1886,7 +1886,7 @@ const char* ucol_getLocaleByType(const UCollator *coll,
 static UCollator *collator = NULL;
 static int collationLocaleSet = 0;
 
-/* called from platform.c */
+/* called from platform.cpp */
 void attribute_hidden resetICUcollator(void)
 {
     if (collator) ucol_close(collator);

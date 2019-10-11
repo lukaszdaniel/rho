@@ -3506,7 +3506,7 @@ int Rconn_getline(Rconnection con, char *buf, int bufsize)
 int Rconn_printf(Rconnection con, const char *format, ...)
 {
     int res;
-    va_list(ap);
+    va_list ap;
 
     va_start(ap, format);
     /* Parentheses added for FC4 with gcc4 and -D_FORTIFY_SOURCE=2 */
@@ -3520,7 +3520,8 @@ int Rconn_printf(Rconnection con, const char *format, ...)
 SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* n_, RObject* ok_, RObject* warn_, RObject* encoding_, RObject* skipNul_)
 {
     SEXP ans = R_NilValue, ans2;
-    int ok, warn, skipNul, c, nbuf, buf_size = BUF_SIZE;
+    int ok, warn, skipNul, c;
+    size_t nbuf, buf_size = BUF_SIZE;
     cetype_t oenc = CE_NATIVE;
     Rconnection con = NULL;
     Rboolean wasopen;

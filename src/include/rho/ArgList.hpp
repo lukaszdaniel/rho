@@ -256,7 +256,7 @@ namespace rho {
 	 *          cause an error to be raised.
 	 */
 	void evaluateToArray(Environment* env,
-			     int num_args, RObject** evaluated_args,
+			     unsigned int num_args, RObject** evaluated_args,
 			     MissingArgHandling allow_missing
 			         = MissingArgHandling::Error) const;
 
@@ -308,7 +308,7 @@ namespace rho {
 
         /** @brief Set the argument at the specified position.
          */
-        void set(int position, RObject* value);
+        void set(size_t position, RObject* value);
 
         /** @brief Return the tag at the specified position.
          */
@@ -316,12 +316,12 @@ namespace rho {
 
         /** @brief Set the tag at the specified position.
          */
-        void setTag(int position, const Symbol* tag);
+        void setTag(size_t position, const Symbol* tag);
 
         /** @brief Remove the argument at the specified position.  Invalidates
          *     any existing iterators.
          */
-        void erase(int position);
+        void erase(size_t position);
 
 	/** @brief Iterator through the argument list, leaving '...' unchanged.
 	 *

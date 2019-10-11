@@ -148,7 +148,7 @@ static unsigned next_log2_32(unsigned size) {
 
   // Now make sure we go one above the highest set bit if the input is larger
   // than that power of two:
-  if (size > (1 << log2)) {
+  if (size > static_cast<unsigned int>(1 << log2)) {
     log2 += 1;
   }
   return log2;
@@ -161,12 +161,12 @@ static unsigned next_log2_32(unsigned size) {
 void rho::GCNodeAllocator::initialize() {
   AllocatorSuperblock::allocateArena();
 
-  for (int i = 0; i < s_num_small_pools + s_num_medium_pools; ++i) {
+  for (unsigned int i = 0; i < s_num_small_pools + s_num_medium_pools; ++i) {
     // Initialize available superblock pointers.
     s_superblocks[i] = nullptr;
   }
 
-  for (int i = 0; i < s_num_freelists; ++i) {
+  for (unsigned int i = 0; i < s_num_freelists; ++i) {
     // Initialize regular freelists.
     s_freelists[i] = nullptr;
 #ifdef HAVE_ADDRESS_SANITIZER

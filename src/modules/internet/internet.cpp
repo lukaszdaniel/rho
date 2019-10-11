@@ -1049,7 +1049,7 @@ void RxmlMessage(int level, const char *format, ...)
 {
     int clevel;
     char buf[MBUFSIZE], *p;
-    va_list(ap);
+    va_list ap;
 
     clevel = asInteger(GetOption1(install("internet.info")));
     if(clevel == NA_INTEGER) clevel = 2;

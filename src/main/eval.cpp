@@ -157,7 +157,7 @@ static int getFilenum(const char* filename) {
 	    R_Profiling_Error = 1;
 	    return 0;
 	}
-	if (R_Srcfiles[fnum] - reinterpret_cast<char*>(RAW(R_Srcfiles_buffer)) + len + 1 > length(R_Srcfiles_buffer)) {
+	if (R_Srcfiles[fnum] - reinterpret_cast<char*>(RAW(R_Srcfiles_buffer)) + len + 1 > (long unsigned int) Rf_length(R_Srcfiles_buffer)) {
 	      /* out of space in the buffer */
 	    R_Profiling_Error = 2;
 	    return 0;

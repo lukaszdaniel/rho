@@ -216,7 +216,7 @@ void extR_HTTPDStop(void)
 extern "C"
 SEXP Rsockconnect(SEXP sport, SEXP shost)
 {
-    if (length(sport) != 1) error("invalid 'socket' argument");
+    if (Rf_length(sport) != 1) error("invalid 'socket' argument");
     int port = asInteger(sport);
     char *host[1];
     host[0] = const_cast<char *>( translateChar(STRING_ELT(shost, 0)));
@@ -231,7 +231,7 @@ SEXP Rsockconnect(SEXP sport, SEXP shost)
 extern "C"
 SEXP Rsockread(SEXP ssock, SEXP smaxlen)
 {
-    if (length(ssock) != 1) error("invalid 'socket' argument");
+    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock), maxlen = asInteger(smaxlen);
     char buf[maxlen+1], *abuf[1];
     abuf[0] = buf;
@@ -246,7 +246,7 @@ SEXP Rsockread(SEXP ssock, SEXP smaxlen)
 extern "C"
 SEXP Rsockclose(SEXP ssock)
 {
-    if (length(ssock) != 1) error("invalid 'socket' argument");
+    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock);
     if (sock <= 0) error(_("attempt to close invalid socket"));
     if(!initialized) internet_Init();
@@ -260,7 +260,7 @@ SEXP Rsockclose(SEXP ssock)
 extern "C"
 SEXP Rsockopen(SEXP sport)
 {
-    if (length(sport) != 1) error("invalid 'port' argument");
+    if (Rf_length(sport) != 1) error("invalid 'port' argument");
     int port = asInteger(sport);
     if(!initialized) internet_Init();
     if(initialized > 0)
@@ -273,7 +273,7 @@ SEXP Rsockopen(SEXP sport)
 extern "C"
 SEXP Rsocklisten(SEXP ssock)
 {
-    if (length(ssock) != 1) error("invalid 'socket' argument");
+    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock), len = 256;
     char buf[257], *abuf[1];
     abuf[0] = buf;
@@ -292,7 +292,7 @@ SEXP Rsocklisten(SEXP ssock)
 extern "C"
 SEXP Rsockwrite(SEXP ssock, SEXP sstring)
 {
-    if (length(ssock) != 1) error("invalid 'socket' argument");
+    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock), start = 0, end, len;
     char *buf = const_cast<char *>( translateChar(STRING_ELT(sstring, 0))), *abuf[1];
     end = len = int( strlen(buf));

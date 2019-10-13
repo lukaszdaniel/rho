@@ -118,7 +118,7 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
 	    }
 	}
 	if (isList(vec) || isLanguage(vec)) {
-	    len = length(vec);
+	    len = Rf_length(vec);
 	    PROTECT(s = allocVector(STRSXP, len));
 	    i = 0;
 	    any = 0;
@@ -348,7 +348,7 @@ static void checkNames(SEXP x, SEXP s)
 	    error(_("invalid type (%s) for 'names': must be vector"),
 		  type2char(TYPEOF(s)));
 	if (xlength(x) != xlength(s))
-	    error(_("'names' attribute [%d] must be the same length as the vector [%d]"), length(s), length(x));
+	    error(_("'names' attribute [%d] must be the same length as the vector [%d]"), Rf_length(s), Rf_length(x));
     }
     else if(IS_S4_OBJECT(x)) {
       /* leave validity checks to S4 code */
@@ -422,7 +422,7 @@ static SEXP commentgets(SEXP vec, SEXP comment)
 
     if (isNull(comment) || isString(comment)) {
 	vec->setAttribute(static_cast<Symbol*>(R_CommentSymbol),
-			  length(comment) <= 0 ? nullptr : comment);
+			  Rf_length(comment) <= 0 ? nullptr : comment);
 	return R_NilValue;
     }
     error(_("attempt to set invalid 'comment' attribute"));
@@ -434,7 +434,7 @@ SEXP attribute_hidden do_commentgets(/*const*/ Expression* call, const BuiltInFu
     RObject* object = x_;
     RObject* comment = value_;
     if (MAYBE_SHARED(object)) object = duplicate(object);
-    if (length(comment) == 0) comment = R_NilValue;
+    if (Rf_length(comment) == 0) comment = R_NilValue;
     setAttrib(object, R_CommentSymbol, comment);
     SET_NAMED(object, 0);
     return object;
@@ -448,7 +448,7 @@ SEXP attribute_hidden do_comment(/*const*/ Expression* call, const BuiltInFuncti
 SEXP Rf_classgets(SEXP vec, SEXP klass)
 {
     if (isNull(klass) || isString(klass)) {
-	int ncl = length(klass);
+	int ncl = Rf_length(klass);
   	if (ncl <= 0) {
 	    vec->setAttribute(static_cast<Symbol*>(R_ClassSymbol), nullptr);
 	    // problems when package building:  UNSET_S4_OBJECT(vec);
@@ -511,7 +511,7 @@ SEXP Rf_classgets(SEXP vec, SEXP klass)
 SEXP attribute_hidden do_classgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* new_class)
 {
     if (MAYBE_SHARED(object)) object = shallow_duplicate(object);
-    if (length(new_class) == 0) new_class = R_NilValue;
+    if (Rf_length(new_class) == 0) new_class = R_NilValue;
     if(IS_S4_OBJECT(object))
 	UNSET_S4_OBJECT(object);
     setAttrib(object, R_ClassSymbol, new_class);
@@ -566,12 +566,12 @@ static SEXP lang2str(SEXP obj, SEXPTYPE t)
 SEXP R_data_class(SEXP obj, Rboolean singleString)
 {
     SEXP value, klass = getAttrib(obj, R_ClassSymbol);
-    int n = length(klass);
+    int n = Rf_length(klass);
     if(n == 1 || (n > 0 && !singleString))
 	return(klass);
     if(n == 0) {
 	SEXP dim = getAttrib(obj, R_DimSymbol);
-	int nd = length(dim);
+	int nd = Rf_length(dim);
 	if(nd > 0) {
 	    if(nd == 2)
 		klass = mkChar("matrix");
@@ -738,16 +738,16 @@ void Rf_InitS3DefaultTypes()
 SEXP attribute_hidden R_data_class2 (SEXP obj)
 {
     SEXP klass = getAttrib(obj, R_ClassSymbol);
-    if(length(klass) > 0) {
+    if(Rf_length(klass) > 0) {
 	if(IS_S4_OBJECT(obj))
 	    return S4_extends(klass, TRUE);
 	else
 	    return klass;
     }
-    else { /* length(klass) == 0 */
+    else { /* Rf_length(klass) == 0 */
 
 	SEXP dim = getAttrib(obj, R_DimSymbol);
-	int n = length(dim);
+	int n = Rf_length(dim);
 	SEXPTYPE t = TYPEOF(obj);
 	SEXP defaultClass;
 	switch(n) {
@@ -849,11 +849,11 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
 	if (!isVectorizable(val))
 	    error(_("incompatible 'names' argument"));
 	else {
-	    rval = allocVector(STRSXP, length(vec));
+	    rval = allocVector(STRSXP, Rf_length(vec));
 	    PROTECT(rval);
 	    /* See PR#10807 */
 	    for (i = 0, tval = val;
-		 i < length(vec) && tval != R_NilValue;
+		 i < Rf_length(vec) && tval != R_NilValue;
 		 i++, tval = CDR(tval)) {
 		s = coerceVector(CAR(tval), STRSXP);
 		SET_STRING_ELT(rval, i, STRING_ELT(s, 0));
@@ -879,7 +879,7 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
 
     if (isVector(vec) || isList(vec) || isLanguage(vec)) {
 	s = getAttrib(vec, R_DimSymbol);
-	if (TYPEOF(s) == INTSXP && length(s) == 1) {
+	if (TYPEOF(s) == INTSXP && Rf_length(s) == 1) {
 	    PROTECT(val = CONS(val, R_NilValue));
 	    setAttrib(vec, R_DimNamesSymbol, val);
 	    UNPROTECT(3);
@@ -967,10 +967,10 @@ SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
     if (!isPairList(val) && !isNewList(val))
 	error(_("'%s' must be a list"), "dimnames");
     dims = getAttrib(vec, R_DimSymbol);
-    if ((k = LENGTH(dims)) < length(val))
+    if ((k = LENGTH(dims)) < Rf_length(val))
 	error(_("length of 'dimnames' [%d] must match that of 'dims' [%d]"),
-	      length(val), k);
-    if (length(val) == 0) {
+	      Rf_length(val), k);
+    if (Rf_length(val) == 0) {
 	removeAttrib(vec, R_DimNamesSymbol);
 	UNPROTECT(2);
 	return vec;
@@ -985,7 +985,7 @@ SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
 	UNPROTECT(1);
 	PROTECT(val = newval);
     }
-    if (length(val) > 0 && length(val) < k) {
+    if (Rf_length(val) > 0 && Rf_length(val) < k) {
 	newval = lengthgets(val, k);
 	UNPROTECT(1);
 	PROTECT(val = newval);
@@ -995,9 +995,9 @@ SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
 	UNPROTECT(1);
 	PROTECT(val = newval);
     }
-    if (k != length(val))
+    if (k != Rf_length(val))
 	error(_("length of 'dimnames' [%d] must match that of 'dims' [%d]"),
-	      length(val), k);
+	      Rf_length(val), k);
     for (i = 0; i < k; i++) {
 	SEXP _this = VECTOR_ELT(val, i);
 	if (_this != R_NilValue) {
@@ -1064,7 +1064,7 @@ SEXP Rf_dimgets(SEXP vec, SEXP val)
     PROTECT(val);
 
     len = xlength(vec);
-    ndim = length(val);
+    ndim = Rf_length(val);
     if (ndim == 0)
 	error(_("length-0 dimension vector is invalid"));
     total = 1;
@@ -1104,7 +1104,7 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
 
     namesattr = R_NilValue;
     GCStackRoot<> attrs(ATTRIB(x));
-    nvalues = length(attrs);
+    nvalues = Rf_length(attrs);
     if (isList(x)) {
 	namesattr = getAttrib(x, R_NamesSymbol);
 	if (namesattr != R_NilValue)
@@ -1169,7 +1169,7 @@ SEXP attribute_hidden do_attributesgets(/*const*/ Expression* call, const BuiltI
     /* Do checks before duplication */
     if (!isNewList(attrs))
 	error(_("attributes must be a list or NULL"));
-    nattrs = length(attrs);
+    nattrs = Rf_length(attrs);
     if (nattrs > 0) {
 	names = getAttrib(attrs, R_NamesSymbol);
 	if (names == R_NilValue)
@@ -1242,7 +1242,7 @@ SEXP attribute_hidden do_attributesgets(/*const*/ Expression* call, const BuiltI
     {
 	if (!is.character(which))
 	    stop("attribute name must be of mode character")
-	if (length(which) != 1)
+	if (Rf_length(which) != 1)
 	    stop("exactly one attribute name must be given")
 	attributes(x)[[which]]
    }
@@ -1257,7 +1257,7 @@ SEXP attribute_hidden do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP tag = R_NilValue, alist, ans, x, which, exact_;
     const char *str;
-    int nargs = length(args), exact = 0;
+    int nargs = Rf_length(args), exact = 0;
     enum { NONE, PARTIAL, PARTIAL2, FULL } match = NONE;
 
     /* argument matching */
@@ -1271,7 +1271,7 @@ SEXP attribute_hidden do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
 
     if (!isString(which))
 	errorcall(call, _("'which' must be of mode character"));
-    if (length(which) != 1)
+    if (Rf_length(which) != 1)
 	errorcall(call, _("exactly one attribute 'which' must be given"));
 
     if (TYPEOF(x) == ENVSXP)
@@ -1393,7 +1393,7 @@ SEXP attribute_hidden do_slotgets(SEXP call, SEXP op, SEXP args, SEXP env)
     if (isSymbol(nlist))
 	input = Rf_ScalarString(PRINTNAME(nlist));
     else if(isString(nlist)) {
-        input = length(nlist) == 1
+        input = Rf_length(nlist) == 1
             ? nlist : Rf_ScalarString(STRING_ELT(nlist, 0));
     }
     else {
@@ -1679,7 +1679,7 @@ SEXP attribute_hidden do_AT(SEXP call, SEXP op, SEXP args, SEXP env)
     if(!s_dot_Data) init_slot_handling();
     if(nlist != s_dot_Data && !IS_S4_OBJECT(object)) {
 	klass = getAttrib(object, R_ClassSymbol);
-	if(length(klass) == 0)
+	if(Rf_length(klass) == 0)
 	    error(_("trying to get slot \"%s\" from an object of a basic class (\"%s\") with no slots"),
 		  CHAR(PRINTNAME(nlist)),
 		  CHAR(STRING_ELT(R_data_class(object, FALSE), 0)));

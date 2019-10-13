@@ -114,7 +114,7 @@ int Rf_ncols(SEXP s)
 	return 1;
     }
     else if (isFrame(s)) {
-	return length(s);
+	return Rf_length(s);
     }
     else error(_("object is not a matrix"));
     return -1;/*NOTREACHED*/
@@ -439,7 +439,7 @@ Rboolean isBlankString(const char *s)
     if(mbcslocale) {
 	wchar_t wc; size_t used; mbstate_t mb_st;
 	mbs_init(&mb_st);
-	while( (used = Mbrtowc(&wc, s, MB_CUR_MAX, &mb_st)) ) {
+	while( (used = Rf_mbrtowc(&wc, s, MB_CUR_MAX, &mb_st)) ) {
 	    if(!iswspace(wint_t( wc))) return FALSE;
 	    s += used;
 	}
@@ -1404,7 +1404,7 @@ char *Rf_strchr(const char *s, int c)
 
     if(!mbcslocale || utf8locale) return RHO_C_CAST(char*, strchr(s, c));
     mbs_init(&mb_st);
-    while( (used = Mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
+    while( (used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
 	if(*p == c) return p;
 	p += used;
     }
@@ -1419,7 +1419,7 @@ char *Rf_strrchr(const char *s, int c)
 
     if(!mbcslocale || utf8locale) return RHO_C_CAST(char*, strrchr(s, c));
     mbs_init(&mb_st);
-    while( (used = Mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
+    while( (used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
 	if(*p == c) plast = p;
 	p += used;
     }
@@ -1434,7 +1434,7 @@ void R_fixslash(char *s)
     if(mbcslocale) {
 	mbstate_t mb_st; int used;
 	mbs_init(&mb_st);
-	while((used = Mbrtowc(NULL, p, MB_CUR_MAX, &mb_st))) {
+	while((used = Rf_mbrtowc(NULL, p, MB_CUR_MAX, &mb_st))) {
 	    if(*p == '\\') *p = '/';
 	    p += used;
 	}
@@ -1470,7 +1470,7 @@ void R_fixbackslash(char *s)
     if(mbcslocale) {
 	mbstate_t mb_st; int used;
 	mbs_init(&mb_st);
-	while((used = Mbrtowc(NULL, p, MB_CUR_MAX, &mb_st))) {
+	while((used = Rf_mbrtowc(NULL, p, MB_CUR_MAX, &mb_st))) {
 	    if(*p == '/') *p = '\\';
 	    p += used;
 	}

@@ -295,9 +295,9 @@ static void substr(char *buf, const char *str, int ienc, int sa, int so)
 	    const char *end = str + strlen(str);
 	    mbstate_t mb_st;
 	    mbs_init(&mb_st);
-	    for (i = 1; i < sa; i++) str += Mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st);
+	    for (i = 1; i < sa; i++) str += Rf_mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st);
 	    for (i = sa; i <= so && str < end; i++) {
-		used = int( Mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st));
+		used = int( Rf_mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st));
 		for (j = 0; j < used; j++) *buf++ = *str++;
 	    }
 	} else
@@ -481,11 +481,11 @@ substrset(char *buf, const char *const str, cetype_t ienc, size_t sa, size_t so)
     } else {
 	/* This cannot work for stateful encodings */
 	if (mbcslocale) {
-	    for (size_t i = 1; i < sa; i++) buf += Mbrtowc(nullptr, buf, MB_CUR_MAX, nullptr);
+	    for (size_t i = 1; i < sa; i++) buf += Rf_mbrtowc(nullptr, buf, MB_CUR_MAX, nullptr);
 	    /* now work out how many bytes to replace by how many */
 	    for (size_t i = sa; i <= so && in < strlen(str); i++) {
-		in += Mbrtowc(nullptr, str+in, MB_CUR_MAX, nullptr);
-		out += Mbrtowc(nullptr, buf+out, MB_CUR_MAX, nullptr);
+		in += Rf_mbrtowc(nullptr, str+in, MB_CUR_MAX, nullptr);
+		out += Rf_mbrtowc(nullptr, buf+out, MB_CUR_MAX, nullptr);
 		if (!str[in]) break;
 	    }
 	    if (in != out) memmove(buf+in, buf+out, strlen(buf+out)+1);
@@ -877,11 +877,11 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 	    mbstate_t mb_st;
 	    const char *pp = This;
 	    mbs_init(&mb_st);
-	    used = int( Mbrtowc(&wc, pp, MB_CUR_MAX, &mb_st));
+	    used = int(Rf_mbrtowc(&wc, pp, MB_CUR_MAX, &mb_st));
 	    pp += used; nc -= used;
 	    if (wc == L'.') {
 		if (nc > 0) {
-		    Mbrtowc(&wc, pp, MB_CUR_MAX, &mb_st);
+		    Rf_mbrtowc(&wc, pp, MB_CUR_MAX, &mb_st);
 		    if (iswdigit(wc))  need_prefix = TRUE;
 		}
 	    } else if (!iswalpha(wc)) need_prefix = TRUE;
@@ -1559,7 +1559,7 @@ SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFuncti
 	wsum = 0;
 	mbs_init(&mb_st);
 	for (p = This, w0 = 0, q = buf; *p ;) {
-	    nb =  int( Mbrtowc(&wc, p, MB_CUR_MAX, &mb_st));
+	    nb =  int( Rf_mbrtowc(&wc, p, MB_CUR_MAX, &mb_st));
 	    w0 = Ri18n_wcwidth(wc);
 	    if (w0 < 0) { p += nb; continue; } /* skip non-printable chars */
 	    wsum += w0;

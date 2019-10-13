@@ -179,8 +179,8 @@ SEXP do_relop(/*const*/ Expression* call,
 	VectorBase* xv = static_cast<VectorBase*>(coerceVector(x, STRSXP));
 	VectorBase* yv = static_cast<VectorBase*>(coerceVector(y, STRSXP));
 	checkOperandsConformable(xv, yv);
-	int nx = length(xv);
-	int ny = length(yv);
+	int nx = Rf_length(xv);
+	int ny = Rf_length(yv);
 	bool mismatch = false;
 	if (nx > 0 && ny > 0)
 	    mismatch = (((nx > ny) ? nx % ny : ny % nx) != 0);

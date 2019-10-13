@@ -122,7 +122,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    warning(_("ignoring non-pairlist attributes"));
 	} else {
 	    SEXP elx, ely;
-	    if(length(ax) != length(ay)) return FALSE;
+	    if(Rf_length(ax) != Rf_length(ay)) return FALSE;
 	    /* They are the same length and should have
 	       unique non-empty non-NA tags */
 	    for(elx = ax; elx != R_NilValue; elx = CDR(elx)) {

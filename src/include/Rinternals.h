@@ -1016,8 +1016,7 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 /* In C++, this macro can play havoc with some standard C++ header
  * files.  Consequently, the alternative approach is taken of defining
  * length as an inline function within the namespace rho (where it can be
- * found via argument-dependent lookup).  The relevant definition is at the
- * end of this file.
+ * found via argument-dependent lookup).
  */
 #define length(x)               Rf_length(x)
 #endif
@@ -1193,10 +1192,10 @@ void* DATAPTR(SEXP x);
  * macro can cause with C++ header files.  New code should invoke
  * Rf_length() explicitly.
  */
-inline R_xlen_t length(SEXP s)
-{
-    return Rf_length(s);
-}
+// inline R_len_t length(SEXP s)
+// {
+//     return Rf_length(s);
+// }
 #endif
 
 #endif /* R_INTERNALS_H_ */

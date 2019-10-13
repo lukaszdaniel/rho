@@ -475,7 +475,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
     int i;
 
     if(!mode && strlen(buf) == 0) return 1;
-    for (i = 0; i < length(d->NAstrings); i++)
+    for (i = 0; i < Rf_length(d->NAstrings); i++)
 	if (!strcmp(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
     return 0;
 }
@@ -672,7 +672,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
     int badline, nstring = 0;
     R_StringBuffer buf = {nullptr, 0, MAXELTSIZE};
 
-    nc = length(what);
+    nc = Rf_length(what);
     if (!nc) {
 	    error(_("empty 'what' specified"));
     }
@@ -704,7 +704,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 
     // we checked its type in do_scan
     int *lstrip = LOGICAL(stripwhite);
-    Rboolean vec_strip = Rboolean(length(stripwhite) == length(what));
+    Rboolean vec_strip = Rboolean(Rf_length(stripwhite) == Rf_length(what));
     strip = lstrip[0];
 
     for (;;) {
@@ -868,15 +868,15 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 
     if (TYPEOF(stripwhite) != LGLSXP)
 	error(_("invalid '%s' argument"), "strip.white");
-    if (length(stripwhite) != 1 && length(stripwhite) != length(what))
+    if (Rf_length(stripwhite) != 1 && Rf_length(stripwhite) != Rf_length(what))
 	error(_("invalid 'strip.white' length"));
     if (TYPEOF(data.NAstrings) != STRSXP)
 	error(_("invalid '%s' argument"), "na.strings");
-    if (TYPEOF(comstr) != STRSXP || length(comstr) != 1)
+    if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
 	error(_("invalid '%s' argument"), "comment.char");
 
     if (isString(sep) || isNull(sep)) {
-	if (length(sep) == 0) data.sepchar = 0;
+	if (Rf_length(sep) == 0) data.sepchar = 0;
 	else {
 	    const char *sc = translateChar(STRING_ELT(sep, 0));
 	    if(strlen(sc) > 1)
@@ -887,7 +887,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     } else error(_("invalid '%s' argument"), "sep");
 
     if (isString(dec) || isNull(dec)) {
-	if (length(dec) == 0)
+	if (Rf_length(dec) == 0)
 	    data.decchar = '.';
 	else {
 	    const char *dc = translateChar(STRING_ELT(dec, 0));
@@ -1005,7 +1005,7 @@ SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunctio
 	PROTECT(prompt);
     } else {
 	PROTECT(prompt = coerceVector(prompt, STRSXP));
-	if(length(prompt) > 0) {
+	if(Rf_length(prompt) > 0) {
 	    strncpy(ConsolePrompt, translateChar(STRING_ELT(prompt, 0)),
 		    CONSOLE_PROMPT_SIZE - 1);
 	    ConsolePrompt[CONSOLE_PROMPT_SIZE - 1] = '\0';

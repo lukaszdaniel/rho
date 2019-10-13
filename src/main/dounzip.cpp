@@ -327,7 +327,7 @@ SEXP Runzip(SEXP args)
     strcpy(zipname, p);
     args = CDR(args);
     fn = CAR(args);
-    ntopics = length(fn);
+    ntopics = Rf_length(fn);
     if (ntopics > 0) {
 	if (!isString(fn))
 	    error(_("invalid '%s' argument"), "files");

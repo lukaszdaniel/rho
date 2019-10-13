@@ -844,13 +844,13 @@ static SEXP inherits3(SEXP x, SEXP what, SEXP which)
 	klass = R_data_class2(x);
     else
 	klass = R_data_class(x, FALSE);
-    int nclass = length(klass);
+    int nclass = Rf_length(klass);
 
     if(!Rf_isString(what))
 	Rf_error(_("'what' must be a character vector"));
-    int j, nwhat = length(what);
+    int j, nwhat = Rf_length(what);
 
-    if( !Rf_isLogical(which) || (length(which) != 1) )
+    if( !Rf_isLogical(which) || (Rf_length(which) != 1) )
 	Rf_error(_("'which' must be a length 1 logical vector"));
     int isvec = Rf_asLogical(which);
 
@@ -940,7 +940,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	superCl = Rf_eval(_call, rho);
 	UNPROTECT(2);
 	PROTECT(superCl);
-	for(i=0; i < length(superCl); i++) {
+	for(i=0; i < Rf_length(superCl); i++) {
 	    const char *s_class = CHAR(STRING_ELT(superCl, i));
 	    for (ans = 0; ; ans++) {
 		if (!strlen(valid[ans]))
@@ -1020,7 +1020,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 {
     R_stdGen_ptr_t old = R_get_standardGeneric_ptr();
     int ival =  !NOT_METHODS_DISPATCH_PTR(old);
-    if(length(onOff) > 0) {
+    if(Rf_length(onOff) > 0) {
 	Rboolean onOffValue = RHOCONSTRUCT(Rboolean, Rf_asLogical(onOff));
 	if(onOffValue == NA_INTEGER)
 	    Rf_error(_("'onOff' must be TRUE or FALSE"));
@@ -1550,7 +1550,7 @@ SEXP attribute_hidden do_setS4Object(/*const*/ Expression* call, const BuiltInFu
 {
     SEXP object = object_;
     int flag = Rf_asLogical(flag_), complete = Rf_asInteger(complete_);
-    if(length(flag_) != 1 || flag == NA_INTEGER)
+    if(Rf_length(flag_) != 1 || flag == NA_INTEGER)
 	Rf_error("invalid '%s' argument", "flag");
     if(complete == NA_INTEGER)
 	Rf_error("invalid '%s' argument", "complete");

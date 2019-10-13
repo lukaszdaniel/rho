@@ -104,7 +104,7 @@ SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFun
     bool trace = op->variant() == 0;  // Otherwise it's debug.
     Rboolean prev = Rboolean(trace ? FunctionBase::tracingEnabled()
 			     : Closure::debuggingEnabled());
-    if(length(onOff) > 0) {
+    if(Rf_length(onOff) > 0) {
 	Rboolean _new = RHOCONSTRUCT(Rboolean, asLogical(onOff));
 	if(_new == TRUE || _new == FALSE) {
 	    if (trace)

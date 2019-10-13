@@ -907,7 +907,7 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     v = x_;
     if (!isLogical(v))
 	error(_("argument to 'which' is not logical"));
-    len = length(v);
+    len = Rf_length(v);
     buf = reinterpret_cast<int *>( R_alloc(len, sizeof(int)));
 
     for (i = 0; i < len; i++) {
@@ -986,7 +986,7 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
     if(len == 0) return allocVector(anstype, 0);
     /* Check for fractional recycling (added in 2.14.0) */
     for (int arg = 0; arg < num_args; arg++) {
-	n = length(args[arg]);
+	n = Rf_length(args[arg]);
 	if (len % n) {
 	    warning(_("an argument will be fractionally recycled"));
 	    break;

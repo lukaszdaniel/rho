@@ -529,7 +529,7 @@ SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
     vl = findVar(R_DotsSymbol, rho);
     i = ddVal(symbol);
     if (vl != R_UnboundValue) {
-	if (length(vl) >= i) {
+	if (Rf_length(vl) >= i) {
 	    vl = nthcdr(vl, i - 1);
 	    return(CAR(vl));
 	}
@@ -692,10 +692,10 @@ SEXP attribute_hidden do_assign(/*const*/ Expression* call, const BuiltInFunctio
     SEXP name=R_NilValue, val, aenv;
     int ginherits = 0;
 
-    if (!isString(x_) || length(x_) == 0)
+    if (!isString(x_) || Rf_length(x_) == 0)
 	error(_("invalid first argument"));
     else {
-	if (length(x_) > 1)
+	if (Rf_length(x_) > 1)
 	    warning(_("only the first element is used as variable name"));
 	name = installTrChar(STRING_ELT(x_, 0));
     }
@@ -947,7 +947,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
     SEXP ans;
     int ginherits = 0, nvals, nmode, nifnfnd;
 
-    nvals = length(x);
+    nvals = Rf_length(x);
 
     /* The first arg is the object name */
     /* It must be present and a string */
@@ -961,7 +961,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
     if (!env)
 	error(_("second argument must be an environment"));
 
-    nmode = length(mode);
+    nmode = Rf_length(mode);
     if( !isString(mode) )
 	error(_("invalid '%s' argument"), "mode");
 
@@ -969,7 +969,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
 	error(_("wrong length for '%s' argument"), "mode");
 
     PROTECT(ifnotfound = coerceVector(ifnotfound, VECSXP));
-    nifnfnd = length(ifnotfound);
+    nifnfnd = Rf_length(ifnotfound);
     if( !isVector(ifnotfound) )
 	error(_("invalid '%s' argument"), "ifnotfound");
 
@@ -1046,7 +1046,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;  // Binding defined in PairList form
 
     s = sym = CAR(args);
-    if( isString(sym) && length(sym)==1 )
+    if( isString(sym) && Rf_length(sym)==1 )
 	s = sym = installTrChar(STRING_ELT(CAR(args), 0));
     if (!isSymbol(sym))
 	errorcall(call, _("invalid use of 'missing'"));
@@ -1060,7 +1060,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
     t = (bdg ? bdg->asPairList() : nullptr);
     if (t != R_NilValue) {
 	if (DDVAL(s)) {
-	    if (length(CAR(t)) < ddv  || CAR(t) == R_MissingArg) {
+	    if (Rf_length(CAR(t)) < ddv  || CAR(t) == R_MissingArg) {
 		return Rf_ScalarLogical(1);
 	    }
 	    else
@@ -1223,7 +1223,7 @@ SEXP attribute_hidden do_search(/*const*/ Expression* call, const BuiltInFunctio
     i = 1;
     for (t = ENCLOS(R_GlobalEnv); t != R_BaseEnv ; t = ENCLOS(t)) {
 	name = getAttrib(t, R_NameSymbol);
-	if (!isString(name) || length(name) < 1)
+	if (!isString(name) || Rf_length(name) < 1)
 	    SET_STRING_ELT(ans, i, mkChar("(unknown)"));
 	else
 	    SET_STRING_ELT(ans, i, STRING_ELT(name, 0));
@@ -1544,7 +1544,7 @@ SEXP attribute_hidden do_pos2env(/*const*/ Expression* call, const BuiltInFuncti
     int i, npos;
 
     PROTECT(pos = coerceVector(pos, INTSXP));
-    npos = length(pos);
+    npos = Rf_length(pos);
     if (npos <= 0)
 	errorcall(call, _("invalid '%s' argument"), "pos");
     PROTECT(env = allocVector(VECSXP, npos));
@@ -1566,7 +1566,7 @@ static SEXP matchEnvir(SEXP call, const char *what)
 	return R_BaseEnv;
     for (t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
 	name = getAttrib(t, R_NameSymbol);
-	if(isString(name) && length(name) > 0 &&
+	if(isString(name) && Rf_length(name) > 0 &&
 	   !strcmp(translateChar(STRING_ELT(name, 0)), what)) {
 	    vmaxset(vmax);
 	    return t;
@@ -1790,7 +1790,7 @@ Rboolean R_IsPackageEnv(SEXP rho)
 	SEXP name = getAttrib(rho, R_NameSymbol);
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
-	if(isString(name) && length(name) > 0 &&
+	if(isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return TRUE;
 	else
@@ -1806,7 +1806,7 @@ SEXP R_PackageEnvName(SEXP rho)
 	SEXP name = getAttrib(rho, R_NameSymbol);
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
-	if(isString(name) && length(name) > 0 &&
+	if(isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return name;
 	else

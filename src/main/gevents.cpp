@@ -144,7 +144,7 @@ do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
     int i, count=0, devNum;
 
     prompt = CAR(args);
-    if (!isString(prompt) || !length(prompt)) error(_("invalid prompt"));
+    if (!isString(prompt) || !Rf_length(prompt)) error(_("invalid prompt"));
 
     /* NB:  cleanup of event handlers must be done by driver in onExit handler */
 

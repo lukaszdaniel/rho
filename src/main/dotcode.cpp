@@ -430,7 +430,7 @@ static void setDLLname(SEXP s, char *DLLname)
     SEXP ss = CAR(s);
     const char *name;
 
-    if(TYPEOF(ss) != STRSXP || length(ss) != 1)
+    if(TYPEOF(ss) != STRSXP || Rf_length(ss) != 1)
 	error(_("PACKAGE argument must be a single character string"));
     name = translateChar(STRING_ELT(ss, 0));
     /* allow the package: form of the name, as returned by find */
@@ -499,7 +499,7 @@ static SEXP enctrim(SEXP args)
 SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     const char *sym, *type="", *pkg = "";
-    int val = 1, nargs = length(args);
+    int val = 1, nargs = Rf_length(args);
     R_RegisteredNativeSymbol symbol = {R_ANY_SYM, {nullptr}, nullptr};
 
     if (nargs < 1) error(_("no arguments supplied"));
@@ -540,13 +540,13 @@ SEXP attribute_hidden do_External(SEXP call, SEXP op, SEXP args, SEXP env)
     const void *vmax = vmaxget();
     char buf[MaxSymbolBytes];
 
-    if (length(args) < 1) errorcall(call, _("'.NAME' is missing"));
+    if (Rf_length(args) < 1) errorcall(call, _("'.NAME' is missing"));
     check1arg2(args, call, ".NAME");
     args = resolveNativeRoutine(args, &ofun, &symbol, buf, nullptr, nullptr,
 				call, env);
 
     if(symbol.symbol.external && symbol.symbol.external->numArgs > -1) {
-	int nargs = length(args) - 1;
+	int nargs = Rf_length(args) - 1;
 	if(symbol.symbol.external->numArgs != nargs)
 	    errorcall(call,
 		      _("Incorrect number of arguments (%d), expecting %d for '%s'"),
@@ -614,7 +614,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
     const void *vmax = vmaxget();
     char buf[MaxSymbolBytes];
 
-    if (length(args) < 1) errorcall(call, _("'.NAME' is missing"));
+    if (Rf_length(args) < 1) errorcall(call, _("'.NAME' is missing"));
     check1arg2(args, call, ".NAME");
 
     args = resolveNativeRoutine(args, &ofun, &symbol, buf, NULL, NULL, call, env);
@@ -800,7 +800,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     const void *vmax;
     char symName[MaxSymbolBytes];
 
-    if (length(args) < 1) errorcall(call, _("'.NAME' is missing"));
+    if (Rf_length(args) < 1) errorcall(call, _("'.NAME' is missing"));
     check1arg2(args, call, ".NAME");
     if (NaokSymbol == nullptr || DupSymbol == nullptr || PkgSymbol == nullptr) {
 	NaokSymbol = install("NAOK");
@@ -1394,7 +1394,7 @@ static void *RObjToCPtr2(SEXP s)
 	/* From here down, probably not right */
     case VECSXP:
 	{
-	    n = length(s);
+	    n = Rf_length(s);
 	    SEXP *lptr = static_cast<SEXP *>( RHO_alloc(n, sizeof(SEXP)));
 	    for (int i = 0 ; i < n ; i++) lptr[i] = VECTOR_ELT(s, i);
 	    return RHO_NO_CAST(void*) lptr;
@@ -1471,13 +1471,13 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
 	    results[0] = static_cast<char *>( RObjToCPtr2(s));
 	break;
     case VECSXP:
-	n = length(s);
+	n = Rf_length(s);
 	if (nres < n) n = int( nres);
 	for (i = 0 ; i < n ; i++)
 	    results[i] = static_cast<char *>( RObjToCPtr2(VECTOR_ELT(s, i)));
 	break;
     case LISTSXP:
-	n = length(s);
+	n = Rf_length(s);
 	if(nres < n) n = int( nres);
 	for(i = 0 ; i < n ; i++) {
 	    results[i] = static_cast<char *>( RObjToCPtr2(s));

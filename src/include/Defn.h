@@ -579,7 +579,7 @@ LibExtern SEXP R_LogicalNAValue;
 # define ItemName		Rf_ItemName
 # define jump_to_toplevel	Rf_jump_to_toplevel
 # define KillAllDevices		Rf_KillAllDevices
-# define levelsgets		Rf_levelsgets
+//# define levelsgets		Rf_levelsgets //rho
 # define LogicalFromComplex	Rf_LogicalFromComplex
 # define LogicalFromInteger	Rf_LogicalFromInteger
 # define LogicalFromReal	Rf_LogicalFromReal

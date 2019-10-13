@@ -1097,7 +1097,7 @@ static BBOX RenderStr(const char *str, int draw, mathContext *mc,
 	    const char *p = str;
 	    mbstate_t mb_st;
 	    mbs_init(&mb_st);
-	    while ((used = Mbrtowc(&wc, p, n, &mb_st)) > 0) {
+	    while ((used = Rf_mbrtowc(&wc, p, n, &mb_st)) > 0) {
 		/* On Windows could have sign extension here */
 		glyphBBox = GlyphBBox(static_cast<unsigned int>( wc), gc, dd);
 		resultBBox = CombineBBoxes(resultBBox, glyphBBox);
@@ -1250,7 +1250,7 @@ static BBOX RenderSpace(SEXP expr, int draw, mathContext *mc,
 {
 
     BBOX opBBox, arg1BBox, arg2BBox;
-    int nexpr = length(expr);
+    int nexpr = Rf_length(expr);
 
     if (nexpr == 2) {
 	opBBox = RenderSymbolChar(' ', draw, mc, gc, dd);
@@ -1331,7 +1331,7 @@ static BBOX RenderBin(SEXP expr, int draw, mathContext *mc,
 		      pGEcontext gc, pGEDevDesc dd)
 {
     int op = BinAtom(CAR(expr));
-    int nexpr = length(expr);
+    int nexpr = Rf_length(expr);
     BBOX bbox;
     double gap;
 
@@ -1687,7 +1687,7 @@ static BBOX RenderAccent(SEXP expr, int draw, mathContext *mc,
     BBOX bodyBBox, accentBBox;
     double xoffset, yoffset, width, italic;
     int code;
-    if (length(expr) != 2)
+    if (Rf_length(expr) != 2)
 	InvalidAccent(expr);
     accent = CAR(expr);
     body = CADR(expr);
@@ -1948,7 +1948,7 @@ static int DelimCode(SEXP expr, SEXP head)
 	else if (NameMatch(head, "rceil"))
 	    code = S_BRACKETRIGHTTP;
     }
-    else if (StringAtom(head) && length(head) > 0) {
+    else if (StringAtom(head) && Rf_length(head) > 0) {
 	if (StringMatch(head, "|"))
 	    code = '|';
 	else if (StringMatch(head, "||"))  // historical anomaly
@@ -1995,7 +1995,7 @@ static BBOX RenderGroup(SEXP expr, int draw, mathContext *mc,
     double cexSaved = gc->cex;
     BBOX bbox;
     int code;
-    if (length(expr) != 4)
+    if (Rf_length(expr) != 4)
 	errorcall(expr, _("invalid group specification"));
     bbox = NullBBox();
     code = DelimCode(expr, CADR(expr));
@@ -2132,7 +2132,7 @@ static BBOX RenderBGroup(SEXP expr, int draw, mathContext *mc,
     double axisHeight = TeX(sigma22, gc, dd);
     double extra = 0.2 * xHeight(gc, dd);
     int delim1, delim2;
-    if (length(expr) != 4)
+    if (Rf_length(expr) != 4)
 	errorcall(expr, _("invalid group specification"));
     bbox = NullBBox();
     delim1 = DelimCode(expr, CADR(expr));
@@ -2213,7 +2213,7 @@ static BBOX RenderInt(SEXP expr, int draw, mathContext *mc,
 		      pGEcontext gc, pGEDevDesc dd)
 {
     BBOX opBBox, lowerBBox, upperBBox, bodyBBox;
-    int nexpr = length(expr);
+    int nexpr = Rf_length(expr);
     STYLE style = GetStyle(mc);
     double savedX = mc->CurrentX;
     double savedY = mc->CurrentY;
@@ -2330,7 +2330,7 @@ static BBOX RenderOp(SEXP expr, int draw, mathContext *mc,
     BBOX lowerBBox = NullBBox() /* -Wall */, upperBBox = NullBBox(), bodyBBox;
     double savedX = mc->CurrentX;
     double savedY = mc->CurrentY;
-    int nexpr = length(expr);
+    int nexpr = Rf_length(expr);
     STYLE style = GetStyle(mc);
     BBOX opBBox = RenderOpSymbol(CAR(expr), 0, mc, gc, dd);
     double width = bboxWidth(opBBox);
@@ -2646,7 +2646,7 @@ static BBOX RenderRel(SEXP expr, int draw, mathContext *mc,
 		      pGEcontext gc, pGEDevDesc dd)
 {
     int op = RelAtom(CAR(expr));
-    int nexpr = length(expr);
+    int nexpr = Rf_length(expr);
     BBOX bbox;
     double gap;
 
@@ -2858,7 +2858,7 @@ static BBOX RenderConcatenate(SEXP expr, int draw, mathContext *mc,
     int i, n;
 
     expr = CDR(expr);
-    n = length(expr);
+    n = Rf_length(expr);
 
     for (i = 0; i < n; i++) {
 	bbox = CombineBBoxes(bbox, RenderElement(CAR(expr), draw, mc, gc, dd));
@@ -2881,7 +2881,7 @@ static BBOX RenderCommaList(SEXP expr, int draw, mathContext *mc,
     BBOX bbox = NullBBox();
     double small = 0.4 * ThinSpace(gc, dd);
     int i, n;
-    n = length(expr);
+    n = Rf_length(expr);
     for (i = 0; i < n; i++) {
 	if (NameAtom(CAR(expr)) && NameMatch(CAR(expr), "...")) {
 	    if (i > 0) {

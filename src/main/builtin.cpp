@@ -79,7 +79,7 @@ R_xlen_t asVecSize(SEXP x)
 
 SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_, RObject* eval_env_, RObject* assign_env_)
 {
-    if (!isString(x_) || length(x_) == 0)
+    if (!isString(x_) || Rf_length(x_) == 0)
 	error(_("invalid first argument"));
     SEXP name = installTrChar(STRING_ELT(x_, 0));
     SEXP expr = value_;
@@ -178,7 +178,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP s;
 
-    if (TYPEOF(CAR(args)) == STRSXP && length(CAR(args))==1) {
+    if (TYPEOF(CAR(args)) == STRSXP && Rf_length(CAR(args))==1) {
 	PROTECT(s = installTrChar(STRING_ELT(CAR(args), 0)));
 	SETCAR(args, findFun(s, rho));
 	UNPROTECT(1);
@@ -307,7 +307,7 @@ static Rboolean R_IsImportsEnv(SEXP env)
     if (ENCLOS(env) != R_BaseNamespace)
 	return FALSE;
     SEXP name = getAttrib(env, R_NameSymbol);
-    if (!isString(name) || length(name) != 1)
+    if (!isString(name) || Rf_length(name) != 1)
 	return FALSE;
 
     const char *imports_prefix = "imports:";
@@ -480,7 +480,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 	if (strstr(CHAR(STRING_ELT(sepr, i)), "\n")) nlsep = 1; /* ASCII */
 
     fill = fill_;
-    if ((!isNumeric(fill) && !isLogical(fill)) || (length(fill) != 1))
+    if ((!isNumeric(fill) && !isLogical(fill)) || (Rf_length(fill) != 1))
 	error(_("invalid '%s' argument"), "fill");
     if (isLogical(fill)) {
 	if (asLogical(fill) == 1)
@@ -497,7 +497,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
     labs = labels_;
     if (!isString(labs) && labs != R_NilValue)
 	error(_("invalid '%s' argument"), "labels");
-    lablen = length(labs);
+    lablen = Rf_length(labs);
 
     append = asLogical(append_);
     if (append == NA_LOGICAL)
@@ -516,7 +516,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 
     /* use try-catch to close the connection if there is an error */
     try {
-	nobjs = length(objs);
+	nobjs = Rf_length(objs);
 	width = 0;
 	ntot = 0;
 	nlines = 0;
@@ -524,7 +524,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 	    s = VECTOR_ELT(objs, iobj);
 	    if (iobj != 0 && !isNull(s))
 		cat_printsep(sepr, ntot++);
-	    n = length(s);
+	    n = Rf_length(s);
 	    /* 0-length objects are ignored */
 	    if (n > 0) {
 		if (labs != R_NilValue && (iobj == 0)
@@ -646,7 +646,7 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP a, ans, nms;
     int i, n, named;
     named = 0;
-    n = length(args);
+    n = Rf_length(args);
     PROTECT(ans = allocVector(EXPRSXP, n));
     a = args;
     for (i = 0; i < n; i++) {
@@ -680,11 +680,11 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
     R_xlen_t len;
     SEXP s;
     SEXPTYPE mode;
-    if (length(length_) != 1) error(_("invalid '%s' argument"), "length");
+    if (Rf_length(length_) != 1) error(_("invalid '%s' argument"), "length");
     len = asVecSize(length_);
     if (len < 0) error(_("invalid '%s' argument"), "length");
     s = coerceVector(mode_, STRSXP);
-    if (length(s) != 1) error(_("invalid '%s' argument"), "mode");
+    if (Rf_length(s) != 1) error(_("invalid '%s' argument"), "mode");
     mode = str2type(CHAR(STRING_ELT(s, 0))); /* ASCII */
     if (RHOCONSTRUCT(int, mode) == -1 && streql(CHAR(STRING_ELT(s, 0)), "double"))
 	mode = REALSXP;
@@ -830,7 +830,7 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 
     if (!isVector(x) && !isVectorizable(x))
 	error(_("invalid argument"));
-    if (length(value_) != 1)
+    if (Rf_length(value_) != 1)
 	error(_("invalid value"));
     R_xlen_t len = asVecSize(value_);
     if (len < 0) error(_("invalid value"));
@@ -916,11 +916,11 @@ static SEXP setDflt(SEXP arg, SEXP dflt)
 
 SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    int argval, nargs = length(args);
+    int argval, nargs = Rf_length(args);
     SEXP x, y, z, w, ans, dflt = nullptr;
 
     PROTECT(x = eval(CAR(args), rho));
-    if (!isVector(x) || length(x) != 1)
+    if (!isVector(x) || Rf_length(x) != 1)
 	errorcall(call, _("EXPR must be a length 1 vector"));
     if (isFactor(x))
 	warningcall(call,
@@ -969,7 +969,7 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    /* fall through to error */
 	} else { /* Treat as numeric */
 	    argval = asInteger(x);
-	    if (argval != NA_INTEGER && argval >= 1 && argval <= length(w)) {
+	    if (argval != NA_INTEGER && argval >= 1 && argval <= Rf_length(w)) {
 		SEXP alt = CAR(nthcdr(w, argval - 1));
 		if (alt == R_MissingArg)
 		    error("empty alternative in numeric switch");

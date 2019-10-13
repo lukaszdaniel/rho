@@ -315,9 +315,9 @@ SEXP attribute_hidden do_fileshow(/*const*/ Expression* call, const BuiltInFunct
     dl = Rboolean( asLogical(delete_file_));
     pg = pager_;
     n = 0;			/* -Wall */
-    if (!isString(fn) || (n = length(fn)) < 1)
+    if (!isString(fn) || (n = Rf_length(fn)) < 1)
 	error(_("invalid filename specification"));
-    if (!isString(hd) || length(hd) != n)
+    if (!isString(hd) || Rf_length(hd) != n)
 	error(_("invalid '%s' argument"), "headers");
     if (!isString(tl))
 	error(_("invalid '%s' argument"), "title");
@@ -398,8 +398,8 @@ SEXP attribute_hidden do_fileappend(/*const*/ Expression* call, const BuiltInFun
     SEXP f1, f2, ans;
     int n, n1, n2;
 
-    f1 = file1_; n1 = length(f1);
-    f2 = file2_; n2 = length(f2);
+    f1 = file1_; n1 = Rf_length(f1);
+    f2 = file2_; n2 = Rf_length(f2);
     if (!isString(f1))
 	error(_("invalid '%s' argument"), "file1");
     if (!isString(f2))
@@ -461,7 +461,7 @@ SEXP attribute_hidden do_filecreate(/*const*/ Expression* call, const BuiltInFun
 	error(_("invalid filename argument"));
     show = asLogical(showWarnings_);
     if (show == NA_LOGICAL) show = 0;
-    n = length(fn);
+    n = Rf_length(fn);
     PROTECT(ans = allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
 	LOGICAL(ans)[i] = 0;
@@ -485,7 +485,7 @@ SEXP attribute_hidden do_fileremove(/*const*/ Expression* call, const BuiltInFun
     f = dots_;
     if (!isString(f))
 	error(_("invalid first filename"));
-    n = length(f);
+    n = Rf_length(f);
     PROTECT(ans = allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
 	if (STRING_ELT(f, i) != NA_STRING) {
@@ -550,8 +550,8 @@ SEXP attribute_hidden do_filesymlink(/*const*/ Expression* call, const BuiltInFu
     SEXP ans;
     int i;
 #endif
-    f1 = from_; n1 = length(f1);
-    f2 = to_; n2 = length(f2);
+    f1 = from_; n1 = Rf_length(f1);
+    f2 = to_; n2 = Rf_length(f2);
     if (!isString(f1))
 	error(_("invalid first filename"));
     if (!isString(f2))
@@ -631,8 +631,8 @@ SEXP attribute_hidden do_filelink(/*const*/ Expression* call, const BuiltInFunct
     SEXP ans;
     int i;
 #endif
-    f1 = from_; n1 = length(f1);
-    f2 = to_; n2 = length(f2);
+    f1 = from_; n1 = Rf_length(f1);
+    f2 = to_; n2 = Rf_length(f2);
     if (!isString(f1))
 	error(_("invalid first filename"));
     if (!isString(f2))
@@ -708,8 +708,8 @@ SEXP attribute_hidden do_filerename(/*const*/ Expression* call, const BuiltInFun
     int res;
 #endif
 
-    f1 = from_; n1 = length(f1);
-    f2 = to_; n2 = length(f2);
+    f1 = from_; n1 = Rf_length(f1);
+    f2 = to_; n2 = Rf_length(f2);
     if (!isString(f1))
 	error(_("invalid '%s' argument"), "from");
     if (!isString(f2))
@@ -802,7 +802,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
     int extras = asInteger(extra_cols_);
     if(extras == NA_INTEGER)
 	error(_("invalid '%s' argument"), "extra_cols");
-    int n = length(fn), ncols = 6;
+    int n = Rf_length(fn), ncols = 6;
     if(extras) {
 #ifdef UNIX_EXTRAS
 	ncols = 10;
@@ -980,7 +980,7 @@ SEXP attribute_hidden do_direxists(SEXP call, SEXP op, SEXP args, SEXP rho)
     fn = CAR(args);
     if (!isString(fn))
 	error(_("invalid filename argument"));
-    int n = length(fn);
+    int n = Rf_length(fn);
     PROTECT(ans = allocVector(LGLSXP, n));
     for (int i = 0; i < n; i++) {
 #ifdef Win32
@@ -1140,9 +1140,9 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
     if (!isString(d)) error(_("invalid '%s' argument"), "path");
     SEXP p = pattern_;
     Rboolean pattern = FALSE;
-    if (isString(p) && length(p) >= 1 && STRING_ELT(p, 0) != NA_STRING)
+    if (isString(p) && Rf_length(p) >= 1 && STRING_ELT(p, 0) != NA_STRING)
 	pattern = TRUE;
-    else if (!isNull(p) && !(isString(p) && length(p) < 1))
+    else if (!isNull(p) && !(isString(p) && Rf_length(p) < 1))
 	error(_("invalid '%s' argument"), "pattern");
     int allfiles = asLogical(all_files_);
     if (allfiles == NA_LOGICAL)
@@ -1302,7 +1302,7 @@ SEXP attribute_hidden do_fileexists(/*const*/ Expression* call, const BuiltInFun
     int i, nfile;
     if (!isString(file = dots_))
 	error(_("invalid '%s' argument"), "file");
-    nfile = length(file);
+    nfile = Rf_length(file);
     ans = PROTECT(allocVector(LGLSXP, nfile));
     for (i = 0; i < nfile; i++) {
 	LOGICAL(ans)[i] = 0;
@@ -1358,7 +1358,7 @@ SEXP attribute_hidden do_fileaccess(/*const*/ Expression* call, const BuiltInFun
     fn = names_;
     if (!isString(fn))
 	error(_("invalid '%s' argument"), "names");
-    n = length(fn);
+    n = Rf_length(fn);
     mode = asInteger(mode_);
     if (mode < 0 || mode > 7) error(_("invalid '%s' argument"), "mode");
     modemask = 0;
@@ -1566,7 +1566,7 @@ SEXP attribute_hidden do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
     wglob_t globbuf;
 
     fn = CAR(args);
-    nfiles = length(fn);
+    nfiles = Rf_length(fn);
     if (nfiles > 0) {
 	if (!isString(fn))
 	    error(_("invalid '%s' argument"), "x");
@@ -1608,7 +1608,7 @@ SEXP attribute_hidden do_unlink(/*const*/ Expression* call, const BuiltInFunctio
 #endif
 
     fn = x_;
-    nfiles = length(fn);
+    nfiles = Rf_length(fn);
     if (nfiles > 0) {
 	if (!isString(fn))
 	    error(_("invalid '%s' argument"), "x");
@@ -1840,7 +1840,7 @@ SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFun
     fn = path_;
     if (!isString(fn))
 	error(_("invalid '%s' argument"), "path");
-    n = length(fn);
+    n = Rf_length(fn);
     PROTECT(ans = allocVector(STRSXP, n));
     for (i = 0; i < n; i++) {
 	SEXP tmp = STRING_ELT(fn, i);
@@ -2076,7 +2076,7 @@ SEXP attribute_hidden do_dircreate(/*const*/ Expression* call, const BuiltInFunc
     char *p, dir[PATH_MAX];
 
     path = path_;
-    if (!isString(path) || length(path) != 1)
+    if (!isString(path) || Rf_length(path) != 1)
 	error(_("invalid '%s' argument"), "path");
     if (STRING_ELT(path, 0) == NA_STRING) return ScalarLogical(FALSE);
     show = asLogical(showWarnings_);
@@ -2135,7 +2135,7 @@ SEXP attribute_hidden do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
     int res, show, recursive, serrno = 0;
 
     path = CAR(args);
-    if (!isString(path) || length(path) != 1)
+    if (!isString(path) || Rf_length(path) != 1)
 	error(_("invalid '%s' argument"), "path");
     if (STRING_ELT(path, 0) == NA_STRING) return ScalarLogical(FALSE);
     show = asLogical(CADR(args));
@@ -2315,7 +2315,7 @@ SEXP attribute_hidden do_filecopy(SEXP call, SEXP op, SEXP args, SEXP rho)
     int i, nfiles, over, recursive, perms, dates, nfail;
 
     fn = CAR(args);
-    nfiles = length(fn);
+    nfiles = Rf_length(fn);
     PROTECT(ans = allocVector(LGLSXP, nfiles));
     if (nfiles > 0) {
 	args = CDR(args);
@@ -2535,7 +2535,7 @@ SEXP attribute_hidden do_filecopy(/*const*/ Expression* call, const BuiltInFunct
     int i, nfiles, over, recursive, perms, dates, nfail;
 
     fn = from_;
-    nfiles = length(fn);
+    nfiles = Rf_length(fn);
     PROTECT(ans = allocVector(LGLSXP, nfiles));
     if (nfiles > 0) {
 	if (!isString(fn))

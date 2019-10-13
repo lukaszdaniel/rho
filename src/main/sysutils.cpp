@@ -250,9 +250,9 @@ SEXP attribute_hidden do_tempfile(/*const*/ rho::Expression* call, const rho::Bu
     char *tm;
     int i, n1, n2, n3, slen;
 
-    pattern = pattern_; n1 = length(pattern);
-    tempdir = tmpdir_; n2 = length(tempdir);
-    fileext = fileext_; n3 = length(fileext);
+    pattern = pattern_; n1 = Rf_length(pattern);
+    tempdir = tmpdir_; n2 = Rf_length(tempdir);
+    fileext = fileext_; n3 = Rf_length(fileext);
     if (!isString(pattern))
 	error(_("invalid filename pattern"));
     if (!isString(tempdir))
@@ -596,13 +596,13 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	const char *from, *to;
 	Rboolean isLatin1 = FALSE, isUTF8 = FALSE;
 
-	if(!isString(from_) || length(from_) != 1)
+	if(!isString(from_) || Rf_length(from_) != 1)
 	    error(_("invalid '%s' argument"), "from");
 	from = CHAR(STRING_ELT(from_, 0)); /* ASCII */
-	if(!isString(to_) || length(to_) != 1)
+	if(!isString(to_) || Rf_length(to_) != 1)
 	    error(_("invalid '%s' argument"), "to");
 	to = CHAR(STRING_ELT(to_, 0));
-	if(!isString(sub_) || length(sub_) != 1)
+	if(!isString(sub_) || Rf_length(sub_) != 1)
 	    error(_("invalid '%s' argument"), "sub");
 	if(STRING_ELT(sub_, 0) == NA_STRING) sub = nullptr;
 	else sub = translateChar(STRING_ELT(sub_, 0));

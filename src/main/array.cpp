@@ -197,7 +197,7 @@ SEXP attribute_hidden do_matrix(/*const*/ Expression* call, const BuiltInFunctio
 	    ;
 	}
     }
-    if(!isNull(dimnames) && length(dimnames) > 0)
+    if(!isNull(dimnames) && Rf_length(dimnames) > 0)
 	ans = dimnamesgets(ans, dimnames);
     UNPROTECT(1);
     return ans;
@@ -330,7 +330,7 @@ SEXP attribute_hidden do_length(/*const*/ Expression* call, const BuiltInFunctio
         call, rho, ArgList({ x }, ArgList::EVALUATED));
     if (dispatched.first) {
 	RObject* ans = dispatched.second;
-	if (length(ans) == 1 && TYPEOF(ans) == REALSXP) {
+	if (Rf_length(ans) == 1 && TYPEOF(ans) == REALSXP) {
 	    GCStackRoot<> ansrt(ans);
 	    double d = REAL(ans)[0];
 	    if (R_FINITE(d) && d >= 0. && d <= INT_MAX && floor(d) == d)
@@ -345,7 +345,7 @@ SEXP attribute_hidden do_length(/*const*/ Expression* call, const BuiltInFunctio
     R_xlen_t len = xlength(x);
     if (len > INT_MAX) return ScalarReal(double( len));
 #endif
-    return ScalarInteger(length(x));
+    return ScalarInteger(Rf_length(x));
 }
 
 R_xlen_t attribute_hidden dispatch_xlength(RObject* x,
@@ -657,8 +657,8 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 
     xdims = getAttrib(x, R_DimSymbol);
     ydims = getAttrib(y, R_DimSymbol);
-    ldx = length(xdims);
-    ldy = length(ydims);
+    ldx = Rf_length(xdims);
+    ldy = Rf_length(ydims);
 
     if (ldx != 2 && ldy != 2) {		/* x and y non-matrices */
 	// for crossprod, allow two cases: n x n ==> (1,n) x (n,1);  1 x n = (n, 1) x (1, n)
@@ -982,7 +982,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
 
     if (isVector(a)) {
 	dims = getAttrib(a, R_DimSymbol);
-	ldim = length(dims);
+	ldim = Rf_length(dims);
 	rnames = R_NilValue;
 	cnames = R_NilValue;
 	switch(ldim) {
@@ -1130,7 +1130,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 
     int *pp = static_cast<int *>( RHO_alloc(size_t( n), sizeof(int)));
     perm = perm_;
-    if (length(perm) == 0) {
+    if (Rf_length(perm) == 0) {
 	for (i = 0; i < n; i++) pp[i] = n-1-i;
     } else {
 	if (LENGTH(perm) != n)
@@ -1449,14 +1449,14 @@ SEXP attribute_hidden do_colsum(/*const*/ Expression* call, const BuiltInFunctio
     data <- as.vector(data)
     dim <- as.integer(dim)
     vl <- prod(dim)
-    if (length(data) != vl) {
+    if (Rf_length(data) != vl) {
         if (vl > .Machine$integer.max)
             stop("'dim' specifies too large an array")
         data <- rep(data, length.out = vl)
     }
-    if (length(dim))
+    if (Rf_length(dim))
         dim(data) <- dim
-    if (is.list(dimnames) && length(dimnames))
+    if (is.list(dimnames) && Rf_length(dimnames))
         dimnames(data) <- dimnames
     data
 }
@@ -1568,7 +1568,7 @@ SEXP attribute_hidden do_array(/*const*/ Expression* call, const BuiltInFunction
     }
 
     ans = dimgets(ans, dims);
-    if(!isNull(dimnames) && length(dimnames) > 0)
+    if(!isNull(dimnames) && Rf_length(dimnames) > 0)
 	ans = dimnamesgets(ans, dimnames);
 
     UNPROTECT(2);

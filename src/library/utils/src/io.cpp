@@ -95,7 +95,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
     int i;
 
     if(!mode && strlen(buf) == 0) return 1;
-    for (i = 0; i < length(d->NAstrings); i++)
+    for (i = 0; i < Rf_length(d->NAstrings); i++)
 	if (!strcmp(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
     return 0;
 }
@@ -326,7 +326,7 @@ SEXP countfields(SEXP args)
     nskip = asInteger(CAR(args));  args = CDR(args);
     blskip = asLogical(CAR(args)); args = CDR(args);
     comstr = CAR(args);
-    if (TYPEOF(comstr) != STRSXP || length(comstr) != 1)
+    if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
 	error(_("invalid '%s' argument"), "comment.char");
     p = translateChar(STRING_ELT(comstr, 0));
     data.comchar = NO_COMCHAR; /*  here for -Wall */
@@ -338,7 +338,7 @@ SEXP countfields(SEXP args)
     if (blskip == NA_LOGICAL) blskip = 1;
 
     if (isString(sep) || isNull(sep)) {
-	if (length(sep) == 0) data.sepchar = 0;
+	if (Rf_length(sep) == 0) data.sepchar = 0;
 	else data.sepchar = (unsigned char) translateChar(STRING_ELT(sep, 0))[0];
 	/* gets compared to chars: bug prior to 1.7.0 */
     } else error(_("invalid '%s' argument"), "sep");
@@ -579,7 +579,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
     dec = CADDDR(args);
     if (isString(dec) || isNull(dec)) {
-	if (length(dec) == 0)
+	if (Rf_length(dec) == 0)
 	    data.decchar = '.';
 	else
 	    data.decchar = translateChar(STRING_ELT(dec, 0))[0];
@@ -606,7 +606,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     cvec = CAR(args);
-    len = length(cvec);
+    len = Rf_length(cvec);
 
     /* save the dim/dimnames attributes */
 
@@ -834,7 +834,7 @@ SEXP readtablehead(SEXP args)
     else
 	error(_("invalid quote symbol set"));
 
-    if (TYPEOF(comstr) != STRSXP || length(comstr) != 1)
+    if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
 	error(_("invalid '%s' argument"), "comment.char");
     p = translateChar(STRING_ELT(comstr, 0));
     data.comchar = NO_COMCHAR; /*  here for -Wall */
@@ -842,7 +842,7 @@ SEXP readtablehead(SEXP args)
 	error(_("invalid '%s' argument"), "comment.char");
     else if (strlen(p) == 1) data.comchar = (int)*p;
     if (isString(sep) || isNull(sep)) {
-	if (length(sep) == 0) data.sepchar = 0;
+	if (Rf_length(sep) == 0) data.sepchar = 0;
 	else data.sepchar = (unsigned char) translateChar(STRING_ELT(sep, 0))[0];
 	/* gets compared to chars: bug prior to 1.7.0 */
     } else error(_("invalid '%s' argument"), "sep");
@@ -997,7 +997,7 @@ static const char
     char *q;
     const char *p, *p0;
 
-    if (indx < 0 || indx >= length(x))
+    if (indx < 0 || indx >= Rf_length(x))
 	error(_("index out of range"));
     if(TYPEOF(x) == STRSXP) {
 	const void *vmax = vmaxget();
@@ -1085,7 +1085,7 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 	error(_("'dec' must be a single character"));
     quote_col = (Rboolean *) R_alloc(nc, sizeof(Rboolean));
     for(int j = 0; j < nc; j++) quote_col[j] = FALSE;
-    for(int i = 0; i < length(quote); i++) { /* NB, quote might be NULL */
+    for(int i = 0; i < Rf_length(quote); i++) { /* NB, quote might be NULL */
 	int thiss = INTEGER(quote)[i];
 	if(thiss == 0) quote_rn = TRUE;
 	if(thiss >  0) quote_col[thiss - 1] = TRUE;

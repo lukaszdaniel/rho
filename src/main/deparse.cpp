@@ -295,13 +295,13 @@ SEXP Rf_deparse1line(SEXP call, Rboolean abbrev)
 
     PROTECT(temp = deparse1WithCutoff(call, abbrev, MAX_Cutoff, backtick,
 			     SIMPLEDEPARSE, -1));
-    if ((lines = length(temp)) > 1) {
+    if ((lines = Rf_length(temp)) > 1) {
 	char *buf;
 	int i;
 	size_t len;
 	const void *vmax;
 	cetype_t enc = CE_NATIVE;
-	for (len = 0, i = 0; i < length(temp); i++) {
+	for (len = 0, i = 0; i < Rf_length(temp); i++) {
 	    SEXP s = STRING_ELT(temp, i);
 	    cetype_t thisenc = getCharCE(s);
 	    len += strlen(CHAR(s));  // FIXME: check for overflow?
@@ -311,7 +311,7 @@ SEXP Rf_deparse1line(SEXP call, Rboolean abbrev)
 	vmax = vmaxget();
 	buf = R_alloc(size_t( len)+lines, sizeof(char));
 	*buf = '\0';
-	for (i = 0; i < length(temp); i++) {
+	for (i = 0; i < Rf_length(temp); i++) {
 	    strcat(buf, CHAR(STRING_ELT(temp, i)));
 	    if (i < lines - 1)
 		strcat(buf, "\n");
@@ -412,8 +412,8 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
 	error(_("'file' must be a character string or connection"));
     if(!isString(names))
 	error( _("character arguments expected"));
-    nobjs = length(names);
-    if(nobjs < 1 || length(file) < 1)
+    nobjs = Rf_length(names);
+    if(nobjs < 1 || Rf_length(file) < 1)
 	error(_("zero-length argument"));
     source = envir_;
     if (source != R_NilValue && TYPEOF(source) != ENVSXP)
@@ -567,7 +567,7 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 		switch(arginfo.kind) {
 		case BuiltInFunction::PP_BINARY:	      /* Not all binary ops are binary! */
 		case BuiltInFunction::PP_BINARY2:
-		    switch(length(CDR(arg))) {
+		    switch(Rf_length(CDR(arg))) {
 		    case 1:
 			if (!left)
 			    return FALSE;
@@ -610,7 +610,7 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 	    }
 	}
     }
-    else if ((TYPEOF(arg) == CPLXSXP) && (length(arg) == 1)) {
+    else if ((TYPEOF(arg) == CPLXSXP) && (Rf_length(arg) == 1)) {
 	if (mainop.precedence > BuiltInFunction::PREC_SUM
 	    || (mainop.precedence == BuiltInFunction::PREC_SUM && left == mainop.rightassoc)) {
 	    return TRUE;
@@ -623,7 +623,7 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 static Rboolean hasAttributes(SEXP s)
 {
     SEXP a = ATTRIB(s);
-    if (length(a) > 2) return(TRUE);
+    if (Rf_length(a) > 2) return(TRUE);
     while(!isNull(a)) {
 	if(TAG(a) != R_SrcrefSymbol)
 	    return(TRUE);
@@ -702,7 +702,7 @@ static void printcomment(SEXP s, LocalParseData *d)
     }
     else {
 	cmt = getAttrib(s, R_CommentSymbol);
-	ncmt = length(cmt);
+	ncmt = Rf_length(cmt);
 	for(i = 0 ; i < ncmt ; i++) {
 	    print2buff(translateChar(STRING_ELT(cmt, i)), d);
 	    writeline(d);
@@ -862,7 +862,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	break;
     case EXPRSXP:
 	if (localOpts & SHOWATTRIBUTES) attr1(s, d);
-	if(length(s) <= 0)
+	if(Rf_length(s) <= 0)
 	    print2buff("expression()", d);
 	else {
 	    print2buff("expression(", d);
@@ -923,7 +923,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		} else
 		    fop = PPINFO(SYMVALUE(op));
 		if (fop.kind == BuiltInFunction::PP_BINARY) {
-		    switch (length(s)) {
+		    switch (Rf_length(s)) {
 		    case 1:
 			fop.kind = BuiltInFunction::PP_UNARY;
 			if (fop.precedence == BuiltInFunction::PREC_SUM)   /* binary +/- precedence upgraded as unary */
@@ -937,7 +937,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		    }
 		}
 		else if (fop.kind == BuiltInFunction::PP_BINARY2) {
-		    if (length(s) != 2)
+		    if (Rf_length(s) != 2)
 			fop.kind = BuiltInFunction::PP_FUNCALL;
 		    else if (userbinop)
 	 	    	fop.kind = BuiltInFunction::PP_BINARY;
@@ -956,7 +956,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 			}
 		    }
 		    /* need to find out if there is an else */
-		    if (length(s) > 2) {
+		    if (Rf_length(s) > 2) {
 			deparse2buff(CAR(CDR(s)), d);
 			if (d->incurly && !d->inlist) {
 			    writeline(d);
@@ -1057,7 +1057,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 			deparse2buff(CADR(s), d);
 		    } else {
 			s = CADDR(s);
-			n = length(s);
+			n = Rf_length(s);
 			const void *vmax = vmaxget();
 			for(i = 0 ; i < n ; i++) {
 			    print2buff(translateChar(STRING_ELT(s, i)), d);
@@ -1355,7 +1355,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
     Rboolean surround = FALSE, addL = TRUE;
     bool allNA;
 
-    tlen = length(vector);
+    tlen = Rf_length(vector);
     if( isString(vector) )
 	quote = '"';
     else
@@ -1543,7 +1543,7 @@ static void src2buff1(SEXP srcref, LocalParseData *d)
 
     PROTECT(srcref = lang2(install("as.character"), srcref));
     PROTECT(srcref = eval(srcref, R_BaseEnv));
-    n = length(srcref);
+    n = Rf_length(srcref);
     for(i = 0 ; i < n ; i++) {
 	print2buff(translateChar(STRING_ELT(srcref, i)), d);
 	if(i < n-1) writeline(d);
@@ -1558,7 +1558,7 @@ static Rboolean src2buff(SEXP sv, int k, LocalParseData *d)
 {
     SEXP t;
 
-    if (TYPEOF(sv) == VECSXP && length(sv) > k && !isNull(t = VECTOR_ELT(sv, k))) {
+    if (TYPEOF(sv) == VECSXP && Rf_length(sv) > k && !isNull(t = VECTOR_ELT(sv, k))) {
 	src2buff1(t, d);
 	return TRUE;
     }
@@ -1574,9 +1574,9 @@ static void vec2buff(SEXP v, LocalParseData *d)
     Rboolean lbreak = FALSE;
     const void *vmax = vmaxget();
 
-    n = length(v);
+    n = Rf_length(v);
     nv = getAttrib(v, R_NamesSymbol);
-    if (length(nv) == 0) nv = R_NilValue;
+    if (Rf_length(nv) == 0) nv = R_NilValue;
 
     if (d->opts & USESOURCE) {
 	sv = getAttrib(v, R_SrcrefSymbol);

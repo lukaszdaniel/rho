@@ -390,7 +390,7 @@ SEXP Rf_VectorToPairList(SEXP x)
     SEXP xptr, xnew, xnames;
     int i, len, named;
 
-    len = length(x);
+    len = Rf_length(x);
     PROTECT(x);
     PROTECT(xnew = Rf_allocList(len)); /* limited to int */
     PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol));
@@ -414,7 +414,7 @@ static SEXP coerceToSymbol(SEXP v)
 {
     SEXP ans = R_NilValue;
     int warn = 0;
-    if (length(v) <= 0)
+    if (Rf_length(v) <= 0)
 	Rf_error(_("invalid data of mode '%s' (too short)"),
 	      Rf_type2char(TYPEOF(v)));
     PROTECT(v);
@@ -930,10 +930,10 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
 	return rval;
     }
     else if (type == STRSXP) {
-	n = length(v);
+	n = Rf_length(v);
 	PROTECT(rval = Rf_allocVector(type, n));
 	for (vp = v, i = 0; vp != R_NilValue; vp = CDR(vp), i++) {
-	    if (Rf_isString(CAR(vp)) && length(CAR(vp)) == 1)
+	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(rval, i, STRING_ELT(CAR(vp), 0));
 	    else
 		SET_STRING_ELT(rval, i, STRING_ELT(Rf_deparse1line(CAR(vp), RHO_FALSE), 0));
@@ -944,7 +944,7 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
 	return rval;
     }
     else if (Rf_isVectorizable(v)) {
-	n = length(v);
+	n = Rf_length(v);
 	PROTECT(rval = Rf_allocVector(type, n));
 	switch (type) {
 	case LGLSXP:
@@ -1031,7 +1031,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 		elt = (*ev)[i];
 	    }
 	    else elt = VECTOR_ELT(v, i);
-	    if (Rf_isString(elt) && length(elt) == 1)
+	    if (Rf_isString(elt) && Rf_length(elt) == 1)
 		SET_STRING_ELT(rval, i, STRING_ELT(elt, 0));
 #if 0
 	    /* this will make as.character(list(s)) not backquote
@@ -1161,7 +1161,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	/* This is mostly copied from coercePairList, but we need to
 	 * special-case the first element so as not to get operators
 	 * put in backticks. */
-	n = length(v);
+	n = Rf_length(v);
 	PROTECT(ans = Rf_allocVector(type, n));
 	if (n == 0) {
 	    /* Can this actually happen? */
@@ -1184,7 +1184,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	 * here "always", but is really dubious since it makes x <- a
 	 * and x <- "a" come out identical. Won't fix just now. */
 	for (vp = v;  vp != R_NilValue; vp = CDR(vp), i++) {
-	    if (Rf_isString(CAR(vp)) && length(CAR(vp)) == 1)
+	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(ans, i, STRING_ELT(CAR(vp), 0));
 	    else
 		SET_STRING_ELT(ans, i, STRING_ELT(Rf_deparse1line(CAR(vp), RHO_FALSE), 0));
@@ -1248,8 +1248,8 @@ SEXP Rf_CreateTag(SEXP x)
     if (Rf_isNull(x) || Rf_isSymbol(x))
 	return x;
     if (Rf_isString(x)
-	&& length(x) >= 1
-	&& length(STRING_ELT(x, 0)) >= 1) {
+	&& Rf_length(x) >= 1
+	&& Rf_length(STRING_ELT(x, 0)) >= 1) {
 	x = Rf_installTrChar(STRING_ELT(x, 0));
     } else
 	x = Rf_installChar(STRING_ELT(Rf_deparse1(x, TRUE, SIMPLEDEPARSE), 0));
@@ -1268,7 +1268,7 @@ static SEXP asFunction(SEXP x)
 	f = Rf_mkCLOSXP(nullptr, x, R_GlobalEnv);
     }
     else {
-	n = length(x);
+	n = Rf_length(x);
 	SEXP formals = Rf_allocList(n - 1);
 	SEXP pf = formals;
 	while(--n) {
@@ -1491,7 +1491,7 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
     if (!envir)
 	Rf_errorcall(call, _("invalid environment"));
 
-    n = length(arglist);
+    n = Rf_length(arglist);
     if (n < 1)
 	Rf_errorcall(call, _("argument must have length at least 1"));
     names = Rf_getAttrib(arglist, R_NamesSymbol);
@@ -1532,7 +1532,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	break;
     case VECSXP:
 	{
-	    if(0 == (n = length(args)))
+	    if(0 == (n = Rf_length(args)))
 		Rf_errorcall(call, _("invalid length 0 argument"));
 	    names = Rf_getAttrib(args, R_NamesSymbol);
 	    GCStackRoot<PairList> tl(PairList::make(n - 1));
@@ -1548,7 +1548,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	}
     case EXPRSXP:
 	{
-	    if(0 == (n = length(args)))
+	    if(0 == (n = Rf_length(args)))
 		Rf_errorcall(call, _("invalid length 0 argument"));
 	    names = Rf_getAttrib(args, R_NamesSymbol);
 	    GCStackRoot<PairList> tl(PairList::make(n - 1));
@@ -1918,7 +1918,7 @@ SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunct
 namespace {
     inline int LIST_VEC_NA(SEXP s)
     {
-	if (!Rf_isVector(s) || length(s) != 1)
+	if (!Rf_isVector(s) || Rf_length(s) != 1)
 	    return 0;
 	else {
 	    switch (TYPEOF(s)) {
@@ -2352,7 +2352,7 @@ SEXP attribute_hidden do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* zero-length string check used to be here but Rf_install gives
        better error message.
      */
-    if (!Rf_isString(rfun) || length(rfun) != 1)
+    if (!Rf_isString(rfun) || Rf_length(rfun) != 1)
 	errorcall_return(call, _("first argument must be a character string"));
     const char *str = Rf_translateChar(STRING_ELT(rfun, 0));
     if (streql(str, ".Internal")) Rf_error("illegal usage");
@@ -2381,7 +2381,7 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
        zero-length string check used to be here but Rf_install gives
        better error message.
      */
-    if(!(Rf_isFunction(fun) || (Rf_isString(fun) && length(fun) == 1)))
+    if(!(Rf_isFunction(fun) || (Rf_isString(fun) && Rf_length(fun) == 1)))
 	Rf_error(_("'what' must be a function or character string"));
 
 #ifdef __maybe_in_the_future__
@@ -2395,7 +2395,7 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
     if (!Rf_isEnvironment(envir))
 	Rf_error(_("'envir' must be an environment"));
 
-    n = length(args);
+    n = Rf_length(args);
     names = Rf_getAttrib(args, R_NamesSymbol);
 
     GCStackRoot<PairList> tl(PairList::make(n));
@@ -2609,7 +2609,7 @@ static SEXP do_unsetS4(SEXP obj, SEXP newClass)
   if(Rf_isNull(newClass))  { /* NULL class is only valid for S3 objects */
     Rf_warning(_("Setting class(x) to NULL;   result will no longer be an S4 object"));
   }
-  else if(length(newClass) > 1)
+  else if(Rf_length(newClass) > 1)
     Rf_warning(_("Setting class(x) to multiple strings (\"%s\", \"%s\", ...); result will no longer be an S4 object"),
 	    Rf_translateChar(STRING_ELT(newClass, 0)),
 	    Rf_translateChar(STRING_ELT(newClass, 1)));
@@ -2627,7 +2627,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 {
     int nProtect = 0;
     // use of zero-length vector used to be documented.
-    if(!length(value)) { // usually NULL
+    if(!Rf_length(value)) { // usually NULL
 	Rf_setAttrib(obj, R_ClassSymbol, value);
 	if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	  do_unsetS4(obj, value);
@@ -2640,12 +2640,12 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	PROTECT(value = Rf_coerceVector(dup, STRSXP));
 	nProtect += 2;
     }
-    if(length(value) > 1) {
+    if(Rf_length(value) > 1) {
 	Rf_setAttrib(obj, R_ClassSymbol, value);
 	if(IS_S4_OBJECT(obj)) /*  multiple strings only valid for S3 objects */
 	  do_unsetS4(obj, value);
     }
-    else if(length(value) == 0) {
+    else if(Rf_length(value) == 0) {
 	UNPROTECT(nProtect); nProtect = 0;
 	Rf_error(_("invalid replacement object to be a class string"));
     }
@@ -2685,15 +2685,15 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	/* the next 2 special cases mirror the special code in
 	 * R_data_class */
 	else if(!strcmp("matrix", valueString)) {
-	    if(length(Rf_getAttrib(obj, R_DimSymbol)) != 2)
+	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) != 2)
 		Rf_error(_("invalid to set the class to matrix unless the dimension attribute is of length 2 (was %d)"),
-		 length(Rf_getAttrib(obj, R_DimSymbol)));
+		 Rf_length(Rf_getAttrib(obj, R_DimSymbol)));
 	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj))
 	      do_unsetS4(obj, value);
 	}
 	else if(!strcmp("array", valueString)) {
-	    if(length(Rf_getAttrib(obj, R_DimSymbol)) <= 0)
+	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) <= 0)
 		Rf_error(_("cannot set class to \"array\" unless the dimension attribute has length > 0"));
 	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */

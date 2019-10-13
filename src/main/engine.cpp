@@ -3085,7 +3085,7 @@ int GEstring_to_pch(SEXP pch)
 	   On Windows this only covers CJK locales, so we could.
 	 */
 	unsigned int ucs = 0;
-	if ( int( mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
+	if ( int( Rf_mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
 	else error(_("invalid multibyte char in pch=\"c\""));
 	if (ipch > 127) ipch = -ipch;
     }

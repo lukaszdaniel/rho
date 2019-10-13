@@ -79,7 +79,7 @@ static R_size_t objectsize(SEXP s)
     case BUILTINSXP:
 	break;
     case CHARSXP:
-	vcnt = BYTE2VEC(length(s)+1);
+	vcnt = BYTE2VEC(Rf_length(s)+1);
 	isVec = TRUE;
 	break;
     case LGLSXP:

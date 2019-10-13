@@ -167,7 +167,7 @@ AnswerType(SEXP x, int recurse, int usenames, struct BindData *data, SEXP call)
 	}
 	else {
 	    data->ans_flags |= 256;
-	    data->ans_length += length(x);
+	    data->ans_length += Rf_length(x);
 	}
 	break;
     default:
@@ -1114,7 +1114,7 @@ SEXP attribute_hidden do_bind(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (tryS4 && !anyS4 && isS4(obj)) anyS4 = TRUE;
 	if (compatible && isObject(obj)) {
 	    SEXP classlist = PROTECT(R_data_class2(obj));
-	    for (int i = 0; i < length(classlist); i++) {
+	    for (int i = 0; i < Rf_length(classlist); i++) {
 		const char *s = translateChar(STRING_ELT(classlist, i));
 		if(strlen(generic) + strlen(s) + 2 > 512)
 		    error(_("class name too long in '%s'"), generic);
@@ -1253,7 +1253,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	if((isMatrix(u) ? nrows(u) : length(u)) > 0) {
+	if((isMatrix(u) ? nrows(u) : Rf_length(u)) > 0) {
 	    lenmin = 1;
 	    break;
 	}
@@ -1265,7 +1265,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
 	dims = getAttrib(u, R_DimSymbol);
-	if (length(dims) == 2) {
+	if (Rf_length(dims) == 2) {
 	    if (mrows == -1)
 		mrows = INTEGER(dims)[0];
 	    else if (mrows != INTEGER(dims)[0])
@@ -1273,8 +1273,8 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		      na + 1);
 	    cols += INTEGER(dims)[1];
 	}
-	else if (length(u) >= lenmin) {
-	    rows = imax2(rows, length(u));
+	else if (Rf_length(u) >= lenmin) {
+	    rows = imax2(rows, Rf_length(u));
 	    cols += 1;
 	}
         na++;
@@ -1287,16 +1287,16 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
 	dims = getAttrib(u, R_DimSymbol);
-	if (length(dims) == 2) {
+	if (Rf_length(dims) == 2) {
 	    dn = getAttrib(u, R_DimNamesSymbol);
-	    if (length(dn) == 2) {
+	    if (Rf_length(dn) == 2) {
 		if (VECTOR_ELT(dn, 1) != R_NilValue)
 		    have_cnames = TRUE;
 		if (VECTOR_ELT(dn, 0) != R_NilValue)
 		    mnames = mrows;
 	    }
 	} else {
-	    int k = length(u);
+	    int k = Rf_length(u);
 	    if (!warned && k > 0 && (k > rows || rows % k)) {
 		warned = TRUE;
 		warning("number of rows of result is not a multiple of vector length (arg %d)", na + 1);
@@ -1307,7 +1307,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 				((deparse_level == 1) &&
 				 isSymbol(substitute(arg.car(),R_NilValue)))))
 		have_cnames = TRUE;
-	    nnames = imax2(nnames, length(dn));
+	    nnames = imax2(nnames, Rf_length(dn));
 	    UNPROTECT(1); /* dn */
 	}
         na++;
@@ -1321,7 +1321,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     if (mode == STRSXP) {
       for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, STRSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
@@ -1334,7 +1334,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
 	    int umatrix = isMatrix(u); /* might be lost in coercion to VECSXP */
-	    if (umatrix || length(u) >= lenmin) {
+	    if (umatrix || Rf_length(u) >= lenmin) {
 		/* we cannot assume here that coercion will work */
 		switch(TYPEOF(u)) {
 		case NILSXP:
@@ -1371,7 +1371,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == CPLXSXP) {
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, CPLXSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
@@ -1383,7 +1383,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == RAWSXP) {
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, RAWSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
@@ -1395,7 +1395,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else { /* everything else, currently REALSXP, INTSXP, LGLSXP */
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car()); /* type of u can be any of: RAW, LGL, INT, REAL */
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
 		if (TYPEOF(u) <= INTSXP) { /* INT or LGL */
@@ -1461,18 +1461,18 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		/* but if tnam is non-null, have_cnames = TRUE: see above */
 		tnam = GetColNames(v);
 		if (tnam != R_NilValue) {
-		    for (int i = 0; i < length(tnam); i++)
+		    for (int i = 0; i < Rf_length(tnam); i++)
 			SET_STRING_ELT(nam, j++, STRING_ELT(tnam, i));
 		}
 		else if (have_cnames) {
 		    for (int i = 0; i < ncols(u); i++)
 			SET_STRING_ELT(nam, j++, R_BlankString);
 		}
-	    } else if (length(u) >= lenmin) {
+	    } else if (Rf_length(u) >= lenmin) {
 		u = getAttrib(u, R_NamesSymbol);
 
 		if (have_rnames && GetRowNames(dn) == R_NilValue
-		    && u != R_NilValue && length(u) == rows)
+		    && u != R_NilValue && Rf_length(u) == rows)
 		    SetRowNames(dn, lazy_duplicate(u));
 
 		if (arg.tag() != R_NilValue)
@@ -1517,7 +1517,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	if((isMatrix(u) ? ncols(u) : length(u)) > 0) {
+	if((isMatrix(u) ? ncols(u) : Rf_length(u)) > 0) {
 	    lenmin = 1;
 	    break;
 	}
@@ -1529,7 +1529,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     for (const auto& arg : args.getArgs()) {
 	u = PRVALUE(arg.car());
 	dims = getAttrib(u, R_DimSymbol);
-	if (length(dims) == 2) {
+	if (Rf_length(dims) == 2) {
 	    if (mcols == -1)
 		mcols = INTEGER(dims)[1];
 	    else if (mcols != INTEGER(dims)[1])
@@ -1537,8 +1537,8 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		      na + 1);
 	    rows += INTEGER(dims)[0];
 	}
-	else if (length(u) >= lenmin){
-	    cols = imax2(cols, length(u));
+	else if (Rf_length(u) >= lenmin){
+	    cols = imax2(cols, Rf_length(u));
 	    rows += 1;
 	}
         ++na;
@@ -1551,9 +1551,9 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     for (const auto& arg : args.getArgs()) {
 	u = PRVALUE(arg.car());
 	dims = getAttrib(u, R_DimSymbol);
-	if (length(dims) == 2) {
+	if (Rf_length(dims) == 2) {
 	    dn = getAttrib(u, R_DimNamesSymbol);
-	    if (length(dn) == 2) {
+	    if (Rf_length(dn) == 2) {
 		if (VECTOR_ELT(dn, 0) != R_NilValue)
 		    have_rnames = TRUE;
 		if (VECTOR_ELT(dn, 1) != R_NilValue)
@@ -1561,7 +1561,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 	    }
 	}
 	else {
-	    int k = length(u);
+	    int k = Rf_length(u);
 	    if (!warned && k>0 && (k > cols || cols % k)) {
 		warned = TRUE;
 		warning("number of columns of result is not a multiple of vector length (arg %d)", na + 1);
@@ -1572,7 +1572,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 				((deparse_level == 1) &&
 				 isSymbol(substitute(arg.car(), R_NilValue)))))
 		have_rnames = TRUE;
-	    nnames = imax2(nnames, length(dn));
+	    nnames = imax2(nnames, Rf_length(dn));
 	    UNPROTECT(1); /* dn */
 	}
         ++na;
@@ -1587,7 +1587,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     if (mode == STRSXP) {
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, STRSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (isMatrix(u)) ? nrows(u) : (k > 0);
@@ -1600,7 +1600,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car());
 	    int umatrix = isMatrix(u), urows = umatrix ? nrows(u) : 1; /* coercing to VECSXP will lose these. PR#15468 */
-	    if (umatrix || length(u) >= lenmin) {
+	    if (umatrix || Rf_length(u) >= lenmin) {
 		PROTECT(u = coerceVector(u, mode));
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = umatrix ? urows : (k > 0);
@@ -1615,7 +1615,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == RAWSXP) {
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, RAWSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (isMatrix(u)) ? nrows(u) : (k > 0);
@@ -1628,7 +1628,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == CPLXSXP) {
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car());
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		u = coerceVector(u, CPLXSXP);
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (isMatrix(u)) ? nrows(u) : (k > 0);
@@ -1641,7 +1641,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else { /* everything else, currently REALSXP, INTSXP, LGLSXP */
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car()); /* type of u can be any of: RAW, LGL, INT, REAL */
-	    if (isMatrix(u) || length(u) >= lenmin) {
+	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
 		R_xlen_t k = XLENGTH(u);
 		R_xlen_t idx = (isMatrix(u)) ? nrows(u) : (k > 0);
 		if (TYPEOF(u) <= INTSXP) {
@@ -1700,7 +1700,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		tnam = GetRowNames(v);
 		if (have_rnames) {
 		    if (tnam != R_NilValue) {
-			for (int i = 0; i < length(tnam); i++)
+			for (int i = 0; i < Rf_length(tnam); i++)
 			    SET_STRING_ELT(nam, j++, STRING_ELT(tnam, i));
 		    }
 		    else {
@@ -1709,11 +1709,11 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		    }
 		}
 	    }
-	    else if (length(u) >= lenmin) {
+	    else if (Rf_length(u) >= lenmin) {
 		u = getAttrib(u, R_NamesSymbol);
 
 		if (have_cnames && GetColNames(dn) == R_NilValue
-		    && u != R_NilValue && length(u) == cols)
+		    && u != R_NilValue && Rf_length(u) == cols)
 		    SetColNames(dn, lazy_duplicate(u));
 
 		if (arg.tag() != R_NilValue)

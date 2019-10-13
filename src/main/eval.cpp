@@ -196,7 +196,7 @@ static void lineprof(char* buf, SEXP srcref)
 
 	if (!srcfile || TYPEOF(srcfile) != ENVSXP) return;
 	srcfile = Rf_findVar(Rf_install("filename"), srcfile);
-	if (TYPEOF(srcfile) != STRSXP || !length(srcfile)) return;
+	if (TYPEOF(srcfile) != STRSXP || !Rf_length(srcfile)) return;
 	filename = CHAR(STRING_ELT(srcfile, 0));
 
 	if ((fnum = getFilenum(filename)))
@@ -287,7 +287,7 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 			     TYPEOF(CADDR(fun)) == STRSXP ||
 			     TYPEOF(CADDR(fun)) == INTSXP ||
 			     TYPEOF(CADDR(fun)) == REALSXP) &&
-			    length(CADDR(fun)) > 0)) {
+			    Rf_length(CADDR(fun)) > 0)) {
 		    /* Function accessed via [[. The first arg must be a symbol
 		       and the second can be a symbol, string, integer, or
 		       real. */
@@ -522,7 +522,7 @@ void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 	SEXP srcfile = Rf_getAttrib(srcref, R_SrcfileSymbol);
 	if (TYPEOF(srcfile) == ENVSXP) {
 	    SEXP filename = Rf_findVar(Rf_install("filename"), srcfile);
-	    if (Rf_isString(filename) && length(filename)) {
+	    if (Rf_isString(filename) && Rf_length(filename)) {
 		Rprintf(_("%s at %s#%d: "), prefix, CHAR(STRING_ELT(filename, 0)), 
 			                    Rf_asInteger(srcref));
 		return;
@@ -550,10 +550,10 @@ static R_INLINE SEXP getSrcref(SEXP srcrefs, int ind)
 {
     SEXP result;
     if (!Rf_isNull(srcrefs)
-	&& length(srcrefs) > ind
+	&& Rf_length(srcrefs) > ind
 	&& !Rf_isNull(result = VECTOR_ELT(srcrefs, ind))
 	&& TYPEOF(result) == INTSXP
-	&& length(result) >= 6)
+	&& Rf_length(result) >= 6)
 	return result;
     return R_NilValue;
 }
@@ -750,7 +750,7 @@ static SEXP replaceCall(SEXP fun, SEXP val, SEXP args, SEXP rhs)
     PROTECT(args);
     PROTECT(rhs);
     PROTECT(val);
-    GCStackRoot<PairList> tl(PairList::make(length(args) + 2));
+    GCStackRoot<PairList> tl(PairList::make(Rf_length(args) + 2));
     ptmp = tmp = new Expression(nullptr, tl);
     UNPROTECT(4);
     SETCAR(ptmp, fun); ptmp = CDR(ptmp);
@@ -782,13 +782,13 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
 {
     int cond = NA_LOGICAL;
 
-    if (length(s) > 1)
+    if (Rf_length(s) > 1)
     {
 	GCStackRoot<> gc_protect(s);
 	Rf_warningcall(call,
 		    _("the condition has length > 1 and only the first element will be used"));
     }
-    if (length(s) > 0) {
+    if (Rf_length(s) > 0) {
 	/* inline common cases for efficiency */
 	switch(TYPEOF(s)) {
 	case LGLSXP:
@@ -803,7 +803,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
     }
 
     if (cond == NA_LOGICAL) {
-	char *msg = length(s) ? (Rf_isLogical(s) ?
+	char *msg = Rf_length(s) ? (Rf_isLogical(s) ?
 				 _("missing value where TRUE/FALSE needed") :
 				 _("argument is not interpretable as logical")) :
 	    _("argument is of length zero");
@@ -859,7 +859,7 @@ SEXP attribute_hidden do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (asLogicalNoNA(Cond, call))
 	Stmt = CAR(CDR(args));
     else {
-	if (length(args) > 2) 
+	if (Rf_length(args) > 2) 
 	   Stmt = CAR(CDR(CDR(args)));
 	else
 	   vis = 1;
@@ -928,7 +928,7 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     if (Rf_isList(val) || Rf_isNull(val)) {
-	n = length(val);
+	n = Rf_length(val);
     } else {
 	n = LENGTH(val);
     }
@@ -1239,7 +1239,7 @@ SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 	op = forcePromise(op);
 	SET_NAMED(op, 2);
     }
-    if (length(args) < 2) WrongArgCount("function");
+    if (Rf_length(args) < 2) WrongArgCount("function");
     SEXP formals = CAR(args);
     if (formals && formals->sexptype() != LISTSXP)
 	Rf_error(_("invalid formal argument list for 'function'"));
@@ -1451,7 +1451,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    SEXP funchead = CAR(functor);
 		    if ((funchead == R_DoubleColonSymbol
 			 || funchead == R_TripleColonSymbol)
-			&& length(functor) == 3) {
+			&& Rf_length(functor) == 3) {
 			SEXP arg2 = CADDR(functor);
 			if (TYPEOF(arg2) == SYMSXP) {
 			    const Symbol* fsym = static_cast<Symbol*>(arg2);
@@ -1484,7 +1484,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SEXP funchead = CAR(functor);
 		if ((funchead == R_DoubleColonSymbol
 		     || funchead == R_TripleColonSymbol)
-		    && length(functor) == 3) {
+		    && Rf_length(functor) == 3) {
 		    SEXP arg2 = CADDR(functor);
 		    if (TYPEOF(arg2) == SYMSXP) {
 			const Symbol* fsym = static_cast<Symbol*>(arg2);
@@ -1524,7 +1524,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP attribute_hidden do_set(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP s;
-    if (length(args) != 2)
+    if (Rf_length(args) != 2)
 	WrongArgCount(asym[PRIMVAL(op)]);
     if (Rf_isString(CAR(args))) {
 	/* fix up a duplicate or args and recursively call do_set */
@@ -1604,13 +1604,13 @@ static SEXP VectorToPairListNamed(SEXP x)
     PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol)); /* isn't this protected via x? */
     named = (xnames != R_NilValue);
     if(named)
-	for (i = 0; i < length(x); i++)
+	for (i = 0; i < Rf_length(x); i++)
 	    if (CHAR(STRING_ELT(xnames, i))[0] != '\0') len++;
 
     if(len) {
 	PROTECT(xnew = Rf_allocList(len));
 	xptr = xnew;
-	for (i = 0; i < length(x); i++) {
+	for (i = 0; i < Rf_length(x); i++) {
 	    if (CHAR(STRING_ELT(xnames, i))[0] != '\0') {
 		SETCAR(xptr, VECTOR_ELT(x, i));
 		SET_TAG(xptr, Rf_installTrChar(STRING_ELT(xnames, i)));
@@ -1673,7 +1673,7 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	break;
     case INTSXP:
     case REALSXP:
-	if (length(env) != 1)
+	if (Rf_length(env) != 1)
 	    Rf_error(_("numeric 'envir' arg not of length one"));
 	frame = Rf_asInteger(env);
 	if (frame == NA_INTEGER)

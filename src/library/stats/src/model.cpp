@@ -113,12 +113,12 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 	error(_("invalid variables"));
     if (!isString(varnames))
 	error(_("invalid variable names"));
-    if ((nvars = length(variables)) != length(varnames))
+    if ((nvars = Rf_length(variables)) != Rf_length(varnames))
 	error(_("number of variables != number of variable names"));
 
     if (!isNewList(dots))
 	error(_("invalid extra variables"));
-    if ((ndots = length(dots)) != length(dotnames))
+    if ((ndots = Rf_length(dots)) != Rf_length(dotnames))
 	error(_("number of variables != number of variable names"));
     if ( ndots && !isString(dotnames))
 	error(_("invalid extra variable names"));
@@ -154,7 +154,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* Sanity checks to ensure that the the answer can become */
     /* a data frame.  Be deeply suspicious here! */
 
-    nc = length(data);
+    nc = Rf_length(data);
     nr = 0;			/* -Wall */
     if (nc > 0) {
 	nr = nrows(VECTOR_ELT(data, 0));
@@ -177,7 +177,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 		error(_("variable lengths differ (found for '%s')"),
 		      translateChar(STRING_ELT(names, i)));
 	}
-    } else nr = length(row_names);
+    } else nr = Rf_length(row_names);
 
     PROTECT(data);
     PROTECT(subset);
@@ -190,7 +190,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(tmp = mkString("data.frame"));
     setAttrib(data, R_ClassSymbol, tmp);
     UNPROTECT(1);
-    if (length(row_names) == nr) {
+    if (Rf_length(row_names) == nr) {
 	setAttrib(data, R_RowNamesSymbol, row_names);
     } else {
 	/*
@@ -222,18 +222,18 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* some na.actions need this to distinguish responses from
 	   explanatory variables */
 	setAttrib(data, install("terms"), terms);
-	if (isString(na_action) && length(na_action) > 0)
+	if (isString(na_action) && Rf_length(na_action) > 0)
 	    na_action = installTrChar(STRING_ELT(na_action, 0));
 	PROTECT(na_action);
 	PROTECT(tmp = lang2(na_action, data));
 	PROTECT(ans = eval(tmp, rho));
-	if (!isNewList(ans) || length(ans) != length(data))
+	if (!isNewList(ans) || Rf_length(ans) != Rf_length(data))
 	    error(_("invalid result from na.action"));
 	/* need to transfer _all but tsp and dim_ attributes, possibly lost
 	   by subsetting in na.action. */
 	/* But if data is unchanged, don't mess with it (PR#16436) */
 
-	for ( i = length(ans) ; i-- ; )
+	for ( i = Rf_length(ans) ; i-- ; )
 	    if (VECTOR_ELT(data, i) != VECTOR_ELT(ans, i))
 		copyMostAttribNoTs(VECTOR_ELT(data, i),VECTOR_ELT(ans, i));
 
@@ -332,7 +332,7 @@ static char *AppendInteger(char *buf, int i)
 static SEXP ColumnNames(SEXP x)
 {
     SEXP dn = getAttrib(x, R_DimNamesSymbol);
-    if (dn == R_NilValue || length(dn) < 2)
+    if (dn == R_NilValue || Rf_length(dn) < 2)
 	return R_NilValue;
     else
 	return VECTOR_ELT(dn, 1);
@@ -374,7 +374,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     nVar = nterms = 0;		/* -Wall */
     PROTECT(factors = duplicate(getAttrib(terms, install("factors"))));
-    if (length(factors) == 0) {
+    if (Rf_length(factors) == 0) {
 	/* if (intrcept == 0)
 	   error("invalid model (zero parameters).");*/
 	nVar = 1;
@@ -389,8 +389,8 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* Get the variable names from the factor matrix */
 
     vnames = getAttrib(factors, R_DimNamesSymbol);
-    if (length(factors) > 0) {
-	if (length(vnames) < 1 ||
+    if (Rf_length(factors) > 0) {
+	if (Rf_length(vnames) < 1 ||
 	    (nVar - intrcept > 0 && !isString(VECTOR_ELT(vnames, 0))))
 	    error(_("invalid '%s' argument"), "terms");
 	vnames = VECTOR_ELT(vnames, 0);
@@ -402,9 +402,9 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* 2) We don't type-check the response. */
 
     vars = CADR(args);
-    if (!isNewList(vars) || length(vars) < nVar)
+    if (!isNewList(vars) || Rf_length(vars) < nVar)
 	error(_("invalid model frame"));
-    if (length(vars) == 0)
+    if (Rf_length(vars) == 0)
 	error(_("do not know how many cases"));
 
     nn = n = nrows(VECTOR_ELT(vars, 0));
@@ -789,17 +789,17 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 	else op = NULL;
 	PROTECT(object);
 	if (CAR(object) == plusSymbol) {
-	    if (length(object) == 2) {
+	    if (Rf_length(object) == 2) {
 		SETCADR(object, ExpandDots(CADR(object), value));
 	    }
-	    else if (length(object) == 3) {
+	    else if (Rf_length(object) == 3) {
 		SETCADR(object, ExpandDots(CADR(object), value));
 		SETCADDR(object, ExpandDots(CADDR(object), value));
 	    }
 	    else goto badformula;
 	}
 	else if (CAR(object) == minusSymbol) {
-	    if (length(object) == 2) {
+	    if (Rf_length(object) == 2) {
 		if (CADR(object) == dotSymbol &&
 		   (op == plusSymbol || op == minusSymbol))
 		    SETCADR(object, lang2(parenSymbol,
@@ -807,7 +807,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 		else
 		    SETCADR(object, ExpandDots(CADR(object), value));
 	    }
-	    else if (length(object) == 3) {
+	    else if (Rf_length(object) == 3) {
 		if (CADR(object) == dotSymbol &&
 		   (op == plusSymbol || op == minusSymbol))
 		    SETCADR(object, lang2(parenSymbol,
@@ -824,7 +824,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 	    else goto badformula;
 	}
 	else if (CAR(object) == timesSymbol || CAR(object) == slashSymbol) {
-	    if (length(object) != 3)
+	    if (Rf_length(object) != 3)
 		goto badformula;
 	    if (CADR(object) == dotSymbol &&
 	       (op == plusSymbol || op == minusSymbol))
@@ -840,7 +840,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 		SETCADDR(object, ExpandDots(CADDR(object), value));
 	}
 	else if (CAR(object) == colonSymbol) {
-	    if (length(object) != 3)
+	    if (Rf_length(object) != 3)
 		goto badformula;
 	    if (CADR(object) == dotSymbol &&
 	       (op == plusSymbol || op == minusSymbol ||
@@ -857,7 +857,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 		SETCADDR(object, ExpandDots(CADDR(object), value));
 	}
 	else if (CAR(object) == powerSymbol) {
-	    if (length(object) != 3)
+	    if (Rf_length(object) != 3)
 		goto badformula;
 	    if (CADR(object) == dotSymbol &&
 	       (op == plusSymbol || op == minusSymbol ||
@@ -923,13 +923,13 @@ SEXP updateform(SEXP old, SEXP newf)
        CAR(_new) != tildeSymbol)
 	error(_("formula expected"));
 
-    if (length(old) == 3) {
+    if (Rf_length(old) == 3) {
 	SEXP lhs = CADR(old);
 	SEXP rhs = CADDR(old);
 	/* We now check that new formula has a valid lhs.
 	   If it doesn't, we add one and set it to the rhs of the old
 	   formula. */
-	if (length(_new) == 2)
+	if (Rf_length(_new) == 2)
 	    SETCDR(_new, CONS(lhs, CDR(_new)));
 	/* Now we check the left and right sides of the new formula
 	   and substitute the correct value for any "." templates.
@@ -944,7 +944,7 @@ SEXP updateform(SEXP old, SEXP newf)
 	/* The old formula had no lhs, so we only expand the rhs of the
 	   new formula. */
 	SEXP rhs = CADR(old);
-	if (length(_new) == 3)
+	if (Rf_length(_new) == 3)
 	    SETCADDR(_new, ExpandDots(CADDR(_new), rhs));
 	else
 	    SETCADR(_new, ExpandDots(CADR(_new), rhs));
@@ -1079,11 +1079,11 @@ static void CheckRHS(SEXP v)
 	v = CDR(v);
     }
     if (isSymbol(v)) {
-	for (i = 0; i < length(framenames); i++) {
+	for (i = 0; i < Rf_length(framenames); i++) {
 	    s = installTrChar(STRING_ELT(framenames, i));
 	    if (v == s) {
-		t = allocVector(STRSXP, length(framenames) - 1);
-		for (j = 0; j < length(t); j++) {
+		t = allocVector(STRSXP, Rf_length(framenames) - 1);
+		for (j = 0; j < Rf_length(t); j++) {
 		    if (j < i)
 			SET_STRING_ELT(t, j, STRING_ELT(framenames, j));
 		    else
@@ -1114,7 +1114,7 @@ static void ExtractVars(SEXP formula, int checkonly)
 	if (!checkonly) {
 	    if (formula == dotSymbol && framenames != R_NilValue) {
 		haveDot = TRUE;
-		for (i = 0; i < length(framenames); i++) {
+		for (i = 0; i < Rf_length(framenames); i++) {
 		    v = installTrChar(STRING_ELT(framenames, i));
 		    if (!MatchVar(v, CADR(varlist))) InstallVar(v);
 		}
@@ -1124,7 +1124,7 @@ static void ExtractVars(SEXP formula, int checkonly)
 	return;
     }
     if (isLanguage(formula)) {
-	len = length(formula);
+	len = Rf_length(formula);
 	if (CAR(formula) == tildeSymbol) {
 	    if (response)
 		error(_("invalid model formula"));
@@ -1140,9 +1140,9 @@ static void ExtractVars(SEXP formula, int checkonly)
 	    return;
 	}
 	if (CAR(formula) == plusSymbol) {
-	    if (length(formula) > 1)
+	    if (Rf_length(formula) > 1)
 		ExtractVars(CADR(formula), checkonly);
-	    if (length(formula) > 2)
+	    if (Rf_length(formula) > 2)
 		ExtractVars(CADDR(formula), checkonly);
 	    return;
 	}
@@ -1368,7 +1368,7 @@ static SEXP InteractTerms(SEXP left, SEXP right)
     SEXP term, l, r, t;
     PROTECT(left = EncodeVars(left));
     PROTECT(right = EncodeVars(right));
-    PROTECT(term = allocList(length(left) * length(right)));
+    PROTECT(term = allocList(Rf_length(left) * Rf_length(right)));
     t = term;
     for (l = left; l != R_NilValue; l = CDR(l))
 	for (r = right; r != R_NilValue; r = CDR(r)) {
@@ -1389,7 +1389,7 @@ static SEXP CrossTerms(SEXP left, SEXP right)
     SEXP term, l, r, t;
     PROTECT(left = EncodeVars(left));
     PROTECT(right = EncodeVars(right));
-    PROTECT(term = allocList(length(left) * length(right)));
+    PROTECT(term = allocList(Rf_length(left) * Rf_length(right)));
     t = term;
     for (l = left; l != R_NilValue; l = CDR(l))
 	for (r = right; r != R_NilValue; r = CDR(r)) {
@@ -1419,7 +1419,7 @@ static SEXP PowerTerms(SEXP left, SEXP right)
     right = left;
     for (i=1; i < ip; i++)  {
 	PROTECT(right);
-	PROTECT(term = allocList(length(left) * length(right)));
+	PROTECT(term = allocList(Rf_length(left) * Rf_length(right)));
 	t = term;
 	for (l = left; l != R_NilValue; l = CDR(l))
 	    for (r = right; r != R_NilValue; r = CDR(r)) {
@@ -1556,7 +1556,7 @@ static SEXP EncodeVars(SEXP formula)
 	}
     }
     if (isLanguage(formula)) {
-	len = length(formula);
+	len = Rf_length(formula);
 	if (CAR(formula) == tildeSymbol) {
 	    if (isNull(CDDR(formula)))
 		return EncodeVars(CADR(formula));
@@ -1682,7 +1682,7 @@ SEXP termsform(SEXP args)
 
     if (!isLanguage(CAR(args)) ||
 	CAR(CAR(args)) != tildeSymbol ||
-	(length(CAR(args)) != 2 && length(CAR(args)) != 3))
+	(Rf_length(CAR(args)) != 2 && Rf_length(CAR(args)) != 3))
 	error(_("argument is not a valid model"));
 
     haveDot = FALSE;
@@ -1692,7 +1692,7 @@ SEXP termsform(SEXP args)
     /* The formula will be returned, modified if haveDot becomes TRUE */
 
     specials = CADR(args);
-    if(length(specials) && !isString(specials))
+    if(Rf_length(specials) && !isString(specials))
 	error(_("'specials' must be NULL or a character vector"));
     a = CDDR(args);
 
@@ -1709,8 +1709,8 @@ SEXP termsform(SEXP args)
     PROTECT_WITH_INDEX(framenames, &vpi);
 
     if (framenames != R_NilValue) {
-	if(length(framenames)) hadFrameNames = TRUE;
-	if (length(CAR(args)) == 3)
+	if(Rf_length(framenames)) hadFrameNames = TRUE;
+	if (Rf_length(CAR(args)) == 3)
 	    CheckRHS(CADR(CAR(args)));
     }
 
@@ -1743,7 +1743,7 @@ SEXP termsform(SEXP args)
     SET_TAG(a, install("variables"));
     a = CDR(a);
 
-    nvar = length(varlist) - 1;
+    nvar = Rf_length(varlist) - 1;
     /* in allocating words need to allow for intercept term */
     nwords = (int)(nvar/ WORDSIZE + 1);
 //    printf("nvar = %d, nwords = %d\n", nvar, nwords);
@@ -1765,7 +1765,7 @@ SEXP termsform(SEXP args)
 
     PROTECT(formula = EncodeVars(CAR(args)));
 
-    nvar = length(varlist) - 1; /* need to recompute, in case
+    nvar = Rf_length(varlist) - 1; /* need to recompute, in case
 				   EncodeVars stretched it */
 
     /* Step 2a: Compute variable names */
@@ -1793,7 +1793,7 @@ SEXP termsform(SEXP args)
 	while (1) {
 	    SEXP thisterm = foundOne ? CDR(call) : call;
 	    Rboolean have_offset = FALSE;
-	    if(length(thisterm) == 0) break;
+	    if(Rf_length(thisterm) == 0) break;
 	    for (i = 1; i <= nvar; i++)
 		if (GetBit(CAR(thisterm), i) &&
 		    !strncmp(CHAR(STRING_ELT(varnames, i-1)), "offset(", 7)) {
@@ -1809,7 +1809,7 @@ SEXP termsform(SEXP args)
 	    }
 	}
     }
-    nterm = length(formula);
+    nterm = Rf_length(formula);
 
     /* Step 3: Reorder the model terms by BitCount, otherwise
        preserving their order. */
@@ -1917,7 +1917,7 @@ SEXP termsform(SEXP args)
 
     if (specials != R_NilValue) {
 	const void *vmax = vmaxget();
-	i = length(specials);
+	i = Rf_length(specials);
 	PROTECT(v = allocList(i));
 	for (j = 0, t = v; j < i; j++, t = CDR(t)) {
 	    const char *ss = translateChar(STRING_ELT(specials, j));
@@ -1955,7 +1955,7 @@ SEXP termsform(SEXP args)
        the framenames joined by + */
 
     if (haveDot) {
-	if(length(framenames)) {
+	if(Rf_length(framenames)) {
 	    PROTECT_INDEX ind;
 	    PROTECT_WITH_INDEX(rhs = installTrChar(STRING_ELT(framenames, 0)),
 			       &ind);

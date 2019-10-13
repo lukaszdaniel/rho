@@ -1983,7 +1983,7 @@ SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction*
 
     /* Use try-catch to close the file if there is an error */
     try {
-	len = length(list_);
+	len = Rf_length(list_);
 	GCStackRoot<> s(allocList(len));
 
 	t = s;
@@ -2286,7 +2286,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 
 	R_InitConnOutPStream(&out, con, type, version, nullptr, nullptr);
 
-	len = length(list);
+	len = Rf_length(list);
 	PROTECT(s = allocList(len));
 
 	t = s;

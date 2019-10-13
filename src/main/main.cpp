@@ -1713,7 +1713,7 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
     SET_VECTOR_ELT(internalData, 1, data);
     SET_VECTOR_ELT(internalData, 2, useData);
 
-    if(length(name))
+    if(Rf_length(name))
 	tmpName = CHAR(STRING_ELT(name, 0));
 
     PROTECT(index = allocVector(INTSXP, 1));
@@ -1721,7 +1721,7 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
 			    reinterpret_cast<void (*)(void*)>( R_ReleaseObject), tmpName,
 			    INTEGER(index));
 
-    if(length(name) == 0) {
+    if(Rf_length(name) == 0) {
 	PROTECT(name = mkString(el->name));
 	setAttrib(index, R_NamesSymbol, name);
 	UNPROTECT(1);

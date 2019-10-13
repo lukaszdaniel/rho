@@ -168,7 +168,7 @@ SEXP attribute_hidden do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
     int x1, x2;
     int ans;
 
-    if (length(args) != 2)
+    if (Rf_length(args) != 2)
 	error(_("'%s' operator requires 2 arguments"),
 	      PRIMVAL(op) == 1 ? "&&" : "||");
 

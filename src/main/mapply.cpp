@@ -42,7 +42,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     int m, zero = 0;
     R_xlen_t *lengths, *counters, longest = 0;
 
-    m = length(varyingArgs);
+    m = Rf_length(varyingArgs);
     SEXP vnames = PROTECT(getAttrib(varyingArgs, R_NamesSymbol));
     Rboolean named = RHOCONSTRUCT(Rboolean, vnames != nullptr);
 

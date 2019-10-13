@@ -57,7 +57,7 @@ using namespace rho;
 SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 	int n;
-	if ((n=length(args))!=1)
+	if ((n=Rf_length(args))!=1)
 		errorcall(call,_("%d arguments passed to 'castestfun' which requires 1"),n);
 
 	if (TYPEOF(CAR(args))!=SYMSXP)
@@ -103,7 +103,7 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
-    if ((n=length(args))!=1)
+    if ((n=Rf_length(args))!=1)
 	errorcall(call,_("%d arguments passed to 'hasProvenance' which requires 1"),n);
 
     if (TYPEOF(CAR(args))!=SYMSXP)
@@ -129,7 +129,7 @@ SEXP attribute_hidden do_provenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 #else
     const int nfields=5;
     int n;
-    if ((n=length(args))!=1)
+    if ((n=Rf_length(args))!=1)
 	errorcall(call,_("%d arguments passed to 'provenance' which requires 1"),n);
 
     if (TYPEOF(CAR(args))!=SYMSXP)

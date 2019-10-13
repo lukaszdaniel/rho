@@ -80,7 +80,7 @@ SEXP attribute_hidden getParseContext(void)
 	last = i;
     }
     /* get rid of empty line after last newline */
-    if (nread && !length(STRING_ELT(ans, nread-1))) {
+    if (nread && !Rf_length(STRING_ELT(ans, nread-1))) {
 	nread--;
 	R_ParseContextLine--;
     }
@@ -98,12 +98,12 @@ static void getParseFilename(char* buffer, size_t buflen)
 	if (isEnvironment(R_ParseErrorFile)) {
 	    SEXP filename;
 	    PROTECT(filename = findVar(install("filename"), R_ParseErrorFile));
-	    if (isString(filename) && length(filename)) {
+	    if (isString(filename) && Rf_length(filename)) {
 		strncpy(buffer, CHAR(STRING_ELT(filename, 0)), buflen - 1);
 		buffer[buflen - 1] = '\0';
 	    }
 	    UNPROTECT(1);
-	} else if (isString(R_ParseErrorFile) && length(R_ParseErrorFile)) {
+	} else if (isString(R_ParseErrorFile) && Rf_length(R_ParseErrorFile)) {
 	    strncpy(buffer, CHAR(STRING_ELT(R_ParseErrorFile, 0)), buflen - 1);
 	    buffer[buflen - 1] = '\0';
 	}
@@ -117,8 +117,8 @@ static SEXP tabExpand(SEXP strings)
     const char *input;
     SEXP result;
     PROTECT(strings);
-    PROTECT(result = allocVector(STRSXP, length(strings)));
-    for (i = 0; i < length(strings); i++) {
+    PROTECT(result = allocVector(STRSXP, Rf_length(strings)));
+    for (i = 0; i < Rf_length(strings); i++) {
 	input = CHAR(STRING_ELT(strings, i));
 	for (b = buffer; *input && (b-buffer < 192); input++) {
 	    if (*input == '\t') do {
@@ -139,7 +139,7 @@ void NORET parseError(SEXP call, int linenum)
     int len, width;
     char filename[128], buffer[10];
     PROTECT(context = tabExpand(getParseContext()));
-    len = length(context);
+    len = Rf_length(context);
     if (linenum) {
 	getParseFilename(filename, sizeof(filename)-2);
 	if (strlen(filename)) strcpy(filename + strlen(filename), ":");
@@ -215,11 +215,11 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
 	return(allocVector(EXPRSXP, 0));
 
     PROTECT(text = coerceVector(text_, STRSXP));
-    if(length(text_) && !length(text))
+    if(Rf_length(text_) && !Rf_length(text))
 	errorcall(call, _("coercion of 'text' to character was unsuccessful"));
     prompt = prompt_;
     source = srcfile_;
-    if(!isString(encoding_) || length(encoding_) != 1)
+    if(!isString(encoding_) || Rf_length(encoding_) != 1)
 	error(_("invalid '%s' value"), "encoding");
     encoding = CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
     known_to_be_latin1 = known_to_be_utf8 = FALSE;
@@ -238,7 +238,7 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
     else
 	PROTECT(prompt = coerceVector(prompt, STRSXP));
 
-    if (length(text) > 0) {
+    if (Rf_length(text) > 0) {
 	/* If 'text' has known encoding then we can be sure it will be
 	   correctly re-encoded to the current encoding by
 	   translateChar in the parser and so could mark the result in
@@ -248,7 +248,7 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
 	   different encodings, but all that matters is that all
 	   non-ASCII elements have known encoding.
 	*/
-	for(i = 0; i < length(text); i++)
+	for(i = 0; i < Rf_length(text); i++)
 	    if(!ENC_KNOWN(STRING_ELT(text, i)) &&
 	       !IS_ASCII(STRING_ELT(text, i))) {
 		allKnown = FALSE;

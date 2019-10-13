@@ -208,7 +208,7 @@ int attribute_hidden R_TextBufferInit(TextBuffer *txtb, SEXP text)
     if (isString(text)) {
 	// translateChar might allocate
 	void *vmax = vmaxget();
-	n = length(text);
+	n = Rf_length(text);
 	l = 0;
 	for (i = 0; i < n; i++) {
 	    if (STRING_ELT(text, i) != R_NilValue) {

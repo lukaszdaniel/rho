@@ -158,8 +158,8 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
 	    int( strlen(CHAR(R_print.na_string)));
     }
 
-    if (length(rowlab) == 0) rowlab = R_NilValue;
-    if (length(collab) == 0) collab = R_NilValue;
+    if (Rf_length(rowlab) == 0) rowlab = R_NilValue;
+    if (Rf_length(collab) == 0) collab = R_NilValue;
     if (!isNull(rowlab) && !isString(rowlab))
 	error(_("invalid row labels"));
     if (!isNull(collab) && !isString(collab))
@@ -335,8 +335,8 @@ static void PrintGenericVector(SEXP s, SEXP env)
     SEXP dims, t, names, newcall, tmp;
     char pbuf[115], *ptag, save[TAGBUFLEN0];
 
-    ns = length(s);
-    if((dims = getAttrib(s, R_DimSymbol)) != R_NilValue && length(dims) > 1) {
+    ns = Rf_length(s);
+    if((dims = getAttrib(s, R_DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = allocArray(STRSXP, dims));
@@ -413,7 +413,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		break;
 	    case LISTSXP:
 	    case VECSXP:
-		snprintf(pbuf, 115, "List,%zu", length(tmp));
+		snprintf(pbuf, 115, "List,%d", Rf_length(tmp));
 		break;
 	    case LANGSXP:
 		snprintf(pbuf, 115, "Expression");
@@ -504,7 +504,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 	    SEXP klass;
 	    if(isObject(s) && isMethodsDispatchOn()) {
 		klass = getAttrib(s, R_ClassSymbol);
-		if(length(klass) == 1) {
+		if(Rf_length(klass) == 1) {
 		    /* internal version of isClass() */
 		    char str[201];
 		    const char *ss = translateChar(STRING_ELT(klass, 0));
@@ -541,7 +541,7 @@ static void printList(SEXP s, SEXP env)
     char pbuf[101], *ptag;
     const char *rn, *cn;
 
-    if ((dims = getAttrib(s, R_DimSymbol)) != R_NilValue && length(dims) > 1) {
+    if ((dims = getAttrib(s, R_DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = allocArray(STRSXP, dims));
@@ -575,7 +575,7 @@ static void printList(SEXP s, SEXP env)
 		break;
 
 	    case LISTSXP:
-		snprintf(pbuf, 100, "List,%zu", length(CAR(s)));
+		snprintf(pbuf, 100, "List,%d", Rf_length(CAR(s)));
 		break;
 
 	    case LANGSXP:

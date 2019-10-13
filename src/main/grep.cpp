@@ -691,7 +691,7 @@ static int fgrep_one(const char *pat, const char *target,
 		if (next != nullptr) *next = ib + plen;
 		return i;
 	    }
-	    used = (int) Mbrtowc(NULL,  target+ib, MB_CUR_MAX, &mb_st);
+	    used = (int) Rf_mbrtowc(NULL,  target+ib, MB_CUR_MAX, &mb_st);
 	    if (used <= 0) break;
 	    ib += used;
 	}
@@ -735,7 +735,7 @@ static int fgrep_one_bytes(const char *pat, const char *target, int len,
 	mbs_init(&mb_st);
 	for (ib = 0, i = 0; ib <= len-plen; i++) {
 	    if (strncmp(pat, target+ib, plen) == 0) return ib;
-	    used = (int) Mbrtowc(NULL, target+ib, MB_CUR_MAX, &mb_st);
+	    used = (int) Rf_mbrtowc(NULL, target+ib, MB_CUR_MAX, &mb_st);
 	    if (used <= 0) break;
 	    ib += used;
 	}

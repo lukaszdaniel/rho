@@ -110,7 +110,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
     format = num_args ? args[0] : nullptr;
     if (!isString(format))
 	error(_("'fmt' is not a character vector"));
-    nfmt = length(format);
+    nfmt = Rf_length(format);
     if (nfmt == 0) return allocVector(STRSXP, 0);
     args = (args + 1); nargs--;
     if(nargs >= MAXNARGS)
@@ -123,7 +123,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 	if((t_ai = TYPEOF(a[i])) == LANGSXP || t_ai == SYMSXP) /* << maybe add more .. */
 	    error(_("invalid type of argument[%d]: '%s'"),
 		  i+1, CHAR(type2str(t_ai)));
-	lens[i] = length(a[i]);
+	lens[i] = Rf_length(a[i]);
 	if(lens[i] == 0) return allocVector(STRSXP, 0);
     }
 
@@ -271,7 +271,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 
 #define CHECK_this_length						\
 			PROTECT(_this);					\
-			thislen = length(_this);			\
+			thislen = Rf_length(_this);			\
 			if(thislen == 0)				\
 			    error(_("coercion has changed vector length to 0"))
 

@@ -210,7 +210,7 @@ SEXP attribute_hidden do_sample(/*const*/ Expression* call, const BuiltInFunctio
     sn = x_;
     sk = size_;
     sreplace = replace_;
-    if(length(sreplace) != 1)
+    if(Rf_length(sreplace) != 1)
 	 error(_("invalid '%s' argument"), "replace");
     int replace = asLogical(sreplace);
     prob = prob_;
@@ -230,7 +230,7 @@ SEXP attribute_hidden do_sample(/*const*/ Expression* call, const BuiltInFunctio
 	if (MAYBE_REFERENCED(prob)) prob = duplicate(prob);
 	PROTECT(prob);
 	double *p = REAL(prob);
-	if (length(prob) != n)
+	if (Rf_length(prob) != n)
 	    error(_("incorrect number of probabilities"));
 	FixupProb(p, n, k, Rboolean(replace));
 	PROTECT(x = allocVector(INTSXP, n));

@@ -103,8 +103,8 @@ typedef struct yyltype
 #define INIT_DATA_COUNT 16384    	/* init parser data to this size */
 #define MAX_DATA_COUNT   65536		/* release it at the end if it is this size or larger*/
 
-#define DATA_COUNT  (ParseState.data ? length( ParseState.data ) / DATA_ROWS : 0)
-#define ID_COUNT    ((ParseState.ids ? length( ParseState.ids ) / 2 : 0) - 1)
+#define DATA_COUNT  (ParseState.data ? Rf_length( ParseState.data ) / DATA_ROWS : 0)
+#define ID_COUNT    ((ParseState.ids ? Rf_length( ParseState.ids ) / 2 : 0) - 1)
 
 static void finalizeData( ) ;
 static void growData( ) ;
@@ -938,7 +938,7 @@ static SEXP xxfuncall(SEXP expr, SEXP args)
 	if (isString(expr))
 	    expr = installChar(STRING_ELT(expr, 0));
 	PROTECT(expr);
-	if (length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == R_NilValue )
+	if (Rf_length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == R_NilValue )
 	    ans = lang1(expr);
 	else
             ans = new CachingExpression(expr, SEXP_downcast<PairList*>(CDR(args)));
@@ -1492,7 +1492,7 @@ static SEXP R_Parse(int n, ParseStatus *status, SEXP srcfile)
 finish:
 
     t = CDR(t);
-    PROTECT(rval = allocVector(EXPRSXP, length(t)));
+    PROTECT(rval = allocVector(EXPRSXP, Rf_length(t)));
     for (n = 0 ; n < LENGTH(rval) ; n++, t = CDR(t))
 	SET_XVECTOR_ELT(rval, n, CAR(t));
     if (ParseState.keepSrcRefs) {
@@ -1556,7 +1556,7 @@ SEXP R_ParseVector(SEXP text, int n, ParseStatus *status, SEXP srcfile)
 static const char *Prompt(SEXP prompt, int type)
 {
     if(type == 1) {
-	if(length(prompt) <= 0) {
+	if(Rf_length(prompt) <= 0) {
 	    return CHAR(STRING_ELT(GetOption1(install("prompt")), 0));
 	}
 	else
@@ -1638,7 +1638,7 @@ SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt,
 finish:
     R_IoBufferWriteReset(buffer);
     t = CDR(t);
-    PROTECT(rval = allocVector(EXPRSXP, length(t)));
+    PROTECT(rval = allocVector(EXPRSXP, Rf_length(t)));
     for (n = 0 ; n < LENGTH(rval) ; n++, t = CDR(t))
 	SET_VECTOR_ELT(rval, n, CAR(t));
     if (ParseState.keepSrcRefs) {
@@ -2259,12 +2259,12 @@ static int mbcs_get_next2(int c, ucs_t *wc)
 	    if(s[i] == R_EOF) error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
 	}
 	s[clen] ='\0'; /* x86 Solaris requires this */
-	res = mbtoucs(wc, s, clen);
+	res = Rf_mbtoucs(wc, s, clen);
 	if(res == -1) error(_("invalid multibyte character in parser at line %d"), ParseState.xxlineno);
     } else {
 	/* This is not necessarily correct for stateful MBCS */
 	while(clen <= MB_CUR_MAX) {
-	    res = mbtoucs(wc, s, clen);
+	    res = Rf_mbtoucs(wc, s, clen);
 	    if(res >= 0) break;
 	    if(res == -1)
 		error(_("invalid multibyte character in parser at line %d"), ParseState.xxlineno);
@@ -2518,7 +2518,7 @@ static int StringValue(int c, Rboolean forSymbol)
 	    ucs_t wc;
 	    char s[2] = " ";
 	    s[0] = (char) c;
-	    mbtoucs(&wc, s, 2);
+	    Rf_mbtoucs(&wc, s, 2);
 #else
 	    wchar_t wc;
 	    char s[2] = " ";
@@ -2595,15 +2595,15 @@ int Rf_isValidName(const char *name)
 	   use the wchar variants */
 	size_t n = strlen(name), used;
 	wchar_t wc;
-	used = Mbrtowc(&wc, p, n, NULL); p += used; n -= used;
+	used = Rf_mbrtowc(&wc, p, n, NULL); p += used; n -= used;
 	if(used == 0) return 0;
 	if (wc != L'.' && !iswalpha(wc) ) return 0;
 	if (wc == L'.') {
 	    /* We don't care about other than ASCII digits */
 	    if(isdigit(0xff & (int)*p)) return 0;
-	    /* Mbrtowc(&wc, p, n, NULL); if(iswdigit(wc)) return 0; */
+	    /* Rf_mbrtowc(&wc, p, n, NULL); if(iswdigit(wc)) return 0; */
 	}
-	while((used = Mbrtowc(&wc, p, n, NULL))) {
+	while((used = Rf_mbrtowc(&wc, p, n, NULL))) {
 	    if (!(iswalnum(wc) || wc == L'.' || wc == L'_')) break;
 	    p += used; n -= used;
 	}
@@ -2666,7 +2666,7 @@ static void setParseFilename(SEXP newname) {
     
     if (isEnvironment(ParseState.SrcFile)) {
     	SEXP oldname = findVar(install("filename"), ParseState.SrcFile);
-    	if (isString(oldname) && length(oldname) > 0 &&
+    	if (isString(oldname) && Rf_length(oldname) > 0 &&
     	    strcmp(CHAR(STRING_ELT(oldname, 0)),
     	           CHAR(STRING_ELT(newname, 0))) == 0) return;
 	REPROTECT(ParseState.SrcFile = NewEnvironment(R_NilValue, R_NilValue, R_EmptyEnv), ParseState.SrcFileProt);
@@ -3319,12 +3319,12 @@ static SEXP lengthgets2(SEXP x, int len) {
     SEXP result;
     PROTECT(result = allocVector( TYPEOF(x), len ));
     
-    len = (len < length(x)) ? len : length(x);
+    len = (len < Rf_length(x)) ? len : Rf_length(x);
     switch(TYPEOF(x)) {
     	case INTSXP: 
     	    for (int i = 0; i < len; i++)
     	    	INTEGER(result)[i] = INTEGER(x)[i];
-	    for (int i = len; i < length(result); i++)
+	    for (int i = len; i < Rf_length(result); i++)
 		INTEGER(result)[i] = 0;
     	    break;
     	case STRSXP:

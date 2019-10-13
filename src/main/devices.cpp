@@ -154,7 +154,7 @@ pGEDevDesc GEcurrentDevice(void)
      * If there is one, start it up. */
     if (NoDevices()) {
 	SEXP defdev = GetOption1(install("device"));
-	if (isString(defdev) && length(defdev) > 0) {
+	if (isString(defdev) && Rf_length(defdev) > 0) {
 	    SEXP devName = installChar(STRING_ELT(defdev, 0));
 	    /*  Not clear where this should be evaluated, since
 		grDevices need not be in the search path.

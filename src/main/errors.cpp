@@ -539,7 +539,7 @@ void Rf_PrintWarnings(void)
 
 static SEXP GetSrcLoc(SEXP srcref)
 {
-    if (TYPEOF(srcref) != INTSXP || length(srcref) < 4)
+    if (TYPEOF(srcref) != INTSXP || Rf_length(srcref) < 4)
 	return ScalarString(mkChar(""));
 
     SEXP srcfile = R_GetSrcFilename(srcref);
@@ -603,7 +603,7 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 	    int protectct = 0, skip = NA_INTEGER;
 	    SEXP opt = GetOption1(install("show.error.locations"));
 	    if (!isNull(opt)) {
-		if (TYPEOF(opt) == STRSXP && length(opt) == 1) {
+		if (TYPEOF(opt) == STRSXP && Rf_length(opt) == 1) {
 		    if (pmatch(ScalarString(mkChar("top")), opt, RHO_FALSE)) skip = 0;
 		    else if (pmatch(ScalarString(mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
 		} else if (TYPEOF(opt) == LGLSXP)
@@ -1020,7 +1020,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
     else errorcall(call, _("invalid '%s' value"), "domain");
 
     /* libintl seems to malfunction if given a message of "" */
-    if(strlen(domain) && length(STRING_ELT(msg1, 0))) {
+    if(strlen(domain) && Rf_length(STRING_ELT(msg1, 0))) {
 	char *fmt = dngettext(domain,
 			      translateChar(STRING_ELT(msg1, 0)),
 			      translateChar(STRING_ELT(msg2, 0)),

@@ -298,7 +298,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
     x = x_;
     if (!isVectorList(x))
 	error(_("invalid first argument"));
-    nx = length(x);
+    nx = Rf_length(x);
     if(nx == 0) return allocVector(STRSXP, 0);
 
 
@@ -327,7 +327,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	    if (!isString(VECTOR_ELT(x, j)))
 		error(_("non-string argument to Internal paste"));
 	}
-	ln = length(VECTOR_ELT(x, j));
+	ln = Rf_length(VECTOR_ELT(x, j));
 	if(ln > maxlen) maxlen = ln;
 	if(ln == 0) {nzero++; break;}
     }
@@ -338,13 +338,13 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
     for (i = 0; i < maxlen; i++) {
 	pwidth = 0;
 	for (j = 0; j < nx; j++) {
-	    k = length(VECTOR_ELT(x, j));
+	    k = Rf_length(VECTOR_ELT(x, j));
 	    pwidth += int( strlen(translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k))));
 	}
 	pwidth += (nx - 1) * sepw;
 	cbuf = buf = static_cast<char*>(R_AllocStringBuffer(pwidth, &cbuff));
 	for (j = 0; j < nx; j++) {
-	    k = length(VECTOR_ELT(x, j));
+	    k = Rf_length(VECTOR_ELT(x, j));
 	    if (k > 0) {
 		s = translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k));
 		strcpy(buf, s);

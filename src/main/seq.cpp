@@ -58,9 +58,9 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
     char *cbuf;
     const void *vmax = vmaxget();
 
-    if (length(s) != length(t))
+    if (Rf_length(s) != Rf_length(t))
 	errorcall(call, _("unequal factor lengths"));
-    n = length(s);
+    n = Rf_length(s);
     ls = getAttrib(s, R_LevelsSymbol);
     lt = getAttrib(t, R_LevelsSymbol);
     nls = LENGTH(ls);
@@ -166,8 +166,8 @@ SEXP attribute_hidden do_colon(/*const*/ Expression* call, const BuiltInFunction
 
     s1 = from_;
     s2 = to_;
-    n1 = length(s1);
-    n2 = length(s2);
+    n1 = Rf_length(s1);
+    n2 = Rf_length(s2);
     if (n1 == 0 || n2 == 0)
 	errorcall(call, _("argument of length 0"));
     if (n1 > 1)
@@ -403,7 +403,7 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 	error(_("attempt to replicate non-vector"));
 
     len = length_out_;
-    if(length(len) != 1)
+    if(Rf_length(len) != 1)
 	error(_("invalid '%s' value"), "length.out");
 #ifdef LONG_VECTOR_SUPPORT
     double sna = asReal(len);
@@ -651,14 +651,14 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if(len != NA_INTEGER && len < 0)
 	    errorcall(call, _("invalid '%s' argument"), "length.out");
     }
-    if(length(length_out) != 1)
+    if(Rf_length(length_out) != 1)
 	warningcall(call, _("first element used of '%s' argument"),
 		    "length.out");
 
     each = asInteger(each_);
     if(each != NA_INTEGER && each < 0)
 	errorcall(call, _("invalid '%s' argument"), "each");
-    if(length(each_) != 1)
+    if(Rf_length(each_) != 1)
 	warningcall(call, _("first element used of '%s' argument"), "each");
     if(each == NA_INTEGER) each = 1;
 
@@ -709,7 +709,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP xn = getAttrib(x, R_NamesSymbol);
 
     PROTECT(ans = rep4(x, times, len, each, nt));
-    if (length(xn) > 0)
+    if (Rf_length(xn) > 0)
 	setAttrib(ans, R_NamesSymbol, rep4(xn, times, len, each, nt));
 
 #ifdef _S4_rep_keepClass
@@ -737,7 +737,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = R_NilValue /* -Wall */, from, to, by, len, along, ignored;
-    int nargs = length(args), lf;
+    int nargs = Rf_length(args), lf;
     Rboolean One = RHOCONSTRUCT(Rboolean, nargs == 1);
     R_xlen_t i, lout = NA_INTEGER;
 
@@ -759,7 +759,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 		   { &from, &to, &by, &len, &along, &ignored });
 
     if(One && from != R_MissingArg) {
-	lf = length(from);
+	lf = Rf_length(from);
 	if(lf == 1 && (TYPEOF(from) == INTSXP || TYPEOF(from) == REALSXP)) {
 	    double rfrom = asReal(from);
 	    if (!R_FINITE(rfrom))
@@ -782,7 +782,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	double rout = asReal(len);
 	if(ISNAN(rout) || rout <= -0.5)
 	    errorcall(call, _("'length.out' must be a non-negative number"));
-	if(length(len) != 1)
+	if(Rf_length(len) != 1)
 	    warningcall(call, _("first element used of '%s' argument"),
 			"length.out");
 	lout = R_xlen_t( ceil(rout));
@@ -791,9 +791,9 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(lout == NA_INTEGER) {
 	double rfrom = asReal(from), rto = asReal(to), rby = asReal(by), *ra;
 	if(from == R_MissingArg) rfrom = 1.0;
-	else if(length(from) != 1) error("'from' must be of length 1");
+	else if(Rf_length(from) != 1) error("'from' must be of length 1");
 	if(to == R_MissingArg) rto = 1.0;
-	else if(length(to) != 1) error("'to' must be of length 1");
+	else if(Rf_length(to) != 1) error("'to' must be of length 1");
 	if (!R_FINITE(rfrom))
 	    errorcall(call, "'from' cannot be NA, NaN or infinite");
 	if (!R_FINITE(rto))
@@ -801,7 +801,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if(by == R_MissingArg)
 	    ans = seq_colon(rfrom, rto, call);
 	else {
-	    if(length(by) != 1) error("'by' must be of length 1");
+	    if(Rf_length(by) != 1) error("'by' must be of length 1");
 	    double del = rto - rfrom, n, dd;
 	    R_xlen_t nn;
 	    if(!R_FINITE(rfrom))
@@ -972,7 +972,7 @@ SEXP attribute_hidden do_seq_len(/*const*/ Expression* call, const BuiltInFuncti
     SEXP ans;
     R_xlen_t len;
 
-    if(length(length_) != 1)
+    if(Rf_length(length_) != 1)
 	warningcall(call, _("first element used of '%s' argument"),
 		    "length.out");
 

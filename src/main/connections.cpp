@@ -4610,7 +4610,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 			const char *p = s;
 			mbs_init(&mb_st);
 			for(i = 0, lenb = 0; RHO_S_CAST(R_xlen_t, i) < len; i++) {
-			    used = Mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st);
+			    used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st);
 			    p += used;
 			    lenb += used;
 			}

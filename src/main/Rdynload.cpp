@@ -1108,7 +1108,7 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
 
     name = translateChar(STRING_ELT(sname, 0));
 
-    if(length(spackage)) {
+    if(Rf_length(spackage)) {
 	if(TYPEOF(spackage) == STRSXP)
 	    package = translateChar(STRING_ELT(spackage, 0));
 	else if(TYPEOF(spackage) == EXTPTRSXP &&
@@ -1328,7 +1328,7 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 	withRegistrationInfo = with_registration_info_;
 
     name = translateChar(STRING_ELT(sname, 0));
-    if(length(spackage)) {
+    if(Rf_length(spackage)) {
 	if(TYPEOF(spackage) == STRSXP)
 	    package = translateChar(STRING_ELT(spackage, 0));
 	else if(TYPEOF(spackage) == EXTPTRSXP &&

@@ -372,7 +372,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* This is the zero argument case.
 	   We alloc up a vector list and write the system values into it.
 	*/
-	int n = length(options);
+	int n = Rf_length(options);
 	PROTECT(value = allocVector(VECSXP, n));
 	PROTECT(names = allocVector(STRSXP, n));
 	for (int i = 0; i < n; i++) {
@@ -402,11 +402,11 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
        [ Vomits quietly onto shoes ... ]
        */
 
-    int n = length(args);
+    int n = Rf_length(args);
     if (n == 1 && (isPairList(CAR(args)) || isVectorList(CAR(args)))
 	&& TAG(args) == R_NilValue ) {
 	args = CAR(args);
-	n = length(args);
+	n = Rf_length(args);
     }
     PROTECT(value = allocVector(VECSXP, n));
     PROTECT(names = allocVector(STRSXP, n));

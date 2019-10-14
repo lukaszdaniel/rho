@@ -207,7 +207,7 @@ static SEXP xxnewlist(SEXP item)
     	UNPROTECT_PTR(item);
     } else ans = tmp;
 #if DEBUGVALS
-    Rprintf(" result: %p is length %d\n", ans, length(ans));
+    Rprintf(" result: %p is length %d\n", ans, Rf_length(ans));
 #endif
     return ans;
 }
@@ -222,7 +222,7 @@ static SEXP xxlist(SEXP oldlist, SEXP item)
     UNPROTECT_PTR(item);
     UNPROTECT_PTR(oldlist);
 #if DEBUGVALS
-    Rprintf(" result: %p is length %d\n", ans, length(ans));
+    Rprintf(" result: %p is length %d\n", ans, Rf_length(ans));
 #endif
     return ans;
 }
@@ -294,7 +294,7 @@ static SEXP xxblock(SEXP body, YYLTYPE *lloc)
 static int VerbatimLookup(const char *s)
 {
     int i;
-    for (i = 0; i < length(parseState.xxVerbatimList); i++) {
+    for (i = 0; i < Rf_length(parseState.xxVerbatimList); i++) {
     	if (strcmp(s, CHAR(STRING_ELT(parseState.xxVerbatimList, i))) == 0)
     	    return TRUE;
     }

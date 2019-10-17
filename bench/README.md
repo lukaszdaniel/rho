@@ -35,7 +35,7 @@ To build faster you can add `--no-clean` which skips running `git clean` before 
 
 
 The benchmark script will build and benchmark with and without JIT enabled. You
-can disable the JIT benchmark by adding `--no-jit`:
+can disable the JIT benchmark by adding `--skip-jit`:
 
     $ ./runbench.py --skip-jit 1234567
 

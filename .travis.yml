@@ -20,6 +20,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - gfortran
             - automake
             - perl
             - libboost-all-dev
@@ -30,8 +31,7 @@ matrix:
             - libedit-dev
             - gcc-7=7.4.*
             - g++-7=7.4.*
-            - gfortran-7=7.4.*
-      env: F77=gfortran-7 FCC=gfortran-7 C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CFLAGS="-g -O1 --coverage" CXXFLAGS="${CFLAGS}" LDFLAGS="${CFLAGS}" COVERAGE=1
+      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CFLAGS="-g -O1 --coverage" CXXFLAGS="${CFLAGS}" LDFLAGS="${CFLAGS}" COVERAGE=1
 
     # With address sanitizer enabled.  Use the most recent supported verison
     # of clang, to get the best error detection.
@@ -54,7 +54,6 @@ matrix:
             - libomp-dev
             - clang-7
             - llvm-7-dev
-            - gfortran-7=7.4.*
       env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 LLVM_CONFIG=/usr/bin/llvm-config-7 CPPFLAGS="-DNO_CELLPOOLS" CFLAGS="-g -O2 -fsanitize=address" CXXFLAGS="${CFLAGS}" MAIN_LDFLAGS="${CFLAGS}"
 
     # # With undefined behaviour sanitizer enabled.  Use the most recent

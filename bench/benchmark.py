@@ -48,7 +48,7 @@ def parse_args():
       'gitref', nargs='+',
       help='The Rho git reference to benchmark')
   parser.add_argument(
-      '--repository', default='git@github.com:rho-devel/rho',
+      '--repository', default='https://github.com/lukaszdaniel/rho.git',
       help='The git repository to clone from.')
   parser.add_argument(
       '--build_dir', default='rho',
@@ -117,14 +117,14 @@ def build_rho(gitref, args, jit):
         subprocess.call(['tools/rsync-recommended'])
         # Use Clang to build (needed for the LLVM JIT build).
         env = os.environ.copy()
-        env['CC'] = 'clang'
-        env['CXX'] = 'clang++'
+        env['CC'] = 'clang-7'
+        env['CXX'] = 'clang++-7'
         if jit:
           # Build with JIT enabled.
           # Requires llvm-config to be on PATH.
           subprocess.call([
               './configure', '--with-blas', '--with-lapack',
-              '--enable-llvm-jit'], env=env)
+              '--enable-llvm-jit', '--with-llvm=/usr/bin/llvm-config-7'], env=env)
         else:
           subprocess.call([
               './configure', '--with-blas', '--with-lapack'], env=env)
@@ -257,7 +257,7 @@ def setup_benchmarks(args):
     os.mkdir(args.result_dir)
   if not os.path.isdir('benchmarks'):
     # Clone the benchmark suite.
-    subprocess.call(['git', 'clone', 'git@github.com:rho-devel/benchmarks.git',
+    subprocess.call(['git', 'clone', 'https://github.com/rho-devel/benchmarks.git',
                      'benchmarks'])
     bench_dir = os.getcwd()
     try:

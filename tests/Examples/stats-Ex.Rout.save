@@ -3798,7 +3798,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7fe47ce12630>
+<environment: 0x7fc973678b50>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -7290,7 +7290,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7fe47d974a40>
+<environment: 0x7fc97483f870>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -11780,12 +11780,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7fe47cbd21e0>
+<environment: 0x7fc9740353d0>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7fe47cbd21e0>
+<environment: 0x7fc9740353d0>
 
 > 
 > 
@@ -15815,7 +15815,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7fe47e352e70>
+<environment: 0x7fc973eb6090>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -18092,7 +18092,7 @@ Number of Fisher Scoring iterations: 6
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  12.553 0.156 12.71 0 0 
+Time elapsed:  12.568 0.152 12.722 0 0 
 > grDevices::dev.off()
 null device 
           1 

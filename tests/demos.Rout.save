@@ -1516,5 +1516,5 @@ sm     3    3    3    3    4    4    4    4    2     2     2
 > par(op)
 > 
 > cat("Time elapsed: ", proc.time() - .ptime, "\n")
-Time elapsed:  1.441 0.02 1.46 0 0 
+Time elapsed:  1.382 0.025 1.406 0 0 
 > 

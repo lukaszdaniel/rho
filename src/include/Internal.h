@@ -483,7 +483,7 @@ SEXP do_getallconnections(rho::Expression* call, const rho::BuiltInFunction* op)
 SEXP do_sumconnection(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object_);
 SEXP do_sockconn(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* host_, rho::RObject* port_, rho::RObject* server_, rho::RObject* blocking_, rho::RObject* open_, rho::RObject* encoding_, rho::RObject* timeout_);
 SEXP do_sockselect(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* socklist_, rho::RObject* write_, rho::RObject* timeout_);
-SEXP do_gzcon(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* con_, rho::RObject* level_, rho::RObject* allowNonCompressed_);
+SEXP do_gzcon(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* con_, rho::RObject* level_, rho::RObject* allowNonCompressed_, rho::RObject* text_);
 SEXP do_memCompress(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* from_, rho::RObject* type_);
 SEXP do_memDecompress(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* from_, rho::RObject* type_);
 

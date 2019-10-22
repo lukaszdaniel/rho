@@ -5211,6 +5211,11 @@ size_t R_ReadConnection(Rconnection con, void *buf, size_t n)
     return con->read(buf, 1, n, con);
 }
 
+Rconnection R_GetConnection(SEXP sConn) {
+    if (!inherits(sConn, "connection")) error(_("invalid connection"));
+    return getConnection(asInteger(sConn));
+}
+
 /* ------------------- (de)compression functions  --------------------- */
 
 /* Code for gzcon connections is modelled on gzio.c from zlib 1.2.3 */
@@ -5473,13 +5478,14 @@ static int gzcon_fgetc(Rconnection con)
 
 
 /* gzcon(con, level, allowNonCompressed) */
-SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* level_, RObject* allowNonCompressed_)
+SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* level_, RObject* allowNonCompressed_, RObject* text_)
 {
     SEXP ans, connclass;
     int icon, level, allow;
     Rconnection incon = nullptr, newconn = nullptr;
     char *m, description[1000];
     RHOCONST char* mode = nullptr;
+    Rboolean text;
 
     if(!inherits(con_, "connection"))
 	error(_("'con' is not a connection"));
@@ -5490,7 +5496,10 @@ SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction
     allow = asLogical(allowNonCompressed_);
     if(allow == NA_INTEGER)
 	error(_("'allowNonCompression' must be TRUE or FALSE"));
-
+    text = Rboolean(asLogical(text_));
+    if(text == NA_INTEGER)
+        error(_("'text' must be TRUE or FALSE"));
+    
     if(incon->isGzcon) {
 	warning(_("this is already a 'gzcon' connection"));
 	return con_;
@@ -5521,7 +5530,7 @@ SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction
 	error(_("allocation of 'gzcon' connection failed"));
     }
     init_con(newconn, description, CE_NATIVE, mode);
-    newconn->text = FALSE;
+    newconn->text = text;
     newconn->isGzcon = TRUE;
     newconn->open = &gzcon_open;
     newconn->close = &gzcon_close;

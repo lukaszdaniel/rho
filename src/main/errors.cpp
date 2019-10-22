@@ -1549,7 +1549,7 @@ static void vsignalError(SEXP call, const char *format, va_list ap)
 	char *buf = errbuf;
 	SEXP entry = list->car();
 	R_HandlerStack = list->tail();
-	strncpy(buf, localbuf, BUFSIZE - 1);
+	strncpy(buf, localbuf, BUFSIZE);
 	/*	Rvsnprintf(buf, BUFSIZE - 1, format, ap);*/
 	buf[BUFSIZE - 1] = 0;
 	if (IS_CALLING_ENTRY(entry)) {

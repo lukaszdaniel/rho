@@ -1594,7 +1594,7 @@ SEXP attribute_hidden do_diag(/*const*/ Expression* call, const BuiltInFunction*
     if (nc < 0)
 	error(_("invalid 'ncol' value (< 0)"));
     int mn = (nr < nc) ? nr : nc;
-    if (mn > 0 && LENGTH(x) == 0)
+    if (mn > 0 && Rf_length(x) == 0)
 	error(_("'x' must have positive length"));
 
 #ifndef LONG_VECTOR_SUPPORT

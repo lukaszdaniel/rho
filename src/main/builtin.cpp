@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2015  The R Core Team.
+ *  Copyright (C) 1999-2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -224,15 +224,24 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
 {
     if (TYPEOF(fun_) == CLOSXP)
 	return duplicate(FORMALS(fun_));
-    else
+    else {
+	if(!(TYPEOF(fun_) == BUILTINSXP ||
+	     TYPEOF(fun_) == SPECIALSXP))
+	    warningcall(call, _("argument is not a function"));
 	return R_NilValue;
+    }
 }
 
 SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP)
 	return duplicate(BODY(fun_));
-    else return R_NilValue;
+    else {
+	if(!(TYPEOF(fun_) == BUILTINSXP ||
+	     TYPEOF(fun_) == SPECIALSXP))
+	    warningcall(call, _("argument is not a function"));
+	return R_NilValue;
+    }
 }
 
 namespace rho {
@@ -607,10 +616,9 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 
 SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP list, names, next;
-    int i, n, havenames;
-
+    int n, havenames;
     /* compute number of args and check for names */
+    SEXP next;
     for (next = args, n = 0, havenames = FALSE;
 	 next != R_NilValue;
 	 next = CDR(next)) {
@@ -619,9 +627,9 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 	n++;
     }
 
-    PROTECT(list = allocVector(VECSXP, n));
-    PROTECT(names = havenames ? allocVector(STRSXP, n) : R_NilValue);
-    for (i = 0; i < n; i++) {
+    SEXP list = PROTECT(allocVector(VECSXP, n));
+    SEXP names = PROTECT(havenames ? allocVector(STRSXP, n) : R_NilValue);
+    for (int i = 0; i < n; i++) {
 	if (havenames) {
 	    if (TAG(args) != R_NilValue)
 		SET_STRING_ELT(names, i, PRINTNAME(TAG(args)));

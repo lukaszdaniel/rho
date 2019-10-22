@@ -2034,7 +2034,7 @@ assign("#HAS_DUPLICATE_CLASS_NAMES", FALSE, envir = .classTable)
 ## in the assumption this is a classRepresentation or subclass of that.
 ## In principle, this could replace the checks on class(name) in getClassDef
 ## and new(), which don't work for subclasses of classRepresentation anyway.
-.getClassFromCache <- function(name, where = "", package = packageSlot(name),
+.getClassFromCache <- function(name, where, package = packageSlot(name),
                                resolve.confl = "first", resolve.msg = TRUE) {
 	value <- .Call(C_R_getClassFromCache, name, .classTable)
 	if(is.list(value)) { ## multiple classes with this name -- choose at most one
@@ -2050,10 +2050,13 @@ assign("#HAS_DUPLICATE_CLASS_NAMES", FALSE, envir = .classTable)
 		switch(resolve.confl,
 		       "none" = NULL,
 		       "first" = {
-			   if(resolve.msg)
+			   if(resolve.msg) {
 			       message(gettextf(
 				"Found more than one class \"%s\" in cache; using the first, from namespace '%s'",
 				name, pkgs[1]), domain=NA)
+                               message("Also defined by ",
+                                       paste(sQuote(pkgs[-1]), collapse = " "))
+                           }
 			   value[[1]]
 		       },
 		       "all" = value) # return all, a list
@@ -2457,3 +2460,4 @@ isMixin <- function(classDef) {
     is.environment(env) && exists(what, envir = env, inherits = FALSE) &&
        bindingIsLocked(what, env)
 }
+

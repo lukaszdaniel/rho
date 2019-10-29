@@ -512,7 +512,7 @@ void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
 
     const char *supplied = CHAR(PRINTNAME(tag));
     if (strncmp(supplied, formal, strlen(supplied)) != 0)
-	errorcall(const_cast<RObject*>(call),
+	Rf_errorcall(const_cast<RObject*>(call),
 		  _("supplied argument name '%s' does not match '%s'"),
 		  supplied, formal);
 }
@@ -537,10 +537,10 @@ void attribute_hidden Expression::check1arg(const char *formal) const
 
 SEXP Rf_nthcdr(SEXP s, int n)
 {
-    if (isList(s) || isLanguage(s) || isFrame(s) || TYPEOF(s) == DOTSXP ) {
+    if (Rf_isList(s) || Rf_isLanguage(s) || Rf_isFrame(s) || TYPEOF(s) == DOTSXP ) {
 	while( n-- > 0 ) {
 	    if (s == R_NilValue)
-		error(_("'nthcdr' list shorter than %d"), n);
+		Rf_error(_("'nthcdr' list shorter than %d"), n);
 	    s = CDR(s);
 	}
 	return s;
@@ -559,7 +559,7 @@ SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction
 	cptr = ClosureContext::innermost(cptr->nextOut());
     if (cptr)
 	nargs = cptr->promiseArgs().size();
-    return ScalarInteger(nargs);
+    return Rf_ScalarInteger(nargs);
 }
 
 
@@ -621,6 +621,18 @@ static void isort_with_index(int *x, int *indx, int n)
 }
 
 
+// body(x) without attributes "srcref", "srcfile", "wholeSrcref" :
+SEXP R_body_no_src(SEXP x) {
+    SEXP b = PROTECT(Rf_duplicate(BODY_EXPR(x)));
+    /* R's removeSource() works *recursively* on the body()
+       in  ../library/utils/R/sourceutils.R  but that seems unneeded (?) */
+    Rf_setAttrib(b, R_SrcrefSymbol, R_NilValue);
+    Rf_setAttrib(b, R_SrcfileSymbol, R_NilValue);
+    Rf_setAttrib(b, R_WholeSrcrefSymbol, R_NilValue);
+    UNPROTECT(1);
+    return b;
+}
+
 /* merge(xinds, yinds, all.x, all.y) */
 /* xinds, yinds are along x and y rows matching into the (numeric)
    common indices, with 0 for non-matches.
@@ -639,15 +651,15 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 
     xi = xinds_;
     // NB: long vectors are not supported for input
-    if ( !isInteger(xi) || !(nx = LENGTH(xi)) )
-	error(_("invalid '%s' argument"), "xinds");
+    if ( !Rf_isInteger(xi) || !(nx = LENGTH(xi)) )
+	Rf_error(_("invalid '%s' argument"), "xinds");
     yi = yinds_;
-    if ( !isInteger(yi) || !(ny = LENGTH(yi)) )
-	error(_("invalid '%s' argument"), "yinds");
-    if(!LENGTH(ans = all_x_) || NA_LOGICAL == (all_x = asLogical(ans)))
-	error(_("'all.x' must be TRUE or FALSE"));
-    if(!LENGTH(ans = all_y_)|| NA_LOGICAL == (all_y = asLogical(ans)))
-	error(_("'all.y' must be TRUE or FALSE"));
+    if ( !Rf_isInteger(yi) || !(ny = LENGTH(yi)) )
+	Rf_error(_("invalid '%s' argument"), "yinds");
+    if(!LENGTH(ans = all_x_) || NA_LOGICAL == (all_x = Rf_asLogical(ans)))
+	Rf_error(_("'all.x' must be TRUE or FALSE"));
+    if(!LENGTH(ans = all_y_)|| NA_LOGICAL == (all_y = Rf_asLogical(ans)))
+	Rf_error(_("'all.y' must be TRUE or FALSE"));
 
     /* 0. sort the indices */
     int* ix = static_cast<int *>( RHO_alloc(size_t( nx), sizeof(int)));
@@ -678,7 +690,7 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 	dnans += ((double)(nnx-i))*(nny-j);
     }
     if (dnans > R_XLEN_T_MAX)
-	error(_("number of rows in the result exceeds maximum vector length"));
+	Rf_error(_("number of rows in the result exceeds maximum vector length"));
     R_xlen_t nans = (int) dnans;
 
 
@@ -686,18 +698,18 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 
     const char *nms[] = {"xi", "yi", "x.alone", "y.alone", ""};
     ans = PROTECT(mkNamed(VECSXP, nms));
-    ansx = allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 0, ansx);
-    ansy = allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 1, ansy);
+    ansx = Rf_allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 0, ansx);
+    ansy = Rf_allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 1, ansy);
 
     if(all_x) {
-	SEXP x_lone = allocVector(INTSXP, nx_lone);
+	SEXP x_lone = Rf_allocVector(INTSXP, nx_lone);
 	SET_VECTOR_ELT(ans, 2, x_lone);
 	for (i = 0, ll = 0; i < nx_lone; i++)
 	    INTEGER(x_lone)[ll++] = ix[i];
     }
 
     if(all_y) {
-	SEXP y_lone = allocVector(INTSXP, ny_lone);
+	SEXP y_lone = Rf_allocVector(INTSXP, ny_lone);
 	SET_VECTOR_ELT(ans, 3, y_lone);
 	for (i = 0, ll = 0; i < ny_lone; i++)
 	    INTEGER(y_lone)[ll++] = iy[i];
@@ -743,7 +755,7 @@ SEXP static intern_getwd(void)
     }
 #else
     char *res = getcwd(buf, PATH_MAX); /* can return NULL */
-    if(res) rval = mkString(buf);
+    if(res) rval = Rf_mkString(buf);
 #endif
     return(rval);
 }
@@ -981,7 +993,7 @@ SEXP attribute_hidden do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
 #else
     Rboolean OK;
     warning("this platform does not have realpath so the results may not be canonical");
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     for (i = 0; i < n; i++) {
 	path = translateChar(STRING_ELT(paths, i));
 	OK = strlen(path) <= PATH_MAX;
@@ -1000,9 +1012,9 @@ SEXP attribute_hidden do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SET_STRING_ELT(ans, i, STRING_ELT(paths, i));
 	    /* and report the problem */
 	    if (mustWork == 1)
-		error("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
+		Rf_error("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
 	    else if (mustWork == NA_LOGICAL)
-		warning("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
+		Rf_warning("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
 	}
     }
 #endif
@@ -1041,26 +1053,26 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
 
     if (TYPEOF(x = x_) != STRSXP)
 	error(_("a character vector argument expected"));
-    if(isNull(width_)) w = NA_INTEGER;
+    if(Rf_isNull(width_)) w = NA_INTEGER;
     else {
-	w = asInteger(width_);
+	w = Rf_asInteger(width_);
 	if(w != NA_INTEGER && w < 0)
-	    error(_("invalid '%s' value"), "width");
+	    Rf_error(_("invalid '%s' value"), "width");
     }
     findWidth = RHOCONSTRUCT(Rboolean, (w == NA_INTEGER));
     s = quote_;
     if(LENGTH(s) != 1 || TYPEOF(s) != STRSXP)
-	error(_("invalid '%s' value"), "quote");
-    cs = translateChar(STRING_ELT(s, 0));
+	Rf_error(_("invalid '%s' value"), "quote");
+    cs = Rf_translateChar(STRING_ELT(s, 0));
     if(strlen(cs) > 0) quote = cs[0];
     if(strlen(cs) > 1)
-	warning(_("only the first character of 'quote' will be used"));
-    justify = asInteger(na_encode_);
+	Rf_warning(_("only the first character of 'quote' will be used"));
+    justify = Rf_asInteger(na_encode_);
     if(justify == NA_INTEGER || justify < 0 || justify > 3)
-	error(_("invalid '%s' value"), "justify");
+	Rf_error(_("invalid '%s' value"), "justify");
     if(justify == 3) w = 0;
-    na = asLogical(justify_);
-    if(na == NA_LOGICAL) error(_("invalid '%s' value"), "na.encode");
+    na = Rf_asLogical(justify_);
+    if(na == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "na.encode");
 
     len = XLENGTH(x);
     if(findWidth && justify < 3) {
@@ -1072,18 +1084,18 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
 	}
 	if(quote) w +=2; /* for surrounding quotes */
     }
-    PROTECT(ans = duplicate(x));
+    PROTECT(ans = Rf_duplicate(x));
     for(i = 0; i < len; i++) {
 	s = STRING_ELT(x, i);
 	if(na || s != NA_STRING) {
 	    cetype_t ienc = getCharCE(s);
 	    if(ienc == CE_UTF8) {
-		const char *ss = EncodeString(s, w-1000000, quote,
+		const char *ss = Rf_EncodeString(s, w-1000000, quote,
 					      (Rprt_adj) justify);
-		SET_STRING_ELT(ans, i, mkCharCE(ss, ienc));
+		SET_STRING_ELT(ans, i, Rf_mkCharCE(ss, ienc));
 	    } else {
 		const char *ss = EncodeString(s, w, quote, Rprt_adj( justify));
-		SET_STRING_ELT(ans, i, mkChar(ss));
+		SET_STRING_ELT(ans, i, Rf_mkChar(ss));
 	    }
 	}
     }
@@ -1098,9 +1110,9 @@ SEXP attribute_hidden do_encoding(/*const*/ Expression* call, const BuiltInFunct
     RHOCONST char *tmp;
 
     if (TYPEOF(x = x_) != STRSXP)
-	error(_("a character vector argument expected"));
+	Rf_error(_("a character vector argument expected"));
     n = XLENGTH(x);
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     for (i = 0; i < n; i++) {
 	if(IS_BYTES(STRING_ELT(x, i))) tmp = "bytes";
 	else if(IS_LATIN1(STRING_ELT(x, i))) tmp = "latin1";
@@ -1154,7 +1166,7 @@ SEXP attribute_hidden Rf_markKnown(const char *s, SEXP ref)
 	if(known_to_be_latin1) ienc = CE_LATIN1;
 	if(known_to_be_utf8) ienc = CE_UTF8;
     }
-    return mkCharCE(s, ienc);
+    return Rf_mkCharCE(s, ienc);
 }
 
 Rboolean Rf_strIsASCII(const char *str)
@@ -1253,16 +1265,16 @@ Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 
     if(wc)
 	for(p = wc, t = s; ; p++, t += m) {
-	    m  = ssize_t( utf8toucs(p, t));
-	    if (m < 0) error(_("invalid input '%s' in 'utf8towcs'"), s);
+	    m  = ssize_t( Rf_utf8toucs(p, t));
+	    if (m < 0) Rf_error(_("invalid input '%s' in 'utf8towcs'"), s);
 	    if (m == 0) break;
 	    res ++;
 	    if (res >= RHOCONSTRUCT(int, n)) break;
 	}
     else
 	for(t = s; ; res++, t += m) {
-	    m  = ssize_t( utf8toucs(&local, t));
-	    if (m < 0) error(_("invalid input '%s' in 'utf8towcs'"), s);
+	    m  = ssize_t( Rf_utf8toucs(&local, t));
+	    if (m < 0) Rf_error(_("invalid input '%s' in 'utf8towcs'"), s);
 	    if (m == 0) break;
 	}
     return size_t( res);
@@ -1347,7 +1359,7 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
 	    }
 	}
 	*q = '\0';
-	error(_("invalid multibyte string at '%s'"), err);
+	Rf_error(_("invalid multibyte string at '%s'"), err);
     }
     return used;
 }
@@ -1367,10 +1379,10 @@ Rboolean utf8Valid(const char *str)
 
 SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, RObject* x)
 {
-    if (!isString(x))
-	error(_("invalid '%s' argument"), "x");
+    if (!Rf_isString(x))
+	Rf_error(_("invalid '%s' argument"), "x");
     R_xlen_t n = XLENGTH(x);
-    SEXP ans = allocVector(LGLSXP, n); // no allocation below
+    SEXP ans = Rf_allocVector(LGLSXP, n); // no allocation below
     int *lans = LOGICAL(ans);
     for (R_xlen_t i = 0; i < n; i++)
 	lans[i] = utf8Valid(CHAR(STRING_ELT(x, i)));
@@ -1379,10 +1391,10 @@ SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, 
 
 SEXP attribute_hidden do_validEnc(Expression* call, const BuiltInFunction* op, RObject* x)
 {
-    if (!isString(x))
-	error(_("invalid '%s' argument"), "x");
+    if (!Rf_isString(x))
+	Rf_error(_("invalid '%s' argument"), "x");
     R_xlen_t n = XLENGTH(x);
-    SEXP ans = allocVector(LGLSXP, n); // no allocation below
+    SEXP ans = Rf_allocVector(LGLSXP, n); // no allocation below
     int *lans = LOGICAL(ans);
     for (R_xlen_t i = 0; i < n; i++) {
 	SEXP p = STRING_ELT(x, i);
@@ -1486,12 +1498,12 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar)
     int nc = *nchar;
     char buf[256];
     if(nc > 255) {
-	warning(_("error message truncated to 255 chars"));
+	Rf_warning(_("error message truncated to 255 chars"));
 	nc = 255;
     }
     strncpy(buf, msg, size_t( nc));
     buf[nc] = '\0';
-    error("%s", buf);
+    Rf_error("%s", buf);
 }
 
 void F77_SYMBOL(rwarnc)(char *msg, int *nchar)
@@ -1499,12 +1511,12 @@ void F77_SYMBOL(rwarnc)(char *msg, int *nchar)
     int nc = *nchar;
     char buf[256];
     if(nc > 255) {
-	warning(_("warning message truncated to 255 chars"));
+	Rf_warning(_("warning message truncated to 255 chars"));
 	nc = 255;
     }
     strncpy(buf, msg, size_t( nc));
     buf[nc] = '\0';
-    warning("%s", buf);
+    Rf_warning("%s", buf);
 }
 
 void F77_SYMBOL(rchkusr)(void)
@@ -1647,7 +1659,7 @@ double R_strtod5(const char *str, char **endptr, char dec,
 #define strtod_EXACT_CLAUSE						\
 	if(exact && ans > 0x1.fffffffffffffp52) {			\
 	    if(exact == NA_LOGICAL)					\
-		warning(_(						\
+		Rf_warning(_(						\
 		"accuracy loss in conversion from \"%s\" to numeric"),	\
 			str);						\
 	    else {							\
@@ -1763,24 +1775,24 @@ SEXP attribute_hidden do_enc2(/*const*/ Expression* call, const BuiltInFunction*
     R_xlen_t i;
     Rboolean duped = FALSE;
 
-    if (!isString(ans))
-	errorcall(call, "argumemt is not a character vector");
+    if (!Rf_isString(ans))
+	Rf_errorcall(call, "argumemt is not a character vector");
     for (i = 0; i < XLENGTH(ans); i++) {
 	el = STRING_ELT(ans, i);
 	if (el == NA_STRING) continue;
 	if (op->variant() || known_to_be_utf8) { /* enc2utf8 */
 	    if (IS_UTF8(el) || IS_ASCII(el) || IS_BYTES(el)) continue;
-	    if (!duped) { ans = PROTECT(duplicate(ans)); duped = TRUE; }
+	    if (!duped) { ans = PROTECT(Rf_duplicate(ans)); duped = TRUE; }
 	    SET_STRING_ELT(ans, i,
-			   mkCharCE(translateCharUTF8(el), CE_UTF8));
+			   Rf_mkCharCE(Rf_translateCharUTF8(el), CE_UTF8));
 	} else if (ENC_KNOWN(el)) { /* enc2native */
 	    if (IS_ASCII(el) || IS_BYTES(el)) continue;
 	    if (known_to_be_latin1 && IS_LATIN1(el)) continue;
-	    if (!duped) { PROTECT(ans = duplicate(ans)); duped = TRUE; }
+	    if (!duped) { PROTECT(ans = Rf_duplicate(ans)); duped = TRUE; }
 	    if (known_to_be_latin1)
-		SET_STRING_ELT(ans, i, mkCharCE(translateChar(el), CE_LATIN1));
+		SET_STRING_ELT(ans, i, Rf_mkCharCE(Rf_translateChar(el), CE_LATIN1));
 	    else
-		SET_STRING_ELT(ans, i, mkChar(translateChar(el)));
+		SET_STRING_ELT(ans, i, Rf_mkChar(Rf_translateChar(el)));
 	}
     }
     if(duped) UNPROTECT(1);

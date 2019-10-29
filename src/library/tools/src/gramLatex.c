@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.3.2.  */
+/* A Bison parser, made by GNU Bison 3.4.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.3.2"
+#define YYBISON_VERSION "3.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -66,7 +66,6 @@
 
 
 /* First part of user prologue.  */
-
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -399,6 +398,8 @@ typedef short yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
 
 #if ! defined yyoverflow || YYERROR_VERBOSE
 
@@ -1210,33 +1211,23 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
   switch (yytype)
     {
     case 5: /* MACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 6: /* TEXT  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 7: /* COMMENT  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 8: /* BEGIN  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 9: /* END  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
       default:
@@ -1352,6 +1343,8 @@ yynewstate:
 | yynewstate -- set current state (the top of the stack) to yystate.  |
 `--------------------------------------------------------------------*/
 yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
   *yyssp = (yytype_int16) yystate;
 
   if (yyss + yystacksize - 1 <= yyssp)
@@ -1418,8 +1411,6 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1525,125 +1516,85 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 2:
-
+  case 2:
     { xxsavevalue(yyvsp[-1], &(yyloc)); YYACCEPT; }
-
     break;
 
   case 3:
-
     { xxsavevalue(NULL, &(yyloc)); YYACCEPT; }
-
     break;
 
   case 4:
-
     { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
-
     break;
 
   case 5:
-
     { yyval = xxnewlist(yyvsp[0]); }
-
     break;
 
   case 6:
-
     { yyval = xxnewlist(yyvsp[0]); }
-
     break;
 
   case 7:
-
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-
     break;
 
   case 8:
-
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-
     break;
 
   case 9:
-
     { yyval = xxnewlist(yyvsp[0]); }
-
     break;
 
   case 10:
-
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-
     break;
 
   case 11:
-
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-
     break;
 
   case 12:
-
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-
     break;
 
   case 13:
-
     { yyval = xxtag(yyvsp[0], MACRO, &(yyloc)); }
-
     break;
 
   case 14:
-
     { yyval = xxtag(yyvsp[0], VERB, &(yyloc)); }
-
     break;
 
   case 15:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 16:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 17:
-
     { xxSetInVerbEnv(yyvsp[-1]); }
-
     break;
 
   case 18:
-
     { yyval = xxenv(yyvsp[-7], yyvsp[-4], yyvsp[-1], &(yyloc));
                                                   UNPROTECT_PTR(yyvsp[-9]); UNPROTECT_PTR(yyvsp[-3]); }
-
     break;
 
   case 19:
-
     { yyval = xxmath(yyvsp[-1], &(yyloc)); }
-
     break;
 
   case 20:
-
     { yyval = xxblock(yyvsp[-1], &(yyloc)); }
-
     break;
 
   case 21:
-
     { yyval = xxblock(NULL, &(yyloc)); }
-
     break;
 
 
@@ -1884,7 +1835,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-
 
 
 static SEXP xxnewlist(SEXP item)

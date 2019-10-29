@@ -909,8 +909,9 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if ( !Rf_isSymbol(sym) ) Rf_errorcall(call, _("non-symbol loop variable"));
 
+    dbg = ENV_DEBUG(rho);
     /* rho FIXME
-    if (R_jit_enabled > 2 && ! R_PendingPromises) {
+    if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
 	return R_NilValue;
     }
@@ -935,7 +936,7 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     val_type = TYPEOF(val);
 
-    dbg = ENV_DEBUG(rho);
+
     bgn = BodyHasBraces(body);
 
     /* bump up NAMED count of sequence to avoid modification by loop code */
@@ -1046,14 +1047,14 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;
     volatile SEXP body;
 
+    dbg = ENV_DEBUG(rho);
     /* rho FIXME
-    if (R_jit_enabled > 2 && ! R_PendingPromises) {
+    if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
 	return R_NilValue;
     }
     */
 
-    dbg = ENV_DEBUG(rho);
     body = CADR(args);
     bgn = BodyHasBraces(body);
 
@@ -1108,14 +1109,14 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;
     volatile SEXP body;
 
+    dbg = ENV_DEBUG(rho);
     /* rho FIXME
-    if (R_jit_enabled > 2 && ! R_PendingPromises) {
+    if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
 	return R_NilValue;
     }
     */
 
-    dbg = ENV_DEBUG(rho);
     body = CAR(args);
     bgn = BodyHasBraces(body);
 

@@ -224,6 +224,13 @@ INLINE_FUN SEXP Rf_list5(SEXP s, SEXP t, SEXP u, SEXP v, SEXP w)
     return s;
 }
 
+INLINE_FUN SEXP Rf_list6(SEXP s, SEXP t, SEXP u, SEXP v, SEXP w, SEXP x)
+{
+    PROTECT(s);
+    s = CONS(s, Rf_list5(t, u, v, w, x));
+    UNPROTECT(1);
+    return s;
+}
 
 /* Destructive list append : See also ``append'' */
 

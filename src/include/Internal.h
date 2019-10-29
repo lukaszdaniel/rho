@@ -226,7 +226,7 @@ SEXP do_gsub(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject
 SEXP do_iconv(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* from_, rho::RObject* to_, rho::RObject* sub_, rho::RObject* mark_, rho::RObject* toRaw_);
 SEXP do_ICUget(SEXP, SEXP, SEXP, SEXP);
 SEXP do_ICUset(SEXP, SEXP, SEXP, SEXP);
-SEXP do_identical(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_);
+SEXP do_identical(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_, rho::RObject* ignore_srcref_);
 SEXP do_if(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_inherits(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* what_, rho::RObject* which_);
 SEXP do_inspect(rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...);

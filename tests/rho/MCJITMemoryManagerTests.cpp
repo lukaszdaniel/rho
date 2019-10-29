@@ -34,13 +34,12 @@ using namespace rho;
 using namespace rho::JIT;
 using namespace llvm;
 
-static LLVMContext TheContext;
 
 class MCJITMemoryManagerTest : public ::testing::Test
 {
 protected:
     MCJITMemoryManagerTest()
-	: m_context(TheContext),
+	: m_context(LLVMContext()),
 	  m_module(new Module("mcjit_mm_test", m_context)),
 	  m_manager(new rho::JIT::MCJITMemoryManager(m_module.get())) { }
 

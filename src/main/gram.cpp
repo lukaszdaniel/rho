@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.3.2.  */
+/* A Bison parser, made by GNU Bison 3.4.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.3.2"
+#define YYBISON_VERSION "3.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -75,7 +75,6 @@
 #define yylloc          gram_lloc
 
 /* First part of user prologue.  */
-
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -655,6 +654,8 @@ typedef short yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
 
 #if ! defined yyoverflow || YYERROR_VERBOSE
 
@@ -1792,6 +1793,8 @@ yynewstate:
 | yynewstate -- set current state (the top of the stack) to yystate.  |
 `--------------------------------------------------------------------*/
 yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
   *yyssp = (yytype_int16) yystate;
 
   if (yyss + yystacksize - 1 <= yyssp)
@@ -1858,8 +1861,6 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1965,538 +1966,360 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 2:
-
+  case 2:
     { YYACCEPT; }
-
     break;
 
   case 3:
-
     { yyresult = xxvalue(NULL,2,NULL);	goto yyreturn; }
-
     break;
 
   case 4:
-
     { yyresult = xxvalue(yyvsp[-1],3,&(yylsp[-1]));	goto yyreturn; }
-
     break;
 
   case 5:
-
     { yyresult = xxvalue(yyvsp[-1],4,&(yylsp[-1]));	goto yyreturn; }
-
     break;
 
   case 6:
-
     { YYABORT; }
-
     break;
 
   case 7:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 8:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 9:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]); }
-
     break;
 
   case 10:
-
     { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-
     break;
 
   case 11:
-
     { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-
     break;
 
   case 12:
-
     { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-
     break;
 
   case 13:
-
     { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-
     break;
 
   case 14:
-
     { yyval = xxexprlist(yyvsp[-2],&(yylsp[-2]),yyvsp[-1]); setId( yyval, (yyloc)); }
-
     break;
 
   case 15:
-
     { yyval = xxparen(yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 16:
-
     { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 17:
-
     { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 18:
-
     { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 19:
-
     { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 20:
-
     { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 21:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 22:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 23:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 24:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 25:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 26:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 27:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 28:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 29:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 30:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 31:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 32:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 33:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 34:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 35:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 36:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 37:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 38:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 39:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 40:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 41:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 42:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[0],yyvsp[-2]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 43:
-
     { yyval = xxdefun(yyvsp[-5],yyvsp[-3],yyvsp[0],&(yyloc)); 	setId( yyval, (yyloc)); }
-
     break;
 
   case 44:
-
     { yyval = xxfuncall(yyvsp[-3],yyvsp[-1]);  setId( yyval, (yyloc)); modif_token( &(yylsp[-3]), SYMBOL_FUNCTION_CALL ) ; }
-
     break;
 
   case 45:
-
     { yyval = xxif(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 46:
-
     { yyval = xxifelse(yyvsp[-4],yyvsp[-3],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 47:
-
     { yyval = xxfor(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 48:
-
     { yyval = xxwhile(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 49:
-
     { yyval = xxrepeat(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 50:
-
     { yyval = xxsubscript(yyvsp[-4],yyvsp[-3],yyvsp[-2]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 51:
-
     { yyval = xxsubscript(yyvsp[-3],yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 52:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
-
     break;
 
   case 53:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
-
     break;
 
   case 54:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 55:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 56:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
-
     break;
 
   case 57:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
-
     break;
 
   case 58:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 59:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 60:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 61:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 62:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[0]), SLOT ) ; }
-
     break;
 
   case 63:
-
     { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 64:
-
     { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 65:
-
     { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 66:
-
     { yyval = xxcond(yyvsp[-1]);   }
-
     break;
 
   case 67:
-
     { yyval = xxifcond(yyvsp[-1]); }
-
     break;
 
   case 68:
-
     { yyval = xxforcond(yyvsp[-3],yyvsp[-1]);	setId( yyval, (yyloc)); }
-
     break;
 
   case 69:
-
     { yyval = xxexprlist0();	setId( yyval, (yyloc)); }
-
     break;
 
   case 70:
-
     { yyval = xxexprlist1(yyvsp[0], &(yylsp[0])); }
-
     break;
 
   case 71:
-
     { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
-
     break;
 
   case 72:
-
     { yyval = yyvsp[-1];		setId( yyval, (yyloc)); }
-
     break;
 
   case 73:
-
     { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
-
     break;
 
   case 74:
-
     { yyval = yyvsp[-1];}
-
     break;
 
   case 75:
-
     { yyval = xxsublist1(yyvsp[0]);	  }
-
     break;
 
   case 76:
-
     { yyval = xxsublist2(yyvsp[-3],yyvsp[0]); }
-
     break;
 
   case 77:
-
     { yyval = xxsub0();	 }
-
     break;
 
   case 78:
-
     { yyval = xxsub1(yyvsp[0], &(yylsp[0]));  }
-
     break;
 
   case 79:
-
     { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; modif_token( &(yylsp[-1]), SYMBOL_SUB ) ; }
-
     break;
 
   case 80:
-
     { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; modif_token( &(yylsp[-2]), SYMBOL_SUB ) ; }
-
     break;
 
   case 81:
-
     { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
-
     break;
 
   case 82:
-
     { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
-
     break;
 
   case 83:
-
     { yyval = xxnullsub0(&(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
-
     break;
 
   case 84:
-
     { yyval = xxnullsub1(yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
-
     break;
 
   case 85:
-
     { yyval = xxnullformal(); }
-
     break;
 
   case 86:
-
     { yyval = xxfirstformal0(yyvsp[0]); 	modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
-
     break;
 
   case 87:
-
     { yyval = xxfirstformal1(yyvsp[-2],yyvsp[0]); 	modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ; }
-
     break;
 
   case 88:
-
     { yyval = xxaddformal0(yyvsp[-2],yyvsp[0], &(yylsp[0]));   modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
-
     break;
 
   case 89:
-
     { yyval = xxaddformal1(yyvsp[-4],yyvsp[-2],yyvsp[0],&(yylsp[-2])); modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ;}
-
     break;
 
   case 90:
-
     { EatLines = 1; }
-
     break;
 
 
@@ -2737,7 +2560,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-
 
 
 

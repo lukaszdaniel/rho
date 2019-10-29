@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -177,6 +177,7 @@ SEXP Rf_getAttrib(SEXP vec, SEXP name)
 	return getAttrib0(vec, name);
 }
 
+// R's .row_names_info(x, type = 1L) := .Internal(shortRowNames(x, type)) :
 attribute_hidden
 SEXP do_shortRowNames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* type_)
 {
@@ -1148,8 +1149,8 @@ SEXP attribute_hidden do_levelsgets(/*const*/ Expression* call, const BuiltInFun
     RObject* object = x_;
     RObject* levels = value_;
     if(!isNull(levels) && any_duplicated(levels, FALSE))
-	warningcall(call, _("duplicated levels in factors are deprecated"));
-/* TODO errorcall(call, _("duplicated levels are not allowed in factors anymore")); */
+	errorcall(call, _("factor level [%d] is duplicated"),
+		  any_duplicated(levels, FALSE));
     if (MAYBE_SHARED(object)) object = duplicate(object);
     setAttrib(object, R_LevelsSymbol, levels);
     return object;
@@ -1164,7 +1165,7 @@ SEXP attribute_hidden do_attributesgets(/*const*/ Expression* call, const BuiltI
 /* "dim" and "dimnames" are set that the "dim" is attached first. */
 
     SEXP names = R_NilValue /* -Wall */;
-    int i, i0 = -1, nattrs;
+    int i, nattrs;
 
     /* Do checks before duplication */
     if (!isNewList(attrs))
@@ -1219,6 +1220,7 @@ SEXP attribute_hidden do_attributesgets(/*const*/ Expression* call, const BuiltI
     /* "dim" occurs in the attribute list before "dimnames". */
 
     if (nattrs > 0) {
+	int i0 = -1;
 	for (i = 0; i < nattrs; i++) {
 	    if (!strcmp(CHAR(STRING_ELT(names, i)), "dim")) {
 		i0 = i;

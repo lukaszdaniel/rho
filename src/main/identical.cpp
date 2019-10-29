@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2001-2014  The R Core Team
+ *  Copyright (C) 2001-2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -37,42 +37,43 @@
 
 /* How are  R "double"s compared : */
 typedef enum {
-    bit_NA__num_bit = 0,/* S's default - look at bit pattern, also for NA/NaN's */
-    bit_NA__num_eq  = 1,/* bitwise comparison for NA / NaN; '==' for other numbers */
-    single_NA__num_bit = 2,/*         one   "  "  NA          "  " 'bit'comparison */
-    single_NA__num_eq  = 3,/* R's default: one kind of NA or NaN; for num, use '==' */
+    bit_NA__num_bit = 0,// S's default - look at bit pattern, also for NA/NaN's
+    bit_NA__num_eq  = 1,// bitwise comparison for NA / NaN; '==' for other numbers
+ single_NA__num_bit = 2,// one kind of NA or NaN; for num, use 'bit'comparison
+ single_NA__num_eq  = 3,// one kind of NA or NaN; for num, use '==' : R's DEFAULT
 } ne_strictness_type;
-
 /* NOTE:  ne_strict = NUM_EQ + (SINGLE_NA * 2)  = NUM_EQ | (SINGLE_NA << 1)   */
 
 static Rboolean neWithNaN(double x, double y, ne_strictness_type str);
 
 
 /* .Internal(identical(..)) */
-SEXP attribute_hidden do_identical(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_)
+SEXP attribute_hidden do_identical(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_, rho::RObject* ignore_srcref_)
 {
     int num_eq = 1, single_NA = 1, attr_as_set = 1, ignore_bytecode = 1,
-	ignore_env = 0, flags;
+	ignore_env = 0, ignore_srcref = 1, flags;
     /* avoid problems with earlier (and future) versions captured in S4
        methods: but this should be fixed where it is caused, in
        'methods'!
 
        checkArity(op, args); */
-    num_eq = asLogical(num_eq_);
-    single_NA = asLogical(single_NA_);
-    attr_as_set = asLogical(attr_as_set_);
-    ignore_bytecode = asLogical(ignore_bytecode_);
-    ignore_env = asLogical(ignore_env_);
+    num_eq = Rf_asLogical(num_eq_);
+    single_NA = Rf_asLogical(single_NA_);
+    attr_as_set = Rf_asLogical(attr_as_set_);
+    ignore_bytecode = Rf_asLogical(ignore_bytecode_);
+    ignore_env = Rf_asLogical(ignore_env_);
+    ignore_srcref = Rf_asLogical(ignore_srcref_);
 
-    if(num_eq == NA_LOGICAL) error(_("invalid '%s' value"), "num.eq");
-    if(single_NA == NA_LOGICAL) error(_("invalid '%s' value"), "single.NA");
-    if(attr_as_set == NA_LOGICAL) error(_("invalid '%s' value"), "attrib.as.set");
-    if(ignore_bytecode == NA_LOGICAL) error(_("invalid '%s' value"), "ignore.bytecode");
-    if(ignore_env == NA_LOGICAL) error(_("invalid '%s' value"), "ignore.environment");
+    if(num_eq          == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "num.eq");
+    if(single_NA       == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "single.NA");
+    if(attr_as_set     == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "attrib.as.set");
+    if(ignore_bytecode == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.bytecode");
+    if(ignore_env      == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.environment");
+    if(ignore_srcref   == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.srcref");
 
     flags = (num_eq ? 0 : 1) + (single_NA ? 0 : 2) + (attr_as_set ? 0 : 4) +
-	(ignore_bytecode ? 0 : 8) + (ignore_env ? 0 : 16);
-    return ScalarLogical(R_compute_identical(x, y, flags));
+	(ignore_bytecode ? 0 : 8) + (ignore_env ? 0 : 16) + (ignore_srcref ? 0 : 32);
+    return Rf_ScalarLogical(R_compute_identical(x, y, flags));
 }
 
 #define NUM_EQ		(!(flags & 1))
@@ -80,9 +81,10 @@ SEXP attribute_hidden do_identical(/*const*/ rho::Expression* call, const rho::B
 #define ATTR_AS_SET     (!(flags & 4))
 #define IGNORE_BYTECODE (!(flags & 8))
 #define IGNORE_ENV      (!(flags & 16))
+#define IGNORE_SRCREF   (!(flags & 32))
 
 /* do the two objects compute as identical?
-   Also used in unique.c */
+   Also used in unique.cpp */
 Rboolean
 R_compute_identical(SEXP x, SEXP y, int flags)
 {
@@ -96,13 +98,21 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 
     /* Skip attribute checks for CHARSXP
        -- such attributes are used in CR for the cache.  */
-    if(TYPEOF(x) == CHARSXP)
-    {
+    if(TYPEOF(x) == CHARSXP) {
 	/* This matches NAs */
 	return RHOCONSTRUCT(Rboolean, Seql(x, y));
     }
-
-    ax = ATTRIB(x); ay = ATTRIB(y);
+    if (IGNORE_SRCREF && TYPEOF(x) == CLOSXP) {
+	/* Remove "srcref" attribute - and below, treat body(x), body(y) */
+	SEXP x_ = Rf_duplicate(x), y_ = Rf_duplicate(y);
+	Rf_setAttrib(x_, R_SrcrefSymbol, nullptr);
+	Rf_setAttrib(y_, R_SrcrefSymbol, nullptr);
+	ax = ATTRIB(x_); ay = ATTRIB(y_);
+	UNPROTECT(2);
+    }
+    else {
+	ax = ATTRIB(x); ay = ATTRIB(y);
+    }
     if (!ATTR_AS_SET) {
 	if(!R_compute_identical(ax, ay, flags)) return FALSE;
     }
@@ -119,7 +129,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	if(ax == R_NilValue || ay == R_NilValue)
 	    return FALSE;
 	if(TYPEOF(ax) != LISTSXP || TYPEOF(ay) != LISTSXP) {
-	    warning(_("ignoring non-pairlist attributes"));
+	    Rf_warning(_("ignoring non-pairlist attributes"));
 	} else {
 	    SEXP elx, ely;
 	    if(Rf_length(ax) != Rf_length(ay)) return FALSE;
@@ -151,19 +161,19 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case NILSXP:
 	return TRUE;
     case LGLSXP:
-	if (xlength(x) != xlength(y)) return FALSE;
+	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
 	return memcmp(RHO_NO_CAST(void *)LOGICAL(x), RHO_NO_CAST(void *)LOGICAL(y),
-		      xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
+		      Rf_xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
     case INTSXP:
-	if (xlength(x) != xlength(y)) return FALSE;
+	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
 	return memcmp(RHO_NO_CAST(void *)INTEGER(x), RHO_NO_CAST(void *)INTEGER(y),
-		      xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
+		      Rf_xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
     case REALSXP:
     {
-	R_xlen_t n = xlength(x);
-	if(n != xlength(y)) return FALSE;
+	R_xlen_t n = Rf_xlength(x);
+	if(n != Rf_xlength(y)) return FALSE;
 	else {
 	    double *xp = REAL(x), *yp = REAL(y);
 	    int ne_strict = NUM_EQ | (SINGLE_NA << 1);
@@ -174,8 +184,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     }
     case CPLXSXP:
     {
-	R_xlen_t n = xlength(x);
-	if(n != xlength(y)) return FALSE;
+	R_xlen_t n = Rf_xlength(x);
+	if(n != Rf_xlength(y)) return FALSE;
 	else {
 	    Rcomplex *xp = COMPLEX(x), *yp = COMPLEX(y);
 	    int ne_strict = NUM_EQ | (SINGLE_NA << 1);
@@ -188,15 +198,15 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     }
     case STRSXP:
     {
-	R_xlen_t i, n = xlength(x);
-	if(n != xlength(y)) return FALSE;
+	R_xlen_t i, n = Rf_xlength(x);
+	if(n != Rf_xlength(y)) return FALSE;
 	for(i = 0; i < n; i++) {
 	    /* This special-casing for NAs is not needed */
 	    Rboolean na1 = (RHOCONSTRUCT(Rboolean, STRING_ELT(x, i) == NA_STRING)),
 		na2 = (RHOCONSTRUCT(Rboolean, STRING_ELT(y, i) == NA_STRING));
 	    if(na1 ^ na2) return FALSE;
 	    if(na1 && na2) continue;
-	    if (! Seql(STRING_ELT(x, i), STRING_ELT(y, i))) return FALSE;
+	    if (! Rf_Seql(STRING_ELT(x, i), STRING_ELT(y, i))) return FALSE;
 	}
 	return TRUE;
     }
@@ -207,8 +217,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     }
     case VECSXP:
     {
-	R_xlen_t i, n = xlength(x);
-	if(n != xlength(y)) return FALSE;
+	R_xlen_t i, n = Rf_xlength(x);
+	if(n != Rf_xlength(y)) return FALSE;
 	for(i = 0; i < n; i++)
 	    if(!R_compute_identical(VECTOR_ELT(x, i),VECTOR_ELT(y, i), flags))
 		return FALSE;
@@ -216,8 +226,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     }
     case EXPRSXP:
     {
-	R_xlen_t i, n = xlength(x);
-	if(n != xlength(y)) return FALSE;
+	R_xlen_t i, n = Rf_xlength(x);
+	if(n != Rf_xlength(y)) return FALSE;
 	for(i = 0; i < n; i++)
 	    if(!R_compute_identical(XVECTOR_ELT(x, i),XVECTOR_ELT(y, i), flags))
 		return FALSE;
@@ -247,8 +257,12 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     }
     case CLOSXP:
 	return Rboolean(R_compute_identical(FORMALS(x), FORMALS(y), flags) &&
-			R_compute_identical(BODY(x), BODY(y), flags) &&
-			(CLOENV(x) == CLOENV(y) ? TRUE : FALSE));
+	       (( IGNORE_SRCREF && R_compute_identical(R_body_no_src(x), R_body_no_src(y), flags)) ||
+		(!IGNORE_SRCREF && R_compute_identical(    BODY_EXPR(x),     BODY_EXPR(y), flags))) &&
+	       (IGNORE_ENV || CLOENV(x) == CLOENV(y) ? TRUE : FALSE) &&
+	       (IGNORE_BYTECODE || R_compute_identical(BODY(x), BODY(y), flags))
+	       ); /* FIXME: without IGNORE_BYTECODE, the comparison of functions
+		            will compare the function bodies more than once */
     case SPECIALSXP:
     case BUILTINSXP:
 	return(PRIMOFFSET(x) == PRIMOFFSET(y) ? TRUE : FALSE);
@@ -260,10 +274,10 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case EXTPTRSXP:
 	return (EXTPTR_PTR(x) == EXTPTR_PTR(y) ? TRUE : FALSE);
     case RAWSXP:
-	if (xlength(x) != xlength(y)) return FALSE;
+	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
 	return memcmp(RHO_NO_CAST(void *)RAW(x), RHO_NO_CAST(void *)RAW(y),
-		      xlength(x) * sizeof(Rbyte)) == 0 ? TRUE : FALSE;
+		      Rf_xlength(x) * sizeof(Rbyte)) == 0 ? TRUE : FALSE;
 
 /*  case PROMSXP: args are evaluated, so will not be seen */
 	/* test for equality of the substituted expression -- or should
@@ -279,7 +293,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     default:
 	/* these are all supposed to be types that represent constant
 	   entities, so no further testing required ?? */
-	printf("Unknown Type: %s (%x)\n", type2char(TYPEOF(x)), TYPEOF(x));
+	printf("Unknown Type: %s (%x)\n", Rf_type2char(TYPEOF(x)), TYPEOF(x));
 	return TRUE;
     }
 }

@@ -1823,9 +1823,9 @@ do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op,
 	old_elapsed = elapsedLimitValue;
     int transient;
 
-    cpu = asReal(cpu_);
-    elapsed = asReal(elapsed_);
-    transient = asLogical(transient_);
+    cpu = Rf_asReal(cpu_);
+    elapsed = Rf_asReal(elapsed_);
+    transient = Rf_asLogical(transient_);
 
     if (R_FINITE(cpu) && cpu > 0) cpuLimitValue = cpu; else cpuLimitValue = -1;
 
@@ -1847,8 +1847,8 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 {
     double cpu, elapsed, data[5];
 
-    cpu = asReal(cpu_);
-    elapsed = asReal(elapsed_);
+    cpu = Rf_asReal(cpu_);
+    elapsed = Rf_asReal(elapsed_);
     R_getProcTime(data);
 
     if (R_FINITE(cpu) && cpu > 0)
@@ -1889,12 +1889,12 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
 #endif
 
-    if (!isString(x = paths_))
+    if (!Rf_isString(x = paths_))
 	error(_("invalid '%s' argument"), "paths");
-    if (!XLENGTH(x)) return allocVector(STRSXP, 0);
-    dirmark = asLogical(dirmark_);
+    if (!XLENGTH(x)) return Rf_allocVector(STRSXP, 0);
+    dirmark = Rf_asLogical(dirmark_);
     if (dirmark == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "dirmark");
+	Rf_error(_("invalid '%s' argument"), "dirmark");
 #ifndef GLOB_MARK
     if (dirmark)
 	error(_("'dirmark = TRUE' is not supported on this platform"));
@@ -1911,7 +1911,7 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
 	if (res == GLOB_NOSPACE)
 	    error(_("internal out-of-memory condition"));
 #else
-	res = glob(translateChar(el),
+	res = glob(Rf_translateChar(el),
 # ifdef GLOB_MARK
 		   (dirmark ? GLOB_MARK : 0) |
 # endif
@@ -1919,17 +1919,17 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
 		   nullptr, &globbuf);
 # ifdef GLOB_ABORTED
 	if (res == GLOB_ABORTED)
-	    warning(_("read error on '%s'"), translateChar(el));
+	    Rf_warning(_("read error on '%s'"), translateChar(el));
 # endif
 # ifdef GLOB_NOSPACE
 	if (res == GLOB_NOSPACE)
-	    error(_("internal out-of-memory condition"));
+	    Rf_error(_("internal out-of-memory condition"));
 # endif
 #endif
 	initialized = TRUE;
     }
     n = initialized ? globbuf.gl_pathc : 0;
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     for (i = 0; i < n; i++)
 #ifdef Win32
     {
@@ -1941,7 +1941,7 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
 	SET_STRING_ELT(ans, i, mkCharCE(buf, CE_UTF8));
     }
 #else
-	SET_STRING_ELT(ans, i, mkChar(globbuf.gl_pathv[i]));
+	SET_STRING_ELT(ans, i, Rf_mkChar(globbuf.gl_pathv[i]));
 #endif
     UNPROTECT(1);
 #ifdef Win32

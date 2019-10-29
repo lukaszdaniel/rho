@@ -1,4 +1,4 @@
-/* A Bison parser, made by GNU Bison 3.3.2.  */
+/* A Bison parser, made by GNU Bison 3.4.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.3.2"
+#define YYBISON_VERSION "3.4.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -75,7 +75,6 @@
 #define yylloc          gramRd_lloc
 
 /* First part of user prologue.  */
-
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -507,6 +506,8 @@ typedef short yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
 
 #if ! defined yyoverflow || YYERROR_VERBOSE
 
@@ -1557,327 +1558,219 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
   switch (yytype)
     {
     case 5: /* SECTIONHEADER  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 6: /* RSECTIONHEADER  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 7: /* VSECTIONHEADER  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 8: /* SECTIONHEADER2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 9: /* RCODEMACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 10: /* SEXPR  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 12: /* LATEXMACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 13: /* VERBMACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 14: /* OPTMACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 15: /* ESCAPE  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 16: /* LISTSECTION  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 17: /* ITEMIZE  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 18: /* DESCRIPTION  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 19: /* NOITEM  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 20: /* LATEXMACRO2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 21: /* VERBMACRO2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 22: /* VERBLATEX  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 23: /* LATEXMACRO3  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 24: /* NEWCOMMAND  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 25: /* USERMACRO  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 26: /* USERMACRO1  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 27: /* USERMACRO2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 28: /* USERMACRO3  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 29: /* USERMACRO4  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 30: /* USERMACRO5  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 31: /* USERMACRO6  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 32: /* USERMACRO7  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 33: /* USERMACRO8  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 34: /* USERMACRO9  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 35: /* IFDEF  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 36: /* ENDIF  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 37: /* TEXT  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 38: /* RCODE  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 39: /* VERB  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 40: /* COMMENT  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 41: /* UNKNOWN  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 42: /* STARTFILE  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 43: /* STARTFRAGMENT  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 54: /* ArgItems  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 58: /* LatexArg  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 63: /* RLikeArg2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 65: /* VerbatimArg1  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 66: /* VerbatimArg2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 67: /* IfDefTarget  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 68: /* goLatexLike  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 69: /* goRLike  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 70: /* goRLike2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 71: /* goOption  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 72: /* goVerbatim  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 73: /* goVerbatim1  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 74: /* goVerbatim2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 75: /* goItem0  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 76: /* goItem2  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
     case 78: /* Option  */
-
       { UNPROTECT_PTR((*yyvaluep)); }
-
         break;
 
       default:
@@ -1993,6 +1886,8 @@ yynewstate:
 | yynewstate -- set current state (the top of the stack) to yystate.  |
 `--------------------------------------------------------------------*/
 yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
   *yyssp = (yytype_int16) yystate;
 
   if (yyss + yystacksize - 1 <= yyssp)
@@ -2059,8 +1954,6 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -2166,380 +2059,255 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 2:
-
+  case 2:
     { xxsavevalue(yyvsp[-1], &(yyloc)); UNPROTECT_PTR(yyvsp[-2]); YYACCEPT; }
-
     break;
 
   case 3:
-
     { xxsavevalue(yyvsp[-1], &(yyloc)); UNPROTECT_PTR(yyvsp[-2]); YYACCEPT; }
-
     break;
 
   case 4:
-
     { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
-
     break;
 
   case 5:
-
     { yyval = yyvsp[0]; UNPROTECT_PTR(yyvsp[-1]); }
-
     break;
 
   case 6:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 7:
-
     { yyval = xxnewlist(yyvsp[0]); }
-
     break;
 
   case 8:
-
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-
     break;
 
   case 9:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 10:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); }
-
     break;
 
   case 11:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 12:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 13:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 14:
-
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-
     break;
 
   case 15:
-
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); UNPROTECT_PTR(yyvsp[0]); }
-
     break;
 
   case 16:
-
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); }
-
     break;
 
   case 17:
-
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-1]); }
-
     break;
 
   case 18:
-
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-2]); }
-
     break;
 
   case 19:
-
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-
     break;
 
   case 20:
-
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-
     break;
 
   case 21:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 22:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 23:
-
     { yyval = xxnewlist(yyvsp[0]); }
-
     break;
 
   case 24:
-
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-
     break;
 
   case 25:
-
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-
     break;
 
   case 26:
-
     { yyval = xxtag(yyvsp[0], RCODE, &(yyloc)); }
-
     break;
 
   case 27:
-
     { yyval = xxtag(yyvsp[0], VERB, &(yyloc)); }
-
     break;
 
   case 28:
-
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-
     break;
 
   case 29:
-
     { yyval = xxtag(yyvsp[0], UNKNOWN, &(yyloc)); yyerror(yyunknown); }
-
     break;
 
   case 30:
-
     { yyval = xxmarkup(R_NilValue, yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 31:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 32:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 33:
-
     { yyval = yyvsp[0]; }
-
     break;
 
   case 34:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 35:
-
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-
     break;
 
   case 36:
-
     { yyval = xxmarkup3(yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 37:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 38:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 39:
-
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], STATIC, &(yyloc)); xxpopMode(yyvsp[-1]); }
-
     break;
 
   case 40:
-
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); xxpopMode(yyvsp[-2]); }
-
     break;
 
   case 41:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 42:
-
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-1]); }
-
     break;
 
   case 43:
-
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-2]); }
-
     break;
 
   case 44:
-
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-
     break;
 
   case 45:
-
     { yyval = xxmarkup2(yyvsp[-1], yyvsp[0], R_NilValue, 1, STATIC, &(yyloc)); }
-
     break;
 
   case 46:
-
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-
     break;
 
   case 47:
-
     { yyval = xxmarkup(yyvsp[0], R_NilValue, STATIC, &(yyloc)); }
-
     break;
 
   case 48:
-
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); UNPROTECT_PTR(yyvsp[0]); }
-
     break;
 
   case 49:
-
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); }
-
     break;
 
   case 50:
-
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-
     break;
 
   case 51:
-
     { yyval = xxnewcommand(yyvsp[-2], yyvsp[-1], yyvsp[0], &(yyloc)); }
-
     break;
 
   case 52:
-
     { yyval = xxusermacro(yyvsp[0], xxnewlist(NULL), &(yyloc)); }
-
     break;
 
   case 53:
-
     { yyval = xxusermacro(yyvsp[-1], xxnewlist(yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 54:
-
     { yyval = xxusermacro(yyvsp[-2], xxnewlist2(yyvsp[-1], yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 55:
-
     { yyval = xxusermacro(yyvsp[-3], xxnewlist3(yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 56:
-
     { yyval = xxusermacro(yyvsp[-4], xxnewlist4(yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 57:
-
     { yyval = xxusermacro(yyvsp[-5], xxnewlist5(yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 58:
-
     { yyval = xxusermacro(yyvsp[-6], xxnewlist6(yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-
     break;
 
   case 59:
-
     { yyval = xxusermacro(yyvsp[-8], xxnewlist7(yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-
     break;
 
   case 60:
-
     { yyval = xxusermacro(yyvsp[-9], xxnewlist8(yyvsp[-8], yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-
     break;
 
   case 61:
-
     { yyval = xxusermacro(yyvsp[-10], xxnewlist9(yyvsp[-9], yyvsp[-8], yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-
     break;
 
   case 62:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 63:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 64:
-
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(yyvsp[0]); 
      						  if(wCalls)
     	    					      warning(_("bad markup (extra space?) at %s:%d:%d"), 
@@ -2548,157 +2316,106 @@ yyreduce:
     	    					      warningcall(R_NilValue, _("bad markup (extra space?) at %s:%d:%d"), 
     	    					            parseState.xxBasename, (yylsp[0]).first_line, (yylsp[0]).first_column); 
 						}
-
     break;
 
   case 65:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 66:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 67:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 68:
-
     { xxpopMode(yyvsp[-2]); yyval = yyvsp[-1]; }
-
     break;
 
   case 69:
-
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(NULL); }
-
     break;
 
   case 70:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 71:
-
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-
     break;
 
   case 72:
-
     { xxpopMode(yyvsp[-2]); yyval = yyvsp[-1]; }
-
     break;
 
   case 73:
-
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(NULL); }
-
     break;
 
   case 74:
-
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(xxtag(yyvsp[0], TEXT, &(yyloc))); }
-
     break;
 
   case 75:
-
     { yyval = xxpushMode(LATEXLIKE, UNKNOWN, FALSE); }
-
     break;
 
   case 76:
-
     { yyval = xxpushMode(RLIKE, UNKNOWN, FALSE); }
-
     break;
 
   case 77:
-
     { parseState.xxbraceDepth--; yyval = xxpushMode(RLIKE, UNKNOWN, FALSE); parseState.xxbraceDepth++; }
-
     break;
 
   case 78:
-
     { yyval = xxpushMode(INOPTION, UNKNOWN, FALSE); }
-
     break;
 
   case 79:
-
     { yyval = xxpushMode(VERBATIM, UNKNOWN, FALSE); }
-
     break;
 
   case 80:
-
     { yyval = xxpushMode(VERBATIM, UNKNOWN, TRUE); }
-
     break;
 
   case 81:
-
     { parseState.xxbraceDepth--; yyval = xxpushMode(VERBATIM, UNKNOWN, FALSE); parseState.xxbraceDepth++; }
-
     break;
 
   case 82:
-
     { yyval = xxpushMode(LATEXLIKE, ESCAPE, FALSE); }
-
     break;
 
   case 83:
-
     { yyval = xxpushMode(LATEXLIKE, LATEXMACRO2, FALSE); }
-
     break;
 
   case 84:
-
     { yyval = yyvsp[-1]; }
-
     break;
 
   case 85:
-
     { yyval = xxnewlist(NULL); }
-
     break;
 
   case 86:
-
     { yyval = yyvsp[-2]; }
-
     break;
 
   case 87:
-
     { yyval = xxnewlist(NULL); }
-
     break;
 
   case 88:
-
     { yyval = yyvsp[-2]; }
-
     break;
 
   case 89:
-
     { yyval = yyvsp[-1]; }
-
     break;
 
 
@@ -2939,7 +2656,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-
 
 
 static SEXP xxpushMode(int newmode, int newitem, int neweqn)

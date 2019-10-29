@@ -7755,6 +7755,7 @@ fi
 
 
 
+
 ## cairographics needs pkg-config
 # Extract the first word of "pkg-config ", so it can be a program name with args.
 set dummy pkg-config ; ac_word=$2
@@ -23787,7 +23788,7 @@ done
   if test "${use_readline}" = no; then
     as_fn_error $? "--with-readline=yes (default) and headers/libs are not available" "$LINENO" 5
   else
-    for ac_func in rl_completion_matches
+    for ac_func in rl_completion_matches rl_resize_terminal
 do
 as_ac_Symbol=`$as_echo "ac_cv_have_decl_$ac_func" | $as_tr_sh`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ac_func exists and is declared" >&5
@@ -25929,7 +25930,7 @@ _ACEOF
 # flags.
 r_save_CFLAGS=$CFLAGS
 CFLAGS="$CFLAGS $r_verb"
-(eval echo $as_me:25932: \"$ac_link\") >&5
+(eval echo $as_me:25933: \"$ac_link\") >&5
 r_c_v_output=`eval $ac_link 5>&1 2>&1 | grep -v 'Driving:'`
 echo "$r_c_v_output" >&5
 CFLAGS=$r_save_CFLAGS
@@ -26004,7 +26005,7 @@ _ACEOF
 # flags.
 r_save_CFLAGS=$CFLAGS
 CFLAGS="$CFLAGS $r_cv_prog_c_v"
-(eval echo $as_me:26007: \"$ac_link\") >&5
+(eval echo $as_me:26008: \"$ac_link\") >&5
 r_c_v_output=`eval $ac_link 5>&1 2>&1 | grep -v 'Driving:'`
 echo "$r_c_v_output" >&5
 CFLAGS=$r_save_CFLAGS
@@ -32149,13 +32150,49 @@ $as_echo "#define HAVE_WORKING_CALLOC 1" >>confdefs.h
 
 fi
 
+if test "${ac_cv_have_decl_isfinite}" = "yes"; then
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for working isfinite" >&5
+$as_echo_n "checking for working isfinite... " >&6; }
+if ${r_cv_func_isfinite_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  r_cv_func_isfinite_works=no
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-## isfinite() is in territory where C++98 clashes with C99,
-## so is not used in rho.
-## if test "${ac_cv_have_decl_isfinite}" = "yes"; then
-## R_FUNC_ISFINITE
-## fi
+#include <math.h>
+#include <stdlib.h>
+#include "confdefs.h"
+int main () {
+#ifdef HAVE_DECL_ISFINITE
+  exit(isfinite(1./0.) | isfinite(0./0.) | isfinite(-1./0.));
+#else
+  exit(1);
+#endif
+}
 
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  r_cv_func_isfinite_works=yes
+else
+  r_cv_func_isfinite_works=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $r_cv_func_isfinite_works" >&5
+$as_echo "$r_cv_func_isfinite_works" >&6; }
+if test "x${r_cv_func_isfinite_works}" = xyes; then
+
+$as_echo "#define HAVE_WORKING_ISFINITE 1" >>confdefs.h
+
+fi
+
+fi
 ## check accuracy of log1p
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working log1p" >&5
 $as_echo_n "checking for working log1p... " >&6; }

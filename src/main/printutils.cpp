@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999--2015  The R Core Team
+ *  Copyright (C) 1999--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -103,7 +103,7 @@ R_size_t R_Decode2Long(char *p, int *ierr)
     /* else look for letter-code ending : */
     if(R_Verbose)
 	REprintf("R_Decode2Long(): v=%ld\n", v);
-    // NB: currently, positive *ierr are not differentiated in the callers:
+    // NOTE: currently, positive *ierr are not differentiated in the callers:
     if(p[0] == 'G') {
 	if((Giga * double(v)) > R_SIZE_T_MAX) { *ierr = 4; return(v); }
 	return R_size_t( Giga) * v;
@@ -335,10 +335,6 @@ const char
 	       const char *dec)
 {
     static char buff[NB+2];
-    char Re[NB];
-    const char *Im, *tmp;
-    int flagNegIm = 0;
-    Rcomplex y;
 
     /* IEEE allows signed zeros; strip these here */
     if (x.r == 0.0) x.r = 0.0;
@@ -349,6 +345,10 @@ const char
 		 "%*s", /* was "%*s%*s", R_print.gap, "", */
 		 min(wr+wi+2, (NB-1)), CHAR(R_print.na_string));
     } else {
+	char Re[NB];
+	const char *Im, *tmp;
+	int flagNegIm = 0;
+	Rcomplex y;
 	/* formatComplex rounded, but this does not, and we need to
 	   keep it that way so we don't get strange trailing zeros.
 	   But we do want to avoid printing small exponentials that
@@ -356,12 +356,10 @@ const char
 	 */
 	z_prec_r(&y, &x, R_print.digits);
 	/* EncodeReal has static buffer, so copy */
-	if(y.r == 0.) tmp = EncodeReal0(y.r, wr, dr, er, dec);
-	else tmp = EncodeReal0(x.r, wr, dr, er, dec);
+	tmp = EncodeReal0(y.r == 0. ? y.r : x.r, wr, dr, er, dec);
 	strcpy(Re, tmp);
 	if ( (flagNegIm = (x.i < 0)) ) x.i = -x.i;
-	if(y.i == 0.) Im = EncodeReal0(y.i, wi, di, ei, dec);
-	else Im = EncodeReal0(x.i, wi, di, ei, dec);
+	Im = EncodeReal0(y.i == 0. ? y.i : x.i, wi, di, ei, dec);
 	snprintf(buff, NB+2, "%s%s%si", Re, flagNegIm ? "-" : "+", Im);
     }
     buff[NB+2-1] = '\0';
@@ -662,7 +660,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		    case L'"':
 		    case L'`':
 			{
-			    if(quote == *p)  *q++ = '\\'; 
+			    if(quote == *p)  *q++ = '\\';
 			    *q++ = *p++;
 			    break;
 			}
@@ -737,7 +735,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		    case '`':
 		    {
 			if(quote == *p)  *q++ = '\\';
-			*q++ = *p; 
+			*q++ = *p;
 			break;
 		    }
 		    default: *q++ = *p; break;

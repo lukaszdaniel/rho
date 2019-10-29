@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-17 r7bd0aac6cd) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-10-22 rda51a54f7d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-04-17 r70500) -- "Frisbee Sailing"
+R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -194,7 +194,7 @@ Error in assertWarning(ff()) :
 > bibstyle("unsorted", sortKeys = function(refs) seq_along(refs),
 +     fmtPrefix = function(paper) paste0("[", paper$.index, "]"),
 +        .init = TRUE)
-<environment: 0x7f8c428da0a0>
+<environment: 0x7f5d6bf2abd0>
 > print(refs, .bibstyle = "unsorted")
 [1] R Core Team (2013). _R: A Language and Environment for Statistical
 Computing_. R Foundation for Statistical Computing, Vienna, Austria.
@@ -717,6 +717,14 @@ NULL
 > ### Keywords: utilities
 > 
 > ### ** Examples
+> ## Don't show: 
+> checkMV <- function(r)
++   stopifnot(is.character(r),
++             length(r) == 0 || (length(r) == 1 && file.exists(r)))
+> checkMV(makevars_user())
+> checkMV(makevars_site())
+> ## End(Don't show)
+> 
 > 
 > 
 > cleanEx()
@@ -750,13 +758,6 @@ NULL
 > 
 > ### ** Examples
 > 
-> ## Not run: 
-> ##D pdb <- available.packages()
-> ##D deps <- package_dependencies(packages = "MASS", pdb,
-> ##D                     which = c("Depends", "Imports", "LinkingTo", "Suggests"),
-> ##D                     recursive = TRUE, reverse = TRUE)
-> ##D length(deps$MASS)
-> ## End(Not run)
 > 
 > 
 > 
@@ -1021,7 +1022,7 @@ List of 6
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.311 0.012 0.324 0 0 
+Time elapsed:  0.298 0.004 0.302 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2013  The R Core Team.
+ *  Copyright (C) 1998--2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -655,14 +655,14 @@ int Rf_Seql(SEXP a, SEXP b)
       as unknown. */
     if (a == b) return 1;
     /* Leave this to compiler to optimize */
-    if (ENC_KNOWN(a) == ENC_KNOWN(b))
-	return 0;
-    else {
+    // if (ENC_KNOWN(a) == ENC_KNOWN(b))
+	// return 0;
+    // else {
 	const void* vmax = vmaxget();
     	int result = !strcmp(translateCharUTF8(a), translateCharUTF8(b));
     	vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
     	return result;
-    }
+    // }
 }
 
 

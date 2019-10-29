@@ -113,16 +113,16 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     SEXP newx, names, newnames;
 
     /* Sanity Checks */
-    if (!isVector(x))
-	error(_("attempt to enlarge non-vector"));
+    if (!Rf_isVector(x))
+	Rf_error(_("attempt to enlarge non-vector"));
 
     /* Enlarge the vector itself. */
-    len = xlength(x);
-    if (LOGICAL(GetOption1(install("check.bounds")))[0])
-	warning(_("assignment outside vector/list limits (extending from %d to %d)"),
+    len = Rf_xlength(x);
+    if (LOGICAL(Rf_GetOption1(Rf_install("check.bounds")))[0])
+	Rf_warning(_("assignment outside vector/list limits (extending from %d to %d)"),
 		len, newlen);
     PROTECT(x);
-    PROTECT(newx = allocVector(TYPEOF(x), newlen));
+    PROTECT(newx = Rf_allocVector(TYPEOF(x), newlen));
 
     /* Copy the elements into place. */
     switch(TYPEOF(x)) {
@@ -176,9 +176,9 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     }
 
     /* Adjust the attribute list. */
-    names = getAttrib(x, R_NamesSymbol);
-    if (!isNull(names)) {
-	PROTECT(newnames = allocVector(STRSXP, newlen));
+    names = Rf_getAttrib(x, R_NamesSymbol);
+    if (!Rf_isNull(names)) {
+	PROTECT(newnames = Rf_allocVector(STRSXP, newlen));
 	for (i = 0; i < len; i++)
 	    SET_STRING_ELT(newnames, i, STRING_ELT(names, i));
 	for (i = len; i < newlen; i++)
@@ -186,7 +186,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 	setAttrib(newx, R_NamesSymbol, newnames);
 	UNPROTECT(1);
     }
-    copyMostAttrib(x, newx);
+    Rf_copyMostAttrib(x, newx);
     UNPROTECT(2);
     return newx;
 }
@@ -197,8 +197,8 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 static SEXP embedInVector(SEXP v, SEXP call)
 {
     SEXP ans;
-    warningcall(call, "implicit list embedding of S4 objects is deprecated");
-    PROTECT(ans = allocVector(VECSXP, 1));
+    Rf_warningcall(call, "implicit list embedding of S4 objects is deprecated");
+    PROTECT(ans = Rf_allocVector(VECSXP, 1));
     SET_VECTOR_ELT(ans, 0, v);
     UNPROTECT(1);
     return (ans);
@@ -209,7 +209,7 @@ static std::pair<bool, SEXP> dispatch_asvector(SEXP x, const Expression* call,
 {
     static GCRoot<BuiltInFunction> op
         = BuiltInFunction::obtainPrimitive("as.vector");
-    static GCRoot<> any = mkString("any");
+    static GCRoot<> any = Rf_mkString("any");
     ArgList args({ x, any }, ArgList::EVALUATED);
     return Rf_Dispatch(call, op, args, rho);
 }
@@ -255,20 +255,20 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
 
     case 1013:	/* logical    <- integer    */
 
-	*x = coerceVector(*x, INTSXP);
+	*x = Rf_coerceVector(*x, INTSXP);
 	break;
 
     case 1014:	/* logical    <- real	    */
     case 1314:	/* integer    <- real	    */
 
-	*x = coerceVector(*x, REALSXP);
+	*x = Rf_coerceVector(*x, REALSXP);
 	break;
 
     case 1015:	/* logical    <- complex    */
     case 1315:	/* integer    <- complex    */
     case 1415:	/* real	      <- complex    */
 
-	*x = coerceVector(*x, CPLXSXP);
+	*x = Rf_coerceVector(*x, CPLXSXP);
 	break;
 
     case 1610:	/* character  <- logical    */
@@ -276,7 +276,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
     case 1614:	/* character  <- real	    */
     case 1615:	/* character  <- complex    */
 
-	*y = coerceVector(*y, STRSXP);
+	*y = Rf_coerceVector(*y, STRSXP);
 	break;
 
     case 1016:	/* logical    <- character  */
@@ -284,7 +284,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
     case 1416:	/* real	      <- character  */
     case 1516:	/* complex    <- character  */
 
-	*x = coerceVector(*x, STRSXP);
+	*x = Rf_coerceVector(*x, STRSXP);
 	break;
 
     case 1901:  /* vector     <- symbol   */
@@ -306,7 +306,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
 
 	if (level == 1) {
 	    /* Coerce the RHS into a list */
-	    *y = coerceVector(*y, VECSXP);
+	    *y = Rf_coerceVector(*y, VECSXP);
 	} else {
 	    /* Nothing to do here: duplicate when used (if needed) */
 	}
@@ -328,7 +328,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
     case 1519:  /* complex    <- vector     */
     case 1619:  /* character  <- vector     */
     case 2419:  /* raw        <- vector     */
-	*x = coerceVector(*x, VECSXP);
+	*x = Rf_coerceVector(*x, VECSXP);
 	break;
 
     case 1020:  /* logical    <- expression */
@@ -337,7 +337,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
     case 1520:  /* complex    <- expression */
     case 1620:  /* character  <- expression */
     case 2420:  /* raw        <- expression */
-	*x = coerceVector(*x, EXPRSXP);
+	*x = Rf_coerceVector(*x, EXPRSXP);
 	break;
 
     case 2001:	/* expression <- symbol	    */
@@ -352,7 +352,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
 
 	if (level == 1) {
 	    /* Coerce the RHS into a list */
-	    *y = coerceVector(*y, VECSXP);
+	    *y = Rf_coerceVector(*y, VECSXP);
 	} else {
 	    /* Note : No coercion is needed here. */
 	    /* We just insert the RHS into the LHS. */
@@ -418,10 +418,10 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 {
     SEXP include, xnew, xnames, xnewnames;
     R_xlen_t i, ii, len, lenw;
-    len = xlength(x);
-    lenw = xlength(which);
+    len = Rf_xlength(x);
+    lenw = Rf_xlength(which);
     /* calculate the length of the result */
-    PROTECT(include = allocVector(INTSXP, len));
+    PROTECT(include = Rf_allocVector(INTSXP, len));
     for (i = 0; i < len; i++)
 	INTEGER(include)[i] = 1;
     for (i = 0; i < lenw; i++) {
@@ -436,7 +436,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	UNPROTECT(1);
 	return x;
     }
-    PROTECT(xnew = allocVector(TYPEOF(x), ii));
+    PROTECT(xnew = Rf_allocVector(TYPEOF(x), ii));
     ii = 0;
     switch (TYPEOF(x)) {
     case VECSXP:
@@ -458,9 +458,9 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     default:
 	Rf_error(_("Internal error: unexpected type in DeleteListElements"));
     }
-    xnames = getAttrib(x, R_NamesSymbol);
+    xnames = Rf_getAttrib(x, R_NamesSymbol);
     if (xnames != R_NilValue) {
-	PROTECT(xnewnames = allocVector(STRSXP, ii));
+	PROTECT(xnewnames = Rf_allocVector(STRSXP, ii));
 	ii = 0;
 	for (i = 0; i < len; i++) {
 	    if (INTEGER(include)[i] == 1) {
@@ -468,7 +468,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 		ii++;
 	    }
 	}
-	setAttrib(xnew, R_NamesSymbol, xnewnames);
+	Rf_setAttrib(xnew, R_NamesSymbol, xnewnames);
 	UNPROTECT(1);
     }
     copyMostAttrib(x, xnew);
@@ -482,7 +482,7 @@ static SEXP VectorAssign(SEXP call, SEXP rho, SEXP xarg, SEXP sarg, SEXP yarg)
     GCStackRoot<> s(sarg);
     GCStackRoot<> y(yarg);
 
-    if (isNull(x) && isNull(y)) {
+    if (Rf_isNull(x) && Rf_isNull(y)) {
 	return R_NilValue;
     }
 

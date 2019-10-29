@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-17 r7bd0aac6cd) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-10-22 rda51a54f7d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-04-17 r70500) -- "Frisbee Sailing"
+R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -418,6 +418,13 @@ Warning in bxp(list(stats = c(7, 11, 14, 18.5, 23, 7, 12, 16.5, 18, 21,  :
 +         subset = supp == "OJ", col = "orange")
 > legend(2, 9, c("Ascorbic acid", "Orange juice"),
 +        fill = c("yellow", "orange"))
+> 
+> ## With less effort (slightly different) using factor *interaction*:
+> boxplot(len ~ dose:supp, data = ToothGrowth,
++         boxwex = 0.5, col = c("orange", "yellow"),
++         main = "Guinea Pigs' Tooth Growth",
++         xlab = "Vitamin C dose mg", ylab = "tooth length",
++         sep = ":", lex.order = TRUE, ylim = c(0, 35), yaxs = "i")
 > 
 > ## more examples in  help(bxp)
 > 
@@ -1856,7 +1863,7 @@ armed.forces
 > lx <- seq(1, 5, length = 41)
 > yl <- expression(e^{-frac(1,2) * {log[10](x)}^2})
 > y <- exp(-.5*lx^2)
-> op <- par(mfrow = c(2,1), mar = par("mar")+c(0,1,0,0))
+> op <- par(mfrow = c(2,1), mar = par("mar")-c(1,0,2,0), mgp = c(2, .7, 0))
 > plot(10^lx, y, log = "xy", type = "l", col = "purple",
 +      main = "Log-Log plot", ylab = yl, xlab = "x")
 > plot(10^lx, y, log = "xy", type = "o", pch = ".", col = "forestgreen",
@@ -1864,8 +1871,9 @@ armed.forces
 +      axes = FALSE, frame.plot = TRUE)
 > my.at <- 10^(1:5)
 > axis(1, at = my.at, labels = formatC(my.at, format = "fg"))
-> at.y <- 10^(-5:-1)
-> axis(2, at = at.y, labels = formatC(at.y, format = "fg"), col.axis = "red")
+> e.y <- -5:-1 ; at.y <- 10^e.y
+> axis(2, at = at.y, col.axis = "red", las = 1,
++      labels = as.expression(lapply(e.y, function(E) bquote(10^.(E)))))
 > par(op)
 > 
 > 
@@ -3020,7 +3028,7 @@ function (xy = 1, warn.log = TRUE)
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  4.144 0.08 4.225 0 0 
+Time elapsed:  3.793 0.084 3.877 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -299,7 +299,7 @@ Rboolean (OBJECT)(SEXP x);
 int  (MARK)(SEXP x);
 SEXPTYPE (TYPEOF)(SEXP x);
 int  (NAMED)(SEXP x);
-// int  (REFCNT)(SEXP x);
+// int  (REFCNT)(SEXP x); //rho
 void (SET_OBJECT)(SEXP x, int v);
 void SET_TYPEOF(SEXP x, SEXPTYPE v);
 void (SET_NAMED)(SEXP x, int v);
@@ -393,8 +393,8 @@ void SET_INTERNAL(SEXP x, SEXP v);
 SEXP (FRAME)(SEXP x);
 SEXP (ENCLOS)(SEXP x);
 SEXP (HASHTAB)(SEXP x);
-// int  (ENVFLAGS)(SEXP x);
-// void (SET_ENVFLAGS)(SEXP x, int v);
+// int  (ENVFLAGS)(SEXP x); //rho
+// void (SET_ENVFLAGS)(SEXP x, int v); //rho
 void SET_FRAME(SEXP x, SEXP v);
 void SET_ENCLOS(SEXP x, SEXP v);
 void SET_HASHTAB(SEXP x, SEXP v);
@@ -405,17 +405,17 @@ SEXP (PRCODE)(SEXP x);
 SEXP (PRENV)(SEXP x);
 SEXP (PRVALUE)(SEXP x);
 int  (PRSEEN)(SEXP x);
-// void (SET_PRSEEN)(SEXP x, int v);
-// void SET_PRENV(SEXP x, SEXP v);
+// void (SET_PRSEEN)(SEXP x, int v); //rho
+// void SET_PRENV(SEXP x, SEXP v); //rho
 void SET_PRVALUE(SEXP x, SEXP v);
-// void SET_PRCODE(SEXP x, SEXP v);
+// void SET_PRCODE(SEXP x, SEXP v); //rho
 void SET_PRSEEN(SEXP x, int v);
 
 /* Hashing Functions */
-// int  (HASHASH)(SEXP x);
+// int  (HASHASH)(SEXP x); //rho
 int  (HASHVALUE)(SEXP x);
-// void (SET_HASHASH)(SEXP x, int v);
-// void (SET_HASHVALUE)(SEXP x, int v);
+// void (SET_HASHASH)(SEXP x, int v); //rho
+// void (SET_HASHVALUE)(SEXP x, int v); //rho
 
 /* External pointer access macros */
 /* (only for backwards compatibility in rho) */
@@ -424,9 +424,9 @@ int  (HASHVALUE)(SEXP x);
 #define EXTPTR_TAG(x)	R_ExternalPtrTag(x)
 
 /* Bytecode access macros */
-// #define BCODE_CODE(x)	CAR(x)
-// #define BCODE_CONSTS(x) CDR(x)
-// #define BCODE_EXPR(x)	TAG(x)
+// #define BCODE_CODE(x)	CAR(x) //rho
+// #define BCODE_CONSTS(x) CDR(x) //rho
+// #define BCODE_EXPR(x)	TAG(x) //rho
 #define isByteCode(x) (0)
 
 /* Pointer Protection and Unprotection */
@@ -585,7 +585,7 @@ void Rf_copyMatrix(SEXP, SEXP, Rboolean);
 void Rf_copyListMatrix(SEXP, SEXP, Rboolean);
 void Rf_copyMostAttrib(SEXP, SEXP);
 void Rf_copyVector(SEXP, SEXP);
-// int Rf_countContexts(int, int);
+// int Rf_countContexts(int, int); //rho
 SEXP Rf_CreateTag(SEXP);
 void Rf_defineVar(SEXP, SEXP, SEXP);
 SEXP Rf_dimgets(SEXP, SEXP);
@@ -666,9 +666,9 @@ void Rf_unprotect(int);
 #endif
 void Rf_unprotect_ptr(SEXP);
 
-// void NORET R_signal_protect_error(void);
-// void NORET R_signal_unprotect_error(void);
-// void NORET R_signal_reprotect_error(PROTECT_INDEX i);
+// void NORET R_signal_protect_error(void); //rho
+// void NORET R_signal_unprotect_error(void); //rho
+// void NORET R_signal_reprotect_error(PROTECT_INDEX i); //rho
 
 #ifndef INLINE_PROTECT
 void R_ProtectWithIndex(SEXP, PROTECT_INDEX *);
@@ -734,9 +734,9 @@ void R_RunWeakRefFinalizer(SEXP w);
 
 SEXP R_PromiseExpr(SEXP);
 SEXP R_ClosureExpr(SEXP);
-// void R_initialize_bcode(void);
-// SEXP R_bcEncode(SEXP);
-// SEXP R_bcDecode(SEXP);
+// void R_initialize_bcode(void); //rho
+// SEXP R_bcEncode(SEXP); //rho
+// SEXP R_bcDecode(SEXP); //rho
 #define PREXPR(e) R_PromiseExpr(e)
 #define BODY_EXPR(e) R_ClosureExpr(e)
 
@@ -891,9 +891,11 @@ int R_system(const char *);
    4 = !ATTR_AS_SET
    8 = !IGNORE_BYTECODE
   16 = !IGNORE_ENV
-  Default from R's default: 15
+  Default from R's default: 16
 */
 Rboolean R_compute_identical(SEXP, SEXP, int);
+
+SEXP R_body_no_src(SEXP x); // body(x) without "srcref" etc, ../main/utils.c
 
 /* C version of R's  indx <- order(..., na.last, decreasing) :
    e.g.  arglist = Rf_lang2(x,y)  or  Rf_lang3(x,y,z) */
@@ -1027,6 +1029,7 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define list3			Rf_list3
 #define list4			Rf_list4
 #define list5			Rf_list5
+#define list6			Rf_list6
 #define listAppend		Rf_listAppend
 #define match			Rf_match
 #define matchE			Rf_matchE
@@ -1157,6 +1160,7 @@ SEXP	 Rf_list2(SEXP, SEXP);
 SEXP	 Rf_list3(SEXP, SEXP, SEXP);
 SEXP	 Rf_list4(SEXP, SEXP, SEXP, SEXP);
 SEXP	 Rf_list5(SEXP, SEXP, SEXP, SEXP, SEXP);
+SEXP	 Rf_list6(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 SEXP	 Rf_listAppend(SEXP, SEXP);
 SEXP	 Rf_mkNamed(SEXPTYPE, const char **);
 SEXP	 Rf_mkString(const char *);

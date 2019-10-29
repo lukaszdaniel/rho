@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 2002-3	      The R Foundation
- *  Copyright (C) 1999-2013   The R Core Team.
+ *  Copyright (C) 2002-3     The R Foundation
+ *  Copyright (C) 1999-2015  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -841,7 +841,7 @@ static SEXP inherits3(SEXP x, SEXP what, SEXP which)
     GCStackRoot<> klass;
 
     if(IS_S4_OBJECT(x))
-	klass = R_data_class2(x);
+	klass = R_data_class2(x); // -> := S4_extends( "class(x)" )
     else
 	klass = R_data_class(x, FALSE);
     int nclass = Rf_length(klass);

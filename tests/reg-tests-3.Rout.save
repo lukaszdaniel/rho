@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-17 r7bd0aac6cd) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-10-22 rda51a54f7d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-04-17 r70500) -- "Frisbee Sailing"
+R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -834,18 +834,12 @@ X2 0           1  0
 +  detach("package:Matrix", unload=TRUE)
 + }##{Matrix}
 Loading required package: Matrix
-
-Attaching package: 'Matrix'
-
-The following object is masked from 'package:base':
-
-    det
-
 3 x 8 Matrix of class "dgeMatrix"
               a b c  d
 [1,] 1 4 7 10 1 4 7 10
 [2,] 2 5 8 11 2 5 8 11
 [3,] 3 6 9 12 3 6 9 12
+> 
 > 
 > ## Invalid UTF-8 strings
 > x <- c("Jetz", "no", "chli", "z\xc3\xbcrit\xc3\xbc\xc3\xbctsch:",
@@ -894,4 +888,12 @@ Error in nchar(x, "w") : invalid multibyte string, element 10
 > nchar(x, "w", allowNA = TRUE)
  [1]  4  2  4 12  5  3  7  2  8 NA
 > ## Results differed by platform, but some gave incorrect results on string 10.
+> 
+> 
+> ## str() on large strings
+> nchar(L <- strrep(paste(LETTERS, collapse="."), 100000), type="b")# 5.1 M
+[1] 5100000
+> stopifnot(system.time( str(L) )[[1]] < 0.05)
+ chr "A.B.C.D.E.F.G.H.I.J.K.L.M.N.O.P.Q.R.S.T.U.V.W.X.Y.ZA.B.C.D.E.F.G.H.I.J.K.L.M.N.O.P.Q.R.S.T.U.V.W.X.Y.ZA.B.C.D.E"| __truncated__
+> ## needed 1.6 sec in R <= 3.3.0
 > 

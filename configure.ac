@@ -649,6 +649,7 @@ AM_CONDITIONAL(HAVE_NOTANGLE, "${NOTANGLE}" != "false")
 ## javareconf needs this
 AC_PATH_PROG(REALPATH, realpath, false)
 
+
 ## cairographics needs pkg-config
 AC_PATH_PROG(PKGCONF, pkg-config , [], 
 	     [$PATH:/usr/local/bin:/ext/bin:/ext:/sw/bin:/opt/bin])
@@ -816,7 +817,7 @@ if test "${use_readline}" = yes; then
   if test "${use_readline}" = no; then
     AC_MSG_ERROR([--with-readline=yes (default) and headers/libs are not available])
   else
-    R_CHECK_FUNCS([rl_completion_matches], 
+    R_CHECK_FUNCS([rl_completion_matches rl_resize_terminal], 
 [#include <stdio.h>
 #include <readline/readline.h>]
                  )
@@ -2065,13 +2066,9 @@ AC_SEARCH_LIBS(gethostbyname, [nsl socket])
 AC_SEARCH_LIBS(xdr_string, [nsl tirpc])
 R_FUNC___SETFPUCW
 R_FUNC_CALLOC
-
-## isfinite() is in territory where C++98 clashes with C99,
-## so is not used in rho.
-## if test "${ac_cv_have_decl_isfinite}" = "yes"; then
-## R_FUNC_ISFINITE
-## fi
-
+if test "${ac_cv_have_decl_isfinite}" = "yes"; then
+R_FUNC_ISFINITE
+fi
 ## check accuracy of log1p
 R_FUNC_LOG1P
 R_FUNC_FTELL

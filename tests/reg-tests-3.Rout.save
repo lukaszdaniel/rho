@@ -906,7 +906,7 @@ Error in nchar(x, "w") : invalid multibyte string, element 10
 > Sys.setlocale("LC_CTYPE", oloc)
 [1] "C"
 > ## needed 1.6 sec in (some) R <= 3.3.0 in a multibyte locale
->
+> 
 > # R rev: 70724
 > # "Internal S4 dispatch sets .Generic in the method frame for consistency with standardGeneric() (PR#16929)."
 > # not yet implemented in rho

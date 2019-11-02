@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2019-10-22 rda51a54f7d) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-10-29 ra456e8b289) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
@@ -190,7 +190,7 @@ Coefficients:
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.767 0.004 0.771 0 0 
+Time elapsed:  0.882 0.012 0.894 0 0 
 > grDevices::dev.off()
 null device 
           1 

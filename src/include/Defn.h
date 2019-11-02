@@ -579,7 +579,6 @@ LibExtern SEXP R_LogicalNAValue;
 # define ItemName		Rf_ItemName
 # define jump_to_toplevel	Rf_jump_to_toplevel
 # define KillAllDevices		Rf_KillAllDevices
-//# define levelsgets		Rf_levelsgets //rho
 # define LogicalFromComplex	Rf_LogicalFromComplex
 # define LogicalFromInteger	Rf_LogicalFromInteger
 # define LogicalFromReal	Rf_LogicalFromReal
@@ -713,7 +712,6 @@ SEXP Rf_EnsureString(SEXP);
 
 /* Other Internally Used Functions */
 
-//SEXP Rf_allocCharsxp(R_len_t); //rho
 //SEXP Rf_append(SEXP, SEXP); /* apparently unused now */
 R_xlen_t asVecSize(SEXP x);
 void Rf_checkArityCall(SEXP, SEXP, SEXP);
@@ -723,7 +721,6 @@ void Rf_copyListMatrix(SEXP, SEXP, Rboolean);
 void Rf_copyMostAttribNoTs(SEXP, SEXP);
 double Rf_currentTime(void);
 void Rf_CustomPrintValue(SEXP, SEXP);
-//void Rf_DataFrameClass(SEXP); //rho
 SEXP Rf_ddfindVar(SEXP, SEXP);
 SEXP Rf_deparse1(SEXP,Rboolean,int);
 SEXP Rf_deparse1w(SEXP,Rboolean,int);
@@ -734,14 +731,9 @@ SEXP dispatch_subset2(SEXP, R_xlen_t, SEXP, SEXP);
 SEXP Rf_duplicated(SEXP, Rboolean);
 R_xlen_t Rf_any_duplicated(SEXP, Rboolean);
 R_xlen_t Rf_any_duplicated3(SEXP, SEXP, Rboolean);
-//int Rf_factorsConform(SEXP, SEXP); //rho
 SEXP Rf_findVar1(SEXP, SEXP, SEXPTYPE, int);
-//void Rf_FrameClassFix(SEXP); //rho
-//SEXP Rf_frameSubscript(int, SEXP, SEXP); //rho
 R_xlen_t Rf_get1index(SEXP, SEXP, R_xlen_t, int, int, SEXP);
 int Rf_GetOptionCutoff(void);
-//SEXP Rf_getVar(SEXP, SEXP); //rho
-//SEXP Rf_getVarInFrame(SEXP, SEXP); //rho
 void Rf_InitArithmetic(void);
 void Rf_InitConnections(void);
 void Rf_InitEd(void);
@@ -788,17 +780,14 @@ void Rf_InitGraphics(void);
 void Rf_InitMemory(void);
 void Rf_InitNames(void);
 void Rf_InitOptions(void);
-//void Rf_InitStringHash(void); //rho
 void Init_R_Variables(SEXP);
 void Rf_InitTempDir(void);
-//void Rf_initStack(void); //rho
 void Rf_internalTypeCheck(SEXP, SEXP, SEXPTYPE);
 void Rf_InitTypeTables(void);
 void Rf_InitS3DefaultTypes(void);
 Rboolean isMethodsDispatchOn(void);
 int Rf_isValidName(const char *);
 void Rf_KillAllDevices(void);
-//SEXP Rf_levelsgets(SEXP, SEXP); //rho
 void Rf_mainloop(void);
 SEXP Rf_makeSubscript(SEXP, SEXP, R_xlen_t *, SEXP);
 SEXP Rf_markKnown(const char *, SEXP);
@@ -807,14 +796,12 @@ SEXP Rf_matchArgExact(SEXP, SEXP*);
 SEXP Rf_mkCLOSXP(SEXP, SEXP, SEXP);
 SEXP Rf_mkFalse(void);
 SEXP Rf_mkPROMISE(SEXP, SEXP);
-//SEXP Rf_mkQUOTE(SEXP); //rho
 SEXP Rf_mkTrue(void);
 SEXP Rf_NewEnvironment(SEXP, SEXP, SEXP);
 void Rf_onintr(void);
 RETSIGTYPE Rf_onsigusr1(int);
 RETSIGTYPE Rf_onsigusr2(int);
 R_xlen_t Rf_OneIndex(SEXP, SEXP, R_xlen_t, int, SEXP*, int, SEXP);
-//SEXP Rf_parse(FILE*, int); //rho
 void Rf_PrintDefaults(void);
 void Rf_PrintGreeting(void);
 void Rf_PrintValueEnv(SEXP, SEXP);

@@ -1416,7 +1416,7 @@ std::pair<bool, SEXP> attribute_hidden
 R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
 		    const rho::ArgList& arglist, rho::Environment* callenv)
 {
-    SEXP value;
+    SEXP value, suppliedvars;
     GCStackRoot<> mlist;
     int offset = op->offset();
     if(offset < 0 || offset > curMaxOffset)
@@ -1449,12 +1449,14 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
             if (Rf_inherits(value, "internalDispatchMethod")) {
                 return std::pair<bool, SEXP>(false, nullptr);
 	    }
+            PROTECT(suppliedvars = Rf_list1(Rf_mkString(op->name())));
+            SET_TAG(suppliedvars, R_dot_Generic);
 	    Closure* func = static_cast<Closure*>(value);
-	    // found a method, call it with promised args
+	    /* found a method, call it with promised args */
 	    value = call->evaluateFunctionCall(func, callenv, arglist);
 	    return std::make_pair(true, value);
 	}
-	// else, need to perform full method search
+	/* else, need to perform full method search */
     }
     RObject* fundef = prim_generics[offset];
     if(!fundef || TYPEOF(fundef) != CLOSXP)

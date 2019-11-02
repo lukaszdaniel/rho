@@ -635,9 +635,9 @@ static SEXP S4_extends(SEXP klass, bool use_tab) {
 	s_extendsForS3 = Symbol::obtain(".extendsForS3");
 	R_S4_extends_table = R_NewHashedEnv(R_NilValue, ScalarInteger(0));
     }
-    /* sanity check for methods package available */
-    if(findVar(s_extends, R_GlobalEnv) == R_UnboundValue)
-	return klass;
+    if(!isMethodsDispatchOn()) {
+        return klass;
+    }
     class_str = translateChar(STRING_ELT(klass, 0)); /* TODO: include package attr. */
     if(use_tab) {
 	val = findVarInFrame(R_S4_extends_table, install(class_str));

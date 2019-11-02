@@ -94,6 +94,8 @@
  * happens in this code.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -231,15 +233,15 @@ static GCRoot<> R_NamespaceSymbol;
 void Rf_InitGlobalEnv()
 {
     Environment::initialize();
-    R_NamespaceSymbol = install(".__NAMESPACE__.");
+    R_NamespaceSymbol = Rf_install(".__NAMESPACE__.");
     R_MethodsNamespace = R_GlobalEnv; // so it is initialized.
-    SET_SYMVALUE(install(".BaseNamespaceEnv"), R_BaseNamespace);
-    R_BaseNamespaceName = ScalarString(mkChar("base"));
+    SET_SYMVALUE(Rf_install(".BaseNamespaceEnv"), R_BaseNamespace);
+    R_BaseNamespaceName = Rf_ScalarString(Rf_mkChar("base"));
     R_PreserveObject(R_BaseNamespaceName);
-    GCStackRoot<> zero(ScalarInteger(0));
+    GCStackRoot<> zero(Rf_ScalarInteger(0));
     R_NamespaceRegistry = R_NewHashedEnv(R_NilValue, zero);
     R_PreserveObject(R_NamespaceRegistry);
-    defineVar(R_BaseSymbol, R_BaseNamespace, R_NamespaceRegistry);
+    Rf_defineVar(R_BaseSymbol, R_BaseNamespace, R_NamespaceRegistry);
 
 #ifdef PROVENANCE_TRACKING
     ProvenanceTracker::setMonitors();
@@ -265,9 +267,9 @@ void Rf_InitGlobalEnv()
 void attribute_hidden Rf_unbindVar(SEXP symbol, SEXP rho)
 {
     if (rho == R_BaseNamespace)
-	error(_("cannot unbind in the base namespace"));
+	Rf_error(_("cannot unbind in the base namespace"));
     if (rho == R_BaseEnv)
-	error(_("unbind in the base environment is unimplemented"));
+	Rf_error(_("unbind in the base environment is unimplemented"));
 
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -350,7 +352,7 @@ SEXP Rf_findVarInFrame3(SEXP rho, SEXP symbol, Rboolean /*doGet*/)
 
 SEXP Rf_findVarInFrame(SEXP rho, SEXP symbol)
 {
-    return findVarInFrame3(rho, symbol, TRUE);
+    return Rf_findVarInFrame3(rho, symbol, TRUE);
 }
 
 
@@ -366,7 +368,7 @@ SEXP Rf_findVar(SEXP symbol, SEXP rho)
 {
     auto env = downcast_to_env(rho);
     if (!env)
-	error(_("argument to '%s' is not an environment"), "findVar");
+	Rf_error(_("argument to '%s' is not an environment"), "findVar");
 
     Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Frame::Binding* bdg = env->findBinding(sym);
@@ -527,17 +529,17 @@ SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
     SEXP vl;
 
     /* first look for ... symbol  */
-    vl = findVar(R_DotsSymbol, rho);
+    vl = Rf_findVar(R_DotsSymbol, rho);
     i = ddVal(symbol);
     if (vl != R_UnboundValue) {
 	if (Rf_length(vl) >= i) {
-	    vl = nthcdr(vl, i - 1);
+	    vl = Rf_nthcdr(vl, i - 1);
 	    return(CAR(vl));
 	}
 	else
-	    error(_("the ... list does not contain %d elements"), i);
+	    Rf_error(_("the ... list does not contain %d elements"), i);
     }
-    else error(_("..%d used in an incorrect context, no ... to look in"), i);
+    else Rf_error(_("..%d used in an incorrect context, no ... to look in"), i);
 
     return R_NilValue;
 }
@@ -561,7 +563,7 @@ SEXP dynamicfindVar(SEXP symbol, ClosureContext *cptr)
 {
     SEXP vl;
     while (cptr) {
-	vl = findVarInFrame3(cptr->workingEnvironment(), symbol, TRUE);
+	vl = Rf_findVarInFrame3(cptr->workingEnvironment(), symbol, TRUE);
 	if (vl != R_UnboundValue) return vl;
 	cptr = ClosureContext::innermost(cptr->nextOut());
     }
@@ -592,7 +594,7 @@ SEXP Rf_findFun(SEXP symbol, SEXP rho)
     FunctionBase* fun = findFunction(sym, env);
     if (fun)
 	return fun;
-    error(_("could not find function \"%s\""), sym->name()->c_str());
+    Rf_error(_("could not find function \"%s\""), sym->name()->c_str());
     /* NOT REACHED */
     return R_UnboundValue;
 }
@@ -609,7 +611,7 @@ SEXP Rf_findFun(SEXP symbol, SEXP rho)
 void Rf_defineVar(SEXP symbol, SEXP value, SEXP rho)
 {
     if (rho == R_EmptyEnv)
-	error(_("cannot assign values in the empty environment"));
+	Rf_error(_("cannot assign values in the empty environment"));
 
     GCStackRoot<> valrt(value);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -693,24 +695,24 @@ SEXP attribute_hidden do_assign(/*const*/ Expression* call, const BuiltInFunctio
     SEXP name=R_NilValue, val, aenv;
     int ginherits = 0;
 
-    if (!isString(x_) || Rf_length(x_) == 0)
-	error(_("invalid first argument"));
+    if (!Rf_isString(x_) || Rf_length(x_) == 0)
+	Rf_error(_("invalid first argument"));
     else {
 	if (Rf_length(x_) > 1)
-	    warning(_("only the first element is used as variable name"));
-	name = installTrChar(STRING_ELT(x_, 0));
+	    Rf_warning(_("only the first element is used as variable name"));
+	name = Rf_installTrChar(STRING_ELT(x_, 0));
     }
     PROTECT(val = value_);
     aenv = simple_as_environment(envir_);
     if (!aenv)
-	error(_("invalid '%s' argument"), "envir");
-    ginherits = asLogical(inherits_);
+	Rf_error(_("invalid '%s' argument"), "envir");
+    ginherits = Rf_asLogical(inherits_);
     if (ginherits == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "inherits");
+	Rf_error(_("invalid '%s' argument"), "inherits");
     if (ginherits)
-	setVar(name, val, aenv);
+	Rf_setVar(name, val, aenv);
     else
-	defineVar(name, val, aenv);
+	Rf_defineVar(name, val, aenv);
     UNPROTECT(1);
     return val;
 }
@@ -725,19 +727,19 @@ SEXP attribute_hidden do_list2env(/*const*/ Expression* call, const BuiltInFunct
     int n;
 
     if (TYPEOF(x_) != VECSXP)
-	error(_("first argument must be a named list"));
+	Rf_error(_("first argument must be a named list"));
     x = x_;
     n = LENGTH(x);
-    xnms = getAttrib(x, R_NamesSymbol);
+    xnms = Rf_getAttrib(x, R_NamesSymbol);
     if (n && (TYPEOF(xnms) != STRSXP || LENGTH(xnms) != n))
-	error(_("names(x) must be a character vector of the same length as x"));
+	Rf_error(_("names(x) must be a character vector of the same length as x"));
     envir = envir_;
     if (TYPEOF(envir) != ENVSXP)
-	error(_("'envir' argument must be an environment"));
+	Rf_error(_("'envir' argument must be an environment"));
 
     for(int i = 0; i < n; i++) {
-	SEXP name = installTrChar(STRING_ELT(xnms, i));
-	defineVar(name, VECTOR_ELT(x, i), envir);
+	SEXP name = Rf_installTrChar(STRING_ELT(xnms, i));
+	Rf_defineVar(name, VECTOR_ELT(x, i), envir);
     }
 
     return envir;
@@ -759,13 +761,13 @@ SEXP attribute_hidden do_list2env(/*const*/ Expression* call, const BuiltInFunct
 static int RemoveVariable(SEXP name, SEXP env)
 {
     if (env == R_BaseNamespace)
-	error(_("cannot remove variables from base namespace"));
+	Rf_error(_("cannot remove variables from base namespace"));
     if (env == R_BaseEnv)
-	error(_("cannot remove variables from the base environment"));
+	Rf_error(_("cannot remove variables from the base environment"));
     if (env == R_EmptyEnv)
-	error(_("cannot remove variables from the empty environment"));
+	Rf_error(_("cannot remove variables from the empty environment"));
     if (FRAME_IS_LOCKED(env))
-	error(_("cannot remove bindings from a locked environment"));
+	Rf_error(_("cannot remove bindings from a locked environment"));
 
     Environment* envir = SEXP_downcast<Environment*>(env);
     const Symbol* sym = SEXP_downcast<Symbol*>(name);
@@ -782,20 +784,20 @@ SEXP attribute_hidden do_remove(/*const*/ Expression* call, const BuiltInFunctio
     int done, i;
 
     name = list_;
-    if (!isString(name))
-	error(_("invalid first argument"));
+    if (!Rf_isString(name))
+	Rf_error(_("invalid first argument"));
 
     envarg = simple_as_environment(envir_);
     if (!envarg)
-	error(_("invalid '%s' argument"), "envir");
+	Rf_error(_("invalid '%s' argument"), "envir");
 
-    ginherits = asLogical(inherits_);
+    ginherits = Rf_asLogical(inherits_);
     if (ginherits == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "inherits");
+	Rf_error(_("invalid '%s' argument"), "inherits");
 
     for (i = 0; i < LENGTH(name); i++) {
 	done = 0;
-	tsym = install(translateChar(STRING_ELT(name, i)));
+	tsym = Rf_install(Rf_translateChar(STRING_ELT(name, i)));
 	tenv = envarg;
 	while (tenv != R_EmptyEnv) {
 	    done = RemoveVariable(tsym, tenv);
@@ -804,7 +806,7 @@ SEXP attribute_hidden do_remove(/*const*/ Expression* call, const BuiltInFunctio
 	    tenv = CDR(tenv);
 	}
 	if (!done)
-	    warning(_("object '%s' not found"), EncodeChar(PRINTNAME(tsym)));
+	    Rf_warning(_("object '%s' not found"), Rf_EncodeChar(PRINTNAME(tsym)));
     }
     return R_NilValue;
 }
@@ -830,21 +832,21 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
     /* The first arg is the object name */
     /* It must be present and a non-empty string */
 
-    if (!isValidStringF(x))
-	error(_("invalid first argument"));
+    if (!Rf_isValidStringF(x))
+	Rf_error(_("invalid first argument"));
     else
-	t1 = installTrChar(STRING_ELT(x, 0));
+	t1 = Rf_installTrChar(STRING_ELT(x, 0));
 
     /* envir :	originally, the "where=" argument */
 
     if (TYPEOF(envir) == REALSXP || TYPEOF(envir) == INTSXP) {
-	where = asInteger(envir);
+	where = Rf_asInteger(envir);
 	genv = R_sysframe(where, ClosureContext::innermost());
     }
     else {
 	genv = simple_as_environment(envir);
 	if (!genv)
-	    error(_("invalid '%s' argument"), "envir");
+	    Rf_error(_("invalid '%s' argument"), "envir");
     }
 
     /* mode :  The mode of the object being sought */
@@ -853,24 +855,24 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
        storage.mode.
     */
 
-    if (isString(mode)) {
+    if (Rf_isString(mode)) {
 	if (!strcmp(CHAR(STRING_ELT(mode, 0)), "function")) /* ASCII */
 	    gmode = FUNSXP;
 	else
-	    gmode = str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
+	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
     } else {
-	error(_("invalid '%s' argument"), "mode");
+	Rf_error(_("invalid '%s' argument"), "mode");
 	gmode = FUNSXP;/* -Wall */
     }
 
-    ginherits = asLogical(inherits);
+    ginherits = Rf_asLogical(inherits);
     if (ginherits == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "inherits");
+	Rf_error(_("invalid '%s' argument"), "inherits");
 
     /* Search for the object */
     rval = findVar1mode(t1, genv, gmode, ginherits, op->variant());
     if (rval == R_MissingArg)
-	error(_("argument \"%s\" is missing, with no default"),
+	Rf_error(_("argument \"%s\" is missing, with no default"),
 	      CHAR(PRINTNAME(t1)));
 
     return rval;
@@ -884,20 +886,20 @@ SEXP attribute_hidden do_get(Expression* call, const BuiltInFunction* op,
 				   x, envir, mode, inherits);
     switch (op->variant()) {
     case 0: // exists(.) :
-	return ScalarLogical(value != R_UnboundValue);
+	return Rf_ScalarLogical(value != R_UnboundValue);
     case 1: //  have get(.)
 	if (value == R_UnboundValue) {
-	    SEXP x_printname = PRINTNAME(installTrChar(STRING_ELT(x, 0)));
-	    if (str2type(CHAR(STRING_ELT(mode, 0))) == ANYSXP)
-		error(_("object '%s' not found"), EncodeChar(x_printname));
+	    SEXP x_printname = PRINTNAME(Rf_installTrChar(STRING_ELT(x, 0)));
+	    if (Rf_str2type(CHAR(STRING_ELT(mode, 0))) == ANYSXP)
+		Rf_error(_("object '%s' not found"), Rf_EncodeChar(x_printname));
 	    else
-		error(_("object '%s' of mode '%s' was not found"),
+		Rf_error(_("object '%s' of mode '%s' was not found"),
 		      CHAR(x_printname),
 		      CHAR(STRING_ELT(mode, 0))); /* ASCII */
 	}
 	return forceIfPromise(value);
     default:
-	error(_("unknown op"));
+	Rf_error(_("unknown op"));
     }
 }
 
@@ -921,8 +923,8 @@ static SEXP gfind(const char *name, Environment* env, SEXPTYPE mode,
     SEXP rval = findVar1mode(t1, env, mode, inherits, true);
 
     if (rval == R_UnboundValue) {
-	if( isFunction(ifnotfound) ) {
-	    SEXP var = mkString(name);
+	if( Rf_isFunction(ifnotfound) ) {
+	    SEXP var = Rf_mkString(name);
 	    Expression* R_fcall = new Expression(ifnotfound, { var });
 	    rval = R_fcall->evaluate(Environment::base());
 	    UNPROTECT(1);
@@ -952,53 +954,53 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
 
     /* The first arg is the object name */
     /* It must be present and a string */
-    if (!isString(x) )
-	error(_("invalid first argument"));
+    if (!Rf_isString(x) )
+	Rf_error(_("invalid first argument"));
     for(int i = 0; i < nvals; i++)
-	if( isNull(STRING_ELT(x, i)) || !CHAR(STRING_ELT(x, 0))[0] )
-	    error(_("invalid name in position %d"), i+1);
+	if( Rf_isNull(STRING_ELT(x, i)) || !CHAR(STRING_ELT(x, 0))[0] )
+	    Rf_error(_("invalid name in position %d"), i+1);
 
     Environment* env = downcast_to_env(envir);
     if (!env)
-	error(_("second argument must be an environment"));
+	Rf_error(_("second argument must be an environment"));
 
     nmode = Rf_length(mode);
-    if( !isString(mode) )
-	error(_("invalid '%s' argument"), "mode");
+    if( !Rf_isString(mode) )
+	Rf_error(_("invalid '%s' argument"), "mode");
 
     if( nmode != nvals && nmode != 1 )
-	error(_("wrong length for '%s' argument"), "mode");
+	Rf_error(_("wrong length for '%s' argument"), "mode");
 
-    PROTECT(ifnotfound = coerceVector(ifnotfound, VECSXP));
+    PROTECT(ifnotfound = Rf_coerceVector(ifnotfound, VECSXP));
     nifnfnd = Rf_length(ifnotfound);
-    if( !isVector(ifnotfound) )
-	error(_("invalid '%s' argument"), "ifnotfound");
+    if( !Rf_isVector(ifnotfound) )
+	Rf_error(_("invalid '%s' argument"), "ifnotfound");
 
     if( nifnfnd != nvals && nifnfnd != 1 )
-	error(_("wrong length for '%s' argument"), "ifnotfound");
+	Rf_error(_("wrong length for '%s' argument"), "ifnotfound");
 
-    ginherits = asLogical(inherits);
+    ginherits = Rf_asLogical(inherits);
     if (ginherits == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "inherits");
+	Rf_error(_("invalid '%s' argument"), "inherits");
 
-    PROTECT(ans = allocVector(VECSXP, nvals));
+    PROTECT(ans = Rf_allocVector(VECSXP, nvals));
 
     for(int i = 0; i < nvals; i++) {
 	SEXPTYPE gmode;
 	if (!strcmp(CHAR(STRING_ELT(mode, i % nmode)), "function"))
 	    gmode = FUNSXP;
 	else {
-	    gmode = str2type(CHAR(STRING_ELT(mode, i % nmode)));
+	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, i % nmode)));
 	    if(gmode == SEXPTYPE( (-1)))
-		error(_("invalid '%s' argument"), "mode");
+		Rf_error(_("invalid '%s' argument"), "mode");
 	}
-	SEXP ans_i = gfind(translateChar(STRING_ELT(x, i % nvals)), env,
+	SEXP ans_i = gfind(Rf_translateChar(STRING_ELT(x, i % nvals)), env,
                            gmode, VECTOR_ELT(ifnotfound, i % nifnfnd),
                            ginherits);
-	SET_VECTOR_ELT(ans, i, lazy_duplicate(ans_i));
+	SET_VECTOR_ELT(ans, i, Rf_lazy_duplicate(ans_i));
     }
 
-    setAttrib(ans, R_NamesSymbol, lazy_duplicate(x));
+    Rf_setAttrib(ans, R_NamesSymbol, Rf_lazy_duplicate(x));
     UNPROTECT(2);
     return(ans);
 }
@@ -1047,10 +1049,10 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;  // Binding defined in PairList form
 
     s = sym = CAR(args);
-    if( isString(sym) && Rf_length(sym)==1 )
-	s = sym = installTrChar(STRING_ELT(CAR(args), 0));
-    if (!isSymbol(sym))
-	errorcall(call, _("invalid use of 'missing'"));
+    if( Rf_isString(sym) && Rf_length(sym)==1 )
+	s = sym = Rf_installTrChar(STRING_ELT(CAR(args), 0));
+    if (!Rf_isSymbol(sym))
+	Rf_errorcall(call, _("invalid use of 'missing'"));
 
     if (DDVAL(sym)) {
 	ddv = ddVal(sym);
@@ -1065,7 +1067,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
 		return Rf_ScalarLogical(1);
 	    }
 	    else
-		t = nthcdr(CAR(t), ddv-1);
+		t = Rf_nthcdr(CAR(t), ddv-1);
 	}
 	if (MISSING(t) || CAR(t) == R_MissingArg) {
 	    return Rf_ScalarLogical(1);
@@ -1073,7 +1075,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
 	else goto havebinding;
     }
     else  /* it wasn't an argument to the function */
-	errorcall(call, _("'missing' can only be used for arguments"));
+	Rf_errorcall(call, _("'missing' can only be used for arguments"));
 
  havebinding:
 
@@ -1083,7 +1085,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     t = findRootPromise(t);
-    if (!isSymbol(PREXPR(t)))
+    if (!Rf_isSymbol(PREXPR(t)))
 	return Rf_ScalarLogical(0);
     else
 	return Rf_ScalarLogical(R_isMissing(PREXPR(t), PRENV(t)));
@@ -1146,15 +1148,15 @@ SEXP attribute_hidden do_attach(/*const*/ Expression* call, const BuiltInFunctio
 {
     GCStackRoot<Environment> env_to_attach;
 
-    int pos = asInteger(pos_);
+    int pos = Rf_asInteger(pos_);
     if (pos == NA_INTEGER)
-	error(_("'pos' must be an integer"));
+	Rf_error(_("'pos' must be an integer"));
 
-    if (!isValidStringF(name_))
-	error(_("invalid '%s' argument"), "name");
+    if (!Rf_isValidStringF(name_))
+	Rf_error(_("invalid '%s' argument"), "name");
     StringVector* name = SEXP_downcast<StringVector*>(name_);
 
-    if (isNewList(what_)) {
+    if (Rf_isNewList(what_)) {
         GCStackRoot<Frame> frame(Frame::normalFrame());
 	GCStackRoot<Environment> newenv(new Environment(nullptr, frame));
 
@@ -1164,20 +1166,20 @@ SEXP attribute_hidden do_attach(/*const*/ Expression* call, const BuiltInFunctio
 	    const StringVector* names = elements->names();
 	    size_t length = elements->size();
 	    if (!names || elements->size() != names->size()) {
-		error(_("all elements of a list must be named"));
+		Rf_error(_("all elements of a list must be named"));
 	    }
 	    for (size_t i = 0; i < length; ++i) {
 		if (!(*names)[i]) {
-		    error(_("all elements of a list must be named"));
+		    Rf_error(_("all elements of a list must be named"));
 		}
 		frame->bind(Symbol::obtain((*names)[i]), (*elements)[i]);
 	    }
 	}
 	env_to_attach = newenv;
-    } else if (isEnvironment(what_)) {
+    } else if (Rf_isEnvironment(what_)) {
 	env_to_attach = SEXP_downcast<Environment*>(what_);
     } else {
-	error(_("'attach' only works for lists, data frames and environments"));
+	Rf_error(_("'attach' only works for lists, data frames and environments"));
     }
     return env_to_attach->attachToSearchPath(pos, name);
 }
@@ -1194,7 +1196,7 @@ SEXP attribute_hidden do_attach(/*const*/ Expression* call, const BuiltInFunctio
 
 SEXP attribute_hidden do_detach(/*const*/ Expression* call, const BuiltInFunction* op, RObject* pos_)
 {
-    int pos = asInteger(pos_);
+    int pos = Rf_asInteger(pos_);
 
     return Environment::detachFromSearchPath(pos);
 }
@@ -1217,15 +1219,15 @@ SEXP attribute_hidden do_search(/*const*/ Expression* call, const BuiltInFunctio
     n = 2;
     for (t = ENCLOS(R_GlobalEnv); t != R_BaseEnv ; t = ENCLOS(t))
 	n++;
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     /* TODO - what should the name of this be? */
-    SET_STRING_ELT(ans, 0, mkChar(".GlobalEnv"));
-    SET_STRING_ELT(ans, n-1, mkChar("package:base"));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(".GlobalEnv"));
+    SET_STRING_ELT(ans, n-1, Rf_mkChar("package:base"));
     i = 1;
     for (t = ENCLOS(R_GlobalEnv); t != R_BaseEnv ; t = ENCLOS(t)) {
-	name = getAttrib(t, R_NameSymbol);
-	if (!isString(name) || Rf_length(name) < 1)
-	    SET_STRING_ELT(ans, i, mkChar("(unknown)"));
+	name = Rf_getAttrib(t, R_NameSymbol);
+	if (!Rf_isString(name) || Rf_length(name) < 1)
+	    SET_STRING_ELT(ans, i, Rf_mkChar("(unknown)"));
 	else
 	    SET_STRING_ELT(ans, i, STRING_ELT(name, 0));
 	i++;
@@ -1276,10 +1278,10 @@ static void FrameValues(SEXP frame, int all, SEXP values, int *indx)
 	    SEXP value = CAR(frame);
 	    if (TYPEOF(value) == PROMSXP) {
 		PROTECT(value);
-		value = eval(value, R_GlobalEnv);
+		value = Rf_eval(value, R_GlobalEnv);
 		UNPROTECT(1);
 	    }
-	    SET_VECTOR_ELT(values, *indx, lazy_duplicate(value));
+	    SET_VECTOR_ELT(values, *indx, Rf_lazy_duplicate(value));
 	    (*indx)++;
 	}
 	frame = CDR(frame);
@@ -1329,10 +1331,10 @@ SEXP attribute_hidden do_ls(/*const*/ Expression* call, const BuiltInFunction* o
 {
     RObject* env = envir_;
 
-    int all = asLogical(all_names_);
+    int all = Rf_asLogical(all_names_);
     if (all == NA_LOGICAL) all = 0;
 
-    int sort_nms = asLogical(sorted_); /* sorted = TRUE/FALSE */
+    int sort_nms = Rf_asLogical(sorted_); /* sorted = TRUE/FALSE */
     if (sort_nms == NA_LOGICAL) sort_nms = 0;
 
     return R_lsInternal3(env, Rboolean(all), Rboolean(sort_nms));
@@ -1345,14 +1347,14 @@ SEXP R_lsInternal3(SEXP env, Rboolean all, Rboolean sorted)
     const Environment* envir
 	= simple_as_environment(env, /* allow_null = */ true);
     if (!envir)
-	error(_("invalid '%s' argument"), "envir");
+	Rf_error(_("invalid '%s' argument"), "envir");
     std::vector<const Symbol*> syms = envir->frame()->symbols(all);
     std::size_t sz = syms.size();
     GCStackRoot<StringVector> ans(StringVector::create(sz));
     for (unsigned int i = 0; i < sz; ++i)
 	(*ans)[i] = const_cast<String*>(syms[i]->name());
     if (sorted)
-	sortVector(ans, FALSE);
+	Rf_sortVector(ans, FALSE);
     return ans;
 }
 
@@ -1368,12 +1370,12 @@ SEXP attribute_hidden do_env2list(/*const*/ Expression* call, const BuiltInFunct
 {
     Environment* env = simple_as_environment(x_);
     if(!env)
-	error(_("argument must be an environment"));
+	Rf_error(_("argument must be an environment"));
 
-    int all = asLogical(all_names_); /* all.names = TRUE/FALSE */
+    int all = Rf_asLogical(all_names_); /* all.names = TRUE/FALSE */
     if (all == NA_LOGICAL) all = 0;
 
-    int sort_nms = asLogical(sorted_); /* sorted = TRUE/FALSE */
+    int sort_nms = Rf_asLogical(sorted_); /* sorted = TRUE/FALSE */
     if (sort_nms == NA_LOGICAL) sort_nms = 0;
 
     GCStackRoot<Frame> frame(env->frame());
@@ -1388,7 +1390,7 @@ SEXP attribute_hidden do_env2list(/*const*/ Expression* call, const BuiltInFunct
 	(*result)[i] = frame->binding(symbol)->forcedValue();
     }
     if (syms.size() > 0)
-	setAttrib(result, R_NamesSymbol, names);
+	Rf_setAttrib(result, R_NamesSymbol, names);
     return(result);
 }
 
@@ -1404,28 +1406,28 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     int i, k, k2;
     int /* boolean */ all, useNms;
 
-    env = downcast_to_env(eval(CAR(args), rho));
+    env = downcast_to_env(Rf_eval(CAR(args), rho));
     if(!env)
-	error(_("argument must be an environment"));
+	Rf_error(_("argument must be an environment"));
 
     FUN = CADR(args);
-    if (!isSymbol(FUN))
-	error(_("arguments must be symbolic"));
+    if (!Rf_isSymbol(FUN))
+	Rf_error(_("arguments must be symbolic"));
 
     /* 'all.names' : */
-    all = asLogical(eval(CADDR(args), rho));
+    all = Rf_asLogical(Rf_eval(CADDR(args), rho));
     if (all == NA_LOGICAL) all = 0;
 
     /* 'USE.NAMES' : */
-    useNms = asLogical(eval(CADDDR(args), rho));
+    useNms = Rf_asLogical(Rf_eval(CADDDR(args), rho));
     if (useNms == NA_LOGICAL) useNms = 0;
 
     GCStackRoot<> framelist(FRAME(env));
 
     k = FrameSize(framelist, all);
 
-    PROTECT(ans  = allocVector(VECSXP, k));
-    PROTECT(tmp2 = allocVector(VECSXP, k));
+    PROTECT(ans  = Rf_allocVector(VECSXP, k));
+    PROTECT(tmp2 = Rf_allocVector(VECSXP, k));
 
     k2 = 0;
     FrameValues(framelist, all, tmp2, &k2);
@@ -1433,32 +1435,32 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     static Symbol* Xsym = Symbol::obtain("X");
     static Symbol* isym = Symbol::obtain("i");
 
-    PROTECT(ind = allocVector(INTSXP, 1));
+    PROTECT(ind = Rf_allocVector(INTSXP, 1));
     /* tmp :=  `[`(<elist>, i) */
     PROTECT(tmp = new Expression(R_Bracket2Symbol, { Xsym, ind }));
     /* fcall :=  <FUN>( tmp, ... ) */
     Expression* R_fcall = new Expression(FUN, { tmp, R_DotsSymbol });
 
-    defineVar(Xsym, tmp2, rho);
+    Rf_defineVar(Xsym, tmp2, rho);
     SET_NAMED(tmp2, 1);
-    defineVar(isym, ind, rho);
+    Rf_defineVar(isym, ind, rho);
     SET_NAMED(ind, 1);
 
     for(i = 0; i < k2; i++) {
 	INTEGER(ind)[0] = i+1;
 	SEXP tmp = R_forceAndCall(R_fcall, 1, rho);
 	if (MAYBE_REFERENCED(tmp))
-	    tmp = lazy_duplicate(tmp);
+	    tmp = Rf_lazy_duplicate(tmp);
 	SET_VECTOR_ELT(ans, i, tmp);
     }
 
     if (useNms) {
 	SEXP names;
-	PROTECT(names = allocVector(STRSXP, k));
+	PROTECT(names = Rf_allocVector(STRSXP, k));
 	k = 0;
 	FrameNames(framelist, all, names, &k);
 
-	setAttrib(ans, R_NamesSymbol, names);
+	Rf_setAttrib(ans, R_NamesSymbol, names);
 	UNPROTECT(1);
     }
     UNPROTECT(4);
@@ -1484,13 +1486,13 @@ SEXP attribute_hidden do_builtins(/*const*/ Expression* call, const BuiltInFunct
 {
     SEXP ans;
     int intern, nelts;
-    intern = asLogical(internal_);
+    intern = Rf_asLogical(internal_);
     if (intern == NA_INTEGER) intern = 0;
     nelts = BuiltinSize(1, intern);
-    ans = allocVector(STRSXP, nelts);
+    ans = Rf_allocVector(STRSXP, nelts);
     nelts = 0;
     BuiltinNames(1, intern, ans, &nelts);
-    sortVector(ans, TRUE);
+    Rf_sortVector(ans, TRUE);
     return ans;
 }
 
@@ -1515,25 +1517,25 @@ static SEXP pos2env(int pos, SEXP call)
     ClosureContext *cptr;
 
     if (pos == NA_INTEGER || pos < -1 || pos == 0) {
-	errorcall(call, _("invalid '%s' argument"), "pos");
+	Rf_errorcall(call, _("invalid '%s' argument"), "pos");
 	env = call;/* just for -Wall */
     }
     else if (pos == -1) {
 	/* make sure the context is a funcall */
 	cptr = ClosureContext::innermost();
 	if( !cptr )
-	    errorcall(call, _("no enclosing environment"));
+	    Rf_errorcall(call, _("no enclosing environment"));
 
 	env = cptr->callEnvironment();
 	if (R_GlobalEnv != R_NilValue && env == R_NilValue)
-	    errorcall(call, _("invalid '%s' argument"), "pos");
+	    Rf_errorcall(call, _("invalid '%s' argument"), "pos");
     }
     else {
 	for (env = R_GlobalEnv; env != R_EmptyEnv && pos > 1;
 	     env = ENCLOS(env))
 	    pos--;
 	if (pos != 1)
-	    errorcall(call, _("invalid '%s' argument"), "pos");
+	    Rf_errorcall(call, _("invalid '%s' argument"), "pos");
     }
     return env;
 }
@@ -1544,11 +1546,11 @@ SEXP attribute_hidden do_pos2env(/*const*/ Expression* call, const BuiltInFuncti
     SEXP env;
     int i, npos;
 
-    PROTECT(pos = coerceVector(pos, INTSXP));
+    PROTECT(pos = Rf_coerceVector(pos, INTSXP));
     npos = Rf_length(pos);
     if (npos <= 0)
-	errorcall(call, _("invalid '%s' argument"), "pos");
-    PROTECT(env = allocVector(VECSXP, npos));
+	Rf_errorcall(call, _("invalid '%s' argument"), "pos");
+    PROTECT(env = Rf_allocVector(VECSXP, npos));
     for (i = 0; i < npos; i++) {
 	SET_VECTOR_ELT(env, i, pos2env(INTEGER(pos)[i], call));
     }
@@ -1566,14 +1568,14 @@ static SEXP matchEnvir(SEXP call, const char *what)
     if(!strcmp("package:base", what))
 	return R_BaseEnv;
     for (t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
-	name = getAttrib(t, R_NameSymbol);
-	if(isString(name) && Rf_length(name) > 0 &&
-	   !strcmp(translateChar(STRING_ELT(name, 0)), what)) {
+	name = Rf_getAttrib(t, R_NameSymbol);
+	if(Rf_isString(name) && Rf_length(name) > 0 &&
+	   !strcmp(Rf_translateChar(STRING_ELT(name, 0)), what)) {
 	    vmaxset(vmax);
 	    return t;
 	}
     }
-    errorcall(call, _("no item called \"%s\" on the search list"), what);
+    Rf_errorcall(call, _("no item called \"%s\" on the search list"), what);
     /* not reached */
     vmaxset(vmax);
     return R_NilValue;
@@ -1583,37 +1585,37 @@ static SEXP matchEnvir(SEXP call, const char *what)
 SEXP attribute_hidden
 do_as_environment(/*const*/ Expression* call, const BuiltInFunction* op, RObject* arg)
 {
-    if(isEnvironment(arg))
+    if(Rf_isEnvironment(arg))
 	return arg;
 
     switch(TYPEOF(arg)) {
     case STRSXP:
-	return matchEnvir(call, translateChar(asChar(arg)));
+	return matchEnvir(call, Rf_translateChar(Rf_asChar(arg)));
     case REALSXP:
     case INTSXP:
 	return do_pos2env(call, op, arg);
     case NILSXP:
-	errorcall(call,_("using 'as.environment(NULL)' is defunct"));
+	Rf_errorcall(call,_("using 'as.environment(NULL)' is defunct"));
 	return R_BaseEnv;	/* -Wall */
     case S4SXP: {
 	/* dispatch was tried above already */
 	Environment* dot_xData = simple_as_environment(arg);
 	if(!dot_xData)
-	    errorcall(call, _("S4 object does not extend class \"environment\""));
+	    Rf_errorcall(call, _("S4 object does not extend class \"environment\""));
 	return(dot_xData);
     }
     case VECSXP: {
 	/* implement as.environment.list() {isObject(.) is false for a list} */
 	SEXP call, val;
-	PROTECT(call = lang4(install("list2env"), arg,
+	PROTECT(call = Rf_lang4(Rf_install("list2env"), arg,
 			     /* envir = */nullptr,
 			     /* parent = */R_EmptyEnv));
-	val = eval(call, R_BaseEnv);
+	val = Rf_eval(call, R_BaseEnv);
 	UNPROTECT(1);
 	return val;
     }
     default:
-	errorcall(call, _("invalid object for 'as.environment'"));
+	Rf_errorcall(call, _("invalid object for 'as.environment'"));
 	return R_NilValue;	/* -Wall */
     }
 }
@@ -1622,7 +1624,7 @@ void R_LockEnvironment(SEXP env, Rboolean bindings)
 {
     Environment* envir = simple_as_environment(env, /* allow_null = */ true);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
 
     if (envir == R_BaseEnv || envir == R_BaseNamespace) {
 	if (bindings) {
@@ -1642,7 +1644,7 @@ Rboolean R_EnvironmentIsLocked(SEXP env)
 {
     Environment* envir = simple_as_environment(env);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     return Rboolean(envir->frame()->isLocked());
 }
 
@@ -1651,53 +1653,53 @@ SEXP do_lockEnv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* 
     SEXP frame;
     Rboolean bindings;
     frame = env_;
-    bindings = RHOCONSTRUCT(Rboolean, asLogical(bindings_));
+    bindings = RHOCONSTRUCT(Rboolean, Rf_asLogical(bindings_));
     R_LockEnvironment(frame, bindings);
     return R_NilValue;
 }
 
 SEXP attribute_hidden do_envIsLocked(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
 {
-    return ScalarLogical(R_EnvironmentIsLocked(env_));
+    return Rf_ScalarLogical(R_EnvironmentIsLocked(env_));
 }
 
 void R_LockBinding(SEXP sym, SEXP env)
 {
     if (TYPEOF(sym) != SYMSXP)
-	error(_("not a symbol"));
+	Rf_error(_("not a symbol"));
     Environment* envir = simple_as_environment(env);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     const Symbol* symbol = static_cast<Symbol*>(sym);
     Frame::Binding* binding = envir->frame()->binding(symbol);
     if (!binding)
-	error(_("no binding for \"%s\""), symbol->name()->c_str());
+	Rf_error(_("no binding for \"%s\""), symbol->name()->c_str());
     binding->setLocking(true);
 }
 
 void R_unLockBinding(SEXP sym, SEXP env)
 {
     if (TYPEOF(sym) != SYMSXP)
-	error(_("not a symbol"));
+	Rf_error(_("not a symbol"));
     Environment* envir = simple_as_environment(env);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     const Symbol* symbol = static_cast<Symbol*>(sym);
     Frame::Binding* binding = envir->frame()->binding(symbol);
     if (!binding)
-	error(_("no binding for \"%s\""), symbol->name()->c_str());
+	Rf_error(_("no binding for \"%s\""), symbol->name()->c_str());
     binding->setLocking(false);
 }
 
 void R_MakeActiveBinding(SEXP sym, SEXP fun, SEXP env)
 {
     if (TYPEOF(sym) != SYMSXP)
-	error(_("not a symbol"));
-    if (! isFunction(fun))
-	error(_("not a function"));
+	Rf_error(_("not a symbol"));
+    if (! Rf_isFunction(fun))
+	Rf_error(_("not a function"));
     Environment* envir = simple_as_environment(env);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     const Symbol* symbol = static_cast<Symbol*>(sym);
     Frame::Binding* binding = envir->frame()->obtainBinding(symbol);
     FunctionBase* function = static_cast<FunctionBase*>(fun);
@@ -1707,27 +1709,27 @@ void R_MakeActiveBinding(SEXP sym, SEXP fun, SEXP env)
 Rboolean R_BindingIsLocked(SEXP sym, SEXP env)
 {
     if (TYPEOF(sym) != SYMSXP)
-	error(_("not a symbol"));
+	Rf_error(_("not a symbol"));
     Environment* envir = simple_as_environment(env);
     if (!envir)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     const Symbol* symbol = static_cast<Symbol*>(sym);
     Frame::Binding* binding = envir->frame()->binding(symbol);
     if (!binding)
-	error(_("no binding for \"%s\""), symbol->name()->c_str());
+	Rf_error(_("no binding for \"%s\""), symbol->name()->c_str());
     return Rboolean(binding->isLocked());
 }
 
 Rboolean R_BindingIsActive(SEXP sym, SEXP env)
 {
     if (TYPEOF(sym) != SYMSXP)
-	error(_("not a symbol"));
+	Rf_error(_("not a symbol"));
     env = simple_as_environment(env);
     if (!env)
-	error(_("not an environment"));
+	Rf_error(_("not an environment"));
     Frame::Binding* binding = findVarLocInFrame(env, sym, nullptr);
     if (!binding)
-	error(_("no binding for \"%s\""), EncodeChar(PRINTNAME(sym)));
+	Rf_error(_("no binding for \"%s\""), Rf_EncodeChar(PRINTNAME(sym)));
     return Rboolean(binding->isActive());
 }
 
@@ -1754,7 +1756,7 @@ SEXP attribute_hidden do_lockBnd(/*const*/ Expression* call, const BuiltInFuncti
 	R_unLockBinding(sym, env);
 	break;
     default:
-	error(_("unknown op"));
+	Rf_error(_("unknown op"));
     }
     return R_NilValue;
 }
@@ -1764,7 +1766,7 @@ SEXP attribute_hidden do_bndIsLocked(/*const*/ Expression* call, const BuiltInFu
     SEXP sym, env;
     sym = sym_;
     env = env_;
-    return ScalarLogical(R_BindingIsLocked(sym, env));
+    return Rf_ScalarLogical(R_BindingIsLocked(sym, env));
 }
 
 SEXP attribute_hidden do_mkActiveBnd(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sym_, RObject* fun_, RObject* env_)
@@ -1782,16 +1784,16 @@ SEXP attribute_hidden do_bndIsActive(/*const*/ Expression* call, const BuiltInFu
     SEXP sym, env;
     sym = sym_;
     env = env_;
-    return ScalarLogical(R_BindingIsActive(sym, env));
+    return Rf_ScalarLogical(R_BindingIsActive(sym, env));
 }
 
 Rboolean R_IsPackageEnv(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
-	SEXP name = getAttrib(rho, R_NameSymbol);
+	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
-	if(isString(name) && Rf_length(name) > 0 &&
+	if(Rf_isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return TRUE;
 	else
@@ -1804,10 +1806,10 @@ Rboolean R_IsPackageEnv(SEXP rho)
 SEXP R_PackageEnvName(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
-	SEXP name = getAttrib(rho, R_NameSymbol);
+	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
-	if(isString(name) && Rf_length(name) > 0 &&
+	if(Rf_isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return name;
 	else
@@ -1842,9 +1844,9 @@ Rboolean R_IsNamespaceEnv(SEXP rho)
     if (rho == R_BaseNamespace)
 	return TRUE;
     else if (TYPEOF(rho) == ENVSXP) {
-	SEXP info = findVarInFrame3(rho, R_NamespaceSymbol, TRUE);
+	SEXP info = Rf_findVarInFrame3(rho, R_NamespaceSymbol, TRUE);
 	if (info != R_UnboundValue && TYPEOF(info) == ENVSXP) {
-	    SEXP spec = findVarInFrame3(info, install("spec"), TRUE);
+	    SEXP spec = Rf_findVarInFrame3(info, Rf_install("spec"), TRUE);
 	    if (spec != R_UnboundValue &&
 		TYPEOF(spec) == STRSXP && LENGTH(spec) > 0)
 		return TRUE;
@@ -1858,7 +1860,7 @@ Rboolean R_IsNamespaceEnv(SEXP rho)
 
 SEXP attribute_hidden do_isNSEnv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* ns_)
 {
-    return R_IsNamespaceEnv(ns_) ? mkTrue() : mkFalse();
+    return R_IsNamespaceEnv(ns_) ? Rf_mkTrue() : Rf_mkFalse();
 }
 
 SEXP R_NamespaceEnvSpec(SEXP rho)
@@ -1870,9 +1872,9 @@ SEXP R_NamespaceEnvSpec(SEXP rho)
     if (rho == R_BaseNamespace)
 	return R_BaseNamespaceName;
     else if (TYPEOF(rho) == ENVSXP) {
-	SEXP info = findVarInFrame3(rho, R_NamespaceSymbol, TRUE);
+	SEXP info = Rf_findVarInFrame3(rho, R_NamespaceSymbol, TRUE);
 	if (info != R_UnboundValue && TYPEOF(info) == ENVSXP) {
-	    SEXP spec = findVarInFrame3(info, install("spec"), TRUE);
+	    SEXP spec = Rf_findVarInFrame3(info, Rf_install("spec"), TRUE);
 	    if (spec != R_UnboundValue &&
 		TYPEOF(spec) == STRSXP && LENGTH(spec) > 0)
 		return spec;
@@ -1896,7 +1898,7 @@ SEXP R_FindNamespace(SEXP info)
     PROTECT(info);
     static const Symbol* s_getNamespace = Symbol::obtain("getNamespace");
     PROTECT(expr = Rf_lang2(const_cast<Symbol*>(s_getNamespace), info));
-    val = eval(expr, R_GlobalEnv);
+    val = Rf_eval(expr, R_GlobalEnv);
     UNPROTECT(2);
     return val;
 }
@@ -1914,12 +1916,12 @@ static SEXP checkNSname(SEXP call, SEXP name)
 	break;
     case STRSXP:
 	if (LENGTH(name) >= 1) {
-	    name = installTrChar(STRING_ELT(name, 0));
+	    name = Rf_installTrChar(STRING_ELT(name, 0));
 	    break;
 	}
 	/* else fall through */
     default:
-	errorcall(call, _("bad namespace name"));
+	Rf_errorcall(call, _("bad namespace name"));
     }
     return name;
 }
@@ -1929,9 +1931,9 @@ SEXP attribute_hidden do_regNS(/*const*/ Expression* call, const BuiltInFunction
     SEXP name, val;
     name = checkNSname(call, name_);
     val = env_;
-    if (findVarInFrame(R_NamespaceRegistry, name) != R_UnboundValue)
-	errorcall(call, _("namespace already registered"));
-    defineVar(name, val, R_NamespaceRegistry);
+    if (Rf_findVarInFrame(R_NamespaceRegistry, name) != R_UnboundValue)
+	Rf_errorcall(call, _("namespace already registered"));
+    Rf_defineVar(name, val, R_NamespaceRegistry);
     return R_NilValue;
 }
 
@@ -1939,8 +1941,8 @@ SEXP attribute_hidden do_unregNS(/*const*/ Expression* call, const BuiltInFuncti
 {
     SEXP name;
     name = checkNSname(call, nsname_);
-    if (findVarInFrame(R_NamespaceRegistry, name) == R_UnboundValue)
-	errorcall(call, _("namespace not registered"));
+    if (Rf_findVarInFrame(R_NamespaceRegistry, name) == R_UnboundValue)
+	Rf_errorcall(call, _("namespace not registered"));
     RemoveVariable(name, R_NamespaceRegistry);
     return R_NilValue;
 }
@@ -1948,8 +1950,8 @@ SEXP attribute_hidden do_unregNS(/*const*/ Expression* call, const BuiltInFuncti
 SEXP attribute_hidden do_getRegNS(/*const*/ Expression* call, const BuiltInFunction* op, RObject* name_)
 {
     SEXP name, val;
-    name = checkNSname(call, coerceVector(name_, SYMSXP));
-    val = findVarInFrame(R_NamespaceRegistry, name);
+    name = checkNSname(call, Rf_coerceVector(name_, SYMSXP));
+    val = Rf_findVarInFrame(R_NamespaceRegistry, name);
 
     switch(op->variant()) {
     case 0: // get..()
@@ -1958,9 +1960,9 @@ SEXP attribute_hidden do_getRegNS(/*const*/ Expression* call, const BuiltInFunct
 	else
 	    return val;
     case 1: // is..()
-	return ScalarLogical(val == R_UnboundValue ? FALSE : TRUE);
+	return Rf_ScalarLogical(val == R_UnboundValue ? FALSE : TRUE);
 
-    default: error(_("unknown op"));
+    default: Rf_error(_("unknown op"));
     }
     return R_NilValue; // -Wall
 }
@@ -1988,19 +1990,19 @@ SEXP attribute_hidden do_importIntoEnv(/*const*/ Expression* call, const BuiltIn
 
     impenv = simple_as_environment(impenv);
     if (!impenv)
-	error(_("bad import environment argument"));
+	Rf_error(_("bad import environment argument"));
     expenv = simple_as_environment(expenv);
     if (!expenv)
-	error(_("bad import environment argument"));
+	Rf_error(_("bad import environment argument"));
     if (TYPEOF(impnames) != STRSXP || TYPEOF(expnames) != STRSXP)
-	error(_("invalid '%s' argument"), "names");
+	Rf_error(_("invalid '%s' argument"), "names");
     if (LENGTH(impnames) != LENGTH(expnames))
-	error(_("length of import and export names must match"));
+	Rf_error(_("length of import and export names must match"));
 
     n = LENGTH(impnames);
     for (i = 0; i < n; i++) {
-	impsym = installTrChar(STRING_ELT(impnames, i));
-	expsym = installTrChar(STRING_ELT(expnames, i));
+	impsym = Rf_installTrChar(STRING_ELT(impnames, i));
+	expsym = Rf_installTrChar(STRING_ELT(expnames, i));
 
 	/* find the binding--may be a CONS cell or a symbol */
 	SEXP binding = R_NilValue;
@@ -2016,7 +2018,7 @@ SEXP attribute_hidden do_importIntoEnv(/*const*/ Expression* call, const BuiltIn
 	/* get value of the binding; do not force promises */
 	if (TYPEOF(binding) == SYMSXP) {
 	    if (SYMVALUE(expsym) == R_UnboundValue)
-		error(_("exported symbol '%s' has no value"),
+		Rf_error(_("exported symbol '%s' has no value"),
 		      CHAR(PRINTNAME(expsym)));
 	    val = SYMVALUE(expsym);
 	}
@@ -2025,7 +2027,7 @@ SEXP attribute_hidden do_importIntoEnv(/*const*/ Expression* call, const BuiltIn
 	/* import the binding */
 	if (IS_ACTIVE_BINDING(binding))
 	    R_MakeActiveBinding(impsym, val, impenv);
-	else defineVar(impsym, val, impenv);
+	else Rf_defineVar(impsym, val, impenv);
     }
     return R_NilValue;
 }

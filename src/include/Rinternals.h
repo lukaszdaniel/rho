@@ -299,7 +299,6 @@ Rboolean (OBJECT)(SEXP x);
 int  (MARK)(SEXP x);
 SEXPTYPE (TYPEOF)(SEXP x);
 int  (NAMED)(SEXP x);
-// int  (REFCNT)(SEXP x); //rho
 void (SET_OBJECT)(SEXP x, int v);
 void SET_TYPEOF(SEXP x, SEXPTYPE v);
 void (SET_NAMED)(SEXP x, int v);
@@ -393,8 +392,6 @@ void SET_INTERNAL(SEXP x, SEXP v);
 SEXP (FRAME)(SEXP x);
 SEXP (ENCLOS)(SEXP x);
 SEXP (HASHTAB)(SEXP x);
-// int  (ENVFLAGS)(SEXP x); //rho
-// void (SET_ENVFLAGS)(SEXP x, int v); //rho
 void SET_FRAME(SEXP x, SEXP v);
 void SET_ENCLOS(SEXP x, SEXP v);
 void SET_HASHTAB(SEXP x, SEXP v);
@@ -405,17 +402,11 @@ SEXP (PRCODE)(SEXP x);
 SEXP (PRENV)(SEXP x);
 SEXP (PRVALUE)(SEXP x);
 int  (PRSEEN)(SEXP x);
-// void (SET_PRSEEN)(SEXP x, int v); //rho
-// void SET_PRENV(SEXP x, SEXP v); //rho
 void SET_PRVALUE(SEXP x, SEXP v);
-// void SET_PRCODE(SEXP x, SEXP v); //rho
 void SET_PRSEEN(SEXP x, int v);
 
 /* Hashing Functions */
-// int  (HASHASH)(SEXP x); //rho
 int  (HASHVALUE)(SEXP x);
-// void (SET_HASHASH)(SEXP x, int v); //rho
-// void (SET_HASHVALUE)(SEXP x, int v); //rho
 
 /* External pointer access macros */
 /* (only for backwards compatibility in rho) */
@@ -423,10 +414,6 @@ int  (HASHVALUE)(SEXP x);
 #define EXTPTR_PROT(x)  R_ExternalPtrProtected(x)
 #define EXTPTR_TAG(x)	R_ExternalPtrTag(x)
 
-/* Bytecode access macros */
-// #define BCODE_CODE(x)	CAR(x) //rho
-// #define BCODE_CONSTS(x) CDR(x) //rho
-// #define BCODE_EXPR(x)	TAG(x) //rho
 #define isByteCode(x) (0)
 
 /* Pointer Protection and Unprotection */
@@ -561,7 +548,6 @@ typedef struct R_allocator R_allocator_t;
 /* Other Internally Used Functions, excluding those which are inline-able*/
 
 char * Rf_acopy_string(const char *);
-//void Rf_addMissingVarsToNewEnv(SEXP, SEXP); //rho
 SEXP Rf_alloc3DArray(SEXPTYPE, int, int, int);
 SEXP Rf_allocArray(SEXPTYPE, SEXP);
 SEXP Rf_allocFormalsList2(SEXP sym1, SEXP sym2);
@@ -576,7 +562,6 @@ SEXP Rf_allocSExp(SEXPTYPE);
 SEXP Rf_allocVector3(SEXPTYPE, R_xlen_t, void*);
 R_xlen_t Rf_any_duplicated(SEXP x, Rboolean from_last);
 R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last);
-//SEXP Rf_applyClosure(SEXP, SEXP, SEXP, SEXP, SEXP); //rho
 SEXP Rf_arraySubscript(int, SEXP, SEXP, SEXP (*)(SEXP,SEXP),
                        SEXP (*)(SEXP, int), SEXP);
 SEXP Rf_classgets(SEXP, SEXP);
@@ -585,7 +570,6 @@ void Rf_copyMatrix(SEXP, SEXP, Rboolean);
 void Rf_copyListMatrix(SEXP, SEXP, Rboolean);
 void Rf_copyMostAttrib(SEXP, SEXP);
 void Rf_copyVector(SEXP, SEXP);
-// int Rf_countContexts(int, int); //rho
 SEXP Rf_CreateTag(SEXP);
 void Rf_defineVar(SEXP, SEXP, SEXP);
 SEXP Rf_dimgets(SEXP, SEXP);
@@ -614,9 +598,7 @@ SEXP Rf_GetRowNames(SEXP);
 void Rf_gsetVar(SEXP, SEXP, SEXP);
 SEXP Rf_install(const char *);
 SEXP Rf_installChar(SEXP);
-//SEXP Rf_installDDVAL(int i); //rho
 SEXP Rf_installS3Signature(const char *, const char *);
-//Rboolean Rf_isFree(SEXP); //rho
 Rboolean Rf_isOrdered(SEXP);
 Rboolean Rf_isUnmodifiedSpecSym(SEXP sym, SEXP env);
 Rboolean Rf_isUnordered(SEXP);
@@ -646,7 +628,6 @@ void Rf_PrintValue(SEXP);
 #ifndef INLINE_PROTECT
 SEXP Rf_protect(SEXP);
 #endif
-//void Rf_readS3VarsFromFrame(SEXP, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*, SEXP*); //rho
 SEXP Rf_setAttrib(SEXP, SEXP, SEXP);
 void Rf_setSVector(SEXP*, int, SEXP);
 void Rf_setVar(SEXP, SEXP, SEXP);
@@ -665,10 +646,6 @@ SEXP Rf_type2str_nowarn(SEXPTYPE);
 void Rf_unprotect(int);
 #endif
 void Rf_unprotect_ptr(SEXP);
-
-// void NORET R_signal_protect_error(void); //rho
-// void NORET R_signal_unprotect_error(void); //rho
-// void NORET R_signal_reprotect_error(PROTECT_INDEX i); //rho
 
 #ifndef INLINE_PROTECT
 void R_ProtectWithIndex(SEXP, PROTECT_INDEX *);
@@ -734,9 +711,6 @@ void R_RunWeakRefFinalizer(SEXP w);
 
 SEXP R_PromiseExpr(SEXP);
 SEXP R_ClosureExpr(SEXP);
-// void R_initialize_bcode(void); //rho
-// SEXP R_bcEncode(SEXP); //rho
-// SEXP R_bcDecode(SEXP); //rho
 #define PREXPR(e) R_PromiseExpr(e)
 #define BODY_EXPR(e) R_ClosureExpr(e)
 
@@ -911,7 +885,6 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 
 #ifndef R_NO_REMAP
 #define acopy_string		Rf_acopy_string
-#define addMissingVarsToNewEnv	Rf_addMissingVarsToNewEnv
 #define alloc3DArray            Rf_alloc3DArray
 #define allocArray		Rf_allocArray
 #define allocFormalsList2	Rf_allocFormalsList2

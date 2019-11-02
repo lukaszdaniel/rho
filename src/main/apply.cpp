@@ -352,14 +352,15 @@ static Rboolean islistfactor(SEXP X)
 {
     int i, n = Rf_length(X);
 
-    if(n == 0) return FALSE;
     switch(TYPEOF(X)) {
     case VECSXP:
+        if(n == 0) return Rboolean(NA_LOGICAL);
 	for(i = 0; i < LENGTH(X); i++)
 	    if(!islistfactor(VECTOR_ELT(X, i))) return FALSE;
 	return TRUE;
 	break;
     case EXPRSXP:
+        if(n == 0) return Rboolean(NA_LOGICAL);
 	for(i = 0; i < LENGTH(X); i++)
 	    if(!islistfactor(XVECTOR_ELT(X, i))) return FALSE;
 	return TRUE;
@@ -395,18 +396,26 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
     } else {
 	switch(TYPEOF(X)) {
 	case VECSXP:
-	    for(i = 0; i < LENGTH(X); i++)
-		if(!islistfactor(VECTOR_ELT(X, i))) {
-		    lans = FALSE;
-		    break;
-		}
+        lans = FALSE;
+	for(i = 0; i < LENGTH(X); i++) {
+            Rboolean isfactor = islistfactor(VECTOR_ELT(X, i));
+	    if(!isfactor) {
+		lans = FALSE;
+		break;
+	    } else if (isfactor == TRUE)
+                lans = TRUE;
+        }
 	    break;
 	case EXPRSXP:
-	    for(i = 0; i < LENGTH(X); i++)
-		if(!islistfactor(XVECTOR_ELT(X, i))) {
-		    lans = FALSE;
-		    break;
-		}
+        lans = FALSE;
+	for(i = 0; i < LENGTH(X); i++) {
+            Rboolean isfactor = islistfactor(XVECTOR_ELT(X, i));
+	    if(!isfactor) {
+		lans = FALSE;
+		break;
+	    } else if (isfactor == TRUE)
+                lans = TRUE;
+        }
 	    break;
 	default:
 	    break;

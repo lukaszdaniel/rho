@@ -30,6 +30,8 @@
  *  See ./format.cpp	 for the  format_Foo_  functions.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -75,23 +77,23 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 
     /* We use formatting and so we must initialize printing. */
 
-    PrintDefaults();
+    Rf_PrintDefaults();
 
     /* Check the arguments */
 
     x = args[0];
-    if (!isVectorList(x))
-	error(_("invalid first argument"));
-    nx = xlength(x);
+    if (!Rf_isVectorList(x))
+	Rf_error(_("invalid first argument"));
+    nx = Rf_xlength(x);
 
     if(use_sep) { /* paste(..., sep, .) */
 	sep = args[1];
-	if (!isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
-	    error(_("invalid separator"));
+	if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
+	    Rf_error(_("invalid separator"));
 	sep = STRING_ELT(sep, 0);
-	csep = translateChar(sep);
+	csep = Rf_translateChar(sep);
 	u_sepw = sepw = int( strlen(csep)); // will be short
-	sepASCII = strIsASCII(csep);
+	sepASCII = Rf_strIsASCII(csep);
 	sepKnown = ENC_KNOWN(sep) > 0;
 	sepUTF8 = IS_UTF8(sep);
 	sepBytes = IS_BYTES(sep);
@@ -100,40 +102,40 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	u_sepw = sepw = 0; sep = R_NilValue;/* -Wall */
 	collapse = args[1];
     }
-    if (!isNull(collapse))
-	if(!isString(collapse) || LENGTH(collapse) <= 0 ||
+    if (!Rf_isNull(collapse))
+	if(!Rf_isString(collapse) || LENGTH(collapse) <= 0 ||
 	   STRING_ELT(collapse, 0) == NA_STRING)
-	    error(_("invalid '%s' argument"), "collapse");
+	    Rf_error(_("invalid '%s' argument"), "collapse");
     if(nx == 0)
-	return (!isNull(collapse)) ? mkString("") : allocVector(STRSXP, 0);
+	return (!Rf_isNull(collapse)) ? Rf_mkString("") : Rf_allocVector(STRSXP, 0);
 
 
     /* Maximum argument length, coerce if needed */
 
     maxlen = 0;
     for (j = 0; j < nx; j++) {
-	if (!isString(VECTOR_ELT(x, j))) {
+	if (!Rf_isString(VECTOR_ELT(x, j))) {
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = lang2(install("as.character"), xj));
-		SET_VECTOR_ELT(x, j, eval(call, env));
+		PROTECT(call = Rf_lang2(Rf_install("as.character"), xj));
+		SET_VECTOR_ELT(x, j, Rf_eval(call, env));
 		UNPROTECT(1);
-	    } else if (isSymbol(xj))
-		SET_VECTOR_ELT(x, j, ScalarString(PRINTNAME(xj)));
+	    } else if (Rf_isSymbol(xj))
+		SET_VECTOR_ELT(x, j, Rf_ScalarString(PRINTNAME(xj)));
 	    else
-		SET_VECTOR_ELT(x, j, coerceVector(xj, STRSXP));
+		SET_VECTOR_ELT(x, j, Rf_coerceVector(xj, STRSXP));
 
-	    if (!isString(VECTOR_ELT(x, j)))
-		error(_("non-string argument to internal 'paste'"));
+	    if (!Rf_isString(VECTOR_ELT(x, j)))
+		Rf_error(_("non-string argument to internal 'paste'"));
 	}
-	if(xlength(VECTOR_ELT(x, j)) > maxlen)
-	    maxlen = xlength(VECTOR_ELT(x, j));
+	if(Rf_xlength(VECTOR_ELT(x, j)) > maxlen)
+	    maxlen = Rf_xlength(VECTOR_ELT(x, j));
     }
     if(maxlen == 0)
-	return (!isNull(collapse)) ? mkString("") : allocVector(STRSXP, 0);
+	return (!Rf_isNull(collapse)) ? Rf_mkString("") : Rf_allocVector(STRSXP, 0);
 
-    PROTECT(ans = allocVector(STRSXP, maxlen));
+    PROTECT(ans = Rf_allocVector(STRSXP, maxlen));
 
     for (i = 0; i < maxlen; i++) {
 	/* Strategy for marking the encoding: if all inputs (including
@@ -152,7 +154,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 
 	pwidth = 0;
 	for (j = 0; j < nx; j++) {
-	    k = xlength(VECTOR_ELT(x, j));
+	    k = Rf_xlength(VECTOR_ELT(x, j));
 	    if (k > 0) {
 		SEXP cs = STRING_ELT(VECTOR_ELT(x, j), i % k);
 		if(IS_UTF8(cs)) use_UTF8 = TRUE;
@@ -162,41 +164,41 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	if (use_Bytes) use_UTF8 = FALSE;
 	vmax = vmaxget();
 	for (j = 0; j < nx; j++) {
-	    k = xlength(VECTOR_ELT(x, j));
+	    k = Rf_xlength(VECTOR_ELT(x, j));
 	    if (k > 0) {
 		if(use_Bytes)
 		    pwidth += strlen(CHAR(STRING_ELT(VECTOR_ELT(x, j), i % k)));
 		else if(use_UTF8)
-		    pwidth += strlen(translateCharUTF8(STRING_ELT(VECTOR_ELT(x, j), i % k)));
+		    pwidth += strlen(Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, j), i % k)));
 		else
-		    pwidth += strlen(translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k)));
+		    pwidth += strlen(Rf_translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k)));
 		vmaxset(vmax);
 	    }
 	}
 	if(use_sep) {
 	    if (use_UTF8 && !u_csep) {
-		u_csep = translateCharUTF8(sep);
-		u_sepw = int( strlen(u_csep)); // will be short
+		u_csep = Rf_translateCharUTF8(sep);
+		u_sepw = int(strlen(u_csep)); // will be short
 	    }
 	    pwidth += (nx - 1) * (use_UTF8 ? u_sepw : sepw);
 	}
 	if (pwidth > INT_MAX)
-	    error(_("result would exceed 2^31-1 bytes"));
+	    Rf_error(_("result would exceed 2^31-1 bytes"));
 	cbuf = buf = static_cast<char*>(R_AllocStringBuffer(pwidth, &cbuff));
 	vmax = vmaxget();
 	for (j = 0; j < nx; j++) {
-	    k = xlength(VECTOR_ELT(x, j));
+	    k = Rf_xlength(VECTOR_ELT(x, j));
 	    if (k > 0) {
 		SEXP cs = STRING_ELT(VECTOR_ELT(x, j), i % k);
 		if (use_UTF8) {
-		    s = translateCharUTF8(cs);
+		    s = Rf_translateCharUTF8(cs);
 		    strcpy(buf, s);
 		    buf += strlen(s);
 		} else {
-		    s = use_Bytes ? CHAR(cs) : translateChar(cs);
+		    s = use_Bytes ? CHAR(cs) : Rf_translateChar(cs);
 		    strcpy(buf, s);
 		    buf += strlen(s);
-		    allKnown = allKnown && (strIsASCII(s) || (ENC_KNOWN(cs)> 0));
+		    allKnown = allKnown && (Rf_strIsASCII(s) || (ENC_KNOWN(cs)> 0));
 		    anyKnown = anyKnown || (ENC_KNOWN(cs)> 0);
 		}
 	    }
@@ -218,7 +220,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    if(known_to_be_latin1) ienc = CE_LATIN1;
 	    if(known_to_be_utf8) ienc = CE_UTF8;
 	}
-	SET_STRING_ELT(ans, i, mkCharCE(cbuf, ienc));
+	SET_STRING_ELT(ans, i, Rf_mkCharCE(cbuf, ienc));
     }
 
     /* Now collapse, if required. */
@@ -235,23 +237,23 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    csep = CHAR(sep);
 	    use_UTF8 = FALSE;
 	} else if(use_UTF8)
-	    csep = translateCharUTF8(sep);
+	    csep = Rf_translateCharUTF8(sep);
 	else
-	    csep = translateChar(sep);
-	sepw = int( strlen(csep));
+	    csep = Rf_translateChar(sep);
+	sepw = int(strlen(csep));
 	anyKnown = ENC_KNOWN(sep) > 0;
-	allKnown = anyKnown || strIsASCII(csep);
+	allKnown = anyKnown || Rf_strIsASCII(csep);
 	pwidth = 0;
 	vmax = vmaxget();
 	for (i = 0; i < nx; i++)
 	    if(use_UTF8) {
-		pwidth += strlen(translateCharUTF8(STRING_ELT(ans, i)));
+		pwidth += strlen(Rf_translateCharUTF8(STRING_ELT(ans, i)));
 		vmaxset(vmax);
 	    } else /* already translated */
 		pwidth += strlen(CHAR(STRING_ELT(ans, i)));
 	pwidth += (nx - 1) * sepw;
 	if (pwidth > INT_MAX)
-	    error(_("result would exceed 2^31-1 bytes"));
+	    Rf_error(_("result would exceed 2^31-1 bytes"));
 	cbuf = buf = static_cast<char*>(R_AllocStringBuffer(pwidth, &cbuff));
 	vmax = vmaxget();
 	for (i = 0; i < nx; i++) {
@@ -260,14 +262,14 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 		buf += sepw;
 	    }
 	    if(use_UTF8)
-		s = translateCharUTF8(STRING_ELT(ans, i));
+		s = Rf_translateCharUTF8(STRING_ELT(ans, i));
 	    else /* already translated */
 		s = CHAR(STRING_ELT(ans, i));
 	    strcpy(buf, s);
 	    while (*buf)
 		buf++;
 	    allKnown = allKnown &&
-		(strIsASCII(s) || (ENC_KNOWN(STRING_ELT(ans, i)) > 0));
+		(Rf_strIsASCII(s) || (ENC_KNOWN(STRING_ELT(ans, i)) > 0));
 	    anyKnown = anyKnown || (ENC_KNOWN(STRING_ELT(ans, i)) > 0);
 	    if(use_UTF8) vmaxset(vmax);
 	}
@@ -279,7 +281,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    if(known_to_be_latin1) ienc = CE_LATIN1;
 	    if(known_to_be_utf8) ienc = CE_UTF8;
 	}
-	PROTECT(ans = Rf_ScalarString(mkCharCE(cbuf, ienc)));
+	PROTECT(ans = Rf_ScalarString(Rf_mkCharCE(cbuf, ienc)));
     }
     R_FreeStringBufferL(&cbuff);
     UNPROTECT(1);
@@ -296,15 +298,15 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
     /* Check the arguments */
 
     x = x_;
-    if (!isVectorList(x))
-	error(_("invalid first argument"));
+    if (!Rf_isVectorList(x))
+	Rf_error(_("invalid first argument"));
     nx = Rf_length(x);
-    if(nx == 0) return allocVector(STRSXP, 0);
+    if(nx == 0) return Rf_allocVector(STRSXP, 0);
 
 
     sep = sep_;
-    if (!isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
-	error(_("invalid separator"));
+    if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
+	Rf_error(_("invalid separator"));
     sep = STRING_ELT(sep, 0);
     csep = CHAR(sep);
     sepw = int( strlen(csep)); /* hopefully 1 */
@@ -312,41 +314,41 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
     /* Any zero-length argument gives zero-length result */
     maxlen = 0; nzero = 0;
     for (j = 0; j < nx; j++) {
-	if (!isString(VECTOR_ELT(x, j))) {
+	if (!Rf_isString(VECTOR_ELT(x, j))) {
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = lang2(install("as.character"), xj));
-		SET_VECTOR_ELT(x, j, eval(call, R_BaseEnv));
+		PROTECT(call = Rf_lang2(Rf_install("as.character"), xj));
+		SET_VECTOR_ELT(x, j, Rf_eval(call, R_BaseEnv));
 		UNPROTECT(1);
-	    } else if (isSymbol(xj))
-		SET_VECTOR_ELT(x, j, ScalarString(PRINTNAME(xj)));
+	    } else if (Rf_isSymbol(xj))
+		SET_VECTOR_ELT(x, j, Rf_ScalarString(PRINTNAME(xj)));
 	    else
-		SET_VECTOR_ELT(x, j, coerceVector(xj, STRSXP));
+		SET_VECTOR_ELT(x, j, Rf_coerceVector(xj, STRSXP));
 
-	    if (!isString(VECTOR_ELT(x, j)))
-		error(_("non-string argument to Internal paste"));
+	    if (!Rf_isString(VECTOR_ELT(x, j)))
+		Rf_error(_("non-string argument to Internal paste"));
 	}
 	ln = Rf_length(VECTOR_ELT(x, j));
 	if(ln > maxlen) maxlen = ln;
 	if(ln == 0) {nzero++; break;}
     }
-    if(nzero || maxlen == 0) return allocVector(STRSXP, 0);
+    if(nzero || maxlen == 0) return Rf_allocVector(STRSXP, 0);
 
-    PROTECT(ans = allocVector(STRSXP, maxlen));
+    PROTECT(ans = Rf_allocVector(STRSXP, maxlen));
 
     for (i = 0; i < maxlen; i++) {
 	pwidth = 0;
 	for (j = 0; j < nx; j++) {
 	    k = Rf_length(VECTOR_ELT(x, j));
-	    pwidth += int( strlen(translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k))));
+	    pwidth += int( strlen(Rf_translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k))));
 	}
 	pwidth += (nx - 1) * sepw;
 	cbuf = buf = static_cast<char*>(R_AllocStringBuffer(pwidth, &cbuff));
 	for (j = 0; j < nx; j++) {
 	    k = Rf_length(VECTOR_ELT(x, j));
 	    if (k > 0) {
-		s = translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k));
+		s = Rf_translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k));
 		strcpy(buf, s);
 		buf += strlen(s);
 	    }
@@ -365,7 +367,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	    }
 	}
 #endif
-	SET_STRING_ELT(ans, i, mkChar(cbuf));
+	SET_STRING_ELT(ans, i, Rf_mkChar(cbuf));
     }
     R_FreeStringBufferL(&cbuff);
     UNPROTECT(1);
@@ -383,58 +385,58 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
     const char *strp;
     R_xlen_t i, n;
 
-    PrintDefaults();
+    Rf_PrintDefaults();
     scikeep = R_print.scipen;
 
-    if (isEnvironment(x = x_)) {
-	return mkString(EncodeEnvironment(x));
+    if (Rf_isEnvironment(x = x_)) {
+	return Rf_mkString(EncodeEnvironment(x));
     }
-    else if (!isVector(x))
-	error(_("first argument must be atomic"));
+    else if (!Rf_isVector(x))
+	Rf_error(_("first argument must be atomic"));
 
-    trim = asLogical(trim_);
+    trim = Rf_asLogical(trim_);
     if (trim == NA_INTEGER)
-	error(_("invalid '%s' argument"), "trim");
+	Rf_error(_("invalid '%s' argument"), "trim");
 
-    if (!isNull(digits_)) {
-	digits = asInteger(digits_);
+    if (!Rf_isNull(digits_)) {
+	digits = Rf_asInteger(digits_);
 	if (digits == NA_INTEGER || digits < R_MIN_DIGITS_OPT
 	    || digits > R_MAX_DIGITS_OPT)
-	    error(_("invalid '%s' argument"), "digits");
+	    Rf_error(_("invalid '%s' argument"), "digits");
 	R_print.digits = digits;
     }
 
-    nsmall = asInteger(nsmall_);
+    nsmall = Rf_asInteger(nsmall_);
     if (nsmall == NA_INTEGER || nsmall < 0 || nsmall > 20)
-	error(_("invalid '%s' argument"), "nsmall");
+	Rf_error(_("invalid '%s' argument"), "nsmall");
 
-    if (isNull(swd = width_)) wd = 0; else wd = asInteger(swd);
+    if (Rf_isNull(swd = width_)) wd = 0; else wd = Rf_asInteger(swd);
     if(wd == NA_INTEGER)
-	error(_("invalid '%s' argument"), "width");
+	Rf_error(_("invalid '%s' argument"), "width");
 
-    adj = asInteger(justify_);
+    adj = Rf_asInteger(justify_);
     if(adj == NA_INTEGER || adj < 0 || adj > 3)
-	error(_("invalid '%s' argument"), "justify");
+	Rf_error(_("invalid '%s' argument"), "justify");
 
-    na = asLogical(na_encode_);
+    na = Rf_asLogical(na_encode_);
     if(na == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "na.encode");
+	Rf_error(_("invalid '%s' argument"), "na.encode");
 
     if(LENGTH(scientific_) != 1)
-	error(_("invalid '%s' argument"), "scientific");
-    if(isLogical(scientific_)) {
+	Rf_error(_("invalid '%s' argument"), "scientific");
+    if(Rf_isLogical(scientific_)) {
 	int tmp = LOGICAL(scientific_)[0];
 	if(tmp == NA_LOGICAL) sci = NA_INTEGER;
 	else sci = tmp > 0 ?-100 : 100;
-    } else if (isNumeric(scientific_)) {
-	sci = asInteger(scientific_);
+    } else if (Rf_isNumeric(scientific_)) {
+	sci = Rf_asInteger(scientific_);
     } else
-	error(_("invalid '%s' argument"), "scientific");
+	Rf_error(_("invalid '%s' argument"), "scientific");
     if(sci != NA_INTEGER) R_print.scipen = sci;
 
     // copy/paste from "OutDec" part of ./options.c
     if (TYPEOF(decimal_mark_) != STRSXP || LENGTH(decimal_mark_) != 1)
-	error(_("invalid '%s' argument"), "decimal.mark");
+	Rf_error(_("invalid '%s' argument"), "decimal.mark");
     const char *my_OutDec;
     if(STRING_ELT(decimal_mark_, 0) == NA_STRING)
 	my_OutDec = OutDec; // default
@@ -453,28 +455,28 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
     }
 
     if ((n = XLENGTH(x)) <= 0) {
-	PROTECT(y = allocVector(STRSXP, 0));
+	PROTECT(y = Rf_allocVector(STRSXP, 0));
     } else {
 	switch (TYPEOF(x)) {
 
 	case LGLSXP:
-	    PROTECT(y = allocVector(STRSXP, n));
+	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    if (trim) w = 0; else formatLogical(LOGICAL(x), n, &w);
 	    w = imax2(w, wd);
 	    for (i = 0; i < n; i++) {
 		strp = EncodeLogical(LOGICAL(x)[i], w);
-		SET_STRING_ELT(y, i, mkChar(strp));
+		SET_STRING_ELT(y, i, Rf_mkChar(strp));
 	    }
 	    break;
 
 	case INTSXP:
-	    PROTECT(y = allocVector(STRSXP, n));
+	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    if (trim) w = 0;
 	    else formatInteger(INTEGER(x), n, &w);
 	    w = imax2(w, wd);
 	    for (i = 0; i < n; i++) {
 		strp = EncodeInteger(INTEGER(x)[i], w);
-		SET_STRING_ELT(y, i, mkChar(strp));
+		SET_STRING_ELT(y, i, Rf_mkChar(strp));
 	    }
 	    break;
 
@@ -482,10 +484,10 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    formatReal(REAL(x), n, &w, &d, &e, nsmall);
 	    if (trim) w = 0;
 	    w = imax2(w, wd);
-	    PROTECT(y = allocVector(STRSXP, n));
+	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		strp = EncodeReal0(REAL(x)[i], w, d, e, my_OutDec);
-		SET_STRING_ELT(y, i, mkChar(strp));
+		SET_STRING_ELT(y, i, Rf_mkChar(strp));
 	    }
 	    break;
 
@@ -493,10 +495,10 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    formatComplex(COMPLEX(x), n, &w, &d, &e, &wi, &di, &ei, nsmall);
 	    if (trim) wi = w = 0;
 	    w = imax2(w, wd); wi = imax2(wi, wd);
-	    PROTECT(y = allocVector(STRSXP, n));
+	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		strp = EncodeComplex(COMPLEX(x)[i], w, d, e, wi, di, ei, my_OutDec);
-		SET_STRING_ELT(y, i, mkChar(strp));
+		SET_STRING_ELT(y, i, Rf_mkChar(strp));
 	    }
 	    break;
 
@@ -511,7 +513,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 
 	    /* This is clumsy, but it saves rewriting and re-testing
 	       this complex code */
-	    PROTECT(xx = duplicate(x));
+	    PROTECT(xx = Rf_duplicate(x));
 	    for (i = 0; i < n; i++) {
 		SEXP tmp =  STRING_ELT(xx, i);
 		if(IS_BYTES(tmp)) {
@@ -528,8 +530,8 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 		    }
 		    *qq = '\0';
 		    s = pp;
-		} else s = translateChar(tmp);
-		if(s != CHAR(tmp)) SET_STRING_ELT(xx, i, mkChar(s));
+		} else s = Rf_translateChar(tmp);
+		if(s != CHAR(tmp)) SET_STRING_ELT(xx, i, Rf_mkChar(s));
 	    }
 
 	    w = wd;
@@ -549,7 +551,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    R_CheckStack2(cnt+1);
 	    vector<char> buffv(cnt+1);
 	    char* buff = &buffv[0];
-	    PROTECT(y = allocVector(STRSXP, n));
+	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		if(!na && STRING_ELT(xx, i) == NA_STRING) {
 		    SET_STRING_ELT(y, i, NA_STRING);
@@ -569,7 +571,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 		    if(b > 0 && adj != Rprt_adj_right)
 			for(j = 0 ; j < b ; j++) *q++ = ' ';
 		    *q = '\0';
-		    SET_STRING_ELT(y, i, mkChar(buff));
+		    SET_STRING_ELT(y, i, Rf_mkChar(buff));
 		}
 	    }
 	}
@@ -577,15 +579,15 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	PROTECT(y);
 	break;
 	default:
-	    error(_("Impossible mode ( x )")); y = R_NilValue;/* -Wall */
+	    Rf_error(_("Impossible mode ( x )")); y = R_NilValue;/* -Wall */
 	}
     }
-    if((l = getAttrib(x, R_DimSymbol)) != R_NilValue) {
-	setAttrib(y, R_DimSymbol, l);
-	if((l = getAttrib(x, R_DimNamesSymbol)) != R_NilValue)
-	    setAttrib(y, R_DimNamesSymbol, l);
-    } else if((l = getAttrib(x, R_NamesSymbol)) != R_NilValue)
-	setAttrib(y, R_NamesSymbol, l);
+    if((l = Rf_getAttrib(x, R_DimSymbol)) != R_NilValue) {
+	Rf_setAttrib(y, R_DimSymbol, l);
+	if((l = Rf_getAttrib(x, R_DimNamesSymbol)) != R_NilValue)
+	    Rf_setAttrib(y, R_DimNamesSymbol, l);
+    } else if((l = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue)
+	Rf_setAttrib(y, R_NamesSymbol, l);
 
     /* In case something else forgets to set PrintDefaults(), PR#14477 */
     R_print.scipen = scikeep;
@@ -610,18 +612,18 @@ SEXP attribute_hidden do_formatinfo(/*const*/ rho::Expression* call, const rho::
 
     x = x_;
     R_xlen_t n = XLENGTH(x);
-    PrintDefaults();
+    Rf_PrintDefaults();
 
-    if (!isNull(digits_)) {
-	digits = asInteger(digits_);
+    if (!Rf_isNull(digits_)) {
+	digits = Rf_asInteger(digits_);
 	if (digits == NA_INTEGER || digits < R_MIN_DIGITS_OPT
 	    || digits > R_MAX_DIGITS_OPT)
-	    error(_("invalid '%s' argument"), "digits");
+	    Rf_error(_("invalid '%s' argument"), "digits");
 	R_print.digits = digits;
     }
-    nsmall = asInteger(nsmall_);
+    nsmall = Rf_asInteger(nsmall_);
     if (nsmall == NA_INTEGER || nsmall < 0 || nsmall > 20)
-	error(_("invalid '%s' argument"), "nsmall");
+	Rf_error(_("invalid '%s' argument"), "nsmall");
 
     w = 0;
     d = 0;
@@ -660,9 +662,9 @@ SEXP attribute_hidden do_formatinfo(/*const*/ rho::Expression* call, const rho::
 	break;
 
     default:
-	error(_("atomic vector arguments only"));
+	Rf_error(_("atomic vector arguments only"));
     }
-    x = allocVector(INTSXP, no);
+    x = Rf_allocVector(INTSXP, no);
     INTEGER(x)[0] = w;
     if(no > 1) {
 	INTEGER(x)[1] = d;

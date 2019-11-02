@@ -2,7 +2,7 @@
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *            (C) 2004  The R Foundation
- *  Copyright (C) 1998-2014 The R Core Team.
+ *  Copyright (C) 1998-2015 The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -55,7 +55,7 @@ using namespace rho;
    and when (as in R 2.15.x) a for() loop was used.
 */
 #ifdef __APPLE__
-/* it seems some OS X builds do not copy >= 2^32 bytes fully */
+/* it seems macOS builds did not copy >= 2^32 bytes fully */
 #define DUPLICATE_ATOMIC_VECTOR(type, fun, to, from, deep) do {	\
   R_xlen_t __n__ = XLENGTH(from); \
   PROTECT(from); \

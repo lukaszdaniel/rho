@@ -27,6 +27,7 @@
 /* <UTF8> char here is handled as a whole string, but note that
    fprintf is used */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -112,11 +113,11 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(envir);
 
     fn = CAR(args); args = CDR(args);
-    if (!isString(fn))
-	error(_("invalid argument to edit()"));
+    if (!Rf_isString(fn))
+	Rf_error(_("invalid argument to edit()"));
 
     if (LENGTH(STRING_ELT(fn, 0)) > 0) {
-	const char *ss = translateChar(STRING_ELT(fn, 0));
+	const char *ss = Rf_translateChar(STRING_ELT(fn, 0));
 	filename = R_alloc(strlen(ss), sizeof(char));
 	strcpy(filename, ss);
     }
@@ -124,11 +125,11 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (x != R_NilValue) {
 	if((fp=R_fopen(R_ExpandFileName(filename), "w")) == nullptr)
-	    errorcall(call, _("unable to open file"));
+	    Rf_errorcall(call, _("unable to open file"));
 	if (LENGTH(STRING_ELT(fn, 0)) == 0) EdFileUsed++;
-	PROTECT(src = deparse1(x, RHO_FALSE, FORSOURCING)); /* deparse for sourcing, not for display */
+	PROTECT(src = Rf_deparse1(x, RHO_FALSE, FORSOURCING)); /* deparse for sourcing, not for display */
 	for (i = 0; i < LENGTH(src); i++)
-	    fprintf(fp, "%s\n", translateChar(STRING_ELT(src, i)));
+	    fprintf(fp, "%s\n", Rf_translateChar(STRING_ELT(src, i)));
 	UNPROTECT(1); /* src */
 	fclose(fp);
     }
@@ -137,14 +138,14 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
     args = CDR(args);
     ed = CAR(args);
-    if (!isString(ed)) errorcall(call, _("argument 'editor' type not valid"));
-    cmd = translateChar(STRING_ELT(ed, 0));
-    if (strlen(cmd) == 0) errorcall(call, _("argument 'editor' is not set"));
+    if (!Rf_isString(ed)) Rf_errorcall(call, _("argument 'editor' type not valid"));
+    cmd = Rf_translateChar(STRING_ELT(ed, 0));
+    if (strlen(cmd) == 0) Rf_errorcall(call, _("argument 'editor' is not set"));
     editcmd = R_alloc(strlen(cmd) + strlen(filename) + 6, sizeof(char));
 #ifdef Win32
     if (!strcmp(cmd,"internal")) {
-	if (!isString(ti))
-	    error(_("'title' must be a string"));
+	if (!Rf_isString(ti))
+	    Rf_error(_("'title' must be a string"));
 	if (LENGTH(STRING_ELT(ti, 0)) > 0) {
 	    title = R_alloc(strlen(CHAR(STRING_ELT(ti, 0)))+1, sizeof(char));
 	    strcpy(title, CHAR(STRING_ELT(ti, 0)));
@@ -162,9 +163,9 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    sprintf(editcmd, "%s \"%s\"", cmd, filename);
 	rc = runcmd(editcmd, CE_NATIVE, 1, 1, NULL, NULL, NULL);
 	if (rc == NOLAUNCH)
-	    errorcall(call, _("unable to run editor '%s'"), cmd);
+	    Rf_errorcall(call, _("unable to run editor '%s'"), cmd);
 	if (rc != 0)
-	    warningcall(call, _("editor ran but returned error status"));
+	    Rf_warningcall(call, _("editor ran but returned error status"));
     }
 #else
     if (ptr_R_EditFile)
@@ -174,16 +175,16 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	rc = R_system(editcmd);
     }
     if (rc != 0)
-	errorcall(call, _("problem with running editor %s"), cmd);
+	Rf_errorcall(call, _("problem with running editor %s"), cmd);
 #endif
 
-    if (asLogical(GetOption1(install("keep.source")))) {
-	PROTECT(Rfn = findFun(install("readLines"), R_BaseEnv));
-	PROTECT(src = lang2(Rfn, ScalarString(mkChar(R_ExpandFileName(filename)))));
-	PROTECT(src = eval(src, R_BaseEnv));
-	PROTECT(Rfn = findFun(install("srcfilecopy"), R_BaseEnv));
-	PROTECT(srcfile = lang3(Rfn, ScalarString(mkChar("<tmp>")), src));
-	srcfile = eval(srcfile, R_BaseEnv);
+    if (Rf_asLogical(Rf_GetOption1(Rf_install("keep.source")))) {
+	PROTECT(Rfn = Rf_findFun(Rf_install("readLines"), R_BaseEnv));
+	PROTECT(src = Rf_lang2(Rfn, Rf_ScalarString(Rf_mkChar(R_ExpandFileName(filename)))));
+	PROTECT(src = Rf_eval(src, R_BaseEnv));
+	PROTECT(Rfn = Rf_findFun(Rf_install("srcfilecopy"), R_BaseEnv));
+	PROTECT(srcfile = Rf_lang3(Rfn, Rf_ScalarString(Rf_mkChar("<tmp>")), src));
+	srcfile = Rf_eval(srcfile, R_BaseEnv);
 	UNPROTECT(5);
     } else
 	srcfile = R_NilValue;
@@ -192,13 +193,13 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* <FIXME> setup a context to close the file, and parse and eval
        line by line */
     if((fp = R_fopen(R_ExpandFileName(filename), "r")) == nullptr)
-	errorcall(call, _("unable to open file to read"));
+	Rf_errorcall(call, _("unable to open file to read"));
 
     x = PROTECT(R_ParseFile(fp, -1, &status, srcfile));
     fclose(fp);
 
     if (status != PARSE_OK)
-	errorcall(call,
+	Rf_errorcall(call,
 		  _("%s occurred on line %d\n use a command like\n x <- edit()\n to recover"), R_ParseErrorMsg, R_ParseError);
     R_ResetConsole();
     {   /* can't just eval(x) here */
@@ -207,7 +208,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 	n = LENGTH(x);
 	for (j = 0 ; j < n ; j++)
-	    tmp = eval(XVECTOR_ELT(x, j), R_GlobalEnv);
+	    tmp = Rf_eval(XVECTOR_ELT(x, j), R_GlobalEnv);
 	x = tmp;
     }
     if (TYPEOF(x) == CLOSXP && envir != R_NilValue)

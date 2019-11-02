@@ -199,7 +199,30 @@ nchar(x, "w", allowNA = TRUE)
 ## Results differed by platform, but some gave incorrect results on string 10.
 
 
-## str() on large strings
+## str() on large strings (in multibyte locales; changing locale may not work everywhere
+oloc <- Sys.getlocale("LC_CTYPE")
+mbyte.lc <- if(.Platform$OS.type == "windows")
+ "English_United States.28605" else "en_GB.UTF-8"
+try(Sys.setlocale("LC_CTYPE", mbyte.lc))
+cc <- "J\xf6reskog" # valid in "latin-1"; invalid multibyte string in UTF-8
+str(cc) # failed in some R-devel versions
 nchar(L <- strrep(paste(LETTERS, collapse="."), 100000), type="b")# 5.1 M
 stopifnot(system.time( str(L) )[[1]] < 0.05)
-## needed 1.6 sec in R <= 3.3.0
+Sys.setlocale("LC_CTYPE", oloc)
+## needed 1.6 sec in (some) R <= 3.3.0 in a multibyte locale
+
+# R rev: 70724
+# "Internal S4 dispatch sets .Generic in the method frame for consistency with standardGeneric() (PR#16929)."
+# not yet implemented in rho
+if(require("Matrix")) {
+    M <- Matrix(diag(1:10), sparse=TRUE) # a "dsCMatrix"
+    setClass("TestM", slots = c(M='numeric'))
+    setMethod("+", c("TestM","TestM"), function(e1,e2) {
+        e1@M + e2@M
+    })
+    M+M # works the first time
+#    M+M # was error   "object '.Generic' not found"
+    rm(M)
+    detach("package:Matrix", unload=TRUE)
+}##{Matrix}
+

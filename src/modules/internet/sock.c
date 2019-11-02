@@ -1,5 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+
  *  Copyright (C) 1998-2015   The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -71,7 +72,7 @@ static int Sock_error(Sock_error_t perr, int e, int he)
     return -1;
 }
 
-/* <FIXME> is this classic MacOS X? */
+/* <FIXME> is this classic Mac OS? */
 #ifdef MACINTOSH
 extern void __sinit(void);
 extern int __initialize (void *ignoredParameter);

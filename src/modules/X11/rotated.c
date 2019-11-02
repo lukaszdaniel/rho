@@ -1,19 +1,3 @@
-/* $Id$
- *
- * This file is part of Rho, a project to refactor the R interpreter
- * into C++.  It may consist in whole or in part of program code and
- * documentation taken from the R project itself, incorporated into
- * Rho (and possibly MODIFIED) under the terms of the GNU General Public
- * Licence.
- * 
- * Rho is Copyright (C) 2008-14 Andrew R. Runnalls, subject to such other
- * copyrights and copyright restrictions as may be stated below.
- * 
- * Rho is not part of the R project, and bugs and other issues should
- * not be reported via r-bugs or other R project channels; instead refer
- * to the Rho website.
- * */
-
 /* ********************************************************************** */
 
 /* xvertext 5.0, Copyright (c) 1993 Alan Richardson (mppa3@uk.ac.sussex.syma)
@@ -470,8 +454,8 @@ static int XRotPaintAlignedString(Display *dpy, XFontStruct *font, double angle,
     }
 
     /* where should top left corner of bitmap go ? */
-    xp=(short)(x - item->cols_out/2. + hot_xp);
-    yp=(short)(y - item->rows_out/2. - hot_yp);
+    xp=(short)(x - (item->cols_out/2. + hot_xp));
+    yp=(short)(y - (item->rows_out/2. - hot_yp));
 
     /* by default we draw the rotated bitmap, solid */
     bitmap_to_paint=item->bitmap;

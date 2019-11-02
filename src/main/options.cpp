@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -51,7 +53,7 @@ using namespace rho;
  *
  *   2) Those used (and sometimes set) from C code;
  *	Either accessing and/or setting a global C variable,
- *	or just accessed by e.g.  GetOption1(install("pager"))
+ *	or just accessed by e.g.  Rf_GetOption1(Rf_install("pager"))
  *
  * A (complete?!) list of these (2):
  *
@@ -66,12 +68,12 @@ using namespace rho;
  *	"keep.source.pkgs"
  *	"browserNLdisabled"
 
- *	"de.cellwidth"		../unix/X11/ & ../gnuwin32/dataentry.c
+ *	"de.cellwidth"		../unix/X11/ & ../gnuwin32/dataentry.cpp
  *	"device"
  *	"pager"
  *	"paper.size"		./devPS.c
 
- *	"timeout"		./connections.c
+ *	"timeout"		./connections.cpp
 
  *	"check.bounds"
  *	"error"
@@ -95,7 +97,7 @@ using namespace rho;
 static SEXP Options(void)
 {
     static SEXP sOptions = NULL;
-    if(!sOptions) sOptions = install(".Options");
+    if(!sOptions) sOptions = Rf_install(".Options");
     return sOptions;
 }
 
@@ -119,14 +121,14 @@ static SEXP makeErrorCall(SEXP fun)
 
 SEXP Rf_GetOption(SEXP tag, SEXP rho)
 {
-    return GetOption1(tag);
+    return Rf_GetOption1(tag);
 }
 
 
 SEXP Rf_GetOption1(SEXP tag)
 {
     SEXP opt = SYMVALUE(Options());
-    if (!isList(opt)) error(_("corrupted options list"));
+    if (!Rf_isList(opt)) Rf_error(_("corrupted options list"));
     opt = FindTaggedItem(opt, tag);
     return CAR(opt);
 }
@@ -134,9 +136,9 @@ SEXP Rf_GetOption1(SEXP tag)
 int Rf_GetOptionWidth(void)
 {
     int w;
-    w = asInteger(GetOption1(install("width")));
+    w = Rf_asInteger(Rf_GetOption1(Rf_install("width")));
     if (w < R_MIN_WIDTH_OPT || w > R_MAX_WIDTH_OPT) {
-	warning(_("invalid printing width, used 80"));
+	Rf_warning(_("invalid printing width, used 80"));
 	return 80;
     }
     return w;
@@ -145,9 +147,9 @@ int Rf_GetOptionWidth(void)
 int Rf_GetOptionDigits(void)
 {
     int d;
-    d = asInteger(GetOption1(install("digits")));
+    d = Rf_asInteger(Rf_GetOption1(Rf_install("digits")));
     if (d < R_MIN_DIGITS_OPT || d > R_MAX_DIGITS_OPT) {
-	warning(_("invalid printing digits, used 7"));
+	Rf_warning(_("invalid printing digits, used 7"));
 	return 7;
     }
     return d;
@@ -157,9 +159,9 @@ attribute_hidden
 int Rf_GetOptionCutoff(void)
 {
     int w;
-    w = asInteger(GetOption1(install("deparse.cutoff")));
+    w = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.cutoff")));
     if (w == NA_INTEGER || w <= 0) {
-	warning(_("invalid 'deparse.cutoff', used 60"));
+	Rf_warning(_("invalid 'deparse.cutoff', used 60"));
 	w = 60;
     }
     return w;
@@ -169,9 +171,9 @@ attribute_hidden
 Rboolean Rf_GetOptionDeviceAsk(void)
 {
     int ask;
-    ask = asLogical(GetOption1(install("device.ask.default")));
+    ask = Rf_asLogical(Rf_GetOption1(Rf_install("device.ask.default")));
     if(ask == NA_LOGICAL) {
-	warning(_("invalid value for \"device.ask.default\", using FALSE"));
+	Rf_warning(_("invalid value for \"device.ask.default\", using FALSE"));
 	return FALSE;
     }
     return RHOCONSTRUCT(Rboolean, ask != 0);
@@ -186,8 +188,8 @@ static SEXP SetOption(SEXP tag, SEXP value)
     SEXP opt, old, t;
     PROTECT(value);
     t = opt = SYMVALUE(Options());
-    if (!isList(opt))
-	error(_("corrupted options list"));
+    if (!Rf_isList(opt))
+	Rf_error(_("corrupted options list"));
     opt = FindTaggedItem(opt, tag);
 
     /* The option is being removed. */
@@ -207,7 +209,7 @@ static SEXP SetOption(SEXP tag, SEXP value)
     if (opt == R_NilValue) {
 	while (CDR(t) != R_NilValue)
 	    t = CDR(t);
-	SETCDR(t, allocList(1));
+	SETCDR(t, Rf_allocList(1));
 	opt = CDR(t);
 	SET_TAG(opt, tag);
     }
@@ -225,8 +227,8 @@ int attribute_hidden R_SetOptionWidth(int w)
     SEXP t, v;
     if (w < R_MIN_WIDTH_OPT) w = R_MIN_WIDTH_OPT;
     if (w > R_MAX_WIDTH_OPT) w = R_MAX_WIDTH_OPT;
-    PROTECT(t = install("width"));
-    PROTECT(v = ScalarInteger(w));
+    PROTECT(t = Rf_install("width"));
+    PROTECT(v = Rf_ScalarInteger(w));
     v = SetOption(t, v);
     UNPROTECT(2);
     return INTEGER(v)[0];
@@ -236,8 +238,8 @@ int attribute_hidden R_SetOptionWarn(int w)
 {
     SEXP t, v;
 
-    t = install("warn");
-    PROTECT(v = ScalarInteger(w));
+    t = Rf_install("warn");
+    PROTECT(v = Rf_ScalarInteger(w));
     v = SetOption(t, v);
     UNPROTECT(1);
     return INTEGER(v)[0];
@@ -252,89 +254,89 @@ void attribute_hidden Rf_InitOptions(void)
     char *p;
 
 #ifdef HAVE_RL_COMPLETION_MATCHES
-    PROTECT(v = val = allocList(17));
+    PROTECT(v = val = Rf_allocList(17));
 #else
-    PROTECT(v = val = allocList(16));
+    PROTECT(v = val = Rf_allocList(16));
 #endif
 
-    SET_TAG(v, install("prompt"));
-    SETCAR(v, mkString("> "));
+    SET_TAG(v, Rf_install("prompt"));
+    SETCAR(v, Rf_mkString("> "));
     v = CDR(v);
 
-    SET_TAG(v, install("continue"));
-    SETCAR(v, mkString("+ "));
+    SET_TAG(v, Rf_install("continue"));
+    SETCAR(v, Rf_mkString("+ "));
     v = CDR(v);
 
-    SET_TAG(v, install("expressions"));
-    SETCAR(v, ScalarInteger(StackChecker::depthLimit()));
+    SET_TAG(v, Rf_install("expressions"));
+    SETCAR(v, Rf_ScalarInteger(StackChecker::depthLimit()));
     v = CDR(v);
 
-    SET_TAG(v, install("width"));
-    SETCAR(v, ScalarInteger(80));
+    SET_TAG(v, Rf_install("width"));
+    SETCAR(v, Rf_ScalarInteger(80));
     v = CDR(v);
 
-    SET_TAG(v, install("deparse.cutoff"));
-    SETCAR(v, ScalarInteger(60));
+    SET_TAG(v, Rf_install("deparse.cutoff"));
+    SETCAR(v, Rf_ScalarInteger(60));
     v = CDR(v);
 
-    SET_TAG(v, install("digits"));
-    SETCAR(v, ScalarInteger(7));
+    SET_TAG(v, Rf_install("digits"));
+    SETCAR(v, Rf_ScalarInteger(7));
     v = CDR(v);
 
-    SET_TAG(v, install("echo"));
-    SETCAR(v, ScalarLogical(!R_Slave));
+    SET_TAG(v, Rf_install("echo"));
+    SETCAR(v, Rf_ScalarLogical(!R_Slave));
     v = CDR(v);
 
-    SET_TAG(v, install("verbose"));
-    SETCAR(v, ScalarLogical(R_Verbose));
+    SET_TAG(v, Rf_install("verbose"));
+    SETCAR(v, Rf_ScalarLogical(R_Verbose));
     v = CDR(v);
 
-    SET_TAG(v, install("check.bounds"));
-    SETCAR(v, ScalarLogical(0));	/* no checking */
+    SET_TAG(v, Rf_install("check.bounds"));
+    SETCAR(v, Rf_ScalarLogical(0));	/* no checking */
     v = CDR(v);
 
     p = getenv("R_KEEP_PKG_SOURCE");
     R_KeepSource = (p && (strcmp(p, "yes") == 0)) ? RHO_TRUE : RHO_FALSE;
 
-    SET_TAG(v, install("keep.source")); /* overridden in common.R */
-    SETCAR(v, ScalarLogical(R_KeepSource));
+    SET_TAG(v, Rf_install("keep.source")); /* overridden in common.R */
+    SETCAR(v, Rf_ScalarLogical(R_KeepSource));
     v = CDR(v);
 
-    SET_TAG(v, install("keep.source.pkgs"));
-    SETCAR(v, ScalarLogical(R_KeepSource));
+    SET_TAG(v, Rf_install("keep.source.pkgs"));
+    SETCAR(v, Rf_ScalarLogical(R_KeepSource));
     v = CDR(v);
 
-    SET_TAG(v, install("warning.length"));
-    SETCAR(v, ScalarInteger(1000));
+    SET_TAG(v, Rf_install("warning.length"));
+    SETCAR(v, Rf_ScalarInteger(1000));
     v = CDR(v);
 
-    SET_TAG(v, install("nwarnings"));
-    SETCAR(v, ScalarInteger(50));
+    SET_TAG(v, Rf_install("nwarnings"));
+    SETCAR(v, Rf_ScalarInteger(50));
     v = CDR(v);
 
-    SET_TAG(v, install("OutDec"));
-    SETCAR(v, mkString("."));
+    SET_TAG(v, Rf_install("OutDec"));
+    SETCAR(v, Rf_mkString("."));
     v = CDR(v);
 
-    SET_TAG(v, install("browserNLdisabled"));
-    SETCAR(v, ScalarLogical(FALSE));
+    SET_TAG(v, Rf_install("browserNLdisabled"));
+    SETCAR(v, Rf_ScalarLogical(FALSE));
     v = CDR(v);
 
     p = getenv("R_C_BOUNDS_CHECK");
     R_CBoundsCheck = RHOCONSTRUCT(Rboolean, (p && (strcmp(p, "yes") == 0)) ? 1 : 0);
 
-    SET_TAG(v, install("CBoundsCheck"));
-    SETCAR(v, ScalarLogical(R_CBoundsCheck));
+    SET_TAG(v, Rf_install("CBoundsCheck"));
+    SETCAR(v, Rf_ScalarLogical(R_CBoundsCheck));
     v = CDR(v);
 
 #ifdef HAVE_RL_COMPLETION_MATCHES
     /* value from Rf_initialize_R */
-    SET_TAG(v, install("rl_word_breaks"));
-    SETCAR(v, mkString(" \t\n\"\\'`><=%;,|&{()}"));
+    SET_TAG(v, Rf_install("rl_word_breaks"));
+    SETCAR(v, Rf_mkString(" \t\n\"\\'`><=%;,|&{()}"));
     set_rl_word_breaks(" \t\n\"\\'`><=%;,|&{()}");
 #endif
 
-    SET_SYMVALUE(install(".Options"), val);
+    SET_SYMVALUE(Rf_install(".Options"), val);
     UNPROTECT(1);
 }
 
@@ -342,9 +344,9 @@ void attribute_hidden Rf_InitOptions(void)
 SEXP attribute_hidden do_getOption(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP x = CAR(args);
-    if (!isString(x) || LENGTH(x) != 1)
-	error(_("'%s' must be a character string"), "x");
-    return duplicate(GetOption1(install(CHAR(STRING_ELT(x, 0)))));
+    if (!Rf_isString(x) || LENGTH(x) != 1)
+	Rf_error(_("'%s' must be a character string"), "x");
+    return Rf_duplicate(Rf_GetOption1(Rf_install(CHAR(STRING_ELT(x, 0)))));
 }
 
 
@@ -373,24 +375,24 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	   We alloc up a vector list and write the system values into it.
 	*/
 	int n = Rf_length(options);
-	PROTECT(value = allocVector(VECSXP, n));
-	PROTECT(names = allocVector(STRSXP, n));
+	PROTECT(value = Rf_allocVector(VECSXP, n));
+	PROTECT(names = Rf_allocVector(STRSXP, n));
 	for (int i = 0; i < n; i++) {
 	    SET_STRING_ELT(names, i, PRINTNAME(TAG(options)));
-	    SET_VECTOR_ELT(value, i, duplicate(CAR(options)));
+	    SET_VECTOR_ELT(value, i, Rf_duplicate(CAR(options)));
 	    options = CDR(options);
 	}
-	SEXP sind = PROTECT(allocVector(INTSXP, n));
+	SEXP sind = PROTECT(Rf_allocVector(INTSXP, n));
 	int *indx = INTEGER(sind);
 	for (int i = 0; i < n; i++) indx[i] = i;
 	orderVector1(indx, n, names, TRUE, FALSE, R_NilValue);
-	SEXP value2 = PROTECT(allocVector(VECSXP, n));
-	SEXP names2 = PROTECT(allocVector(STRSXP, n));
+	SEXP value2 = PROTECT(Rf_allocVector(VECSXP, n));
+	SEXP names2 = PROTECT(Rf_allocVector(STRSXP, n));
 	for(int i = 0; i < n; i++) {
 	    SET_STRING_ELT(names2, i, STRING_ELT(names, indx[i]));
 	    SET_VECTOR_ELT(value2, i, VECTOR_ELT(value, indx[i]));
 	}
-	setAttrib(value2, R_NamesSymbol, names2);
+	Rf_setAttrib(value2, R_NamesSymbol, names2);
 	UNPROTECT(5);
 	R_Visible = TRUE;
 	return value2;
@@ -403,13 +405,13 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
        */
 
     int n = Rf_length(args);
-    if (n == 1 && (isPairList(CAR(args)) || isVectorList(CAR(args)))
+    if (n == 1 && (Rf_isPairList(CAR(args)) || Rf_isVectorList(CAR(args)))
 	&& TAG(args) == R_NilValue ) {
 	args = CAR(args);
 	n = Rf_length(args);
     }
-    PROTECT(value = allocVector(VECSXP, n));
-    PROTECT(names = allocVector(STRSXP, n));
+    PROTECT(value = Rf_allocVector(VECSXP, n));
+    PROTECT(names = Rf_allocVector(STRSXP, n));
 
     SEXP argnames = R_NilValue;
     switch (TYPEOF(args)) {
@@ -418,9 +420,9 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	break;
     case VECSXP:
 	if(n > 0) {
-	    argnames = getAttrib(args, R_NamesSymbol);
+	    argnames = Rf_getAttrib(args, R_NamesSymbol);
 	    if(LENGTH(argnames) != n)
-		error(_("list argument has no valid names"));
+		Rf_error(_("list argument has no valid names"));
 	}
 	break;
     default:
@@ -433,7 +435,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	switch (TYPEOF(args)) {
 	case LISTSXP:
 	    argi = CAR(args);
-	    namei = EnsureString(TAG(args)); /* gives "" for no tag */
+	    namei = Rf_EnsureString(TAG(args)); /* gives "" for no tag */
 	    args = CDR(args);
 	    break;
 	case VECSXP:
@@ -445,233 +447,233 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 
 	if (*CHAR(namei)) { /* name = value  ---> assignment */
-	    SEXP tag = installTrChar(namei);
+	    SEXP tag = Rf_installTrChar(namei);
 	    if (streql(CHAR(namei), "width")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		if (k < R_MIN_WIDTH_OPT || k > R_MAX_WIDTH_OPT)
-		    error(_("invalid 'width' parameter, allowed %d...%d"),
+		    Rf_error(_("invalid 'width' parameter, allowed %d...%d"),
 			  R_MIN_WIDTH_OPT, R_MAX_WIDTH_OPT);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "deparse.cutoff")) {
-		int k = asInteger(argi);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		int k = Rf_asInteger(argi);
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "digits")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		if (k < R_MIN_DIGITS_OPT || k > R_MAX_DIGITS_OPT)
-		    error(_("invalid 'digits' parameter, allowed %d...%d"),
+		    Rf_error(_("invalid 'digits' parameter, allowed %d...%d"),
 			  R_MIN_DIGITS_OPT, R_MAX_DIGITS_OPT);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "expressions")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		StackChecker::setDepthLimit(k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "keep.source")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_KeepSource = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
-	    else if (streql(CHAR(namei), "editor") && isString(argi)) {
-		SEXP s =  asChar(argi);
+	    else if (streql(CHAR(namei), "editor") && Rf_isString(argi)) {
+		SEXP s =  Rf_asChar(argi);
 		if (s == NA_STRING || LENGTH(s) == 0)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarString(s)));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarString(s)));
 	    }
 	    else if (streql(CHAR(namei), "continue")) {
-		SEXP s =  asChar(argi);
+		SEXP s =  Rf_asChar(argi);
 		if (s == NA_STRING || LENGTH(s) == 0)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		/* We want to make sure these are in the native encoding */
 		SET_VECTOR_ELT(value, i,
-			       SetOption(tag, mkString(translateChar(s))));
+			       SetOption(tag, Rf_mkString(Rf_translateChar(s))));
 	    }
 	    else if (streql(CHAR(namei), "prompt")) {
-		SEXP s =  asChar(argi);
+		SEXP s =  Rf_asChar(argi);
 		if (s == NA_STRING || LENGTH(s) == 0)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		/* We want to make sure these are in the native encoding */
 		SET_VECTOR_ELT(value, i,
-			       SetOption(tag, mkString(translateChar(s))));
+			       SetOption(tag, Rf_mkString(Rf_translateChar(s))));
 	    }
 	    else if (streql(CHAR(namei), "contrasts")) {
 		if (TYPEOF(argi) != STRSXP || LENGTH(argi) != 2)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 	    }
 	    else if (streql(CHAR(namei), "check.bounds")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		/* R_CheckBounds = k; */
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "warn")) {
-		if (!isNumeric(argi) || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		if (!Rf_isNumeric(argi) || LENGTH(argi) != 1)
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 	    }
 	    else if (streql(CHAR(namei), "warning.length")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		if (k < 100 || k > 8170)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		R_WarnLength = k;
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 	    }
 	    else if ( streql(CHAR(namei), "warning.expression") )  {
-		if( !isLanguage(argi) &&  ! isExpression(argi) )
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		if( !Rf_isLanguage(argi) &&  !Rf_isExpression(argi) )
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 	    }
 	    else if (streql(CHAR(namei), "max.print")) {
-		int k = asInteger(argi);
-		if (k < 1) error(_("invalid value for '%s'"), CHAR(namei));
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		int k = Rf_asInteger(argi);
+		if (k < 1) Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "nwarnings")) {
-		int k = asInteger(argi);
-		if (k < 1) error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asInteger(argi);
+		if (k < 1) Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		R_nwarnings = k;
 		R_CollectWarnings = 0; /* force a reset */
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if ( streql(CHAR(namei), "error") ) {
-		if(isFunction(argi))
+		if(Rf_isFunction(argi))
 		  argi = makeErrorCall(argi);
-		else if( !isLanguage(argi) &&  !isExpression(argi) )
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		else if( !Rf_isLanguage(argi) && !Rf_isExpression(argi) )
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 	    }
 /* handle this here to avoid GetOption during error handling */
 	    else if ( streql(CHAR(namei), "show.error.messages") ) {
-		if( !isLogical(argi) && LENGTH(argi) != 1 )
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		if( !Rf_isLogical(argi) && LENGTH(argi) != 1 )
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, argi));
 		R_ShowErrorMessages = LOGICAL(argi)[0];
 	    }
 	    else if (streql(CHAR(namei), "echo")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		/* Should be quicker than checking options(echo)
 		   every time R prompts for input:
 		   */
 		R_Slave = RHOCONSTRUCT(Rboolean, !k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "OutDec")) {
 		if (TYPEOF(argi) != STRSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		static char sdec[11];
 		if(R_nchar(STRING_ELT(argi, 0), Chars,
 			   /* allowNA = */ FALSE, /* keepNA = */ FALSE,
 			   "OutDec") != 1) // will become an error
-		    warning(_("'OutDec' must be a string of one character"));
+		    Rf_warning(_("'OutDec' must be a string of one character"));
 		strncpy(sdec, CHAR(STRING_ELT(argi, 0)), 10);
 		sdec[10] = '\0';
 		OutDec = sdec;
-		SET_VECTOR_ELT(value, i, SetOption(tag, duplicate(argi)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_duplicate(argi)));
 	    }
 	    else if (streql(CHAR(namei), "max.contour.segments")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		if (k < 0) // also many times above: rely on  NA_INTEGER  <  <finite_int>
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		max_contour_segments = k;
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "rl_word_breaks")) {
 		if (TYPEOF(argi) != STRSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 #ifdef HAVE_RL_COMPLETION_MATCHES
 		set_rl_word_breaks(CHAR(STRING_ELT(argi, 0)));
 #endif
-		SET_VECTOR_ELT(value, i, SetOption(tag, duplicate(argi)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_duplicate(argi)));
 	    }
 	    else if (streql(CHAR(namei), "warnPartialMatchDollar")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_warn_partial_match_dollar = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "warnPartialMatchArgs")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		ArgMatcher::enableWarnOnPartialMatch(k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "warnPartialMatchAttr")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_warn_partial_match_attr = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "showWarnCalls")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_ShowWarnCalls = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "showErrorCalls")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_ShowErrorCalls = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "showNCalls")) {
-		int k = asInteger(argi);
+		int k = Rf_asInteger(argi);
 		if (k < 30 || k > 500 || k == NA_INTEGER || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		R_NShowCalls = k;
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarInteger(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
 	    }
 	    else if (streql(CHAR(namei), "par.ask.default")) {
-		error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
+		Rf_error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
 	    }
 	    else if (streql(CHAR(namei), "browserNLdisabled")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		if (k == NA_LOGICAL)
-		    error(_("invalid value for '%s'"), CHAR(namei));
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
 		R_DisableNLinBrowser = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(CHAR(namei), "CBoundsCheck")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
-		    error(_("invalid value for '%s'"), CHAR(namei));
-		int k = asLogical(argi);
+		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+		int k = Rf_asLogical(argi);
 		R_CBoundsCheck = RHOCONSTRUCT(Rboolean, k);
-		SET_VECTOR_ELT(value, i, SetOption(tag, ScalarLogical(k)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else {
-		SET_VECTOR_ELT(value, i, SetOption(tag, duplicate(argi)));
+		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_duplicate(argi)));
 	    }
 	    SET_STRING_ELT(names, i, namei);
 	}
 	else { /* querying arg */
 	    const char *tag;
-	    if (!isString(argi) || LENGTH(argi) <= 0)
-		error(_("invalid argument"));
+	    if (!Rf_isString(argi) || LENGTH(argi) <= 0)
+		Rf_error(_("invalid argument"));
 	    tag = CHAR(STRING_ELT(argi, 0));
 	    if (streql(tag, "par.ask.default")) {
-		error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
+		Rf_error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
 	    }
 
-	    SET_VECTOR_ELT(value, i, duplicate(CAR(FindTaggedItem(options, install(tag)))));
+	    SET_VECTOR_ELT(value, i, Rf_duplicate(CAR(FindTaggedItem(options, Rf_install(tag)))));
 	    SET_STRING_ELT(names, i, STRING_ELT(argi, 0));
 	    R_Visible = TRUE;
 	}
     } /* for() */
-    setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, R_NamesSymbol, names);
     UNPROTECT(2);
     return value;
 }

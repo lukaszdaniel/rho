@@ -1432,7 +1432,7 @@ SEXP attribute_hidden do_xtfrm(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (dispatched.first)
         return dispatched.second;
     /* otherwise dispatch the default method */
-    RObject* fn = findFun(install("xtfrm.default"), rho);
+    RObject* fn = Rf_findFun(Rf_install("xtfrm.default"), rho);
     Closure* closure = SEXP_downcast<Closure*>(fn);
 
     return callx->evaluateFunctionCall(closure, callenv, arglist);

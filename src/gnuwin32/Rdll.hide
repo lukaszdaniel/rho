@@ -330,7 +330,6 @@
  Rf_TimeToSeed
  Rf_VectorIndex
  Rf_WarningMessage
- Rf_addMissingVarsToNewEnv
  Rf_allocCharsxp
  Rf_asVecSize
  Rf_bd0

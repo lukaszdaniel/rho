@@ -1,25 +1,9 @@
-/* $Id$
- *
- * This file is part of Rho, a project to refactor the R interpreter
- * into C++.  It may consist in whole or in part of program code and
- * documentation taken from the R project itself, incorporated into
- * Rho (and possibly MODIFIED) under the terms of the GNU General Public
- * Licence.
- * 
- * Rho is Copyright (C) 2008-14 Andrew R. Runnalls, subject to such other
- * copyrights and copyright restrictions as may be stated below.
- * 
- * Rho is not part of the R project, and bugs and other issues should
- * not be reported via r-bugs or other R project channels; instead refer
- * to the Rho website.
- * */
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
 
 #include <AvailabilityMacros.h> /* for MAC_OS_X_VERSION_10_* -- present on 10.2+ (according to Apple) */
-/* Since OS X 10.8 vecLib requires Accelerate to be included first (which in turn includes vecLib) */
+/* Since macOS 10.8 vecLib requires Accelerate to be included first (which in turn includes vecLib) */
 #if defined MAC_OS_X_VERSION_10_8 && MAC_OS_X_VERSION_MIN_REQUIRED >= 1040
 #include <Accelerate/Accelerate.h>
 #else

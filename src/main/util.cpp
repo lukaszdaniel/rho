@@ -622,6 +622,7 @@ static void isort_with_index(int *x, int *indx, int n)
 
 
 // body(x) without attributes "srcref", "srcfile", "wholeSrcref" :
+// NOTE: Callers typically need  PROTECT(R_body_no_src(.))
 SEXP R_body_no_src(SEXP x) {
     SEXP b = PROTECT(Rf_duplicate(BODY_EXPR(x)));
     /* R's removeSource() works *recursively* on the body()
@@ -1028,7 +1029,7 @@ extern "C" const char *getTZinfo(void)
     const char *p = getenv("TZ");
     if(p) return p;
 #ifdef HAVE_REALPATH
-    // This works on Linux, OS X and *BSD: other known OSes set TZ.
+    // This works on Linux, macOS and *BSD: other known OSes set TZ.
     static char abspath[PATH_MAX+1] = "";
     if(abspath[0]) return abspath + 20;
     if(realpath("/etc/localtime", abspath))
@@ -1802,7 +1803,7 @@ SEXP attribute_hidden do_enc2(/*const*/ Expression* call, const BuiltInFunction*
 #ifdef USE_ICU
 # include <locale.h>
 #ifdef USE_ICU_APPLE
-/* Mac OS X is missing the headers */
+/* macOS is missing the headers */
 extern "C" {
     typedef int UErrorCode; /* really an enum these days */
     struct UCollator;

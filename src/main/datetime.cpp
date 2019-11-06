@@ -781,9 +781,8 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
     setAttrib(ans, install("tzone"), tzone);
     SEXP nm = getAttrib(x, R_NamesSymbol);
     if(nm != R_NilValue) setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
-    UNPROTECT(6);
-
     if(settz) reset_tz(oldtz);
+    UNPROTECT(6);
     return ans;
 }
 

@@ -77,7 +77,7 @@ double attribute_hidden R_FileMtime(const char *path)
 {
     struct _stati64 sb;
     if (_stati64(R_ExpandFileName(path), &sb) != 0)
-	error(_("cannot determine file modification time of '%s'"), path);
+	Rf_error(_("cannot determine file modification time of '%s'"), path);
     return sb.st_mtime;
 }
 #else
@@ -91,7 +91,7 @@ double attribute_hidden R_FileMtime(const char *path)
 {
     struct stat sb;
     if (stat(R_ExpandFileName(path), &sb) != 0)
-	error(_("cannot determine file modification time of '%s'"), path);
+	Rf_error(_("cannot determine file modification time of '%s'"), path);
     return double( sb.st_mtime);
 }
 #endif
@@ -158,7 +158,7 @@ FILE *R_fopen(const char *filename, const char *mode)
    (UCS-2), and _wfopen is provided to access them by UCS-2 names.
 */
 
-#if defined(Win32)
+#ifdef Win32
 
 #define BSIZE 100000
 wchar_t *filenameToWchar(const SEXP fn, const Rboolean expand)
@@ -175,10 +175,10 @@ wchar_t *filenameToWchar(const SEXP fn, const Rboolean expand)
     }
     if(IS_LATIN1(fn)) from = "latin1";
     if(IS_UTF8(fn)) from = "UTF-8";
-    if(IS_BYTES(fn)) error(_("encoding of a filename cannot be 'bytes'"));
+    if(IS_BYTES(fn)) Rf_error(_("encoding of a filename cannot be 'bytes'"));
     obj = Riconv_open("UCS-2LE", from);
     if(obj == (void *)(-1))
-	error(_("unsupported conversion from '%s' in codepage %d"),
+	Rf_error(_("unsupported conversion from '%s' in codepage %d"),
 	      from, localeCP);
 
     if(expand) inbuf = R_ExpandFileName(CHAR(fn)); else inbuf = CHAR(fn);
@@ -187,8 +187,8 @@ wchar_t *filenameToWchar(const SEXP fn, const Rboolean expand)
     outbuf = (char *) filename;
     res = Riconv(obj, &inbuf , &inb, &outbuf, &outb);
     Riconv_close(obj);
-    if(inb > 0) error(_("file name conversion problem -- name too long?"));
-    if(res == -1) error(_("file name conversion problem"));
+    if(inb > 0) Rf_error(_("file name conversion problem -- name too long?"));
+    if(res == -1) Rf_error(_("file name conversion problem"));
 
     return filename;
 }
@@ -234,12 +234,12 @@ char *R_HomeDir(void)
 /* This is a primitive (with no arguments) */
 SEXP attribute_hidden do_interactive(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
-    return ScalarLogical( (R_Interactive) ? 1 : 0 );
+    return Rf_ScalarLogical( (R_Interactive) ? 1 : 0 );
 }
 
 SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
-    return mkString(R_TempDir);
+    return Rf_mkString(R_TempDir);
 }
 
 
@@ -253,28 +253,28 @@ SEXP attribute_hidden do_tempfile(/*const*/ rho::Expression* call, const rho::Bu
     pattern = pattern_; n1 = Rf_length(pattern);
     tempdir = tmpdir_; n2 = Rf_length(tempdir);
     fileext = fileext_; n3 = Rf_length(fileext);
-    if (!isString(pattern))
-	error(_("invalid filename pattern"));
-    if (!isString(tempdir))
-	error(_("invalid '%s' value"), "tempdir");
-    if (!isString(fileext))
-	error(_("invalid file extension"));
+    if (!Rf_isString(pattern))
+	Rf_error(_("invalid filename pattern"));
+    if (!Rf_isString(tempdir))
+	Rf_error(_("invalid '%s' value"), "tempdir");
+    if (!Rf_isString(fileext))
+	Rf_error(_("invalid file extension"));
     if (n1 < 1)
-	error(_("no 'pattern'"));
+	Rf_error(_("no 'pattern'"));
     if (n2 < 1)
-	error(_("no 'tempdir'"));
+	Rf_error(_("no 'tempdir'"));
     if (n3 < 1)
-	error(_("no 'fileext'"));
+	Rf_error(_("no 'fileext'"));
     slen = (n1 > n2) ? n1 : n2;
     slen = (n3 > slen) ? n3 : slen;
-    PROTECT(ans = allocVector(STRSXP, slen));
+    PROTECT(ans = Rf_allocVector(STRSXP, slen));
     for(i = 0; i < slen; i++) {
-	tn = translateChar( STRING_ELT( pattern , i%n1 ) );
-	td = translateChar( STRING_ELT( tempdir , i%n2 ) );
-	te = translateChar( STRING_ELT( fileext , i%n3 ) );
+	tn = Rf_translateChar( STRING_ELT( pattern , i%n1 ) );
+	td = Rf_translateChar( STRING_ELT( tempdir , i%n2 ) );
+	te = Rf_translateChar( STRING_ELT( fileext , i%n3 ) );
 	/* try to get a new file name */
 	tm = R_tmpnam2(tn, td, te);
-	SET_STRING_ELT(ans, i, mkChar(tm));
+	SET_STRING_ELT(ans, i, Rf_mkChar(tm));
 	if(tm) free(tm);
     }
     UNPROTECT(1);
@@ -360,11 +360,11 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
     int i, j;
     SEXP ans;
 
-    if (!isString(symbol_))
-	error(_("wrong type for argument"));
+    if (!Rf_isString(symbol_))
+	Rf_error(_("wrong type for argument"));
 
-    if (!isString(default_value_) || LENGTH(default_value_) != 1)
-	error(_("wrong type for argument"));
+    if (!Rf_isString(default_value_) || LENGTH(default_value_) != 1)
+	Rf_error(_("wrong type for argument"));
 
     i = LENGTH(symbol_);
     if (i == 0) {
@@ -376,7 +376,7 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 	N = 3*n+1;
 	vector<char> bufv(N);
 	char* buf = &bufv[0];
-	PROTECT(ans = allocVector(STRSXP, i));
+	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (i = 0, w = _wenviron; *w != NULL; i++, w++) {
 	    wcstoutf8(buf, *w, N); buf[N-1] = '\0';
 	    SET_STRING_ELT(ans, i, mkCharCE(buf, CE_UTF8));
@@ -384,12 +384,12 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 #else
 	char **e;
 	for (i = 0, e = environ; *e != nullptr; i++, e++);
-	PROTECT(ans = allocVector(STRSXP, i));
+	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (i = 0, e = environ; *e != nullptr; i++, e++)
-	    SET_STRING_ELT(ans, i, mkChar(*e));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(*e));
 #endif
     } else {
-	PROTECT(ans = allocVector(STRSXP, i));
+	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (j = 0; j < i; j++) {
 #ifdef Win32
 	    const wchar_t *wnm = wtransChar(STRING_ELT(CAR(args), j));
@@ -404,14 +404,14 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 		SET_STRING_ELT(ans, j, mkCharCE(buf, CE_UTF8));
 	    }
 #else
-	    char *s = getenv(translateChar(STRING_ELT(symbol_, j)));
+	    char *s = getenv(Rf_translateChar(STRING_ELT(symbol_, j)));
 	    if (s == nullptr)
 		SET_STRING_ELT(ans, j, STRING_ELT(default_value_, 0));
 	    else {
 		SEXP tmp;
-		if(known_to_be_latin1) tmp = mkCharCE(s, CE_LATIN1);
-		else if(known_to_be_utf8) tmp = mkCharCE(s, CE_UTF8);
-		else tmp = mkChar(s);
+		if(known_to_be_latin1) tmp = Rf_mkCharCE(s, CE_LATIN1);
+		else if(known_to_be_utf8) tmp = Rf_mkCharCE(s, CE_UTF8);
+		else tmp = Rf_mkChar(s);
 		SET_STRING_ELT(ans, j, tmp);
 	    }
 #endif
@@ -453,19 +453,19 @@ SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::Buil
     int i, n;
     SEXP ans, nm, vars;
 
-    if (!isString(nm = name_))
-	error(_("wrong type for argument"));
-    if (!isString(vars = value_))
-	error(_("wrong type for argument"));
+    if (!Rf_isString(nm = name_))
+	Rf_error(_("wrong type for argument"));
+    if (!Rf_isString(vars = value_))
+	Rf_error(_("wrong type for argument"));
     if(LENGTH(nm) != LENGTH(vars))
-	error(_("wrong length for argument"));
+	Rf_error(_("wrong length for argument"));
 
     n = LENGTH(vars);
-    PROTECT(ans = allocVector(LGLSXP, n));
+    PROTECT(ans = Rf_allocVector(LGLSXP, n));
 #ifdef HAVE_SETENV
     for (i = 0; i < n; i++)
-	LOGICAL(ans)[i] = setenv(translateChar(STRING_ELT(nm, i)),
-				 translateChar(STRING_ELT(vars, i)),
+	LOGICAL(ans)[i] = setenv(Rf_translateChar(STRING_ELT(nm, i)),
+				 Rf_translateChar(STRING_ELT(vars, i)),
 				 1) == 0;
 #elif defined(Win32)
     for (i = 0; i < n; i++)
@@ -479,7 +479,7 @@ SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::Buil
     UNPROTECT(1);
     return ans;
 #else
-    error(_("'Sys.setenv' is not available on this system"));
+    Rf_error(_("'Sys.setenv' is not available on this system"));
     return R_NilValue; /* -Wall */
 #endif
 }
@@ -489,17 +489,17 @@ SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::Bu
     int i, n;
     SEXP ans, vars;
 
-    if (!isString(vars = x_))
-	error(_("wrong type for argument"));
+    if (!Rf_isString(vars = x_))
+	Rf_error(_("wrong type for argument"));
     n = LENGTH(vars);
 
 #if defined(HAVE_UNSETENV) || defined(HAVE_PUTENV_UNSET) || defined(HAVE_PUTENV_UNSET2)
 #ifdef HAVE_UNSETENV
-    for (i = 0; i < n; i++) unsetenv(translateChar(STRING_ELT(vars, i)));
+    for (i = 0; i < n; i++) unsetenv(Rf_translateChar(STRING_ELT(vars, i)));
 #elif defined(HAVE_PUTENV_UNSET)
     for (i = 0; i < n; i++) {
 	char buf[1000];
-	snprintf(buf, 1000, "%s",  translateChar(STRING_ELT(vars, i)));
+	snprintf(buf, 1000, "%s",  Rf_translateChar(STRING_ELT(vars, i)));
 	putenv(buf);
     }
 #elif defined(HAVE_PUTENV_UNSET2)
@@ -515,7 +515,7 @@ SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::Bu
 # else
     for (i = 0; i < n; i++) {
 	char buf[1000];
-	snprintf(buf, 1000, "%s=", translateChar(STRING_ELT(vars, i)));
+	snprintf(buf, 1000, "%s=", Rf_translateChar(STRING_ELT(vars, i)));
 	putenv(buf);
     }
 # endif
@@ -526,9 +526,9 @@ SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::Bu
     n = LENGTH(vars);
     for (i = 0; i < n; i++) {
 #ifdef HAVE_SETENV
-	setenv(translateChar(STRING_ELT(vars, i)), "", 1);
+	setenv(Rf_translateChar(STRING_ELT(vars, i)), "", 1);
 #else
-	Rputenv(translateChar(STRING_ELT(vars, i)), "");
+	Rputenv(Rf_translateChar(STRING_ELT(vars, i)), "");
 #endif
     }
 
@@ -536,9 +536,9 @@ SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::Bu
     warning(_("'Sys.unsetenv' is not available on this system"));
 #endif
 
-    PROTECT(ans = allocVector(LGLSXP, n));
+    PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++)
-	LOGICAL(ans)[i] = !getenv(translateChar(STRING_ELT(vars, i)));
+	LOGICAL(ans)[i] = !getenv(Rf_translateChar(STRING_ELT(vars, i)));
     UNPROTECT(1);
     return ans;
 }
@@ -562,7 +562,7 @@ write_one (unsigned int namescount, const char * const *names, void *data)
   SEXP ans = (SEXP) data;
 
   for (i = 0; i < namescount; i++)
-      SET_STRING_ELT(ans, cnt++, mkChar(names[i]));
+      SET_STRING_ELT(ans, cnt++, Rf_mkChar(names[i]));
   return 0;
 }
 #endif
@@ -581,11 +581,11 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
     Rboolean isRawlist = FALSE;
 
-    if(isNull(x)) {  /* list locales */
+    if(Rf_isNull(x)) {  /* list locales */
 #ifdef HAVE_ICONVLIST
 	cnt = 0;
 	iconvlist(count_one, NULL);
-	PROTECT(ans = allocVector(STRSXP, cnt));
+	PROTECT(ans = Rf_allocVector(STRSXP, cnt));
 	cnt = 0;
 	iconvlist(write_one, (void *)ans);
 #else
@@ -596,22 +596,22 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	const char *from, *to;
 	Rboolean isLatin1 = FALSE, isUTF8 = FALSE;
 
-	if(!isString(from_) || Rf_length(from_) != 1)
-	    error(_("invalid '%s' argument"), "from");
+	if(!Rf_isString(from_) || Rf_length(from_) != 1)
+	    Rf_error(_("invalid '%s' argument"), "from");
 	from = CHAR(STRING_ELT(from_, 0)); /* ASCII */
-	if(!isString(to_) || Rf_length(to_) != 1)
-	    error(_("invalid '%s' argument"), "to");
+	if(!Rf_isString(to_) || Rf_length(to_) != 1)
+	    Rf_error(_("invalid '%s' argument"), "to");
 	to = CHAR(STRING_ELT(to_, 0));
-	if(!isString(sub_) || Rf_length(sub_) != 1)
-	    error(_("invalid '%s' argument"), "sub");
+	if(!Rf_isString(sub_) || Rf_length(sub_) != 1)
+	    Rf_error(_("invalid '%s' argument"), "sub");
 	if(STRING_ELT(sub_, 0) == NA_STRING) sub = nullptr;
-	else sub = translateChar(STRING_ELT(sub_, 0));
-	mark = asLogical(mark_);
+	else sub = Rf_translateChar(STRING_ELT(sub_, 0));
+	mark = Rf_asLogical(mark_);
 	if(mark == NA_LOGICAL)
-	    error(_("invalid '%s' argument"), "mark");
-	toRaw = asLogical(toRaw_);
+	    Rf_error(_("invalid '%s' argument"), "mark");
+	toRaw = Rf_asLogical(toRaw_);
 	if(toRaw == NA_LOGICAL)
-	    error(_("invalid '%s' argument"), "toRaw");
+	    Rf_error(_("invalid '%s' argument"), "toRaw");
 	/* some iconv's allow "UTF8", but libiconv does not */
 	if(streql(from, "UTF8") || streql(from, "utf8") ) from = "UTF-8";
 	if(streql(to, "UTF8") || streql(to, "utf8") ) to = "UTF-8";
@@ -624,27 +624,27 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	obj = Riconv_open(to, from);
 	if(obj == iconv_t((-1)))
 #ifdef Win32
-	    error(_("unsupported conversion from '%s' to '%s' in codepage %d"),
+	    Rf_error(_("unsupported conversion from '%s' to '%s' in codepage %d"),
 		  from, to, localeCP);
 #else
-	    error(_("unsupported conversion from '%s' to '%s'"), from, to);
+	    Rf_error(_("unsupported conversion from '%s' to '%s'"), from, to);
 #endif
 	isRawlist = RHOCONSTRUCT(Rboolean, (TYPEOF(x) == VECSXP));
 	if(isRawlist) {
 	    if(toRaw)
-		PROTECT(ans = duplicate(x));
+		PROTECT(ans = Rf_duplicate(x));
 	    else {
-		PROTECT(ans = allocVector(STRSXP, LENGTH(x)));
+		PROTECT(ans = Rf_allocVector(STRSXP, LENGTH(x)));
 		SHALLOW_DUPLICATE_ATTRIB(ans, x);
 	    }
 	} else {
 	    if(TYPEOF(x) != STRSXP)
-		error(_("'x' must be a character vector"));
+		Rf_error(_("'x' must be a character vector"));
 	    if(toRaw) {
-		PROTECT(ans = allocVector(VECSXP, LENGTH(x)));
+		PROTECT(ans = Rf_allocVector(VECSXP, LENGTH(x)));
 		SHALLOW_DUPLICATE_ATTRIB(ans, x);
 	    } else
-		PROTECT(ans = duplicate(x));
+		PROTECT(ans = Rf_duplicate(x));
 	}
 	R_AllocStringBuffer(0, &cbuff);  /* 0 -> default */
 	for(R_xlen_t i = 0; i < XLENGTH(x); i++) {
@@ -654,7 +654,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 		    if (!toRaw) SET_STRING_ELT(ans, i, NA_STRING);
 		    continue;
 		} else if (TYPEOF(si) != RAWSXP)
-		    error(_("'x' must be a character vector or a list of NULL or raw vectors"));
+		    Rf_error(_("'x' must be a character vector or a list of NULL or raw vectors"));
 	    } else {
 		si = STRING_ELT(x, i);
 		if (si == NA_STRING) {
@@ -704,7 +704,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	    if(toRaw) {
 		if(res != RHOCONSTRUCT(size_t, -1) && inb == 0) {
 		    size_t nout = cbuff.bufsize - 1 - outb;
-		    SEXP el = allocVector(RAWSXP, nout);
+		    SEXP el = Rf_allocVector(RAWSXP, nout);
 		    memcpy(RAW(el), cbuff.data, nout);
 		    SET_VECTOR_ELT(ans, i, el);
 		} /* otherwise is already NULL */
@@ -718,7 +718,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 			else if(isUTF8) ienc = CE_UTF8;
 		    }
 		    SET_STRING_ELT(ans, i,
-				   mkCharLenCE(cbuff.data, int( nout), ienc));
+				   Rf_mkCharLenCE(cbuff.data, int( nout), ienc));
 		} else SET_STRING_ELT(ans, i, NA_STRING);
 	    }
 	}
@@ -732,7 +732,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 cetype_t Rf_getCharCE(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "getCharCE");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "getCharCE");
     if(IS_UTF8(x)) return CE_UTF8;
     else if(IS_LATIN1(x)) return CE_LATIN1;
     else if(IS_BYTES(x)) return CE_BYTES;
@@ -801,7 +801,7 @@ static R_INLINE nttype_t needsTranslation(SEXP x) {
 	return NT_FROM_LATIN1;
     }
     if (IS_BYTES(x))
-	error(_("translating strings with \"bytes\" encoding is not allowed"));
+	Rf_error(_("translating strings with \"bytes\" encoding is not allowed"));
     return NT_NONE;
 }
 
@@ -814,7 +814,7 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
 			      nttype_t ttype) {
 
     if (ttype == NT_NONE)
-	error(_("internal error: no translation needed"));
+	Rf_error(_("internal error: no translation needed"));
 
     void * obj;
     const char *inbuf;
@@ -828,10 +828,10 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
 	    /* should never happen */
 	    if(obj == (void *)(-1))
 #ifdef Win32
-		error(_("unsupported conversion from '%s' in codepage %d"),
+		Rf_error(_("unsupported conversion from '%s' in codepage %d"),
 		      "latin1", localeCP);
 #else
-		error(_("unsupported conversion from '%s' to '%s'"),
+		Rf_error(_("unsupported conversion from '%s' to '%s'"),
 		      "latin1", "");
 #endif
 	    latin1_obj = obj;
@@ -843,10 +843,10 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
 	    /* should never happen */
 	    if(obj == (void *)(-1))
 #ifdef Win32
-		error(_("unsupported conversion from '%s' in codepage %d"),
+		Rf_error(_("unsupported conversion from '%s' in codepage %d"),
 		      "latin1", localeCP);
 #else
-		error(_("unsupported conversion from '%s' to '%s'"),
+		Rf_error(_("unsupported conversion from '%s' to '%s'"),
 		      "latin1", "");
 #endif
 	    utf8_obj = obj;
@@ -911,7 +911,7 @@ next_char:
 const char *Rf_translateChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "translateChar");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "translateChar");
     nttype_t t = needsTranslation(x);
     const char *ans = CHAR(x);
     assert(ans != nullptr);
@@ -931,14 +931,14 @@ const char *Rf_translateChar(SEXP x)
 SEXP Rf_installTrChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "installTrChar");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "installTrChar");
     nttype_t t = needsTranslation(x);
     if (t == NT_NONE) return installChar(x);
 
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
     translateToNative(CHAR(x), &cbuff, t);
 
-    SEXP Sans = install(cbuff.data);
+    SEXP Sans = Rf_install(cbuff.data);
     R_FreeStringBuffer(&cbuff);
     return Sans;
 }
@@ -949,9 +949,9 @@ SEXP Rf_installTrChar(SEXP x)
 const char *Rf_translateChar0(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "translateChar0");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "translateChar0");
     if(IS_BYTES(x)) return CHAR(x);
-    return translateChar(x);
+    return Rf_translateChar(x);
 }
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
@@ -965,20 +965,20 @@ const char *Rf_translateCharUTF8(SEXP x)
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "translateCharUTF8");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "translateCharUTF8");
     if(x == NA_STRING) return ans;
     if(IS_UTF8(x)) return ans;
     if(IS_ASCII(x)) return ans;
     if(IS_BYTES(x))
-	error(_("translating strings with \"bytes\" encoding is not allowed"));
+	Rf_error(_("translating strings with \"bytes\" encoding is not allowed"));
 
     obj = Riconv_open("UTF-8", IS_LATIN1(x) ? "latin1" : "");
     if(obj == reinterpret_cast<void *>((-1))) 
 #ifdef Win32
-	error(_("unsupported conversion from '%s' in codepage %d"),
+	Rf_error(_("unsupported conversion from '%s' in codepage %d"),
 	      "latin1", localeCP);
 #else
-       error(_("unsupported conversion from '%s' to '%s'"), "latin1", "UTF-8");
+       Rf_error(_("unsupported conversion from '%s' to '%s'"), "latin1", "UTF-8");
 #endif
     R_AllocStringBuffer(0, &cbuff);
 top_of_loop:
@@ -1042,16 +1042,16 @@ const wchar_t *wtransChar(SEXP x)
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
     if(TYPEOF(x) != CHARSXP)
-	error(_("'%s' must be called on a CHARSXP"), "wtransChar");
+	Rf_error(_("'%s' must be called on a CHARSXP"), "wtransChar");
 
     if(IS_BYTES(x))
-	error(_("translating strings with \"bytes\" encoding is not allowed"));
+	Rf_error(_("translating strings with \"bytes\" encoding is not allowed"));
 
     if(IS_LATIN1(x)) {
 	if(!latin1_wobj) {
 	    obj = Riconv_open(TO_WCHAR, "latin1");
 	    if(obj == reinterpret_cast<void *>((-1)))
-		error(_("unsupported conversion from '%s' to '%s'"),
+		Rf_error(_("unsupported conversion from '%s' to '%s'"),
 		      "latin1", TO_WCHAR);
 	    latin1_wobj = obj;
 	} else
@@ -1061,7 +1061,7 @@ const wchar_t *wtransChar(SEXP x)
 	if(!utf8_wobj) {
 	    obj = Riconv_open(TO_WCHAR, "UTF-8");
 	    if(obj == reinterpret_cast<void *>((-1))) 
-		error(_("unsupported conversion from '%s' to '%s'"),
+		Rf_error(_("unsupported conversion from '%s' to '%s'"),
 		      "latin1", TO_WCHAR);
 	    utf8_wobj = obj;
 	} else
@@ -1071,10 +1071,10 @@ const wchar_t *wtransChar(SEXP x)
 	obj = Riconv_open(TO_WCHAR, "");
 	if(obj == reinterpret_cast<void *>((-1)))
 #ifdef Win32
-	    error(_("unsupported conversion to '%s' from codepage %d"),
+	    Rf_error(_("unsupported conversion to '%s' from codepage %d"),
 		  TO_WCHAR, localeCP);
 #else
-	    error(_("unsupported conversion from '%s' to '%s'"), "", TO_WCHAR);
+	    Rf_error(_("unsupported conversion from '%s' to '%s'"), "", TO_WCHAR);
 #endif
     }
 
@@ -1100,7 +1100,7 @@ next_char:
 	inbuf++; inb--;
 	goto next_char;
 	/* if(!knownEnc) Riconv_close(obj);
-	   error(_("invalid input in wtransChar")); */
+	   Rf_error(_("invalid input in wtransChar")); */
     }
     if(!knownEnc) Riconv_close(obj);
     res = (top - outb);
@@ -1336,7 +1336,7 @@ next_char:
     Riconv_close(obj);
     *outbuf = '\0';
     res = (top-outb)+1; /* strlen(cbuff.data) + 1; */
-    if (res > ny) error("converted string too long for buffer");
+    if (res > ny) Rf_error("converted string too long for buffer");
     memcpy(y, cbuff.data, res);
     R_FreeStringBuffer(&cbuff);
 }
@@ -1442,7 +1442,7 @@ next_char:
     Riconv_close(obj);
     *outbuf = '\0';
     res = (top-outb)+1; /* strlen(cbuff.data) + 1; */
-    if (res > ny) error("converted string too long for buffer");
+    if (res > ny) Rf_error("converted string too long for buffer");
     memcpy(y, cbuff.data, res);
     R_FreeStringBuffer(&cbuff);
 }
@@ -1578,7 +1578,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 
     if(ucsutf8_obj == nullptr) {
 	if(reinterpret_cast<void *>((-1)) == (cd = Riconv_open("UTF-8", UNICODE))) {
-	    error(_("unsupported conversion from '%s' to '%s'"),
+	    Rf_error(_("unsupported conversion from '%s' to '%s'"),
 		  UNICODE, "UTF-8");
 	    return size_t((-1));
 	}
@@ -1592,7 +1592,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 	case E2BIG:
 	    break;
 	default:
-	    error(_("invalid Unicode point %u"), wc);
+	    Rf_error(_("invalid Unicode point %u"), wc);
 	    return (size_t) -1; // Not reached
 	}
     }
@@ -1619,7 +1619,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 # define S_IFDIR __S_IFDIR
 #endif
 
-static int isDir(RHOCONST char *path)
+static int Rf_isDir(RHOCONST char *path)
 {
 #ifdef Win32
     struct _stati64 sb;
@@ -1643,7 +1643,7 @@ static int isDir(RHOCONST char *path)
     return isdir;
 }
 #else
-static int isDir(RHOCONST char *path)
+static int Rf_isDir(RHOCONST char *path)
 {
     return 1;
 }
@@ -1670,11 +1670,11 @@ void attribute_hidden Rf_InitTempDir()
     tmp = nullptr; /* getenv("R_SESSION_TMPDIR");   no longer set in R.sh */
     if (!tmp) {
 	tm = getenv("TMPDIR");
-	if (!isDir(tm)) {
+	if (!Rf_isDir(tm)) {
 	    tm = getenv("TMP");
-	    if (!isDir(tm)) {
+	    if (!Rf_isDir(tm)) {
 		tm = getenv("TEMP");
-		if (!isDir(tm))
+		if (!Rf_isDir(tm))
 #ifdef Win32
 		    tm = getenv("R_USER"); /* this one will succeed */
 #else
@@ -1699,7 +1699,7 @@ void attribute_hidden Rf_InitTempDir()
 #ifndef Win32
 # ifdef HAVE_SETENV
 	if(setenv("R_SESSION_TMPDIR", tmp, 1))
-	    errorcall(R_NilValue, _("unable to set R_SESSION_TMPDIR"));
+	    Rf_errorcall(R_NilValue, _("unable to set R_SESSION_TMPDIR"));
 # elif defined(HAVE_PUTENV)
 	{
 	    size_t len = strlen(tmp) + 20;
@@ -1756,7 +1756,7 @@ char * R_tmpnam2(const char *prefix, const char *tempdir, const char *fileext)
 #endif
 
     if(strlen(tempdir) + 1 + strlen(prefix) + RAND_WIDTH + strlen(fileext) >= PATH_MAX)
-	error(_("temporary name too long"));
+	Rf_error(_("temporary name too long"));
 
     for (n = 0; n < 100; n++) {
 	/* try a random number at the end.  Need at least 6 hex digits */
@@ -1771,10 +1771,10 @@ char * R_tmpnam2(const char *prefix, const char *tempdir, const char *fileext)
 	}
     }
     if(!done)
-	error(_("cannot find unused tempfile name"));
+	Rf_error(_("cannot find unused tempfile name"));
     res = static_cast<char *>( malloc((strlen(tm)+1) * sizeof(char)));
     if(!res)
-	error(_("allocation failed in R_tmpnam2"));
+	Rf_error(_("allocation failed in R_tmpnam2"));
     strcpy(res, tm);
     return res;
 }
@@ -1783,14 +1783,14 @@ SEXP attribute_hidden do_proctime(/*const*/ rho::Expression* call, const rho::Bu
 {
     SEXP ans, nm;
 
-    PROTECT(ans = allocVector(REALSXP, 5));
-    PROTECT(nm = allocVector(STRSXP, 5));
+    PROTECT(ans = Rf_allocVector(REALSXP, 5));
+    PROTECT(nm = Rf_allocVector(STRSXP, 5));
     R_getProcTime(REAL(ans));
-    SET_STRING_ELT(nm, 0, mkChar("user.self"));
-    SET_STRING_ELT(nm, 1, mkChar("sys.self"));
-    SET_STRING_ELT(nm, 2, mkChar("elapsed"));
-    SET_STRING_ELT(nm, 3, mkChar("user.child"));
-    SET_STRING_ELT(nm, 4, mkChar("sys.child"));
+    SET_STRING_ELT(nm, 0, Rf_mkChar("user.self"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("sys.self"));
+    SET_STRING_ELT(nm, 2, Rf_mkChar("elapsed"));
+    SET_STRING_ELT(nm, 3, Rf_mkChar("user.child"));
+    SET_STRING_ELT(nm, 4, Rf_mkChar("sys.child"));
     setAttrib(ans, R_NamesSymbol, nm);
     setAttrib(ans, R_ClassSymbol, mkString("proc_time"));
     UNPROTECT(2);
@@ -1890,14 +1890,14 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
 #endif
 
     if (!Rf_isString(x = paths_))
-	error(_("invalid '%s' argument"), "paths");
+	Rf_error(_("invalid '%s' argument"), "paths");
     if (!XLENGTH(x)) return Rf_allocVector(STRSXP, 0);
     dirmark = Rf_asLogical(dirmark_);
     if (dirmark == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "dirmark");
 #ifndef GLOB_MARK
     if (dirmark)
-	error(_("'dirmark = TRUE' is not supported on this platform"));
+	Rf_error(_("'dirmark = TRUE' is not supported on this platform"));
 #endif
 
     for (i = 0; i < XLENGTH(x); i++) {
@@ -1909,7 +1909,7 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
 			GLOB_QUOTE | (initialized ? GLOB_APPEND : 0),
 			NULL, &globbuf);
 	if (res == GLOB_NOSPACE)
-	    error(_("internal out-of-memory condition"));
+	    Rf_error(_("internal out-of-memory condition"));
 #else
 	res = glob(Rf_translateChar(el),
 # ifdef GLOB_MARK

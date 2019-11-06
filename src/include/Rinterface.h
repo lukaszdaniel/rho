@@ -85,11 +85,13 @@ extern char *R_Home;		    /* Root of the R tree */
 # define jump_to_toplevel	Rf_jump_to_toplevel
 # define mainloop		Rf_mainloop
 # define onintr			Rf_onintr
+# define onintrNoResume		Rf_onintrNoResume
 #endif /* R_NO_REMAP */
 
 void NORET jump_to_toplevel(void);
 void Rf_mainloop(void);
 void Rf_onintr(void);
+void Rf_onintrNoResume(void);
 
 void process_site_Renviron(void);
 void process_system_Renviron(void);

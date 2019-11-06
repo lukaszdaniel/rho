@@ -968,8 +968,7 @@ SEXP attribute_hidden do_math2(Expression* call,
     case 26: return Math2(args, psigamma);
 
     default:
-	errorcall(call,
-		  _("unimplemented real function of %d numeric arguments"), 2);
+	error(_("unimplemented real function of %d numeric arguments"), 2);
     }
     return nullptr;			/* never used; to keep -Wall happy */
 }
@@ -1166,7 +1165,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #define SETUP_Math3						\
     if (!isNumeric(sa) || !isNumeric(sb) || !isNumeric(sc))	\
-	errorcall(lcall, R_MSG_NONNUM_MATH);			\
+	error(R_MSG_NONNUM_MATH);			        \
 								\
     na = XLENGTH(sa);						\
     nb = XLENGTH(sb);						\
@@ -1249,8 +1248,7 @@ SEXP attribute_hidden do_math3(Expression* call,
     case 44:  return Math3B(args, bessel_k_ex);
 
     default:
-	errorcall(call,
-		  _("unimplemented real function of %d numeric arguments"), 3);
+	error(_("unimplemented real function of %d numeric arguments"), 3);
     }
     return nullptr;			/* never used; to keep -Wall happy */
 } /* do_math3() */

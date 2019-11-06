@@ -216,7 +216,7 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
 
     PROTECT(text = coerceVector(text_, STRSXP));
     if(Rf_length(text_) && !Rf_length(text))
-	errorcall(call, _("coercion of 'text' to character was unsuccessful"));
+	error(_("coercion of 'text' to character was unsuccessful"));
     prompt = prompt_;
     source = srcfile_;
     if(!isString(encoding_) || Rf_length(encoding_) != 1)

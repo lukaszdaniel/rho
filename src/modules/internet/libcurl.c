@@ -794,12 +794,14 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
     if (!new->connclass) {
 	free(new);
 	error(_("allocation of url connection failed"));
+        /* for Solaris 12.5 */ new = NULL;
     }
     strcpy(new->connclass, "url-libcurl");
     new->description = (char *) malloc(strlen(description) + 1);
     if (!new->description) {
 	free(new->connclass); free(new);
 	error(_("allocation of url connection failed"));
+        /* for Solaris 12.5 */ new = NULL;
     }
     init_con(new, description, CE_NATIVE, mode);
     new->canwrite = FALSE;
@@ -813,6 +815,7 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
     if (!new->connprivate) {
 	free(new->description); free(new->connclass); free(new);
 	error(_("allocation of url connection failed"));
+        /* for Solaris 12.5 */ new = NULL;
     }
     RCurlconn ctxt = (RCurlconn) new->connprivate;
     ctxt->bufsize = 2 * CURL_MAX_WRITE_SIZE;
@@ -821,6 +824,7 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
 	free(new->description); free(new->connclass); free(new->connprivate);
 	free(new);
 	error(_("allocation of url connection failed"));
+	/* for Solaris 12.5 */ new = NULL;
     }
     return new;
 #else

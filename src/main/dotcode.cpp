@@ -598,7 +598,7 @@ SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 #undef CASE_STATEMENT
 
     default:
-	errorcall(call, _("too many arguments, sorry"));
+	Rf_errorcall(call, _("too many arguments, sorry"));
     }
     return retval;
 }
@@ -622,18 +622,56 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 
     for(nargs = 0, pargs = args ; pargs != R_NilValue; pargs = CDR(pargs)) {
 	if (nargs == MAX_ARGS)
-	    errorcall(call, _("too many arguments in foreign function call"));
+	    Rf_errorcall(call, _("too many arguments in foreign function call"));
 	cargs[nargs] = CAR(pargs);
 	nargs++;
     }
     if(symbol.symbol.call && symbol.symbol.call->numArgs > -1) {
 	if(symbol.symbol.call->numArgs != nargs)
-	    errorcall(call,
+	    Rf_errorcall(call,
 		      _("Incorrect number of arguments (%d), expecting %d for '%s'"),
 		      nargs, symbol.symbol.call->numArgs, buf);
     }
 
-    retval = R_doDotCall(ofun, nargs, cargs, call);
+    if (R_check_constants < 4)
+	retval = R_doDotCall(ofun, nargs, cargs, call);
+    else {
+	SEXP *cargscp = (SEXP *) R_alloc(nargs, sizeof(SEXP));
+	int i;
+	for(i = 0; i < nargs; i++)
+	    cargscp[i] = PROTECT(duplicate(cargs[i]));
+	retval = PROTECT(R_doDotCall(ofun, nargs, cargs, call));
+	Rboolean constsOK = TRUE;
+	for(i = 0; constsOK && i < nargs; i++)
+	    /* 39: not numerical comparison, not single NA, not attributes as
+               set, do ignore byte-code, do ignore environments of closures,
+               not ignore srcref
+
+               srcref is not ignored because ignoring it is expensive
+               (it triggers duplication)
+	    */
+            if (!R_compute_identical(cargs[i], cargscp[i], 39)
+		    && !R_checkConstants(FALSE))
+		constsOK = FALSE;
+	if (!constsOK) {
+	    REprintf("ERROR: detected compiler constant(s) modification after"
+		" .Call invocation of function %s from library %s (%s).\n",
+		buf,
+		symbol.dll ? symbol.dll->name : "unknown",
+		symbol.dll ? symbol.dll->path : "unknown");
+	    for(i = 0; i < nargs; i++)
+		if (!R_compute_identical(cargs[i], cargscp[i], 39))
+		    REprintf("NOTE: .Call function %s modified its argument"
+			" (number %d, type %s, length %d)\n",
+			buf,
+			i + 1,
+			CHAR(Rf_type2str(TYPEOF(cargscp[i]))),
+			Rf_length(cargscp[i])
+		    );
+	    R_Suicide("compiler constants were modified (in .Call?)!\n");
+	}
+	UNPROTECT(nargs + 1);
+    }
     vmaxset(vmax);
     return retval;
 }

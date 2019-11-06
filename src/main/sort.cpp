@@ -186,7 +186,7 @@ SEXP attribute_hidden do_isunsorted(/*const*/ Expression* call, const BuiltInFun
 {
     int strictly = asLogical(strictly_);
     if(strictly == NA_LOGICAL)
-	errorcall(call, _("invalid '%s' argument"), "strictly");
+	error(_("invalid '%s' argument"), "strictly");
     if(isVectorAtomic(x)) {
 	UNPROTECT(1);
 	return (xlength(x) < 2) ? ScalarLogical(FALSE) :

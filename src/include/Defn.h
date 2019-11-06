@@ -461,6 +461,7 @@ void resetTimeLimits(void);
 
 extern attribute_hidden int R_jit_enabled;
 extern attribute_hidden int R_compile_pkgs;
+extern attribute_hidden int R_check_constants;
 extern SEXP R_cmpfun(SEXP);
 extern void R_init_jit_enabled(void);
 extern void R_initAsignSymbols(void);
@@ -602,6 +603,7 @@ LibExtern SEXP R_LogicalNAValue;
 # define NewEnvironment		Rf_NewEnvironment
 # define OneIndex		Rf_OneIndex
 # define onintr			Rf_onintr
+# define onintrNoResume		Rf_onintrNoResume
 # define onsigusr1              Rf_onsigusr1
 # define onsigusr2              Rf_onsigusr2
 # define parse			Rf_parse
@@ -799,6 +801,7 @@ SEXP Rf_mkPROMISE(SEXP, SEXP);
 SEXP Rf_mkTrue(void);
 SEXP Rf_NewEnvironment(SEXP, SEXP, SEXP);
 void Rf_onintr(void);
+void Rf_onintrNoResume(void);
 RETSIGTYPE Rf_onsigusr1(int);
 RETSIGTYPE Rf_onsigusr2(int);
 R_xlen_t Rf_OneIndex(SEXP, SEXP, R_xlen_t, int, SEXP*, int, SEXP);

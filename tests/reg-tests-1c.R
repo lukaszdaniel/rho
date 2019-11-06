@@ -182,7 +182,7 @@ dbeta(0.1, 9,  9.9e307)
 dbeta(0.1, 9.9e307, 10)
 ## first two hung in R <= 3.0.2
 
-## PR#15465
+## PR#15465 (0-extent matrix / data frame)
 provideDimnames(matrix(nrow = 0, ncol = 1))
 provideDimnames(table(character()))
 as.data.frame(table(character()))
@@ -1724,6 +1724,38 @@ stopifnot(vapply(ldd, units, "") == "secs",
 	  vapply(ldd, class, "") == "difftime",
 	  lengths(c(list(d), ldd)) == c(11:8, 11-7))
 ## was losing time units in R <= 3.3.0
+
+
+## sample(NA_real_) etc
+for(xx in list(NA, NA_integer_, NA_real_, NA_character_, NA_complex_, "NA", 1i))
+    stopifnot(identical(xx, sample(xx)))
+## error in R <= 3.3.1
+
+
+## merge.data.frame with names matching order()'s arguments (PR#17119)
+nf <- names(formals(order))
+nf <- nf[nf != "..."]
+v1 <- c(1,3,2)
+v2 <- c(4,2,3)
+for(nm in nf)  {
+    cat(nm,":\n")
+    mdf <- merge(
+        as.data.frame(setNames(list(v1), nm=nm)),
+        as.data.frame(setNames(list(v2), nm=nm)), all = TRUE)
+    stopifnot(identical(mdf,
+                        as.data.frame(setNames(list(0+ 1:4), nm=nm))))
+}
+## some were wrong, others gave an error in R <= 3.3.1
+
+
+## PR#16936: table() dropping "NaN" level & 'exclude' sometimes failing
+(fN1 <- factor(c("NA", NA, "NbN", "NaN")))
+(tN1 <- table(fN1)) ##--> was missing 'NaN'
+(fN <- factor(c(rep(c("A","B"), 2), NA), exclude = NULL))
+(tN <- table(fN, exclude = "B")) ## had extraneous "B"
+stopifnot(identical(c(tN1), c(`NA`=1L, `NaN`=1L, NbN=1L)),
+	  identical(c(tN),  structure(2:1, .Names = c("A", NA))))
+## both failed in R <= 3.3.1
 
 
 

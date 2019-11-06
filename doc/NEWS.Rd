@@ -52,10 +52,10 @@
       \item \code{xy.coords()} and \code{xyz.coords()} get new
       \code{setLab} option.
 
-      \item \code{sort.list()}, \code{order()} and \code{sort.int()}
-      \code{method} argument gains an \code{"auto"} option (the default)
-      which should behave the same as before when \code{method} was left
-      missing.
+      \item The \code{method} argument of \code{sort.list()},
+      \code{order()} and \code{sort.int()} gains an \code{"auto"} option
+      (the default) which should behave the same as before when
+      \code{method} was left missing.
 
       \item \code{stopifnot(E, ..)} now reports differences when
       \code{E} is a call to \code{all.equal()} and that is not true.
@@ -65,10 +65,10 @@
       \code{split.default()} which itself newly gets \code{lex.order} to
       pass to \code{interaction()} for more flexibility.
 
-      \item The \code{plot} method for \code{ppr} got enhanced default
+      \item The \code{plot} method for \code{ppr} has enhanced default
       labels (xmin and main).
 
-      \item \code{sample.int()} got an explicit \code{useHash} option
+      \item \code{sample.int()} gains an explicit \code{useHash} option
       (with a back compatible default).
 
       \item \code{identical()} gets an \code{ignore.srcref} option
@@ -83,8 +83,8 @@
       directly, gets a \code{hatvalues()} method and keeps \code{tol} in
       result.
 
-      \item \code{addNA()} is faster now, e.g., when applied twice;
-      (part of \PR{16895}).
+      \item \code{addNA()} is faster now, e.g., when applied twice.
+      (Part of \PR{16895}.)
 
       \item New option \code{rstandard(<lm>, type = "predicted")}
       provides the \dQuote{PRESS}-related leave-one-out
@@ -98,16 +98,52 @@
       inspired by Mikko Korpela's proposal in \PR{16527}.
 
       \item Illegal factors, e.g., with duplicated levels (illegal but
-      constructable) now give a warning when printed, via new
-      \code{.valid.factor}.
+      constructable) now give a warning when printed, via new function
+      \code{.valid.factor()}.
 
       \item \code{sessionInfo()} has been updated for Apple's change in
-      OS naming as from \sQuote{10.12} (\sQuote{macOS Sierra}).
+      OS naming as from \sQuote{10.12} (\sQuote{macOS Sierra} \emph{vs}
+      \sQuote{OS X El Capitan}).
 
       Its \code{toLatex()} method now includes the \code{running}
       component.
+
+      \item \code{options("interrupt")} can be used to specify a default
+      action for user interrupts.  For now, if this option is not set
+      and the \code{error} option is set, then an unhandled user
+      interrupt invokes the \code{error} option.  This may be dropped in
+      the future as \code{interrupt} conditions are not \code{error}
+      conditions.
+
+      \item In most cases user interrupt handlers will be called with a
+      \code{"resume"} restart available.  Handlers can invoke this
+      restart to resume computation. At the browser prompt the \code{r}
+      command will invoke a \code{"resume"} restart if one is
+      available. Some read operations cannot be resumed properly when
+      interrupted and do not provide a \code{"resume"} restart.
+
+      \item Radix sort is now the \code{"auto"} algorithm for
+      \code{sort.int()} for double vectors (and hence used for
+      \code{sort()} for unclassed double vectors), excluding
+      \sQuote{long} vectors.
+
+      \code{sort.int(method = "radix")} no longer rounds double vectors.
+
+      \item The \code{default} and \code{data.frame} methods for
+      \code{stack()} preserve the names of empty elements in the levels
+      of the \code{ind} column of the return value.  Set the new
+      \code{drop} argument to \code{TRUE} for the previous behavior.
+
+      \item Speedup in \code{simplify2array()} and hence \code{sapply()} and
+      \code{mapply()} (for the case of names and common length > 1),
+      thanks to Suharto Anggono's \PR{17118}.
+
+      %% Would need more work (notably in  ../src/main/sort.c )
+      %% \item New \code{orderL(lst, ....)} for use in \code{do.call()} to
+      %% avoid the name problem seen in \PR{17119}.
     }
   }
+
   \subsection{INSTALLATION and INCLUDED SOFTWARE}{
     \itemize{
       \item \code{readline} headers (and not just the library) are
@@ -117,31 +153,58 @@
       binary builds.  The \file{tcltk*.chm} help file is no longer
       included; please consult the online help at
       \url{http://www.tcl.tk/man/} instead.
+
+      \item \command{configure} now adds a compiler switch for C++11
+      code, even if the compiler supports C++11 by default.  (This
+      ensures that \command{gcc} 6.x uses C++11 mode and not its default
+      C++14 mode.)
+
+      \item \command{configure} now tests for a C++14-compliant compiler
+      by testing some basic features.  This by default tries flags for
+      the compiler specified by \samp{CXX}, but an alternative compiler,
+      options and standard can be specified by variables \samp{CXX1Y},
+      \samp{CXX1YFLAGS} and \samp{CXX1YSTD} (e.g., \samp{-std=gnu++14}).
     }
   }
+
+  \subsection{PACKAGE INSTALLATION}{
+    \itemize{
+      \item There is support for compiling C++14 code in packages on
+      suitable platforms: see \sQuote{Writing R Extensions} for how to
+      request this.
+
+      \item There is a new macro \code{CXXSTD} to help specify the
+      standard for C++ code, e.g.\sspace{}\code{-std=c++98}.  This makes
+      it easier to work with compilers which default to a later
+      standard: with \code{CXX=g++6 CXXSTD=-std=c++98}
+      \command{configure} will select commands for g++ 6.x which conform
+      to C++11 and C++14 where specified but otherwise use C++98.
+    }
+  }
+
+  \subsection{UTILITIES}{
+    \itemize{
+      \item Running \command{R CMD check --as-cran} with
+      \env{_R_CHECK_CRAN_INCOMING_REMOTE_} false now skips tests that
+      require remote access.  The remaining (local) tests typically
+      run very quickly compared to the remote tests.
+    }
+  }
+
   \subsection{DEPRECATED AND DEFUNCT}{
     \itemize{
-      \item The deprecated support for PCRE versions 8.10 to 8.31 will
-      be removed prior to \R 3.4.0.
-
       \item (Windows only) Function \code{setInternet2()} is defunct.
-      
+
       \item Installation support for \code{readline} emulations based on
       \code{editline} (aka \code{libedit}) is deprecated.
     }
   }
+
   \subsection{BUG FIXES}{
     \itemize{
       \item Getting or setting \code{body()} or \code{formals()} on
       non-functions for now signals a warning and may become an error
       for setting.
-
-      \item When a class name matches multiple classes in the cache,
-      perform a dynamic search in order to obey namespace imports. This
-      should eliminate annoying messages about multiple hits in the
-      class cache. Also, pass along the package from the
-      \code{ClassExtends} object when looking up superclasses in the
-      cache.
 
       \item \code{match(x, t)}, \code{duplicated(x)} and
       \code{unique(x)} work as documented for complex numbers with \code{NA}s
@@ -157,7 +220,7 @@
 
       \item Rotated symbols in plotmath expressions are now positioned
       correctly on \code{x11(type = "Xlib")}. (\PR{16948})
-      
+
       \item \code{as<-()} avoids an infinite loop when a virtual class
       is interposed between a subclass and an actual superclass.
 
@@ -167,12 +230,30 @@
       \item Fix S3 dispatch on S4 objects when the \pkg{methods} package is
       not attached.
 
-      \item Internal S4 dispatch sets \code{.Generic} in the method frame for
-      consistency with \code{standardGeneric()} (\PR{16929}).
+      \item Internal S4 dispatch sets \code{.Generic} in the method
+      frame for consistency with \code{standardGeneric()}.  (\PR{16929})
 
-      \item Fix \code{order(x, decreasing=TRUE)} when \code{x} is an
-      integer vector containing \code{MAX_INT}. Ported from a fix Matt
+      \item Fix \code{order(x, decreasing = TRUE)} when \code{x} is an
+      integer vector containing \code{MAX_INT}.  Ported from a fix Matt
       Dowle made to \CRANpkg{data.table}.
+
+      \item Fix caching by \code{callNextMethod()}, resolves \PR{16973}
+      and \PR{16974}.
+
+      \item \code{grouping()} puts NAs last, to be consistent with the
+      default behavior of \code{order()}.
+
+      \item Point mass limit cases: \code{qpois(-2, 0)} now gives
+      \code{NaN} with a warning and \code{qgeom(1, 1)} is \code{0}.
+      (\PR{16972})
+
+      \item Package installation into a library where the package exists
+      via symbolic link now should work wherever \code{\link{Sys.readlink}()}
+      works, resolving \PR{16725}.
+
+      \item \code{table()} no longer drops an \code{"NaN"} factor level,
+      and better obeys \code{exclude = <chr>}, thanks to Suharto Anggono's
+      patch for \PR{16936}.% to be backported
     }
   }
 }
@@ -182,6 +263,10 @@
     \itemize{
       \item \code{extSoftVersion()} now reports the version (if any) of
       the \code{readline} library in use.
+
+      \item Convenience function \code{hasName()} has been added; it
+      is intended to replace the common idiom \code{!is.null(x$name)}
+      without the usually unintended partial name matching.
     }
   }
 
@@ -192,6 +277,37 @@
       \code{readline}: code has been added using a explicit signal
       handler to work around that (when \R is compiled against readline
       >= 6.3).  (\PR{16604})
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item The check for non-portable flags in \command{R CMD check}
+      could be stymied by \file{src/Makevars} files which contained
+      targets.
+
+      \item (Windows only) When using certain desktop themes in Windows
+      7 or higher, \kbd{Alt-Tab} could cause \command{Rterm} to stop
+      accepting input.  (\PR{14406}; patch submitted by Jan Gleixner.)
+
+      \item \code{pretty(d, ..)} behaves better for date-time \code{d}
+      (\PR{16923}).
+
+      \item When a class name matches multiple classes in the cache,
+      perform a dynamic search in order to obey namespace imports.  This
+      should eliminate annoying messages about multiple hits in the
+      class cache.  Also, pass along the package from the
+      \code{ClassExtends} object when looking up superclasses in the
+      cache.
+
+      \item \code{sample(NA_real_)} now works.
+
+      \item Packages using non-ASCII encodings in their code did not
+      install data properly on systems using different encodings.
+
+      \item \code{merge(df1, df2)} now also works for data frames with
+      column names \code{"na.last"}, \code{"decreasing"}, or
+      \code{"method"}.  (\PR{17119})
     }
   }
 }
@@ -219,7 +335,7 @@
 
       \item \code{pretty(d, ..)} for date-time \code{d} rarely failed
       when \code{"halfmonth"} time steps were tried (\PR{16923}) and
-      on \sQuote{inaccurate} platforms such as 32-bit windows or
+      on \sQuote{inaccurate} platforms such as 32-bit Windows or
       a configuration with \command{--disable-long-double}; see comment
       #15 of \PR{16761}.
 

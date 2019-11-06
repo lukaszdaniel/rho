@@ -1,6 +1,6 @@
 ### R.m4 -- extra macros for configuring R		-*- Autoconf -*-
 ###
-### Copyright (C) 1998-2015 R Core Team
+### Copyright (C) 1998-2016 R Core Team
 ###
 ### This file is part of R.
 ###
@@ -3262,7 +3262,7 @@ if test "x${r_cv_have_bzlib}" = xno; then
 fi
 AC_MSG_CHECKING([whether bzip2 support suffices])
 if test "x${have_bzlib}" = xyes; then
-  AC_MSG_RESULT([no])
+  AC_MSG_RESULT([yes])
   LIBS="-lbz2 ${LIBS}"
 else
   AC_MSG_ERROR([bzip2 library and headers are required])
@@ -3666,13 +3666,19 @@ done
 ])# R_CHECK_FUNCS
 
 ## R_GCC4_VISIBILITY
-## Sets up suitable macros for visibility attributes in gcc4/gfortran
+## Sets up suitable macros for visibility attributes in gcc/gfortran
+## Also accepted on clang (which defines __GNUC__). 
+## Intel also defines __GNUC__ but is excluded below, and
+## Solaris <= 12.4 rejected -Werror, but 12.5 did not.
 AC_DEFUN([R_GCC4_VISIBILITY],
 [AC_CACHE_CHECK([whether __attribute__((visibility())) is supported],
                 [r_cv_visibility_attribute],
 [cat > conftest.c <<EOF
 int foo __attribute__ ((visibility ("hidden"))) = 1;
 int bar __attribute__ ((visibility ("default"))) = 1;
+#ifndef __GNUC__
+# error unsupported compiler
+#endif
 EOF
 r_cv_visibility_attribute=no
 if AC_TRY_COMMAND(${CC-cc} -Werror -S conftest.c -o conftest.s 1>&AS_MESSAGE_LOG_FD); then
@@ -3699,8 +3705,8 @@ if test "${r_cv_prog_cc_vis}" = yes; then
     C_VISIBILITY="-fvisibility=hidden"
   fi
 fi
-## Need to exclude Intel compilers, where this does not work.
-## The flag is documented, and is effective but also hides
+## Need to exclude Intel compilers, where this does not work correctly.
+## The flag is documented and is effective, but also hides
 ## unsatisfied references. We cannot test for GCC, as icc passes that test.
 case  "${CC}" in
   ## Intel compiler: note that -c99 may have been appended
@@ -4096,6 +4102,62 @@ if test "x${r_cv_working_mktime}" = xyes; then
 fi
 ])# R_FUNC_MKTIME
 
+## R_CXX1X
+## -------
+## Support for C++11 or later, for use in packages.
+## R_CXX1X(VERSION, PREFIX, DEFAULT)
+AC_DEFUN([R_CXX1X],
+[r_save_CXX="${CXX}"
+r_save_CXXFLAGS="${CXXFLAGS}"
+
+: ${$2=${CXX}}
+: ${$2FLAGS=${CXXFLAGS}}
+: ${$2PICFLAGS=${CXXPICFLAGS}}
+
+CXX="${$2} ${$2STD}"
+CXXFLAGS="${$2FLAGS} ${$2PICFLAGS}"
+AC_LANG_PUSH([C++])dnl
+AX_CXX_COMPILE_STDCXX([$1], [noext], [optional])
+AC_LANG_POP([C++])dnl Seems the macro does not always get this right
+CXX="${r_save_CXX}"
+CXXFLAGS="${r_save_CXXFLAGS}"
+if test "${HAVE_CXX$1}" = "1"; then
+dnl for aesthetics avoid leading space
+  if test "${$2STD}"x = "x";  then
+    $2STD="${switch}"
+  else
+    $2STD="${$2STD} ${switch}"
+  fi
+else
+  $2=""
+  $2STD=""
+  $2FLAGS=""
+  $2PICFLAGS=""
+fi
+
+AC_SUBST($2)
+AC_SUBST($2STD)
+AC_SUBST($2FLAGS)
+AC_SUBST($2PICFLAGS)
+if test -z "${SHLIB_$2LD}"; then
+  SHLIB_$2LD="\$($2) \$($2STD)"
+fi
+AC_SUBST(SHLIB_$2LD)
+: ${SHLIB_$2LDFLAGS=${SHLIB_CXXLDFLAGS}}
+AC_SUBST(SHLIB_$2LDFLAGS)
+
+AC_ARG_VAR([$2], [C++$1 compiler command])
+AC_ARG_VAR([$2STD],
+           [special flag for compiling and for linking C++$1 code, e.g. -std=c++$1])
+AC_ARG_VAR([$2FLAGS], [C++$1 compiler flags])
+AC_ARG_VAR([$2PICFLAGS],
+           [special flags for compiling C++$1 code to be turned into a
+            shared object])
+AC_ARG_VAR([SHLIB_$2LD],
+           [command for linking shared objects which contain object
+            files from the C++$1 compiler])
+AC_ARG_VAR([SHLIB_$2LDFLAGS], [special flags used by SHLIB_$2LD])
+])# R_CXX1X
 
 ## R_LIBCURL
 ## ----------------
@@ -4116,7 +4178,7 @@ if test -n "${CURL_CONFIG}"; then
     CURL_LIBS=`${CURL_CONFIG} --libs`
   fi
 fi
-r_save_CPPFLAGS="${CPPLAGS}"
+r_save_CPPFLAGS="${CPPFLAGS}"
 CPPFLAGS="${CURL_CPPFLAGS} ${CPPFLAGS}"
 r_save_LIBS="${LIBS}"
 LIBS="${CURL_LIBS} ${LIBS}"

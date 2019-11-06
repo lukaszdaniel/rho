@@ -55,7 +55,7 @@ namespace rho {
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
     if (i < 0 || i >= XLENGTH(x))
-	error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"),
+	Rf_error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"),
 	      i, XLENGTH(x));
 
     /*  we need to allow vector-like types here */
@@ -68,7 +68,7 @@ SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 	(*ev)[i] = v;
 	return v;
     } else {
-	error("%s() can only be applied to a '%s', not a '%s'",
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "SET_VECTOR_ELT", "list", Rf_type2char(TYPEOF(x)));
     }
 }

@@ -86,11 +86,11 @@ SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFuncti
 
     Environment* eenv = downcast_to_env(eval_env_);
     if (!eenv)
-	errorcall(call, _("invalid '%s' argument"), "eval.env");
+	error(_("invalid '%s' argument"), "eval.env");
 
     Environment* aenv = downcast_to_env(assign_env_);
     if (!aenv)
-	errorcall(call, _("invalid '%s' argument"), "assign.env");
+	error(_("invalid '%s' argument"), "assign.env");
 
     defineVar(name, mkPROMISE(expr, eenv), aenv);
     return R_NilValue;
@@ -567,9 +567,8 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 		}
 #endif
 		else
-		    errorcall(call,
-			      _("argument %d (type '%s') cannot be handled by 'cat'"),
-			      1+iobj, type2char(TYPEOF(s)));
+		error(_("argument %d (type '%s') cannot be handled by 'cat'"),
+		      1+iobj, type2char(TYPEOF(s)));
 		/* FIXME : cat(...) should handle ANYTHING */
 		size_t w = strlen(p);
 		cat_sepwidth(sepr, &sepw, ntot);

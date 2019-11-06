@@ -42,7 +42,6 @@ using namespace rho;
 #include <float.h> // for DBL_MAX
 
 #define R_MSG_type	_("invalid 'type' (%s) of argument")
-#define imax2(x, y) ((x < y) ? y : x)
 
 #define R_INT_MIN	(1+INT_MIN)
 	/* since INT_MIN is the NA_INTEGER value ! */
@@ -970,13 +969,13 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	    error(_("invalid input type"));
 	}
 	if(type > anstype) anstype = type;
-	n = xlength(x);
+	n = Rf_xlength(x);
 	if ((len > 0) ^ (n > 0)) {
 	    // till 2.15.0:  error(_("cannot mix 0-length vectors with others"));
 	    len = 0;
 	    break;
 	}
-	len = imax2(len, n);
+	len = std::max(len, n);
     }
 
     if (num_args == 1)

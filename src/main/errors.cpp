@@ -143,7 +143,8 @@ void R_CheckUserInterrupt(void)
 }
 
 static SEXP getInterruptCondition();
-void Rf_onintr()
+
+static void onintrEx(Rboolean resumeOK)
 {
     if (R_interrupts_suspended) {
 	R_interrupts_pending = 1;
@@ -151,25 +152,33 @@ void Rf_onintr()
     }
     else R_interrupts_pending = 0;
 
-    SEXP hooksym = install(".signalInterrupt");
+    SEXP hooksym = Rf_install(".signalInterrupt");
     if (SYMVALUE(hooksym) != R_UnboundValue) {
 	int resume = FALSE;
 	SEXP cond, hcall;
 	PROTECT(cond = getInterruptCondition());
 	PROTECT(hcall = LCONS(hooksym, LCONS(cond, R_NilValue)));
-	resume = asLogical(eval(hcall, R_GlobalEnv));
+	resume = Rf_asLogical(Rf_eval(hcall, R_GlobalEnv));
 	UNPROTECT(2);
 	if (resume) return;
     }
     else signalInterrupt();
 
+    /* Interrupts do not inherit from error, so we should not run the
+       user erro handler. But we have been, so as a transition,
+       continue to use options('error') if options('interrupt') is not
+       set */
+    Rboolean tryUserError = Rboolean(Rf_GetOption1(Rf_install("interrupt")) == R_NilValue);
+
     REprintf("\n");
-    /* Attempt to run user error option, save a traceback, show
-       warnings, and reset console; also stop at restart (try/browser)
-       frames.  Not clear this is what we really want, but this
-       preserves current behavior */
-    jump_to_top_ex(TRUE, TRUE, TRUE, TRUE, FALSE);
+    /* Attempt to save a traceback, show warnings, and reset console;
+       also stop at restart (try/browser) frames.  Not clear this is
+       what we really want, but this preserves current behavior */
+    jump_to_top_ex(TRUE, tryUserError, TRUE, TRUE, FALSE);
 }
+
+void Rf_onintr()  { onintrEx(TRUE); }
+void Rf_onintrNoResume() { onintrEx(FALSE); }
 
 /* SIGUSR1: save and quit
    SIGUSR2: save and quit, don't run .Last or on.exit().
@@ -188,7 +197,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr1(int dummy)
 
     inError = 1;
 
-    if(R_CollectWarnings) PrintWarnings();
+    if(R_CollectWarnings) Rf_PrintWarnings();
 
     R_ResetConsole();
     R_FlushConsole();
@@ -576,9 +585,21 @@ const char *R_curErrorBuf() {
 /* temporary hook to allow experimenting with alternate error mechanisms */
 static void (*R_ErrorHook)(SEXP, char *) = nullptr;
 
+
+/* Do not check constants on error more than this number of times per one
+   R process lifetime; if so many errors are generated, the performance
+   overhead due to the checks would be too high, and the program is doing
+   something strange anyway (i.e. running no-segfault tests). The constant
+   checks in GC and session exit (or .Call) do not have such limit. */
+static int allowedConstsChecks = 1000;
+
 static void NORET
 verrorcall_dflt(SEXP call, const char *format, va_list ap)
 {
+    if (allowedConstsChecks > 0) {
+	allowedConstsChecks--;
+	R_checkConstants(TRUE);
+    }
     char *p;
     const char *tr;
     int oldInError;
@@ -888,7 +909,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 
     if(isNull(string) || !n) return string;
 
-    if(!isString(string)) errorcall(call, _("invalid '%s' value"), "string");
+    if(!isString(string)) error(_("invalid '%s' value"), "string");
 
     if(isNull(dots_)) {
 	ClosureContext *cptr
@@ -923,7 +944,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
     } else if(isString(dots_))
 	domain = translateChar(STRING_ELT(dots_,0));
     else if(isLogical(dots_) && LENGTH(dots_) == 1 && LOGICAL(dots_)[0] == NA_LOGICAL) ;
-    else errorcall(call, _("invalid '%s' value"), "domain");
+    else error(_("invalid '%s' value"), "domain");
 
     if(strlen(domain)) {
 	PROTECT(ans = allocVector(STRSXP, n));
@@ -1029,7 +1050,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
     } else if(isString(sdom))
 	domain = CHAR(STRING_ELT(sdom,0));
     else if(isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == NA_LOGICAL) ;
-    else errorcall(call, _("invalid '%s' value"), "domain");
+    else error(_("invalid '%s' value"), "domain");
 
     /* libintl seems to malfunction if given a message of "" */
     if(strlen(domain) && Rf_length(STRING_ELT(msg1, 0))) {
@@ -1053,12 +1074,12 @@ SEXP attribute_hidden do_bindtextdomain(/*const*/ Expression* call, const BuiltI
     char *res;
 
     if(!isString(domain_) || LENGTH(domain_) != 1)
-	errorcall(call, _("invalid '%s' value"), "domain");
+	error(_("invalid '%s' value"), "domain");
     if(isNull(dirname_)) {
 	res = bindtextdomain(translateChar(STRING_ELT(domain_,0)), nullptr);
     } else {
 	if(!isString(dirname_) || LENGTH(dirname_) != 1)
-	    errorcall(call, _("invalid '%s' value"), "dirname");
+	    error(_("invalid '%s' value"), "dirname");
 	res = bindtextdomain(translateChar(STRING_ELT(domain_,0)),
 			     translateChar(STRING_ELT(dirname_,0)));
     }
@@ -1211,12 +1232,15 @@ void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
 	i++;
     }
 
+/* clang pre-3.9.0 says
+      warning: passing an object that undergoes default argument promotion to 
+      'va_start' has undefined behavior [-Wvarargs]
+*/
     va_start(ap, which_warn);
     Rvsnprintf(buf, BUFSIZE, _(WarningDB[i].format), ap);
     va_end(ap);
     warningcall(call, "%s", buf);
 }
-
 
 #ifdef UNUSED
 /* temporary hook to allow experimenting with alternate warning mechanisms */
@@ -1670,10 +1694,16 @@ static void signalInterrupt(void)
 	UNPROTECT(1);
     }
     R_HandlerStack = oldstack;
+
+    SEXP h = GetOption1(install("interrupt"));
+    if (h != R_NilValue) {
+	SEXP call = PROTECT(LCONS(h, R_NilValue));
+	eval(call, R_GlobalEnv);
+    }
 }
 
 void attribute_hidden
-R_InsertRestartHandlers(ClosureContext *cptr, Rboolean browser)
+R_InsertRestartHandlers(ClosureContext *cptr, const char *cname)
 {
     SEXP klass, rho, entry, name;
 
@@ -1686,7 +1716,7 @@ R_InsertRestartHandlers(ClosureContext *cptr, Rboolean browser)
     entry = mkHandlerEntry(klass, rho, nullptr, rho, R_NilValue, TRUE);
     push_handler(entry);
     UNPROTECT(1);
-    PROTECT(name = mkString(browser ? "browser" : "tryRestart"));
+    PROTECT(name = mkString(cname));
     PROTECT(entry = allocVector(VECSXP, 2));
     SET_VECTOR_ELT(entry, 0, name);
     SET_VECTOR_ELT(entry, 1, R_MakeExternalPtr(cptr, R_NilValue, R_NilValue));

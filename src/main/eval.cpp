@@ -2096,6 +2096,7 @@ SEXP R_ClosureExpr(SEXP p)
     return BODY(p);
 }
 
+
 SEXP attribute_hidden do_loadfile(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP file, s;
@@ -2104,11 +2105,11 @@ SEXP attribute_hidden do_loadfile(/*const*/ Expression* call, const BuiltInFunct
     PROTECT(file = Rf_coerceVector(args[0], STRSXP));
 
     if (! Rf_isValidStringF(file))
-	Rf_errorcall(call, _("bad file name"));
+	Rf_error(_("bad file name"));
 
     fp = RC_fopen(STRING_ELT(file, 0), "rb", TRUE);
     if (!fp)
-	Rf_errorcall(call, _("unable to open 'file'"));
+	Rf_error(_("unable to open 'file'"));
     s = R_LoadFromFile(fp, 0);
     fclose(fp);
 
@@ -2127,7 +2128,7 @@ SEXP attribute_hidden do_savefile(/*const*/ Expression* call, const BuiltInFunct
 
     fp = RC_fopen(STRING_ELT(args[1], 0), "wb", TRUE);
     if (!fp)
-	Rf_errorcall(call, _("unable to open 'file'"));
+	Rf_error(_("unable to open 'file'"));
 
     R_SaveToFileV(args[0], fp, INTEGER(args[2])[0], 0);
 
@@ -2154,4 +2155,151 @@ SEXP attribute_hidden do_setmaxnumthreads(/*const*/ Expression* call, const Buil
 	    R_num_math_threads = R_max_num_math_threads;
     }
     return Rf_ScalarInteger(old);
+}
+
+/* R_ConstantsRegistry allows runtime detection of modification of compiler
+   constants. It is a linked list of weak references. Each weak reference
+   refers to a byte-code object (BCODESXPs) as key and to a deep copy of the
+   object's constants as value. The head of the list has a nil payload
+   instead of a weak reference, stays in the list forever, and is a GC root.*/
+static SEXP R_ConstantsRegistry = NULL;
+
+/* A potentially very verbose report for modified compiler constant. */
+static void reportModifiedConstant(SEXP crec, SEXP orig, SEXP copy, int idx)
+{
+    if (R_check_constants < 5)
+	return;
+
+    SEXP consts = VECTOR_ELT(crec, 2);
+    int n = LENGTH(consts);
+    int i;
+    if (idx == -1) {
+	for(i = 0; i < n; i++)
+	    if (VECTOR_ELT(consts, i) == orig) {
+		idx = i;
+		break;
+	    }
+    }
+    int oldout = R_OutputCon; /* redirect standard to error output */
+    R_OutputCon = 2;
+    int oldcheck = R_check_constants; /* guard against recursive invocation */
+    R_check_constants = 0;
+    if (idx != 0) {
+	REprintf(_("ERROR: the modified value of the constant is:\n"));
+	Rf_PrintValue(orig);
+	REprintf(_("ERROR: the original value of the constant is:\n"));
+	Rf_PrintValue(copy);
+	REprintf(_("ERROR: the modified constant is at index %d\n"), idx);
+	REprintf(_("ERROR: the modified constant is in this function body:\n"));
+	Rf_PrintValue(VECTOR_ELT(consts, 0));
+    } else {
+	REprintf(_("ERROR: the modified constant is function body:\n"));
+	Rf_PrintValue(orig);
+	REprintf(_("ERROR: the body was originally:\n"));
+	Rf_PrintValue(copy);
+    }
+    Rf_findFunctionForBody(VECTOR_ELT(consts, 0));
+    R_check_constants = oldcheck;
+    R_OutputCon = oldout;
+}
+
+/* Checks whether compiler constants linked from the given record
+   were modified. */
+static Rboolean checkConstantsInRecord(SEXP crec, Rboolean abortOnError)
+{
+    int i;
+    int n = LENGTH(crec);
+    Rboolean constsOK = TRUE;
+
+    for (i = 3; i < n;) {
+	SEXP corig = VECTOR_ELT(crec, i++);
+	SEXP ccopy = VECTOR_ELT(crec, i++);
+
+	/* 39: not numerical comparison, not single NA, not attributes as
+           set, do ignore byte-code, do ignore environments of closures,
+           not ignore srcref
+
+           srcref is not ignored because ignoring it is expensive
+           (it triggers duplication)
+        */
+	if (!R_compute_identical(corig, ccopy, 39)) {
+
+#ifndef CHECK_ALL_CONSTANTS
+	    REprintf(_("ERROR: modification of compiler constant of type %s, length %d\n"), CHAR(Rf_type2str(TYPEOF(ccopy))), Rf_length(ccopy));
+	    reportModifiedConstant(crec, corig, ccopy, -1);
+#else
+	    int nc = LENGTH(corig);
+	    /* some variables are volatile to prevent the compiler from
+	       optimizing them out, for easier debugging */
+	    volatile int ci;
+	    for(ci = 0; ci < nc; ci++) {
+		volatile SEXP orig = VECTOR_ELT(corig, ci);
+		volatile SEXP copy = VECTOR_ELT(ccopy, ci);
+		if (!R_compute_identical(orig, copy, 39)) {
+		    REprintf(_("ERROR: modification of compiler constant of type %s, length %d\n"),
+			CHAR(type2str(TYPEOF(copy))), length(copy));
+		    reportModifiedConstant(crec, orig, copy, ci);
+		}
+	    }
+#endif
+	    constsOK = FALSE;
+        }
+    }
+
+    if (!constsOK && abortOnError) {
+	/* turn off constant checking to avoid infinite recursion through
+	   R_Suicide -> ... -> R_RunExitFinalizers -> R_checkConstants. */
+	R_check_constants = 0;
+	R_Suicide(_("compiler constants were modified!\n"));
+    }
+
+    return constsOK;
+}
+
+// static void const_cleanup(void *data)
+// {
+//     Rboolean *inProgress = (Rboolean *)data;
+//     *inProgress = FALSE;
+// }
+
+/* Checks if constants of any registered BCODESXP have been modified.
+   Returns TRUE if the constants are ok, otherwise returns false or aborts.*/
+Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
+{
+    if (R_check_constants <= 0 || R_ConstantsRegistry == NULL)
+	return TRUE;
+
+    static Rboolean checkingInProgress = FALSE;
+    //RCNTXT cntxt;
+
+    if (checkingInProgress)
+	/* recursive invocation is possible because of allocation
+           in R_compute_identical */
+	return TRUE;
+
+    /* set up context to recover checkingInProgress */
+    // begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_BaseEnv, R_BaseEnv,
+    //              R_NilValue, R_NilValue);
+    // cntxt.cend = &const_cleanup;
+    // cntxt.cenddata = &checkingInProgress;
+
+    checkingInProgress = TRUE;
+    SEXP prev_crec = R_ConstantsRegistry;
+    SEXP crec = VECTOR_ELT(prev_crec, 0);
+    Rboolean constsOK = TRUE;
+    while(crec != R_NilValue) {
+	SEXP wref = VECTOR_ELT(crec, 1);
+	SEXP bc = R_WeakRefKey(wref);
+	if (!checkConstantsInRecord(crec, abortOnError))
+	    constsOK = FALSE;
+	if (bc == R_NilValue)
+	    /* remove no longer needed record from the registry */
+	    SET_VECTOR_ELT(prev_crec, 0, VECTOR_ELT(crec, 0));
+	else
+            prev_crec = crec;
+	crec = VECTOR_ELT(crec, 0);
+    }
+    // endcontext(&cntxt);
+    checkingInProgress = FALSE;
+    return constsOK;
 }

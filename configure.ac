@@ -249,7 +249,7 @@ fi],
 ## Allow the user to specify building an R framework (Darwin).
 AC_ARG_ENABLE([R-framework],
 [AS_HELP_STRING([--enable-R-framework@<:@=DIR@:>@],[macOS only: build R framework (if possible), and specify
-                 its installation prefix @<:@yes, /Library/Frameworks@:>@])],
+                 its installation prefix @<:@no, /Library/Frameworks@:>@])],
 [want_R_framework="${enableval}"],
 [want_R_framework=no])
 ## Can only build frameworks on Darwin.
@@ -1072,6 +1072,7 @@ case "${host_os}" in
     fi
     ;;
   darwin*)
+    ## which these days mean macOS
     AC_DEFINE(HAVE_NO_SYMBOL_UNDERSCORE)
     ;;
   hpux*)
@@ -1088,6 +1089,7 @@ case "${host_os}" in
     AC_CHECK_LIB(dld, shl_load, [R_XTRA_LIBS="-ldld ${R_XTRA_LIBS}"])
     ;;
   irix*)
+    ## final release in 2006
     R_C_OPTIEEE
     ## <NOTE>
     ## We really should test explictly whether the Fortran and C++
@@ -1196,6 +1198,7 @@ case "${host_os}" in
     fi
     ;;
   osf*)
+    ## does that really still exist?
     AC_DEFINE(HAVE_NO_SYMBOL_UNDERSCORE)
     ;;  
 esac
@@ -1213,6 +1216,7 @@ AC_SUBST(CFLAGS)
 AC_SUBST(MAIN_CFLAGS)
 AC_SUBST(SHLIB_CFLAGS)
 AC_SUBST(CXXFLAGS)
+AC_SUBST(CXXSTD)
 AC_SUBST(SHLIB_CXXFLAGS)
 AC_SUBST(FFLAGS)
 AC_SUBST(SAFE_FFLAGS)
@@ -1798,6 +1802,10 @@ AC_SUBST(FW_VERSION)
 AC_SUBST(STATICR1)
 AC_SUBST(STATICR2)
 AC_SUBST(R_DYLIB_EXT)
+
+## C++11 and later
+R_CXX1X([11], [CXX1X])
+R_CXX1X([14], [CXX1Y])
 
 ### OpenMP.
 
@@ -2855,7 +2863,9 @@ AC_OUTPUT
 ## configure variables to config.status.
 ## </NOTE>
 r_c_compiler="${CC} ${R_XTRA_CFLAGS} ${CFLAGS}"
-r_cxx_compiler="${CXX} ${R_XTRA_CXXFLAGS} ${CXXFLAGS}"
+r_cxx_compiler="${CXX} ${CXXSTD} ${R_XTRA_CXXFLAGS} ${CXXFLAGS}"
+r_cxx1x_compiler="${CXX1X} ${CXX1XSTD} ${CXX1XFLAGS}"
+r_cxx1y_compiler="${CXX1Y} ${CXX1YSTD} ${CXX1YFLAGS}"
 r_f77_compiler="${F77} ${R_XTRA_FFLAGS} ${FFLAGS}"
 r_f95_compiler="${FC} ${FCFLAGS}"
 r_objc_compiler="${OBJC} ${OBJCFLAGS}"
@@ -2992,6 +3002,8 @@ rho is now configured for ${host}
   Fortran 77 compiler:       ${r_f77_compiler}
 
   C++ compiler:              ${r_cxx_compiler}
+  C++11 compiler:            ${r_cxx1x_compiler}
+  C++14 compiler:            ${r_cxx1y_compiler}
   Fortran 90/95 compiler:    ${r_f95_compiler}
   Obj-C compiler:	     ${r_objc_compiler}
 

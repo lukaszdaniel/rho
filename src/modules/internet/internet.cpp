@@ -359,11 +359,13 @@ in_R_newurl(const char *description, const char * const mode, int type)
     if(!newconn->connclass) {
 	free(newconn);
 	error(_("allocation of url connection failed"));
+        /* for Solaris 12.5 */ newconn = NULL;
     }
     newconn->description = (char *) malloc(strlen(description) + 1);
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
 	error(_("allocation of url connection failed"));
+        /* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, description, CE_NATIVE, mode);
     newconn->canwrite = FALSE;
@@ -388,6 +390,7 @@ in_R_newurl(const char *description, const char * const mode, int type)
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
 	error(_("allocation of url connection failed"));
+	/* for Solaris 12.5 */ newconn = NULL;
     }
 
     IDquiet = TRUE;

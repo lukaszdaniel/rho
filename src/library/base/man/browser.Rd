@@ -60,6 +60,10 @@ browser(text = "", condition = NULL, expr = TRUE, skipCalls = 0L)
     \item{\code{s}}{evaluate the next statement, stepping into
       function calls.}
     \item{\code{where}}{print a stack trace of all active function calls.}
+    \item{\code{r}}{invoke a \code{"resume"} restart if one is
+      available; interpreted as an \R expression otherwise. Typically
+      \code{"resume"} restarts are established for continuing from user
+      interrupts.}
     \item{\code{Q}}{exit the browser and the current evaluation and
       return to the top-level prompt.}
   }

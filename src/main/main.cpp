@@ -190,7 +190,7 @@ attribute_hidden   Rboolean latin1locale = FALSE; /* is this a Latin-1 locale? *
 const char* OutDec = ".";  /* decimal point used for output */
 attribute_hidden Rboolean R_DisableNLinBrowser = FALSE;
 attribute_hidden char R_BrowserLastCommand = 'n';
-
+attribute_hidden int R_check_constants = 0;
 attribute_hidden int R_dec_min_exponent		= -308;
 unsigned int max_contour_segments = 25000;
 Rboolean known_to_be_latin1 = FALSE;
@@ -234,13 +234,13 @@ static RObject* R_ReplFile_impl(FILE *fp, SEXP rho)
 	    resetTimeLimits();
 	    count++;
 	    PROTECT(R_CurrentExpr);
-	    R_CurrentExpr = eval(R_CurrentExpr, rho);
+	    R_CurrentExpr = Rf_eval(R_CurrentExpr, rho);
 	    SET_SYMVALUE(R_LastvalueSymbol, R_CurrentExpr);
 	    UNPROTECT(1);
 	    if (R_Visible)
-		PrintValueEnv(R_CurrentExpr, rho);
+		Rf_PrintValueEnv(R_CurrentExpr, rho);
 	    if( R_CollectWarnings )
-		PrintWarnings();
+		Rf_PrintWarnings();
 	    break;
 	case PARSE_ERROR:
 	    R_FinalizeSrcRefState();
@@ -279,10 +279,10 @@ static const char *R_PromptString(int browselevel, int type)
 		snprintf(BrowsePrompt, 20, "Browse[%d]> ", browselevel);
 		return BrowsePrompt;
 	    }
-	    return CHAR(STRING_ELT(GetOption1(install("prompt")), 0));
+	    return CHAR(STRING_ELT(Rf_GetOption1(Rf_install("prompt")), 0));
 	}
 	else {
-	    return CHAR(STRING_ELT(GetOption1(install("continue")), 0));
+	    return CHAR(STRING_ELT(Rf_GetOption1(Rf_install("continue")), 0));
 	}
     }
 }
@@ -404,11 +404,11 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 	    resetTimeLimits();
 	    PROTECT(thisExpr = R_CurrentExpr);
 	    R_Busy(1);
-	    value = eval(thisExpr, rho);
+	    value = Rf_eval(thisExpr, rho);
 	    SET_SYMVALUE(R_LastvalueSymbol, value);
 	    wasDisplayed = R_Visible;
 	    if (R_Visible)
-		PrintValueEnv(value, rho);
+		Rf_PrintValueEnv(value, rho);
 	    if (R_CollectWarnings)
 		PrintWarnings();
 	    Rf_callToplevelHandlers(thisExpr, value, TRUE, wasDisplayed);
@@ -498,7 +498,7 @@ static void check_session_exit()
 	static bool exiting = false;
 	if (exiting)
 	    R_Suicide(_("error during cleanup\n"));
-        if (GetOption1(install("error")) != R_NilValue)
+        if (Rf_GetOption1(Rf_install("error")) != R_NilValue)
             return;
 
         exiting = true;
@@ -561,11 +561,11 @@ int R_ReplDLLdo1(void)
 	PROTECT(R_CurrentExpr);
 	R_Busy(1);
 	lastExpr = R_CurrentExpr;
-	R_CurrentExpr = eval(R_CurrentExpr, rho);
+	R_CurrentExpr = Rf_eval(R_CurrentExpr, rho);
 	SET_SYMVALUE(R_LastvalueSymbol, R_CurrentExpr);
 	wasDisplayed = R_Visible;
 	if (R_Visible)
-	    PrintValueEnv(R_CurrentExpr, rho);
+	    Rf_PrintValueEnv(R_CurrentExpr, rho);
 	if (R_CollectWarnings)
 	    PrintWarnings();
 	Rf_callToplevelHandlers(lastExpr, R_CurrentExpr, TRUE, wasDisplayed);
@@ -665,7 +665,7 @@ static void sigactionSegv(int signum, siginfo_t *ip, void *context)
 	if(intptr_t( R_CStackLimit) != -1) upper += R_CStackLimit;
 	if(diff > 0 && diff < RHOCONSTRUCT(int, upper)) {
 	    REprintf(_("Error: segfault from C stack overflow\n"));
-	    jump_to_toplevel();
+	    Rf_jump_to_toplevel();
 	}
     }
 
@@ -1250,6 +1250,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    SEXP hooksym = install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
 		SEXP hcall;
+		R_Busy(1);
 		PROTECT(hcall = LCONS(hooksym, R_NilValue));
 		eval(hcall, R_GlobalEnv);
 		UNPROTECT(1);
@@ -1338,7 +1339,7 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 		// invoked at top level, but this workaround needs to
 		// be reviewed when arr understands restarts better!
 		if (cptr)
-		    R_InsertRestartHandlers(cptr, TRUE);
+		    R_InsertRestartHandlers(cptr, "browser");
 		R_ReplConsole(rho, savestack);
 	    }
 	    catch (ReturnException& rx) {
@@ -1401,7 +1402,7 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
 	return R_NilValue;
     }
     if( !isString(save_) )
-	errorcall(call, _("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));
+	error(_("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));
     tmp = CHAR(STRING_ELT(save_, 0)); /* ASCII */
     if( !strcmp(tmp, "ask") ) {
 	ask = SA_SAVEASK;
@@ -1414,7 +1415,7 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
     else if( !strcmp(tmp, "default") )
 	ask = SA_DEFAULT;
     else
-	errorcall(call, _("unrecognized value of 'save'"));
+	error(_("unrecognized value of 'save'"));
     status = asInteger(status_);
     if (status == NA_INTEGER) {
 	warning(_("invalid 'status', 0 assumed"));

@@ -53,6 +53,8 @@ SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
     if (n == 0)
 	return(R_GlobalEnv);
 
+    if (n == NA_INTEGER) Rf_error(_("NA argument is invalid"));
+
     if (n > 0)
 	n = framedepth(cptr) - n;
     else

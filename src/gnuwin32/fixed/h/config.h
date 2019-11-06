@@ -1,19 +1,3 @@
-/* $Id$
- *
- * This file is part of Rho, a project to refactor the R interpreter
- * into C++.  It may consist in whole or in part of program code and
- * documentation taken from the R project itself, incorporated into
- * Rho (and possibly MODIFIED) under the terms of the GNU General Public
- * Licence.
- * 
- * Rho is Copyright (C) 2008-14 Andrew R. Runnalls, subject to such other
- * copyrights and copyright restrictions as may be stated below.
- * 
- * Rho is not part of the R project, and bugs and other issues should
- * not be reported via r-bugs or other R project channels; instead refer
- * to the Rho website.
- * */
-
 #ifndef R_CONFIG_H
 #define R_CONFIG_H
 
@@ -176,6 +160,9 @@
 
 /* define if the compiler supports basic C++11 syntax */
 #define HAVE_CXX11 1
+
+/* Define if the compiler supports basic C++14 syntax */
+/* #undef HAVE_CXX14 */
 
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
@@ -419,6 +406,9 @@
 
 /* Define if you have the JPEG headers and libraries. */
 #define HAVE_JPEG 1
+
+/* Define if KERN_USRSTACK sysctl is supported. */
+/* #undef HAVE_KERN_USRSTACK */
 
 /* Define if you have KeySym defined in X11. */
 /* #undef HAVE_KEYSYM */
@@ -1273,3 +1263,4 @@
 #define glthread_once                 libintl_once
 #define glthread_once_call            libintl_once_call
 #define glthread_once_singlethreaded  libintl_once_singlethreaded
+

@@ -1,7 +1,7 @@
-#  File src/library/grid/R/interactive.R
+#  File src/library/utils/R/hasName.R
 #  Part of the R package, https://www.R-project.org
 #
-#  Copyright (C) 1995-2012 The R Core Team
+#  Copyright (C) 2016 The R Core Team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -16,19 +16,6 @@
 #  A copy of the GNU General Public License is available at
 #  https://www.R-project.org/Licenses/
 
+# "hasName(x, name)" is defined to be the same as "name %in% names(x)"
 
-grid.locator <- function(unit="native") {
-  location <- c(grid.Call(C_locator), 1)
-  if (is.na(location[1L]))
-    invisible(NULL)
-  else {
-    transform <- solve(current.transform())
-    location <- (location %*% transform)
-    # The inverse viewport transform is from device coordinates into
-    # inches relative to the current viewport
-    location <- unit(location/location[3L], "inches")
-    list(x=convertX(location[1L], unit),
-         y=convertY(location[2L], unit))
-  }
-}
-
+hasName <- function(x, name) match(name, names(x), nomatch = 0L) > 0L

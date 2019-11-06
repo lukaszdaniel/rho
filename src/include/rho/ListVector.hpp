@@ -62,7 +62,7 @@ extern SEXP XVECTOR_ELT(SEXP x, R_xlen_t i);
 
 /** @brief Examine element of rho::ListVector.
  *
- * @param x Non-null pointer to a rho::ListVector .
+ * @param x Non-null pointer to a rho::ListVector.
  *
  * @param i Index of the required element.  There is no bounds checking.
  *

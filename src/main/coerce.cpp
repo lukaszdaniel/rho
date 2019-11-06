@@ -1409,7 +1409,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
     SEXPTYPE type;
 
     if (!Rf_isString(mode) || LENGTH(mode) != 1)
-	errorcall_return(call, R_MSG_mode);
+	error_return(R_MSG_mode);
     if (!strcmp("function", (CHAR(STRING_ELT(mode, 0))))) /* ASCII */
 	type = CLOSXP;
     else
@@ -1458,7 +1458,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
     case ANYSXP: /* any */
 	break;
     default:
-	errorcall_return(call, R_MSG_mode);
+	error_return(R_MSG_mode);
     }
     ans = ascommon(call, x, type);
     switch(TYPEOF(ans)) { /* keep attributes for these: */
@@ -1485,15 +1485,15 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
 
     arglist = x_;
     if (!Rf_isNewList(arglist))
-	Rf_errorcall(call, _("list argument expected"));
+	Rf_error(_("list argument expected"));
 
     envir = downcast_to_env(envir_);
     if (!envir)
-	Rf_errorcall(call, _("invalid environment"));
+	Rf_error(_("invalid environment"));
 
     n = Rf_length(arglist);
     if (n < 1)
-	Rf_errorcall(call, _("argument must have length at least 1"));
+	Rf_error(_("argument must have length at least 1"));
     names = Rf_getAttrib(arglist, R_NamesSymbol);
     PROTECT(pargs = args = Rf_allocList(n - 1));
     for (i = 0; i < n - 1; i++) {
@@ -1514,7 +1514,7 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
        )
 	    args =  Rf_mkCLOSXP(args, body, envir);
     else
-	    Rf_errorcall(call, _("invalid body for function"));
+	    Rf_error(_("invalid body for function"));
     UNPROTECT(2);
     return args;
 }
@@ -1876,7 +1876,7 @@ SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunct
 
     x = x_;
     if (!Rf_isString(mode_) || LENGTH(mode_) != 1)
-	errorcall_return(call, R_MSG_mode);
+	error_return(R_MSG_mode);
 
     stype = CHAR(STRING_ELT(mode_, 0)); /* ASCII */
 

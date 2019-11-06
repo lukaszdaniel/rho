@@ -191,7 +191,7 @@ namespace rho {
 
 SEXP Rf_dynamicfindVar(SEXP, rho::ClosureContext*);
 int Rf_framedepth(rho::ClosureContext*);
-void R_InsertRestartHandlers(rho::ClosureContext*, Rboolean);
+void R_InsertRestartHandlers(rho::ClosureContext*, const char *cname);
 SEXP R_syscall(int, rho::ClosureContext*);
 int R_sysparent(int, rho::ClosureContext*);
 SEXP R_sysframe(int, rho::ClosureContext*);

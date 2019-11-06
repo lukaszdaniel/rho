@@ -421,7 +421,7 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
     opts = asInteger(opts_);
     /* <NOTE>: change this if extra options are added */
     if(opts == NA_INTEGER || opts < 0 || opts > 1024)
-	errorcall(call, _("'opts' should be small non-negative integer"));
+	error(_("'opts' should be small non-negative integer"));
     evaluate = RHOCONSTRUCT(Rboolean, asLogical(evaluate_));
     if (!evaluate) opts |= DELAYPROMISES;
 

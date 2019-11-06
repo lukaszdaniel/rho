@@ -176,12 +176,14 @@ Rconnection in_R_newsock(const char *host, int port, int server,
     if(!newconn->connclass) {
 	free(newconn);
 	error(_("allocation of socket connection failed"));
+        /* for Solaris 12.5 */ newconn = NULL;
     }
     strcpy(newconn->connclass, "sockconn");
     newconn->description = (char *) malloc(strlen(host) + 10);
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
 	error(_("allocation of socket connection failed"));
+        /* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, host, CE_NATIVE, mode);
     newconn->open = &sock_open;
@@ -195,6 +197,7 @@ Rconnection in_R_newsock(const char *host, int port, int server,
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
 	error(_("allocation of socket connection failed"));
+	/* for Solaris 12.5 */ newconn = NULL;
     }
     ((Rsockconn)newconn->connprivate)-> port = port;
     ((Rsockconn)newconn->connprivate)-> server = server;

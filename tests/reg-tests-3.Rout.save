@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-29 ra456e8b289) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-11-06 r3dfd4094b1) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
+R Under development (unstable) (2016-08-05 r71040) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -910,7 +910,7 @@ Error in nchar(x, "w") : invalid multibyte string, element 10
 > # R rev: 70724
 > # "Internal S4 dispatch sets .Generic in the method frame for consistency with standardGeneric() (PR#16929)."
 > # not yet implemented in rho
-> if(require("Matrix")) {
+> if(require("Matrix", .Library)) {
 +     M <- Matrix(diag(1:10), sparse=TRUE) # a "dsCMatrix"
 +     setClass("TestM", slots = c(M='numeric'))
 +     setMethod("+", c("TestM","TestM"), function(e1,e2) {
@@ -918,6 +918,11 @@ Error in nchar(x, "w") : invalid multibyte string, element 10
 +     })
 +     M+M # works the first time
 + #    M+M # was error   "object '.Generic' not found"
++     ##
++     stopifnot(
++         identical(pmin(2,M), pmin(2, as.matrix(M))),
++         identical(as.matrix(pmax(M, 7)), pmax(as.matrix(M), 7))
++     )
 +     rm(M)
 +     detach("package:Matrix", unload=TRUE)
 + }##{Matrix}

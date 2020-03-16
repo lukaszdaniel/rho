@@ -68,7 +68,7 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
 	PROTECT(ans = allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
 	    buf[0] = char( RAW(x)[i]);
-	    SET_STRING_ELT(ans, i, mkChar(buf));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(buf));
 	}
 	/* do we want to copy e.g. names here? */
 	UNPROTECT(1);
@@ -80,7 +80,7 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
 	for (i = 0, j = -1; i < nc; i++) if(RAW(x)[i]) j = i;
 	nc = j + 1;
 	return Rf_ScalarString(
-	    mkCharLenCE(reinterpret_cast<const char *>(RAW(x)), j+1, CE_NATIVE));
+	    Rf_mkCharLenCE(reinterpret_cast<const char *>(RAW(x)), j+1, CE_NATIVE));
     }
 }
 
@@ -88,14 +88,14 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
 SEXP attribute_hidden do_rawShift(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* n_)
 {
     SEXP ans, x = x_;
-    int shift = asInteger(n_);
+    int shift = Rf_asInteger(n_);
 
 
     if (!isRaw(x))
-	error(_("argument 'x' must be a raw vector"));
+	Rf_error(_("argument 'x' must be a raw vector"));
     if (shift == NA_INTEGER || shift < -8 || shift > 8)
-	error(_("argument 'shift' must be a small integer"));
-    PROTECT(ans = duplicate(x));
+	Rf_error(_("argument 'shift' must be a small integer"));
+    PROTECT(ans = Rf_duplicate(x));
     if (shift > 0)
 	for (R_xlen_t i = 0; i < XLENGTH(x); i++)
 	    RAW(ans)[i] <<= shift;
@@ -114,7 +114,7 @@ SEXP attribute_hidden do_rawToBits(/*const*/ rho::Expression* call, const rho::B
 
     if (!isRaw(x))
 	error(_("argument 'x' must be a raw vector"));
-    PROTECT(ans = allocVector(RAWSXP, 8*XLENGTH(x)));
+    PROTECT(ans = Rf_allocVector(RAWSXP, 8*XLENGTH(x)));
     for (i = 0; i < XLENGTH(x); i++) {
 	tmp = static_cast<unsigned int>( RAW(x)[i]);
 	for (int k = 0; k < 8; k++, tmp >>= 1)
@@ -130,10 +130,10 @@ SEXP attribute_hidden do_intToBits(/*const*/ rho::Expression* call, const rho::B
     R_xlen_t i, j = 0;
     unsigned int tmp;
 
-    PROTECT(x = coerceVector(x_, INTSXP));
-    if (!isInteger(x))
-	error(_("argument 'x' must be an integer vector"));
-    PROTECT(ans = allocVector(RAWSXP, 32*XLENGTH(x)));
+    PROTECT(x = Rf_coerceVector(x_, INTSXP));
+    if (!Rf_isInteger(x))
+	Rf_error(_("argument 'x' must be an integer vector"));
+    PROTECT(ans = Rf_allocVector(RAWSXP, 32*XLENGTH(x)));
     for (i = 0; i < XLENGTH(x); i++) {
 	tmp = static_cast<unsigned int>( INTEGER(x)[i]);
 	for (int k = 0; k < 32; k++, tmp >>= 1)
@@ -151,15 +151,15 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
     int fac;
 
     if (TYPEOF(x) != RAWSXP && TYPEOF(x) != LGLSXP && TYPEOF(x) != INTSXP)
-	error(_("argument 'x' must be raw, integer or logical"));
-    if (!isString(stype)  || LENGTH(stype) != 1)
-	error(_("argument '%s' must be a character string"), "type");
-    useRaw = RHOCONSTRUCT(Rboolean, strcmp(CHAR(STRING_ELT(stype, 0)), "integer"));
+	Rf_error(_("argument 'x' must be raw, integer or logical"));
+    if (!Rf_isString(stype)  || LENGTH(stype) != 1)
+	Rf_error(_("argument '%s' must be a character string"), "type");
+    useRaw = RHOCONSTRUCT(Rboolean, strcmp(R_CHAR(STRING_ELT(stype, 0)), "integer"));
     fac = useRaw ? 8 : 32;
     if (len% fac)
-	error(_("argument 'x' must be a multiple of %d long"), fac);
+	Rf_error(_("argument 'x' must be a multiple of %d long"), fac);
     slen = len/fac;
-    PROTECT(ans = allocVector(useRaw ? RAWSXP : INTSXP, slen));
+    PROTECT(ans = Rf_allocVector(useRaw ? RAWSXP : INTSXP, slen));
     for (i = 0; i < slen; i++)
 	if (useRaw) {
 	    Rbyte btmp = 0;
@@ -167,10 +167,10 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
 		btmp <<= 1;
 		if (isRaw(x))
 		    btmp |= RAW(x)[8*i + k] & 0x1;
-		else if (isLogical(x) || isInteger(x)) {
+		else if (Rf_isLogical(x) || Rf_isInteger(x)) {
 		    int j = INTEGER(x)[8*i+k];
 		    if (j == NA_INTEGER)
-			error(_("argument 'x' must not contain NAs"));
+			Rf_error(_("argument 'x' must not contain NAs"));
 		    btmp |= j & 0x1;
 		}
 	    }
@@ -181,10 +181,10 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
 		itmp <<= 1;
 		if (isRaw(x))
 		    itmp |= RAW(x)[32*i + k] & 0x1;
-		else if (isLogical(x) || isInteger(x)) {
+		else if (Rf_isLogical(x) || Rf_isInteger(x)) {
 		    int j = INTEGER(x)[32*i+k];
 		    if (j == NA_INTEGER)
-			error(_("argument 'x' must not contain NAs"));
+			Rf_error(_("argument 'x' must not contain NAs"));
 		    itmp |= j & 0x1;
 		}
 	    }
@@ -273,13 +273,13 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
     int tmp, used = 0; /* -Wall */
     R_xlen_t i, j, nc;
 
-    if (!isString(x) || LENGTH(x) == 0)
-	error(_("argument must be a character vector of length 1"));
+    if (!Rf_isString(x) || LENGTH(x) == 0)
+	Rf_error(_("argument must be a character vector of length 1"));
     if (LENGTH(x) > 1)
-	warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
-    if (STRING_ELT(x, 0) == NA_STRING) return ScalarInteger(NA_INTEGER);
-    const char *s = CHAR(STRING_ELT(x, 0));
-    if (!utf8Valid(s)) return ScalarInteger(NA_INTEGER);
+	Rf_warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
+    if (STRING_ELT(x, 0) == rho::String::NA()) return Rf_ScalarInteger(NA_INTEGER);
+    const char *s = R_CHAR(STRING_ELT(x, 0));
+    if (!utf8Valid(s)) return Rf_ScalarInteger(NA_INTEGER);
     nc = XLENGTH(STRING_ELT(x, 0)); /* ints will be shorter */
     int *ians = static_cast<int *>( RHO_alloc(nc, sizeof(int)));
     for (i = 0, j = 0; i < nc; i++) {
@@ -289,7 +289,7 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
 	s += used;
     }
     if (used < 0) error(_("invalid UTF-8 string"));
-    ans = allocVector(INTSXP, j);
+    ans = Rf_allocVector(INTSXP, j);
     if (j) memcpy(INTEGER(ans), ians, sizeof(int) * j);
     return ans;
 }
@@ -327,22 +327,22 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
     size_t used, len;
     char buf[10], *tmp;
 
-    PROTECT(x = coerceVector(x_, INTSXP));
-    if (!isInteger(x))
-	error(_("argument 'x' must be an integer vector"));
-    multiple = asLogical(multiple_);
+    PROTECT(x = Rf_coerceVector(x_, INTSXP));
+    if (!Rf_isInteger(x))
+	Rf_error(_("argument 'x' must be an integer vector"));
+    multiple = Rf_asLogical(multiple_);
     if (multiple == NA_LOGICAL)
-	error(_("argument 'multiple' must be TRUE or FALSE"));
+	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
     if (multiple) {
 	R_xlen_t i, nc = XLENGTH(x);
-	PROTECT(ans = allocVector(STRSXP, nc));
+	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
 	    if (INTEGER(x)[i] == NA_INTEGER)
-		SET_STRING_ELT(ans, i, NA_STRING);
+		SET_STRING_ELT(ans, i, rho::String::NA());
 	    else {
 		used = inttomb(buf, INTEGER(x)[i]);
 		buf[used] = '\0';
-		SET_STRING_ELT(ans, i, mkCharCE(buf, CE_UTF8));
+		SET_STRING_ELT(ans, i, Rf_mkCharCE(buf, CE_UTF8));
 	    }
 	}
 	/* do we want to copy e.g. names here? */
@@ -356,7 +356,7 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	}
 	if (haveNA) {
 	    UNPROTECT(1);
-	    return Rf_ScalarString(NA_STRING);
+	    return Rf_ScalarString(rho::String::NA());
 	}
 	if (len >= 10000) {
 	    tmp = Calloc(len+1, char);
@@ -369,7 +369,7 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	    strncpy(tmp + len, buf, used);
 	    len += used;
 	}
-	ans = PROTECT(Rf_ScalarString(mkCharLenCE(tmp, int( len), CE_UTF8)));
+	ans = PROTECT(Rf_ScalarString(Rf_mkCharLenCE(tmp, int( len), CE_UTF8)));
 	if(len >= 10000) Free(tmp);
     }
     UNPROTECT(2);

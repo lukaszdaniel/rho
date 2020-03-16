@@ -378,8 +378,7 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 		cl += std::string("', '") + Rf_translateChar((*klass)[i]);
 	    cl += "')";
 	}
-	Rf_errorcall(call, _("no applicable method for '%s'"
-			     " applied to an object of class '%s'"),
+	Rf_errorcall(call, _("no applicable method for '%s' applied to an object of class '%s'"),
 		     Rf_translateChar((*generic)[0]),
 		     classTypeAsString(obj).c_str());
     }
@@ -499,11 +498,9 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	    FunctionBase* func
 		= S3Launcher::findMethod(gensym, gencallenv, gendefenv).first;
 	    if (!func)
-		Rf_error(_("no calling generic was found:"
-			   " was a method called directly?"));
+		Rf_error(_("no calling generic was found: was a method called directly?"));
 	    if (func->sexptype() != CLOSXP)
-		Rf_errorcall(nullptr, _("'function' is not a function,"
-				  " but of type %d"), func->sexptype());
+		Rf_errorcall(nullptr, _("'function' is not a function, but of type %d"), func->sexptype());
 	    genclos = static_cast<Closure*>(func);
 	}
     }
@@ -1175,10 +1172,10 @@ SEXP R_set_prim_method(SEXP fname, SEXP op, SEXP code_vec, SEXP fundef,
     }
     if (!Rf_isPrimitive(op)) {
         SEXP internal = R_do_slot(op, Rf_install("internal"));
-        op = INTERNAL(Rf_install(CHAR(Rf_asChar(internal))));
+        op = INTERNAL(Rf_install(R_CHAR(Rf_asChar(internal))));
         if (op == R_NilValue) {
 	    Rf_error("'internal' slot does not name an internal function: %s",
-		     CHAR(Rf_asChar(internal)));
+		     R_CHAR(Rf_asChar(internal)));
         }
     }
 
@@ -1460,8 +1457,7 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
     }
     RObject* fundef = prim_generics[offset];
     if(!fundef || TYPEOF(fundef) != CLOSXP)
-	Rf_error(_("primitive function \"%s\" has been set for methods"
-		" but no generic function supplied"),
+	Rf_error(_("primitive function \"%s\" has been set for methods but no generic function supplied"),
                  op->name());
     Closure* func = static_cast<Closure*>(fundef);
     // To do:  arrange for the setting to be restored in case of an

@@ -34,6 +34,8 @@
 
 /* See system.txt for a description of functions */
 
+/* select() is essential here, but configure has required it */
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -55,16 +57,13 @@
 #include <R_ext/Print.h> // for REprintf
 #include "Rinterface.h"
 
+#define __SYSTEM__
+/* includes <sys/select.h> and <sys/time.h> */
+#include <R_ext/eventloop.h>
+#undef __SYSTEM__
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>		/* for unlink */
-#endif
-
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>		/* for struct timeval */
-#endif
-
-#ifdef HAVE_SYS_SELECT_H
-# include <sys/select.h>	/* for select, according to recent POSIX */
 #endif
 
 extern SA_TYPE SaveAction;
@@ -96,10 +95,6 @@ void attribute_hidden Rstd_Suicide(const char *s)
 	 * Under a Motif interface the routines would be
 	 * considerably more complex.
 	 */
-
-#define __SYSTEM__
-#include <R_ext/eventloop.h>
-#undef __SYSTEM__
 
 /*
   The following provides a version of select() that catches interrupts

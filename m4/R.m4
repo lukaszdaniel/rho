@@ -538,6 +538,28 @@ esac
 
 ### * C++ compiler and its characteristics.
 
+## R_PROG_CXX
+## ----------
+## Check whether the C++ compiler can compile code
+AC_DEFUN([R_PROG_CXX],
+[AC_CACHE_CHECK([whether ${CXX} ${CXXFLAGS} can compile C++ code],
+[r_cv_prog_cxx],
+[AC_LANG_PUSH([C++])dnl
+AC_COMPILE_IFELSE([AC_LANG_SOURCE(
+[#ifndef __cplusplus
+# error "not a C++ compiler"
+#endif
+#include <cmath>
+])],
+          [r_cv_prog_cxx=yes], [r_cv_prog_cxx=no])
+AC_LANG_POP([C++])dnl
+])
+if test "${r_cv_prog_cxx}" = no; then
+  CXX=
+  CXXFLAGS=
+fi
+])# R_PROG_CXX
+
 ## R_PROG_CXX_M
 ## ------------
 ## Check whether the C++ compiler accepts '-M' for generating
@@ -1438,36 +1460,6 @@ AC_SUBST(OBJCXX)
 
 
 ### * Library functions
-
-## R_FUNC___SETFPUCW
-## -----------------
-AC_DEFUN([R_FUNC___SETFPUCW],
-[AC_CHECK_FUNC(__setfpucw,
-[AC_CACHE_CHECK([whether __setfpucw is needed],
-	        [r_cv_func___setfpucw_needed],
-[AC_RUN_IFELSE([AC_LANG_SOURCE([[
-int main () {
-#include <fpu_control.h>
-#include <stdlib.h>
-#if defined(_FPU_DEFAULT) && defined(_FPU_IEEE)
-  exit(_FPU_DEFAULT != _FPU_IEEE);
-#endif
-  exit(0);
-}
-]])],
-              [r_cv_func___setfpucw_needed=no],
-              [r_cv_func___setfpucw_needed=yes],
-              [r_cv_func___setfpucw_needed=no])])
-if test "x${r_cv_func___setfpucw_needed}" = xyes; then
-  AC_DEFINE(NEED___SETFPUCW, 1,
-	    [Define if your system needs __setfpucw() to control
-             FPU rounding.
-             This was used to control floating point precision,
-             rounding and floating point exceptions on older Linux
-             systems.
-             As of GLIBC 2.1 this function is not used anymore.])
-fi])
-])# R_FUNC___SETFPUCW
 
 ## R_FUNC_CALLOC
 ## -------------
@@ -4102,11 +4094,11 @@ if test "x${r_cv_working_mktime}" = xyes; then
 fi
 ])# R_FUNC_MKTIME
 
-## R_CXX1X
-## -------
-## Support for C++11 or later, for use in packages.
-## R_CXX1X(VERSION, PREFIX, DEFAULT)
-AC_DEFUN([R_CXX1X],
+## R_STDCXX
+## --------
+## Support for C++ standards (C++98, C++11, C++14), for use in packages.
+## R_STDCXX(VERSION, PREFIX, DEFAULT)
+AC_DEFUN([R_STDCXX],
 [r_save_CXX="${CXX}"
 r_save_CXXFLAGS="${CXXFLAGS}"
 
@@ -4117,7 +4109,7 @@ r_save_CXXFLAGS="${CXXFLAGS}"
 CXX="${$2} ${$2STD}"
 CXXFLAGS="${$2FLAGS} ${$2PICFLAGS}"
 AC_LANG_PUSH([C++])dnl
-AX_CXX_COMPILE_STDCXX([$1], [noext], [optional])
+AX_CXX_COMPILE_STDCXX([$1], [], [optional])
 AC_LANG_POP([C++])dnl Seems the macro does not always get this right
 CXX="${r_save_CXX}"
 CXXFLAGS="${r_save_CXXFLAGS}"
@@ -4157,7 +4149,7 @@ AC_ARG_VAR([SHLIB_$2LD],
            [command for linking shared objects which contain object
             files from the C++$1 compiler])
 AC_ARG_VAR([SHLIB_$2LDFLAGS], [special flags used by SHLIB_$2LD])
-])# R_CXX1X
+])# R_STDCXX
 
 ## R_LIBCURL
 ## ----------------

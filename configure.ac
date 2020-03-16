@@ -57,10 +57,13 @@ AH_TOP([#ifndef R_CONFIG_H
 AH_BOTTOM([
 #endif /* not R_CONFIG_H */])
 
-## The gettext macros call AC_GNU_SOURCE early, so all the
-## C compiling makes use of that.  If it is ever removed, we
-## would need it or something similar here.
-
+## We call AC_GNU_SOURCE early (it is a prerequisite for the gettext
+## macros), so all the C compiling makes use of that.  Nowadays it calls
+## AC_USE_SYSTEM_EXTENSIONS ....
+## This sets _GNU_SOURCE, so glibc defines all its extensions
+## (_POSIX_C_SOURCE, _XOPEN_SOURCE, _BSD_SOURCE, __USE_MISC) and these
+## unlock declarations of non-C99 functions and constants.  
+## Ditto for __EXTENSIONS__ on Solaris and _ALL_SOURCE on AIX.
 
 ### ** Platform.
 
@@ -634,7 +637,7 @@ R_PROG_PAGER
 AC_PATH_PROGS(TAR, [${TAR} gtar gnutar tar], "")
 ## TeXMF stuff
 R_PROG_TEXMF
-## Unzip && zip && gzip && bip2
+## Unzip & zip & gzip & bip2
 AC_PATH_PROGS(R_UNZIPCMD, [${UNZIP} unzip], "")
 AC_PATH_PROGS(R_ZIPCMD, [${ZIP} zip], "")
 AC_PATH_PROGS(R_GZIPCMD, [${GZIP} gzip], true)
@@ -643,14 +646,15 @@ AC_PATH_PROGS(R_BZIPCMD, [${BZIP} bzip2], "")
 R_PROG_BROWSER
 ## PDF viewer
 R_PROG_PDFVIEWER
-## Noweb
+## Noweb - used for maintainer mode only
 AC_PATH_PROG(NOTANGLE, notangle, false)
 AM_CONDITIONAL(HAVE_NOTANGLE, "${NOTANGLE}" != "false")
 ## javareconf needs this
 AC_PATH_PROG(REALPATH, realpath, false)
 
 
-## cairographics needs pkg-config
+## Search for cairographics needs pkg-config, 
+## helps find jpeg, libpng and libtiff.
 AC_PATH_PROG(PKGCONF, pkg-config , [], 
 	     [$PATH:/usr/local/bin:/ext/bin:/ext:/sw/bin:/opt/bin])
 AC_ARG_VAR([PKGCONF], [path to pkg-config utility])
@@ -659,14 +663,26 @@ AC_ARG_VAR([PKG_CONFIG_LIBDIR], [path overriding pkg-config's default search pat
 
 # Prefer the clang compiler if it's available.
 AC_PROG_CC([clang gcc icc cc cl cl.exe])
-
 AC_PROG_GCC_TRADITIONAL
+AC_GNU_SOURCE ## see note above
+
 AC_PROG_CPP
 R_PROG_CPP_CPPFLAGS
-## see if the user set FFLAGS: used for Intel compilers
+
+## see if the user set FFLAGS: used for Intel compilers below
 userFFLAGS=${FFLAGS}
 R_PROG_F77
+
+## User may have set CXXSTD but not set CXX, so add to flags pro tem
+r_save_CXXFLAGS="${CXXFLAGS}"
+CXXFLAGS="${CXXSTD} ${CXXFLAGS}"
 ## AC_PROG_CXX
+## check this actually compiles
+## R_PROG_CXX
+## CXXFLAGS="${r_save_CXXFLAGS}"
+## 
+### R_PROG_CXX98FLAG
+## 
 ## AC_PROG_CXXCPP
 ## if test "${CXXCPP}" = "${CXX} -E"; then
 ##   CXXCPP0="\$(CXX) -E"
@@ -674,8 +690,8 @@ R_PROG_F77
 ##   CXXCPP0=${CXXCPP}
 ## fi
 ## AC_SUBST(CXXCPP0)
+
 R_GCC4_VISIBILITY
-AC_GNU_SOURCE ## needed for libintl
 
 AC_PROG_OBJC
 ## unfortunately autoconf sets OBJC to gcc even if there is no working compiler
@@ -846,30 +862,27 @@ AC_HEADER_SYS_WAIT
 ## Some of these are also checked for when Autoconf computes the default
 ## includes.
 ##
-## The following headers are POSIX: dlfcn.h fcntl.h glob.h grp.h
-## pwd.h strings.h sys/resource.h sys/select.h sys/socket.h 
-## sys/stat.h sys/time.h sys/times.h sys/utsname.h unistd.h utime.h
-## dl.h seems to be for HP-UX
-## floatingpoint.h is on FreeBSD and Solaris, originating in SysV.  
-## (It is probably only used for fpsetmask on FreeBSD).
-## fpu_control.h is only used on Linux, for the obsolete __setfpucw.
+## The following headers are POSIX,
+## We use sched.h for Linux-specific features (affinity)
+AC_CHECK_HEADERS(dlfcn.h fcntl.h glob.h grp.h pwd.h sched.h strings.h \
+  sys/resource.h sys/select.h sys/socket.h sys/stat.h sys/time.h \
+  sys/times.h sys/utsname.h unistd.h utime.h)
+## dl.h is used in src/unix/hpdlfcn.c included from src/unix/dynload.c on HP-UX
+## features.h is used by date-time code on Linux.
+## floatingpoint.h is used for fpsetmask on FreeBSD.
 ## sys/param.h is one way to get PATH_MAX.
-## sched.h is POSIX, but we use it for Linux-specific features (affinity)
-## stdalign.h is C11.
-AC_CHECK_HEADERS(arpa/inet.h dl.h dlfcn.h elf.h features.h fcntl.h \
-  floatingpoint.h fpu_control.h glob.h grp.h langinfo.h \
-  netdb.h netinet/in.h pwd.h sched.h strings.h \
-  sys/param.h sys/resource.h sys/select.h sys/socket.h \
-  sys/stat.h sys/time.h sys/times.h sys/utsname.h unistd.h utime.h)
-## </NOTE>
+AC_CHECK_HEADERS(arpa/inet.h dl.h elf.h features.h floatingpoint.h \
+  langinfo.h netdb.h netinet/in.h sys/param.h)
 ## stdalign.h is C11.
 AC_CHECK_HEADERS(stdalign.h)
-## <NOTE>
 ## These are C99 headers but some C code (written to work also
 ## without assuming C99) may need the corresponding conditionals.
 AC_CHECK_HEADERS(errno.h inttypes.h limits.h locale.h stdarg.h stdbool.h \
                  stdint.h string.h)
 ## only vsnprintf.c requires stdarg.h
+
+## We also use without checking sys/sysctl.h, but only on *BSD and macOS
+## The default includes check for sys/types.h (POSIX), which we use unconditionally
 ## </NOTE>
 
 R_HEADER_SETJMP
@@ -878,7 +891,7 @@ R_HEADER_GLIBC2
 ### * Checks for types.
 
 AC_TYPE_SIGNAL
-## xz needs uint64_t
+## liblzma uses uint64_t: used unconditionally in src/main/util.c
 AC_TYPE_UINT64_T
 AC_CHECK_TYPES([int64_t, int_fast64_t])
 AC_TYPE_PID_T
@@ -1018,40 +1031,6 @@ case "${host_cpu}" in
     ## We used to add -mieee-fp here, but it seems it is really a
     ## linker flag for old Linuxen adding -lieee to a non-shared link.
     ;;
-  alpha*)
-    ## <NOTE>
-    ## * IEEE math
-    ## We really need to use @option{-ieee_with_inexact} (called
-    ## @option{-mieee-with-inexact} for GCC) for the C compiler:
-    ## @option{-ieee} (or @option{-mieee}) are not enough.
-    ## According to <Albrecht.Gebhardt@uni-klu.ac.at> and Luke Tierney
-    ## <luke@stat.uiowa.edu>, @option{-fpe3} is what we want for the
-    ## native Fortran 77 compiler: seems that not all versions map
-    ## @option{-ieee} to @option{-fpe3}.
-    ## What about the C++ compilers?
-    if test "${GCC}" = yes; then
-      R_PROG_CC_FLAG([-mieee-with-inexact],
-                     R_SH_VAR_ADD(R_XTRA_CFLAGS, [-mieee-with-inexact]))
-    else
-      R_PROG_CC_FLAG([-ieee_with_inexact],
-                     R_SH_VAR_ADD(R_XTRA_CFLAGS, [-ieee_with_inexact]))
-    fi
-    if test "${G77}" = yes; then
-      R_PROG_F77_FLAG([-mieee],
-                      R_SH_VAR_ADD(R_XTRA_FFLAGS, [-mieee]))
-    else
-      R_PROG_F77_FLAG([-fpe3],
-                      R_SH_VAR_ADD(R_XTRA_FFLAGS, [-fpe3]))
-    fi
-    if test "${GXX}" = yes; then
-      R_PROG_CXX_FLAG([-mieee],
-                      R_SH_VAR_ADD(R_XTRA_CXXFLAGS, [-mieee]))
-    else
-      R_PROG_CXX_FLAG([-ieee],
-                      R_SH_VAR_ADD(R_XTRA_CXXFLAGS, [-ieee]))
-    fi
-    ## </NOTE>
-    ;;
 esac
 
 AH_TEMPLATE([HAVE_NO_SYMBOL_UNDERSCORE],
@@ -1087,23 +1066,6 @@ case "${host_os}" in
 	;;
     esac
     AC_CHECK_LIB(dld, shl_load, [R_XTRA_LIBS="-ldld ${R_XTRA_LIBS}"])
-    ;;
-  irix*)
-    ## final release in 2006
-    R_C_OPTIEEE
-    ## <NOTE>
-    ## We really should test explictly whether the Fortran and C++
-    ## compilers *need* '-OPT:IEEE_NaN_inf=ON'.  Currently, all we do is
-    ## check whether the non-GNU tools *accept* the flag.
-    if test "${G77}" != yes; then
-      R_PROG_F77_FLAG([-OPT:IEEE_NaN_inf=ON],
-                      R_SH_VAR_ADD(R_XTRA_FFLAGS, [-OPT:IEEE_NaN_inf=ON]))
-    fi
-    if test "${GXX}" != yes; then
-      R_PROG_CXX_FLAG([-OPT:IEEE_NaN_inf=ON],
-                      R_SH_VAR_ADD(R_XTRA_CXXFLAGS, [-OPT:IEEE_NaN_inf=ON]))
-    fi
-    ## </NOTE>
     ;;
   linux*)
     case  "${CC}" in
@@ -1197,10 +1159,6 @@ case "${host_os}" in
       AC_DEFINE(HAVE_NO_SYMBOL_UNDERSCORE)
     fi
     ;;
-  osf*)
-    ## does that really still exist?
-    AC_DEFINE(HAVE_NO_SYMBOL_UNDERSCORE)
-    ;;  
 esac
 
 if test "${SAFE_FFLAGS+set}" != set; then
@@ -1307,7 +1265,7 @@ if test -n "${XMKMF}"; then
   fi
   cxx=`"${srcdir}/tools/GETMAKEVAL" CXX`
   cxx=`echo ${cxx} | sed "s/ .*//"`
-  if test -n "${cxx}" ; then
+  if test -n "${cxx}" -a  -n "${CXX}"; then
     r_cxx_cmd=`echo ${CXX} | sed "s/ .*//"`
     if test "`which ${cxx}`" = "`which ${r_cxx_cmd}`"; then
       cxxpicflags=`"${srcdir}/tools/GETMAKEVAL" CXXPICFLAGS`
@@ -1479,13 +1437,6 @@ rm -f libconftest${DYLIB_EXT} conftest.c
       shlib_cxxldflags="-shared -fPIC"
     fi
     ;;
-  irix*)
-    cpicflags=
-    cxxpicflags=
-    fpicflags=
-    shlib_ldflags="-shared"
-    shlib_cxxldflags="-shared"
-    ;;
   linux*aout)			# GNU Linux/aout
     sed '/HAVE_ELF_H/d' confdefs.h > tmp.h ; mv tmp.h confdefs.h
     ;;
@@ -1569,12 +1520,6 @@ rm -f libconftest${DYLIB_EXT} conftest.c
         ;;
     esac
     ;;
-  osf*)
-    cpicflags=
-    cxxpicflags=
-    fpicflags=
-    shlib_ldflags="-shared"
-    ;;
   solaris*)
 ## SPARC has only an 8k global object table, 1024 entries on 64-bit,
 ## so need PIC not pic.  They are the same on other Solaris platforms.
@@ -1648,7 +1593,7 @@ R_SH_VAR_ADD(MAIN_LDFLAGS, [${main_ldflags}])
 : ${CPICFLAGS="${cpicflags}"}
 if test -z "${CPICFLAGS}"; then
   case "${host_os}" in
-    aix*|irix*|mingw*|osf*)
+    aix*|mingw*)
       ;;
     *)
       AC_MSG_WARN([I could not determine CPICFLAGS.])
@@ -1660,7 +1605,7 @@ fi
 : ${FPICFLAGS="${fpicflags}"}
 if test -z "${FPICFLAGS}"; then
   case "${host_os}" in
-    aix*|irix*|mingw*|osf*)
+    aix*|mingw*)
       ;;
     *)
       AC_MSG_WARN([I could not determine FPICFLAGS.])
@@ -1670,13 +1615,12 @@ if test -z "${FPICFLAGS}"; then
 fi
 
 : ${CXXPICFLAGS="${cxxpicflags}"}
-if test -z "${CXXPICFLAGS}"; then
+if test -n "${CXX}" -a -z "${CXXPICFLAGS}"; then
   case "${host_os}" in
-    aix*|irix*|mingw*|osf*)
+    aix*|mingw*)
       ;;
     *)
       warn_cxxpicflags="I could not determine CXXPICFLAGS."
-      AC_MSG_WARN([${warn_cxxpicflags}])
       ;;
   esac
 fi
@@ -1704,7 +1648,7 @@ if test -z "${SHLIB_CXXLD}"; then
   fi
   R_SH_VAR_ADD(SHLIB_CXXLDFLAGS, [${shlib_cxxldflags}])
 fi
-if test -z "${SHLIB_CXXLDFLAGS}"; then
+if test  -n "${CXX}" -a -z "${SHLIB_CXXLDFLAGS}"; then
   warn_shlib_cxxldflags="I could not determine SHLIB_CXXLDFLAGS"
   AC_MSG_WARN([${warn_shlib_cxxldflags}])
 fi
@@ -1803,9 +1747,10 @@ AC_SUBST(STATICR1)
 AC_SUBST(STATICR2)
 AC_SUBST(R_DYLIB_EXT)
 
-## C++11 and later
-R_CXX1X([11], [CXX1X])
-R_CXX1X([14], [CXX1Y])
+## Test support for C++ standards
+R_STDCXX([98], [CXX98])
+R_STDCXX([11], [CXX1X])
+R_STDCXX([14], [CXX1Y])
 
 ### OpenMP.
 
@@ -1945,6 +1890,25 @@ if test "${ac_cv_have_decl_popen}" = "no"; then
    AC_MSG_ERROR([Building R requires the 'popen' system call])
 fi
 R_CHECK_FUNCS([getline], [#include <stdio.h>])
+R_CHECK_FUNCS([select], 
+[#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>  /* POSIX >= 2001 */
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>  /* Earlier POSIX, HP-UX? */
+#endif])
+case "${host_os}" in
+  mingw*|windows*|winnt)
+  ;;
+  *)
+  if test "${ac_cv_have_decl_select}" = "no"; then
+     AC_MSG_ERROR([Building R on Unix requires the 'select' system call])
+  fi
+  if test "${ac_cv_header_sys_select_h}" = "no" -a "${ac_cv_header_sys_times_h} = "no""; then
+     AC_MSG_ERROR([Building R on Unix requires either <sys/select.h> or <sys/time.h>])
+  fi
+  ;;
+esac
 ## Windows has neither setenv nor unsetenv
 R_CHECK_FUNCS([setenv unsetenv], [#include <stdlib.h>])
 R_CHECK_FUNCS([getrlimit getrusage getpriority], [#include <sys/resource.h>])
@@ -1976,10 +1940,10 @@ R_CHECK_FUNCS([clock_gettime timespec_get], [#include <time.h>])
 ## It is not always declared, so we do not require a declaration.
 AC_CHECK_FUNCS(putenv)
 AC_CHECK_DECLS([putenv], , , [#include <stdlib.h>])
-## this is a GNU extension so usually hidden.  Not on Solaris
+## this is a GNU extension so usually hidden.  Not in Solaris 10
 AC_CHECK_FUNCS(vasprintf)
 AC_CHECK_DECLS([vasprintf], , , [#include <stdio.h>])
-## mempcpy is a GNU extension used by the included gettext.  Not on Solaris
+## mempcpy is a GNU extension used by the included gettext.  Not in Solaris 10
 AC_CHECK_FUNCS(mempcpy)
 ## realpath is POSIX 2001 (and BSD)
 ## Some early GNU libc systems had it in unistd.h.
@@ -2068,17 +2032,16 @@ fi
 AC_SUBST(RMATH_HAVE_LOG1P)
 
 ## Do we need substitutes?
-## mkdtemp is not on Solaris, added in POSIX 2008
-## strdup strncasecmp were first required in POSIX 2008.
+## mkdtemp is not on Solaris 10, added in POSIX 2008
+## strdup strncasecmp were first required in POSIX 2001.
 AC_REPLACE_FUNCS([mkdtemp strdup strncasecmp])
 ## Enable declarations in Defn.h?
 AC_CHECK_DECLS([mkdtemp, strdup, strncasecmp])
 
 AC_SEARCH_LIBS(connect, [socket])
-# gethostbyname was removed in POSIX 2008 (in favour of getaddrinfo, POSIX 2004)
+# gethostbyname was removed in POSIX 2008 (in favour of getaddrinfo, POSIX 2001)
 AC_SEARCH_LIBS(gethostbyname, [nsl socket])
 AC_SEARCH_LIBS(xdr_string, [nsl tirpc])
-R_FUNC___SETFPUCW
 R_FUNC_CALLOC
 if test "${ac_cv_have_decl_isfinite}" = "yes"; then
 R_FUNC_ISFINITE
@@ -2592,7 +2555,7 @@ esac
 : ${FCPICFLAGS="${fcpicflags}"}
 if test -z "${FCPICFLAGS}"; then
   case "${host_os}" in
-    aix*|irix*|mingw*|osf*)
+    aix*|mingw*)
       ;;
     *)
       AC_MSG_WARN([I could not determine FCPICFLAGS.])
@@ -2699,19 +2662,6 @@ AC_SUBST(XTRA_INTL_CPPFLAGS)
 
 AM_CONDITIONAL(USE_NLS, [test "x${USE_NLS}" = xyes])
 AM_CONDITIONAL(BUILD_LIBINTL, [test "x${USE_INCLUDED_LIBINTL}" = xyes])
-
-### * bug fixes
-# PR#9375 claims that sh on OSF1 is not POSIX-compliant and that is 
-# not a bug in the OS: we add a workaround for such benighted OSes
-case "${host_os}" in
-  osf*)
-    OSF_SH_BUG='"${1+@}"'
-  ;;
-  *)
-    OSF_SH_BUG='"${@}"'
-  ;;
-esac
-AC_SUBST(OSF_SH_BUG)
 
 ### shell for use in scripts: we allow R_SHELL to set the script,
 ### since some AIX systems have zsh as sh.
@@ -2864,6 +2814,7 @@ AC_OUTPUT
 ## </NOTE>
 r_c_compiler="${CC} ${R_XTRA_CFLAGS} ${CFLAGS}"
 r_cxx_compiler="${CXX} ${CXXSTD} ${R_XTRA_CXXFLAGS} ${CXXFLAGS}"
+r_cxx98_compiler="${CXX98} ${CXX98STD} ${CXX98FLAGS}"
 r_cxx1x_compiler="${CXX1X} ${CXX1XSTD} ${CXX1XFLAGS}"
 r_cxx1y_compiler="${CXX1Y} ${CXX1YSTD} ${CXX1YFLAGS}"
 r_f77_compiler="${F77} ${R_XTRA_FFLAGS} ${FFLAGS}"
@@ -3001,7 +2952,8 @@ rho is now configured for ${host}
   C compiler:                ${r_c_compiler}
   Fortran 77 compiler:       ${r_f77_compiler}
 
-  C++ compiler:              ${r_cxx_compiler}
+  Default C++ compiler:      ${r_cxx_compiler}
+  C++98 compiler:            ${r_cxx98_compiler}
   C++11 compiler:            ${r_cxx1x_compiler}
   C++14 compiler:            ${r_cxx1y_compiler}
   Fortran 90/95 compiler:    ${r_f95_compiler}

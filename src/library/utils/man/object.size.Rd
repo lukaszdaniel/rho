@@ -73,11 +73,11 @@ object.size(letters)
 object.size(ls)
 format(object.size(library), units = "auto")
 
-sl <- object.size(rep(letters, 500))
+sl <- object.size(rep(letters, 1000))
 (fsl <- sapply(c("Kb", "KB", "KiB"),
                function(u) format(sl, units = u)))
 stopifnot(identical( ## assert that all three are the same :
-             unique(substr(as.vector(fsl), 1,5)),
+             unique(substr(as.vector(fsl), 1,3)),
              format(round(as.vector(sl)/1024, 1))))
 
 ## find the 10 largest objects in the base package

@@ -233,6 +233,7 @@ SEXP do_inspect(rho::Expression* call, const rho::BuiltInFunction* op, int num_a
 SEXP do_intToUtf8(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_);
 SEXP do_interactive(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_internal(SEXP, SEXP, SEXP, SEXP);  // Special
+SEXP do_internalsID(SEXP, SEXP, SEXP, SEXP);
 SEXP do_intToBits(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_invisible(rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...);
 SEXP NORET do_invokeRestart(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* r_, rho::RObject* args_);

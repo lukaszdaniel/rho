@@ -214,7 +214,7 @@ Sys.setlocale("LC_CTYPE", oloc)
 # R rev: 70724
 # "Internal S4 dispatch sets .Generic in the method frame for consistency with standardGeneric() (PR#16929)."
 # not yet implemented in rho
-if(require("Matrix")) {
+if(require("Matrix", .Library)) {
     M <- Matrix(diag(1:10), sparse=TRUE) # a "dsCMatrix"
     setClass("TestM", slots = c(M='numeric'))
     setMethod("+", c("TestM","TestM"), function(e1,e2) {
@@ -222,6 +222,11 @@ if(require("Matrix")) {
     })
     M+M # works the first time
 #    M+M # was error   "object '.Generic' not found"
+    ##
+    stopifnot(
+        identical(pmin(2,M), pmin(2, as.matrix(M))),
+        identical(as.matrix(pmax(M, 7)), pmax(as.matrix(M), 7))
+    )
     rm(M)
     detach("package:Matrix", unload=TRUE)
 }##{Matrix}

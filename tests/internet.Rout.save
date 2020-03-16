@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-29 ra456e8b289) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-11-06 r3dfd4094b1) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
+R Under development (unstable) (2016-08-05 r71040) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -29,7 +29,7 @@ Type 'q()' to quit R.
 > 
 > # test do_download.
 > nrow(available.packages(contrib.url("http://cran.r-project.org")))
-[1] 14392
+[1] 14167
 > 
 > # test url connections on http
 > zz <- url("http://cran.r-project.org/")

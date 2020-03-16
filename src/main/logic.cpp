@@ -97,13 +97,12 @@ namespace {
 	    RawVector* vr = static_cast<RawVector*>(y);
 	    return bitwiseBinary(op->variant(), vl, vr);
 	}
-	if (!isNumber(x) || !isNumber(y))
-	    Rf_error(_("operations are possible only for"
-		       " numeric, logical or complex types"));
+	if (!Rf_isNumber(x) || !Rf_isNumber(y))
+	    Rf_error(_("operations are possible only for numeric, logical or complex types"));
 	GCStackRoot<LogicalVector>
-	    vl(static_cast<LogicalVector*>(coerceVector(x, LGLSXP)));
+	    vl(static_cast<LogicalVector*>(Rf_coerceVector(x, LGLSXP)));
 	GCStackRoot<LogicalVector>
-	    vr(static_cast<LogicalVector*>(coerceVector(y, LGLSXP)));
+	    vr(static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP)));
 	return binaryLogic(op->variant(), vl, vr);
     }
 
@@ -120,14 +119,14 @@ namespace {
 		[](Logical x) { return !x; },
 		CopyAllAttributes(),
 		SEXP_downcast<LogicalVector*>(arg));
-	} else if (!isNumber(arg)) {
+	} else if (!Rf_isNumber(arg)) {
 	    if (Rf_length(arg) == 0U)  // For back-compatibility
 		return LogicalVector::create(0);
 	    Rf_error(_("invalid argument type"));
 	} else {
 	    // Logical negation:
 	    GCStackRoot<LogicalVector>
-		lv(static_cast<LogicalVector*>(coerceVector(arg, LGLSXP)));
+		lv(static_cast<LogicalVector*>(Rf_coerceVector(arg, LGLSXP)));
 	    return applyUnaryOperator(
 		[](Logical x) { return !x; },
                 // Note: in other cases all attributes are copied.
@@ -155,7 +154,7 @@ SEXP attribute_hidden do_logic(/*const*/ Expression* call, const BuiltInFunction
 	return lnot(arg1);
     }
     default:
-	error(_("internal error in do_logic"));
+	Rf_error(_("internal error in do_logic"));
     }
     return nullptr;  // -Wall
 }
@@ -169,23 +168,23 @@ SEXP attribute_hidden do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
     int ans;
 
     if (Rf_length(args) != 2)
-	error(_("'%s' operator requires 2 arguments"),
+	Rf_error(_("'%s' operator requires 2 arguments"),
 	      PRIMVAL(op) == 1 ? "&&" : "||");
 
     s1 = CAR(args);
     s2 = CADR(args);
-    s1 = eval(s1, env);
-    if (!isNumber(s1))
-	errorcall(call, _("invalid 'x' type in 'x %s y'"),
+    s1 = Rf_eval(s1, env);
+    if (!Rf_isNumber(s1))
+	Rf_errorcall(call, _("invalid 'x' type in 'x %s y'"),
 		  PRIMVAL(op) == 1 ? "&&" : "||");
-    x1 = asLogical(s1);
+    x1 = Rf_asLogical(s1);
 
 #define get_2nd							\
-	s2 = eval(s2, env);					\
-	if (!isNumber(s2))					\
-	    errorcall(call, _("invalid 'y' type in 'x %s y'"),	\
+	s2 = Rf_eval(s2, env);					\
+	if (!Rf_isNumber(s2))					\
+	    Rf_errorcall(call, _("invalid 'y' type in 'x %s y'"),	\
 		      PRIMVAL(op) == 1 ? "&&" : "||");		\
-	x2 = asLogical(s2);
+	x2 = Rf_asLogical(s2);
 
     switch (PRIMVAL(op)) {
     case 1: /* && */
@@ -211,9 +210,9 @@ SEXP attribute_hidden do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
 	}
 	break;
     default:
-	error(_("internal error in do_logic2"));
+	Rf_error(_("internal error in do_logic2"));
     }
-    return ScalarLogical(ans);
+    return Rf_ScalarLogical(ans);
 }
 
 
@@ -238,7 +237,7 @@ static Logical checkValues(int op, int na_rm, int *x, R_xlen_t n)
     case _OP_ALL:
         return has_na ? Logical::NA() : true;
     default:
-        error("bad op value for do_logic3");
+        Rf_error("bad op value for do_logic3");
     }
     return Logical::NA(); /* -Wall */
 }
@@ -267,15 +266,15 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 	return(dispatched.second);
     }
 
-    ans = matchArgExact(R_NaRmSymbol, &args);
-    narm = asLogical(ans);
+    ans = Rf_matchArgExact(R_NaRmSymbol, &args);
+    narm = Rf_asLogical(ans);
 
     for (s = args; s != R_NilValue; s = CDR(s)) {
 	t = CAR(s);
 	/* Avoid memory waste from coercing empty inputs, and also
 	   avoid warnings with empty lists coming from sapply */
 	if(xlength(t) == 0) continue;
-	/* coerceVector protects its argument so this actually works
+	/* Rf_coerceVector protects its argument so this actually works
 	   just fine */
 	if (TYPEOF(t) != LGLSXP) {
 	    /* Coercion of integers seems reasonably safe, but for
@@ -283,10 +282,10 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 	       One exception is perhaps the result of lapply, but
 	       then sapply was often what was intended. */
 	    if(TYPEOF(t) != INTSXP)
-		warningcall(call,
+		Rf_warningcall(call,
 			    _("coercing argument of type '%s' to logical"),
-			    type2char(TYPEOF(t)));
-	    t = coerceVector(t, LGLSXP);
+			    Rf_type2char(TYPEOF(t)));
+	    t = Rf_coerceVector(t, LGLSXP);
 	}
 	val = checkValues(PRIMVAL(op), narm, LOGICAL(t), XLENGTH(t));
 	if (!val.isNA()) {
@@ -314,12 +313,12 @@ namespace rho {
 	    if (Rf_isArray(vlnc) && Rf_isArray(vrnc)
 		&& !Rf_conformable(vlnc, vrnc))
 		Rf_error(_("non-conformable arrays"));
-	    if (isTs(vlnc)) {
-		if (isTs(vrnc) && !Rf_tsConform(vlnc, vrnc))
+	    if (Rf_isTs(vlnc)) {
+		if (Rf_isTs(vrnc) && !Rf_tsConform(vlnc, vrnc))
 		    Rf_error(_("non-conformable time-series"));
 		if (vr->size() > vl->size())
 		    Rf_error(_("time-series/vector length mismatch"));
-	    } else if (isTs(vrnc) && vl->size() > vr->size())
+	    } else if (Rf_isTs(vrnc) && vl->size() > vr->size())
 		Rf_error(_("time-series/vector length mismatch"));
 	}
 

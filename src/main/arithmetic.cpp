@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996, 1997  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2015	    The R Core Team.
- *  Copyright (C) 2003--2015	    The R Foundation
+ *  Copyright (C) 1998--2016	    The R Core Team.
+ *  Copyright (C) 2003--2016	    The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -276,7 +276,7 @@ static R_INLINE SEXP ScalarValue1(SEXP x)
     if (NO_REFERENCES(x))
 	return x;
     else
-	return allocVector(TYPEOF(x), 1);
+	return Rf_allocVector(TYPEOF(x), 1);
 }
 
 static R_INLINE SEXP ScalarValue2(SEXP x, SEXP y)
@@ -286,7 +286,7 @@ static R_INLINE SEXP ScalarValue2(SEXP x, SEXP y)
     else if (NO_REFERENCES(y))
 	return y;
     else
-	return allocVector(TYPEOF(x), 1);
+	return Rf_allocVector(TYPEOF(x), 1);
 }
 #endif
 
@@ -298,7 +298,7 @@ RObject* do_arith(/*const*/ Expression* call,
 				   ...)
 {
     if (num_args < 1 || num_args > 2) {
-	errorcall(call, _("operator needs one or two arguments"));
+	Rf_errorcall(call, _("operator needs one or two arguments"));
     }
 
     BuiltInFunction* op = const_cast<BuiltInFunction*>(op_);
@@ -315,14 +315,14 @@ RObject* do_arith(/*const*/ Expression* call,
 namespace {
     VectorBase* COERCE_IF_NEEDED(SEXP v, SEXPTYPE tp) {
 	if (v->sexptype() != tp)
-	    v = coerceVector(v, tp);
+	    v = Rf_coerceVector(v, tp);
 	return static_cast<VectorBase*>(v);
     }
 
     VectorBase* FIXUP_NULL_AND_CHECK_TYPES(SEXP v)
     {
 	if (!v)
-	    return RealVector::create(0);
+	    return IntVector::create(0);
 	switch (v->sexptype()) {
 	case CPLXSXP:
 	case REALSXP:
@@ -359,7 +359,7 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 	}
 
 	if (mismatch)
-	    warningcall(lcall,
+	    Rf_warningcall(lcall,
 			_("longer object length is not a multiple of shorter object length"));
 
 	x = COERCE_IF_NEEDED(x, CPLXSXP);
@@ -408,7 +408,7 @@ static SEXP typed_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
 				      SEXP_downcast<InputType*>(s1));
 	}
     default:
-	errorcall(call, _("invalid unary operator"));
+	Rf_errorcall(call, _("invalid unary operator"));
     }
     return s1;			/* never used; to keep -Wall happy */
 }
@@ -433,7 +433,7 @@ SEXP logical_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
 	    SEXP_downcast<LogicalVector*>(s1));
 	break;
     default:
-	errorcall(call, _("invalid unary operator"));
+	Rf_errorcall(call, _("invalid unary operator"));
     }
 }
 
@@ -453,7 +453,7 @@ SEXP attribute_hidden R_unary(SEXP call, SEXP op, SEXP s1)
     case CPLXSXP:
 	return complex_unary(operation, s1, call);
     default:
-	errorcall(call, _("invalid argument to unary operator"));
+	Rf_errorcall(call, _("invalid argument to unary operator"));
     }
     return s1;			/* never used; to keep -Wall happy */
 }
@@ -531,10 +531,10 @@ namespace {
 	if (TYPEOF(lhs) != INTSXP) {
 	    // Probably a logical.
 	    // TODO(kmillar): eliminate the need to coerce here.
-	    lhs = coerceVector(lhs, INTSXP);
+	    lhs = Rf_coerceVector(lhs, INTSXP);
 	}
 	if (TYPEOF(rhs) != INTSXP) {
-	    rhs = coerceVector(rhs, INTSXP);
+	    rhs = Rf_coerceVector(rhs, INTSXP);
 	}
 
 	return applyBinaryOperator(op,
@@ -589,7 +589,7 @@ static SEXP integer_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2, SEXP lcall)
 	break;
     }
     if (naflag)
-	warningcall(lcall, INTEGER_OVERFLOW_WARNING);
+	Rf_warningcall(lcall, INTEGER_OVERFLOW_WARNING);
 
     return ans;
 }
@@ -703,11 +703,11 @@ private:
 static SEXP math1(SEXP sa, double (*f)(double), SEXP lcall)
 {
     using namespace VectorOps;
-    if (!isNumeric(sa))
-	errorcall(lcall, R_MSG_NONNUM_MATH);
+    if (!Rf_isNumeric(sa))
+	Rf_errorcall(lcall, R_MSG_NONNUM_MATH);
     /* coercion can lose the object bit */
     GCStackRoot<RealVector>
-	rv(static_cast<RealVector*>(coerceVector(sa, REALSXP)));
+	rv(static_cast<RealVector*>(Rf_coerceVector(sa, REALSXP)));
     NaNWarner op(f);
     RealVector* result = applyUnaryOperator(std::ref(op),
 					    CopyAllAttributes(),
@@ -721,7 +721,7 @@ SEXP attribute_hidden do_math1(Expression* call, const BuiltInFunction* builtin,
 {
     SEXP s;
 
-    if (isComplex(x)) {
+    if (Rf_isComplex(x)) {
 	return complex_math1(call, const_cast<BuiltInFunction*>(builtin),
 			     PairList::cons(x, nullptr), nullptr);
     }
@@ -771,7 +771,7 @@ SEXP attribute_hidden do_math1(Expression* call, const BuiltInFunction* builtin,
 #endif
 
     default:
-	errorcall(call, _("unimplemented real function of 1 argument"));
+	Rf_errorcall(call, _("unimplemented real function of 1 argument"));
     }
     return s; /* never used; to keep -Wall happy */
 }
@@ -785,8 +785,8 @@ SEXP attribute_hidden do_trunc(/*const*/ Expression* call, const BuiltInFunction
 	UNPACK_VA_ARGS(num_args, (arg_));
 	arg = arg_;
     }
-    if (isComplex(arg))
-	errorcall(call, _("unimplemented complex function"));
+    if (Rf_isComplex(arg))
+	Rf_errorcall(call, _("unimplemented complex function"));
     return math1(arg, trunc, call);
 }
 
@@ -800,12 +800,12 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP x, s = R_NilValue /* -Wall */;
 
     x = CAR(args);
-    if (isInteger(x) || isLogical(x)) {
+    if (Rf_isInteger(x) || Rf_isLogical(x)) {
 	/* integer or logical ==> return integer,
 	   factor was covered by Math.factor. */
 	R_xlen_t i, n = XLENGTH(x);
 	s = (NO_REFERENCES(x) && TYPEOF(x) == INTSXP) ?
-	    x : allocVector(INTSXP, n);
+	    x : Rf_allocVector(INTSXP, n);
 	PROTECT(s);
 	/* Note: relying on INTEGER(.) === LOGICAL(.) : */
 	for(i = 0 ; i < n ; i++) {
@@ -814,10 +814,10 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
         }
     } else if (TYPEOF(x) == REALSXP) {
 	R_xlen_t i, n = XLENGTH(x);
-	PROTECT(s = NO_REFERENCES(x) ? x : allocVector(REALSXP, n));
+	PROTECT(s = NO_REFERENCES(x) ? x : Rf_allocVector(REALSXP, n));
 	for(i = 0 ; i < n ; i++)
 	    REAL(s)[i] = fabs(REAL(x)[i]);
-    } else if (isComplex(x)) {
+    } else if (Rf_isComplex(x)) {
         SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);
     } else
@@ -843,8 +843,8 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
     double ai, bi, *a, *b, *y;
     int naflag;
 
-    if (!isNumeric(sa) || !isNumeric(sb))
-	errorcall(lcall, R_MSG_NONNUM_MATH);
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb))
+	Rf_errorcall(lcall, R_MSG_NONNUM_MATH);
 
     /* for 0-length a we want the attributes of a, not those of b
        as no recycling will occur */
@@ -852,15 +852,15 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
     na = XLENGTH(sa);				\
     nb = XLENGTH(sb);				\
     if ((na == 0) || (nb == 0))	{		\
-	PROTECT(sy = allocVector(REALSXP, 0));	\
+	PROTECT(sy = Rf_allocVector(REALSXP, 0));	\
 	if (na == 0) SHALLOW_DUPLICATE_ATTRIB(sy, sa);  \
 	UNPROTECT(1);				\
 	return(sy);				\
     }						\
     n = (na < nb) ? nb : na;			\
-    PROTECT(sa = coerceVector(sa, REALSXP));	\
-    PROTECT(sb = coerceVector(sb, REALSXP));	\
-    PROTECT(sy = allocVector(REALSXP, n));	\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));	\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));	\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));	\
     a = REAL(sa);				\
     b = REAL(sb);				\
     y = REAL(sy);				\
@@ -879,7 +879,7 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
     });
 
 #define FINISH_Math2					\
-    if(naflag) warning(R_MSG_NA);			\
+    if(naflag) Rf_warning(R_MSG_NA);			\
     if (n == na)  SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
     else if (n == nb) SHALLOW_DUPLICATE_ATTRIB(sy, sb);	\
     UNPROTECT(3)
@@ -903,8 +903,8 @@ static SEXP math2B(SEXP sa, SEXP sb, double (*f)(double, double, double *),
 
 #define besselJY_max_nu 1e7
 
-    if (!isNumeric(sa) || !isNumeric(sb))
-	errorcall(lcall, R_MSG_NONNUM_MATH);
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb))
+	Rf_errorcall(lcall, R_MSG_NONNUM_MATH);
 
     /* for 0-length a we want the attributes of a, not those of b
        as no recycling will occur */
@@ -947,8 +947,8 @@ SEXP attribute_hidden do_math2(Expression* call,
 			       const BuiltInFunction* op,
 			       RObject* x, RObject* y)
 {
-    if (isComplex(x) ||
-	(op->variant() == 0 && isComplex(y))) {
+    if (Rf_isComplex(x) ||
+	(op->variant() == 0 && Rf_isComplex(y))) {
 	return complex_math2(call, const_cast<BuiltInFunction*>(op),
 			     Rf_list2(x, y), nullptr);
     }
@@ -968,7 +968,7 @@ SEXP attribute_hidden do_math2(Expression* call,
     case 26: return Math2(args, psigamma);
 
     default:
-	error(_("unimplemented real function of %d numeric arguments"), 2);
+	Rf_error(_("unimplemented real function of %d numeric arguments"), 2);
     }
     return nullptr;			/* never used; to keep -Wall happy */
 }
@@ -979,10 +979,10 @@ SEXP attribute_hidden do_math2(Expression* call,
 SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     if (Rf_length(args) >= 2 &&
-	isSymbol(CADR(args)) && R_isMissing(CADR(args), env)) {
+	Rf_isSymbol(CADR(args)) && R_isMissing(CADR(args), env)) {
 	double digits = 0;
 	if(PRIMVAL(op) == 10004) digits = 6.0; // for signif()
-	args = list2(CAR(args), ScalarReal(digits));
+	args = Rf_list2(CAR(args), Rf_ScalarReal(digits));
     }
 
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
@@ -991,7 +991,7 @@ SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
     Expression* call2 = new Expression(CAR(call), arglist);
     int n = arglist.size();
     if (n != 1 && n != 2)
-        error(n_("%d argument passed to '%s' which requires 1 or 2 arguments",
+        Rf_error(n_("%d argument passed to '%s' which requires 1 or 2 arguments",
                        "%d arguments passed to '%s'which requires 1 or 2 arguments", n),
               n, PRIMNAME(op));
 
@@ -1007,14 +1007,14 @@ SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
 	double digits = PRIMVAL(op) == 10001 ? 0 : 6;
 	return do_math2(SEXP_downcast<Expression*>(call),
 			SEXP_downcast<const BuiltInFunction*>(op),
-			arglist.get(0), ScalarReal(digits));
+			arglist.get(0), Rf_ScalarReal(digits));
     }
 
     static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "x", "digits" });
     SEXP x, digits;
     matcher->match(arglist, { &x, &digits} );
     if (Rf_length(digits) == 0)
-	errorcall(call, _("invalid second argument of length 0"));
+	Rf_errorcall(call, _("invalid second argument of length 0"));
     return do_math2(SEXP_downcast<Expression*>(call),
 		    SEXP_downcast<const BuiltInFunction*>(op), x, digits);
 }
@@ -1024,8 +1024,8 @@ SEXP attribute_hidden do_log1arg(/*const*/ Expression* call, const BuiltInFuncti
 {
     SEXP tmp = R_NilValue /* -Wall */;
 
-    if(op->variant() == 10) tmp = ScalarReal(10.0);
-    if(op->variant() == 2)  tmp = ScalarReal(2.0);
+    if(op->variant() == 10) tmp = Rf_ScalarReal(10.0);
+    if(op->variant() == 2)  tmp = Rf_ScalarReal(2.0);
 
     static RObject* log_symbol = Symbol::obtain("log");
     ArgList arglist2({ args[0], tmp }, ArgList::EVALUATED);
@@ -1035,7 +1035,7 @@ SEXP attribute_hidden do_log1arg(/*const*/ Expression* call, const BuiltInFuncti
 	return dispatch.second;
     }
 
-    if (isComplex(args[0]))
+    if (Rf_isComplex(args[0]))
       return BuiltInFunction::callBuiltInWithCApi(complex_math2,
                                                   call2, op, arglist2, env);
     else
@@ -1077,7 +1077,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* log(x) is handled here */
 	SEXP x = CAR(args);
 	if (x != R_MissingArg && ! OBJECT(x)) {
-	    if (isComplex(x))
+	    if (Rf_isComplex(x))
 		res = complex_math1(call, op, args, env);
 	    else
 		res = math1(x, R_log, call);
@@ -1093,7 +1093,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP y = CADR(args);
 	if (x != R_MissingArg && y != R_MissingArg &&
 	    ! OBJECT(x) && ! OBJECT(y)) {
-	    if (isComplex(x) || isComplex(y))
+	    if (Rf_isComplex(x) || Rf_isComplex(y))
 		res = complex_math2(call, op, args, env);
 	    else
 		res = math2(x, y, logbase, call);
@@ -1108,7 +1108,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (n == 1) {
 	if (CAR(args) == R_MissingArg ||
 	    (TAG(args) != R_NilValue && TAG(args) != R_x_Symbol))
-	    error(_("argument \"%s\" is missing, with no default"), "x");
+	    Rf_error(_("argument \"%s\" is missing, with no default"), "x");
 
 	ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
 	auto dispatched = builtin->InternalDispatch(callx, env,
@@ -1116,7 +1116,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (dispatched.first)
 	    res = dispatched.second;
 	else {
-	    if (isComplex(CAR(args)))
+	    if (Rf_isComplex(CAR(args)))
 		res = complex_math1(call, op, args, env);
 	    else
 		res = math1(CAR(args), R_log, call);
@@ -1133,9 +1133,9 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	matcher->match(arglist1, { &x, &base });
 
 	if(x == R_MissingArg)
-	    error(_("argument \"%s\" is missing, with no default"), "x");
+	    Rf_error(_("argument \"%s\" is missing, with no default"), "x");
 	if (base == R_MissingArg)
-	    base = ScalarReal(DFLT_LOG_BASE);
+	    base = Rf_ScalarReal(DFLT_LOG_BASE);
 
 	args = Rf_list2(x, base);
 	ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
@@ -1145,8 +1145,8 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    res = dispatched.second;
 	} else {
 	    if (Rf_length(base) == 0)
-		errorcall(call, _("invalid argument 'base' of length 0"));
-	    if (isComplex(x) || isComplex(base))
+		Rf_errorcall(call, _("invalid argument 'base' of length 0"));
+	    if (Rf_isComplex(x) || Rf_isComplex(base))
 		res = complex_math2(call, op, args, env);
 	    else
 		res = math2(x, base, logbase, call);
@@ -1164,21 +1164,21 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	else if (ISNAN(a) || ISNAN(b)|| ISNAN(c)) y = R_NaN;
 
 #define SETUP_Math3						\
-    if (!isNumeric(sa) || !isNumeric(sb) || !isNumeric(sc))	\
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb) || !Rf_isNumeric(sc))	\
 	error(R_MSG_NONNUM_MATH);			        \
 								\
     na = XLENGTH(sa);						\
     nb = XLENGTH(sb);						\
     nc = XLENGTH(sc);						\
     if ((na == 0) || (nb == 0) || (nc == 0))			\
-	return(allocVector(REALSXP, 0));			\
+	return(Rf_allocVector(REALSXP, 0));			\
     n = na;							\
     if (n < nb) n = nb;						\
     if (n < nc) n = nc;						\
-    PROTECT(sa = coerceVector(sa, REALSXP));			\
-    PROTECT(sb = coerceVector(sb, REALSXP));			\
-    PROTECT(sc = coerceVector(sc, REALSXP));			\
-    PROTECT(sy = allocVector(REALSXP, n));			\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));			\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));			\
+    PROTECT(sc = Rf_coerceVector(sc, REALSXP));			\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));			\
     a = REAL(sa);						\
     b = REAL(sb);						\
     c = REAL(sc);						\
@@ -1186,7 +1186,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
     naflag = 0
 
 #define FINISH_Math3					\
-    if(naflag) warning(R_MSG_NA);			\
+    if(naflag) Rf_warning(R_MSG_NA);			\
 							\
     if (n == na) SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
     else if (n == nb) SHALLOW_DUPLICATE_ATTRIB(sy, sb);	\
@@ -1248,7 +1248,7 @@ SEXP attribute_hidden do_math3(Expression* call,
     case 44:  return Math3B(args, bessel_k_ex);
 
     default:
-	error(_("unimplemented real function of %d numeric arguments"), 3);
+	Rf_error(_("unimplemented real function of %d numeric arguments"), 3);
     }
     return nullptr;			/* never used; to keep -Wall happy */
 } /* do_math3() */

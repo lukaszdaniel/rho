@@ -151,7 +151,7 @@ const static char * const falsenames[] = {
 
 SEXP Rf_asChar(SEXP x)
 {
-	if (isVectorAtomic(x) && XLENGTH(x) >= 1) {
+	if (Rf_isVectorAtomic(x) && XLENGTH(x) >= 1) {
 	    int w, d, e, wi, di, ei;
 	    char buf[MAXELTSIZE];  /* Probably 100 would suffice */
 
@@ -280,7 +280,7 @@ void Rf_InitTypeTables(void) {
 	if (j != -1) {
 	    const char *cstr = TypeTable[j].str;
 	    SEXP rchar = PROTECT(Rf_mkChar(cstr));
-	    SEXP rstr = ScalarString(rchar);
+	    SEXP rstr = Rf_ScalarString(rchar);
 	    MARK_NOT_MUTABLE(rstr);
 	    R_PreserveObject(rstr);
 	    UNPROTECT(1); /* rchar */
@@ -310,7 +310,7 @@ SEXP Rf_type2str_nowarn(SEXPTYPE t) /* returns a CHARSXP */
 
 SEXP Rf_type2str(SEXPTYPE t) /* returns a CHARSXP */
 {
-    SEXP s = type2str_nowarn(t);
+    SEXP s = Rf_type2str_nowarn(t);
     if (s != R_NilValue) {
 	return s;
     }
@@ -400,7 +400,7 @@ size_t mbcsToUcs2(const char *in, ucs2_t *out, int nout, int enc)
     char *o_buf;
     size_t  i_len, o_len, status, wc_len;
     /* out length */
-    wc_len = (enc == CE_UTF8)? utf8towcs(nullptr, in, 0) : mbstowcs(nullptr, in, 0);
+    wc_len = (enc == CE_UTF8)? Rf_utf8towcs(nullptr, in, 0) : mbstowcs(nullptr, in, 0);
     if (out == nullptr || int(wc_len) < 0) return wc_len;
 
     if (reinterpret_cast<void*>(-1) == (cd = Riconv_open(UCS2ENC, (enc == CE_UTF8) ? "UTF-8": "")))
@@ -697,7 +697,7 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
     /* 2. allocate and store result components */
 
     const char *nms[] = {"xi", "yi", "x.alone", "y.alone", ""};
-    ans = PROTECT(mkNamed(VECSXP, nms));
+    ans = PROTECT(Rf_mkNamed(VECSXP, nms));
     ansx = Rf_allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 0, ansx);
     ansy = Rf_allocVector(INTSXP, nans);    SET_VECTOR_ELT(ans, 1, ansy);
 
@@ -1088,13 +1088,13 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
     for(i = 0; i < len; i++) {
 	s = STRING_ELT(x, i);
 	if(na || s != NA_STRING) {
-	    cetype_t ienc = getCharCE(s);
+	    cetype_t ienc = Rf_getCharCE(s);
 	    if(ienc == CE_UTF8) {
 		const char *ss = Rf_EncodeString(s, w-1000000, quote,
 					      (Rprt_adj) justify);
 		SET_STRING_ELT(ans, i, Rf_mkCharCE(ss, ienc));
 	    } else {
-		const char *ss = EncodeString(s, w, quote, Rprt_adj( justify));
+		const char *ss = Rf_EncodeString(s, w, quote, Rprt_adj( justify));
 		SET_STRING_ELT(ans, i, Rf_mkChar(ss));
 	    }
 	}
@@ -1138,7 +1138,7 @@ SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFu
     m = LENGTH(enc);
     if(m == 0)
 	Rf_error(_("'value' must be of positive length"));
-    if(MAYBE_REFERENCED(x)) x = duplicate(x);
+    if(MAYBE_REFERENCED(x)) x = Rf_duplicate(x);
     PROTECT(x);
     n = XLENGTH(x);
     for(i = 0; i < n; i++) {
@@ -1153,7 +1153,7 @@ SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFu
 	       (ienc == CE_UTF8 && IS_UTF8(tmp)) ||
 	       (ienc == CE_BYTES && IS_BYTES(tmp)) ||
 	       (ienc == CE_NATIVE && ! IS_LATIN1(tmp) && ! IS_UTF8(tmp))))
-	    SET_STRING_ELT(x, i, mkCharLenCE(CHAR(tmp), LENGTH(tmp), ienc));
+	    SET_STRING_ELT(x, i, Rf_mkCharLenCE(R_CHAR(tmp), LENGTH(tmp), ienc));
     }
     UNPROTECT(1);
     return x;
@@ -1970,14 +1970,14 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     for (; args != R_NilValue; args = CDR(args)) {
 	SEXP tag = TAG(args);
-	if (isNull(tag)) Rf_error(_("all arguments must be named"));
-	const char *thiss = CHAR(PRINTNAME(tag));
+	if (Rf_isNull(tag)) Rf_error(_("all arguments must be named"));
+	const char *thiss = R_CHAR(PRINTNAME(tag));
 	const char *s;
 
 	x = CAR(args);
-	if (!isString(x) || LENGTH(x) != 1)
+	if (!Rf_isString(x) || LENGTH(x) != 1)
 	    Rf_error(_("invalid '%s' argument"), thiss);
-	s = CHAR(STRING_ELT(x, 0));
+	s = R_CHAR(STRING_ELT(x, 0));
 	if (streql(thiss, "locale")) {
 	    if (collator) {
 		ucol_close(collator);
@@ -2077,7 +2077,7 @@ int Scollate(SEXP a, SEXP b)
 	    strcoll(Rf_translateChar(a), Rf_translateChar(b));
 
     UCharIterator aIter, bIter;
-    const char *as = translateCharUTF8(a), *bs = translateCharUTF8(b);
+    const char *as = Rf_translateCharUTF8(a), *bs = Rf_translateCharUTF8(b);
     int len1 = (int) strlen(as), len2 = (int) strlen(bs);
     uiter_setUTF8(&aIter, as, len1);
     uiter_setUTF8(&bIter, bs, len2);
@@ -2207,7 +2207,8 @@ SEXP attribute_hidden do_tabulate(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-/* .Internal(findInterval(vec, x, rightmost.closed, all.inside,  left.open))
+/* Note: R's findInterval( x , vec, ...)  has first two arguments swapped !
+ * .Internal(findInterval(vec, x, rightmost.closed, all.inside,  left.open))
  *                         xt  x    right             inside       leftOp
  * x can be a long vector but xt cannot since the result is integer
 */
@@ -2302,13 +2303,13 @@ str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 SEXP attribute_hidden do_formatC(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  mode_, RObject*  width_, RObject*  digits_, RObject*  format_, RObject*  flag_, RObject*  i_strlen_)
 {
     SEXP x = x_;
-    if (!isVector(x)) Rf_error(_("'x' must be a vector"));
+    if (!Rf_isVector(x)) Rf_error(_("'x' must be a vector"));
     R_xlen_t n = XLENGTH(x);
-    const char *type = CHAR(STRING_ELT(mode_, 0));
+    const char *type = R_CHAR(STRING_ELT(mode_, 0));
     int width = Rf_asInteger(width_);
     int digits = Rf_asInteger(digits_);
-    const char *fmt = CHAR(STRING_ELT(format_, 0));
-    const char *flag = CHAR(STRING_ELT(flag_, 0));
+    const char *fmt = R_CHAR(STRING_ELT(format_, 0));
+    const char *flag = R_CHAR(STRING_ELT(flag_, 0));
     SEXP i_strlen = PROTECT(Rf_coerceVector(i_strlen_, INTSXP));
     char **cptr = static_cast<char **>( RHO_alloc(n, sizeof(char*)));
     for (R_xlen_t i = 0; i < n; i++) {
@@ -2458,7 +2459,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 			*/
 			double xxx = fabs(xx), X;
 			iex = (int)floor(log10(xxx) + 1e-12);
-			X = fround(xxx/Rexp10((double)iex) + 1e-12,
+			X = Rf_fround(xxx/Rexp10((double)iex) + 1e-12,
 				   (double)(dig-1));
 			if(iex > 0 &&  X >= 10) {
 			    xx = X * Rexp10((double)iex);

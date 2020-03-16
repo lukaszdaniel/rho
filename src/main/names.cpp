@@ -532,6 +532,8 @@ new BuiltInFunction(".Call.graphics", do_dotcallgr, 0,	1,	-1,	{PP_FOREIGN, PREC_
 /* .Internal */
 new BuiltInFunction("Version",	do_version,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("commandArgs", do_commandArgs, 0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("internalsID", do_internalsID,	0,	11,	0,	{PP_FUNCALL, PREC_FN,   0}),
+
 #ifdef Win32
 new BuiltInFunction("system",	do_system,	0,	211,	5,	{PP_FUNCALL, PREC_FN,	0}),
 #else
@@ -907,12 +909,12 @@ SEXP attribute_hidden do_primitive(/*const*/ Expression* call, const BuiltInFunc
 {
     SEXP name, prim;
     name = name_;
-    if (!isString(name) || Rf_length(name) != 1 ||
+    if (!Rf_isString(name) || Rf_length(name) != 1 ||
 	STRING_ELT(name, 0) == R_NilValue)
-	errorcall(call, _("string argument required"));
-    prim = R_Primitive(CHAR(STRING_ELT(name, 0)));
+	Rf_errorcall(call, _("string argument required"));
+    prim = R_Primitive(R_CHAR(STRING_ELT(name, 0)));
     if (prim == R_NilValue)
-	errorcall(call, _("no such primitive function"));
+	Rf_errorcall(call, _("no such primitive function"));
     return prim;
 }
 
@@ -932,12 +934,12 @@ void attribute_hidden Rf_InitNames()
 
 SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    if (isObject(call))
-	return duplicate(call);
+    if (Rf_isObject(call))
+	return Rf_duplicate(call);
     else {
 	SEXP klass;
-	PROTECT(call = duplicate(call));
-	PROTECT(klass = mkString("formula"));
+	PROTECT(call = Rf_duplicate(call));
+	PROTECT(klass = Rf_mkString("formula"));
 	setAttrib(call, R_ClassSymbol, klass);
 	setAttrib(call, R_DotEnvSymbol, rho);
 	UNPROTECT(2);

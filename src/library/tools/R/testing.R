@@ -158,9 +158,14 @@ Rdiff <- function(from, to, useDiff = FALSE, forEx = FALSE,
         if(length(ll)) txt <- txt[seq_len(max(ll) - 1L)]
         ## remove BATCH footer
         nl <- length(txt)
-        if(nl > 3L && startsWith(txt[nl-2L], "> proc.time()")) txt <- txt[1:(nl-3L)]
+        if(nl > 3L && startsWith(txt[nl-2L], "> proc.time()"))
+            txt <- txt[1:(nl-3L)]
+        ## remove text between IGNORE_RDIFF markers.
+        txt[(cumsum(txt == "> ## IGNORE_RDIFF_BEGIN") >
+             cumsum(txt == "> ## IGNORE_RDIFF_END"))] <- ""
+        ## (Keeps the end markers, but that's ok.)
         if (nullPointers)
-        ## remove pointer addresses from listings
+            ## remove pointer addresses from listings
             txt <- gsub("<(environment|bytecode|pointer|promise): [x[:xdigit:]]+>", "<\\1: 0>", txt)
         ## In error and warning messages, the location of the error may be reported
         ## differently by CR and rho, and this may in turn give differences

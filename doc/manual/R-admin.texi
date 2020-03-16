@@ -993,17 +993,17 @@ CXX1YFLAGS
 CXX1YPICFLAGS
 @end example
 @noindent
-The macros @code{CXX} etc are those used by default for C++ code: their
-values are not checked.  @command{configure} will attempt to set the
-rest suitably, choosing for @code{CXX1XSTD} a suitable flag such as
-@option{-std=c++11} for C++11 support. Similarly, configure will if
-possible choose for @code{CXX1YSTD} a flag@footnote{Currently this is a
-valid option for @command{g++} 5 and later and 2016 versions of the
-Intel and Solaris compilers.  For earlier versions of @command{g++} one
-could try @option{-std=c++1y}.} such as @option{-std=c++14} for C++14
-support. The inferred values can be overridden in file
-@file{config.site} or on the @command{configure} command line:
-user-supplied values will be tested compiling some C++11/14 code.
+The macros @code{CXX} etc are those used by default for C++ code.
+@command{configure} will attempt to set the rest suitably, choosing for
+@code{CXX1XSTD} a suitable flag such as @option{-std=c++11} for C++11
+support. Similarly, configure will if possible choose for
+@code{CXX1YSTD} a flag@footnote{Currently this is a valid option for
+@command{g++} 5 and later and 2016 versions of the Intel and Solaris
+compilers.  For earlier versions of @command{g++} one could try
+@option{-std=c++1y}.} such as @option{-std=c++14} for C++14 support. The
+inferred values can be overridden in file @file{config.site} or on the
+@command{configure} command line: user-supplied values will be tested
+compiling some C++11/14 code.
 
 It may be@footnote{This is true for earlier versions of @command{g++} such
 as 4.2.1, and also for commonly-used versions of the Solaris compiler
@@ -1035,13 +1035,17 @@ Solaris: c++03 c++11 c++14 (from 12.5)
 @code{g++}.)  Versions 4.3.x to 4.8.x of @command{g++} accepted flag
 @option{-std=c++0x} with partial support@footnote{For when features were
 supported, see
-@uref{https://gcc.gnu.org/@/projects/@/cxx-status.html#cxx11}.} for C++11:
-this is currently still accepted as a deprecated synonym for
-@option{-std=c++11}.  Option @option{-std=c++14} was introduced in
-version 5.x, with @option{-std=c++1y} (introduced@footnote{See
-@uref{https://gcc.gnu.org/@/projects/@/cxx-status.html#cxx14} for which C++14
-features it supported.} in version 4.9.x) remainng as a deprecated
-synonym.
+@uref{https://gcc.gnu.org/@/projects/@/cxx-status.html#cxx11}.} for
+C++11: this is currently still accepted as a deprecated synonym for
+@option{-std=c++11}.  (At least for versions 4.8.x it has sufficient
+support to be picked by @command{configure}.)  Option
+@option{-std=c++14} was introduced in version 5.x.
+
+@c c++1y does not pass the configure test in 4.9.3
+@c , with @option{-std=c++1y} (introduced@footnote{See
+@c @uref{https://gcc.gnu.org/@/projects/@/cxx-status.html#cxx14} for which
+@c C++14 features it supported.} in version 4.9.x) remaining as a deprecated
+@c synonym.
 
 `Standards' for @command{g++} starting with @samp{gnu} enable `GNU
 extensions': what those are is hard to track down.
@@ -1716,7 +1720,8 @@ Windows' CRLF line endings.
 The front page of a @acronym{CRAN} site has a link `Download R for OS
 X'. Click on that, then download the file @file{R-@value{VERSIONno}.pkg}
 and install it. This runs on macOS 10.9 and later (Mavericks, Yosemite,
-El Capitan, @dots{}).
+El Capitan, Sierra, @dots{}). (It may be possible to install from the
+sources for earlier OS versions: see @ref{macOS}.)
 
 Installers for R-patched and R-devel are usually available from
 @uref{https://r.research.att.com}.
@@ -2302,15 +2307,17 @@ CXXFLAGS=-mtune=native -g -O2 -Wall -pedantic -Wconversion
 @node Customizing package compilation, Multiple sub-architectures, macOS packages, Installing packages
 @subsection Customizing package compilation
 
-The @R{} system and package-specific compilation flags can be overridden or
-added to by setting the appropriate Make variables in the personal file
-@file{@var{HOME}/.R/Makevars-@var{R_PLATFORM}} (but
+The @R{} system and package-specific compilation flags can be overridden
+or added to by setting the appropriate Make variables in the personal
+file @file{@var{HOME}/.R/Makevars-@var{R_PLATFORM}} (but
 @file{@var{HOME}/.R/Makevars.win} or @file{@var{HOME}/.R/Makevars.win64}
 on Windows), or if that does not exist, @file{@var{HOME}/.R/Makevars},
 where @samp{R_PLATFORM} is the platform for which @R{} was built, as
 available in the @code{platform} component of the @R{} variable
-@code{R.version}.  An alternative personal file can be specified
-@emph{via} the environment variable @env{R_MAKEVARS_USER}.
+@code{R.version}.  The path to an alternative personal
+file@footnote{using a path containing spaces is likely to cause
+problems} can be specified @emph{via} the environment variable
+@env{R_MAKEVARS_USER}.
 
 Package developers are encouraged to use this mechanism to enable a
 reasonable amount of diagnostic messaging (``warnings'') when compiling,
@@ -2346,8 +2353,8 @@ FLIBS = -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin14/5.2.0
 
 There is also provision for a site-wide @file{Makevars.site} file under
 @file{@var{R_HOME}/etc} (in a sub-architecture-specific directory if
-appropriate).  This is read immediately after @file{Makeconf}, and an
-alternative file can be specified by environment variable
+appropriate).  This is read immediately after @file{Makeconf}, and the
+path to an alternative file can be specified by environment variable
 @env{R_MAKEVARS_SITE}.
 
 Note that these mechanisms do not work with packages which fail to pass
@@ -3173,17 +3180,19 @@ FORTRAN}).  Your C compiler should be
 @acronym{IEEE}@tie{}754}, POSIX 1003.1 and C99-compliant.@footnote{Note
 that C11 compilers need not be C99-compliant: @R{} requires support for
 @code{double complex} and variable-length arrays which are optional in
-C11 but is mandatory in C99.}  @R{} tries to choose suitable flags for
-the C compilers it knows about, but you may have to set @code{CC} or
-@code{CFLAGS} suitably.  For many versions of @command{gcc} with
-@code{glibc} this means including
+C11 but is mandatory in C99.}  @R{} tries to choose suitable
+flags@footnote{Examples are @option{-std=gnu99}, @option{-std=c99} and
+@option{-c99}.} for the C compilers it knows about, but you may have to
+set @code{CC} or @code{CFLAGS} suitably.  For versions of @command{gcc}
+prior to 5.1 with @code{glibc} this means including
 @option{-std=gnu99}@footnote{@option{-std=c99} excludes POSIX
 functionality, but @file{config.h} will turn on all @acronym{GNU}
-extensions to include the POSIX functionality.  The default mode for GCC
-5.1 and later is @option{-std=gnu11}.}.  (Note that options essential to
-run the compiler even for linking, such as those to set the
-architecture, should be specified as part of @code{CC} rather than in
-@code{CFLAGS}.)
+extensions to include the POSIX functionality for @R{} itself: this does
+not apply to badly-written packages.  The default mode for GCC 5.1 and
+later is @option{-std=gnu11}, which currently includes the optional
+features @R{} needs.}.  (Note that options essential to run the compiler
+even for linking, such as those to set the architecture, should be
+specified as part of @code{CC} rather than in @code{CFLAGS}.)
 
 Unless you do not want to view graphs on-screen (or use macOS) you need
 @samp{X11} installed, including its headers and client libraries. For
@@ -3216,11 +3225,12 @@ functionality of headers @file{wchar.h} and @file{wctype.h}, types
 @code{mbstowcs}, @code{wcrtomb}, @code{wcscoll}, @code{wcstombs},
 @code{wctrans}, @code{wctype}, and @code{iswctype}.} for wide-character
 types: this is checked at configuration.  A small number of POSIX
-functions@footnote{including the @code{opendir}, @code{readdir},
+functions@footnote{including @code{opendir}, @code{readdir},
 @code{closedir}, @code{popen}, @code{stat}, @code{glob}, @code{access},
-@code{getcwd} and @code{chdir} system calls, and either @code{putenv} or
-@code{setenv}.} are essential, and others@footnote{such as
-@code{realpath}, @code{symlink}.} will be used if available.
+@code{getcwd} and @code{chdir} system calls, @code{select} on a
+Unix-alike, and either @code{putenv} or @code{setenv}.} are essential,
+and others@footnote{such as @code{realpath}, @code{symlink}.} will be
+used if available.
 
 @c zlib 1.2.5 is from July 2010, bzip2 1.0.6 from Sept 2010
 @c xz 5.0.3 is from May 2011
@@ -3245,7 +3255,7 @@ Unicode properties can be checked at run-time by calling
 @code{pcre_config()}.  If building PCRE for use with @R{} a suitable
 @command{configure} command might be
 @example
-/configure --enable-utf --enable-unicode-properties --enable-jit --disable-cpp
+./configure --enable-utf --enable-unicode-properties --enable-jit --disable-cpp
 @end example
 @noindent  
 The @option{--enable-jit} flag is supported for most common CPUs.
@@ -4734,7 +4744,7 @@ FCFLAGS=$F77FLAGS
 The instructions here are for @cputype{x86_64} builds on 10.9
 (Mavericks) or later.  In principle@footnote{It will be necessary to
 install later versions of software such as @code{libcurl}.} @R{} can be
-built for 10.6 to 10.8 but these has not been tested recently.
+built for 10.6 to 10.8 but these have not been tested recently.
 
 To build @R{} you need Apple's `Command Line Tools': these can be
 (re-)installed by @command{xcode-select --install}.  (If you have a
@@ -4743,14 +4753,14 @@ offer the installation of the command-line tools.  If you have installed
 Xcode, this provides the command-line tools.  The tools will need to be
 reinstalled when macOS is upgraded, as upgrading partially removes them.)
 
-You need @code{readline}@footnote{Apple provides a partial emulation of
-GNU readline 4.2 based on the NetBSD @code{editline} library.  That is
-not recommended but for the time being @R{}'s installation scripts will
-make use of it if GNU readline is not found.} and a Fortran compiler.
-Those and other binary components are available from
+You need GNU @code{readline}@footnote{Apple provides a partial emulation
+of GNU readline 4.2 based on the NetBSD @code{editline} library.  That
+is not recommended but for the time being @R{}'s installation scripts
+will make use of it if GNU readline is not found.} and a Fortran
+compiler.  Those and other binary components are available from
 @uref{https://r.research.att.com/libs}: you are likely to need
-@code{pcre} and @code{xz} (recent macOS provides libraries but not
-headers for these).
+@code{pcre} and @code{xz} (for @code{libzma}: recent macOS provides
+libraries but not headers for these).
 
 An X sub-system is required unless configuring using
 @option{--without-x}: see @uref{https://xquartz.macosforge.org/}.
@@ -4759,10 +4769,10 @@ To use the @code{quartz()} graphics device you need to configure with
 @option{--with-aqua} (which is the default): @code{quartz()} then
 becomes the default device when running @R{} at the console and X11
 would only be used for the command-line-@R{} data editor/viewer and one
-version of Tcl/Tk.  (This needs an Objective-C compiler@footnote{These
-days that is defined by Apple's implementation of @code{clang}, so it is
-strongly recommended to use that.} which can compile the source code of
-@code{quartz()}.)
+version of Tcl/Tk.  (This option needs an Objective-C
+compiler@footnote{These days that is defined by Apple's implementation
+of @code{clang}, so it is strongly recommended to use that.} which can
+compile the source code of @code{quartz()}.)
 
 Use @option{--without-aqua} if you want a standard Unix-alike build:
 apart from disabling @code{quartz()} and the ability to use the build
@@ -4778,10 +4788,10 @@ CXX=clang++
 F77=gfortran-4.8
 FC=$F77
 OBJC=clang
-CFLAGS=-Wall -mtune=core2 -g -O2
-CXXFLAGS=-Wall -mtune=core2 -g -O2'
-OBJCFLAGS=-Wall -mtune=core2 -g -O2
-F77FLAGS=-Wall -g -O2
+CFLAGS='-Wall -mtune=core2 -g -O2'
+CXXFLAGS='-Wall -mtune=core2 -g -O2'
+OBJCFLAGS='-Wall -mtune=core2 -g -O2'
+F77FLAGS='-Wall -g -O2'
 FCFLAGS=$F77FLAGS
 @end example
 
@@ -4991,7 +5001,7 @@ JAVA_LIBS="-framework JavaVM"
 @noindent
 The Oracle JDK can be specified explicitly by something like
 @example
-JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_72.jdk/Contents/Home
+JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home
 JAVA_CPPFLAGS="-I/$@{JAVA_HOME@}/include -I/$@{JAVA_HOME@}/include/darwin"
 JAVA_LD_LIBRARY_PATH="$@{JAVA_HOME@}/jre/lib/server"
 JAVA_LIBS="-L/$@{JAVA_HOME@}/jre/lib/server -ljvm" 

@@ -144,40 +144,40 @@ SEXP do_relop(/*const*/ Expression* call,
     /* That symbols and calls were allowed was undocumented prior to
        R 2.5.0.  We deparse them as deparse() would, minus attributes */
     bool iS;
-    if ((iS = isSymbol(x)) || TYPEOF(x) == LANGSXP) {
+    if ((iS = Rf_isSymbol(x)) || TYPEOF(x) == LANGSXP) {
 	x = Rf_ScalarString(
 	    (iS) ? PRINTNAME(x) :
-	    STRING_ELT(deparse1(x, RHO_FALSE, DEFAULTDEPARSE), 0));
+	    STRING_ELT(Rf_deparse1(x, RHO_FALSE, DEFAULTDEPARSE), 0));
     }
-    if ((iS = isSymbol(y)) || TYPEOF(y) == LANGSXP) {
+    if ((iS = Rf_isSymbol(y)) || TYPEOF(y) == LANGSXP) {
 	y = Rf_ScalarString(
 	    (iS) ? PRINTNAME(y) :
-	    STRING_ELT(deparse1(y, RHO_FALSE, DEFAULTDEPARSE), 0));
+	    STRING_ELT(Rf_deparse1(y, RHO_FALSE, DEFAULTDEPARSE), 0));
     }
 
-    if (!isVector(x) || !isVector(y)) {
-	if (isNull(x) || isNull(y))
-	    return allocVector(LGLSXP,0);
-	errorcall(call,
+    if (!Rf_isVector(x) || !Rf_isVector(y)) {
+	if (Rf_isNull(x) || Rf_isNull(y))
+	    return Rf_allocVector(LGLSXP,0);
+	Rf_errorcall(call,
 		  _("comparison (%d) is possible only for atomic and list types"),
 		  op->variant());
     }
 
     if (TYPEOF(x) == EXPRSXP || TYPEOF(y) == EXPRSXP)
-	errorcall(call, _("comparison is not allowed for expressions"));
+	Rf_errorcall(call, _("comparison is not allowed for expressions"));
 
     /* ELSE :  x and y are both atomic or list */
 
     if (XLENGTH(x) <= 0 || XLENGTH(y) <= 0) {
-	return allocVector(LGLSXP, 0);
+	return Rf_allocVector(LGLSXP, 0);
     }
 
     RELOP_TYPE opcode = RELOP_TYPE(op->variant());
-    if (isString(x) || isString(y)) {
+    if (Rf_isString(x) || Rf_isString(y)) {
 	// This case has not yet been brought into line with the
 	// general rho pattern.
-	VectorBase* xv = static_cast<VectorBase*>(coerceVector(x, STRSXP));
-	VectorBase* yv = static_cast<VectorBase*>(coerceVector(y, STRSXP));
+	VectorBase* xv = static_cast<VectorBase*>(Rf_coerceVector(x, STRSXP));
+	VectorBase* yv = static_cast<VectorBase*>(Rf_coerceVector(y, STRSXP));
 	checkOperandsConformable(xv, yv);
 	int nx = Rf_length(xv);
 	int ny = Rf_length(yv);
@@ -185,49 +185,48 @@ SEXP do_relop(/*const*/ Expression* call,
 	if (nx > 0 && ny > 0)
 	    mismatch = (((nx > ny) ? nx % ny : ny % nx) != 0);
 	if (mismatch)
-	    warningcall(call, _("longer object length is not"
-				" a multiple of shorter object length"));
+	    Rf_warningcall(call, _("longer object length is not a multiple of shorter object length"));
 	GCStackRoot<VectorBase>
 	    ans(static_cast<VectorBase*>(string_relop(opcode, xv, yv)));
 	GeneralBinaryAttributeCopier::copyAttributes(ans, xv, yv);
 	return ans;
     }
-    else if (isComplex(x) || isComplex(y)) {
+    else if (Rf_isComplex(x) || Rf_isComplex(y)) {
 	GCStackRoot<ComplexVector>
-	    vl(static_cast<ComplexVector*>(coerceVector(x, CPLXSXP)));
+	    vl(static_cast<ComplexVector*>(Rf_coerceVector(x, CPLXSXP)));
 	GCStackRoot<ComplexVector>
-	    vr(static_cast<ComplexVector*>(coerceVector(y, CPLXSXP)));
+	    vr(static_cast<ComplexVector*>(Rf_coerceVector(y, CPLXSXP)));
 	return relop_no_order(vl.get(), vr.get(), opcode);
     }
-    else if (isReal(x) || isReal(y)) {
+    else if (Rf_isReal(x) || Rf_isReal(y)) {
 	GCStackRoot<RealVector>
-	    vl(static_cast<RealVector*>(coerceVector(x, REALSXP)));
+	    vl(static_cast<RealVector*>(Rf_coerceVector(x, REALSXP)));
 	GCStackRoot<RealVector>
-	    vr(static_cast<RealVector*>(coerceVector(y, REALSXP)));
+	    vr(static_cast<RealVector*>(Rf_coerceVector(y, REALSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
-    else if (isInteger(x) || isInteger(y)) {
+    else if (Rf_isInteger(x) || Rf_isInteger(y)) {
 	GCStackRoot<IntVector>
-	    vl(static_cast<IntVector*>(coerceVector(x, INTSXP)));
+	    vl(static_cast<IntVector*>(Rf_coerceVector(x, INTSXP)));
 	GCStackRoot<IntVector>
-	    vr(static_cast<IntVector*>(coerceVector(y, INTSXP)));
+	    vr(static_cast<IntVector*>(Rf_coerceVector(y, INTSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
     else if (isLogical(x) || isLogical(y)) {
 	// TODO(kmillar): do this without promoting to integer.
 	GCStackRoot<IntVector>
-	    vl(static_cast<IntVector*>(coerceVector(x, INTSXP)));
+	    vl(static_cast<IntVector*>(Rf_coerceVector(x, INTSXP)));
 	GCStackRoot<IntVector>
-	    vr(static_cast<IntVector*>(coerceVector(y, INTSXP)));
+	    vr(static_cast<IntVector*>(Rf_coerceVector(y, INTSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
     else if (TYPEOF(x) == RAWSXP || TYPEOF(y) == RAWSXP) {
 	GCStackRoot<RawVector>
-	    vl(static_cast<RawVector*>(coerceVector(x, RAWSXP)));
+	    vl(static_cast<RawVector*>(Rf_coerceVector(x, RAWSXP)));
 	GCStackRoot<RawVector>
-	    vr(static_cast<RawVector*>(coerceVector(y, RAWSXP)));
+	    vr(static_cast<RawVector*>(Rf_coerceVector(y, RAWSXP)));
 	return relop(vl.get(), vr.get(), opcode);
-    } else errorcall(call, _("comparison of these types is not implemented"));
+    } else Rf_errorcall(call, _("comparison of these types is not implemented"));
     return nullptr;  // -Wall
 }
 
@@ -244,7 +243,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
     n = (n1 > n2) ? n1 : n2;
     PROTECT(s1);
     PROTECT(s2);
-    PROTECT(ans = allocVector(LGLSXP, n));
+    PROTECT(ans = Rf_allocVector(LGLSXP, n));
 
     switch (code) {
     case EQOP:
@@ -352,15 +351,14 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 }
 
 
-#define mymax(x, y) ((x >= y) ? x : y)
 
 #define BIT(op, name) \
     int np = 0; \
-    if(isReal(a)) {a = PROTECT(coerceVector(a, INTSXP)); np++;} \
-    if(isReal(b)) {b = PROTECT(coerceVector(b, INTSXP)); np++;} \
-    if (TYPEOF(a) != TYPEOF(b)) error(_("'a' and 'b' must have the same type"));  \
-    R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), mn = (m && n) ? mymax(m, n) : 0;  \
-    SEXP ans = allocVector(TYPEOF(a), mn); \
+    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;} \
+    if(Rf_isReal(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;} \
+    if (TYPEOF(a) != TYPEOF(b)) Rf_error(_("'a' and 'b' must have the same type"));  \
+    R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), mn = (m && n) ? std::max(m, n) : 0;  \
+    SEXP ans = Rf_allocVector(TYPEOF(a), mn); \
     switch(TYPEOF(a)) { \
     case INTSXP: \
 	for(i = 0; i < mn; i++) { \
@@ -392,11 +390,11 @@ static SEXP bitwiseXor(SEXP a, SEXP b)
 static SEXP bitwiseShiftL(SEXP a, SEXP b)
 {
     int np = 0;
-    if(isReal(a)) {a = PROTECT(coerceVector(a, INTSXP)); np++;}
-    if(!isInteger(b)) {b = PROTECT(coerceVector(b, INTSXP)); np++;}
+    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
+    if(!Rf_isInteger(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;}
     R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), 
-	mn = (m && n) ? mymax(m, n) : 0;
-    SEXP ans = allocVector(TYPEOF(a), mn);
+	mn = (m && n) ? std::max(m, n) : 0;
+    SEXP ans = Rf_allocVector(TYPEOF(a), mn);
     switch(TYPEOF(a)) {
     case INTSXP:
 	for(i = 0; i < mn; i++) {
@@ -415,11 +413,11 @@ static SEXP bitwiseShiftL(SEXP a, SEXP b)
 static SEXP bitwiseShiftR(SEXP a, SEXP b)
 {
     int np = 0;
-    if(isReal(a)) {a = PROTECT(coerceVector(a, INTSXP)); np++;}
-    if(!isInteger(b)) {b = PROTECT(coerceVector(b, INTSXP)); np++;}
+    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
+    if(!Rf_isInteger(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;}
     R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), 
-	mn = (m && n) ? mymax(m, n) : 0;
-    SEXP ans = allocVector(TYPEOF(a), mn);
+	mn = (m && n) ? std::max(m, n) : 0;
+    SEXP ans = Rf_allocVector(TYPEOF(a), mn);
     switch(TYPEOF(a)) {
     case INTSXP:
 	for(i = 0; i < mn; i++) {
@@ -454,9 +452,9 @@ SEXP attribute_hidden do_bitwise(/*const*/ Expression* call, const BuiltInFuncti
 
 SEXP attribute_hidden do_bitwise_not(/*const*/ Expression* call, const BuiltInFunction* op, RObject* a) {
     int np = 0;
-    if(isReal(a)) {a = PROTECT(coerceVector(a, INTSXP)); np++;}
+    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
     R_xlen_t i, m = XLENGTH(a);
-    SEXP ans = allocVector(TYPEOF(a), m);
+    SEXP ans = Rf_allocVector(TYPEOF(a), m);
     switch(TYPEOF(a)) {
     case INTSXP:
 	for(i = 0; i < m; i++) {

@@ -75,7 +75,6 @@
 #define yylloc          gramRd_lloc
 
 /* First part of user prologue.  */
-#line 1 "./gramRd.y"
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -257,7 +256,6 @@ static int 	mkComment(int);
 #define YYSTYPE		SEXP
 
 
-#line 261 "y.tab.c"
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
@@ -1560,327 +1558,219 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
   switch (yytype)
     {
     case 5: /* SECTIONHEADER  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1566 "y.tab.c"
         break;
 
     case 6: /* RSECTIONHEADER  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1572 "y.tab.c"
         break;
 
     case 7: /* VSECTIONHEADER  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1578 "y.tab.c"
         break;
 
     case 8: /* SECTIONHEADER2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1584 "y.tab.c"
         break;
 
     case 9: /* RCODEMACRO  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1590 "y.tab.c"
         break;
 
     case 10: /* SEXPR  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1596 "y.tab.c"
         break;
 
     case 12: /* LATEXMACRO  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1602 "y.tab.c"
         break;
 
     case 13: /* VERBMACRO  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1608 "y.tab.c"
         break;
 
     case 14: /* OPTMACRO  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1614 "y.tab.c"
         break;
 
     case 15: /* ESCAPE  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1620 "y.tab.c"
         break;
 
     case 16: /* LISTSECTION  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1626 "y.tab.c"
         break;
 
     case 17: /* ITEMIZE  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1632 "y.tab.c"
         break;
 
     case 18: /* DESCRIPTION  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1638 "y.tab.c"
         break;
 
     case 19: /* NOITEM  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1644 "y.tab.c"
         break;
 
     case 20: /* LATEXMACRO2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1650 "y.tab.c"
         break;
 
     case 21: /* VERBMACRO2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1656 "y.tab.c"
         break;
 
     case 22: /* VERBLATEX  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1662 "y.tab.c"
         break;
 
     case 23: /* LATEXMACRO3  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1668 "y.tab.c"
         break;
 
     case 24: /* NEWCOMMAND  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1674 "y.tab.c"
         break;
 
     case 25: /* USERMACRO  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1680 "y.tab.c"
         break;
 
     case 26: /* USERMACRO1  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1686 "y.tab.c"
         break;
 
     case 27: /* USERMACRO2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1692 "y.tab.c"
         break;
 
     case 28: /* USERMACRO3  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1698 "y.tab.c"
         break;
 
     case 29: /* USERMACRO4  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1704 "y.tab.c"
         break;
 
     case 30: /* USERMACRO5  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1710 "y.tab.c"
         break;
 
     case 31: /* USERMACRO6  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1716 "y.tab.c"
         break;
 
     case 32: /* USERMACRO7  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1722 "y.tab.c"
         break;
 
     case 33: /* USERMACRO8  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1728 "y.tab.c"
         break;
 
     case 34: /* USERMACRO9  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1734 "y.tab.c"
         break;
 
     case 35: /* IFDEF  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1740 "y.tab.c"
         break;
 
     case 36: /* ENDIF  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1746 "y.tab.c"
         break;
 
     case 37: /* TEXT  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1752 "y.tab.c"
         break;
 
     case 38: /* RCODE  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1758 "y.tab.c"
         break;
 
     case 39: /* VERB  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1764 "y.tab.c"
         break;
 
     case 40: /* COMMENT  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1770 "y.tab.c"
         break;
 
     case 41: /* UNKNOWN  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1776 "y.tab.c"
         break;
 
     case 42: /* STARTFILE  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1782 "y.tab.c"
         break;
 
     case 43: /* STARTFRAGMENT  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1788 "y.tab.c"
         break;
 
     case 54: /* ArgItems  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1794 "y.tab.c"
         break;
 
     case 58: /* LatexArg  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1800 "y.tab.c"
         break;
 
     case 63: /* RLikeArg2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1806 "y.tab.c"
         break;
 
     case 65: /* VerbatimArg1  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1812 "y.tab.c"
         break;
 
     case 66: /* VerbatimArg2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1818 "y.tab.c"
         break;
 
     case 67: /* IfDefTarget  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1824 "y.tab.c"
         break;
 
     case 68: /* goLatexLike  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1830 "y.tab.c"
         break;
 
     case 69: /* goRLike  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1836 "y.tab.c"
         break;
 
     case 70: /* goRLike2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1842 "y.tab.c"
         break;
 
     case 71: /* goOption  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1848 "y.tab.c"
         break;
 
     case 72: /* goVerbatim  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1854 "y.tab.c"
         break;
 
     case 73: /* goVerbatim1  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1860 "y.tab.c"
         break;
 
     case 74: /* goVerbatim2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1866 "y.tab.c"
         break;
 
     case 75: /* goItem0  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1872 "y.tab.c"
         break;
 
     case 76: /* goItem2  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1878 "y.tab.c"
         break;
 
     case 78: /* Option  */
-#line 202 "./gramRd.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1884 "y.tab.c"
         break;
 
       default:
@@ -2170,379 +2060,254 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 214 "./gramRd.y"
     { xxsavevalue(yyvsp[-1], &(yyloc)); UNPROTECT_PTR(yyvsp[-2]); YYACCEPT; }
-#line 2176 "y.tab.c"
     break;
 
   case 3:
-#line 215 "./gramRd.y"
     { xxsavevalue(yyvsp[-1], &(yyloc)); UNPROTECT_PTR(yyvsp[-2]); YYACCEPT; }
-#line 2182 "y.tab.c"
     break;
 
   case 4:
-#line 216 "./gramRd.y"
     { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
-#line 2188 "y.tab.c"
     break;
 
   case 5:
-#line 219 "./gramRd.y"
     { yyval = yyvsp[0]; UNPROTECT_PTR(yyvsp[-1]); }
-#line 2194 "y.tab.c"
     break;
 
   case 6:
-#line 222 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2200 "y.tab.c"
     break;
 
   case 7:
-#line 225 "./gramRd.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 2206 "y.tab.c"
     break;
 
   case 8:
-#line 226 "./gramRd.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 2212 "y.tab.c"
     break;
 
   case 9:
-#line 228 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2218 "y.tab.c"
     break;
 
   case 10:
-#line 229 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); }
-#line 2224 "y.tab.c"
     break;
 
   case 11:
-#line 230 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2230 "y.tab.c"
     break;
 
   case 12:
-#line 231 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2236 "y.tab.c"
     break;
 
   case 13:
-#line 232 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2242 "y.tab.c"
     break;
 
   case 14:
-#line 233 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-#line 2248 "y.tab.c"
     break;
 
   case 15:
-#line 234 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); UNPROTECT_PTR(yyvsp[0]); }
-#line 2254 "y.tab.c"
     break;
 
   case 16:
-#line 235 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); }
-#line 2260 "y.tab.c"
     break;
 
   case 17:
-#line 236 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-1]); }
-#line 2266 "y.tab.c"
     break;
 
   case 18:
-#line 237 "./gramRd.y"
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-2]); }
-#line 2272 "y.tab.c"
     break;
 
   case 19:
-#line 238 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-#line 2278 "y.tab.c"
     break;
 
   case 20:
-#line 239 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-#line 2284 "y.tab.c"
     break;
 
   case 21:
-#line 240 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2290 "y.tab.c"
     break;
 
   case 22:
-#line 241 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2296 "y.tab.c"
     break;
 
   case 23:
-#line 243 "./gramRd.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 2302 "y.tab.c"
     break;
 
   case 24:
-#line 244 "./gramRd.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 2308 "y.tab.c"
     break;
 
   case 25:
-#line 246 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-#line 2314 "y.tab.c"
     break;
 
   case 26:
-#line 247 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], RCODE, &(yyloc)); }
-#line 2320 "y.tab.c"
     break;
 
   case 27:
-#line 248 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], VERB, &(yyloc)); }
-#line 2326 "y.tab.c"
     break;
 
   case 28:
-#line 249 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-#line 2332 "y.tab.c"
     break;
 
   case 29:
-#line 250 "./gramRd.y"
     { yyval = xxtag(yyvsp[0], UNKNOWN, &(yyloc)); yyerror(yyunknown); }
-#line 2338 "y.tab.c"
     break;
 
   case 30:
-#line 251 "./gramRd.y"
     { yyval = xxmarkup(R_NilValue, yyvsp[0], STATIC, &(yyloc)); }
-#line 2344 "y.tab.c"
     break;
 
   case 31:
-#line 252 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2350 "y.tab.c"
     break;
 
   case 32:
-#line 253 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2356 "y.tab.c"
     break;
 
   case 33:
-#line 254 "./gramRd.y"
     { yyval = yyvsp[0]; }
-#line 2362 "y.tab.c"
     break;
 
   case 34:
-#line 256 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2368 "y.tab.c"
     break;
 
   case 35:
-#line 257 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-#line 2374 "y.tab.c"
     break;
 
   case 36:
-#line 258 "./gramRd.y"
     { yyval = xxmarkup3(yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2380 "y.tab.c"
     break;
 
   case 37:
-#line 259 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2386 "y.tab.c"
     break;
 
   case 38:
-#line 260 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2392 "y.tab.c"
     break;
 
   case 39:
-#line 261 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], STATIC, &(yyloc)); xxpopMode(yyvsp[-1]); }
-#line 2398 "y.tab.c"
     break;
 
   case 40:
-#line 262 "./gramRd.y"
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); xxpopMode(yyvsp[-2]); }
-#line 2404 "y.tab.c"
     break;
 
   case 41:
-#line 263 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2410 "y.tab.c"
     break;
 
   case 42:
-#line 264 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-2], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-1]); }
-#line 2416 "y.tab.c"
     break;
 
   case 43:
-#line 265 "./gramRd.y"
     { yyval = xxOptionmarkup(yyvsp[-3], yyvsp[-1], yyvsp[0], HAS_SEXPR, &(yyloc)); xxpopMode(yyvsp[-2]); }
-#line 2422 "y.tab.c"
     break;
 
   case 44:
-#line 266 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[-1], yyvsp[0], STATIC, &(yyloc)); }
-#line 2428 "y.tab.c"
     break;
 
   case 45:
-#line 267 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-1], yyvsp[0], R_NilValue, 1, STATIC, &(yyloc)); }
-#line 2434 "y.tab.c"
     break;
 
   case 46:
-#line 268 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-#line 2440 "y.tab.c"
     break;
 
   case 47:
-#line 269 "./gramRd.y"
     { yyval = xxmarkup(yyvsp[0], R_NilValue, STATIC, &(yyloc)); }
-#line 2446 "y.tab.c"
     break;
 
   case 48:
-#line 270 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); UNPROTECT_PTR(yyvsp[0]); }
-#line 2452 "y.tab.c"
     break;
 
   case 49:
-#line 271 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-3], yyvsp[-2], yyvsp[-1], 2, HAS_IFDEF, &(yyloc)); }
-#line 2458 "y.tab.c"
     break;
 
   case 50:
-#line 272 "./gramRd.y"
     { yyval = xxmarkup2(yyvsp[-2], yyvsp[-1], yyvsp[0], 2, STATIC, &(yyloc)); }
-#line 2464 "y.tab.c"
     break;
 
   case 51:
-#line 274 "./gramRd.y"
     { yyval = xxnewcommand(yyvsp[-2], yyvsp[-1], yyvsp[0], &(yyloc)); }
-#line 2470 "y.tab.c"
     break;
 
   case 52:
-#line 275 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[0], xxnewlist(NULL), &(yyloc)); }
-#line 2476 "y.tab.c"
     break;
 
   case 53:
-#line 276 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-1], xxnewlist(yyvsp[0]), &(yyloc)); }
-#line 2482 "y.tab.c"
     break;
 
   case 54:
-#line 278 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-2], xxnewlist2(yyvsp[-1], yyvsp[0]), &(yyloc)); }
-#line 2488 "y.tab.c"
     break;
 
   case 55:
-#line 280 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-3], xxnewlist3(yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-#line 2494 "y.tab.c"
     break;
 
   case 56:
-#line 282 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-4], xxnewlist4(yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-#line 2500 "y.tab.c"
     break;
 
   case 57:
-#line 284 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-5], xxnewlist5(yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-#line 2506 "y.tab.c"
     break;
 
   case 58:
-#line 286 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-6], xxnewlist6(yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1], yyvsp[0]), &(yyloc)); }
-#line 2512 "y.tab.c"
     break;
 
   case 59:
-#line 289 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-8], xxnewlist7(yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-#line 2518 "y.tab.c"
     break;
 
   case 60:
-#line 292 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-9], xxnewlist8(yyvsp[-8], yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-#line 2524 "y.tab.c"
     break;
 
   case 61:
-#line 295 "./gramRd.y"
     { yyval = xxusermacro(yyvsp[-10], xxnewlist9(yyvsp[-9], yyvsp[-8], yyvsp[-7], yyvsp[-6], yyvsp[-5], yyvsp[-4], yyvsp[-3], yyvsp[-2], yyvsp[-1]), &(yyloc)); }
-#line 2530 "y.tab.c"
     break;
 
   case 62:
-#line 298 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2536 "y.tab.c"
     break;
 
   case 63:
-#line 300 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2542 "y.tab.c"
     break;
 
   case 64:
-#line 301 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(yyvsp[0]); 
      						  if(wCalls)
     	    					      warning(_("bad markup (extra space?) at %s:%d:%d"), 
@@ -2551,161 +2316,109 @@ yyreduce:
     	    					      warningcall(R_NilValue, _("bad markup (extra space?) at %s:%d:%d"), 
     	    					            parseState.xxBasename, (yylsp[0]).first_line, (yylsp[0]).first_column); 
 						}
-#line 2555 "y.tab.c"
     break;
 
   case 65:
-#line 310 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2561 "y.tab.c"
     break;
 
   case 66:
-#line 312 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2567 "y.tab.c"
     break;
 
   case 67:
-#line 314 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2573 "y.tab.c"
     break;
 
   case 68:
-#line 318 "./gramRd.y"
     { xxpopMode(yyvsp[-2]); yyval = yyvsp[-1]; }
-#line 2579 "y.tab.c"
     break;
 
   case 69:
-#line 319 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(NULL); }
-#line 2585 "y.tab.c"
     break;
 
   case 70:
-#line 321 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2591 "y.tab.c"
     break;
 
   case 71:
-#line 323 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = yyvsp[0]; }
-#line 2597 "y.tab.c"
     break;
 
   case 72:
-#line 327 "./gramRd.y"
     { xxpopMode(yyvsp[-2]); yyval = yyvsp[-1]; }
-#line 2603 "y.tab.c"
     break;
 
   case 73:
-#line 328 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(NULL); }
-#line 2609 "y.tab.c"
     break;
 
   case 74:
-#line 330 "./gramRd.y"
     { xxpopMode(yyvsp[-1]); yyval = xxnewlist(xxtag(yyvsp[0], TEXT, &(yyloc))); }
-#line 2615 "y.tab.c"
     break;
 
   case 75:
-#line 333 "./gramRd.y"
     { yyval = xxpushMode(LATEXLIKE, UNKNOWN, FALSE); }
-#line 2621 "y.tab.c"
     break;
 
   case 76:
-#line 335 "./gramRd.y"
     { yyval = xxpushMode(RLIKE, UNKNOWN, FALSE); }
-#line 2627 "y.tab.c"
     break;
 
   case 77:
-#line 337 "./gramRd.y"
     { parseState.xxbraceDepth--; yyval = xxpushMode(RLIKE, UNKNOWN, FALSE); parseState.xxbraceDepth++; }
-#line 2633 "y.tab.c"
     break;
 
   case 78:
-#line 339 "./gramRd.y"
     { yyval = xxpushMode(INOPTION, UNKNOWN, FALSE); }
-#line 2639 "y.tab.c"
     break;
 
   case 79:
-#line 341 "./gramRd.y"
     { yyval = xxpushMode(VERBATIM, UNKNOWN, FALSE); }
-#line 2645 "y.tab.c"
     break;
 
   case 80:
-#line 343 "./gramRd.y"
     { yyval = xxpushMode(VERBATIM, UNKNOWN, TRUE); }
-#line 2651 "y.tab.c"
     break;
 
   case 81:
-#line 345 "./gramRd.y"
     { parseState.xxbraceDepth--; yyval = xxpushMode(VERBATIM, UNKNOWN, FALSE); parseState.xxbraceDepth++; }
-#line 2657 "y.tab.c"
     break;
 
   case 82:
-#line 347 "./gramRd.y"
     { yyval = xxpushMode(LATEXLIKE, ESCAPE, FALSE); }
-#line 2663 "y.tab.c"
     break;
 
   case 83:
-#line 349 "./gramRd.y"
     { yyval = xxpushMode(LATEXLIKE, LATEXMACRO2, FALSE); }
-#line 2669 "y.tab.c"
     break;
 
   case 84:
-#line 351 "./gramRd.y"
     { yyval = yyvsp[-1]; }
-#line 2675 "y.tab.c"
     break;
 
   case 85:
-#line 352 "./gramRd.y"
     { yyval = xxnewlist(NULL); }
-#line 2681 "y.tab.c"
     break;
 
   case 86:
-#line 353 "./gramRd.y"
     { yyval = yyvsp[-2]; }
-#line 2687 "y.tab.c"
     break;
 
   case 87:
-#line 354 "./gramRd.y"
     { yyval = xxnewlist(NULL); }
-#line 2693 "y.tab.c"
     break;
 
   case 88:
-#line 355 "./gramRd.y"
     { yyval = yyvsp[-2]; }
-#line 2699 "y.tab.c"
     break;
 
   case 89:
-#line 357 "./gramRd.y"
     { yyval = yyvsp[-1]; }
-#line 2705 "y.tab.c"
     break;
 
 
-#line 2709 "y.tab.c"
 
       default: break;
     }
@@ -2943,7 +2656,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 359 "./gramRd.y"
 
 
 static SEXP xxpushMode(int newmode, int newitem, int neweqn)

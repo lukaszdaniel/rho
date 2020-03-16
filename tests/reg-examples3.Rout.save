@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2019-10-29 ra456e8b289) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2019-11-06 r3dfd4094b1) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-06-02 r70700) -- "Frisbee Sailing"
+R Under development (unstable) (2016-08-05 r71040) -- "Frisbee Sailing"
 Copyright (C) 2019 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -204,6 +204,28 @@ factor> is.na(x)
 
 factor> # [1] FALSE  TRUE FALSE
 factor> 
+factor> ## More rational, since R 3.4.0 :
+factor> factor(c(1:2, NA), exclude =  "" ) # keeps <NA> , as
+[1] 1    2    <NA>
+Levels: 1 2 <NA>
+
+factor> factor(c(1:2, NA), exclude = NULL) # always did
+[1] 1    2    <NA>
+Levels: 1 2 <NA>
+
+factor> ## exclude = <character>
+factor> z # ordered levels 'A < B < C'
+[1] C B A
+Levels: A < B < C
+
+factor> factor(z, exclude = "C") # does exclude
+[1] <NA> B    A   
+Levels: A < B
+
+factor> factor(z, exclude = "B") # ditto
+[1] C    <NA> A   
+Levels: A < C
+
 factor> ## Using addNA()
 factor> Month <- airquality$Month
 

@@ -121,10 +121,9 @@ SEXP R_initMethodDispatch(SEXP envir)
     R_PreserveObject(R_TRUE);
 
     /* some strings (NOT symbols) */
-    PROTECT(s_missing = mkString("missing"));
+    s_missing = mkString("missing");
     setAttrib(s_missing, R_PackageSymbol, mkString("methods"));
     R_PreserveObject(s_missing);
-    UNPROTECT(1);
     s_base = mkString("base");
     R_PreserveObject(s_base);
     /*  Initialize method dispatch, using the static */

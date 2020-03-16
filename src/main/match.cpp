@@ -64,7 +64,7 @@ Rboolean Rf_NonNullStringMatch(SEXP s, SEXP t)
 {
     /* "" or NA string matches nothing */
     if (s == NA_STRING || t == NA_STRING) return FALSE;
-    if (CHAR(s)[0] && CHAR(t)[0] && Rf_Seql(s, t))
+    if (R_CHAR(s)[0] && R_CHAR(t)[0] && Rf_Seql(s, t))
 	return TRUE;
     else
 	return FALSE;
@@ -95,10 +95,10 @@ Rboolean Rf_pmatch(SEXP formal, SEXP tag, Rboolean exact)
     Rboolean res;  // In rho this must be declared outside the span of the gotos
     switch (TYPEOF(formal)) {
     case SYMSXP:
-	f = CHAR(PRINTNAME(formal));
+	f = R_CHAR(PRINTNAME(formal));
 	break;
     case CHARSXP:
-	f = CHAR(formal);
+	f = R_CHAR(formal);
 	break;
     case STRSXP:
 	f = Rf_translateChar(STRING_ELT(formal, 0));
@@ -108,10 +108,10 @@ Rboolean Rf_pmatch(SEXP formal, SEXP tag, Rboolean exact)
     }
     switch(TYPEOF(tag)) {
     case SYMSXP:
-	t = CHAR(PRINTNAME(tag));
+	t = R_CHAR(PRINTNAME(tag));
 	break;
     case CHARSXP:
-	t = CHAR(tag);
+	t = R_CHAR(tag);
 	break;
     case STRSXP:
 	t = Rf_translateChar(STRING_ELT(tag, 0));

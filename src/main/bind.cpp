@@ -1394,9 +1394,9 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     }
     else { /* everything else, currently REALSXP, INTSXP, LGLSXP */
         for (const auto& arg : args.getArgs()) {
-            u = PRVALUE(arg.car()); /* type of u can be any of: RAW, LGL, INT, REAL */
+            u = PRVALUE(arg.car()); /* type of u can be any of: RAW, LGL, INT, REAL, or NULL */
 	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
-		R_xlen_t k = XLENGTH(u);
+		R_xlen_t k = xlength(u); /* use xlength since u can be NULL */
 		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
 		if (TYPEOF(u) <= INTSXP) { /* INT or LGL */
 		    if (mode <= INTSXP) {

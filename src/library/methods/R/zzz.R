@@ -26,6 +26,7 @@
     ## temporary empty reference to the package's own namespace
     assign(".methodsNamespace", new.env(), envir = where)
     .Call(C_R_set_method_dispatch, TRUE)
+    cat("initializing class and method definitions ...")
     ## set up default prototype (uses .Call so has be at load time)
     assign(".defaultPrototype", .Call(C_Rf_allocS4Object), envir = where)
     assign(".SealedClasses", character(), envir = where)
@@ -81,6 +82,7 @@
     ## unlock some bindings that must be modifiable
     unlockBinding(".BasicFunsList", where)
     assign(".saveImage", TRUE, envir = where)
+    cat(" done\n")
 
     assign("envRefMethodNames",
 	   names(getClassDef("envRefClass")@refMethods), envir = where)

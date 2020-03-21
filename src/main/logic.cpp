@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999--2015  The R Core Team.
+ *  Copyright (C) 1999--2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -89,21 +89,46 @@ namespace {
 
     RObject* lbinary(const BuiltInFunction* op, RObject* x, RObject* y)
     {
-	/* logical binary : "&" or "|" */
-	if (x && x->sexptype() == RAWSXP
-	    && y && y->sexptype() == RAWSXP) {
-	    // Bitwise operations:
-	    RawVector* vl = static_cast<RawVector*>(x);
-	    RawVector* vr = static_cast<RawVector*>(y);
-	    return bitwiseBinary(op->variant(), vl, vr);
-	}
-	if (!Rf_isNumber(x) || !Rf_isNumber(y))
+
+	if (x && x->sexptype() == RAWSXP && y && y->sexptype() == RAWSXP) {
+	} else if (!(Rf_isNull(x) || Rf_isNumber(x))
+	    || !(Rf_isNull(y) || Rf_isNumber(y)))
 	    Rf_error(_("operations are possible only for numeric, logical or complex types"));
-	GCStackRoot<LogicalVector>
-	    vl(static_cast<LogicalVector*>(Rf_coerceVector(x, LGLSXP)));
-	GCStackRoot<LogicalVector>
-	    vr(static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP)));
-	return binaryLogic(op->variant(), vl, vr);
+
+	R_xlen_t nx = Rf_xlength(x), ny = Rf_xlength(y);
+
+	checkOperandsConformable(
+	    static_cast<VectorBase*>(x), static_cast<VectorBase*>(y));
+
+	if (nx > 0 && ny > 0) {
+	    /* logical binary : "&" or "|" */
+	    if (x && x->sexptype() == RAWSXP && y && y->sexptype() == RAWSXP) {
+		// Bitwise operations:
+		RawVector* vl = static_cast<RawVector*>(x);
+		RawVector* vr = static_cast<RawVector*>(y);
+		return bitwiseBinary(op->variant(), vl, vr);
+	    }
+	    GCStackRoot<LogicalVector> vl;
+	    GCStackRoot<LogicalVector> vr;
+	    if (Rf_isNull(x))
+		vl = static_cast<LogicalVector*>(
+		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
+	    else // isNumeric(x)
+		vl = static_cast<LogicalVector*>(Rf_coerceVector(x, LGLSXP));
+	    if (Rf_isNull(y))
+		vr = static_cast<LogicalVector*>(
+		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
+	    else // isNumeric(x)
+		vr = static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP));
+	    return binaryLogic(op->variant(), vl, vr);
+	} else { // nx == 0 || ny == 0
+	    GCStackRoot<> val(Rf_allocVector(LGLSXP, 0));
+	    GeneralBinaryAttributeCopier::copyAttributes(
+		SEXP_downcast<VectorBase*>(val.get()),
+		static_cast<VectorBase*>(x),
+		static_cast<VectorBase*>(y));
+	    return val;
+	}
     }
 
     RObject* lnot(RObject* arg)

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2014  The R Core Team
+ *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -141,6 +141,10 @@ SEXP do_relop(/*const*/ Expression* call,
 {
     GCStackRoot<> x(xarg), y(yarg);
 
+    R_xlen_t
+	nx = Rf_xlength(x),
+	ny = Rf_xlength(y);
+
     /* That symbols and calls were allowed was undocumented prior to
        R 2.5.0.  We deparse them as deparse() would, minus attributes */
     bool iS;
@@ -155,36 +159,27 @@ SEXP do_relop(/*const*/ Expression* call,
 	    STRING_ELT(Rf_deparse1(y, RHO_FALSE, DEFAULTDEPARSE), 0));
     }
 
-    if (!Rf_isVector(x) || !Rf_isVector(y)) {
-	if (Rf_isNull(x) || Rf_isNull(y))
-	    return Rf_allocVector(LGLSXP,0);
+    if (Rf_isNull(x)) x = Rf_allocVector(INTSXP,0);
+    if (Rf_isNull(y)) y = Rf_allocVector(INTSXP,0);
+    if (!Rf_isVector(x) || !Rf_isVector(y))
 	Rf_errorcall(call,
 		  _("comparison (%d) is possible only for atomic and list types"),
 		  op->variant());
-    }
 
     if (TYPEOF(x) == EXPRSXP || TYPEOF(y) == EXPRSXP)
 	Rf_errorcall(call, _("comparison is not allowed for expressions"));
 
     /* ELSE :  x and y are both atomic or list */
+	checkOperandsConformable(static_cast<VectorBase*>(xarg), static_cast<VectorBase*>(yarg));
 
-    if (XLENGTH(x) <= 0 || XLENGTH(y) <= 0) {
-	return Rf_allocVector(LGLSXP, 0);
-    }
-
+  if (nx > 0 && ny > 0) {
     RELOP_TYPE opcode = RELOP_TYPE(op->variant());
     if (Rf_isString(x) || Rf_isString(y)) {
 	// This case has not yet been brought into line with the
 	// general rho pattern.
 	VectorBase* xv = static_cast<VectorBase*>(Rf_coerceVector(x, STRSXP));
 	VectorBase* yv = static_cast<VectorBase*>(Rf_coerceVector(y, STRSXP));
-	checkOperandsConformable(xv, yv);
-	int nx = Rf_length(xv);
-	int ny = Rf_length(yv);
-	bool mismatch = false;
-	if (nx > 0 && ny > 0)
-	    mismatch = (((nx > ny) ? nx % ny : ny % nx) != 0);
-	if (mismatch)
+	if (((nx > ny) ? nx % ny : ny % nx) != 0) // mismatch
 	    Rf_warningcall(call, _("longer object length is not a multiple of shorter object length"));
 	GCStackRoot<VectorBase>
 	    ans(static_cast<VectorBase*>(string_relop(opcode, xv, yv)));
@@ -212,7 +207,7 @@ SEXP do_relop(/*const*/ Expression* call,
 	    vr(static_cast<IntVector*>(Rf_coerceVector(y, INTSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
-    else if (isLogical(x) || isLogical(y)) {
+    else if (Rf_isLogical(x) || Rf_isLogical(y)) {
 	// TODO(kmillar): do this without promoting to integer.
 	GCStackRoot<IntVector>
 	    vl(static_cast<IntVector*>(Rf_coerceVector(x, INTSXP)));
@@ -227,6 +222,14 @@ SEXP do_relop(/*const*/ Expression* call,
 	    vr(static_cast<RawVector*>(Rf_coerceVector(y, RAWSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     } else Rf_errorcall(call, _("comparison of these types is not implemented"));
+  }  else {
+      GCStackRoot<> val(Rf_allocVector(LGLSXP, 0));
+      GeneralBinaryAttributeCopier::copyAttributes(
+	  SEXP_downcast<VectorBase*>(val.get()),
+	  static_cast<VectorBase*>(xarg),
+	  static_cast<VectorBase*>(yarg));
+      return val;
+  }
     return nullptr;  // -Wall
 }
 
@@ -240,7 +243,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 
     n1 = XLENGTH(s1);
     n2 = XLENGTH(s2);
-    n = (n1 > n2) ? n1 : n2;
+    n = std::max(n1, n2);
     PROTECT(s1);
     PROTECT(s2);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));

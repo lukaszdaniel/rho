@@ -73,7 +73,7 @@ namespace rho {
 	 */
 	inline void checkOperandsConformable(const VectorBase* vl,
 				      const VectorBase* vr) {
-	    if (vl->hasAttributes() || vr->hasAttributes())
+	    if (((vl && vl->hasAttributes()) || (vr && vr->hasAttributes())))
 		internal::checkOperandsConformable_full(vl, vr);
 	}
 
@@ -130,7 +130,7 @@ namespace rho {
 				       const VectorBase* vl,
 				       const VectorBase* vr)
 	    {
-		if (!vl->attributes() && !vr->attributes())
+		if (vl && vr && !vl->attributes() && !vr->attributes())
 		    return;
 		apply(vout, vl, vr);
 	    }
@@ -148,6 +148,7 @@ namespace rho {
 				       const VectorBase* vl,
 				       const VectorBase* vr)
 	    {
+		assert(vl && vr);
 		if (!vl->attributes() && !vr->attributes())
 		    return;
 
@@ -160,7 +161,7 @@ namespace rho {
 		    Rf_copyMostAttrib(const_cast<VectorBase*>(vr), vout);
 		    Rf_copyMostAttrib(const_cast<VectorBase*>(vl), vout);
 		}
-		
+
 		/* Handle remaining attributes. */
 		GeneralBinaryAttributeCopier::copyAttributes(vout, vl, vr);
 		if (vl->isS4Object() || vr->isS4Object()) {
@@ -227,7 +228,7 @@ namespace rho {
 		return OutputType::createScalar(op((*lhs)[0], (*rhs)[0]));
 	    }
 	    OutputType* result = OutputType::create(size);
-	    if (size == 1) {
+		if (size == 1) {
 		(*result)[0] = op((*lhs)[0], (*rhs)[0]);
 	    } else if (lhs_size == 1) {
 		// TODO: move these into a separate function so that the scalar
@@ -257,8 +258,7 @@ namespace rho {
 		}
 
 		if (lhs_i != 0 || rhs_i != 0) {
-		    Rf_warning(_("longer object length is not"
-				 " a multiple of shorter object length"));
+		    Rf_warning(_("longer object length is not a multiple of shorter object length"));
 		}
 	    }
 

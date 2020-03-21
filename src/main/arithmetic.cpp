@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996, 1997  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2016	    The R Core Team.
- *  Copyright (C) 2003--2016	    The R Foundation
+ *  Copyright (C) 1995--1997 Robert Gentleman and Ross Ihaka
+ *  Copyright (C) 1998--2016 The R Core Team.
+ *  Copyright (C) 2003--2016 The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -54,13 +54,14 @@
 
 #include <Rmath.h>
 
+#include <R_ext/Itermacros.h>
+
 #include "arithmetic.h"
 
 #include <errno.h>
 #include <math.h>
 #include <stdarg.h>
 
-#include "R_ext/Itermacros.h"
 #include "rho/ArgMatcher.hpp"
 #include "rho/BinaryFunction.hpp"
 #include "rho/ClosureContext.hpp"
@@ -141,7 +142,7 @@ static double R_ValueOfNA(void)
 
 int R_IsNA(double x)
 {
-    if (ISNAN(x)) {
+    if (isnan(x)) {
 	ieee_double y;
 	y.value = x;
 	return (y.word[lw] == 1954);
@@ -151,21 +152,25 @@ int R_IsNA(double x)
 
 int R_IsNaN(double x)
 {
-    if (ISNAN(x)) {
+    if (isnan(x)) {
 	ieee_double y;
 	y.value = x;
 	return RHOCONSTRUCT(Rboolean, (y.word[lw] != 1954));
     }
-    return FALSE;
+    return 0;
 }
 
-/* Mainly for use in packages */
+
 int R_isnancpp(double x) {
     return std::isnan(x);
 }
+
+
+/* Mainly for use in packages */
 int R_finite(double x) {
     return std::isfinite(x);
 }
+
 
 /* Arithmetic Initialization */
 
@@ -261,7 +266,7 @@ double R_pow_di(double x, int n)
 	    if(n & 01) xn *= x;
 	    if(n >>= 1) x *= x; else break;
 	}
-        if(is_neg) xn = 1. / xn;
+	if(is_neg) xn = 1. / xn;
     }
     return xn;
 }
@@ -338,29 +343,40 @@ namespace {
 
 SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 {
-    SEXP lcall = call;
     ARITHOP_TYPE oper = ARITHOP_TYPE( PRIMVAL(op));
 
     GCStackRoot<VectorBase> x(FIXUP_NULL_AND_CHECK_TYPES(xarg));
     GCStackRoot<VectorBase> y(FIXUP_NULL_AND_CHECK_TYPES(yarg));
-    checkOperandsConformable(x, y);
-
-    R_xlen_t nx = XLENGTH(x);
+	Rboolean xarray = Rf_isArray(x), yarray = Rf_isArray(y);
+	R_xlen_t nx = XLENGTH(x);
     R_xlen_t ny = XLENGTH(y);
+
+    if (xarray != yarray) {
+    	if (xarray && nx==1 && ny!=1) {
+	    if(ny != 0)
+		Rf_warningcall(call,
+		_("dropping dim() of array of length one.  Will become an error."));
+    	    x = static_cast<VectorBase*>(Rf_duplicate(x));
+    	    Rf_setAttrib(x, R_DimSymbol, R_NilValue);
+    	}
+    	if (yarray && ny==1 && nx!=1) {
+	    if(nx != 0)
+		Rf_warningcall(call,
+		_("dropping dim() of array of length one.  Will become an error."));
+    	    y = static_cast<VectorBase*>(Rf_duplicate(y));
+    	    Rf_setAttrib(y, R_DimSymbol, R_NilValue);
+    	}
+    }
+
+    checkOperandsConformable(x, y);
 
     GCStackRoot<> val;
     /* need to preserve object here, as *_binary copies class attributes */
     if (TYPEOF(x) == CPLXSXP || TYPEOF(y) == CPLXSXP) {
-	bool mismatch = false;  // -Wall
-	if (nx == ny || nx == 1 || ny == 1) mismatch = false;
-	else if (nx > 0 && ny > 0) {
-	    if (nx > ny) mismatch = (nx % ny != 0);
-	    else mismatch = (ny % nx != 0);
-	}
-
-	if (mismatch)
-	    Rf_warningcall(lcall,
-			_("longer object length is not a multiple of shorter object length"));
+	if (nx > 0 && ny > 0 &&
+	((nx > ny) ? nx % ny : ny % nx) != 0) // mismatch
+	Rf_warningcall(call,
+		    _("longer object length is not a multiple of shorter object length"));
 
 	x = COERCE_IF_NEEDED(x, CPLXSXP);
 	y = COERCE_IF_NEEDED(y, CPLXSXP);
@@ -376,7 +392,7 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 	val = real_binary(oper, x, y);
     }
     else {
-	val = integer_binary(oper, x, y, lcall);
+	val = integer_binary(oper, x, y, call);
     }
 
     return val;
@@ -544,7 +560,6 @@ namespace {
     }
 }  // anonymous namespace
 
-#define INTEGER_OVERFLOW_WARNING _("NAs produced by integer overflow")
 
 static SEXP integer_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2, SEXP lcall)
 {
@@ -589,7 +604,7 @@ static SEXP integer_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2, SEXP lcall)
 	break;
     }
     if (naflag)
-	Rf_warningcall(lcall, INTEGER_OVERFLOW_WARNING);
+	Rf_warningcall(lcall, _("NAs produced by integer overflow"));
 
     return ans;
 }
@@ -809,16 +824,16 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	PROTECT(s);
 	/* Note: relying on INTEGER(.) === LOGICAL(.) : */
 	for(i = 0 ; i < n ; i++) {
-            int xi = INTEGER(x)[i];
+	    int xi = INTEGER(x)[i];
 	    INTEGER(s)[i] = (xi == NA_INTEGER) ? xi : abs(xi);
-        }
+	}
     } else if (TYPEOF(x) == REALSXP) {
 	R_xlen_t i, n = XLENGTH(x);
 	PROTECT(s = NO_REFERENCES(x) ? x : Rf_allocVector(REALSXP, n));
 	for(i = 0 ; i < n ; i++)
 	    REAL(s)[i] = fabs(REAL(x)[i]);
     } else if (Rf_isComplex(x)) {
-        SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
+	SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);
     } else
 	errorcall(call, R_MSG_NONNUM_MATH);
@@ -848,22 +863,22 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
 
     /* for 0-length a we want the attributes of a, not those of b
        as no recycling will occur */
-#define SETUP_Math2				\
-    na = XLENGTH(sa);				\
-    nb = XLENGTH(sb);				\
-    if ((na == 0) || (nb == 0))	{		\
-	PROTECT(sy = Rf_allocVector(REALSXP, 0));	\
-	if (na == 0) SHALLOW_DUPLICATE_ATTRIB(sy, sa);  \
-	UNPROTECT(1);				\
-	return(sy);				\
-    }						\
-    n = (na < nb) ? nb : na;			\
-    PROTECT(sa = Rf_coerceVector(sa, REALSXP));	\
-    PROTECT(sb = Rf_coerceVector(sb, REALSXP));	\
-    PROTECT(sy = Rf_allocVector(REALSXP, n));	\
-    a = REAL(sa);				\
-    b = REAL(sb);				\
-    y = REAL(sy);				\
+#define SETUP_Math2					\
+    na = XLENGTH(sa);					\
+    nb = XLENGTH(sb);					\
+    if ((na == 0) || (nb == 0))	{			\
+	PROTECT(sy = Rf_allocVector(REALSXP, 0));		\
+	if (na == 0) SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
+	UNPROTECT(1);					\
+	return(sy);					\
+    }							\
+    n = (na < nb) ? nb : na;				\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));		\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));		\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));		\
+    a = REAL(sa);					\
+    b = REAL(sb);					\
+    y = REAL(sy);					\
     naflag = 0
 
     SETUP_Math2;
@@ -1216,7 +1231,7 @@ static SEXP math3B(SEXP sa, SEXP sb, SEXP sc,
     }
     const void *vmax = vmaxget();
     nw = 1 + long(floor(amax));
-    work = static_cast<double *>( RHO_alloc(size_t( nw), sizeof(double)));
+    work = static_cast<double *>( RHO_alloc(size_t(nw), sizeof(double)));
 
     MOD_ITERATE3 (n, na, nb, nc, i, ia, ib, ic, {
 	ai = a[ia];

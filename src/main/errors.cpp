@@ -352,7 +352,7 @@ static void vwarningcall_dflt(SEXP call, const char *format, va_list ap)
 	else if(w == 1) {	/* print as they happen */
 	    const char *tr;
 	    if( call != R_NilValue ) {
-		dcall = CHAR(STRING_ELT(deparse1s(call), 0));
+		dcall = R_CHAR(STRING_ELT(deparse1s(call), 0));
 	    } else dcall = "";
 	    Rvsnprintf(buf, min(BUFSIZE, R_WarnLength+1), format, ap);
 	    RprintTrunc(buf);
@@ -459,10 +459,10 @@ void Rf_PrintWarnings(void)
 	    REprintf("%s\n", header);
 	    names = CAR(ATTRIB(R_Warnings));
 	    if( VECTOR_ELT(R_Warnings, 0) == R_NilValue )
-		REprintf("%s \n", CHAR(STRING_ELT(names, 0)));
+		REprintf("%s \n", R_CHAR(STRING_ELT(names, 0)));
 	    else {
-		const char *dcall, *msg = CHAR(STRING_ELT(names, 0));
-		dcall = CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, 0)), 0));
+		const char *dcall, *msg = R_CHAR(STRING_ELT(names, 0));
+		dcall = R_CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, 0)), 0));
 		REprintf(_("In %s :"), dcall);
 		if (mbcslocale) {
 		    int msgline1;
@@ -487,10 +487,10 @@ void Rf_PrintWarnings(void)
 	    names = CAR(ATTRIB(R_Warnings));
 	    for(i = 0; i < R_CollectWarnings; i++) {
 		if( VECTOR_ELT(R_Warnings, i) == R_NilValue ) {
-		    REprintf("%d: %s \n", i+1, CHAR(STRING_ELT(names, i)));
+		    REprintf("%d: %s \n", i+1, R_CHAR(STRING_ELT(names, i)));
 		} else {
-		    const char *dcall, *msg = CHAR(STRING_ELT(names, i));
-		    dcall = CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, i)), 0));
+		    const char *dcall, *msg = R_CHAR(STRING_ELT(names, i));
+		    dcall = R_CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, i)), 0));
 		    REprintf("%d: ", i + 1); 
 		    REprintf(_("In %s :"), dcall); 
 		    if (mbcslocale) {
@@ -645,22 +645,22 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 		    skip = asInteger(opt);
 	    }
 
-	    const char *dcall = CHAR(STRING_ELT(deparse1s(call), 0));
+	    const char *dcall = R_CHAR(STRING_ELT(deparse1s(call), 0));
 	    snprintf(tmp2, BUFSIZE,  "%s", head); 
 	    if (skip != NA_INTEGER) {
 		PROTECT(srcloc = GetSrcLoc(R_GetCurrentSrcref(skip)));
 		protectct++;
-		len = strlen(CHAR(STRING_ELT(srcloc, 0)));
+		len = strlen(R_CHAR(STRING_ELT(srcloc, 0)));
 		if (len)
 		    snprintf(tmp2, BUFSIZE,  _("Error in %s (from %s) : "), 
-			     dcall, CHAR(STRING_ELT(srcloc, 0)));
+			     dcall, R_CHAR(STRING_ELT(srcloc, 0)));
 	    }
 	    
 	    Rvsnprintf(tmp, min(BUFSIZE, R_WarnLength) - strlen(head), format, ap);
 	    if (strlen(tmp2) + strlen(tail) + strlen(tmp) < BUFSIZE) {
 		if(len) snprintf(errbuf, BUFSIZE,  
 				 _("Error in %s (from %s) : "),
-				 dcall, CHAR(STRING_ELT(srcloc, 0)));
+				 dcall, R_CHAR(STRING_ELT(srcloc, 0)));
 		else snprintf(errbuf, BUFSIZE,  _("Error in %s : "), dcall);
 		if (mbcslocale) {
 		    int msgline1;
@@ -780,7 +780,7 @@ static void try_jump_to_restart(void)
 	if (TYPEOF(restart) == VECSXP && LENGTH(restart) > 1) {
 	    SEXP name = VECTOR_ELT(restart, 0);
 	    if (TYPEOF(name) == STRSXP && LENGTH(name) == 1) {
-		const char *cname = CHAR(STRING_ELT(name, 0));
+		const char *cname = R_CHAR(STRING_ELT(name, 0));
 		if (! strcmp(cname, "browser") ||
 		    ! strcmp(cname, "tryRestart") ||
 		    ! strcmp(cname, "abort")) /**** move abort eventually? */
@@ -919,7 +919,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	     cptr != nullptr;
 	     cptr = ClosureContext::innermost(cptr->nextOut())) {
 	    /* stop() etc have internal call to .makeMessage */
-	    cfn = CHAR(STRING_ELT(deparse1s(CAR(RHO_C_CAST(Expression*, cptr->call()))), 0));
+	    cfn = R_CHAR(STRING_ELT(deparse1s(CAR(RHO_C_CAST(Expression*, cptr->call()))), 0));
 	    if(streql(cfn, "stop") || streql(cfn, "warning")
 	       || streql(cfn, "message")) continue;
 	    rho = cptr->workingEnvironment();
@@ -1027,7 +1027,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 	    cptr = ClosureContext::innermost(cptr->nextOut()))
 	{
 	    /* stop() etc have internal call to .makeMessage */
-	    cfn = CHAR(STRING_ELT(deparse1s(cptr->call()->car()), 0));
+	    cfn = R_CHAR(STRING_ELT(deparse1s(cptr->call()->car()), 0));
 		if(streql(cfn, "stop") || streql(cfn, "warning")
 		   || streql(cfn, "message")) continue;
 		rho = cptr->workingEnvironment();
@@ -1048,7 +1048,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 	    domain = buf;
 	}
     } else if(isString(sdom))
-	domain = CHAR(STRING_ELT(sdom,0));
+	domain = R_CHAR(STRING_ELT(sdom,0));
     else if(isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == NA_LOGICAL) ;
     else error(_("invalid '%s' value"), "domain");
 
@@ -1351,7 +1351,7 @@ static RHOCONST char * R_ConciseTraceback(SEXP call, int skip)
 	else {
 	    SEXP fun = CAR(RHO_C_CAST(Expression*, c->call()));
 	    const char *funstr = (TYPEOF(fun) == SYMSXP) ?
-		CHAR(PRINTNAME(fun)) : "<Anonymous>";
+		R_CHAR(PRINTNAME(fun)) : "<Anonymous>";
 	    if(streql(funstr, "stop") ||
 	       streql(funstr, "warning") ||
 	       streql(funstr, "suppressWarnings") ||
@@ -1386,7 +1386,7 @@ static RHOCONST char * R_ConciseTraceback(SEXP call, int skip)
     if (ncalls == 1 && TYPEOF(call) == LANGSXP) {
 	SEXP fun = CAR(call);
 	const char *funstr = (TYPEOF(fun) == SYMSXP) ?
-	    CHAR(PRINTNAME(fun)) : "<Anonymous>";
+	    R_CHAR(PRINTNAME(fun)) : "<Anonymous>";
 	if(streql(buf, funstr)) return "";
     }
     return buf;
@@ -1537,9 +1537,9 @@ static PairList* findSimpleErrorHandler(void)
 {
     for (PairList& item : *R_HandlerStack) {
 	SEXP entry = item.car();
-	if (! strcmp(CHAR(ENTRY_CLASS(entry)), "simpleError") ||
-	    ! strcmp(CHAR(ENTRY_CLASS(entry)), "error") ||
-	    ! strcmp(CHAR(ENTRY_CLASS(entry)), "condition"))
+	if (! strcmp(R_CHAR(ENTRY_CLASS(entry)), "simpleError") ||
+	    ! strcmp(R_CHAR(ENTRY_CLASS(entry)), "error") ||
+	    ! strcmp(R_CHAR(ENTRY_CLASS(entry)), "condition"))
 	    return &item;
     }
     return R_NilValue;
@@ -1619,8 +1619,8 @@ static PairList* findConditionHandler(SEXP cond)
     for (PairList& item : *R_HandlerStack) {
 	SEXP entry = item.car();
 	for (int i = 0; i < LENGTH(classes); i++)
-	    if (! strcmp(CHAR(ENTRY_CLASS(entry)),
-			 CHAR(STRING_ELT(classes, i))))
+	    if (! strcmp(R_CHAR(ENTRY_CLASS(entry)),
+			 R_CHAR(STRING_ELT(classes, i))))
 		return &item;
     }
     return R_NilValue;
@@ -1657,8 +1657,8 @@ static PairList* findInterruptHandler(void)
 {
     for (PairList& item : *R_HandlerStack) {
 	SEXP entry = item.car();
-	if (! strcmp(CHAR(ENTRY_CLASS(entry)), "interrupt") ||
-	    ! strcmp(CHAR(ENTRY_CLASS(entry)), "condition"))
+	if (! strcmp(R_CHAR(ENTRY_CLASS(entry)), "interrupt") ||
+	    ! strcmp(R_CHAR(ENTRY_CLASS(entry)), "condition"))
 	    return &item;
     }
     return R_NilValue;
@@ -1836,7 +1836,7 @@ SEXP attribute_hidden do_seterrmessage(/*const*/ Expression* call, const BuiltIn
     msg = message_;
     if(!isString(msg) || LENGTH(msg) != 1)
 	error(_("error message must be a character string"));
-    R_SetErrmessage(CHAR(STRING_ELT(msg, 0)));
+    R_SetErrmessage(R_CHAR(STRING_ELT(msg, 0)));
     return R_NilValue;
 }
 
@@ -1890,4 +1890,105 @@ R_GetSrcFilename(SEXP srcref)
     if (TYPEOF(srcfile) != STRSXP)
 	return ScalarString(mkChar(""));
     return srcfile;
+}
+
+
+
+/*
+ * C level tryCatch support
+ */
+
+/* There are two functions:
+
+       R_TryCatchError    handles error conditions;
+
+       R_TryCatch         can handle any condition type and allows a
+                          finalize action.
+*/
+
+SEXP R_tryCatchError(SEXP (*body)(void *), void *bdata,
+		     SEXP (*handler)(SEXP, void *), void *hdata)
+{
+    SEXP val;
+    SEXP cond = Rf_mkString("error");
+
+    PROTECT(cond);
+    val = R_tryCatch(body, bdata, cond, handler, hdata, NULL, NULL);
+    UNPROTECT(1);
+    return val;
+}
+
+/* This implementation uses R's tryCatch via calls from C to R to
+   invoke R's tryCatch, and then back to C to infoke the C
+   body/handler functions via a .Internal helper. This makes the
+   implementation fairly simple but not fast. If performance becomes
+   an issue we can look into a pure C implementation. LT */
+
+typedef struct {
+    SEXP (*body)(void *);
+    void *bdata;
+    SEXP (*handler)(SEXP, void *);
+    void *hdata;
+    void (*finally)(void *);
+    void *fdata;
+} tryCatchData_t;
+
+static SEXP default_tryCatch_handler(SEXP cond, void *data)
+{
+    return R_NilValue;
+}
+
+static void default_tryCatch_finally(void *data) { }
+
+SEXP R_tryCatch(SEXP (*body)(void *), void *bdata,
+		SEXP conds,
+		SEXP (*handler)(SEXP, void *), void *hdata,
+		void (*finally)(void *), void *fdata)
+{
+    if (body == NULL) error("must supply a body function");
+
+    SEXP fsym = install("..C_tryCatchHelper");
+
+    tryCatchData_t tcd = {
+	.body = body,
+	.bdata = bdata,
+	.handler = handler != NULL ? handler : default_tryCatch_handler,
+	.hdata = hdata,
+	.finally = finally != NULL ? finally : default_tryCatch_finally,
+	.fdata = fdata
+    };
+
+    SEXP fin = finally != NULL ? R_TrueValue : R_FalseValue;
+    SEXP tcdptr = R_MakeExternalPtr(&tcd, R_NilValue, R_NilValue);
+    SEXP expr = lang4(fsym, tcdptr, conds, fin);
+    PROTECT(expr);
+    SEXP val = eval(expr, R_GlobalEnv);
+    UNPROTECT(1); /* expr */
+    return val;
+}
+
+SEXP do_tryCatchHelper(SEXP call, SEXP op, SEXP args, SEXP env)
+{
+    SEXP eptr = CAR(args);
+    SEXP sw = CADR(args);
+    SEXP cond = CADDR(args);
+    
+    if (TYPEOF(eptr) != EXTPTRSXP)
+	error("not an external pointer");
+
+    tryCatchData_t *ptcd = (tryCatchData_t*) R_ExternalPtrAddr(CAR(args));
+
+    switch (Rf_asInteger(sw)) {
+    case 0:
+	return ptcd->body(ptcd->bdata);
+    case 1:
+	if (ptcd->handler != NULL)
+	    return ptcd->handler(cond, ptcd->hdata);
+	else return R_NilValue;
+    case 2:
+	if (ptcd->finally != NULL)
+	    ptcd->finally(ptcd->fdata);
+	return R_NilValue;
+    default: return R_NilValue; /* should not happen */
+    }
 }

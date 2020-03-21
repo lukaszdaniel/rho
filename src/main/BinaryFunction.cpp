@@ -43,39 +43,45 @@ void GeneralBinaryAttributeCopier::apply(VectorBase* vout,
 {
     // Handle layout attributes:
     {
-	RObject* dims = vl->getAttribute(DimSymbol);
+	RObject* dims = vl ? vl->getAttribute(DimSymbol) : nullptr;
 	RObject* dimnames = nullptr;
-	if (dims)
+	size_t nx = vl ? vl->size() : 0;
+	size_t ny = vr ? vr->size() : 0;
+
+	if (dims && (ny != 0 || nx == 0)) {
 	    dimnames = vl->getAttribute(DimNamesSymbol);
-	else
+	} else if (vr && (nx != 0 || ny == 0)) {
 	    dims = vr->getAttribute(DimSymbol);
-	if (!dimnames)
+	} else
+	    dims = nullptr;
+	if (vr && !dimnames)
 	    dimnames = vr->getAttribute(DimNamesSymbol);
 	if (dims) {
-	    vout->setAttribute(DimSymbol, dims);
+	    Rf_setAttrib(vout, DimSymbol, dims);
+	    // vout->setAttribute(DimSymbol, dims);
 	    if (dimnames)
 		vout->setAttribute(DimNamesSymbol, dimnames);
 	} else {
 	    // Neither operand is an array.  Get the names from the longer
 	    // attribute (if present), prefering the first if the lengths are
 	    // the same.
-	    RObject* vl_names = vl->getAttribute(NamesSymbol);
-	    if (vout->size() == vl->size() && vl_names) {
+	    RObject* vl_names = vl ? vl->getAttribute(NamesSymbol) : nullptr;
+	    if (vl_names && vout->size() == nx) {
 		vout->setAttribute(NamesSymbol, vl_names);
-	    } else {
+	    } else if (vr) {
 		RObject* vr_names = vr->getAttribute(NamesSymbol);
-		if (vout->size() == vr->size() && vr_names)
+		if (vr_names && vout->size() == ny)
 		    vout->setAttribute(NamesSymbol, vr_names);
 	    }
 	}
     }
     // Handle attributes related to time series:
     {
-	RObject* tsp = vl->getAttribute(TspSymbol);
+	RObject* tsp = vl? vl->getAttribute(TspSymbol): nullptr;
 	RObject* klass = nullptr;
 	if (tsp)
 	    klass = vl->getAttribute(ClassSymbol);
-	if (!tsp) {
+	if (!tsp && vr) {
 	   tsp = vr->getAttribute(TspSymbol); 
 	   if (tsp)
 	       klass = vr->getAttribute(ClassSymbol);

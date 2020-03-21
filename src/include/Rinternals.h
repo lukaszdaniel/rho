@@ -61,6 +61,7 @@ using std::FILE;
 #include <R_ext/Memory.h>
 #include <R_ext/Utils.h>
 #include <R_ext/Print.h>
+#include <R_ext/Rdynload.h> // for DL_FUNC
 
 #include <R_ext/libextern.h>
 
@@ -702,7 +703,6 @@ void R_SetExternalPtrAddr(SEXP s, void *p);
 void R_SetExternalPtrTag(SEXP s, SEXP tag);
 void R_SetExternalPtrProtected(SEXP s, SEXP p);
 // Added in R 3.4.0
-typedef void * (*DL_FUNC)();
 SEXP R_MakeExternalPtrFn(DL_FUNC p, SEXP tag, SEXP prot);
 DL_FUNC R_ExternalPtrAddrFn(SEXP s);
 
@@ -731,6 +731,12 @@ Rboolean R_checkConstants(Rboolean);
 Rboolean R_ToplevelExec(void (*fun)(void *), void *data);
 SEXP R_ExecWithCleanup(SEXP (*fun)(void *), void *data,
 		       void (*cleanfun)(void *), void *cleandata);
+SEXP R_tryCatch(SEXP (*)(void *), void *,       /* body closure*/
+		SEXP,                           /* condition classes (STRSXP) */
+		SEXP (*)(SEXP, void *), void *, /* handler closure */
+		void (*)(void *), void *);      /* finally closure */
+SEXP R_tryCatchError(SEXP (*)(void *), void *,        /* body closure*/
+		     SEXP (*)(SEXP, void *), void *); /* handler closure */
 
 /* Environment and Binding Features */
 void R_RestoreHashCount(SEXP rho);

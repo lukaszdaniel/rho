@@ -318,7 +318,8 @@ inline size_t PTR2VEC(int n)
 #endif // __cplusplus
 
 /* Miscellaneous Definitions */
-#define streql(s, t)	(!strcmp((s), (t)))
+//#define streql(s, t)	(!strcmp((s), (t)))
+inline int streql(const char *s, const char *t) { return !strcmp(s, t); }
 
 /* Arithmetic and Relation Operators */
 typedef enum {

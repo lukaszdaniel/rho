@@ -428,6 +428,7 @@ SEXP do_traceOnOff(rho::Expression* call, const rho::BuiltInFunction* op, rho::R
 SEXP do_traceback(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_transpose(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_trunc(rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...);
+SEXP do_tryCatchHelper(SEXP, SEXP, SEXP, SEXP);
 SEXP do_typeof(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_unclass(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object);
 SEXP do_unlink(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* recursive_, rho::RObject* force_);

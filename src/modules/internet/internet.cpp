@@ -135,7 +135,7 @@ static Rboolean url_open(Rconnection con)
 	if(TYPEOF(sheaders) == NILSXP)
 	    headers = NULL;
 	else
-	    headers = CHAR(STRING_ELT(sheaders, 0));
+	    headers = R_CHAR(STRING_ELT(sheaders, 0));
 	ctxt = in_R_HTTPOpen(url, headers, 0);
 	UNPROTECT(2);
 	if(ctxt == NULL) {
@@ -256,7 +256,7 @@ static Rboolean url_open2(Rconnection con)
 	if(TYPEOF(sheaders) == NILSXP)
 	    headers = NULL;
 	else
-	    headers = CHAR(STRING_ELT(sheaders, 0));
+	    headers = R_CHAR(STRING_ELT(sheaders, 0));
 	ctxt = in_R_HTTPOpen2(url, headers, 0);
 	UNPROTECT(2);
 	if(ctxt == NULL) {
@@ -465,7 +465,7 @@ static SEXP in_do_download(SEXP args)
 	error(_("invalid '%s' argument"), "url");
     if(Rf_length(scmd) > 1)
 	warning(_("only first element of 'url' argument used"));
-    url = CHAR(STRING_ELT(scmd, 0));
+    url = R_CHAR(STRING_ELT(scmd, 0));
     sfile = CAR(args); args = CDR(args);
     if(!isString(sfile) || Rf_length(sfile) < 1)
 	error(_("invalid '%s' argument"), "destfile");
@@ -478,7 +478,7 @@ static SEXP in_do_download(SEXP args)
     smode =  CAR(args); args = CDR(args);
     if(!isString(smode) || Rf_length(smode) != 1)
 	error(_("invalid '%s' argument"), "mode");
-    mode = CHAR(STRING_ELT(smode, 0));
+    mode = R_CHAR(STRING_ELT(smode, 0));
     cacheOK = asLogical(CAR(args));
     if(cacheOK == NA_LOGICAL)
 	error(_("invalid '%s' argument"), "cacheOK");
@@ -566,7 +566,7 @@ static SEXP in_do_download(SEXP args)
 	UNPROTECT(1); /* utilsNS */
 	PROTECT(sheaders);
 	const char *headers = (TYPEOF(sheaders) == NILSXP) ?
-	    NULL : CHAR(STRING_ELT(sheaders, 0));
+	    NULL : R_CHAR(STRING_ELT(sheaders, 0));
 	ctxt = Ri_HTTPOpen(url, headers, cacheOK);
 	UNPROTECT(2);
 	if(ctxt == NULL) status = 1;

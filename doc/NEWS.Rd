@@ -20,6 +20,16 @@
 
       \item \code{factor(x, exclude = L)} behaves more rationally when
       \code{x} or \code{L} are character vectors.
+
+      \item Arithmetic, logic (\code{&}, \code{|}) and comparison (aka
+      \sQuote{relational}, e.g., \code{<}, \code{==}) operations with
+      arrays now behave consistently, notably for arrays of length zero.
+
+      Arithmetic between length-1 arrays and longer non-arrays had
+      silently dropped the array attributes and recycled.  This now
+      gives a warning and will signal an error in the future, as it has
+      always for logic and comparison operations in these cases (e.g.,
+      compare \code{matrix(1,1) + 2:3} and \code{matrix(1,1) < 2:3}).
     }
   }
   \subsection{NEW FEATURES}{
@@ -263,6 +273,21 @@
       \env{_R_CHECK_CRAN_INCOMING_REMOTE_} false now skips tests that
       require remote access.  The remaining (local) tests typically
       run very quickly compared to the remote tests.
+
+      \item \command{R CMD build} will now give priority to vignettes
+      produced from files in the \file{vignettes} directory over those
+      in the \file{inst/doc} directory, with a warning that the latter
+      are being ignored.
+
+      \item \command{R CMD config} gains a \option{--all} option for
+      printing names and values of all basic configure variables.
+      
+      \item \command{R CMD check} now checks that output files in 
+      \file{inst/doc} are newer than the source files in \file{vignettes}.
+      
+      \item For consistency with other package subdirectories, files
+      named \file{*.r} in the \file{tests} directory are now recognized
+      as tests by \command{R CMD check}. (Wish of \PR{17143})
     }
   }
 

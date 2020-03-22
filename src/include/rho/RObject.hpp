@@ -837,7 +837,7 @@ extern "C" {
      *
      * @return The ::SEXPTYPE's name within R.
      */
-    const char* Rf_type2char(SEXPTYPE st);
+    const char* Rf_type2char(const SEXPTYPE st);
 }
 
 #endif /* ROBJECT_H */

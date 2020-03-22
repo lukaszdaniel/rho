@@ -866,7 +866,7 @@ static SEXP inherits3(SEXP x, SEXP what, SEXP which)
 	if(isvec)
 	    INTEGER(rval)[j] = 0;
 	for(i = 0; i < nclass; i++) {
-	    if(!strcmp(Rf_translateChar(STRING_ELT(klass, i)), ss)) {
+	    if(streql(Rf_translateChar(STRING_ELT(klass, i)), ss)) {
 		if(isvec)
 		    INTEGER(rval)[j] = i+1;
 		else {
@@ -917,7 +917,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
     for (ans = 0; ; ans++) {
 	if (!strlen(valid[ans])) // empty string
 	    break;
-	if (!strcmp(class_str, valid[ans])) return ans;
+	if (streql(class_str, valid[ans])) return ans;
     }
     /* if not found directly, now search the non-virtual super classes :*/
     if(IS_S4_OBJECT(x)) {
@@ -942,7 +942,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	    for (ans = 0; ; ans++) {
 		if (!strlen(valid[ans]))
 		    break;
-		if (!strcmp(s_class, valid[ans])) {
+		if (streql(s_class, valid[ans])) {
 		    UNPROTECT(1);
 		    return ans;
 		}
@@ -1352,7 +1352,7 @@ static SEXP get_this_generic(RObject* const* args, int num_args)
 	if(Rf_isObject(rval)) {
 	    SEXP generic = Rf_getAttrib(rval, gen_name);
 	    if(TYPEOF(generic) == STRSXP &&
-	       !strcmp(Rf_translateChar(Rf_asChar(generic)), fname)) {
+	       streql(Rf_translateChar(Rf_asChar(generic)), fname)) {
 	      value = rval;
 	      break;
 	    }

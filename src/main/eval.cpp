@@ -2303,3 +2303,20 @@ Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
     checkingInProgress = FALSE;
     return constsOK;
 }
+
+#include <Parse.h>
+SEXP R_ParseEvalString(const char *str, SEXP env)
+{
+    SEXP s = PROTECT(Rf_mkString(str));
+
+    ParseStatus status;
+    SEXP ps = PROTECT(R_ParseVector(s, -1, &status, R_NilValue));
+    if (status != PARSE_OK ||
+	TYPEOF(ps) != EXPRSXP ||
+	LENGTH(ps) != 1)
+	Rf_error("parse error");
+
+    SEXP val = Rf_eval(VECTOR_ELT(ps, 0), env);
+    UNPROTECT(2); /* s, ps */
+    return val;
+}

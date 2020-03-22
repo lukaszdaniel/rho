@@ -1356,9 +1356,9 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 	error(_("invalid '%s' value"), "length(xx)");
 #endif
     const char *ties_str = CHAR(asChar(args[2]));
-    if(!strcmp(ties_str, "average"))	ties_kind = AVERAGE;
-    else if(!strcmp(ties_str, "max"))	ties_kind = MAX;
-    else if(!strcmp(ties_str, "min"))	ties_kind = MIN;
+    if(streql(ties_str, "average"))	ties_kind = AVERAGE;
+    else if(streql(ties_str, "max"))	ties_kind = MAX;
+    else if(streql(ties_str, "min"))	ties_kind = MIN;
     else error(_("invalid ties.method for rank() [should never happen]"));
     if (ties_kind == AVERAGE || isLong) {
 	PROTECT(rank = allocVector(REALSXP, n));

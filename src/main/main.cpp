@@ -376,7 +376,7 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 	/* The intention here is to break on CR but not on other
 	   null statements: see PR#9063 */
 	if (browselevel && !R_DisableNLinBrowser
-	    && !strcmp(reinterpret_cast<char *>( state->buf), "\n")) return -1;
+	    && streql(reinterpret_cast<char *>( state->buf), "\n")) return -1;
 	R_IoBufferWriteReset(&R_ConsoleIob);
 	state->prompt_type = 1;
 	return 1;
@@ -1210,11 +1210,11 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
     int rval = 0;
     if (isSymbol(CExpr)) {
 	const char *expr = CHAR(PRINTNAME(CExpr));
-	if (!strcmp(expr, "c") || !strcmp(expr, "cont")) {
+	if (streql(expr, "c") || streql(expr, "cont")) {
 	    rval = 1;
 	    SET_ENV_DEBUG(rho, RHO_FALSE);
 #if 0
-	} else if (!strcmp(expr, "f")) {
+	} else if (streql(expr, "f")) {
 	    rval = 1;
 	    RCNTXT *cntxt = R_GlobalContext;
 	    while (cntxt != R_ToplevelContext
@@ -1225,28 +1225,28 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    SET_ENV_DEBUG(rho, RHO_TRUE);
 	    R_BrowserLastCommand = 'f';
 #endif
-	} else if (!strcmp(expr, "help")) {
+	} else if (streql(expr, "help")) {
 	    rval = 2;
 	    printBrowserHelp();
-	} else if (!strcmp(expr, "n")) {
+	} else if (streql(expr, "n")) {
 	    rval = 1;
 	    SET_ENV_DEBUG(rho, RHO_TRUE);
 	    R_BrowserLastCommand = 'n';
-	} else if (!strcmp(expr, "Q")) {
+	} else if (streql(expr, "Q")) {
 
 	    /* this is really dynamic state that should be managed as such */
 	    SET_ENV_DEBUG(rho, RHO_FALSE); /*PR#1721*/
 
 	    jump_to_toplevel();
-	} else if (!strcmp(expr, "s")) {
+	} else if (streql(expr, "s")) {
 	    rval = 1;
 	    SET_ENV_DEBUG(rho, RHO_TRUE);
 	    R_BrowserLastCommand = 's';
-	} else if (!strcmp(expr, "where")) {
+	} else if (streql(expr, "where")) {
 	    rval = 2;
 	    printwhere();
 	    /* SET_ENV_DEBUG(rho, RHO_TRUE); */
-	} else if (!strcmp(expr, "r")) {
+	} else if (streql(expr, "r")) {
 	    SEXP hooksym = install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
 		SEXP hcall;
@@ -1404,15 +1404,15 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
     if( !isString(save_) )
 	error(_("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));
     tmp = CHAR(STRING_ELT(save_, 0)); /* ASCII */
-    if( !strcmp(tmp, "ask") ) {
+    if( streql(tmp, "ask") ) {
 	ask = SA_SAVEASK;
 	if(!R_Interactive)
 	    warning(_("save=\"ask\" in non-interactive use: command-line default will be used"));
-    } else if( !strcmp(tmp, "no") )
+    } else if( streql(tmp, "no") )
 	ask = SA_NOSAVE;
-    else if( !strcmp(tmp, "yes") )
+    else if( streql(tmp, "yes") )
 	ask = SA_SAVE;
-    else if( !strcmp(tmp, "default") )
+    else if( streql(tmp, "default") )
 	ask = SA_DEFAULT;
     else
 	error(_("unrecognized value of 'save'"));

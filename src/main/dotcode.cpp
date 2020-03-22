@@ -1372,7 +1372,7 @@ static SEXPTYPE string2type(char *s)
 {
     int i;
     for (i = 0 ; typeinfo[i].name ; i++) {
-	if(!strcmp(typeinfo[i].name, s)) {
+	if(streql(typeinfo[i].name, s)) {
 	    return typeinfo[i].type;
 	}
     }

@@ -320,6 +320,7 @@ inline size_t PTR2VEC(int n)
 /* Miscellaneous Definitions */
 //#define streql(s, t)	(!strcmp((s), (t)))
 inline int streql(const char *s, const char *t) { return !strcmp(s, t); }
+inline int streqln(const char *s, const char *t, size_t n) { return !strncmp(s, t, n); }
 
 /* Arithmetic and Relation Operators */
 typedef enum {
@@ -904,8 +905,8 @@ SEXP R_subassign3_dflt(SEXP, SEXP, SEXP, SEXP);
 #include <wchar.h>
 
 /* main/util.cpp */
-void NORET UNIMPLEMENTED_TYPE(const char *s, SEXP x);
-void NORET UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t);
+void NORET UNIMPLEMENTED_TYPE(const char *s, const SEXP x);
+void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t);
 Rboolean Rf_strIsASCII(const char *str);
 int utf8clen(char c);
 int Rf_AdobeSymbol2ucs2(int n);

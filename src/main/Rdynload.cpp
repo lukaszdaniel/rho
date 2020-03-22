@@ -471,7 +471,7 @@ static int DeleteDLL(const char *path)
     int   i, loc;
 
     for (i = 0; i < CountDLL; i++) {
-	if (!strcmp(path, LoadedDLL[i].path)) {
+	if (streql(path, LoadedDLL[i].path)) {
 	    loc = i;
 	    goto found;
 	}
@@ -511,8 +511,8 @@ DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all)
 #ifdef CACHE_DLL_SYM
     int i;
     for (i = 0; i < nCPFun; i++)
-	if (!strcmp(name, CPFun[i].name) &&
-	    (all || !strcmp(pkg, CPFun[i].pkg)))
+	if (streql(name, CPFun[i].name) &&
+	    (all || streql(pkg, CPFun[i].pkg)))
 	    return CPFun[i].func;
 #endif
 
@@ -840,7 +840,7 @@ DL_FUNC R_FindSymbol(char const *name, char const *pkg,
 
     for (i = CountDLL - 1; i >= 0; i--) {
 	doit = all;
-	if(!doit && !strcmp(pkg, LoadedDLL[i].name)) doit = 2;
+	if(!doit && streql(pkg, LoadedDLL[i].name)) doit = 2;
 	if(doit && LoadedDLL[i].forceSymbols) doit = 0;
 	if(doit) {
 	    fcnptr = R_dlsym(&LoadedDLL[i], name, symbol); /* R_osDynSymbol->dlsym */

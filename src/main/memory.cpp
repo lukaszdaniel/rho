@@ -661,7 +661,7 @@ int Rf_Seql(SEXP a, SEXP b)
 	// return 0;
     // else {
 	const void* vmax = vmaxget();
-    	int result = !strcmp(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
+    	int result = streql(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
     	vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
     	return result;
     // }

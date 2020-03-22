@@ -2078,9 +2078,9 @@ setRlibs <-
                      "")
             printLog0(Log, paste(msg, collapse = "\n"))
         }
-        
+
 	## Did the vignettes get updated in inst/doc?
-	inst_doc_files <- list.files(file.path(pkgdir, "inst", "doc"), 
+	inst_doc_files <- list.files(file.path(pkgdir, "inst", "doc"),
 				     recursive = TRUE)
 	vignette_files <- list.files(vign_dir, recursive = TRUE)
 	if (!is_base_pkg && length(vignette_files)) {
@@ -2095,30 +2095,32 @@ setRlibs <-
 	    } else {
 		vignette_times <- file.mtime(file.path(vign_dir, vignette_files))
 		inst_doc_times <- file.mtime(file.path(pkgdir, "inst", "doc", inst_doc_files))
-		if (max(vignette_times) > max(inst_doc_times)) {
+		if (sum(!is.na(vignette_times)) && sum(!is.na(inst_doc_times)) &&
+                    max(vignette_times, na.rm = TRUE) > max(inst_doc_times, na.rm = TRUE)) {
 		    if (!any) warningLog(Log)
 		    any <- TRUE
 		    msg <- c("Files in the 'vignettes' directory newer than all files in 'inst/doc':",
-			     strwrap(paste(sQuote(vignette_files[vignette_times > max(inst_doc_times)]), 
+			     strwrap(paste(sQuote(vignette_files[!is.na(vignette_times) & vignette_times > max(inst_doc_times, na.rm = TRUE)]),
 					   collapse = ", "),
 				     indent = 2L, exdent = 4L),
 			     "")
-		    keep <- vignette_times <= max(inst_doc_times)
+		    keep <- is.na(vignette_times) | vignette_times <= max(inst_doc_times)
 		    vignette_files <- vignette_files[keep]
 		    vignette_times <- vignette_times[keep]
 		    printLog0(Log, paste(msg, collapse = "\n"))
 		}
 		matches <- match(vignette_files, inst_doc_files)
-		newer <- !is.na(matches) & vignette_times > inst_doc_times[matches]
+		newer <- vignette_times > inst_doc_times[matches]
+		newer <- !is.na(matches) & !is.na(newer) & newer
 		if (any(newer)) {
 		    if (!any) warningLog(Log)
 		    any <- TRUE
 		    msg <- c("Files in the 'vignettes' directory newer than same file in 'inst/doc':",
-			     strwrap(paste(sQuote(vignette_files[newer]), 
+			     strwrap(paste(sQuote(vignette_files[newer]),
 					   collapse = ", "),
 				     indent = 2L, exdent = 4L),
 			     "")
-		    printLog0(Log, paste(msg, collapse = "\n"))   
+		    printLog0(Log, paste(msg, collapse = "\n"))
 		}
 	    }
 	}
@@ -2190,7 +2192,7 @@ setRlibs <-
                                     indent = 2, exdent = 2), collapse = "\n"),
                       "\nPlease remove from your package.\n")
         }
-        
+
         if (!any) resultLog(Log, "OK")
     }
 
@@ -2864,12 +2866,18 @@ setRlibs <-
                 ## Don't just fail: try to log where the problem occurred.
                 ## First, find the test which failed.
                 ## (Maybe there was an error without a failing test.)
-                bad_files <- dir(".", pattern="\\.Rout\\.fail")
+                bad_files <- dir(".", pattern="\\.Rout\\.fail$")
                 if (length(bad_files)) {
                     ## Read in output from the (first) failed test.
                     file <- bad_files[1L]
                     lines <- readLines(file, warn = FALSE)
-                    file <- file.path(test_dir, sub("out\\.fail", "", file))
+                    file <- file.path(test_dir, sub("out\\.fail$", "", file))
+                    src_files <- dir(".", pattern = "\\.[rR]$")
+                    if (!(basename(file) %in% src_files)) {
+                    	file <- sub("R$", "r", file)  # This assumes only one of foo.r and foo.R exists.
+                    	if (!(basename(file) %in% src_files))
+                    	    file <- sub("r$", "[rR]", file)  # Just in case the test script got deleted somehow, show the pattern.
+                    }
                     ll <- length(lines)
                     keep <- as.integer(Sys.getenv("_R_CHECK_TESTS_NLINES_",
                                                   "13"))
@@ -3608,7 +3616,12 @@ setRlibs <-
                              "warning: void function",
                              "warning: control reaches end of non-void function",
                              "warning: no return statement in function returning non-void",
-                             ": #warning",
+                             ## gcc-only form
+                             ## ": #warning",
+                             ## gcc indents these, igraph has space after #
+                             "^ *# *warning",
+                             ## Solaris cc has
+                             "Warning: # *warning",
                              # these are from era of static HTML
                              "missing links?:")
                 ## Warnings spotted by gcc with

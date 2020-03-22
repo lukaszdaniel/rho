@@ -330,8 +330,7 @@ protected:
 void RObject::TransmuteConsCell(ConsCell* object, SEXPTYPE dest_type)
 {
     static_assert(sizeof(CachingExpression) == sizeof(PaddedPairList),
-		  "Expected PaddedPairList and CachingExpression to be the "
-		  "same size");
+		  "Expected PaddedPairList and CachingExpression to be the same size");
     static_assert(sizeof(PairList) == sizeof(Expression),
 		  "Expected PairList and Expression to be the same size");
 
@@ -422,8 +421,7 @@ void SET_TYPEOF(SEXP x, SEXPTYPE dest_type) {
     }
 
     Rf_error(
-	"Calling SET_TYPEOF to convert from type %s to type %s is not "
-	"supported in rho",
+	"Calling SET_TYPEOF to convert from type %s to type %s is not supported in rho",
 	Rf_type2char(source_type),
 	Rf_type2char(dest_type));
 }

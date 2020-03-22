@@ -1008,7 +1008,7 @@ static int Seql2(SEXP a, SEXP b)
 	return 0;
     else {
     	const void *vmax = vmaxget();
-    	int result = !strcmp(translateCharUTF8(a), translateCharUTF8(b));
+    	int result = streql(translateCharUTF8(a), translateCharUTF8(b));
     	vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
     	return result;
     }
@@ -1535,7 +1535,7 @@ static SEXP EncodeVars(SEXP formula)
 		/* change in 1.6.0 do not use duplicated names */
 		c = translateChar(STRING_ELT(framenames, i));
 		for(j = 0; j < i; j++)
-		    if(!strcmp(c, translateChar(STRING_ELT(framenames, j))))
+		    if(streql(c, translateChar(STRING_ELT(framenames, j))))
 			error(_("duplicated name '%s' in data frame using '.'"),
 			      c);
 		int cIndex = InstallVar(install(c));
@@ -1778,13 +1778,13 @@ SEXP termsform(SEXP args)
 
     /* first see if any of the variables are offsets */
     for (l = response, k = 0; l < nvar; l++)
-	if (!strncmp(CHAR(STRING_ELT(varnames, l)), "offset(", 7)) k++;
+	if (streqln(CHAR(STRING_ELT(varnames, l)), "offset(", 7)) k++;
     if (k > 0) {
 	Rboolean foundOne = FALSE; /* has there been a non-offset term? */
 	/* allocate the "offsets" attribute */
 	SETCAR(a, v = allocVector(INTSXP, k));
 	for (l = response, k = 0; l < nvar; l++)
-	    if (!strncmp(CHAR(STRING_ELT(varnames, l)), "offset(", 7))
+	    if (streqln(CHAR(STRING_ELT(varnames, l)), "offset(", 7))
 		INTEGER(v)[k++] = l + 1;
 	SET_TAG(a, install("offset"));
 	a = CDR(a);
@@ -1796,7 +1796,7 @@ SEXP termsform(SEXP args)
 	    if(Rf_length(thisterm) == 0) break;
 	    for (i = 1; i <= nvar; i++)
 		if (GetBit(CAR(thisterm), i) &&
-		    !strncmp(CHAR(STRING_ELT(varnames, i-1)), "offset(", 7)) {
+		    streqln(CHAR(STRING_ELT(varnames, i-1)), "offset(", 7)) {
 		    have_offset = TRUE;
 		    break;
 		}
@@ -1926,7 +1926,7 @@ SEXP termsform(SEXP args)
 	    SETCAR(t, allocVector(INTSXP, 0));
 	    k = 0;
 	    for (l = 0; l < nvar; l++) {
-		if (!strncmp(CHAR(STRING_ELT(varnames, l)), ss, n))
+		if (streqln(CHAR(STRING_ELT(varnames, l)), ss, n))
 		    if (CHAR(STRING_ELT(varnames, l))[n] == '(')
 			k++;
 	    }
@@ -1934,7 +1934,7 @@ SEXP termsform(SEXP args)
 		SETCAR(t, allocVector(INTSXP, k));
 		k = 0;
 		for (l = 0; l < nvar; l++) {
-		    if (!strncmp(CHAR(STRING_ELT(varnames, l)), ss, n))
+		    if (streqln(CHAR(STRING_ELT(varnames, l)), ss, n))
 			if (CHAR(STRING_ELT(varnames, l))[n] == '('){
 			    INTEGER(CAR(t))[k++] = l+1;
 			}

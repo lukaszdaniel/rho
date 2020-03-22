@@ -40,17 +40,18 @@
 #ifdef __cplusplus
 # ifndef NO_C_HEADERS
 #  include <cstdio>
-#  ifdef __SUNPRO_CC
-using std::FILE;
-#  endif
 #  include <climits>
 #  include <cstddef>
+# else
+#warning "use of NO_C_HEADERS is deprecated"
 # endif
 #else
 # ifndef NO_C_HEADERS
 #  include <stdio.h>
 #  include <limits.h> /* for INT_MAX */
 #  include <stddef.h> /* for ptrdiff_t */
+# else
+#warning "use of NO_C_HEADERS is deprecated"
 # endif
 #endif
 
@@ -633,6 +634,7 @@ int R_nchar(SEXP string, nchar_type type_,
 
 Rboolean Rf_pmatch(SEXP, SEXP, Rboolean);
 Rboolean Rf_psmatch(const char *, const char *, Rboolean);
+SEXP R_ParseEvalString(const char *, SEXP);
 void Rf_PrintValue(SEXP);
 #ifndef INLINE_PROTECT
 SEXP Rf_protect(SEXP);
@@ -647,10 +649,10 @@ SEXP Rf_substitute(SEXP,SEXP);
 const char * Rf_translateChar(SEXP);
 const char * Rf_translateChar0(SEXP);
 const char * Rf_translateCharUTF8(SEXP);
-const char * Rf_type2char(SEXPTYPE);
-SEXP Rf_type2rstr(SEXPTYPE);
-SEXP Rf_type2str(SEXPTYPE);
-SEXP Rf_type2str_nowarn(SEXPTYPE);
+const char * Rf_type2char(const SEXPTYPE);
+SEXP Rf_type2rstr(const SEXPTYPE);
+SEXP Rf_type2str(const SEXPTYPE);
+SEXP Rf_type2str_nowarn(const SEXPTYPE);
 #ifndef INLINE_PROTECT
 void Rf_unprotect(int);
 #endif
@@ -685,7 +687,7 @@ SEXP Rf_mkCharCE(const char *, cetype_t);
 SEXP Rf_mkCharLenCE(const char *, int, cetype_t);
 const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst);
 
-				/* return(.) NOT reached : for -Wall */
+				/* match(.) NOT reached : for -Wall */
 #define error_return(msg)	{ Rf_error(msg);	   return R_NilValue; }
 #define errorcall_return(cl,msg){ Rf_errorcall(cl, msg);   return R_NilValue; }
 
@@ -817,12 +819,21 @@ void R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
 		      void (*outbytes)(R_outpstream_t, const void *, int),
 		      SEXP (*phook)(SEXP, SEXP), SEXP pdata);
 
+#ifdef __cplusplus
+void R_InitFileInPStream(R_inpstream_t stream, std::FILE *fp,
+			 R_pstream_format_t type,
+			 SEXP (*phook)(SEXP, SEXP), SEXP pdata);
+void R_InitFileOutPStream(R_outpstream_t stream, std::FILE *fp,
+			  R_pstream_format_t type, int version,
+			  SEXP (*phook)(SEXP, SEXP), SEXP pdata);
+#else
 void R_InitFileInPStream(R_inpstream_t stream, FILE *fp,
 			 R_pstream_format_t type,
 			 SEXP (*phook)(SEXP, SEXP), SEXP pdata);
 void R_InitFileOutPStream(R_outpstream_t stream, FILE *fp,
 			  R_pstream_format_t type, int version,
 			  SEXP (*phook)(SEXP, SEXP), SEXP pdata);
+#endif
 
 #ifdef NEED_CONNECTION_PSTREAMS
 /* The connection interface is not available to packages.  To
@@ -872,7 +883,11 @@ void R_RunExitFinalizers(void);	/* in memory.cpp */
 
 /* Replacements for popen and system */
 #ifdef HAVE_POPEN
+# ifdef __cplusplus
+std::FILE *R_popen(const char *, const char *);
+# else
 FILE *R_popen(const char *, const char *);
+# endif
 #endif
 int R_system(const char *);
 

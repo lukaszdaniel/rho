@@ -856,7 +856,7 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
     */
 
     if (Rf_isString(mode)) {
-	if (!strcmp(CHAR(STRING_ELT(mode, 0)), "function")) /* ASCII */
+	if (streql(CHAR(STRING_ELT(mode, 0)), "function")) /* ASCII */
 	    gmode = FUNSXP;
 	else
 	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
@@ -987,7 +987,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
 
     for(int i = 0; i < nvals; i++) {
 	SEXPTYPE gmode;
-	if (!strcmp(CHAR(STRING_ELT(mode, i % nmode)), "function"))
+	if (streql(CHAR(STRING_ELT(mode, i % nmode)), "function"))
 	    gmode = FUNSXP;
 	else {
 	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, i % nmode)));
@@ -1563,14 +1563,14 @@ static SEXP matchEnvir(SEXP call, const char *what)
 {
     SEXP t, name;
     const void *vmax = vmaxget();
-    if(!strcmp(".GlobalEnv", what))
+    if(streql(".GlobalEnv", what))
 	return R_GlobalEnv;
-    if(!strcmp("package:base", what))
+    if(streql("package:base", what))
 	return R_BaseEnv;
     for (t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
 	name = Rf_getAttrib(t, R_NameSymbol);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
-	   !strcmp(Rf_translateChar(STRING_ELT(name, 0)), what)) {
+	   streql(Rf_translateChar(STRING_ELT(name, 0)), what)) {
 	    vmaxset(vmax);
 	    return t;
 	}
@@ -2112,7 +2112,7 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
 	/* search S4 registry */
 	const char *s4prefix = ".__T__";
 	if (TYPEOF(value) == ENVSXP &&
-		!strncmp(vname, s4prefix, strlen(s4prefix))) {
+		streqln(vname, s4prefix, strlen(s4prefix))) {
 	    SETCAR(args, value); /* re-use args */
 	    SEXP rlist = do_env2list(nullptr, SEXP_downcast<BuiltInFunction*>(env2listOp), nsenv, R_TrueValue, R_FalseValue);
 	    PROTECT(rlist);

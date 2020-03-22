@@ -607,7 +607,7 @@ const char *locale2charset(const char *locale)
 	locale = setlocale(LC_CTYPE,nullptr);
 
     /* in some rare circumstances Darwin may return NULL */
-    if (!locale || !strcmp(locale, "C") || !strcmp(locale, "POSIX"))
+    if (!locale || streql(locale, "C") || streql(locale, "POSIX"))
 	return ("ASCII");
 
     memset(charset,0,sizeof(charset));

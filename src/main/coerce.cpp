@@ -1410,7 +1410,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
 
     if (!Rf_isString(mode) || LENGTH(mode) != 1)
 	error_return(R_MSG_mode);
-    if (!strcmp("function", (CHAR(STRING_ELT(mode, 0))))) /* ASCII */
+    if (streql("function", (CHAR(STRING_ELT(mode, 0))))) /* ASCII */
 	type = CLOSXP;
     else
 	type = Rf_str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
@@ -2598,7 +2598,7 @@ static int class2type(const char *s)
 	si = classTable[i].s;
 	if(!si)
 	    return -1;
-	if(!strcmp(s, si))
+	if(streql(s, si))
 	    return i;
     }
     /* cannot get here return -1; */
@@ -2672,7 +2672,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 		      valueString, Rf_type2char(TYPEOF(obj)));
 	    /* else, leave alone */
 	}
-	else if(!strcmp("numeric", valueString)) {
+	else if(streql("numeric", valueString)) {
 	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      do_unsetS4(obj, value);
@@ -2684,7 +2684,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	}
 	/* the next 2 special cases mirror the special code in
 	 * R_data_class */
-	else if(!strcmp("matrix", valueString)) {
+	else if(streql("matrix", valueString)) {
 	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) != 2)
 		Rf_error(_("invalid to set the class to matrix unless the dimension attribute is of length 2 (was %d)"),
 		 Rf_length(Rf_getAttrib(obj, R_DimSymbol)));
@@ -2692,7 +2692,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	    if(IS_S4_OBJECT(obj))
 	      do_unsetS4(obj, value);
 	}
-	else if(!strcmp("array", valueString)) {
+	else if(streql("array", valueString)) {
 	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) <= 0)
 		Rf_error(_("cannot set class to \"array\" unless the dimension attribute has length > 0"));
 	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);

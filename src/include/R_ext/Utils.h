@@ -41,6 +41,8 @@ using std::size_t;
 # else
 #  include <stddef.h>
 # endif
+#else
+#warning "use of NO_C_HEADERS is deprecated"
 #endif
 
 #ifdef  __cplusplus

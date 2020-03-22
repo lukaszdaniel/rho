@@ -73,8 +73,8 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar);
 attribute_hidden
 Rboolean Rf_tsConform(SEXP x, SEXP y)
 {
-    if ((x = getAttrib(x, R_TspSymbol)) != R_NilValue &&
-	(y = getAttrib(y, R_TspSymbol)) != R_NilValue) {
+    if ((x = Rf_getAttrib(x, R_TspSymbol)) != R_NilValue &&
+	(y = Rf_getAttrib(y, R_TspSymbol)) != R_NilValue) {
 	/* tspgets should enforce this, but prior to 2.4.0
 	   had INTEGER() here */
 	if(TYPEOF(x) == REALSXP && TYPEOF(y) == REALSXP)
@@ -89,13 +89,13 @@ Rboolean Rf_tsConform(SEXP x, SEXP y)
 int Rf_nrows(SEXP s)
 {
     SEXP t;
-    if (isVector(s) || isList(s)) {
-	t = getAttrib(s, R_DimSymbol);
+    if (Rf_isVector(s) || Rf_isList(s)) {
+	t = Rf_getAttrib(s, R_DimSymbol);
 	if (t == R_NilValue) return LENGTH(s);
 	return INTEGER(t)[0];
     }
-    else if (isFrame(s)) {
-	return nrows(CAR(s));
+    else if (Rf_isFrame(s)) {
+	return Rf_nrows(CAR(s));
     }
     else Rf_error(_("object is not a matrix"));
     return -1;
@@ -105,14 +105,14 @@ int Rf_nrows(SEXP s)
 int Rf_ncols(SEXP s)
 {
     SEXP t;
-    if (isVector(s) || isList(s)) {
-	t = getAttrib(s, R_DimSymbol);
+    if (Rf_isVector(s) || Rf_isList(s)) {
+	t = Rf_getAttrib(s, R_DimSymbol);
 	if (t == R_NilValue) return 1;
 	if (LENGTH(t) >= 2) return INTEGER(t)[1];
 	/* This is a 1D (or possibly 0D array) */
 	return 1;
     }
-    else if (isFrame(s)) {
+    else if (Rf_isFrame(s)) {
 	return Rf_length(s);
     }
     else Rf_error(_("object is not a matrix"));
@@ -126,7 +126,7 @@ void Rf_internalTypeCheck(SEXP call, SEXP s, SEXPTYPE type)
 {
     if (TYPEOF(s) != type) {
 	if (call)
-	    errorcall(call, type_msg);
+	    Rf_errorcall(call, type_msg);
 	else
 	    Rf_error(type_msg);
     }
@@ -174,7 +174,7 @@ SEXP Rf_asChar(SEXP x)
 		formatReal(REAL(x), 1, &w, &d, &e, 0);
 		return Rf_mkChar(EncodeReal0(REAL(x)[0], w, d, e, OutDec));
 	    case CPLXSXP:
-		PrintDefaults();
+		Rf_PrintDefaults();
 		formatComplex(COMPLEX(x), 1, &w, &d, &e, &wi, &di, &ei, 0);
 		return Rf_mkChar(EncodeComplex(COMPLEX(x)[0], w, d, e, wi, di, ei, OutDec));
 	    case STRSXP:
@@ -245,12 +245,11 @@ TypeTable[] = {
 
 SEXPTYPE Rf_str2type(const char *s)
 {
-    int i;
-    for (i = 0; TypeTable[i].str; i++) {
-	if (!strcmp(s, TypeTable[i].str))
+    for (int i = 0; TypeTable[i].str; i++) {
+	if (streql(s, TypeTable[i].str))
 	    return TypeTable[i].type;
     }
-    return SEXPTYPE( -1);
+    return SEXPTYPE(-1);
 }
 
 static struct {
@@ -261,7 +260,7 @@ static struct {
 } Type2Table[MAX_NUM_SEXPTYPE];
 
 
-static int findTypeInTypeTable(SEXPTYPE t)
+static int findTypeInTypeTable(const SEXPTYPE t)
  {
     for (int i = 0; TypeTable[i].str; i++)
 	if (TypeTable[i].type == t) return i;
@@ -284,34 +283,34 @@ void Rf_InitTypeTables(void) {
 	    MARK_NOT_MUTABLE(rstr);
 	    R_PreserveObject(rstr);
 	    UNPROTECT(1); /* rchar */
-	    SEXP rsym = install(cstr);
+	    SEXP rsym = Rf_install(cstr);
 
 	    Type2Table[type].cstrName = cstr;
 	    Type2Table[type].rcharName = rchar;
 	    Type2Table[type].rstrName = rstr;
 	    Type2Table[type].rsymName = rsym;
 	} else {
-	    Type2Table[type].cstrName = NULL;
-	    Type2Table[type].rcharName = NULL;
-	    Type2Table[type].rstrName = NULL;
-	    Type2Table[type].rsymName = NULL;
+	    Type2Table[type].cstrName = nullptr;
+	    Type2Table[type].rcharName = nullptr;
+	    Type2Table[type].rstrName = nullptr;
+	    Type2Table[type].rsymName = nullptr;
 	}
     }
 }
 
-SEXP Rf_type2str_nowarn(SEXPTYPE t) /* returns a CHARSXP */
+SEXP Rf_type2str_nowarn(const SEXPTYPE t) /* returns a CHARSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rcharName;
-	if (res != NULL) return res;
+	if (res != nullptr) return res;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
-SEXP Rf_type2str(SEXPTYPE t) /* returns a CHARSXP */
+SEXP Rf_type2str(const SEXPTYPE t) /* returns a CHARSXP */
 {
     SEXP s = Rf_type2str_nowarn(t);
-    if (s != R_NilValue) {
+    if (s != nullptr) {
 	return s;
     }
     Rf_warning(_("type %d is unimplemented in '%s'"), t, "type2str");
@@ -320,7 +319,7 @@ SEXP Rf_type2str(SEXPTYPE t) /* returns a CHARSXP */
     return Rf_mkChar(buf);
 }
 
-SEXP Rf_type2rstr(SEXPTYPE t) /* returns a STRSXP */
+SEXP Rf_type2rstr(const SEXPTYPE t) /* returns a STRSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rstrName;
@@ -328,10 +327,10 @@ SEXP Rf_type2rstr(SEXPTYPE t) /* returns a STRSXP */
     }
     Rf_error(_("type %d is unimplemented in '%s'"), t,
 	  "type2ImmutableScalarString");
-    return R_NilValue; /* for -Wall */
+    return nullptr; /* for -Wall */
 }
 
-const char *Rf_type2char(SEXPTYPE t) /* returns a char* */
+const char *Rf_type2char(const SEXPTYPE t) /* returns a char* */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	const char * res = Type2Table[t].cstrName;
@@ -357,7 +356,7 @@ SEXP NORET Rf_type2symbol(SEXPTYPE t)
 #endif
 
 attribute_hidden
-void NORET UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t)
+void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
 {
     int i;
 
@@ -368,7 +367,7 @@ void NORET UNIMPLEMENTED_TYPEt(const char *s, SEXPTYPE t)
     Rf_error(_("unimplemented type (%d) in '%s'\n"), t, s);
 }
 
-void NORET UNIMPLEMENTED_TYPE(const char *s, SEXP x)
+void NORET UNIMPLEMENTED_TYPE(const char *s, const SEXP x)
 {
     UNIMPLEMENTED_TYPEt(s, TYPEOF(x));
 }
@@ -460,7 +459,7 @@ Rboolean StringTrue(const char *name)
 {
     int i;
     for (i = 0; truenames[i]; i++)
-	if (!strcmp(name, truenames[i]))
+	if (streql(name, truenames[i]))
 	    return TRUE;
     return FALSE;
 }
@@ -469,7 +468,7 @@ Rboolean StringFalse(const char *name)
 {
     int i;
     for (i = 0; falsenames[i]; i++)
-	if (!strcmp(name, falsenames[i]))
+	if (streql(name, falsenames[i]))
 	    return TRUE;
     return FALSE;
 }
@@ -561,24 +560,27 @@ SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction
     return Rf_ScalarInteger(nargs);
 }
 
-
+template<typename T>
+void attribute_hidden setVector(T * vec, const int& len, const T& val) {
+	for (int i = 0; i < len; i++) vec[i] = val;
+}
 /* formerly used in subscript.cpp, in Utils.h */
 void attribute_hidden setIVector(int * vec, int len, int val)
 {
-    for (int i = 0; i < len; i++) vec[i] = val;
+    setVector(vec, len, val);
 }
 
 
 /* unused in R, in Utils.h, apparently used in Rcpp  */
 void attribute_hidden setRVector(double * vec, int len, double val)
 {
-    for (int i = 0; i < len; i++) vec[i] = val;
+    setVector(vec, len, val);
 }
 
 /* unused in R, in Rinternals.h */
 void Rf_setSVector(SEXP * vec, int len, SEXP val)
 {
-    for (int i = 0; i < len; i++) vec[i] = val;
+    setVector(vec, len, val);
 }
 
 /* Debugging functions (hence the d-prefix). */
@@ -968,7 +970,7 @@ SEXP attribute_hidden do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
     const char *path;
     char abspath[PATH_MAX+1];
 
-    if (!isString(paths))
+    if (!Rf_isString(paths))
 	Rf_error(_("'path' must be a character vector"));
 
     int mustWork = Rf_asLogical(CADDR(args)); /* 1, NA_LOGICAL or 0 */
@@ -2042,7 +2044,7 @@ SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
 				   &status);
 	if(!U_FAILURE(status) && res) ans = res;
     } else ans = "ICU not in use";
-    return mkString(ans);
+    return Rf_mkString(ans);
 }
 
 /* Caller has to manage the R_alloc stack */
@@ -2195,15 +2197,27 @@ SEXP attribute_hidden do_tabulate(/*const*/ Expression* call, const BuiltInFunct
     SEXP in = bin_, nbin = nbins_;
     if (TYPEOF(in) != INTSXP)  Rf_error("invalid input");
     R_xlen_t n = XLENGTH(in);
-    /* FIXME: could in principle be a long vector */
     int nb = Rf_asInteger(nbin);
     if (nb == NA_INTEGER || nb < 0)
 	Rf_error(_("invalid '%s' argument"), "nbin");
-    SEXP ans = Rf_allocVector(INTSXP, nb);
-    int *x = INTEGER(in), *y = INTEGER(ans);
-    if (nb) memset(y, 0, nb * sizeof(int));
-    for(R_xlen_t i = 0 ; i < n ; i++)
-	if (x[i] != NA_INTEGER && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
+    int *x = INTEGER(in);
+    SEXP ans;
+#ifdef LONG_VECTOR_SUPPORT
+    if (n > INT_MAX) {
+	ans = Rf_allocVector(REALSXP, nb);
+	double *y = REAL(ans);
+	if (nb) memset(y, 0, nb * sizeof(double));
+	for(R_xlen_t i = 0 ; i < n ; i++)
+	    if (x[i] != NA_INTEGER && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
+    } else
+#endif
+    {
+	ans = Rf_allocVector(INTSXP, nb);
+	int *y = INTEGER(ans);
+	if (nb) memset(y, 0, nb * sizeof(int));
+	for(R_xlen_t i = 0 ; i < n ; i++)
+	    if (x[i] != NA_INTEGER && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
+    }
     return ans;
 }
 
@@ -2283,7 +2297,7 @@ SEXP attribute_hidden do_pretty(/*const*/ Expression* call, const BuiltInFunctio
     SET_VECTOR_ELT(ans, 1, Rf_ScalarReal(u));
     SET_VECTOR_ELT(ans, 2, Rf_ScalarInteger(n));
     nm = Rf_allocVector(STRSXP, 3);
-    setAttrib(ans, R_NamesSymbol, nm);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
     SET_STRING_ELT(nm, 0, Rf_mkChar("l"));
     SET_STRING_ELT(nm, 1, Rf_mkChar("u"));
     SET_STRING_ELT(nm, 2, Rf_mkChar("n"));
@@ -2396,7 +2410,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 {
     int dig = abs(digits);
     Rboolean rm_trailing_0 = RHOCONSTRUCT(Rboolean, digits >= 0);
-    Rboolean do_fg = RHOCONSTRUCT(Rboolean, !strcmp("fg", format)); /* TRUE  iff  format == "fg" */
+    Rboolean do_fg = RHOCONSTRUCT(Rboolean, streql("fg", format)); /* TRUE  iff  format == "fg" */
     double xx;
     int iex;
     size_t j, len_flag = strlen(flag);

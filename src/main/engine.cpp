@@ -449,7 +449,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 
     if(isString(value)) {
 	for(i = 0; lineend[i].name; i++) { /* is it the i-th name ? */
-	    if(!strcmp(CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
+	    if(streql(CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
 		return lineend[i].end;
 	}
 	error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
@@ -514,7 +514,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 
     if(isString(value)) {
 	for(i = 0; linejoin[i].name; i++) { /* is it the i-th name ? */
-	    if(!strcmp(CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
+	    if(streql(CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
 		return linejoin[i].join;
 	}
 	error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
@@ -1619,9 +1619,9 @@ static int VFontFamilyCode(char *fontfamily)
 {
     if (strlen(fontfamily) > 7)  {
 	unsigned int j = fontfamily[7]; // protect against signed chars
-	if (!strncmp(fontfamily, "Hershey", 7) && j < 9) return 100 + j;
+	if (streqln(fontfamily, "Hershey", 7) && j < 9) return 100 + j;
 	for (int i = 0; VFontTable[i].minface; i++)
-	    if (!strcmp(fontfamily, VFontTable[i].name)) return i + 1;
+	    if (streql(fontfamily, VFontTable[i].name)) return i + 1;
     }
     return -1;
 }
@@ -3147,7 +3147,7 @@ unsigned int GE_LTYpar(SEXP value, int ind)
 
     if(isString(value)) {
 	for(i = 0; linetype[i].name; i++) { /* is it the i-th name ? */
-	    if(!strcmp(CHAR(STRING_ELT(value, ind)), linetype[i].name))
+	    if(streql(CHAR(STRING_ELT(value, ind)), linetype[i].name))
 		return linetype[i].pattern;
 	}
 	/* otherwise, a string of hex digits: */

@@ -476,7 +476,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
 
     if(!mode && strlen(buf) == 0) return 1;
     for (i = 0; i < Rf_length(d->NAstrings); i++)
-	if (!strcmp(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
+	if (streql(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
     return 0;
 }
 

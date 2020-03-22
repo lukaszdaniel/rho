@@ -565,12 +565,12 @@ typedef struct {
 static int NameMatch(SEXP expr, const char *aString)
 {
     if (!isSymbol(expr)) return 0;
-    return !strcmp(CHAR(PRINTNAME(expr)), aString);
+    return streql(CHAR(PRINTNAME(expr)), aString);
 }
 
 static int StringMatch(SEXP expr, const char *aString)
 {
-    return !strcmp(translateChar(STRING_ELT(expr, 0)), aString);
+    return streql(translateChar(STRING_ELT(expr, 0)), aString);
 }
 /* Code to determine the ascii code corresponding */
 /* to an element of a mathematical expression. */

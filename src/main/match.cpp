@@ -74,7 +74,7 @@ Rboolean Rf_NonNullStringMatch(SEXP s, SEXP t)
 Rboolean Rf_psmatch(const char *f, const char *t, Rboolean exact)
 {
     if (exact)
-	return Rboolean(!strcmp(f, t));
+	return Rboolean(streql(f, t));
     /* else */
     while (*t) {
 	if (*t != *f)   return FALSE;

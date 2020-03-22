@@ -82,9 +82,9 @@ do_commandArgs(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
     SEXP vals;
 
     /* need protection as mkChar allocates */
-    vals = PROTECT(allocVector(STRSXP, NumCommandLineArgs));
+    vals = PROTECT(Rf_allocVector(STRSXP, NumCommandLineArgs));
     for(i = 0; i < NumCommandLineArgs; i++)
-	SET_STRING_ELT(vals, i, mkChar(CommandLineArgs[i]));
+	SET_STRING_ELT(vals, i, Rf_mkChar(CommandLineArgs[i]));
     UNPROTECT(1);
     return vals;
 }
@@ -103,41 +103,41 @@ R_common_command_line(int *pac, char **argv, Rstart Rp)
     R_RestoreHistory = 1;
     while(--ac) {
 	if(processing && **++av == '-') {
-	    if (!strcmp(*av, "--version")) {
+	    if (streql(*av, "--version")) {
 		PrintVersion(msg, 1024);
 		R_ShowMessage(msg);
 		exit(0);
 	    }
-	    else if(!strcmp(*av, "--args")) {
+	    else if(streql(*av, "--args")) {
 		/* copy this through for further processing */
 		argv[newac++] = *av;
 		processing = FALSE;
 	    }
-	    else if(!strcmp(*av, "--save")) {
+	    else if(streql(*av, "--save")) {
 		Rp->SaveAction = SA_SAVE;
 	    }
-	    else if(!strcmp(*av, "--no-save")) {
+	    else if(streql(*av, "--no-save")) {
 		Rp->SaveAction = SA_NOSAVE;
 	    }
-	    else if(!strcmp(*av, "--restore")) {
+	    else if(streql(*av, "--restore")) {
 		Rp->RestoreAction = SA_RESTORE;
 	    }
-	    else if(!strcmp(*av, "--no-restore")) {
+	    else if(streql(*av, "--no-restore")) {
 		Rp->RestoreAction = SA_NORESTORE;
 		R_RestoreHistory = 0;
 	    }
-	    else if(!strcmp(*av, "--no-restore-data")) {
+	    else if(streql(*av, "--no-restore-data")) {
 		Rp->RestoreAction = SA_NORESTORE;
 	    }
-	    else if(!strcmp(*av, "--no-restore-history")) {
+	    else if(streql(*av, "--no-restore-history")) {
 		R_RestoreHistory = 0;
 	    }
-	    else if (!strcmp(*av, "--silent") ||
-		     !strcmp(*av, "--quiet") ||
-		     !strcmp(*av, "-q")) {
+	    else if (streql(*av, "--silent") ||
+		     streql(*av, "--quiet") ||
+		     streql(*av, "-q")) {
 		Rp->R_Quiet = TRUE;
 	    }
-	    else if (!strcmp(*av, "--vanilla")) {
+	    else if (streql(*av, "--vanilla")) {
 		Rp->SaveAction = SA_NOSAVE; /* --no-save */
 		Rp->RestoreAction = SA_NORESTORE; /* --no-restore */
 		R_RestoreHistory = 0;     // --no-restore-history (= part of --no-restore)
@@ -148,28 +148,28 @@ R_common_command_line(int *pac, char **argv, Rstart Rp)
 		R_LoadRconsole = FALSE;
 #endif
 	    }
-	    else if (!strcmp(*av, "--no-environ")) {
+	    else if (streql(*av, "--no-environ")) {
 		Rp->NoRenviron = TRUE;
 	    }
-	    else if (!strcmp(*av, "--verbose")) {
+	    else if (streql(*av, "--verbose")) {
 		Rp->R_Verbose = TRUE;
 	    }
-	    else if (!strcmp(*av, "--slave") ||
-		     !strcmp(*av, "-s")) {
+	    else if (streql(*av, "--slave") ||
+		     streql(*av, "-s")) {
 		Rp->R_Quiet = TRUE;
 		Rp->R_Slave = TRUE;
 		Rp->SaveAction = SA_NOSAVE;
 	    }
-	    else if (!strcmp(*av, "--no-site-file")) {
+	    else if (streql(*av, "--no-site-file")) {
 		Rp->LoadSiteFile = FALSE;
 	    }
-	    else if (!strcmp(*av, "--no-init-file")) {
+	    else if (streql(*av, "--no-init-file")) {
 		Rp->LoadInitFile = FALSE;
 	    }
-	    else if (!strcmp(*av, "--debug-init")) {
+	    else if (streql(*av, "--debug-init")) {
 		Rp->DebugInitFile = TRUE;
 	    }
-	    else if (!strncmp(*av, "--encoding", 10)) {
+	    else if (streqln(*av, "--encoding", 10)) {
 		if(strlen(*av) < 12) {
 		    if(ac > 1) {ac--; av++; p = *av;} else p = nullptr;
 		} else p = &(*av)[11];
@@ -181,28 +181,28 @@ R_common_command_line(int *pac, char **argv, Rstart Rp)
 		}
 	    }
 #ifdef Win32
-	    else if (!strcmp(*av, "--no-Rconsole")) {
+	    else if (streql(*av, "--no-Rconsole")) {
 		R_LoadRconsole = 0;
 	    }
 #endif
-	    else if (!strcmp(*av, "-save") ||
-		     !strcmp(*av, "-nosave") ||
-		     !strcmp(*av, "-restore") ||
-		     !strcmp(*av, "-norestore") ||
-		     !strcmp(*av, "-noreadline") ||
-		     !strcmp(*av, "-quiet") ||
-		     !strcmp(*av, "-nsize") ||
-		     !strcmp(*av, "-vsize") ||
-		     !strncmp(*av, "--max-nsize", 11) ||
-		     !strncmp(*av, "--max-vsize", 11) ||
-		     !strcmp(*av, "-V") ||
-		     !strcmp(*av, "-n") ||
-		     !strcmp(*av, "-v")) {
+	    else if (streql(*av, "-save") ||
+		     streql(*av, "-nosave") ||
+		     streql(*av, "-restore") ||
+		     streql(*av, "-norestore") ||
+		     streql(*av, "-noreadline") ||
+		     streql(*av, "-quiet") ||
+		     streql(*av, "-nsize") ||
+		     streql(*av, "-vsize") ||
+		     streqln(*av, "--max-nsize", 11) ||
+		     streqln(*av, "--max-vsize", 11) ||
+		     streql(*av, "-V") ||
+		     streql(*av, "-n") ||
+		     streql(*av, "-v")) {
 		snprintf(msg, 1024,
 			 _("WARNING: option '%s' no longer supported"), *av);
 		R_ShowMessage(msg);
 	    }
-	    else if (!strncmp(*av, "--min-vsize", 11)) {
+	    else if (streqln(*av, "--min-vsize", 11)) {
 		if(strlen(*av) < 13) {
 		    if(ac > 1) {ac--; av++; p = *av;} else p = nullptr;
 		} else p = &(*av)[12];
@@ -230,8 +230,8 @@ R_common_command_line(int *pac, char **argv, Rstart Rp)
 		    Rp->vsize = value;
 		}
 	    }
-	    else if( !strncmp(*av, "--min-nsize", 11) ||
-		     !strncmp(*av, "--max-ppsize", 12)) {
+	    else if(streqln(*av, "--min-nsize", 11) ||
+		     streqln(*av, "--max-ppsize", 12)) {
 		// rho silently ignores these parameters for compatibility
 		// with CR.
 	    }

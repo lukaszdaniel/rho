@@ -1077,7 +1077,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		    break;
 		case BuiltInFunction::PP_ASSIGN:
 		case BuiltInFunction::PP_ASSIGN2:
-		    if ((outerparens = Rboolean((fnarg && !strcmp(R_CHAR(PRINTNAME(op)), "=")))))
+		    if ((outerparens = Rboolean((fnarg && streql(R_CHAR(PRINTNAME(op)), "=")))))
 		    	print2buff("(", d);
 		    if ((parens = needsparens(fop, CAR(s), 1)))
 			print2buff("(", d);

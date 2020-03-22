@@ -121,7 +121,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
 		for(i = 0; i < nx; i++) {
 		    const char *tmp = Rf_translateChar(STRING_ELT(names, i));
 		    if (!tmp[0]) continue;
-		    if(!strncmp(tmp, Rf_translateChar(STRING_ELT(s, pos)), l)) {
+		    if(streqln(tmp, Rf_translateChar(STRING_ELT(s, pos)), l)) {
 			if(indx == -1 )
 			    indx = i;
 			else
@@ -247,7 +247,7 @@ Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 		for(R_xlen_t i = 0; i < Rf_xlength(names); i++) {
 		    if (STRING_ELT(names, i) != NA_STRING) {
 			const char* cur_name = Rf_translateChar(STRING_ELT(names, i));
-			if (!strncmp(cur_name, ss, len)) {
+			if (streqln(cur_name, ss, len)) {
 			    if (indx == -1) {/* first one */
 				indx = i;
 				if (warn_pok) {

@@ -193,6 +193,13 @@ SEXP do_relop(/*const*/ Expression* call,
 	    vr(static_cast<ComplexVector*>(Rf_coerceVector(y, CPLXSXP)));
 	return relop_no_order(vl.get(), vr.get(), opcode);
     }
+    else if ((Rf_isNumeric(x) || Rf_isLogical(x)) && (Rf_isNumeric(y) || Rf_isLogical(y))) {
+	GCStackRoot<RealVector>
+	    vl(static_cast<RealVector*>(Rf_coerceVector(x, REALSXP)));
+	GCStackRoot<RealVector>
+	    vr(static_cast<RealVector*>(Rf_coerceVector(y, REALSXP)));
+    return relop(vl.get(), vr.get(), opcode);
+    } // rest of cases only apply when 'x' or 'y' is raw
     else if (Rf_isReal(x) || Rf_isReal(y)) {
 	GCStackRoot<RealVector>
 	    vl(static_cast<RealVector*>(Rf_coerceVector(x, REALSXP)));

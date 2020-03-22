@@ -2257,13 +2257,13 @@ static void yyerror(const char *s)
     SEXP filename;
     char ParseErrorFilename[PARSE_ERROR_SIZE];
    
-    if (!strncmp(s, yyunexpected, sizeof yyunexpected -1)) {
+    if (streqln(s, yyunexpected, sizeof yyunexpected -1)) {
 	int i, translated = FALSE;
     	/* Edit the error message */    
     	expecting = strstr(s + sizeof yyunexpected -1, yyexpecting);
     	if (expecting) *expecting = '\0';
     	for (i = 0; yytname_translations[i]; i += 2) {
-    	    if (!strcmp(s + sizeof yyunexpected - 1, yytname_translations[i])) {
+    	    if (streql(s + sizeof yyunexpected - 1, yytname_translations[i])) {
     	    	if (yychar < 256)
     	    	    snprintf(ParseErrorMsg, PARSE_ERROR_SIZE,
 			     _(yyshortunexpected), 
@@ -2292,7 +2292,7 @@ static void yyerror(const char *s)
     	if (expecting) {
  	    translated = FALSE;
     	    for (i = 0; yytname_translations[i]; i += 2) {
-    	    	if (!strcmp(expecting + sizeof yyexpecting - 1, yytname_translations[i])) {
+    	    	if (streql(expecting + sizeof yyexpecting - 1, yytname_translations[i])) {
     	    	    strcat(ParseErrorMsg, _(yyexpecting));
     	    	    strcat(ParseErrorMsg, i/2 < YYENGLISH ? _(yytname_translations[i+1])
     	    	                    : yytname_translations[i+1]);
@@ -2305,7 +2305,7 @@ static void yyerror(const char *s)
 	    	strcat(ParseErrorMsg, expecting + sizeof yyexpecting - 1);
 	    }
 	}
-    } else if (!strncmp(s, yyunknown, sizeof yyunknown-1)) {
+    } else if (streqln(s, yyunknown, sizeof yyunknown-1)) {
     	snprintf(ParseErrorMsg, PARSE_ERROR_SIZE, 
 		 "%s '%s'", s, CHAR(STRING_ELT(yylval, 0)));
     } else {

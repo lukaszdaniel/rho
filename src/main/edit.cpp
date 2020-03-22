@@ -143,7 +143,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (strlen(cmd) == 0) Rf_errorcall(call, _("argument 'editor' is not set"));
     editcmd = R_alloc(strlen(cmd) + strlen(filename) + 6, sizeof(char));
 #ifdef Win32
-    if (!strcmp(cmd,"internal")) {
+    if (streql(cmd,"internal")) {
 	if (!Rf_isString(ti))
 	    Rf_error(_("'title' must be a string"));
 	if (LENGTH(STRING_ELT(ti, 0)) > 0) {

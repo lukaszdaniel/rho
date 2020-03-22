@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997-2015   The R Core Team
+ *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -593,12 +593,14 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 			    (iop == 2 && tmp < zcum.r) ||
 			    (iop == 3 && tmp > zcum.r))	zcum.r = tmp;
 		    } else if(ans_type == STRSXP) {
-			if(empty) scum = stmp;
+			if(int_a)
+			   stmp = Rf_StringFromInteger(itmp, &warn);
+			else if(real_a)
+			   stmp = Rf_StringFromReal(tmp, &warn);
+
+			if(empty)
+			    scum = stmp;
 			else if (scum != NA_STRING) {
-			    if(int_a)
-				stmp = StringFromInteger(itmp, &warn);
-			    if(real_a)
-				stmp = StringFromReal(tmp, &warn);
 			    PROTECT(stmp);
 			    if(stmp == NA_STRING ||
 			       (iop == 2 && stmp != scum && Scollate(stmp, scum) < 0) ||
@@ -631,7 +633,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 			if(ans_type == INTSXP) {
 			    s = double( icum) + double( itmp);
 			    if(s > INT_MAX || s < R_INT_MIN){
-				warningcall(call,_("Integer overflow - use sum(as.numeric(.))"));
+				Rf_warningcall(call,_("Integer overflow - use sum(as.numeric(.))"));
 				goto na_answer;
 			    }
 			    else icum += itmp;
@@ -715,11 +717,11 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	    case STRSXP:
 		if (iop == 2 || iop == 3) {
 		    if(!empty && ans_type == INTSXP) {
-			scum = StringFromInteger(icum, &warn);
+			scum = Rf_StringFromInteger(icum, &warn);
 			UNPROTECT(1); /* scum */
 			PROTECT(scum);
 		    } else if(!empty && ans_type == REALSXP) {
-			scum = StringFromReal(zcum.r, &warn);
+			scum = Rf_StringFromReal(zcum.r, &warn);
 			UNPROTECT(1); /* scum */
 			PROTECT(scum);
 		    }
@@ -744,12 +746,12 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     /*-------------------------------------------------------*/
     if(empty && (iop == 2 || iop == 3)) {
 	if(ans_type == STRSXP) {
-	    warningcall(call, _("no non-missing arguments, returning NA"));
+	    Rf_warningcall(call, _("no non-missing arguments, returning NA"));
 	} else {
 	    if(iop == 2)
-		warningcall(call, _("no non-missing arguments to min; returning Inf"));
+		Rf_warningcall(call, _("no non-missing arguments to min; returning Inf"));
 	    else
-		warningcall(call, _("no non-missing arguments to max; returning -Inf"));
+		Rf_warningcall(call, _("no non-missing arguments to max; returning -Inf"));
 	    ans_type = REALSXP;
 	}
     }
@@ -776,7 +778,7 @@ na_answer: /* only sum(INTSXP, ...) case currently used */
     return ans;
 
 invalid_type:
-    errorcall(call, R_MSG_type, type2char(TYPEOF(a)));
+    errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
     return R_NilValue;
 }/* do_summary */
 
@@ -797,7 +799,7 @@ SEXP attribute_hidden do_range(SEXP call, SEXP op, SEXP args, SEXP env)
 	return(dispatched.second);
     }
 
-    PROTECT(op = findFun(install("range.default"), env));
+    PROTECT(op = Rf_findFun(Rf_install("range.default"), env));
     Closure* closure = SEXP_downcast<Closure*>(op);
     ans = call2->evaluateFunctionCall(closure, callenv, arglist);
     UNPROTECT(2);
@@ -811,8 +813,8 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
     SEXP sx = x_, ans;
     R_xlen_t i, n, indx = -1;
 
-    if (!isNumeric(sx)) {
-	sx = coerceVector(sx, REALSXP);
+    if (!Rf_isNumeric(sx)) {
+	sx = Rf_coerceVector(sx, REALSXP);
     }
     n = XLENGTH(sx);
     switch(TYPEOF(sx)) {
@@ -880,17 +882,17 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 
     i = (indx != -1);
     bool large = (indx + 1) > INT_MAX;
-    PROTECT(ans = allocVector(large ? REALSXP : INTSXP, i ? 1 : 0));
+    PROTECT(ans = Rf_allocVector(large ? REALSXP : INTSXP, i ? 1 : 0));
     if (i) {
 	if(large)
 	    REAL(ans)[0] = (double)indx + 1;
 	else
 	    INTEGER(ans)[0] = (int)indx + 1;
-	if (getAttrib(sx, R_NamesSymbol) != R_NilValue) { /* preserve names */
+	if (Rf_getAttrib(sx, R_NamesSymbol) != R_NilValue) { /* preserve names */
 	    SEXP ansnam;
 	    PROTECT(ansnam =
-		    ScalarString(STRING_ELT(getAttrib(sx, R_NamesSymbol), indx)));
-	    setAttrib(ans, R_NamesSymbol, ansnam);
+		    Rf_ScalarString(STRING_ELT(Rf_getAttrib(sx, R_NamesSymbol), indx)));
+	    Rf_setAttrib(ans, R_NamesSymbol, ansnam);
 	    UNPROTECT(1);
 	}
     }
@@ -904,8 +906,8 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     int i, j = 0, len, *buf;
 
     v = x_;
-    if (!isLogical(v))
-	error(_("argument to 'which' is not logical"));
+    if (!Rf_isLogical(v))
+	Rf_error(_("argument to 'which' is not logical"));
     len = Rf_length(v);
     buf = reinterpret_cast<int *>( R_alloc(len, sizeof(int)));
 
@@ -917,16 +919,16 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     }
 
     len = j;
-    PROTECT(ans = allocVector(INTSXP, len));
+    PROTECT(ans = Rf_allocVector(INTSXP, len));
     if(len) memcpy(INTEGER(ans), buf, sizeof(int) * len);
 
-    if ((v_nms = getAttrib(v, R_NamesSymbol)) != R_NilValue) {
-	PROTECT(ans_nms = allocVector(STRSXP, len));
+    if ((v_nms = Rf_getAttrib(v, R_NamesSymbol)) != R_NilValue) {
+	PROTECT(ans_nms = Rf_allocVector(STRSXP, len));
 	for (i = 0; i < len; i++) {
 	    SET_STRING_ELT(ans_nms, i,
 			   STRING_ELT(v_nms, INTEGER(ans)[i] - 1));
 	}
-	setAttrib(ans, R_NamesSymbol, ans_nms);
+	Rf_setAttrib(ans, R_NamesSymbol, ans_nms);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
@@ -945,15 +947,15 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 
     // Remove narm from the args.
     assert(num_args >= 1);
-    narm = asLogical(args[0]);
+    narm = Rf_asLogical(args[0]);
     if(narm == NA_LOGICAL)
-	error(_("invalid '%s' value"), "na.rm");
-    if(num_args < 2) error(_("no arguments"));
+	Rf_error(_("invalid '%s' value"), "na.rm");
+    if(num_args < 2) Rf_error(_("no arguments"));
     args = (args + 1);
     num_args = num_args - 1;
 
     // Check that the types are valid and get the max length.
-    len = xlength(args[0]);
+    len = Rf_xlength(args[0]);
     anstype = TYPEOF(args[0]);
     for (int arg = 0; arg < num_args; arg++) {
 	x = args[arg];
@@ -966,7 +968,7 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	case STRSXP:
 	    break;
 	default:
-	    error(_("invalid input type"));
+	    Rf_error(_("invalid input type"));
 	}
 	if(type > anstype) anstype = type;
 	n = Rf_xlength(x);
@@ -982,29 +984,29 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	return args[0]; /* one input */
 
     if(anstype < INTSXP) anstype = INTSXP;
-    if(len == 0) return allocVector(anstype, 0);
+    if(len == 0) return Rf_allocVector(anstype, 0);
     /* Check for fractional recycling (added in 2.14.0) */
     for (int arg = 0; arg < num_args; arg++) {
 	n = Rf_length(args[arg]);
 	if (len % n) {
-	    warning(_("an argument will be fractionally recycled"));
+	    Rf_warning(_("an argument will be fractionally recycled"));
 	    break;
 	}
     }
 
-    PROTECT(ans = allocVector(anstype, len));
+    PROTECT(ans = Rf_allocVector(anstype, len));
     switch(anstype) {
     case INTSXP:
     {
 	int *r,  *ra = INTEGER(ans), tmp;
-	PROTECT(x = coerceVector(args[0], anstype));
+	PROTECT(x = Rf_coerceVector(args[0], anstype));
 	r = INTEGER(x);
 	n = XLENGTH(x);
 	xcopyIntegerWithRecycle(ra, r, 0, len, n);
 	UNPROTECT(1);
 	for (int arg = 1; arg < num_args; arg++) {
 	    x = args[arg];
-	    PROTECT(x = coerceVector(x, anstype));
+	    PROTECT(x = Rf_coerceVector(x, anstype));
 	    n = XLENGTH(x);
 	    r = INTEGER(x);
 	    MOD_ITERATE1(len, n, i, i1, {
@@ -1030,14 +1032,14 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
     case REALSXP:
     {
 	double *r, *ra = REAL(ans), tmp;
-	PROTECT(x = coerceVector(args[0], anstype));
+	PROTECT(x = Rf_coerceVector(args[0], anstype));
 	r = REAL(x);
 	n = XLENGTH(x);
 	xcopyRealWithRecycle(ra, r, 0, len, n);
 	UNPROTECT(1);
 	for (int arg = 1; arg < num_args; arg++) {
 	    x = args[arg];
-	    PROTECT(x = coerceVector(x, anstype));
+	    PROTECT(x = Rf_coerceVector(x, anstype));
 	    n = XLENGTH(x);
 	    r = REAL(x);
 	    MOD_ITERATE1(len, n, i, i1, {
@@ -1060,14 +1062,14 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	break;
     case STRSXP:
     {
-	PROTECT(x = coerceVector(args[0], anstype));
+	PROTECT(x = Rf_coerceVector(args[0], anstype));
 	n = XLENGTH(x);
 	xcopyStringWithRecycle(ans, x, 0, len, n);
 	UNPROTECT(1);
 	for (int arg = 1; arg < num_args; arg++) {
 	    x = args[arg];
 	    SEXP tmp, t2;
-	    PROTECT(x = coerceVector(x, anstype));
+	    PROTECT(x = Rf_coerceVector(x, anstype));
 	    n = XLENGTH(x);
 	    MOD_ITERATE1(len, n, i, i1, {
 		tmp = STRING_ELT(x, i1);

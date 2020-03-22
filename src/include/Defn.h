@@ -624,7 +624,7 @@ LibExtern SEXP R_LogicalNAValue;
 # define RealFromString		Rf_RealFromString
 # define Seql			Rf_Seql
 # define sexptype2char		Rf_sexptype2char
-# define Scollate		Rf_Scollate
+//# define Scollate		Rf_Scollate
 # define sortVector		Rf_sortVector
 # define SrcrefPrompt		Rf_SrcrefPrompt
 # define ssort			Rf_ssort

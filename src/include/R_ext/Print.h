@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1998-2010    The R Core Team
+ *  Copyright (C) 1998-2016    The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -30,18 +30,17 @@
 
 #ifdef  __cplusplus
 /* If the vprintf interface is defined at all in C++ it may only be
-   defined in namespace std. */
+   defined in namespace std.  It is part of the C++11 standard. */
 /* rho comment 2011-07-28: ISO14882:2003 specifies that vprintf() be
    included in cstdio. */
 # ifdef R_USE_C99_IN_CXX
 #  include <cstdarg>
-#  ifdef __SUNPRO_CC
-using _STLP_VENDOR_CSTD::va_list;
-#  endif
+#  define R_VA_LIST std::va_list
 # endif
 extern "C" {
 #else
 # include <stdarg.h>
+# define R_VA_LIST va_list
 #endif
 
 void Rprintf(const char *, ...);

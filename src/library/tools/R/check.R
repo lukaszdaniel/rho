@@ -1516,7 +1516,8 @@ setRlibs <-
                                 paste(utils::tail(out3, -pos),
                                       collapse = " "))
                     miss <- R_runR2(Rcmd, "R_DEFAULT_PACKAGES=")
-                    if(length(miss)) {
+                    ## base has no NAMESPACE
+                    if(length(miss) && pkgname != "base") {
                         msg3 <- if(length(grep("^importFrom\\(\"methods\"",
                                                miss))) {
                             strwrap("to your NAMESPACE file (and ensure that your DESCRIPTION Imports field contains 'methods').")
@@ -2088,10 +2089,12 @@ setRlibs <-
 			 "")
 		printLog0(Log, paste(msg, collapse = "\n"))
 	    } else {
+                ## allow for some imprecision in file times (in secs)
+                time_tol <- as.double(Sys.getenv("_R_CHECK_FILE_TIMES_TOL_", 10))
 		vignette_times <- file.mtime(file.path(vign_dir, vignette_files))
 		inst_doc_times <- file.mtime(file.path(pkgdir, "inst", "doc", inst_doc_files))
 		if (sum(!is.na(vignette_times)) && sum(!is.na(inst_doc_times)) &&
-                    max(vignette_times, na.rm = TRUE) > max(inst_doc_times, na.rm = TRUE)) {
+                    max(vignette_times, na.rm = TRUE) > max(inst_doc_times, na.rm = TRUE) + time_tol) {
 		    if (!any) warningLog(Log)
 		    any <- TRUE
 		    msg <- c("Files in the 'vignettes' directory newer than all files in 'inst/doc':",
@@ -2099,13 +2102,14 @@ setRlibs <-
 					   collapse = ", "),
 				     indent = 2L, exdent = 4L),
 			     "")
-		    keep <- is.na(vignette_times) | vignette_times <= max(inst_doc_times)
+		    keep <- is.na(vignette_times) |
+                        vignette_times <= max(inst_doc_times, na.rm = TRUE) + time_tol
 		    vignette_files <- vignette_files[keep]
 		    vignette_times <- vignette_times[keep]
 		    printLog0(Log, paste(msg, collapse = "\n"))
 		}
 		matches <- match(vignette_files, inst_doc_files)
-		newer <- vignette_times > inst_doc_times[matches]
+		newer <- vignette_times > inst_doc_times[matches] + time_tol
 		newer <- !is.na(matches) & !is.na(newer) & newer
 		if (any(newer)) {
 		    if (!any) warningLog(Log)
@@ -3887,7 +3891,7 @@ setRlibs <-
             f <- file.path(pkgdir, "DESCRIPTION")
             desc <- try(.read_description(f))
             if (inherits(desc, "try-error") || !length(desc)) {
-                resultLog(Log, "EXISTS but not correct format")
+                errorLog(Log, "File DESCRIPTION exists but is not in correct format")
                 summaryLog(Log)
                 do_exit(1L)
             }
@@ -3918,7 +3922,8 @@ setRlibs <-
             summaryLog(Log)
             do_exit(1L)
         } else {
-            resultLog(Log, "NO")
+            errorLog(Log,
+                     "File DESCRIPTION does not exist")
             summaryLog(Log)
             do_exit(1L)
         }
@@ -4729,7 +4734,6 @@ setRlibs <-
         dir.create(pkgoutdir, mode = "0755")
         if (!dir.exists(pkgoutdir)) {
             message(sprintf("ERROR: cannot create check dir %s", sQuote(pkgoutdir)))
-            summaryLog(Log)
             do_exit(1L)
         }
         Log <- newLog(file.path(pkgoutdir, "00check.log"))
@@ -4824,7 +4828,7 @@ setRlibs <-
             file.exists(file.path(pkgdir, "Makefile.in"))) {
             desc <- try(read.dcf(f))
             if (inherits(desc, "try-error") || !length(desc)) {
-                resultLog(Log, "EXISTS but not correct format")
+                errorLog(Log, "File DESCRIPTION exists but is not in correct format")
                 summaryLog(Log)
                 do_exit(1L)
             }

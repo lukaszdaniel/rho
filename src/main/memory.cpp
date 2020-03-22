@@ -306,16 +306,11 @@ SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
 {
     SEXP s = nullptr;  // -Wall
 
-    if (length > R_XLEN_T_MAX) {
-	FunctionContext* ctxt = FunctionContext::innermost();
-	Rf_errorcall(ctxt ? const_cast<Expression*>(ctxt->call()) : static_cast<RObject*>(nullptr),
-		  _("vector is too large"));; /**** put length into message */
-    }
-    else if (length < 0 ) {
-	FunctionContext* ctxt = FunctionContext::innermost();
-	Rf_errorcall(ctxt ? const_cast<Expression*>(ctxt->call()) : static_cast<RObject*>(nullptr),
-		  _("negative length vectors are not allowed"));
-    }
+    if (length > R_XLEN_T_MAX)
+	Rf_error(_("vector is too large")); /**** put length into message */
+    else if (length < 0 )
+	Rf_error(_("negative length vectors are not allowed"));
+
     /* number of vector cells to allocate */
     switch (type) {
     case NILSXP:

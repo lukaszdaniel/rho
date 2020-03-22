@@ -27,9 +27,11 @@
 
 #include "Rcomplex.h"
 
-/* Note: gcc may warn in several places about C99 features as extensions.
-   This is a very-long-standing GCC bug, http://gcc.gnu.org/PR7263
+/* Note: gcc -peantic may warn in several places about C99 features 
+   as extensions.
+   This was a very-long-standing GCC bug, http://gcc.gnu.org/PR7263
    The system <complex.h> header can work around it: some do.
+   It should have been resolved (after a decade) in 2012.
 */
 
 #if 0
@@ -114,7 +116,7 @@ SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
     case PLUSOP:
 	return s1;
     case MINUSOP:
-	ans = NO_REFERENCES(s1) ? s1 : duplicate(s1);
+	ans = NO_REFERENCES(s1) ? s1 : Rf_duplicate(s1);
 	n = XLENGTH(s1);
 	for (i = 0; i < n; i++) {
 	    Rcomplex x = COMPLEX(s1)[i];
@@ -123,7 +125,7 @@ SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
 	}
 	return ans;
     default:
-	errorcall(call, _("invalid complex unary operator"));
+	Rf_errorcall(call, _("invalid complex unary operator"));
     }
     return R_NilValue; /* -Wall */
 }
@@ -209,7 +211,7 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
     n1 = XLENGTH(s1);
     n2 = XLENGTH(s2);
      /* S4-compatibility change: if n1 or n2 is 0, result is of length 0 */
-    if (n1 == 0 || n2 == 0) return(allocVector(CPLXSXP, 0));
+    if (n1 == 0 || n2 == 0) return(Rf_allocVector(CPLXSXP, 0));
 
     n = (n1 > n2) ? n1 : n2;
     ans = R_allocOrReuseVector(s1, s2, CPLXSXP, n);
@@ -251,7 +253,7 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
 	});
 	break;
     default:
-	error(_("unimplemented complex operation"));
+	Rf_error(_("unimplemented complex operation"));
     }
     UNPROTECT(1);
 
@@ -262,9 +264,9 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
     /* Copy attributes from longer argument. */
 
     if (ans != s2 && n == n2 && ATTRIB(s2) != R_NilValue)
-	copyMostAttrib(s2, ans);
+	Rf_copyMostAttrib(s2, ans);
     if (ans != s1 && n == n1 && ATTRIB(s1) != R_NilValue)
-	copyMostAttrib(s1, ans); /* Done 2nd so s1's attrs overwrite s2's */
+	Rf_copyMostAttrib(s1, ans); /* Done 2nd so s1's attrs overwrite s2's */
 
     return ans;
 }
@@ -274,25 +276,25 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP x, y = R_NilValue;	/* -Wall*/
     R_xlen_t i, n;
 
-    if (DispatchGroup("Complex", call, op, args, env, &x))
+    if (Rf_DispatchGroup("Complex", call, op, args, env, &x))
 	return x;
     x = CAR(args);
-    if (isComplex(x)) {
+    if (Rf_isComplex(x)) {
 	n = XLENGTH(x);
 	switch(PRIMVAL(op)) {
 	case 1:	/* Re */
-	    y = allocVector(REALSXP, n);
+	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 		REAL(y)[i] = COMPLEX(x)[i].r;
 	    break;
 	case 2:	/* Im */
-	    y = allocVector(REALSXP, n);
+	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 		REAL(y)[i] = COMPLEX(x)[i].i;
 	    break;
 	case 3:	/* Mod */
 	case 6:	/* abs */
-	    y = allocVector(REALSXP, n);
+	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 #if HAVE_CABS
 		REAL(y)[i] = cabs(C99_COMPLEX2(x, i));
@@ -301,7 +303,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 #endif
 	    break;
 	case 4:	/* Arg */
-	    y = allocVector(REALSXP, n);
+	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 #if HAVE_CARG
 		REAL(y)[i] = carg(C99_COMPLEX2(x, i));
@@ -310,7 +312,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 #endif
 	    break;
 	case 5:	/* Conj */
-	    y = NO_REFERENCES(x) ? x : allocVector(CPLXSXP, n);
+	    y = NO_REFERENCES(x) ? x : Rf_allocVector(CPLXSXP, n);
 	    for(i = 0 ; i < n ; i++) {
 		COMPLEX(y)[i].r = COMPLEX(x)[i].r;
 		COMPLEX(y)[i].i = -COMPLEX(x)[i].i;
@@ -318,11 +320,11 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	    break;
 	}
     }
-    else if(isNumeric(x)) { /* so no complex numbers involved */
+    else if(Rf_isNumeric(x)) { /* so no complex numbers involved */
 	n = XLENGTH(x);
-	if(isReal(x)) PROTECT(x);
-	else PROTECT(x = coerceVector(x, REALSXP));
-	y = NO_REFERENCES(x) ? x : allocVector(REALSXP, n);
+	if(Rf_isReal(x)) PROTECT(x);
+	else PROTECT(x = Rf_coerceVector(x, REALSXP));
+	y = NO_REFERENCES(x) ? x : Rf_allocVector(REALSXP, n);
 
 	switch(PRIMVAL(op)) {
 	case 1:	/* Re */
@@ -351,7 +353,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	}
 	UNPROTECT(1);
     }
-    else errorcall(call, _("non-numeric argument to function"));
+    else Rf_errorcall(call, _("non-numeric argument to function"));
 
     if (x != y && ATTRIB(x) != R_NilValue) {
 	PROTECT(x);
@@ -384,12 +386,12 @@ void attribute_hidden z_prec_r(Rcomplex *r, Rcomplex *x, double digits)
     if (dig > 306) {
 	double pow10 = 1.0e4;
 	digits = (double)(dig - 4);
-	r->r = fround(pow10 * x->r, digits)/pow10;
-	r->i = fround(pow10 * x->i, digits)/pow10;
+	r->r = Rf_fround(pow10 * x->r, digits)/pow10;
+	r->i = Rf_fround(pow10 * x->i, digits)/pow10;
     } else {
 	digits = (double)(dig);
-	r->r = fround(x->r, digits);
-	r->i = fround(x->i, digits);
+	r->r = Rf_fround(x->r, digits);
+	r->i = Rf_fround(x->i, digits);
     }
 }
 
@@ -615,7 +617,7 @@ SEXP attribute_hidden complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
 
     PROTECT(x = CAR(args));
     n = XLENGTH(x);
-    PROTECT(y = allocVector(CPLXSXP, n));
+    PROTECT(y = Rf_allocVector(CPLXSXP, n));
 
     switch (PRIMVAL(op)) {
     case 10003: naflag = cmath1(clog, COMPLEX(x), COMPLEX(y), n); break;
@@ -636,10 +638,10 @@ SEXP attribute_hidden complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
 
     default:
 	/* such as sign, gamma */
-	errorcall(call, _("unimplemented complex function"));
+	Rf_errorcall(call, _("unimplemented complex function"));
     }
     if (naflag)
-	warningcall(call, "NaNs produced in function \"%s\"", PRIMNAME(op));
+	Rf_warningcall(call, "NaNs produced in function \"%s\"", PRIMNAME(op));
     SHALLOW_DUPLICATE_ATTRIB(y, x);
     UNPROTECT(2);
     return y;
@@ -709,15 +711,15 @@ SEXP attribute_hidden complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
 	error_return(_("unimplemented complex function"));
     }
 
-    PROTECT(sa = coerceVector(CAR(args), CPLXSXP));
-    PROTECT(sb = coerceVector(CADR(args), CPLXSXP));
+    PROTECT(sa = Rf_coerceVector(CAR(args), CPLXSXP));
+    PROTECT(sb = Rf_coerceVector(CADR(args), CPLXSXP));
     na = XLENGTH(sa); nb = XLENGTH(sb);
     if ((na == 0) || (nb == 0)) {
 	UNPROTECT(2);
-	return(allocVector(CPLXSXP, 0));
+	return(Rf_allocVector(CPLXSXP, 0));
     }
     n = (na < nb) ? nb : na;
-    PROTECT(sy = allocVector(CPLXSXP, n));
+    PROTECT(sy = Rf_allocVector(CPLXSXP, n));
     a = COMPLEX(sa); b = COMPLEX(sb); y = COMPLEX(sy);
     MOD_ITERATE2(n, na, nb, i, ia, ib, {
 	ai = a[ia]; bi = b[ib];
@@ -732,7 +734,7 @@ SEXP attribute_hidden complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
 	}
     });
     if (naflag)
-	warning("NaNs produced in function \"%s\"", PRIMNAME(op));
+	Rf_warning("NaNs produced in function \"%s\"", PRIMNAME(op));
     if(n == na) {
 	SHALLOW_DUPLICATE_ATTRIB(sy, sa);
     } else if(n == nb) {
@@ -749,18 +751,18 @@ SEXP attribute_hidden do_complex(SEXP call, SEXP op, SEXP args, SEXP rho)
     R_xlen_t i, na, nr, ni;
 
     checkArity(op, args);
-    na = asInteger(CAR(args));
+    na = Rf_asInteger(CAR(args));
     if(na == NA_INTEGER || na < 0)
-	error(_("invalid length"));
-    PROTECT(re = coerceVector(CADR(args), REALSXP));
-    PROTECT(im = coerceVector(CADDR(args), REALSXP));
+	Rf_error(_("invalid length"));
+    PROTECT(re = Rf_coerceVector(CADR(args), REALSXP));
+    PROTECT(im = Rf_coerceVector(CADDR(args), REALSXP));
     nr = XLENGTH(re);
     ni = XLENGTH(im);
     /* is always true: if (na >= 0) {*/
     na = (nr > na) ? nr : na;
     na = (ni > na) ? ni : na;
     /* }*/
-    ans = allocVector(CPLXSXP, na);
+    ans = Rf_allocVector(CPLXSXP, na);
     for(i=0 ; i<na ; i++) {
 	COMPLEX(ans)[i].r = 0;
 	COMPLEX(ans)[i].i = 0;
@@ -794,14 +796,14 @@ SEXP attribute_hidden do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
     case REALSXP:
     case INTSXP:
     case LGLSXP:
-	PROTECT(z = coerceVector(z, CPLXSXP));
+	PROTECT(z = Rf_coerceVector(z, CPLXSXP));
 	break;
     default:
 	UNIMPLEMENTED_TYPE("polyroot", z);
     }
 #ifdef LONG_VECTOR_SUPPORT
     R_xlen_t nn = XLENGTH(z);
-    if (nn > R_SHORT_LEN_MAX) error("long vectors are not supported");
+    if (nn > R_SHORT_LEN_MAX) Rf_error("long vectors are not supported");
     n = (int) nn;
 #else
     n = LENGTH(z);
@@ -812,21 +814,21 @@ SEXP attribute_hidden do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     n = degree + 1; /* omit trailing zeroes */
     if(degree >= 1) {
-	PROTECT(rr = allocVector(REALSXP, n));
-	PROTECT(ri = allocVector(REALSXP, n));
-	PROTECT(zr = allocVector(REALSXP, n));
-	PROTECT(zi = allocVector(REALSXP, n));
+	PROTECT(rr = Rf_allocVector(REALSXP, n));
+	PROTECT(ri = Rf_allocVector(REALSXP, n));
+	PROTECT(zr = Rf_allocVector(REALSXP, n));
+	PROTECT(zi = Rf_allocVector(REALSXP, n));
 
 	for(i = 0 ; i < n ; i++) {
 	    if(!R_FINITE(COMPLEX(z)[i].r) || !R_FINITE(COMPLEX(z)[i].i))
-		error(_("invalid polynomial coefficient"));
+		Rf_error(_("invalid polynomial coefficient"));
 	    REAL(zr)[degree-i] = COMPLEX(z)[i].r;
 	    REAL(zi)[degree-i] = COMPLEX(z)[i].i;
 	}
 	R_cpolyroot(REAL(zr), REAL(zi), &degree, REAL(rr), REAL(ri), &fail);
-	if(fail) error(_("root finding code failed"));
+	if(fail) Rf_error(_("root finding code failed"));
 	UNPROTECT(2);
-	r = allocVector(CPLXSXP, degree);
+	r = Rf_allocVector(CPLXSXP, degree);
 	for(i = 0 ; i < degree ; i++) {
 	    COMPLEX(r)[i].r = REAL(rr)[i];
 	    COMPLEX(r)[i].i = REAL(ri)[i];
@@ -835,7 +837,7 @@ SEXP attribute_hidden do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     else {
 	UNPROTECT(1);
-	r = allocVector(CPLXSXP, 0);
+	r = Rf_allocVector(CPLXSXP, 0);
     }
     return r;
 }

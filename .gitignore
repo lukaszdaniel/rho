@@ -243,6 +243,7 @@ tests/rho/SETLENGTHtest
 tests/rho/UnitTests
 tests/simple-true.Rout
 tests/testr/check.log
+tests/reg-S4-examples.Rout
 tests/testr/codetools-manual.log
 tests/testr/foo
 tests/testr/foo1

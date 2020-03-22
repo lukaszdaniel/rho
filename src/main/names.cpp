@@ -918,6 +918,17 @@ SEXP attribute_hidden do_primitive(/*const*/ Expression* call, const BuiltInFunc
     return prim;
 }
 
+#if 0
+static SEXP mkSymMarker(SEXP pname)
+{
+    SEXP ans = Rf_allocSExp(SYMSXP);
+    SET_SYMVALUE(ans, ans);
+    SET_ATTRIB(ans, R_NilValue);
+    SET_PRINTNAME(ans, pname);
+    return ans;
+}
+#endif
+
 /* initialize the symbol table */
 void attribute_hidden Rf_InitNames()
 {
@@ -940,8 +951,8 @@ SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP klass;
 	PROTECT(call = Rf_duplicate(call));
 	PROTECT(klass = Rf_mkString("formula"));
-	setAttrib(call, R_ClassSymbol, klass);
-	setAttrib(call, R_DotEnvSymbol, rho);
+	Rf_setAttrib(call, R_ClassSymbol, klass);
+	Rf_setAttrib(call, R_DotEnvSymbol, rho);
 	UNPROTECT(2);
 	return call;
     }

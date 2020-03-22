@@ -351,22 +351,41 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 	R_xlen_t nx = XLENGTH(x);
     R_xlen_t ny = XLENGTH(y);
 
+#define R_ARITHMETIC_ARRAY_1_SPECIAL
+
+#ifdef R_ARITHMETIC_ARRAY_1_SPECIAL
+    /* If either x or y is a matrix with length 1 and the other is a
+       vector of a different length, we want to coerce the matrix to be a vector.
+       Do we want to?  We don't do it!  BDR 2004-03-06
+
+       From 3.4.0 (Sep. 2016), this signals a warning,
+       and in the future we will disable these 2 clauses,
+       so it will give an error.
+    */
+
+    /* FIXME: Danger Will Robinson.
+     * -----  We might be trashing arguments here.
+     */
     if (xarray != yarray) {
     	if (xarray && nx==1 && ny!=1) {
 	    if(ny != 0)
 		Rf_warningcall(call,
-		_("dropping dim() of array of length one.  Will become an error."));
+		_(
+	"Recycling array of length 1 in array-vector arithmetic is deprecated.\n\
+  Use c() or as.vector() instead.\n"));
     	    x = static_cast<VectorBase*>(Rf_duplicate(x));
     	    Rf_setAttrib(x, R_DimSymbol, R_NilValue);
     	}
     	if (yarray && ny==1 && nx!=1) {
 	    if(nx != 0)
 		Rf_warningcall(call,
-		_("dropping dim() of array of length one.  Will become an error."));
+		_("Recycling array of length 1 in vector-array arithmetic is deprecated.\n\
+  Use c() or as.vector() instead.\n"));
     	    y = static_cast<VectorBase*>(Rf_duplicate(y));
     	    Rf_setAttrib(y, R_DimSymbol, R_NilValue);
     	}
     }
+#endif
 
     checkOperandsConformable(x, y);
 

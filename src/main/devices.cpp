@@ -50,7 +50,7 @@ int baseRegisterIndex = -1;
 
 GPar* dpptr(pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
-	error(_("the base graphics system is not registered"));
+	Rf_error(_("the base graphics system is not registered"));
     baseSystemState *bss = RHO_S_CAST(baseSystemState*, dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->dp);
 }
@@ -58,8 +58,8 @@ GPar* dpptr(pGEDevDesc dd) {
 static SEXP R_INLINE getSymbolValue(SEXP symbol)
 {
     if (TYPEOF(symbol) != SYMSXP)
-	error("argument to 'getSymbolValue' is not a symbol");
-    return findVar(symbol, R_BaseEnv);
+	Rf_error("argument to 'getSymbolValue' is not a symbol");
+    return Rf_findVar(symbol, R_BaseEnv);
 }
 
 /*
@@ -153,17 +153,17 @@ pGEDevDesc GEcurrentDevice(void)
      * check the options for a "default device".
      * If there is one, start it up. */
     if (NoDevices()) {
-	SEXP defdev = GetOption1(install("device"));
-	if (isString(defdev) && Rf_length(defdev) > 0) {
-	    SEXP devName = installChar(STRING_ELT(defdev, 0));
+	SEXP defdev = Rf_GetOption1(Rf_install("device"));
+	if (Rf_isString(defdev) && Rf_length(defdev) > 0) {
+	    SEXP devName = Rf_installChar(STRING_ELT(defdev, 0));
 	    /*  Not clear where this should be evaluated, since
 		grDevices need not be in the search path.
 		So we look for it first on the global search path.
 	    */
-	    defdev = findVar(devName, R_GlobalEnv);
+	    defdev = Rf_findVar(devName, R_GlobalEnv);
 	    if(defdev != R_UnboundValue) {
-		PROTECT(defdev = lang1(devName));
-		eval(defdev, R_GlobalEnv);
+		PROTECT(defdev = Rf_lang1(devName));
+		Rf_eval(defdev, R_GlobalEnv);
 		UNPROTECT(1);
 	    } else {
 		/* Not globally visible:
@@ -171,24 +171,24 @@ pGEDevDesc GEcurrentDevice(void)
 		   The option is unlikely to be set if it is not loaded,
 		   as the default setting is in grDevices:::.onLoad.
 		*/
-		SEXP ns = findVarInFrame(R_NamespaceRegistry,
-					 install("grDevices"));
+		SEXP ns = Rf_findVarInFrame(R_NamespaceRegistry,
+					 Rf_install("grDevices"));
 		PROTECT(ns);
 		if(ns != R_UnboundValue &&
-		   findVar(devName, ns) != R_UnboundValue) {
-		    PROTECT(defdev = lang1(devName));
-		    eval(defdev, ns);
+		   Rf_findVar(devName, ns) != R_UnboundValue) {
+		    PROTECT(defdev = Rf_lang1(devName));
+		    Rf_eval(defdev, ns);
 		    UNPROTECT(1);
 		} else
-		    error(_("no active or default device"));
+		    Rf_error(_("no active or default device"));
 		UNPROTECT(1);
 	    }
 	} else if(TYPEOF(defdev) == CLOSXP) {
-	    PROTECT(defdev = lang1(defdev));
-	    eval(defdev, R_GlobalEnv);
+	    PROTECT(defdev = Rf_lang1(defdev));
+	    Rf_eval(defdev, R_GlobalEnv);
 	    UNPROTECT(1);
 	} else
-	    error(_("no active or default device"));
+	    Rf_error(_("no active or default device"));
     }
     return R_Devices[R_CurrentDevice];
 }
@@ -285,8 +285,8 @@ int selectDevice(int devNum)
 	R_CurrentDevice = devNum;
 
 	/* maintain .Device */
-	gsetVar(R_DeviceSymbol,
-		elt(getSymbolValue(R_DevicesSymbol), devNum),
+	Rf_gsetVar(R_DeviceSymbol,
+		Rf_elt(getSymbolValue(R_DevicesSymbol), devNum),
 		R_BaseEnv);
 
 	gdd = GEcurrentDevice(); /* will start a device if current is null */
@@ -320,15 +320,15 @@ void removeDevice(int devNum, Rboolean findNext)
 	    /* maintain .Devices */
 	    PROTECT(s = getSymbolValue(R_DevicesSymbol));
 	    for (i = 0; i < devNum; i++) s = CDR(s);
-	    SETCAR(s, mkString(""));
+	    SETCAR(s, Rf_mkString(""));
 	    UNPROTECT(1);
 
 	    /* determine new current device */
 	    if (devNum == R_CurrentDevice) {
 		R_CurrentDevice = nextDevice(R_CurrentDevice);
 		/* maintain .Device */
-		gsetVar(R_DeviceSymbol,
-			elt(getSymbolValue(R_DevicesSymbol), R_CurrentDevice),
+		Rf_gsetVar(R_DeviceSymbol,
+			Rf_elt(getSymbolValue(R_DevicesSymbol), R_CurrentDevice),
 			R_BaseEnv);
 
 		/* activate new current device */
@@ -402,7 +402,7 @@ pGEDevDesc desc2GEDesc(pDevDesc dd)
 void R_CheckDeviceAvailable(void)
 {
     if (R_NumDevices >= R_MaxDevices - 1)
-	error(_("too many open devices"));
+	Rf_error(_("too many open devices"));
 }
 
 Rboolean R_CheckDeviceAvailableBool(void)
@@ -450,7 +450,7 @@ void GEaddDevice(pGEDevDesc gdd)
     if(gdd->dev->activate) gdd->dev->activate(gdd->dev);
 
     /* maintain .Devices (.Device has already been set) */
-    t = PROTECT(duplicate(getSymbolValue(R_DeviceSymbol)));
+    t = PROTECT(Rf_duplicate(getSymbolValue(R_DeviceSymbol)));
     if (appnd)
 	SETCDR(s, CONS(t, R_NilValue));
     else
@@ -465,26 +465,26 @@ void GEaddDevice(pGEDevDesc gdd)
        device is restored to a sane value. */
     if (i == R_MaxDevices - 1) {
 	killDevice(i);
-	error(_("too many open devices"));
+	Rf_error(_("too many open devices"));
     }
 }
 
 /* convenience wrappers */
 void GEaddDevice2(pGEDevDesc gdd, const char *name)
 {
-    gsetVar(R_DeviceSymbol, mkString(name), R_BaseEnv);
+    gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
 }
 
 void GEaddDevice2f(pGEDevDesc gdd, const char *name, const char *file)
 {
-    SEXP f = PROTECT(mkString(name));
+    SEXP f = PROTECT(Rf_mkString(name));
     if(file) {
-      SEXP s_filepath = install("filepath");
-      setAttrib(f, s_filepath, mkString(file));
+      SEXP s_filepath = Rf_install("filepath");
+      Rf_setAttrib(f, s_filepath, Rf_mkString(file));
     }
-    gsetVar(R_DeviceSymbol, f, R_BaseEnv);
+    Rf_gsetVar(R_DeviceSymbol, f, R_BaseEnv);
     UNPROTECT(1);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
@@ -506,7 +506,7 @@ pGEDevDesc GEcreateDevDesc(pDevDesc dev)
      */
     int i;
     if (!gdd)
-	error(_("not enough memory to allocate device (in GEcreateDevDesc)"));
+	Rf_error(_("not enough memory to allocate device (in GEcreateDevDesc)"));
     for (i = 0; i < MAX_GRAPHICS_SYSTEMS; i++) gdd->gesd[i] = nullptr;
     gdd->index = -1;
     gdd->dev = dev;
@@ -532,10 +532,10 @@ void attribute_hidden Rf_InitGraphics(void)
     }
 
     /* init .Device and .Devices */
-    SEXP s = PROTECT(mkString("null device"));
-    gsetVar(R_DeviceSymbol, s, R_BaseEnv);
-    s = PROTECT(mkString("null device"));
-    gsetVar(R_DevicesSymbol, CONS(s, R_NilValue), R_BaseEnv);
+    SEXP s = PROTECT(Rf_mkString("null device"));
+    Rf_gsetVar(R_DeviceSymbol, s, R_BaseEnv);
+    s = PROTECT(Rf_mkString("null device"));
+    Rf_gsetVar(R_DevicesSymbol, CONS(s, R_NilValue), R_BaseEnv);
     UNPROTECT(2);
 }
 

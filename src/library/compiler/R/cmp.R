@@ -85,7 +85,7 @@ loadcmp <- function (file, envir = .GlobalEnv, chdir = FALSE) {
   invisible()
 }
 
-compile <- function(e, env = .GlobalEnv, options = NULL) {
+compile <- function(e, env = .GlobalEnv, options = NULL, srcref = NULL) {
   e
 }
 

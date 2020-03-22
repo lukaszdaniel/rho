@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996	Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2015	The R Core Team.
+ *  Copyright (C) 1998--2016	The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1817,6 +1817,46 @@ static bool isDefaultMethod(const Expression* call) {
     return strcmp(symbol_name->c_str() + symbol_name->size() - suffix_length,
 		  ".default") == 0;
 }
+#if 0
+/* A version of DispatchOrEval that checks for possible S4 methods for
+ * any argument, not just the first.  Used in the code for `c()` in do_c()
+ * and previously used in the code for `[` in do_subset.
+ * Differs in that all arguments are evaluated
+ * immediately, rather than after the call to R_possible_dispatch.
+ */
+attribute_hidden
+int DispatchAnyOrEval(SEXP call, SEXP op, const char *generic, SEXP args,
+		      SEXP rho, SEXP *ans, int dropmissing, int argsevald)
+{
+    if(R_has_methods(op)) {
+	SEXP argValue, el,  value;
+	/* Rboolean hasS4 = FALSE; */
+	int nprotect = 0, dispatch;
+	if(!argsevald) {
+	    PROTECT(argValue = evalArgs(args, rho, dropmissing, call, 0));
+	    nprotect++;
+	    argsevald = TRUE;
+	}
+	else argValue = args;
+	for(el = argValue; el != R_NilValue; el = CDR(el)) {
+	    if(IS_S4_OBJECT(CAR(el))) {
+		value = R_possible_dispatch(call, op, argValue, rho, TRUE);
+		if(value) {
+		    *ans = value;
+		    UNPROTECT(nprotect);
+		    return 1;
+		}
+		else break;
+	    }
+	}
+	 /* else, use the regular DispatchOrEval, but now with evaluated args */
+	dispatch = Rf_DispatchOrEval(call, op, generic, argValue, rho, ans, dropmissing, argsevald);
+	UNPROTECT(nprotect);
+	return dispatch;
+    }
+    return Rf_DispatchOrEval(call, op, generic, args, rho, ans, dropmissing, argsevald);
+}
+#endif
 
 /* Rf_DispatchOrEval is used in internal functions which dispatch to
  * object methods (e.g. "[" or "[[").  The code either builds promises

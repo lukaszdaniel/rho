@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-22 r124565d688) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-22 rdf0094e221) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-09-25 r71350) -- "Frisbee Sailing"
+R Under development (unstable) (2016-10-11 r71500) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -6359,7 +6359,7 @@ callFunc(default = TRUE)
 > sink(con <- textConnection("of", "w")) ; c ; sink(NULL); close(con)
 > of2 <- capture.output(print(c))
 > stopifnot(identical(of2, of),
-+           identical(of2, "function (..., recursive = FALSE, use.names = TRUE)  .Primitive(\"c\")"))
++           identical(of2, "function (...)  .Primitive(\"c\")"))
 > ## ^^ would have failed up to R 2.9.x
 > foo
 function(given = NULL) {
@@ -6410,15 +6410,15 @@ function ()
 > print.function
 function (x, ...)  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 19 1 63 19 63 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f719d483210> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fb541529be0> 
 > f
 function ()  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 17 1 28 17 28 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f719d4ab620> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fb5414307e0> 
  - attr(*, "note")= chr "just a note"
  - attr(*, "yada")=function ()  
   ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 2 24 2 48 24 48 2 2
-  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f719d4ab620> 
+  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fb5414307e0> 
 > rm(print.function)
 > ## auto-printing and printing differed up to R 2.9.x
 > 

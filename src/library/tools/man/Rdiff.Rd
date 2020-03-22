@@ -63,3 +63,4 @@ Rdiff(from, to, useDiff = FALSE, forEx = FALSE,
 }
 
 \keyword{utilities}
+

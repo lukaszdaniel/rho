@@ -1294,9 +1294,9 @@ SEXP R_GetTraceback(int skip)
 	if (skip > 0)
 	    skip--;
 	else {
-	    SETCAR(t, deparse1(RHO_C_CAST(Expression*, c->call()), RHO_FALSE, DEFAULTDEPARSE));
-	    if (c->sourceLocation() && !isNull(c->sourceLocation())) 
-		setAttrib(CAR(t), R_SrcrefSymbol, duplicate(c->sourceLocation()));
+	    SETCAR(t, Rf_deparse1(RHO_C_CAST(Expression*, c->call()), RHO_FALSE, DEFAULTDEPARSE));
+	    if (c->sourceLocation() && !Rf_isNull(c->sourceLocation())) 
+		Rf_setAttrib(CAR(t), R_SrcrefSymbol, Rf_duplicate(c->sourceLocation()));
 	    t = CDR(t);
 	}
     UNPROTECT(1);

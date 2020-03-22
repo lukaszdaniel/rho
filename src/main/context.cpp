@@ -56,7 +56,7 @@ SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
     if (n == NA_INTEGER) Rf_error(_("NA argument is invalid"));
 
     if (n > 0)
-	n = framedepth(cptr) - n;
+	n = Rf_framedepth(cptr) - n;
     else
 	n = -n;
 
@@ -114,7 +114,7 @@ int attribute_hidden R_sysparent(int n, ClosureContext *cptr)
     return n;
 }
 
-int attribute_hidden framedepth(ClosureContext* cptr)
+int attribute_hidden Rf_framedepth(ClosureContext* cptr)
 {
     int nframe = 0;
     while (cptr) {
@@ -124,38 +124,44 @@ int attribute_hidden framedepth(ClosureContext* cptr)
     return nframe;
 }
 
+static SEXP getCallWithSrcref(ClosureContext *cptr)
+{
+    SEXP result;
+
+	    PROTECT(result = Rf_shallow_duplicate(const_cast<Expression*>(cptr->call())));
+	    if (cptr->sourceLocation())
+		Rf_setAttrib(result, R_SrcrefSymbol,
+			  Rf_duplicate(cptr->sourceLocation()));
+	    UNPROTECT(1);
+	    return result;
+}
+
 SEXP attribute_hidden R_syscall(int n, ClosureContext* cptr)
 {
     /* negative n counts back from the current frame */
     /* positive n counts up from the globalEnv */
-    SEXP result;
 
     if (n > 0)
-	n = framedepth(cptr) - n;
+	n = Rf_framedepth(cptr) - n;
     else
-	n = - n;
-    if(n < 0)
+	n = -n;
+    if (n < 0)
 	Rf_error(_("not that many frames on the stack"));
     while (cptr) {
-	if (n == 0) {
-	    PROTECT(result = shallow_duplicate(const_cast<Expression*>(cptr->call())));
-	    if (cptr->sourceLocation())
-		setAttrib(result, R_SrcrefSymbol,
-			  duplicate(cptr->sourceLocation()));
-	    UNPROTECT(1);
-	    return result;
-	} else
+	if (n == 0)
+	    return getCallWithSrcref(cptr);
+	else
 	    n--;
 	cptr = ClosureContext::innermost(cptr->nextOut());
     }
     Rf_error(_("not that many frames on the stack"));
-    return R_NilValue;	/* just for -Wall */
+    return R_NilValue; /* just for -Wall */
 }
 
 SEXP attribute_hidden R_sysfunction(int n, ClosureContext* cptr)
 {
     if (n > 0)
-	n = framedepth(cptr) - n;
+	n = Rf_framedepth(cptr) - n;
     else
 	n = - n;
     if (n < 0)
@@ -179,8 +185,8 @@ SEXP attribute_hidden do_sysbrowser(/*const*/ Expression* call, const BuiltInFun
 {
     int n;
 
-    n = asInteger(n_);
-    if(n < 1 ) error(_("number of contexts must be positive"));
+    n = Rf_asInteger(n_);
+    if(n < 1 ) Rf_error(_("number of contexts must be positive"));
 
     switch (op->variant()) {
     case 1: /* text */
@@ -207,11 +213,11 @@ SEXP attribute_hidden do_sysbrowser(/*const*/ Expression* call, const BuiltInFun
 		n--;
 		cptr = ClosureContext::innermost(cptr->nextOut());
 	    }
-	    if (!cptr)
-		error(_("not that many functions on the call stack"));
-	    else {
+	    if (!cptr) {
+		Rf_error(_("not that many functions on the call stack"));
+        }
 		SET_RDEBUG(cptr->workingEnvironment(), TRUE);
-	    }
+
 	}
         break;
     }
@@ -238,40 +244,40 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 
     if (num_args == 1) {
 	UNPACK_VA_ARGS(num_args, (n_));
-	n = asInteger(n_);
+	n = Rf_asInteger(n_);
     }
 
     switch (op->variant()) {
     case 1: /* parent */
 	if(n == NA_INTEGER)
-	    error(_("invalid '%s' argument"), "n");
-	i = nframe = framedepth(cptr);
+	    Rf_error(_("invalid '%s' argument"), "n");
+	i = nframe = Rf_framedepth(cptr);
 	/* This is a pretty awful kludge, but the alternative would be
 	   a major redesign of everything... -pd */
 	while (n-- > 0)
 	    i = R_sysparent(nframe - i + 1, cptr);
-	return ScalarInteger(i);
+	return Rf_ScalarInteger(i);
     case 2: /* call */
 	if(n == NA_INTEGER)
-	    error(_("invalid '%s' argument"), "which");
+	    Rf_error(_("invalid '%s' argument"), "which");
 	return R_syscall(n, cptr);
     case 3: /* frame */
 	if(n == NA_INTEGER)
-	    error(_("invalid '%s' argument"), "which");
+	    Rf_error(_("invalid '%s' argument"), "which");
 	return R_sysframe(n, cptr);
     case 4: /* sys.nframe */
-	return ScalarInteger(framedepth(cptr));
+	return Rf_ScalarInteger(Rf_framedepth(cptr));
     case 5: /* sys.calls */
-	nframe = framedepth(cptr);
-	PROTECT(rval = allocList(nframe));
+	nframe = Rf_framedepth(cptr);
+	PROTECT(rval = Rf_allocList(nframe));
 	t=rval;
 	for(i = 1; i <= nframe; i++, t = CDR(t))
 	    SETCAR(t, R_syscall(i, cptr));
 	UNPROTECT(1);
 	return rval;
     case 6: /* sys.frames */
-	nframe = framedepth(cptr);
-	PROTECT(rval = allocList(nframe));
+	nframe = Rf_framedepth(cptr);
+	PROTECT(rval = Rf_allocList(nframe));
 	t = rval;
 	for(i = 1; i <= nframe; i++, t = CDR(t))
 	    SETCAR(t, R_sysframe(i, cptr));
@@ -288,17 +294,17 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	    return R_NilValue;
 	}
     case 8: /* sys.parents */
-	nframe = framedepth(cptr);
-	rval = allocVector(INTSXP, nframe);
+	nframe = Rf_framedepth(cptr);
+	rval = Rf_allocVector(INTSXP, nframe);
 	for(i = 0; i < nframe; i++)
 	    INTEGER(rval)[i] = R_sysparent(nframe - i, cptr);
 	return rval;
     case 9: /* sys.function */
 	if(n == NA_INTEGER)
-	    error(_("invalid '%s' value"), "which");
+	    Rf_error(_("invalid '%s' value"), "which");
 	return(R_sysfunction(n, cptr));
     default:
-	error(_("internal error in 'do_sys'"));
+	Rf_error(_("internal error in 'do_sys'"));
 	return R_NilValue;/* just for -Wall */
     }
 }
@@ -307,10 +313,10 @@ SEXP attribute_hidden do_parentframe(/*const*/ Expression* call, const BuiltInFu
 {
     ClosureContext *cptr;
 
-    int n = asInteger(n_);
+    int n = Rf_asInteger(n_);
 
     if(n == NA_INTEGER || n < 1 )
-	error(_("invalid '%s' value"), "n");
+	Rf_error(_("invalid '%s' value"), "n");
 
     cptr = ClosureContext::innermost();
     SEXP t = cptr->callEnvironment();
@@ -389,7 +395,7 @@ protectedEval(void *d)
     if(data->env) {
 	env = data->env;
     }
-    data->val = eval(data->expression, env);
+    data->val = Rf_eval(data->expression, env);
 }
 
 SEXP

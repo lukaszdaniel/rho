@@ -202,19 +202,35 @@
 
       \item Connections now \code{print()} without error, even if
       invalid, i.e., typically after having been closed.
-      
+
       \item \code{apropos()} and \code{find(simple.words = FALSE)} no
       longer match object names starting with \samp{.} which are known
       to be internal objects (such as \code{.__S3MethodsTable__.}).
+
+      \item \code{strcapture()} no longer fixes column names nor coerces
+      strings to factors (suggested by Bill Dunlap).
+
+      \item \code{strcapture()} returns \code{NA} for non-matching
+      values in \code{x} (suggested by Bill Dunlap).
     }
   }
 
   \subsection{C-LEVEL FACILITIES}{
     \itemize{
-      \item There are new entry points \code{R_MakeExternalPtrFn} and
-      \code{R_ExternalPtrFn} to facilitate creating and retrieving an
-      \R{} external pointer from a C function pointer without ISO C
-      warnings about the conversion of function pointers.
+      \item Entry points \code{R_MakeExternalPtrFn} and
+      \code{R_ExternalPtrFn} are now declared in \file{Rinternals.h} to
+      facilitate creating and retrieving an \R{} external pointer from a
+      C function pointer without ISO C warnings about the conversion of
+      function pointers.
+
+      \item There was an exception for the native Solaris C++ compiler
+      to the dropping (in \R 3.3.0) of legacy C++ headers from headers
+      such as \file{R.h} and \file{Rmath.h} --- this has now been
+      removed.  That compiler has strict C++98 compliance hence does not
+      include extensions in its (non-legacy) C++ headers, so some
+      packages will need to request C++11 or replace non-C++98 calls
+      such as \code{lgamma}: see §1.6.4 of \sQuote{Writing R
+	Extensions}.
     }
   }
 
@@ -295,6 +311,10 @@
       \item For consistency with other package subdirectories, files
       named \file{*.r} in the \file{tests} directory are now recognized
       as tests by \command{R CMD check}. (Wish of \PR{17143})
+
+      \item \command{R CMD build} and \command{R CMD check} now use the
+      \emph{union} of \env{R_LIBS} \code{.libPaths()}.  They may not be
+      equivalent, e.g., when the latter is determined by \env{R_PROFILE}.
     }
   }
 
@@ -390,6 +410,9 @@
       larger than the maximal integer, the result is now of type
       \code{double} and hence no longer silently overflows to wrong
       values.  (\PR{17140})
+
+      \item \code{as.character.factor()} respects S4 inheritance when
+      checking the type of its argument. (\PR{17141})
     }
   }
 }
@@ -514,6 +537,8 @@
       \item \code{parallel::mccollect()} now returns a named list (as
       documented) when called with \code{wait = FALSE}.  (Reported by
       Michel Lang.)
+
+      \item \code{c()}'s argument \code{use.names} is documented now.
     }
   }
 }

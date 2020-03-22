@@ -819,7 +819,32 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
     return object;
 }
 
+/** Version of inherits() that supports S4 inheritance and implicit
+    classes.  The inlined inherits() does not have access to private
+    entry points R_data_class() and R_data_class2(). The semantics of
+    inherits2() are identical to that of the R-level inherits(),
+    except there is no translation.
+*/
 
+Rboolean attribute_hidden inherits2(SEXP x, const char *what) {
+    if (OBJECT(x)) {
+	SEXP klass;
+  
+	if(IS_S4_OBJECT(x))
+	    PROTECT(klass = R_data_class2(x));
+	else
+	    PROTECT(klass = R_data_class(x, FALSE));
+	int nclass = Rf_length(klass);
+	for (int i = 0; i < nclass; i++) {
+	    if (streql(R_CHAR(STRING_ELT(klass, i)), what)) {
+		UNPROTECT(1);
+		return TRUE;
+	    }
+	}
+	UNPROTECT(1);
+    }
+    return FALSE;
+}
 
 /* NOTE: Fast  inherits(x, what)    in ../include/Rinlinedfuns.h
  * ----        ----------------- */
@@ -849,13 +874,7 @@ static SEXP inherits3(SEXP x, SEXP what, SEXP which)
 
     if( !Rf_isLogical(which) || (Rf_length(which) != 1) )
 	Rf_error(_("'which' must be a length 1 logical vector"));
-    int isvec = Rf_asLogical(which);
-
-#ifdef _be_too_picky_
-    if(IS_S4_OBJECT(x) && nwhat == 1 && !isvec &&
-       !isNull(R_getClassDef(translateChar(STRING_ELT(what, 0)))))
-	warning(_("use 'is()' instead of 'inherits()' on S4 objects"));
-#endif
+    Rboolean isvec = Rboolean(Rf_asLogical(which));
 
     GCStackRoot<> rval;
     if(isvec)
@@ -925,7 +944,6 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	   .selectSuperClasses(getClass("....")@contains, dropVirtual=TRUE)  */
 	SEXP classExts, superCl, _call;
 	static GCRoot<> s_contains = nullptr, s_selectSuperCl = nullptr;
-	int i;
 	if(!s_contains) {
 	    s_contains      = Rf_install("contains");
 	    s_selectSuperCl = Rf_install(".selectSuperClasses");
@@ -937,7 +955,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	superCl = Rf_eval(_call, rho);
 	UNPROTECT(2);
 	PROTECT(superCl);
-	for(i=0; i < Rf_length(superCl); i++) {
+	for(int i=0; i < Rf_length(superCl); i++) {
 	    const char *s_class = CHAR(STRING_ELT(superCl, i));
 	    for (ans = 0; ; ans++) {
 		if (!strlen(valid[ans]))

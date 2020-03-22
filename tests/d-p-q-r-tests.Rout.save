@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-21 rc61ebac83c) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-22 r124565d688) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-09-18 r71300) -- "Frisbee Sailing"
+R Under development (unstable) (2016-09-25 r71350) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -1402,5 +1402,5 @@ N
 > 
 > 
 > cat("Time elapsed: ", proc.time() - .ptime,"\n")
-Time elapsed:  1.613 0.004 1.624 0 0 
+Time elapsed:  1.441 0.013 1.453 0 0 
 > 

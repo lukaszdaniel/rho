@@ -46,28 +46,28 @@ using namespace rho;
 attribute_hidden
 R_xlen_t asVecSize(SEXP x)
 {
-    if (isVectorAtomic(x) && LENGTH(x) >= 1) {
+    if (Rf_isVectorAtomic(x) && LENGTH(x) >= 1) {
 	switch (TYPEOF(x)) {
 	case INTSXP:
 	{
 	    int res = INTEGER(x)[0];
-	    if(res == NA_INTEGER) error(_("vector size cannot be NA"));
+	    if(res == NA_INTEGER) Rf_error(_("vector size cannot be NA"));
 	    return R_xlen_t( res);
 	}
 	case REALSXP:
 	{
 	    double d = REAL(x)[0];
-	    if(ISNAN(d)) error(_("vector size cannot be NA/NaN"));
-	    if(!R_FINITE(d)) error(_("vector size cannot be infinite"));
-	    if(d > R_XLEN_T_MAX) error(_("vector size specified is too large"));
+	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t( d);
 	}
 	case STRSXP:
 	{
-	    double d = asReal(x);
-	    if(ISNAN(d)) error(_("vector size cannot be NA/NaN"));
-	    if(!R_FINITE(d)) error(_("vector size cannot be infinite"));
-	    if(d > R_XLEN_T_MAX) error(_("vector size specified is too large"));
+	    double d = Rf_asReal(x);
+	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t( d);
 	}
 	default:
@@ -79,20 +79,20 @@ R_xlen_t asVecSize(SEXP x)
 
 SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_, RObject* eval_env_, RObject* assign_env_)
 {
-    if (!isString(x_) || Rf_length(x_) == 0)
-	error(_("invalid first argument"));
-    SEXP name = installTrChar(STRING_ELT(x_, 0));
+    if (!Rf_isString(x_) || Rf_length(x_) == 0)
+	Rf_error(_("invalid first argument"));
+    SEXP name = Rf_installTrChar(STRING_ELT(x_, 0));
     SEXP expr = value_;
 
     Environment* eenv = downcast_to_env(eval_env_);
     if (!eenv)
-	error(_("invalid '%s' argument"), "eval.env");
+	Rf_error(_("invalid '%s' argument"), "eval.env");
 
     Environment* aenv = downcast_to_env(assign_env_);
     if (!aenv)
-	error(_("invalid '%s' argument"), "assign.env");
+	Rf_error(_("invalid '%s' argument"), "assign.env");
 
-    defineVar(name, mkPROMISE(expr, eenv), aenv);
+    Rf_defineVar(name, Rf_mkPROMISE(expr, eenv), aenv);
     return R_NilValue;
 }
 
@@ -103,21 +103,21 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
     R_xlen_t i;
 
     names = vars_;
-    if (!isString(names))
-	error(_("invalid first argument"));
+    if (!Rf_isString(names))
+	Rf_error(_("invalid first argument"));
     values = vals_;
     expr = expr_;
     eenv = db_;
-    if (!isEnvironment(eenv)) error(_("invalid '%s' argument"), "eval.env");
+    if (!Rf_isEnvironment(eenv)) Rf_error(_("invalid '%s' argument"), "eval.env");
     aenv = envir_;
-    if (!isEnvironment(aenv)) error(_("invalid '%s' argument"), "assign.env");
+    if (!Rf_isEnvironment(aenv)) Rf_error(_("invalid '%s' argument"), "assign.env");
 
     for(i = 0; i < XLENGTH(names); i++) {
-	SEXP name = installChar(STRING_ELT(names, i));
-	PROTECT(val = eval(VECTOR_ELT(values, i), eenv));
-	PROTECT(expr0 = duplicate(expr));
+	SEXP name = Rf_installChar(STRING_ELT(names, i));
+	PROTECT(val = Rf_eval(VECTOR_ELT(values, i), eenv));
+	PROTECT(expr0 = Rf_duplicate(expr));
 	SETCAR(CDR(expr0), val);
-	defineVar(name, mkPROMISE(expr0, eenv), aenv);
+	Rf_defineVar(name, Rf_mkPROMISE(expr0, eenv), aenv);
 	UNPROTECT(2);
     }
     return R_NilValue;
@@ -137,9 +137,9 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (code == R_MissingArg)
 	code = R_NilValue;
     if (add != R_MissingArg) {
-	addit = asLogical(eval(add, rho));
+	addit = Rf_asLogical(Rf_eval(add, rho));
 	if (addit == NA_INTEGER)
-	    errorcall(call, _("invalid '%s' argument"), "add");
+	    Rf_errorcall(call, _("invalid '%s' argument"), "add");
     }
 
     ctxt = ClosureContext::innermost();
@@ -161,9 +161,9 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else
 	    {
-		PROTECT(tmp = allocList(1));
+		PROTECT(tmp = Rf_allocList(1));
 		SETCAR(tmp, code);
-		ctxt->setOnExit(listAppend(duplicate(oldcode),tmp));
+		ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode),tmp));
 		UNPROTECT(1);
 	    }
 	}
@@ -179,13 +179,13 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP s;
 
     if (TYPEOF(CAR(args)) == STRSXP && Rf_length(CAR(args))==1) {
-	PROTECT(s = installTrChar(STRING_ELT(CAR(args), 0)));
-	SETCAR(args, findFun(s, rho));
+	PROTECT(s = Rf_installTrChar(STRING_ELT(CAR(args), 0)));
+	SETCAR(args, Rf_findFun(s, rho));
 	UNPROTECT(1);
     }
 
     if (TYPEOF(CAR(args)) == CLOSXP) {
-	return mkCLOSXP(FORMALS(CAR(args)), nullptr, R_GlobalEnv);
+	return Rf_mkCLOSXP(FORMALS(CAR(args)), nullptr, R_GlobalEnv);
     }
 
     if (TYPEOF(CAR(args)) == BUILTINSXP || TYPEOF(CAR(args)) == SPECIALSXP) {
@@ -193,25 +193,25 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP env, s2;
 	PROTECT_INDEX xp;
 
-	PROTECT_WITH_INDEX(env = findVarInFrame3(R_BaseEnv,
-						 install(".ArgsEnv"), TRUE),
+	PROTECT_WITH_INDEX(env = Rf_findVarInFrame3(R_BaseEnv,
+						 Rf_install(".ArgsEnv"), TRUE),
 			   &xp);
 
-	if (TYPEOF(env) == PROMSXP) REPROTECT(env = eval(env, R_BaseEnv), xp);
-	PROTECT(s2 = findVarInFrame3(env, install(nm), TRUE));
+	if (TYPEOF(env) == PROMSXP) REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
+	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
 	if(s2 != R_UnboundValue) {
-	    s = duplicate(s2);
+	    s = Rf_duplicate(s2);
 	    SET_CLOENV(s, R_GlobalEnv);
 	    UNPROTECT(2);
 	    return s;
 	}
 	UNPROTECT(1); /* s2 */
-	REPROTECT(env = findVarInFrame3(R_BaseEnv, install(".GenericArgsEnv"),
+	REPROTECT(env = Rf_findVarInFrame3(R_BaseEnv, Rf_install(".GenericArgsEnv"),
 					TRUE), xp);
-	if (TYPEOF(env) == PROMSXP) REPROTECT(env = eval(env, R_BaseEnv), xp);
-	PROTECT(s2 = findVarInFrame3(env, install(nm), TRUE));
+	if (TYPEOF(env) == PROMSXP) REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
+	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
 	if(s2 != R_UnboundValue) {
-	    s = mkCLOSXP(FORMALS(s2), nullptr, R_GlobalEnv);
+	    s = Rf_mkCLOSXP(FORMALS(s2), nullptr, R_GlobalEnv);
 	    UNPROTECT(2);
 	    return s;
 	}
@@ -223,11 +223,11 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP)
-	return duplicate(FORMALS(fun_));
+	return Rf_duplicate(FORMALS(fun_));
     else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
-	    warningcall(call, _("argument is not a function"));
+	    Rf_warningcall(call, _("argument is not a function"));
 	return R_NilValue;
     }
 }
@@ -235,11 +235,11 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
 SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP)
-	return duplicate(BODY(fun_));
+	return Rf_duplicate(BODY(fun_));
     else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
-	    warningcall(call, _("argument is not a function"));
+	    Rf_warningcall(call, _("argument is not a function"));
 	return R_NilValue;
     }
 }
@@ -255,7 +255,7 @@ SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction
 	return CLOENV(fun_);
     else if (fun_ == R_NilValue)
 	return ClosureContext::innermost()->callEnvironment();
-    else return getAttrib(fun_, R_DotEnvSymbol);
+    else return Rf_getAttrib(fun_, R_DotEnvSymbol);
 }
 
 SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* s, RObject* env)
@@ -263,12 +263,12 @@ SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunc
     if (TYPEOF(s) == CLOSXP && (env = simple_as_environment(env)) != nullptr) {
 	if(MAYBE_SHARED(s))
 	    /* this copies but does not duplicate args or code */
-	    s = duplicate(s);
+	    s = Rf_duplicate(s);
 	SET_CLOENV(s, env);
     } else {
 	if (env && (env = simple_as_environment(env)) == nullptr)
-	    error(_("replacement object is not an environment"));
-	setAttrib(s, R_DotEnvSymbol, env);
+	    Rf_error(_("replacement object is not an environment"));
+	Rf_setAttrib(s, R_DotEnvSymbol, env);
     }
     return s;
 }
@@ -283,19 +283,19 @@ SEXP attribute_hidden do_newenv(/*const*/ Expression* call, const BuiltInFunctio
     SEXP size, ans;
     int hash;
 
-    hash = asInteger(hash_);
+    hash = Rf_asInteger(hash_);
     Environment* enclos = simple_as_environment(parent_);
     if (!enclos)
-	error(_("'enclos' must be an environment"));
+	Rf_error(_("'enclos' must be an environment"));
 
     if( hash ) {
-	PROTECT(size = coerceVector(size_, INTSXP));
+	PROTECT(size = Rf_coerceVector(size_, INTSXP));
 	if (INTEGER(size)[0] == NA_INTEGER)
 	    INTEGER(size)[0] = 0; /* so it will use the internal default */
 	ans = R_NewHashedEnv(enclos, size);
 	UNPROTECT(1);
     } else
-	ans = NewEnvironment(R_NilValue, R_NilValue, enclos);
+	ans = Rf_NewEnvironment(R_NilValue, R_NilValue, enclos);
     return ans;
 }
 
@@ -303,24 +303,24 @@ SEXP attribute_hidden do_parentenv(/*const*/ Expression* call, const BuiltInFunc
 {
     Environment* arg = simple_as_environment(env_);
     if (!arg)
-	error( _("argument is not an environment"));
+	Rf_error( _("argument is not an environment"));
     if( arg == R_EmptyEnv )
-	error(_("the empty environment has no parent"));
+	Rf_error(_("the empty environment has no parent"));
     return( ENCLOS(arg) );
 }
 
 static Rboolean R_IsImportsEnv(SEXP env)
 {
-    if (isNull(env) || !isEnvironment(env))
+    if (Rf_isNull(env) || !Rf_isEnvironment(env))
 	return FALSE;
     if (ENCLOS(env) != R_BaseNamespace)
 	return FALSE;
-    SEXP name = getAttrib(env, R_NameSymbol);
-    if (!isString(name) || Rf_length(name) != 1)
+    SEXP name = Rf_getAttrib(env, R_NameSymbol);
+    if (!Rf_isString(name) || Rf_length(name) != 1)
 	return FALSE;
 
     const char *imports_prefix = "imports:";
-    const char *name_string = CHAR(STRING_ELT(name, 0));
+    const char *name_string = R_CHAR(STRING_ELT(name, 0));
     if (streqln(name_string, imports_prefix, strlen(imports_prefix)))
 	return TRUE;
     else
@@ -331,17 +331,17 @@ SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltIn
 {
     Environment* env = simple_as_environment(env_);
     if (!env)
-	error(_("argument is not an environment"));
+	Rf_error(_("argument is not an environment"));
     if( env == R_EmptyEnv )
-	error(_("can not set parent of the empty environment"));
+	Rf_error(_("can not set parent of the empty environment"));
     if (R_EnvironmentIsLocked(env) && R_IsNamespaceEnv(env))
-	error(_("can not set the parent environment of a namespace"));
+	Rf_error(_("can not set the parent environment of a namespace"));
     if (R_EnvironmentIsLocked(env) && R_IsImportsEnv(env))
-	error(_("can not set the parent environment of package imports"));
+	Rf_error(_("can not set the parent environment of package imports"));
 
     Environment* parent = simple_as_environment(value_);
     if (!parent)
-	error(_("'parent' is not an environment"));
+	Rf_error(_("'parent' is not an environment"));
 
     env->setEnclosingEnvironment(parent);
     return(env);
@@ -349,7 +349,7 @@ SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltIn
 
 SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
 {
-    SEXP ans=mkString(""), res;
+    SEXP ans=Rf_mkString(""), res;
 
     if (!env_) {
 	return ans;
@@ -357,14 +357,14 @@ SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunc
 
     Environment* env = simple_as_environment(env_);
     if (env) {
-	if (env == R_GlobalEnv) ans = mkString("R_GlobalEnv");
-	else if (env == R_BaseEnv) ans = mkString("base");
-	else if (env == R_EmptyEnv) ans = mkString("R_EmptyEnv");
+	if (env == R_GlobalEnv) ans = Rf_mkString("R_GlobalEnv");
+	else if (env == R_BaseEnv) ans = Rf_mkString("base");
+	else if (env == R_EmptyEnv) ans = Rf_mkString("R_EmptyEnv");
 	else if (R_IsPackageEnv(env))
-	    ans = ScalarString(STRING_ELT(R_PackageEnvName(env), 0));
+	    ans = Rf_ScalarString(STRING_ELT(R_PackageEnvName(env), 0));
 	else if (R_IsNamespaceEnv(env))
-	    ans = ScalarString(STRING_ELT(R_NamespaceEnvSpec(env), 0));
-	else if (!isNull(res = getAttrib(env, R_NameSymbol))) ans = res;
+	    ans = Rf_ScalarString(STRING_ELT(R_NamespaceEnvSpec(env), 0));
+	else if (!Rf_isNull(res = Rf_getAttrib(env, R_NameSymbol))) ans = res;
     }
     return ans;
 }
@@ -375,11 +375,11 @@ SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunc
 /* Uses R_alloc but called by a .Internal.  Result may be R_alloc-ed */
 static const char *trChar(SEXP x)
 {
-    size_t n = strlen(CHAR(x));
-    cetype_t ienc = getCharCE(x);
+    size_t n = strlen(R_CHAR(x));
+    cetype_t ienc = Rf_getCharCE(x);
 
     if (ienc == CE_BYTES) {
-	const char *p = CHAR(x), *q;
+	const char *p = R_CHAR(x), *q;
 	char *pp = R_alloc(4*n+1, 1), *qq = pp, buf[5];
 	for (q = p; *q; q++) {
 	    unsigned char k = static_cast<unsigned char>( *q);
@@ -400,11 +400,11 @@ static const char *trChar(SEXP x)
 	   can afford to be profligate here: translateChar is */
 	if (n < 100) p = buf; else p = R_alloc(n+7, 1);
 	if (WinUTF8out && ienc == CE_UTF8) {
-	    strcpy(p, UTF8in); strcat(p, CHAR(x)); strcat(p, UTF8out);
+	    strcpy(p, UTF8in); strcat(p, R_CHAR(x)); strcat(p, UTF8out);
 	    return p;
 	} else
 #endif
-	    return translateChar(x);
+	    return Rf_translateChar(x);
     }
 }
 
@@ -413,7 +413,7 @@ static void cat_newline(SEXP labels, int *width, int lablen, int ntot)
     Rprintf("\n");
     *width = 0;
     if (labels != R_NilValue) {
-	Rprintf("%s ", EncodeString(STRING_ELT(labels, ntot % lablen),
+	Rprintf("%s ", Rf_EncodeString(STRING_ELT(labels, ntot % lablen),
 				    1, 0, Rprt_adj_left));
 	*width += Rstrlen(STRING_ELT(labels, ntot % lablen), 0) + 1;
     }
@@ -471,46 +471,46 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
     const char *p = "";
 
     /* Use standard printing defaults */
-    PrintDefaults();
+    Rf_PrintDefaults();
 
     objs = dots_;
 
     file = file_;
-    ifile = asInteger(file);
+    ifile = Rf_asInteger(file);
     con = getConnection(ifile);
     if(!con->canwrite) /* if it is not open, we may not know yet */
-	error(_("cannot write to this connection"));
+	Rf_error(_("cannot write to this connection"));
 
     sepr = sep_;
-    if (!isString(sepr))
-	error(_("invalid '%s' specification"), "sep");
+    if (!Rf_isString(sepr))
+	Rf_error(_("invalid '%s' specification"), "sep");
     nlsep = 0;
     for (i = 0; i < LENGTH(sepr); i++)
-	if (strstr(CHAR(STRING_ELT(sepr, i)), "\n")) nlsep = 1; /* ASCII */
+	if (strstr(R_CHAR(STRING_ELT(sepr, i)), "\n")) nlsep = 1; /* ASCII */
 
     fill = fill_;
-    if ((!isNumeric(fill) && !isLogical(fill)) || (Rf_length(fill) != 1))
-	error(_("invalid '%s' argument"), "fill");
-    if (isLogical(fill)) {
-	if (asLogical(fill) == 1)
+    if ((!Rf_isNumeric(fill) && !Rf_isLogical(fill)) || (Rf_length(fill) != 1))
+	Rf_error(_("invalid '%s' argument"), "fill");
+    if (Rf_isLogical(fill)) {
+	if (Rf_asLogical(fill) == 1)
 	    pwidth = R_print.width;
 	else
 	    pwidth = INT_MAX;
     }
-    else pwidth = asInteger(fill);
+    else pwidth = Rf_asInteger(fill);
     if(pwidth <= 0) {
-	warning(_("non-positive 'fill' argument will be ignored"));
+	Rf_warning(_("non-positive 'fill' argument will be ignored"));
 	pwidth = INT_MAX;
     }
 
     labs = labels_;
-    if (!isString(labs) && labs != R_NilValue)
-	error(_("invalid '%s' argument"), "labels");
+    if (!Rf_isString(labs) && labs != R_NilValue)
+	Rf_error(_("invalid '%s' argument"), "labels");
     lablen = Rf_length(labs);
 
-    append = asLogical(append_);
+    append = Rf_asLogical(append_);
     if (append == NA_LOGICAL)
-	error(_("invalid '%s' specification"), "append");
+	Rf_error(_("invalid '%s' specification"), "append");
 
     ci.wasopen = con->isopen;
 
@@ -531,23 +531,23 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 	nlines = 0;
 	for (iobj = 0; iobj < nobjs; iobj++) {
 	    s = VECTOR_ELT(objs, iobj);
-	    if (iobj != 0 && !isNull(s))
+	    if (iobj != 0 && !Rf_isNull(s))
 		cat_printsep(sepr, ntot++);
 	    n = Rf_length(s);
 	    /* 0-length objects are ignored */
 	    if (n > 0) {
 		if (labs != R_NilValue && (iobj == 0)
-		    && (asInteger(fill) > 0)) {
+		    && (Rf_asInteger(fill) > 0)) {
 		    Rprintf("%s ", trChar(STRING_ELT(labs, nlines % lablen)));
 		    /* FIXME -- Rstrlen allows for double-width chars */
 		    width += Rstrlen(STRING_ELT(labs, nlines % lablen), 0) + 1;
 		    nlines++;
 		}
-		if (isString(s))
+		if (Rf_isString(s))
 		    p = trChar(STRING_ELT(s, 0));
-		else if (isSymbol(s)) /* length 1 */
-		    p = CHAR(PRINTNAME(s));
-		else if (isVectorAtomic(s)) {
+		else if (Rf_isSymbol(s)) /* length 1 */
+		    p = R_CHAR(PRINTNAME(s));
+		else if (Rf_isVectorAtomic(s)) {
 		    /* Not a string, as that is covered above.
 		       Thus the maximum size is about 60.
 		       The copy is needed as cat_newline might reuse the buffer.
@@ -567,8 +567,8 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 		}
 #endif
 		else
-		error(_("argument %d (type '%s') cannot be handled by 'cat'"),
-		      1+iobj, type2char(TYPEOF(s)));
+		Rf_error(_("argument %d (type '%s') cannot be handled by 'cat'"),
+		      1+iobj, Rf_type2char(TYPEOF(s)));
 		/* FIXME : cat(...) should handle ANYTHING */
 		size_t w = strlen(p);
 		cat_sepwidth(sepr, &sepw, ntot);
@@ -581,7 +581,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 		    width += int(w + sepw);
 		    if (i < (n - 1)) {
 			cat_printsep(sepr, ntot);
-			if (isString(s))
+			if (Rf_isString(s))
 			    p = trChar(STRING_ELT(s, i+1));
 			else {
 			    p = EncodeElement0(s, i+1, 0, OutDec);
@@ -626,8 +626,8 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 	n++;
     }
 
-    SEXP list = PROTECT(allocVector(VECSXP, n));
-    SEXP names = PROTECT(havenames ? allocVector(STRSXP, n) : R_NilValue);
+    SEXP list = PROTECT(Rf_allocVector(VECSXP, n));
+    SEXP names = PROTECT(havenames ? Rf_allocVector(STRSXP, n) : R_NilValue);
     for (int i = 0; i < n; i++) {
 	if (havenames) {
 	    if (TAG(args) != R_NilValue)
@@ -641,7 +641,7 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 	args = CDR(args);
     }
     if (havenames) {
-	setAttrib(list, R_NamesSymbol, names);
+	Rf_setAttrib(list, R_NamesSymbol, names);
     }
     UNPROTECT(2);
     return list;
@@ -654,18 +654,18 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
     int i, n, named;
     named = 0;
     n = Rf_length(args);
-    PROTECT(ans = allocVector(EXPRSXP, n));
+    PROTECT(ans = Rf_allocVector(EXPRSXP, n));
     a = args;
     for (i = 0; i < n; i++) {
 	if(MAYBE_REFERENCED(CAR(a)))
-	    SET_XVECTOR_ELT(ans, i, duplicate(CAR(a)));
+	    SET_XVECTOR_ELT(ans, i, Rf_duplicate(CAR(a)));
 	else
 	    SET_XVECTOR_ELT(ans, i, CAR(a));
 	if (TAG(a) != R_NilValue) named = 1;
 	a = CDR(a);
     }
     if (named) {
-	PROTECT(nms = allocVector(STRSXP, n));
+	PROTECT(nms = Rf_allocVector(STRSXP, n));
 	a = args;
 	for (i = 0; i < n; i++) {
 	    if (TAG(a) != R_NilValue)
@@ -674,7 +674,7 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SET_STRING_ELT(nms, i, R_BlankString);
 	    a = CDR(a);
 	}
-	setAttrib(ans, R_NamesSymbol, nms);
+	Rf_setAttrib(ans, R_NamesSymbol, nms);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
@@ -687,13 +687,13 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
     R_xlen_t len;
     SEXP s;
     SEXPTYPE mode;
-    if (Rf_length(length_) != 1) error(_("invalid '%s' argument"), "length");
+    if (Rf_length(length_) != 1) Rf_error(_("invalid '%s' argument"), "length");
     len = asVecSize(length_);
-    if (len < 0) error(_("invalid '%s' argument"), "length");
-    s = coerceVector(mode_, STRSXP);
-    if (Rf_length(s) != 1) error(_("invalid '%s' argument"), "mode");
-    mode = str2type(CHAR(STRING_ELT(s, 0))); /* ASCII */
-    if (RHOCONSTRUCT(int, mode) == -1 && streql(CHAR(STRING_ELT(s, 0)), "double"))
+    if (len < 0) Rf_error(_("invalid '%s' argument"), "length");
+    s = Rf_coerceVector(mode_, STRSXP);
+    if (Rf_length(s) != 1) Rf_error(_("invalid '%s' argument"), "mode");
+    mode = Rf_str2type(R_CHAR(STRING_ELT(s, 0))); /* ASCII */
+    if (RHOCONSTRUCT(int, mode) == -1 && streql(R_CHAR(STRING_ELT(s, 0)), "double"))
 	mode = REALSXP;
     switch (mode) {
     case LGLSXP:
@@ -704,15 +704,15 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
     case EXPRSXP:
     case VECSXP:
     case RAWSXP:
-	s = allocVector(mode, len);
+	s = Rf_allocVector(mode, len);
 	break;
     case LISTSXP:
-	if (len > INT_MAX) error("too long for a pairlist");
-	s = allocList(int( len));
+	if (len > INT_MAX) Rf_error("too long for a pairlist");
+	s = Rf_allocList(int( len));
 	break;
     default:
-	error(_("vector: cannot make a vector of mode '%s'."),
-	      translateChar(STRING_ELT(s, 0))); /* should be ASCII */
+	Rf_error(_("vector: cannot make a vector of mode '%s'."),
+	      Rf_translateChar(STRING_ELT(s, 0))); /* should be ASCII */
     }
     if (mode == INTSXP || mode == LGLSXP)
 	Memzero(INTEGER(s), len);
@@ -736,15 +736,15 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 {
     R_xlen_t lenx, i;
     SEXP rval, names, xnames, t;
-    if (!isVector(x) && !isVectorizable(x))
-	error(_("cannot set length of non-vector"));
-    lenx = xlength(x);
+    if (!Rf_isVector(x) && !Rf_isVectorizable(x))
+	Rf_error(_("cannot set length of non-vector"));
+    lenx = Rf_xlength(x);
     if (lenx == len)
 	return (x);
-    PROTECT(rval = allocVector(TYPEOF(x), len));
-    PROTECT(xnames = getAttrib(x, R_NamesSymbol));
+    PROTECT(rval = Rf_allocVector(TYPEOF(x), len));
+    PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol));
     if (xnames != R_NilValue)
-	names = allocVector(STRSXP, len);
+	names = Rf_allocVector(STRSXP, len);
     else names = R_NilValue;	/*- just for -Wall --- should we do this ? */
     switch (TYPEOF(x)) {
     case NILSXP:
@@ -818,8 +818,8 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
     default:
 	UNIMPLEMENTED_TYPE("length<-", x);
     }
-    if (isVector(x) && xnames != R_NilValue)
-	setAttrib(rval, R_NamesSymbol, names);
+    if (Rf_isVector(x) && xnames != R_NilValue)
+	Rf_setAttrib(rval, R_NamesSymbol, names);
     UNPROTECT(2);
     return rval;
 }
@@ -827,7 +827,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 /* public older version */
 SEXP Rf_lengthgets(SEXP x, R_len_t len)
 {
-    return xlengthgets(x, R_xlen_t( len));
+    return Rf_xlengthgets(x, R_xlen_t( len));
 }
 
 
@@ -835,21 +835,21 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 {
     SEXP x = x_;
 
-    if (!isVector(x) && !isVectorizable(x))
-	error(_("invalid argument"));
+    if (!Rf_isVector(x) && !Rf_isVectorizable(x))
+	Rf_error(_("invalid argument"));
     if (Rf_length(value_) != 1)
-	error(_("invalid value"));
+	Rf_error(_("invalid value"));
     R_xlen_t len = asVecSize(value_);
-    if (len < 0) error(_("invalid value"));
+    if (len < 0) Rf_error(_("invalid value"));
     if (len > R_LEN_T_MAX) {
 #ifdef LONG_VECTOR_SUPPORT
-	return xlengthgets(x, len);
+	return Rf_xlengthgets(x, len);
 #else
-	error(_("vector size specified is too large"));
+	Rf_error(_("vector size specified is too large"));
 	return x; /* -Wall */
 #endif
     }
-    return lengthgets(x, R_len_t( len));
+    return Rf_lengthgets(x, R_len_t( len));
 }
 
 /* Expand dots in args, but do not evaluate */
@@ -862,7 +862,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
 
     while (el != R_NilValue) {
 	if (CAR(el) == R_DotsSymbol) {
-	    SEXP h = PROTECT(findVar(CAR(el), rho));
+	    SEXP h = PROTECT(Rf_findVar(CAR(el), rho));
 	    if (TYPEOF(h) == DOTSXP || h == R_NilValue) {
 		while (h != R_NilValue) {
 		    SETCDR(tail, CONS(CAR(h), R_NilValue));
@@ -871,7 +871,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
 		    h = CDR(h);
 		}
 	    } else if (h != R_MissingArg)
-		error(_("'...' used in an incorrect context"));
+		Rf_error(_("'...' used in an incorrect context"));
 	    UNPROTECT(1); /* h */
 	} else {
 	    SETCDR(tail, CONS(CAR(el), R_NilValue));
@@ -891,10 +891,10 @@ static SEXP setDflt(SEXP arg, SEXP dflt)
 {
     if (dflt) {
 	SEXP dflt1, dflt2;
-	PROTECT(dflt1 = deparse1line(dflt, TRUE));
-	PROTECT(dflt2 = deparse1line(CAR(arg), TRUE));
-	error(_("duplicate 'switch' defaults: '%s' and '%s'"),
-	      CHAR(STRING_ELT(dflt1, 0)), CHAR(STRING_ELT(dflt2, 0)));
+	PROTECT(dflt1 = Rf_deparse1line(dflt, TRUE));
+	PROTECT(dflt2 = Rf_deparse1line(CAR(arg), TRUE));
+	Rf_error(_("duplicate 'switch' defaults: '%s' and '%s'"),
+	      R_CHAR(STRING_ELT(dflt1, 0)), R_CHAR(STRING_ELT(dflt2, 0)));
 	UNPROTECT(2); /* won't get here, but just for good form */
     }
     return(CAR(arg));
@@ -926,11 +926,11 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
     int argval, nargs = Rf_length(args);
     SEXP x, y, z, w, ans, dflt = nullptr;
 
-    PROTECT(x = eval(CAR(args), rho));
-    if (!isVector(x) || Rf_length(x) != 1)
-	errorcall(call, _("EXPR must be a length 1 vector"));
-    if (isFactor(x))
-	warningcall(call,
+    PROTECT(x = Rf_eval(CAR(args), rho));
+    if (!Rf_isVector(x) || Rf_length(x) != 1)
+	Rf_errorcall(call, _("EXPR must be a length 1 vector"));
+    if (Rf_isFactor(x))
+	Rf_warningcall(call,
 		    _("EXPR is a \"factor\", treated as integer.\n"
 		      " Consider using '%s' instead."),
 		    "switch(as.character( * ), ...)");
@@ -938,10 +938,10 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* There is a complication: if called from lapply
 	   there may be a ... argument */
 	PROTECT(w = expandDots(CDR(args), rho));
-	if (isString(x)) {
+	if (Rf_isString(x)) {
 	    for (y = w; y != R_NilValue; y = CDR(y)) {
 		if (TAG(y) != R_NilValue) {
-		    if (pmatch(STRING_ELT(x, 0), TAG(y), RHO_TRUE /* exact */)) {
+		    if (Rf_pmatch(STRING_ELT(x, 0), TAG(y), RHO_TRUE /* exact */)) {
 			/* Find the next non-missing argument.
 			   (If there is none, return NULL.) */
 			while (CAR(y) == R_MissingArg) {
@@ -961,7 +961,7 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 			for (z = CDR(y); z != R_NilValue; z = CDR(z))
 			    if (TAG(z) == R_NilValue) dflt = setDflt(z, dflt);
 
-			ans =  eval(CAR(y), rho);
+			ans =  Rf_eval(CAR(y), rho);
 			UNPROTECT(2);
 			return ans;
 		    }
@@ -969,18 +969,18 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    dflt = setDflt(y, dflt);
 	    }
 	    if (dflt) {
-		ans =  eval(dflt, rho);
+		ans =  Rf_eval(dflt, rho);
 		UNPROTECT(2);
 		return ans;
 	    }
 	    /* fall through to error */
 	} else { /* Treat as numeric */
-	    argval = asInteger(x);
+	    argval = Rf_asInteger(x);
 	    if (argval != NA_INTEGER && argval >= 1 && argval <= Rf_length(w)) {
-		SEXP alt = CAR(nthcdr(w, argval - 1));
+		SEXP alt = CAR(Rf_nthcdr(w, argval - 1));
 		if (alt == R_MissingArg)
-		    error("empty alternative in numeric switch");
-		ans =  eval(alt, rho);
+		    Rf_error("empty alternative in numeric switch");
+		ans =  Rf_eval(alt, rho);
 		UNPROTECT(2);
 		return ans;
 	    }
@@ -988,7 +988,7 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 	UNPROTECT(1); /* w */
     } else
-	warningcall(call, _("'switch' with no alternatives"));
+	Rf_warningcall(call, _("'switch' with no alternatives"));
     /* an error */
     UNPROTECT(1); /* x */
     R_Visible = FALSE;

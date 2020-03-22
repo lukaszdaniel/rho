@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
- *  Copyright (C) 2002--2015  The R Foundation
+ *  Copyright (C) 1997--2016  The R Core Team
+ *  Copyright (C) 2002--2016  The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -749,8 +749,8 @@ static void NewExtractNames(SEXP v, SEXP base, const RObject* tag, int recurse,
 /* way, rather than having an interpreted front-end do the job, */
 /* because we want to avoid duplication at the top level. */
 /* FIXME : is there another possibility? */
-
-static SEXP ExtractOptionals(SEXP ans, int *recurse, int *usenames, SEXP call)
+static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
+			  SEXP call)
 {
     SEXP a, n, last = nullptr, next = nullptr;
     int v, n_recurse = 0, n_usenames = 0;
@@ -758,11 +758,11 @@ static SEXP ExtractOptionals(SEXP ans, int *recurse, int *usenames, SEXP call)
     for (a = ans; a != R_NilValue; a = next) {
 	n = TAG(a);
 	next = CDR(a);
-	if (n != R_NilValue && pmatch(R_RecursiveSymbol, n, RHO_TRUE)) {
+	if (n != R_NilValue && Rf_pmatch(R_RecursiveSymbol, n, RHO_TRUE)) {
 	    if (n_recurse++ == 1)
-		errorcall(call, _("repeated formal argument 'recursive'"));
-	    if ((v = asLogical(CAR(a))) != NA_INTEGER) {
-		*recurse = v;
+		Rf_errorcall(call, _("repeated formal argument 'recursive'"));
+	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
+		*recurse = Rboolean(v);
 	    }
 	    if (last == nullptr)
 		ans = next;
@@ -771,9 +771,9 @@ static SEXP ExtractOptionals(SEXP ans, int *recurse, int *usenames, SEXP call)
 	}
 	else if (n != R_NilValue && pmatch(R_UseNamesSymbol, n, RHO_TRUE)) {
 	    if (n_usenames++ == 1)
-		errorcall(call, _("repeated formal argument 'use.names'"));
-	    if ((v = asLogical(CAR(a))) != NA_INTEGER) {
-		*usenames = v;
+		Rf_errorcall(call, _("repeated formal argument 'use.names'"));
+	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
+		*usenames = Rboolean(v);
 	    }
 	    if (last == nullptr)
 		ans = next;
@@ -803,6 +803,9 @@ SEXP attribute_hidden do_c(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     /* Attempt method dispatch. */
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
+    // if (DispatchAnyOrEval(call, op, "c", args, env, &ans, 1, 1))
+	// //      ^^^ "Any" => all args are eval()ed and checked => correct multi-arg dispatch
+	// return(ans);
     auto dispatched = Rf_Dispatch(SEXP_downcast<const Expression*>(call),
                                   SEXP_downcast<const BuiltInFunction*>(op),
                                   arglist,
@@ -814,33 +817,31 @@ SEXP attribute_hidden do_c(SEXP call, SEXP op, SEXP args, SEXP env)
 
 static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
 {
-    SEXP ans, t;
-    int recurse, usenames;
-    SEXPTYPE mode;
-    struct BindData data;
-    struct NameData nameData;
     SEXP args = const_cast<PairList*>(arglist.list());
 
-/*    data.deparse_level = 1;  Initialize this early. */
 
     /* Method dispatch has failed; run the default code. */
     /* By default we do not recurse, but this can be over-ridden */
     /* by an optional "recursive" argument. */
 
-    usenames = 1;
-    recurse = 0;
+    Rboolean
+	usenames = TRUE,
+	recurse = FALSE;
     /* this was only done for length(args) > 1 prior to 1.5.0,
        _but_ `recursive' might be the only argument */
-    PROTECT(args = ExtractOptionals(args, &recurse, &usenames, call));
+    PROTECT(args = c_Extract_opt(args, &recurse, &usenames, call));
 
     /* Determine the type of the returned value. */
     /* The strategy here is appropriate because the */
     /* object being operated on is a pair based list. */
 
+    struct BindData data;
+/*    data.deparse_level = 1;  Initialize this early. */
     data.ans_flags  = 0;
     data.ans_length = 0;
     data.ans_nnames = 0;
 
+    SEXP t;
     for (t = args; t != R_NilValue; t = CDR(t)) {
 	if (usenames && !data.ans_nnames) {
 	    if (!isNull(TAG(t))) data.ans_nnames = 1;
@@ -853,7 +854,7 @@ static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
     /* recursive is FALSE) then we must return a list.	Otherwise, */
     /* we use the natural coercion for vector types. */
 
-    mode = NILSXP;
+    SEXPTYPE mode = NILSXP;
     if      (data.ans_flags & 512) mode = EXPRSXP;
     else if (data.ans_flags & 256) mode = VECSXP;
     else if (data.ans_flags & 128) mode = STRSXP;
@@ -866,7 +867,7 @@ static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
     /* Allocate the return value and set up to pass through */
     /* the arguments filling in values of the returned object. */
 
-    PROTECT(ans = allocVector(mode, data.ans_length));
+    SEXP ans = PROTECT(Rf_allocVector(mode, data.ans_length));
     data.ans_ptr = ans;
     data.ans_length = 0;
     t = args;
@@ -901,6 +902,7 @@ static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
 	PROTECT(data.ans_names = allocVector(STRSXP, data.ans_length));
 	data.ans_nnames = 0;
 	while (args != R_NilValue) {
+	    struct NameData nameData;
 	    nameData.seqno = 0;
 	    nameData.firstpos = 0;
 	    nameData.count = 0;
@@ -919,10 +921,8 @@ static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
 SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  recursive_, RObject*  use_names_)
 {
     SEXP ans, t;
-    SEXPTYPE mode;
     R_xlen_t i, n = 0;
     struct BindData data;
-    struct NameData nameData;
 
 /*    data.deparse_level = 1; */
 
@@ -971,7 +971,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
     /* recursive = F) then we must return a list.  Otherwise, we use */
     /* the natural coercion for vector types. */
 
-    mode = NILSXP;
+    SEXPTYPE mode = NILSXP;
     if      (data.ans_flags & 512) mode = EXPRSXP;
     else if (data.ans_flags & 256) mode = VECSXP;
     else if (data.ans_flags & 128) mode = STRSXP;
@@ -1014,6 +1014,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
     /* Build and attach the names attribute for the returned object. */
 
     if (data.ans_nnames && data.ans_length > 0) {
+	struct NameData nameData;
 	PROTECT(data.ans_names = allocVector(STRSXP, data.ans_length));
 	if (!recurse) {
 	    if (TYPEOF(args) == VECSXP) {

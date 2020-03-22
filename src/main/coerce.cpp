@@ -1338,7 +1338,7 @@ SEXP Rf_asCharacterFactor(SEXP x)
 {
     SEXP ans;
 
-    if( !Rf_inherits(x, "factor") )
+    if( !inherits2(x, "factor") )
 	Rf_error(_("attempting to coerce non-factor"));
 
     R_xlen_t i, n = XLENGTH(x);

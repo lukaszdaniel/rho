@@ -520,7 +520,7 @@ LibExtern SEXP R_LogicalNAValue;
 
 #ifndef R_NO_REMAP
 # define allocCharsxp		Rf_allocCharsxp
-# define asVecSize		Rf_asVecSize
+//# define asVecSize		Rf_asVecSize
 # define begincontext		Rf_begincontext
 # define BindDomain		Rf_BindDomain
 # define CleanEd		Rf_CleanEd
@@ -746,6 +746,7 @@ void Rf_InitGlobalEnv(void);
 Rboolean R_current_trace_state(void);
 Rboolean R_current_debug_state(void);
 void R_InitialData(void);
+Rboolean inherits2(SEXP, const char *);
 
 #ifdef __cplusplus
 }  // extern "C"

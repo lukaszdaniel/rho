@@ -77,8 +77,8 @@ inline SEXP VECTOR_ELT(SEXP x, R_xlen_t i)
     } else if (x && x->sexptype() == EXPRSXP) {
       return XVECTOR_ELT(x, i);
     }  else {
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-		 "VECTOR_ELT", "list", Rf_type2char(TYPEOF(x)));
+	Rf_error("'%s' function can only be applied to a list, not a '%s'",
+		 "VECTOR_ELT()",  Rf_type2char(TYPEOF(x)));
     }
 }
 

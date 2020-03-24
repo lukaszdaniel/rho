@@ -228,7 +228,7 @@ namespace rho {
 		return OutputType::createScalar(op((*lhs)[0], (*rhs)[0]));
 	    }
 	    OutputType* result = OutputType::create(size);
-		if (size == 1) {
+	    if (size == 1) {
 		(*result)[0] = op((*lhs)[0], (*rhs)[0]);
 	    } else if (lhs_size == 1) {
 		// TODO: move these into a separate function so that the scalar

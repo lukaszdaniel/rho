@@ -100,9 +100,9 @@ static void NORET reg_report(int rc,  regex_t *reg, const char *pat)
     char errbuf[1001];
     tre_regerror(rc, reg, errbuf, 1001);
     if (pat)
-	error(_("invalid regular expression '%s', reason '%s'"), pat, errbuf);
+	Rf_error(_("invalid regular expression '%s', reason '%s'"), pat, errbuf);
     else
-	error(_("invalid regular expression, reason '%s'"), errbuf);
+	Rf_error(_("invalid regular expression, reason '%s'"), errbuf);
 }
 
 /* FIXME: make more robust, and public */
@@ -117,7 +117,7 @@ static SEXP mkCharWLen(const wchar_t *wc, int nc)
     xi = static_cast<char *>( alloca((nb+1)*sizeof(char)));
     wcstoutf8(xi, wt, nb + 1);
     if (nb > INT_MAX)
-	error("R character strings are limited to 2^31-1 bytes");
+	Rf_error("R character strings are limited to 2^31-1 bytes");
     return mkCharLenCE(xi, int(nb), CE_UTF8);
 }
 
@@ -127,7 +127,7 @@ static SEXP mkCharW(const wchar_t *wc)
     char *xi = static_cast<char *>( Calloc(nb+1, char));
     SEXP ans;
     wcstoutf8(xi, wc, nb + 1);
-    ans = mkCharCE(xi, CE_UTF8);
+    ans = Rf_mkCharCE(xi, CE_UTF8);
     Free(xi);
     return ans;
 }
@@ -155,18 +155,18 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 
     x = x_;
     tok = split_;
-    fixed_opt = asLogical(fixed_);
-    perl_opt = asLogical(perl_);
-    useBytes = asLogical(useBytes_);
+    fixed_opt = Rf_asLogical(fixed_);
+    perl_opt = Rf_asLogical(perl_);
+    useBytes = Rf_asLogical(useBytes_);
     if (fixed_opt == NA_INTEGER) fixed_opt = 0;
     if (perl_opt == NA_INTEGER) perl_opt = 0;
     if (useBytes == NA_INTEGER) useBytes = 0;
     if (fixed_opt && perl_opt) {
-	warning(_("argument '%s' will be ignored"), "perl = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "perl = TRUE");
 	perl_opt = 0;
     }
 
-    if (!isString(x) || !isString(tok)) error(_("non-character argument"));
+    if (!Rf_isString(x) || !Rf_isString(tok)) Rf_error(_("non-character argument"));
 
 
     len = XLENGTH(x);
@@ -205,43 +205,43 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
     }
 
     /* group by token for efficiency with PCRE/TRE versions */
-    PROTECT(ans = allocVector(VECSXP, len));
+    PROTECT(ans = Rf_allocVector(VECSXP, len));
     vmax = vmaxget();
     for (itok = 0; itok < tlen; itok++) {
 	SEXP thiss = STRING_ELT(tok, itok);
 
 	if (thiss == NA_STRING) { /* NA token doesn't split */
 	    for (i = itok; i < len; i += tlen)
-		SET_VECTOR_ELT(ans, i, ScalarString(STRING_ELT(x, i)));
+		SET_VECTOR_ELT(ans, i, Rf_ScalarString(STRING_ELT(x, i)));
 	    continue;
-	} else if (!CHAR(thiss)[0]) { /* empty */
+	} else if (!R_CHAR(thiss)[0]) { /* empty */
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
 		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 		    continue;
 		}
 		if (useBytes)
-		    buf = CHAR(STRING_ELT(x, i));
+		    buf = R_CHAR(STRING_ELT(x, i));
 		else if (use_UTF8) {
-		    buf = translateCharUTF8(STRING_ELT(x, i));
+		    buf = Rf_translateCharUTF8(STRING_ELT(x, i));
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		} else {
-		    buf = translateChar(STRING_ELT(x, i));
+		    buf = Rf_translateChar(STRING_ELT(x, i));
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		}
-		if (!useBytes && (use_UTF8 || mbcslocale) && !strIsASCII(buf)) {
+		if (!useBytes && (use_UTF8 || mbcslocale) && !Rf_strIsASCII(buf)) {
 		/* split into individual characters (not bytes) */
 		    char bf[20 /* > MB_CUR_MAX */];
 		    const char *p = buf;
@@ -253,23 +253,23 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			for (ntok = 0; *p; p += used, ntok++)
 			    used = utf8clen(*p);
 			p = buf;
-			PROTECT(t = allocVector(STRSXP, ntok));
+			PROTECT(t = Rf_allocVector(STRSXP, ntok));
 			for (j = 0; j < ntok; j++, p += used) {
 			    used = utf8clen(*p);
 			    memcpy(bf, p, used); bf[used] = '\0';
-			    SET_STRING_ELT(t, j, mkCharCE(bf, CE_UTF8));
+			    SET_STRING_ELT(t, j, Rf_mkCharCE(bf, CE_UTF8));
 			}
 		    } else if ((nt = mbstowcs(nullptr, buf, 0)) < 0) {
-			PROTECT(t = ScalarString(NA_STRING));
+			PROTECT(t = Rf_ScalarString(NA_STRING));
 		    } else {
 			ntok = nt;
 			mbs_init(&mb_st);
-			PROTECT(t = allocVector(STRSXP, ntok));
+			PROTECT(t = Rf_allocVector(STRSXP, ntok));
 			for (j = 0; j < ntok; j++, p += used) {
 			    /* This is valid as we have already checked */
 			    used = mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st);
 			    memcpy(bf, p, used); bf[used] = '\0';
-			    SET_STRING_ELT(t, j, markKnown(bf, STRING_ELT(x, i)));
+			    SET_STRING_ELT(t, j, Rf_markKnown(bf, STRING_ELT(x, i)));
 			}
 		    }
 		} else {
@@ -277,11 +277,11 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		       single-byte locale and not marked as UTF-8 */
 		    char bf[2];
 		    ntok = strlen(buf);
-		    PROTECT(t = allocVector(STRSXP, ntok));
+		    PROTECT(t = Rf_allocVector(STRSXP, ntok));
 		    bf[1] = '\0';
 		    for (j = 0; j < ntok; j++) {
 			bf[0] = buf[j];
-			SET_STRING_ELT(t, j, markKnown(bf, STRING_ELT(x, i)));
+			SET_STRING_ELT(t, j, Rf_markKnown(bf, STRING_ELT(x, i)));
 		    }
 		}
 		SET_VECTOR_ELT(ans, i, t);
@@ -291,15 +291,15 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	} else if (fixed_opt) {
 	    const char *laststart, *ebuf;
 	    if (useBytes)
-		split = CHAR(STRING_ELT(tok, itok));
+		split = R_CHAR(STRING_ELT(tok, itok));
 	    else if (use_UTF8) {
-		split = translateCharUTF8(STRING_ELT(tok, itok));
+		split = Rf_translateCharUTF8(STRING_ELT(tok, itok));
 		if (!utf8Valid(split))
-		    error(_("'split' string %d is invalid UTF-8"), itok+1);
+		    Rf_error(_("'split' string %d is invalid UTF-8"), itok+1);
 	    } else {
-		split = translateChar(STRING_ELT(tok, itok));
+		split = Rf_translateChar(STRING_ELT(tok, itok));
 		if (mbcslocale && !mbcsValid(split))
-		    error(_("'split' string %d is invalid in this locale"),
+		    Rf_error(_("'split' string %d is invalid in this locale"),
 			  itok+1);
 	    }
 	    int slen = int( strlen(split));
@@ -308,26 +308,26 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
 		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 		    continue;
 		}
 
 		if (useBytes)
-		    buf = CHAR(STRING_ELT(x, i));
+		    buf = R_CHAR(STRING_ELT(x, i));
 		else if (use_UTF8) {
-		    buf = translateCharUTF8(STRING_ELT(x, i));
+		    buf = Rf_translateCharUTF8(STRING_ELT(x, i));
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		} else {
-		    buf = translateChar(STRING_ELT(x, i));
+		    buf = Rf_translateChar(STRING_ELT(x, i));
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		}
@@ -345,7 +345,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		}
 		bufp = laststart;
 		SET_VECTOR_ELT(ans, i,
-			       t = allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
+			       t = Rf_allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
 		/* and fill with the splits */
 		laststart = bufp = buf;
 		pt = Realloc(pt, strlen(buf)+1, char);
@@ -366,18 +366,18 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			bufp += MAX(slen-1, 0);
 			laststart = bufp+1;
 			if (use_UTF8)
-			    SET_STRING_ELT(t, j, mkCharCE(pt, CE_UTF8));
+			    SET_STRING_ELT(t, j, Rf_mkCharCE(pt, CE_UTF8));
 			else
-			    SET_STRING_ELT(t, j, markKnown(pt, STRING_ELT(x, i)));
+			    SET_STRING_ELT(t, j, Rf_markKnown(pt, STRING_ELT(x, i)));
 			break;
 		    }
 		    bufp = laststart;
 		}
 		if (*bufp) {
 		    if (use_UTF8)
-			SET_STRING_ELT(t, ntok, mkCharCE(bufp, CE_UTF8));
+			SET_STRING_ELT(t, ntok, Rf_mkCharCE(bufp, CE_UTF8));
 		    else
-			SET_STRING_ELT(t, ntok, markKnown(bufp, STRING_ELT(x, i)));
+			SET_STRING_ELT(t, ntok, Rf_markKnown(bufp, STRING_ELT(x, i)));
 		}
 		vmaxset(vmax2);
 	    }
@@ -390,15 +390,15 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 
 	    if (use_UTF8) options = PCRE_UTF8;
 	    if (useBytes)
-		split = CHAR(STRING_ELT(tok, itok));
+		split = R_CHAR(STRING_ELT(tok, itok));
 	    else if (use_UTF8) {
-		split = translateCharUTF8(STRING_ELT(tok, itok));
+		split = Rf_translateCharUTF8(STRING_ELT(tok, itok));
 		if (!utf8Valid(split))
-		    error(_("'split' string %d is invalid UTF-8"), itok+1);
+		    Rf_error(_("'split' string %d is invalid UTF-8"), itok+1);
 	    } else {
-		split = translateChar(STRING_ELT(tok, itok));
+		split = Rf_translateChar(STRING_ELT(tok, itok));
 		if (mbcslocale && !mbcsValid(split))
-		    error(_("'split' string %d is invalid in this locale"), itok+1);
+		    Rf_error(_("'split' string %d is invalid in this locale"), itok+1);
 	    }
 
 	    // PCRE docs say this is not needed, but it is on Windows
@@ -407,38 +407,38 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 				   &errorptr, &erroffset, tables);
 	    if (!re_pcre) {
 		if (errorptr)
-		    warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
+		    Rf_warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
 			    errorptr, split+erroffset);
-		error(_("invalid split pattern '%s'"), split);
+		Rf_error(_("invalid split pattern '%s'"), split);
 	    }
 	    re_pe = pcre_study(re_pcre, 0, &errorptr);
 	    if (errorptr)
-		warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
 		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 		    continue;
 		}
 
 		if (useBytes)
-		    buf = CHAR(STRING_ELT(x, i));
+		    buf = R_CHAR(STRING_ELT(x, i));
 		else if (use_UTF8) {
-		    buf = translateCharUTF8(STRING_ELT(x, i));
+		    buf = Rf_translateCharUTF8(STRING_ELT(x, i));
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		} else {
-		    buf = translateChar(STRING_ELT(x, i));
+		    buf = Rf_translateChar(STRING_ELT(x, i));
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		}
@@ -456,7 +456,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    }
 		}
 		SET_VECTOR_ELT(ans, i,
-			       t = allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
+			       t = Rf_allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
 		/* and fill with the splits */
 		bufp = buf;
 		pt = Realloc(pt, strlen(buf)+1, char);
@@ -476,15 +476,15 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			bufp++;
 		    }
 		    if (use_UTF8)
-			SET_STRING_ELT(t, j, mkCharCE(pt, CE_UTF8));
+			SET_STRING_ELT(t, j, Rf_mkCharCE(pt, CE_UTF8));
 		    else
-			SET_STRING_ELT(t, j, markKnown(pt, STRING_ELT(x, i)));
+			SET_STRING_ELT(t, j, Rf_markKnown(pt, STRING_ELT(x, i)));
 		}
 		if (*bufp) {
 		    if (use_UTF8)
-			SET_STRING_ELT(t, ntok, mkCharCE(bufp, CE_UTF8));
+			SET_STRING_ELT(t, ntok, Rf_mkCharCE(bufp, CE_UTF8));
 		    else
-			SET_STRING_ELT(t, ntok, markKnown(bufp, STRING_ELT(x, i)));
+			SET_STRING_ELT(t, ntok, Rf_markKnown(bufp, STRING_ELT(x, i)));
 		}
 		vmaxset(vmax2);
 	    }
@@ -504,18 +504,18 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	       the empty string (not a ``token'' in the strict sense).
 	    */
 
-	    wsplit = wtransChar(STRING_ELT(tok, itok));
+	    wsplit = Rf_wtransChar(STRING_ELT(tok, itok));
 	    if ((rc = tre_regwcomp(&reg, wsplit, cflags)))
-		reg_report(rc, &reg, translateChar(STRING_ELT(tok, itok)));
+		reg_report(rc, &reg, Rf_translateChar(STRING_ELT(tok, itok)));
 
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
 		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 		    continue;
 		}
-		wbuf = wtransChar(STRING_ELT(x, i));
+		wbuf = Rf_wtransChar(STRING_ELT(x, i));
 
 		/* find out how many splits there will be */
 		ntok = 0;
@@ -529,7 +529,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    }
 		}
 		SET_VECTOR_ELT(ans, i,
-			       t = allocVector(STRSXP, ntok + (*wbufp ? 1 : 0)));
+			       t = Rf_allocVector(STRSXP, ntok + (*wbufp ? 1 : 0)));
 		/* and fill with the splits */
 		wbufp = wbuf;
 		wpt = Realloc(wpt, wcslen(wbuf)+1, wchar_t);
@@ -570,11 +570,11 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	    */
 	    /* never use_UTF8 */
 	    if (useBytes)
-		split = CHAR(STRING_ELT(tok, itok));
+		split = R_CHAR(STRING_ELT(tok, itok));
 	    else {
-		split = translateChar(STRING_ELT(tok, itok));
+		split = Rf_translateChar(STRING_ELT(tok, itok));
 		if (mbcslocale && !mbcsValid(split))
-		    error(_("'split' string %d is invalid in this locale"), itok+1);
+		    Rf_error(_("'split' string %d is invalid in this locale"), itok+1);
 	    }
 	    if ((rc = tre_regcomp(&reg, split, cflags)))
 		reg_report(rc, &reg, split);
@@ -583,18 +583,18 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
 		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 		    continue;
 		}
 		/* never use_UTF8 */
 		if (useBytes)
-		    buf = CHAR(STRING_ELT(x, i));
+		    buf = R_CHAR(STRING_ELT(x, i));
 		else {
-		    buf = translateChar(STRING_ELT(x, i));
+		    buf = Rf_translateChar(STRING_ELT(x, i));
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, ScalarString(NA_STRING));
+			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
 			continue;
 		    }
 		}
@@ -611,7 +611,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    }
 		}
 		SET_VECTOR_ELT(ans, i,
-			       t = allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
+			       t = Rf_allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
 		/* and fill with the splits */
 		bufp = buf;
 		pt = Realloc(pt, strlen(buf)+1, char);
@@ -629,10 +629,10 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			pt[1] = '\0';
 			bufp++;
 		    }
-		    SET_STRING_ELT(t, j, markKnown(pt, STRING_ELT(x, i)));
+		    SET_STRING_ELT(t, j, Rf_markKnown(pt, STRING_ELT(x, i)));
 		}
 		if (*bufp)
-		    SET_STRING_ELT(t, ntok, markKnown(bufp, STRING_ELT(x, i)));
+		    SET_STRING_ELT(t, ntok, Rf_markKnown(bufp, STRING_ELT(x, i)));
 		vmaxset(vmax2);
 	    }
 	    tre_regfree(&reg);
@@ -640,8 +640,8 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	vmaxset(vmax);
     }
 
-    if (getAttrib(x, R_NamesSymbol) != R_NilValue)
-	namesgets(ans, getAttrib(x, R_NamesSymbol));
+    if (Rf_getAttrib(x, R_NamesSymbol) != R_NilValue)
+	Rf_namesgets(ans, Rf_getAttrib(x, R_NamesSymbol));
     UNPROTECT(1);
     Free(pt); Free(wpt);
     if (tables) pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
@@ -762,12 +762,12 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 
     pat = pattern_;
     text = x_;
-    igcase_opt = asLogical(ignore_case_);
-    value_opt = asLogical(value_);
-    perl_opt = asLogical(perl_);
-    fixed_opt = asLogical(fixed_);
-    useBytes = asLogical(useBytes_);
-    invert = asLogical(invert_);
+    igcase_opt = Rf_asLogical(ignore_case_);
+    value_opt = Rf_asLogical(value_);
+    perl_opt = Rf_asLogical(perl_);
+    fixed_opt = Rf_asLogical(fixed_);
+    useBytes = Rf_asLogical(useBytes_);
+    invert = Rf_asLogical(invert_);
     if (igcase_opt == NA_INTEGER) igcase_opt = 0;
     if (value_opt == NA_INTEGER) value_opt = 0;
     if (perl_opt == NA_INTEGER) perl_opt = 0;
@@ -775,30 +775,30 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     if (useBytes == NA_INTEGER) useBytes = 0;
     if (invert == NA_INTEGER) invert = 0;
     if (fixed_opt && igcase_opt)
-	warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
-	warning(_("argument '%s' will be ignored"), "perl = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "perl = TRUE");
 	perl_opt = 0;
     }
 
-    if (!isString(pat) || LENGTH(pat) < 1)
-	error(_("invalid '%s' argument"), "pattern");
+    if (!Rf_isString(pat) || LENGTH(pat) < 1)
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if (LENGTH(pat) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
 
-    if (!isString(text))
-	error(_("invalid '%s' argument"), "text");
+    if (!Rf_isString(text))
+	Rf_error(_("invalid '%s' argument"), "text");
 
     n = XLENGTH(text);
     if (STRING_ELT(pat, 0) == NA_STRING) {
 	if (value_opt) {
-	    SEXP nmold = getAttrib(text, R_NamesSymbol);
-	    PROTECT(ans = allocVector(STRSXP, n));
+	    SEXP nmold = Rf_getAttrib(text, R_NamesSymbol);
+	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
 	    if (!isNull(nmold))
-		setAttrib(ans, R_NamesSymbol, duplicate(nmold));
+		Rf_setAttrib(ans, R_NamesSymbol, duplicate(nmold));
 	} else {
-	    PROTECT(ans = allocVector(INTSXP, n));
+	    PROTECT(ans = Rf_allocVector(INTSXP, n));
 	    for (i = 0; i < n; i++)  INTEGER(ans)[i] = NA_INTEGER;
 	}
 	UNPROTECT(1);
@@ -847,15 +847,15 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	use_WC = use_UTF8; use_UTF8 = FALSE;
     }
     if (useBytes)
-	spat = CHAR(STRING_ELT(pat, 0));
+	spat = R_CHAR(STRING_ELT(pat, 0));
     else if (use_WC) ;
     else if (use_UTF8) {
-	spat = translateCharUTF8(STRING_ELT(pat, 0));
-	if (!utf8Valid(spat)) error(_("regular expression is invalid UTF-8"));
+	spat = Rf_translateCharUTF8(STRING_ELT(pat, 0));
+	if (!utf8Valid(spat)) Rf_error(_("regular expression is invalid UTF-8"));
     } else {
-	spat = translateChar(STRING_ELT(pat, 0));
+	spat = Rf_translateChar(STRING_ELT(pat, 0));
 	if (mbcslocale && !mbcsValid(spat))
-	    error(_("regular expression is invalid in this locale"));
+	    Rf_error(_("regular expression is invalid in this locale"));
     }
 
     if (fixed_opt) ;
@@ -869,13 +869,13 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	re_pcre = pcre_compile(spat, cflags, &errorptr, &erroffset, tables);
 	if (!re_pcre) {
 	    if (errorptr)
-		warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
+		Rf_warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
 			errorptr, spat+erroffset);
-	    error(_("invalid regular expression '%s'"), spat);
+	    Rf_error(_("invalid regular expression '%s'"), spat);
 	    if (n > 10) {
 		re_pe = pcre_study(re_pcre, 0, &errorptr);
 		if (errorptr)
-		    warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+		    Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	    }
 	}
     } else {
@@ -884,11 +884,11 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	if (!use_WC)
 	    rc = tre_regcompb(&reg, spat, cflags);
 	else
-	    rc = tre_regwcomp(&reg, wtransChar(STRING_ELT(pat, 0)), cflags);
+	    rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pat, 0)), cflags);
 	if (rc) reg_report(rc, &reg, spat);
     }
 
-    PROTECT(ind = allocVector(LGLSXP, n));
+    PROTECT(ind = Rf_allocVector(LGLSXP, n));
     vmax = vmaxget();
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -896,20 +896,20 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	if (STRING_ELT(text, i) != NA_STRING) {
 	    const char *s = nullptr;
 	    if (useBytes)
-		s = CHAR(STRING_ELT(text, i));
+		s = R_CHAR(STRING_ELT(text, i));
 	    else if (use_WC) ;
 	    else if (use_UTF8) {
-		s = translateCharUTF8(STRING_ELT(text, i));
+		s = Rf_translateCharUTF8(STRING_ELT(text, i));
 		if (!utf8Valid(s)) {
 		    if(nwarn++ < NWARN)
-			warning(_("input string %d is invalid UTF-8"), i+1);
+			Rf_warning(_("input string %d is invalid UTF-8"), i+1);
 		    continue;
 		}
 	    } else {
-		s = translateChar(STRING_ELT(text, i));
+		s = Rf_translateChar(STRING_ELT(text, i));
 		if (mbcslocale && !mbcsValid(s)) {
 		    if(nwarn++ < NWARN)
-			warning(_("input string %d is invalid in this locale"), i+1);
+			Rf_warning(_("input string %d is invalid in this locale"), i+1);
 		    continue;
 		}
 	    }
@@ -923,7 +923,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 		if (!use_WC)
 		    rc = tre_regexecb(&reg, s, 0, nullptr, 0);
 		else
-		    rc = tre_regwexec(&reg, wtransChar(STRING_ELT(text, i)),
+		    rc = tre_regwexec(&reg, Rf_wtransChar(STRING_ELT(text, i)),
 				      0, nullptr, 0);
 		if (rc == 0) LOGICAL(ind)[i] = 1;
 	    }
@@ -946,31 +946,31 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     }
 
     if (value_opt) {
-	SEXP nmold = getAttrib(text, R_NamesSymbol), nm;
-	PROTECT(ans = allocVector(STRSXP, nmatches));
+	SEXP nmold = Rf_getAttrib(text, R_NamesSymbol), nm;
+	PROTECT(ans = Rf_allocVector(STRSXP, nmatches));
 	for (i = 0, j = 0; i < n ; i++)
 	    if (invert ^ LOGICAL(ind)[i])
 		SET_STRING_ELT(ans, j++, STRING_ELT(text, i));
 	/* copy across names and subset */
 	if (!isNull(nmold)) {
-	    nm = allocVector(STRSXP, nmatches);
+	    nm = Rf_allocVector(STRSXP, nmatches);
 	    for (i = 0, j = 0; i < n ; i++)
 		if (invert ^ LOGICAL(ind)[i])
 		    SET_STRING_ELT(nm, j++, STRING_ELT(nmold, i));
-	    setAttrib(ans, R_NamesSymbol, nm);
+	    Rf_setAttrib(ans, R_NamesSymbol, nm);
 	}
 	UNPROTECT(1);
     } else {
 #ifdef LONG_VECTOR_SUPPORT
 	if (n > INT_MAX) {
-	    ans = allocVector(REALSXP, nmatches);
+	    ans = Rf_allocVector(REALSXP, nmatches);
 	    j = 0;
 	    for (i = 0 ; i < n ; i++)
 	        if (invert ^ LOGICAL(ind)[i]) REAL(ans)[j++] = double( (i + 1));
 	} else
 #endif
 	{
-	    ans = allocVector(INTSXP, nmatches);
+	    ans = Rf_allocVector(INTSXP, nmatches);
 	    j = 0;
 	    for (i = 0 ; i < n ; i++)
 		if (invert ^ LOGICAL(ind)[i])
@@ -1054,19 +1054,19 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 
     pat = pattern_;
     text = x_;
-    offset = asInteger(offset_);
-    igcase_opt = asLogical(ignore_case_);
-    fixed_opt = asLogical(fixed_);
-    value = asLogical(value_);
-    all = asLogical(all_);
-    invert = asLogical(invert_);
+    offset = Rf_asInteger(offset_);
+    igcase_opt = Rf_asLogical(ignore_case_);
+    fixed_opt = Rf_asLogical(fixed_);
+    value = Rf_asLogical(value_);
+    all = Rf_asLogical(all_);
+    invert = Rf_asLogical(invert_);
     if (igcase_opt == NA_INTEGER) igcase_opt = 0;
     if (fixed_opt == NA_INTEGER) fixed_opt = 0;
     if (all == NA_INTEGER) all = 0;
     if (value == NA_INTEGER) value = 0;
     if (invert == NA_INTEGER) invert = 0;
     if (fixed_opt && igcase_opt)
-	warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
 
     /* invert=TRUE, value=FALSE will really give you a headache
        thinking about it so we better not go there (the code below
@@ -1074,19 +1074,19 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
        all=TRUE so we could support it at some point but I fail to see
        any real use of it) */
     if (invert && !value) {
-	warning(_("argument '%s' will be ignored"), "invert = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "invert = TRUE");
 	invert = 0;
     }
 
     /* currently we support only offset >= 1 */
     if (offset < 1)
-	error(_("invalid '%s' argument"), "offset");
+	Rf_error(_("invalid '%s' argument"), "offset");
     if (!isRaw(pat))
-	error(_("invalid '%s' argument"), "pattern");
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if (!isRaw(text))
-	error(_("invalid '%s' argument"), "text");
+	Rf_error(_("invalid '%s' argument"), "text");
     if (offset > RHO_S_CAST(R_size_t, LENGTH(text)))
-	return allocVector(INTSXP, 0);
+	return Rf_allocVector(INTSXP, 0);
 
     offset--; /* reduce offset to base 0 */
 
@@ -1096,14 +1096,14 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
        to do it by hand */
     if (fixed_opt) {
 	if (LENGTH(pat) == 0)
-	    return allocVector(value ? (all ? VECSXP : RAWSXP) : INTSXP, 0);
+	    return Rf_allocVector(value ? (all ? VECSXP : RAWSXP) : INTSXP, 0);
 	if (!all) {
 	    R_size_t res = fgrepraw1(pat, text, offset);
 	    if (invert) {
 		Rbyte *ansp;
-		if (res == RHO_S_CAST(R_size_t, -1)) return value ? text : ScalarInteger(1);
-		if (!value) return ScalarInteger(((res == 0) ? LENGTH(pat) : 0) + 1);
-		ans = allocVector(RAWSXP, LENGTH(text) - LENGTH(pat));
+		if (res == RHO_S_CAST(R_size_t, -1)) return value ? text : Rf_ScalarInteger(1);
+		if (!value) return Rf_ScalarInteger(((res == 0) ? LENGTH(pat) : 0) + 1);
+		ans = Rf_allocVector(RAWSXP, LENGTH(text) - LENGTH(pat));
 		ansp = RAW(ans);
 		if (res) {
 		    memcpy(ansp, RAW(text), res);
@@ -1114,8 +1114,8 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    memcpy(ansp, RAW(text) + res, LENGTH(text) - res);
 		return ans;
 	    }
-	    if (res == RHO_S_CAST(R_size_t, -1)) return allocVector(value ? RAWSXP : INTSXP, 0);
-	    if (!value) return ScalarInteger(int(res + 1));
+	    if (res == RHO_S_CAST(R_size_t, -1)) return Rf_allocVector(value ? RAWSXP : INTSXP, 0);
+	    if (!value) return Rf_ScalarInteger(int(res + 1));
 	    /* value=TRUE doesn't really make sense for anything other than
 	       match/nomatch detection since we just return the pattern */
 	    return pat;
@@ -1150,7 +1150,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    /* if there are more matches than in the buffer,
 		       we actually need to get them first */
 		    if (nmatches > MAX_MATCHES_MINIBUF) {
-			mvec = PROTECT(allocVector(INTSXP, nmatches));
+			mvec = PROTECT(Rf_allocVector(INTSXP, nmatches));
 			fmatches = INTEGER(mvec);
 			memcpy(fmatches, matches, sizeof(matches));
 			nmatches = MAX_MATCHES_MINIBUF;
@@ -1165,36 +1165,36 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    }
 
 		    /* there are always nmatches + 1 pieces (unlike strsplit) */
-		    ans = PROTECT(allocVector(VECSXP, nmatches + 1));
+		    ans = PROTECT(Rf_allocVector(VECSXP, nmatches + 1));
 		    /* add all pieces before matches */
 		    for (i = 0; i < RHO_S_CAST(R_size_t, nmatches); i++) {
 			R_size_t elt_size = fmatches[i] - 1 - pos;
-			elt = allocVector(RAWSXP, elt_size);
+			elt = Rf_allocVector(RAWSXP, elt_size);
 			SET_VECTOR_ELT(ans, i, elt);
 			if (elt_size)
 			    memcpy(RAW(elt), RAW(text) + pos, elt_size);
 			pos = fmatches[i] - 1 + LENGTH(pat);
 		    }
 		    /* add the rest after last match */
-		    elt = allocVector(RAWSXP, LENGTH(text) - (fmatches[nmatches - 1] - 1 + LENGTH(pat)));
+		    elt = Rf_allocVector(RAWSXP, LENGTH(text) - (fmatches[nmatches - 1] - 1 + LENGTH(pat)));
 		    SET_VECTOR_ELT(ans, nmatches, elt);
 		    if (LENGTH(elt))
 			memcpy(RAW(elt), RAW(text) + LENGTH(text) - LENGTH(elt), LENGTH(elt));
+		    UNPROTECT(1); /* ans */
 		    if (mvec)
 			UNPROTECT(1);
-		    UNPROTECT(1);
 		    return ans;
 		}
 
 		/* value=TRUE is pathetic for fixed=TRUE without
 		   invert as it is just rep(pat, nmatches) */
-		ans = PROTECT(allocVector(VECSXP, nmatches));
+		ans = PROTECT(Rf_allocVector(VECSXP, nmatches));
 		for (i = 0; i < RHO_S_CAST(R_size_t, nmatches); i++)
 		    SET_VECTOR_ELT(ans, i, pat);
 		UNPROTECT(1);
 		return ans;
 	    }
-	    ans = allocVector(INTSXP, nmatches);
+	    ans = Rf_allocVector(INTSXP, nmatches);
 	    if (nmatches <= MAX_MATCHES_MINIBUF) { /* our min-buffer was enough, great */
 		if (nmatches) memcpy(INTEGER(ans), matches, nmatches * sizeof(int));
 		return ans;
@@ -1228,11 +1228,11 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	tre_regfree(&reg);
 	if (value) {
 	    if (rc != REG_OK || ptag.rm_eo == ptag.rm_so) /* TODO: is this good enough? it is the same as matching an empty string ... */
-		return invert ? text : allocVector(RAWSXP, 0);
+		return invert ? text : Rf_allocVector(RAWSXP, 0);
 	    if (invert) {
 		Rbyte *ansp;
 		R_size_t len;
-		ans = allocVector(RAWSXP, LENGTH(text) - (ptag.rm_eo - ptag.rm_so));
+		ans = Rf_allocVector(RAWSXP, LENGTH(text) - (ptag.rm_eo - ptag.rm_so));
 		ansp = RAW(ans);
 		if (ptag.rm_so) {
 		    memcpy(ansp, RAW(text), ptag.rm_so);
@@ -1242,19 +1242,19 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		if (len)
 		    memcpy(ansp, RAW(text) + ptag.rm_eo, len);
 	    } else {
-		ans = allocVector(RAWSXP, ptag.rm_eo - ptag.rm_so);
+		ans = Rf_allocVector(RAWSXP, ptag.rm_eo - ptag.rm_so);
 		memcpy(RAW(ans), RAW(text) + offset + ptag.rm_so, ptag.rm_eo - ptag.rm_so);
 	    }
 	    return ans;
 	}
-	return (rc == REG_OK) ? ScalarInteger(int(ptag.rm_so + 1 + offset)) : allocVector(INTSXP, 0);
+	return (rc == REG_OK) ? Rf_ScalarInteger(int(ptag.rm_so + 1 + offset)) : Rf_allocVector(INTSXP, 0);
     }
 
     /* match all - we use a pairlist of integer arrays to expand the result
        to allow use on big binary strings with many matches (it could be done
        by re-allocating a temp buffer but I chose sequential allocations to
        reduce possible fragmentation) */
-    res_head = res_tail = PROTECT(list1(allocVector(INTSXP, res_alloc)));
+    res_head = res_tail = PROTECT(Rf_list1(Rf_allocVector(INTSXP, res_alloc)));
     res_val = INTEGER(CAR(res_tail));
     res_ptr = 0;
     while (1) {
@@ -1265,7 +1265,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	if (!nmatches) eflags |= REG_NOTBOL;
 	if (res_ptr >= RHO_S_CAST(R_size_t, res_alloc)) {
 	    if (res_alloc < (2^24)) res_alloc <<= 1;
-	    SETCDR(res_tail, list1(allocVector(INTSXP, res_alloc)));
+	    SETCDR(res_tail, list1(Rf_allocVector(INTSXP, res_alloc)));
 	    res_tail = CDR(res_tail);
 	    res_val = INTEGER(CAR(res_tail));
 	    res_ptr = 0;
@@ -1283,7 +1283,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    infinite_match = 0;
 	    }
 	    if (infinite_match)
-		warning(_("pattern matches an empty string infinitely, returning first match only"));
+		Rf_warning(_("pattern matches an empty string infinitely, returning first match only"));
 	    break;
 	}
 	if (offset >= RHO_S_CAST(R_size_t, LENGTH(text))) break;
@@ -1294,17 +1294,17 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	R_size_t entry = 0, cptr = 0, clen = (CDR(res_head) == R_NilValue) ? res_ptr : LENGTH(vec);
 	R_size_t inv_start = 0; /* 0-based start position of the pieces for invert */
 	res_val = INTEGER(vec);
-	ans = PROTECT(allocVector(VECSXP, invert ? (nmatches + 1) : nmatches));
+	ans = PROTECT(Rf_allocVector(VECSXP, invert ? (nmatches + 1) : nmatches));
 	while (entry < RHO_S_CAST(R_size_t, nmatches)) {
 	    if (invert) { /* for invert=TRUE store the current piece up to the match */
-		SEXP rvec = allocVector(RAWSXP, res_val[cptr] - 1 - inv_start);
+		SEXP rvec = Rf_allocVector(RAWSXP, res_val[cptr] - 1 - inv_start);
 		SET_VECTOR_ELT(ans, entry, rvec);
 		entry++;
 		if (LENGTH(rvec))
 		    memcpy(RAW(rvec), RAW(text) + inv_start, LENGTH(rvec));
 		inv_start = res_val[cptr] - 1 + res_val[cptr + 1];
 	    } else { /* for invert=FALSE store the matched piece */
-		SEXP rvec = allocVector(RAWSXP, res_val[cptr + 1]);
+		SEXP rvec = Rf_allocVector(RAWSXP, res_val[cptr + 1]);
 		SET_VECTOR_ELT(ans, entry, rvec);
 		entry++;
 		if (LENGTH(rvec))
@@ -1322,14 +1322,14 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	    }
 	}
 	if (invert) { /* add the last piece after the last match */
-	    SEXP lvec = allocVector(RAWSXP, LENGTH(text) - inv_start);
+	    SEXP lvec = Rf_allocVector(RAWSXP, LENGTH(text) - inv_start);
 	    SET_VECTOR_ELT(ans, nmatches, lvec);
 	    if (LENGTH(lvec))
 		memcpy(RAW(lvec), RAW(text) + inv_start, LENGTH(lvec));
 	}
 	UNPROTECT(1);
     } else { /* if values are not needed, we just collect all the start offsets */
-	ans = allocVector(INTSXP, nmatches);
+	ans = Rf_allocVector(INTSXP, nmatches);
 	res_val = INTEGER(ans);
 	while (res_head != R_NilValue) {
 	    SEXP vec = CAR(res_head);
@@ -1411,14 +1411,14 @@ char *pcre_string_adj(char *target, const char *orig, const char *repl,
 		    p = xi = static_cast<char *>( alloca((nb+1)*sizeof(char)));
 		    for (j = 0; j < nb; j++) *p++ = orig[ovec[2*k]+j];
 		    *p = '\0';
-		    nc = int( utf8towcs(nullptr, xi, 0));
+		    nc = int(Rf_utf8towcs(nullptr, xi, 0));
 		    if (nc >= 0) {
 			R_CheckStack2((nc+1)*sizeof(wchar_t));
 			wc = static_cast<wchar_t *>( alloca((nc+1)*sizeof(wchar_t)));
-			utf8towcs(wc, xi, nc + 1);
+			Rf_utf8towcs(wc, xi, nc + 1);
 			for (j = 0; j < nc; j++) wc[j] = towctrans(wc[j], tr);
-			nb = int( wcstoutf8(nullptr, wc, 0));
-			wcstoutf8(xi, wc, nb + 1);
+			nb = int(Rf_wcstoutf8(nullptr, wc, 0));
+			Rf_wcstoutf8(xi, wc, nb + 1);
 			for (j = 0; j < nb; j++) *t++ = *xi++;
 		    }
 		} else
@@ -1512,37 +1512,37 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
     pat = pattern_;
     rep = replacement_;
     text = x_;
-    igcase_opt = asLogical(ignore_case_);
-    perl_opt = asLogical(perl_);
-    fixed_opt = asLogical(fixed_);
-    useBytes = asLogical(useBytes_);
+    igcase_opt = Rf_asLogical(ignore_case_);
+    perl_opt = Rf_asLogical(perl_);
+    fixed_opt = Rf_asLogical(fixed_);
+    useBytes = Rf_asLogical(useBytes_);
     if (igcase_opt == NA_INTEGER) igcase_opt = 0;
     if (perl_opt == NA_INTEGER) perl_opt = 0;
     if (fixed_opt == NA_INTEGER) fixed_opt = 0;
     if (useBytes == NA_INTEGER) useBytes = 0;
     if (fixed_opt && igcase_opt)
-	warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
-	warning(_("argument '%s' will be ignored"), "perl = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "perl = TRUE");
 	perl_opt = 0;
     }
 
-    if (!isString(pat) || LENGTH(pat) < 1)
-	error(_("invalid '%s' argument"), "pattern");
+    if (!Rf_isString(pat) || LENGTH(pat) < 1)
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if (LENGTH(pat) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
-    if (!isString(rep) || LENGTH(rep) < 1)
-	error(_("invalid '%s' argument"), "replacement");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+    if (!Rf_isString(rep) || LENGTH(rep) < 1)
+	Rf_error(_("invalid '%s' argument"), "replacement");
     if (LENGTH(rep) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "replacement");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "replacement");
 
-    if (!isString(text))
-	error(_("invalid '%s' argument"), "text");
+    if (!Rf_isString(text))
+	Rf_error(_("invalid '%s' argument"), "text");
 
     n = XLENGTH(text);
     /* This contradicts the code below that has NA matching NA */
     if (STRING_ELT(pat, 0) == NA_STRING) {
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
 	UNPROTECT(1);
 	return ans;
@@ -1590,26 +1590,26 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
     }
 
     if (useBytes) {
-	spat = CHAR(STRING_ELT(pat, 0));
-	srep = CHAR(STRING_ELT(rep, 0));
+	spat = R_CHAR(STRING_ELT(pat, 0));
+	srep = R_CHAR(STRING_ELT(rep, 0));
     } else if (use_WC) ;
     else if (use_UTF8) {
-	spat = translateCharUTF8(STRING_ELT(pat, 0));
-	if (!utf8Valid(spat)) error(_("'pattern' is invalid UTF-8"));
-	srep = translateCharUTF8(STRING_ELT(rep, 0));
-	if (!utf8Valid(srep)) error(_("'replacement' is invalid UTF-8"));
+	spat = Rf_translateCharUTF8(STRING_ELT(pat, 0));
+	if (!utf8Valid(spat)) Rf_error(_("'pattern' is invalid UTF-8"));
+	srep = Rf_translateCharUTF8(STRING_ELT(rep, 0));
+	if (!utf8Valid(srep)) Rf_error(_("'replacement' is invalid UTF-8"));
     } else {
-	spat = translateChar(STRING_ELT(pat, 0));
+	spat = Rf_translateChar(STRING_ELT(pat, 0));
 	if (mbcslocale && !mbcsValid(spat))
-	    error(_("'pattern' is invalid in this locale"));
-	srep = translateChar(STRING_ELT(rep, 0));
+	    Rf_error(_("'pattern' is invalid in this locale"));
+	srep = Rf_translateChar(STRING_ELT(rep, 0));
 	if (mbcslocale && !mbcsValid(srep))
-	    error(_("'replacement' is invalid in this locale"));
+	    Rf_error(_("'replacement' is invalid in this locale"));
     }
 
     if (fixed_opt) {
 	patlen = strlen(spat);
-	if (!patlen) error(_("zero-length pattern"));
+	if (!patlen) Rf_error(_("zero-length pattern"));
 	replen = strlen(srep);
     } else if (perl_opt) {
 	int cflags = 0, erroffset;
@@ -1621,14 +1621,14 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	re_pcre = pcre_compile(spat, cflags, &errorptr, &erroffset, tables);
 	if (!re_pcre) {
 	    if (errorptr)
-		warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
+		Rf_warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
 			errorptr, spat+erroffset);
-	    error(_("invalid regular expression '%s'"), spat);
+	    Rf_error(_("invalid regular expression '%s'"), spat);
 	}
 	if (n > 10) {
 	    re_pe = pcre_study(re_pcre, 0, &errorptr);
 	    if (errorptr)
-		warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	}
 	replen = strlen(srep);
     } else {
@@ -1639,14 +1639,14 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	    if (rc) reg_report(rc, &reg, spat);
 	    replen = strlen(srep);
 	} else {
-	    rc  = tre_regwcomp(&reg, wtransChar(STRING_ELT(pat, 0)), cflags);
-	    if (rc) reg_report(rc, &reg, CHAR(STRING_ELT(pat, 0)));
-	    wrep = wtransChar(STRING_ELT(rep, 0));
+	    rc  = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pat, 0)), cflags);
+	    if (rc) reg_report(rc, &reg, R_CHAR(STRING_ELT(pat, 0)));
+	    wrep = Rf_wtransChar(STRING_ELT(rep, 0));
 	    replen = wcslen(wrep);
 	}
     }
 
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     vmax = vmaxget();
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -1657,19 +1657,19 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	}
 
 	if (useBytes)
-	    s = CHAR(STRING_ELT(text, i));
+	    s = R_CHAR(STRING_ELT(text, i));
 	else if (use_WC) ;
 	else if (use_UTF8) {
-	    s = translateCharUTF8(STRING_ELT(text, i));
-	    if (!utf8Valid(s)) error(("input string %d is invalid UTF-8"), i+1);
+	    s = Rf_translateCharUTF8(STRING_ELT(text, i));
+	    if (!utf8Valid(s)) Rf_error(("input string %d is invalid UTF-8"), i+1);
 	} else {
-	    s = translateChar(STRING_ELT(text, i));
+	    s = Rf_translateChar(STRING_ELT(text, i));
 	    if (mbcslocale && !mbcsValid(s))
-		error(("input string %d is invalid in this locale"), i+1);
+		Rf_error(("input string %d is invalid in this locale"), i+1);
 	}
 
 	if (fixed_opt) {
-	    int st, nr, slen = int( strlen(s));
+	    int st, nr, slen = int(strlen(s));
 	    ns = slen;
 	    st = fgrep_one_bytes(spat, s, ns, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8);
 	    if (st < 0)
@@ -1700,11 +1700,11 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		} while(global && (st = fgrep_one_bytes(spat, s, slen, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8)) >= 0);
 		strcpy(u, s);
 		if (useBytes)
-		    SET_STRING_ELT(ans, i, mkChar(cbuf));
+		    SET_STRING_ELT(ans, i, Rf_mkChar(cbuf));
 		else if (use_UTF8)
-		    SET_STRING_ELT(ans, i, mkCharCE(cbuf, CE_UTF8));
+		    SET_STRING_ELT(ans, i, Rf_mkCharCE(cbuf, CE_UTF8));
 		else
-		    SET_STRING_ELT(ans, i, markKnown(cbuf, STRING_ELT(text, i)));
+		    SET_STRING_ELT(ans, i, Rf_markKnown(cbuf, STRING_ELT(text, i)));
 		Free(cbuf);
 	    }
 	} else if (perl_opt) {
@@ -1753,7 +1753,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	       }
 	       if (nns < (u - cbuf) + (ns-offset) + maxrep + 100) {
 		   char *tmp;
-		   if (nns > INT_MAX/2) error(_("result string is too long"));
+		   if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		   nns *= 2;
 		   tmp = Realloc(cbuf, nns, char);
 		   u = tmp + (u - cbuf);
@@ -1769,7 +1769,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	       /* copy the tail */
 	       if (nns < (u - cbuf) + (ns-offset)+1) {
 		   char *tmp;
-		   if (nns > INT_MAX/2) error(_("result string is too long"));
+		   if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		   nns *= 2;
 		   tmp = Realloc(cbuf, nns, char);
 		   u = tmp + (u - cbuf);
@@ -1778,11 +1778,11 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	       for (j = offset ; s[j] ; j++) *u++ = s[j];
 	       *u = '\0';
 	       if (useBytes)
-		   SET_STRING_ELT(ans, i, mkChar(cbuf));
+		   SET_STRING_ELT(ans, i, Rf_mkChar(cbuf));
 	       else if (use_UTF8)
-		   SET_STRING_ELT(ans, i, mkCharCE(cbuf, CE_UTF8));
+		   SET_STRING_ELT(ans, i, Rf_mkCharCE(cbuf, CE_UTF8));
 	       else
-		   SET_STRING_ELT(ans, i, markKnown(cbuf, STRING_ELT(text, i)));
+		   SET_STRING_ELT(ans, i, Rf_markKnown(cbuf, STRING_ELT(text, i)));
 	   }
 	   Free(cbuf);
        } else if (!use_WC) {
@@ -1817,7 +1817,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		    *u++ = s[offset++];
 		if (nns < (u - cbuf) + (ns-offset) + maxrep + 100) {
 		    char *tmp;
-		    if (nns > INT_MAX/2) error(_("result string is too long"));
+		    if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		    nns *= 2;
 		    tmp = Realloc(cbuf, nns, char);
 		    u = tmp + (u - cbuf);
@@ -1833,7 +1833,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		/* copy the tail */
 		if (nns < (u - cbuf) + (ns-offset)+1) {
 		    char *tmp;
-		    if (nns > INT_MAX/2) error(_("result string is too long"));
+		    if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		    nns *= 2;
 		    tmp = Realloc(cbuf, nns, char);
 		    u = tmp + (u - cbuf);
@@ -1842,18 +1842,18 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		for (j = offset ; s[j] ; j++) *u++ = s[j];
 		*u = '\0';
 		if (useBytes)
-		    SET_STRING_ELT(ans, i, mkChar(cbuf));
+		    SET_STRING_ELT(ans, i, Rf_mkChar(cbuf));
 		else
-		    SET_STRING_ELT(ans, i, markKnown(cbuf, STRING_ELT(text, i)));
+		    SET_STRING_ELT(ans, i, Rf_markKnown(cbuf, STRING_ELT(text, i)));
 	    }
 	    Free(cbuf);
 	} else  {
 	    /* extended regexp in wchar_t */
-	    const wchar_t *s = wtransChar(STRING_ELT(text, i));
+	    const wchar_t *s = Rf_wtransChar(STRING_ELT(text, i));
 	    wchar_t *u, *cbuf;
 	    int maxrep;
 
-	    ns = int( wcslen(s));
+	    ns = int(wcslen(s));
 	    maxrep = int(replen + (ns-2) * wcount_subs(wrep));
 	    if (global) {
 		/* worst possible scenario is to put a copy of the
@@ -1880,7 +1880,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		    wchar_t *tmp;
 		    /* This could fail at smaller value on a 32-bit platform:
 		       it is merely an integer overflow check */
-		    if (nns > INT_MAX/2) error(_("result string is too long"));
+		    if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		    nns *= 2;
 		    tmp = Realloc(cbuf, nns, wchar_t);
 		    u = tmp + (u - cbuf);
@@ -1896,7 +1896,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		/* copy the tail */
 		if (nns < (u - cbuf) + (ns-offset)+1) {
 		    wchar_t *tmp;
-		    if (nns > INT_MAX/2) error(_("result string is too long"));
+		    if (nns > INT_MAX/2) Rf_error(_("result string is too long"));
 		    nns *= 2;
 		    tmp = Realloc(cbuf, nns, wchar_t);
 		    u = tmp + (u - cbuf);
@@ -1929,7 +1929,7 @@ static int getNc(const char *s, int st)
     char *buf = RHO_S_CAST(char*, alloca(st+1));
     memcpy(buf, s, st);
     buf[st] = '\0';
-    return int( utf8towcs(nullptr, buf, 0));
+    return int(Rf_utf8towcs(nullptr, buf, 0));
 }
 
 
@@ -1947,19 +1947,19 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
     const char *string = nullptr;
     const wchar_t *ws = nullptr;
 
-    PROTECT(matchbuf = allocVector(INTSXP, bufsize));
-    PROTECT(matchlenbuf = allocVector(INTSXP, bufsize));
+    PROTECT(matchbuf = Rf_allocVector(INTSXP, bufsize));
+    PROTECT(matchlenbuf = Rf_allocVector(INTSXP, bufsize));
 
     if (useBytes) {
-	string = CHAR(sstr);
+	string = R_CHAR(sstr);
 	len = strlen(string);
 	use_WC = FALSE; /* to be sure */
     } else if (!use_WC) {
-	string = translateChar(sstr);
+	string = Rf_translateChar(sstr);
 	/* FIXME perhaps we ought to check validity here */
 	len = strlen(string);
      } else {
-	ws = wtransChar(sstr);
+	ws = Rf_wtransChar(sstr);
 	len = wcslen(ws);
     }
 
@@ -1972,13 +1972,13 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
 		/* Reallocate match buffers */
 		int newbufsize = bufsize * 2;
 		SEXP tmp;
-		tmp = allocVector(INTSXP, 2 * bufsize);
+		tmp = Rf_allocVector(INTSXP, 2 * bufsize);
 		for (j = 0; j < bufsize; j++)
 		    INTEGER(tmp)[j] = INTEGER(matchlenbuf)[j];
 		UNPROTECT(1);
 		matchlenbuf = tmp;
 		PROTECT(matchlenbuf);
-		tmp = allocVector(INTSXP, 2 * bufsize);
+		tmp = Rf_allocVector(INTSXP, 2 * bufsize);
 		for (j = 0; j < bufsize; j++)
 		    INTEGER(tmp)[j] = INTEGER(matchbuf)[j];
 		matchbuf = tmp;
@@ -2006,16 +2006,16 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
 	}
 	eflags = REG_NOTBOL;
     }
-    PROTECT(ans = allocVector(INTSXP, matchIndex + 1));
-    PROTECT(matchlen = allocVector(INTSXP, matchIndex + 1));
+    PROTECT(ans = Rf_allocVector(INTSXP, matchIndex + 1));
+    PROTECT(matchlen = Rf_allocVector(INTSXP, matchIndex + 1));
     /* copy from buffers */
     for (j = 0; j <= matchIndex; j++) {
 	INTEGER(ans)[j] = INTEGER(matchbuf)[j];
 	INTEGER(matchlen)[j] = INTEGER(matchlenbuf)[j];
     }
-    setAttrib(ans, install("match.length"), matchlen);
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
-	setAttrib(ans, install("useBytes"), R_TrueValue);
+	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(4);
     return ans;
@@ -2031,14 +2031,14 @@ gregexpr_fixed(const char *pattern, const char *string,
     SEXP ans, matchlen;         /* return vect and its attribute */
     SEXP matchbuf, matchlenbuf; /* buffers for storing multiple matches */
     int bufsize = 1024;         /* starting size for buffers */
-    PROTECT(matchbuf = allocVector(INTSXP, bufsize));
-    PROTECT(matchlenbuf = allocVector(INTSXP, bufsize));
+    PROTECT(matchbuf = Rf_allocVector(INTSXP, bufsize));
+    PROTECT(matchlenbuf = Rf_allocVector(INTSXP, bufsize));
     if (!useBytes && use_UTF8)
-	patlen = int(utf8towcs(nullptr, pattern, 0));
+	patlen = int(Rf_utf8towcs(nullptr, pattern, 0));
     else if (!useBytes && mbcslocale)
-	patlen = int( mbstowcs(nullptr, pattern, 0));
+	patlen = int(mbstowcs(nullptr, pattern, 0));
     else
-	patlen = int( strlen(pattern));
+	patlen = int(strlen(pattern));
     slen = strlen(string);
     st = fgrep_one(pattern, string, useBytes, use_UTF8, &nb);
     matchIndex = -1;
@@ -2064,13 +2064,13 @@ gregexpr_fixed(const char *pattern, const char *string,
 		    /* Reallocate match buffers */
 		    int newbufsize = bufsize * 2;
 		    SEXP tmp;
-		    tmp = allocVector(INTSXP, 2 * bufsize);
+		    tmp = Rf_allocVector(INTSXP, 2 * bufsize);
 		    for (j = 0; j < bufsize; j++)
 			INTEGER(tmp)[j] = INTEGER(matchlenbuf)[j];
 		    UNPROTECT(1);
 		    matchlenbuf = tmp;
 		    PROTECT(matchlenbuf);
-		    tmp = allocVector(INTSXP, 2 * bufsize);
+		    tmp = Rf_allocVector(INTSXP, 2 * bufsize);
 		    for (j = 0; j < bufsize; j++)
 			INTEGER(tmp)[j] = INTEGER(matchbuf)[j];
 		    matchbuf = tmp;
@@ -2087,16 +2087,16 @@ gregexpr_fixed(const char *pattern, const char *string,
 	}
     }
     ansSize = foundAny ? (matchIndex + 1) : 1;
-    PROTECT(ans = allocVector(INTSXP, ansSize));
-    PROTECT(matchlen = allocVector(INTSXP, ansSize));
+    PROTECT(ans = Rf_allocVector(INTSXP, ansSize));
+    PROTECT(matchlen = Rf_allocVector(INTSXP, ansSize));
     /* copy from buffers */
     for (j = 0; j < ansSize; j++) {
 	INTEGER(ans)[j] = INTEGER(matchbuf)[j];
 	INTEGER(matchlen)[j] = INTEGER(matchlenbuf)[j];
     }
-    setAttrib(ans, install("match.length"), matchlen);
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
-	setAttrib(ans, install("useBytes"), R_TrueValue);
+	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(4);
     return ans;
@@ -2179,13 +2179,13 @@ gregexpr_perl(const char *pattern, const char *string,
     PROTECT_INDEX cb, clb, mb, mlb;
 
     PROTECT_WITH_INDEX(capturebuf =
-		       allocVector(INTSXP, bufsize*capture_count), &cb);
+		       Rf_allocVector(INTSXP, bufsize*capture_count), &cb);
     PROTECT_WITH_INDEX(capturelenbuf =
-		       allocVector(INTSXP, bufsize*capture_count), &clb);
-    PROTECT_WITH_INDEX(matchbuf = allocVector(INTSXP, bufsize), &mb);
-    PROTECT_WITH_INDEX(matchlenbuf = allocVector(INTSXP, bufsize), &mlb);
+		       Rf_allocVector(INTSXP, bufsize*capture_count), &clb);
+    PROTECT_WITH_INDEX(matchbuf = Rf_allocVector(INTSXP, bufsize), &mb);
+    PROTECT_WITH_INDEX(matchlenbuf = Rf_allocVector(INTSXP, bufsize), &mlb);
     while (!foundAll) {
-	int rc, slen = int( strlen(string));
+	int rc, slen = int(strlen(string));
 	rc = pcre_exec(re_pcre, re_pe, string, slen, start, 0, ovector,
 		       ovector_size);
 	if (rc >= 0) {
@@ -2193,22 +2193,22 @@ gregexpr_perl(const char *pattern, const char *string,
 		/* Reallocate match buffers */
 		int newbufsize = bufsize * 2;
 		SEXP tmp;
-		tmp = allocVector(INTSXP, newbufsize);
+		tmp = Rf_allocVector(INTSXP, newbufsize);
 		for (int j = 0; j < bufsize; j++) /* or use memcpy */
 		    INTEGER(tmp)[j] = INTEGER(matchlenbuf)[j];
 		REPROTECT(matchlenbuf = tmp, mlb);
-		tmp = allocVector(INTSXP, newbufsize);
+		tmp = Rf_allocVector(INTSXP, newbufsize);
 		for (int j = 0; j < bufsize; j++)  /* or use memcpy */
 		    INTEGER(tmp)[j] = INTEGER(matchbuf)[j];
 		REPROTECT(matchbuf = tmp, mb);
 		if (capture_count) {
-		    tmp = allocVector(INTSXP, newbufsize*capture_count);
+		    tmp = Rf_allocVector(INTSXP, newbufsize*capture_count);
 		    for(int j = 0; j < bufsize; j++)
 			for(int i = 0; i < capture_count; i++)
 			    INTEGER(tmp)[j + newbufsize*i] =
 				INTEGER(capturebuf)[j + bufsize*i];
 		    REPROTECT(capturebuf = tmp, cb);
-		    tmp = allocVector(INTSXP, newbufsize*capture_count);
+		    tmp = Rf_allocVector(INTSXP, newbufsize*capture_count);
 		    for(int j = 0; j < bufsize; j++)
 			for(int i = 0; i < capture_count; i++)
 			    INTEGER(tmp)[j + newbufsize*i] =
@@ -2237,12 +2237,12 @@ gregexpr_perl(const char *pattern, const char *string,
 	    if (!foundAny) matchIndex = 0;
 	}
     }
-    PROTECT(ans = allocVector(INTSXP, matchIndex + 1));
-    /* Protect in case install("match.length") allocates */
-    PROTECT(matchlen = allocVector(INTSXP, matchIndex + 1));
-    setAttrib(ans, install("match.length"), matchlen);
+    PROTECT(ans = Rf_allocVector(INTSXP, matchIndex + 1));
+    /* Protect in case Rf_install("match.length") allocates */
+    PROTECT(matchlen = Rf_allocVector(INTSXP, matchIndex + 1));
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
-	setAttrib(ans, install("useBytes"), R_TrueValue);
+	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(1);
     if (foundAny) {
@@ -2255,12 +2255,12 @@ gregexpr_perl(const char *pattern, const char *string,
 
     if (capture_count) {
 	SEXP capture, capturelen, dmn;
-	PROTECT(capture = allocMatrix(INTSXP, matchIndex+1, capture_count));
-	PROTECT(capturelen = allocMatrix(INTSXP, matchIndex+1, capture_count));
-	PROTECT(dmn = allocVector(VECSXP, 2));
+	PROTECT(capture = Rf_allocMatrix(INTSXP, matchIndex+1, capture_count));
+	PROTECT(capturelen = Rf_allocMatrix(INTSXP, matchIndex+1, capture_count));
+	PROTECT(dmn = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dmn, 1, capture_names);
-	setAttrib(capture, R_DimNamesSymbol, dmn);
-	setAttrib(capturelen, R_DimNamesSymbol, dmn);
+	Rf_setAttrib(capture, R_DimNamesSymbol, dmn);
+	Rf_setAttrib(capturelen, R_DimNamesSymbol, dmn);
 	if (foundAny) {
 	    for (int j = 0; j <= matchIndex; j++)
 		for(int i = 0; i < capture_count; i++) {
@@ -2274,9 +2274,9 @@ gregexpr_perl(const char *pattern, const char *string,
 	} else
 	    for(int i = 0; i < capture_count; i++)
 		INTEGER(capture)[i] = INTEGER(capturelen)[i] = -1;
-	setAttrib(ans, install("capture.start"), capture);
-	setAttrib(ans, install("capture.length"), capturelen);
-	setAttrib(ans, install("capture.names"), capture_names);
+	Rf_setAttrib(ans, Rf_install("capture.start"), capture);
+	Rf_setAttrib(ans, Rf_install("capture.length"), capturelen);
+	Rf_setAttrib(ans, Rf_install("capture.names"), capture_names);
 	UNPROTECT(3);
     }
     UNPROTECT(5); /* 4 with indices, ans */
@@ -2288,7 +2288,7 @@ static SEXP gregexpr_NAInputAns(void)
     SEXP ans, matchlen;
     PROTECT(ans = Rf_ScalarInteger(R_NaInt));
     PROTECT(matchlen = Rf_ScalarInteger(R_NaInt));
-    setAttrib(ans, install("match.length"), matchlen);
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     UNPROTECT(2);
     return ans;
 }
@@ -2298,7 +2298,7 @@ static SEXP gregexpr_BadStringAns(void)
     SEXP ans, matchlen;
     PROTECT(ans = Rf_ScalarInteger(-1));
     PROTECT(matchlen = Rf_ScalarInteger(-1));
-    setAttrib(ans, install("match.length"), matchlen);
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     UNPROTECT(2);
     return ans;
 }
@@ -2325,29 +2325,29 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 
     pat = pattern_;
     text = text_;
-    igcase_opt = asLogical(ignore_case_);
-    perl_opt = asLogical(perl_);
-    fixed_opt = asLogical(fixed_);
-    useBytes = asLogical(useBytes_);
+    igcase_opt = Rf_asLogical(ignore_case_);
+    perl_opt = Rf_asLogical(perl_);
+    fixed_opt = Rf_asLogical(fixed_);
+    useBytes = Rf_asLogical(useBytes_);
     if (igcase_opt == NA_INTEGER) igcase_opt = 0;
     if (perl_opt == NA_INTEGER) perl_opt = 0;
     if (fixed_opt == NA_INTEGER) fixed_opt = 0;
     if (useBytes == NA_INTEGER) useBytes = 0;
     if (fixed_opt && igcase_opt)
-	warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
-	warning(_("argument '%s' will be ignored"), "perl = TRUE");
+	Rf_warning(_("argument '%s' will be ignored"), "perl = TRUE");
 	perl_opt = 0;
     }
 
     /* Note that excluding NAs differs from grep/sub */
-    if (!isString(pat) || LENGTH(pat) < 1 || STRING_ELT(pat, 0) == NA_STRING)
-	error(_("invalid '%s' argument"), "pattern");
+    if (!Rf_isString(pat) || LENGTH(pat) < 1 || STRING_ELT(pat, 0) == NA_STRING)
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if (LENGTH(pat) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
 
-    if (!isString(text))
-	error(_("invalid '%s' argument"), "text");
+    if (!Rf_isString(text))
+	Rf_error(_("invalid '%s' argument"), "text");
 
     n = XLENGTH(text);
     if (!useBytes) {
@@ -2394,15 +2394,15 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     }
 
     if (useBytes)
-	spat = CHAR(STRING_ELT(pat, 0));
+	spat = R_CHAR(STRING_ELT(pat, 0));
     else if (use_WC) ;
     else if (use_UTF8) {
-	spat = translateCharUTF8(STRING_ELT(pat, 0));
-	if (!utf8Valid(spat)) error(_("regular expression is invalid UTF-8"));
+	spat = Rf_translateCharUTF8(STRING_ELT(pat, 0));
+	if (!utf8Valid(spat)) Rf_error(_("regular expression is invalid UTF-8"));
     } else {
-	spat = translateChar(STRING_ELT(pat, 0));
+	spat = Rf_translateChar(STRING_ELT(pat, 0));
 	if (mbcslocale && !mbcsValid(spat))
-	    error(_("regular expression is invalid in this locale"));
+	    Rf_error(_("regular expression is invalid in this locale"));
     }
 
     if (fixed_opt) ;
@@ -2416,14 +2416,14 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	re_pcre = pcre_compile(spat, cflags, &errorptr, &erroffset, tables);
 	if (!re_pcre) {
 	    if (errorptr)
-		warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
+		Rf_warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
 			errorptr, spat+erroffset);
-	    error(_("invalid regular expression '%s'"), spat);
+	    Rf_error(_("invalid regular expression '%s'"), spat);
 	}
 	if (n > 10) {
 	    re_pe = pcre_study(re_pcre, 0, &errorptr);
 	    if (errorptr)
-		warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	}
 	/* also extract info for named groups */
 	pcre_fullinfo(re_pcre, re_pe, PCRE_INFO_NAMECOUNT, &name_count);
@@ -2433,14 +2433,14 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	    pcre_fullinfo(re_pcre, re_pe, PCRE_INFO_CAPTURECOUNT,
 			  &capture_count);
 	if(info_code < 0)
-	    error(_("'pcre_fullinfo' returned '%d' "), info_code);
+	    Rf_error(_("'pcre_fullinfo' returned '%d' "), info_code);
 	ovector_size = (capture_count + 1) * 3;
 	ovector = static_cast<int *>( malloc(ovector_size*sizeof(int)));
 	SEXP thisname;
-	PROTECT(capture_names = allocVector(STRSXP, capture_count));
+	PROTECT(capture_names = Rf_allocVector(STRSXP, capture_count));
 	for(i = 0; i < name_count; i++) {
 	    char *entry = name_table + name_entry_size * i;
-	    PROTECT(thisname = mkChar(entry + 2));
+	    PROTECT(thisname = Rf_mkChar(entry + 2));
 	    int capture_num = (entry[0]<<8) + entry[1] - 1;
 	    SET_STRING_ELT(capture_names, capture_num, thisname);
 	    UNPROTECT(1);
@@ -2451,34 +2451,34 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	if (!use_WC)
 	    rc = tre_regcompb(&reg, spat, cflags);
 	else
-	    rc = tre_regwcomp(&reg, wtransChar(STRING_ELT(pat, 0)), cflags);
+	    rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pat, 0)), cflags);
 	if (rc) reg_report(rc, &reg, spat);
     }
 
     if (op->variant() == 0) { /* regexpr */
 	SEXP matchlen, capture_start, capturelen;
 	int *is, *il;
-	PROTECT(ans = allocVector(INTSXP, n));
-	/* Protect in case install("match.length") allocates */
-	PROTECT(matchlen = allocVector(INTSXP, n));
-	setAttrib(ans, install("match.length"), matchlen);
+	PROTECT(ans = Rf_allocVector(INTSXP, n));
+	/* Protect in case Rf_install("match.length") allocates */
+	PROTECT(matchlen = Rf_allocVector(INTSXP, n));
+	Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
 	if(useBytes) {
-	    setAttrib(ans, install("useBytes"), R_TrueValue);
+	    Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
 	}
 	UNPROTECT(1);
 	if (perl_opt && capture_count) {
-	    if (n > INT_MAX) error("too long a vector");
+	    if (n > INT_MAX) Rf_error("too long a vector");
 	    int nn = int( n);
 	    SEXP dmn;
-	    PROTECT(dmn = allocVector(VECSXP, 2));
+	    PROTECT(dmn = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dmn, 1, capture_names);
-	    PROTECT(capture_start = allocMatrix(INTSXP, nn, capture_count));
-	    setAttrib(capture_start, R_DimNamesSymbol, dmn);
-	    setAttrib(ans, install("capture.start"), capture_start);
-	    PROTECT(capturelen = allocMatrix(INTSXP, nn, capture_count));
-	    setAttrib(capturelen, R_DimNamesSymbol, dmn);
-	    setAttrib(ans, install("capture.length"), capturelen);
-	    setAttrib(ans, install("capture.names"), capture_names);
+	    PROTECT(capture_start = Rf_allocMatrix(INTSXP, nn, capture_count));
+	    Rf_setAttrib(capture_start, R_DimNamesSymbol, dmn);
+	    Rf_setAttrib(ans, Rf_install("capture.start"), capture_start);
+	    PROTECT(capturelen = Rf_allocMatrix(INTSXP, nn, capture_count));
+	    Rf_setAttrib(capturelen, R_DimNamesSymbol, dmn);
+	    Rf_setAttrib(ans, Rf_install("capture.length"), capturelen);
+	    Rf_setAttrib(ans, Rf_install("capture.names"), capture_names);
 	    UNPROTECT(3);
 	    is = INTEGER(capture_start);
 	    il = INTEGER(capturelen);
@@ -2493,21 +2493,21 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 		INTEGER(matchlen)[i] = INTEGER(ans)[i] = NA_INTEGER;
 	    } else {
 		if (useBytes)
-		    s = CHAR(STRING_ELT(text, i));
+		    s = R_CHAR(STRING_ELT(text, i));
 		else if (use_WC) ;
 		else if (use_UTF8) {
-		    s = translateCharUTF8(STRING_ELT(text, i));
+		    s = Rf_translateCharUTF8(STRING_ELT(text, i));
 		    if (!utf8Valid(s)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid UTF-8"), i+1);
+			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
 			INTEGER(ans)[i] = INTEGER(matchlen)[i] = -1;
 			continue;
 		    }
 		} else {
-		    s = translateChar(STRING_ELT(text, i));
+		    s = Rf_translateChar(STRING_ELT(text, i));
 		    if (mbcslocale && !mbcsValid(s)) {
 			if(nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"), i+1);
+			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
 			INTEGER(ans)[i] = INTEGER(matchlen)[i] = -1;
 			continue;
 		    }
@@ -2556,7 +2556,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 		    if (!use_WC)
 			rc = tre_regexecb(&reg, s, 1, regmatch, 0);
 		    else
-			rc = tre_regwexec(&reg, wtransChar(STRING_ELT(text, i)),
+			rc = tre_regwexec(&reg, Rf_wtransChar(STRING_ELT(text, i)),
 					  1, regmatch, 0);
 		    if (rc == 0) {
 			int st = regmatch[0].rm_so;
@@ -2569,7 +2569,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	}
     } else {
 	SEXP elt;
-	PROTECT(ans = allocVector(VECSXP, n));
+	PROTECT(ans = Rf_allocVector(VECSXP, n));
 	vmax = vmaxget();
 	for (i = 0 ; i < n ; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -2578,14 +2578,14 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	    } else {
 		if (fixed_opt || perl_opt) {
 		    if (useBytes)
-			s = CHAR(STRING_ELT(text, i));
+			s = R_CHAR(STRING_ELT(text, i));
 		    else if (use_UTF8) {
-			s = translateCharUTF8(STRING_ELT(text, i));
+			s = Rf_translateCharUTF8(STRING_ELT(text, i));
 		    } else
-			s = translateChar(STRING_ELT(text, i));
+			s = Rf_translateChar(STRING_ELT(text, i));
 		    if (!useBytes && !use_UTF8 && mbcslocale && !mbcsValid(s)) {
 			if (nwarn++ < NWARN)
-			    warning(_("input string %d is invalid in this locale"),
+			    Rf_warning(_("input string %d is invalid in this locale"),
 				    i+1);
 			elt = gregexpr_BadStringAns();
 		    } else {
@@ -2638,30 +2638,30 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 
     pat = pattern_;
     text = text_;
-    opt_icase = asLogical(ignore_case_);
-    opt_fixed = asLogical(fixed_);
-    useBytes = asLogical(useBytes_);
+    opt_icase = Rf_asLogical(ignore_case_);
+    opt_fixed = Rf_asLogical(fixed_);
+    useBytes = Rf_asLogical(useBytes_);
 
     if(opt_icase == NA_INTEGER) opt_icase = 0;
     if(opt_fixed == NA_INTEGER) opt_fixed = 0;
     if(useBytes == NA_INTEGER) useBytes = 0;
     if(opt_fixed && opt_icase) {
-	warning(_("argument '%s' will be ignored"),
+	Rf_warning(_("argument '%s' will be ignored"),
 		"ignore.case = TRUE");
 	opt_icase = 0;
     }
     if(opt_fixed) cflags |= REG_LITERAL;
     if(opt_icase) cflags |= REG_ICASE;
 
-    if(!isString(pat) ||
+    if(!Rf_isString(pat) ||
        (LENGTH(pat) < 1) ||
        (STRING_ELT(pat, 0) == NA_STRING))
-	error(_("invalid '%s' argument"), "pattern");
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if(LENGTH(pat) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
 
-    if(!isString(text))
-	error(_("invalid '%s' argument"), "text");
+    if(!Rf_isString(text))
+	Rf_error(_("invalid '%s' argument"), "text");
 
     n = XLENGTH(text);
 
@@ -2705,66 +2705,66 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
     }
 
     if(useBytes)
-	rc = tre_regcompb(&reg, CHAR(STRING_ELT(pat, 0)), cflags);
+	rc = tre_regcompb(&reg, R_CHAR(STRING_ELT(pat, 0)), cflags);
     else if (use_WC)
-	rc = tre_regwcomp(&reg, wtransChar(STRING_ELT(pat, 0)), cflags);
+	rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pat, 0)), cflags);
     else {
-	s = translateChar(STRING_ELT(pat, 0));
+	s = Rf_translateChar(STRING_ELT(pat, 0));
 	if(mbcslocale && !mbcsValid(s))
-	    error(_("regular expression is invalid in this locale"));
+	    Rf_error(_("regular expression is invalid in this locale"));
 	rc = tre_regcomp(&reg, s, cflags);
     }
     if(rc) {
 	char errbuf[1001];
 	tre_regerror(rc, &reg, errbuf, 1001);
-	error(_("regcomp error: '%s'"), errbuf);
+	Rf_error(_("regcomp error: '%s'"), errbuf);
     }
 
     nmatch = reg.re_nsub + 1;
 
     pmatch = static_cast<regmatch_t *>( malloc(nmatch * sizeof(regmatch_t)));
 
-    PROTECT(ans = allocVector(VECSXP, n));
+    PROTECT(ans = Rf_allocVector(VECSXP, n));
 
     for(i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if(STRING_ELT(text, i) == NA_STRING) {
-	    PROTECT(matchpos = ScalarInteger(NA_INTEGER));
-	    SEXP s_match_length = install("match.length");
-	    setAttrib(matchpos, s_match_length ,
-		      ScalarInteger(NA_INTEGER));
+	    PROTECT(matchpos = Rf_ScalarInteger(NA_INTEGER));
+	    SEXP s_match_length = Rf_install("match.length");
+	    Rf_setAttrib(matchpos, s_match_length ,
+		      Rf_ScalarInteger(NA_INTEGER));
 	    SET_VECTOR_ELT(ans, i, matchpos);
 	    UNPROTECT(1);
 	} else {
 	    vmax = vmaxget();
 	    if(useBytes)
-		rc = tre_regexecb(&reg, CHAR(STRING_ELT(text, i)),
+		rc = tre_regexecb(&reg, R_CHAR(STRING_ELT(text, i)),
 				  nmatch, pmatch, 0);
 	    else if(use_WC) {
-		rc = tre_regwexec(&reg, wtransChar(STRING_ELT(text, i)),
+		rc = tre_regwexec(&reg, Rf_wtransChar(STRING_ELT(text, i)),
 				  nmatch, pmatch, 0);
 		vmaxset(vmax);
 	    }
 	    else {
-		t = translateChar(STRING_ELT(text, i));
+		t = Rf_translateChar(STRING_ELT(text, i));
 		if (mbcslocale && !mbcsValid(t))
-		    error(_("input string %d is invalid in this locale"),
+		    Rf_error(_("input string %d is invalid in this locale"),
 			  i + 1);
 		rc = tre_regexec(&reg, t,
 				 nmatch, pmatch, 0);
 		vmaxset(vmax);
 	    }
 	    if(rc == REG_OK) {
-		PROTECT(matchpos = allocVector(INTSXP, nmatch));
-		PROTECT(matchlen = allocVector(INTSXP, nmatch));
+		PROTECT(matchpos = Rf_allocVector(INTSXP, nmatch));
+		PROTECT(matchlen = Rf_allocVector(INTSXP, nmatch));
 		for(j = 0; j < RHOCONSTRUCT(int, nmatch); j++) {
 		    so = pmatch[j].rm_so;
 		    INTEGER(matchpos)[j] = so + 1;
 		    INTEGER(matchlen)[j] = pmatch[j].rm_eo - so;
 		}
-		setAttrib(matchpos, install("match.length"), matchlen);
+		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
 		if(useBytes)
-		    setAttrib(matchpos, install("useBytes"),
+		    Rf_setAttrib(matchpos, Rf_install("useBytes"),
 			      R_TrueValue);
 		SET_VECTOR_ELT(ans, i, matchpos);
 		UNPROTECT(2);
@@ -2772,11 +2772,11 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 		/* No match (or could there be an error?). */
 		/* Alternatively, could return nmatch -1 values.
 		*/
-		PROTECT(matchpos = ScalarInteger(-1));
-		PROTECT(matchlen = ScalarInteger(-1));
-		setAttrib(matchpos, install("match.length"), matchlen);
+		PROTECT(matchpos = Rf_ScalarInteger(-1));
+		PROTECT(matchlen = Rf_ScalarInteger(-1));
+		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
 		if(useBytes)
-		    setAttrib(matchpos, install("useBytes"),
+		    Rf_setAttrib(matchpos, Rf_install("useBytes"),
 			      R_TrueValue);
 		SET_VECTOR_ELT(ans, i, matchpos);
 		UNPROTECT(2);
@@ -2801,10 +2801,10 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     int res;
 
-    SEXP ans = PROTECT(allocVector(LGLSXP, 3));
+    SEXP ans = PROTECT(Rf_allocVector(LGLSXP, 3));
     int *lans = LOGICAL(ans);
-    SEXP nm = allocVector(STRSXP, 3);
-    setAttrib(ans, R_NamesSymbol, nm);
+    SEXP nm = Rf_allocVector(STRSXP, 3);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
     SET_STRING_ELT(nm, 0, mkChar("UTF-8"));
     pcre_config(PCRE_CONFIG_UTF8, &res); lans[0] = res;
     SET_STRING_ELT(nm, 1, mkChar("Unicode properties"));

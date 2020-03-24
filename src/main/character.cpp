@@ -829,7 +829,7 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
 		int nc = (int) utf8towcs(NULL, s, 0);
 		if (nc > minlen) {
 		    warn = TRUE;
-		    const wchar_t *wc = wtransChar(el);
+		    const wchar_t *wc = Rf_wtransChar(el);
 		    nc = (int) wcslen(wc);
 		    R_AllocStringBuffer(sizeof(wchar_t)*(nc+1), &cbuff);
 		    SET_STRING_ELT(ans, i, wstripchars(wc, minlen, usecl));

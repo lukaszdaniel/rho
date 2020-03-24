@@ -519,9 +519,7 @@ LibExtern SEXP R_LogicalNAValue;
  */
 
 #ifndef R_NO_REMAP
-# define allocCharsxp		Rf_allocCharsxp
 //# define asVecSize		Rf_asVecSize
-# define begincontext		Rf_begincontext
 # define BindDomain		Rf_BindDomain
 # define CleanEd		Rf_CleanEd
 # define CoercionWarning       	Rf_CoercionWarning
@@ -530,16 +528,13 @@ LibExtern SEXP R_LogicalNAValue;
 # define ComplexFromReal	Rf_ComplexFromReal
 # define ComplexFromString	Rf_ComplexFromString
 # define copyMostAttribNoTs	Rf_copyMostAttribNoTs
-# define createS3Vars		Rf_createS3Vars
 # define currentTime		Rf_currentTime
 # define CustomPrintValue	Rf_CustomPrintValue
-# define DataFrameClass		Rf_DataFrameClass
 # define ddfindVar		Rf_ddfindVar
 # define deparse1		Rf_deparse1
 # define deparse1w		Rf_deparse1w
 # define deparse1line		Rf_deparse1line
 # define deparse1s		Rf_deparse1s
-# define DispatchGroup		Rf_DispatchGroup
 # define DispatchOrEval		Rf_DispatchOrEval
 # define dynamicfindVar		Rf_dynamicfindVar
 # define EncodeChar             Rf_EncodeChar
@@ -548,16 +543,10 @@ LibExtern SEXP R_LogicalNAValue;
 # define EncodeString           Rf_EncodeString
 # define EnsureString 		Rf_EnsureString
 # define ErrorMessage		Rf_ErrorMessage
-# define factorsConform		Rf_factorsConform
-# define findcontext		Rf_findcontext
 # define findVar1		Rf_findVar1
-# define FrameClassFix		Rf_FrameClassFix
 # define framedepth		Rf_framedepth
-# define frameSubscript		Rf_frameSubscript
 # define get1index		Rf_get1index
 # define GetOptionCutoff       	Rf_GetOptionCutoff
-# define getVar			Rf_getVar
-# define getVarInFrame		Rf_getVarInFrame
 # define InitArithmetic		Rf_InitArithmetic
 # define InitConnections	Rf_InitConnections
 # define InitEd			Rf_InitEd
@@ -567,11 +556,9 @@ LibExtern SEXP R_LogicalNAValue;
 # define InitMemory		Rf_InitMemory
 # define InitNames		Rf_InitNames
 # define InitOptions		Rf_InitOptions
-# define InitStringHash		Rf_InitStringHash
 # define InitS3DefaultTypes	Rf_InitS3DefaultTypes
 # define InitTempDir		Rf_InitTempDir
 # define InitTypeTables		Rf_InitTypeTables
-# define initStack		Rf_initStack
 # define IntegerFromComplex	Rf_IntegerFromComplex
 # define IntegerFromLogical	Rf_IntegerFromLogical
 # define IntegerFromReal	Rf_IntegerFromReal
@@ -590,17 +577,13 @@ LibExtern SEXP R_LogicalNAValue;
 # define makeSubscript		Rf_makeSubscript
 # define markKnown		Rf_markKnown
 # define mat2indsub		Rf_mat2indsub
-# define matchArg		Rf_matchArg
 # define matchArgExact		Rf_matchArgExact
-# define matchPar		Rf_matchPar
 # define Mbrtowc		Rf_mbrtowc
 # define mbtoucs		Rf_mbtoucs
 # define mbcsToUcs2		Rf_mbcsToUcs2
-# define memtrace_report	Rf_memtrace_report
 # define mkCLOSXP		Rf_mkCLOSXP
 # define mkFalse		Rf_mkFalse
 # define mkPROMISE		Rf_mkPROMISE
-# define mkQUOTE		Rf_mkQUOTE
 # define mkTrue			Rf_mkTrue
 # define NewEnvironment		Rf_NewEnvironment
 # define OneIndex		Rf_OneIndex
@@ -608,7 +591,6 @@ LibExtern SEXP R_LogicalNAValue;
 # define onintrNoResume		Rf_onintrNoResume
 # define onsigusr1              Rf_onsigusr1
 # define onsigusr2              Rf_onsigusr2
-# define parse			Rf_parse
 # define PrintDefaults		Rf_PrintDefaults
 # define PrintGreeting		Rf_PrintGreeting
 # define PrintValueEnv		Rf_PrintValueEnv
@@ -647,9 +629,9 @@ LibExtern SEXP R_LogicalNAValue;
 # define utf8towcs		Rf_utf8towcs
 # define vectorIndex		Rf_vectorIndex
 # define warningcall		Rf_warningcall
-# define WarningMessage		Rf_WarningMessage
+//# define WarningMessage		Rf_WarningMessage
 # define wcstoutf8		Rf_wcstoutf8
-# define wtransChar		Rf_wtransChar
+//# define wtransChar		Rf_wtransChar
 #endif /* R_NO_REMAP */
 
 /* Platform Dependent Gui Hooks */
@@ -1044,7 +1026,6 @@ double R_getClockIncrement();
 SEXP do_gpregexpr(SEXP pat, SEXP vec, int igcase_opt, int useBytes);
 SEXP do_pgsub(SEXP pat, SEXP rep, SEXP vec,
 	      int global, int igcase_opt, int useBytes);
-const wchar_t *wtransChar(SEXP x);
 
 #ifdef __cplusplus
 }  /* extern "C" */

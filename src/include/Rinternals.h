@@ -751,11 +751,9 @@ Rboolean R_HasFancyBindings(SEXP rho);
 
 /* ../main/errors.cpp : */
 /* needed for R_load/savehistory handling in front ends */
-#if defined(__GNUC__) && __GNUC__ >= 3
-void Rf_errorcall(SEXP, const char *, ...) __attribute__((noreturn));
-#else
-void Rf_errorcall(SEXP, const char *, ...);
-#endif
+#include <R_ext/Visibility.h>
+
+void NORET Rf_errorcall(SEXP, const char *, ...);
 void Rf_warningcall(SEXP, const char *, ...);
 void Rf_warningcall_immediate(SEXP, const char *, ...);
 
@@ -925,7 +923,6 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define allocVector3		Rf_allocVector3
 #define any_duplicated		Rf_any_duplicated
 #define any_duplicated3		Rf_any_duplicated3
-#define applyClosure		Rf_applyClosure
 #define arraySubscript		Rf_arraySubscript
 #define asChar			Rf_asChar
 #define asCharacterFactor	Rf_asCharacterFactor
@@ -942,7 +939,6 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define copyMatrix		Rf_copyMatrix
 #define copyMostAttrib		Rf_copyMostAttrib
 #define copyVector		Rf_copyVector
-#define countContexts		Rf_countContexts
 #define CreateTag		Rf_CreateTag
 #define defineVar		Rf_defineVar
 #define dimgets			Rf_dimgets
@@ -972,13 +968,11 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define inherits		Rf_inherits
 #define install			Rf_install
 #define installChar		Rf_installChar
-#define installDDVAL		Rf_installDDVAL
 #define installS3Signature	Rf_installS3Signature
 #define isArray			Rf_isArray
 #define isBasicClass            Rf_isBasicClass
 #define isFactor		Rf_isFactor
 #define isFrame			Rf_isFrame
-#define isFree			Rf_isFree
 #define isFunction		Rf_isFunction
 #define isInteger		Rf_isInteger
 #define isLanguage		Rf_isLanguage
@@ -1045,13 +1039,11 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define nrows			Rf_nrows
 #define nthcdr			Rf_nthcdr
 #define PairToVectorList	Rf_PairToVectorList
-#define pmatch			Rf_pmatch
+//#define pmatch			Rf_pmatch
 #define psmatch			Rf_psmatch
 #define PrintValue		Rf_PrintValue
 #define protect			Rf_protect
-#define readS3VarsFromFrame	Rf_readS3VarsFromFrame
 #define reEnc			Rf_reEnc
-#define rownamesgets		Rf_rownamesgets
 #define S3Class                 Rf_S3Class
 #define ScalarComplex		Rf_ScalarComplex
 #define ScalarInteger		Rf_ScalarInteger
@@ -1068,7 +1060,6 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define stringPositionTr	Rf_stringPositionTr
 #define StringBlank		Rf_StringBlank
 #define substitute		Rf_substitute
-#define topenv		        Rf_topenv
 #define translateChar		Rf_translateChar
 #define translateChar0		Rf_translateChar0
 #define translateCharUTF8      	Rf_translateCharUTF8

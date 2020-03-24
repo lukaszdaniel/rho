@@ -392,7 +392,7 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (j = 0; j < i; j++) {
 #ifdef Win32
-	    const wchar_t *wnm = wtransChar(STRING_ELT(CAR(args), j));
+	    const wchar_t *wnm = Rf_wtransChar(STRING_ELT(CAR(args), j));
 	    wchar_t *w = _wgetenv(wnm);
 	    if (w == NULL)
 		SET_STRING_ELT(ans, j, STRING_ELT(CADR(args), 0));
@@ -469,8 +469,8 @@ SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::Buil
 				 1) == 0;
 #elif defined(Win32)
     for (i = 0; i < n; i++)
-	LOGICAL(ans)[i] = Rwputenv(wtransChar(STRING_ELT(nm, i)),
-				   wtransChar(STRING_ELT(vars, i))) == 0;
+	LOGICAL(ans)[i] = Rwputenv(Rf_wtransChar(STRING_ELT(nm, i)),
+				   Rf_wtransChar(STRING_ELT(vars, i))) == 0;
 #else
     for (i = 0; i < n; i++)
 	LOGICAL(ans)[i] = Rputenv(translateChar(STRING_ELT(nm, i)),
@@ -505,7 +505,7 @@ SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::Bu
 #elif defined(HAVE_PUTENV_UNSET2)
 # ifdef Win32
     for (i = 0; i < n; i++) {
-	const wchar_t *w = wtransChar(STRING_ELT(vars, i));
+	const wchar_t *w = Rf_wtransChar(STRING_ELT(vars, i));
 	vector<wchar_t> bufv(2*wcslen(w));
 	wchar_t* buf = &bufv[0];
 	wcscpy(buf, w);
@@ -882,7 +882,8 @@ next_char:
 # ifndef Win32
 		if((unsigned int) wc < 65536) {
 # endif
-		    snprintf(outbuf, 9, "<U+%04X>", (unsigned int) wc);
+		// gcc 7 objects to this with unsigned int
+		    snprintf(outbuf, 9, "<U+%04X>", (unsigned short) wc);
 		    outbuf += 8; outb -= 8;
 # ifndef Win32
 		} else {
@@ -1031,7 +1032,7 @@ static void *latin1_wobj = nullptr, *utf8_wobj=nullptr;
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
 attribute_hidden /* but not hidden on Windows, where it was used in tcltk.c */
-const wchar_t *wtransChar(SEXP x)
+const wchar_t *Rf_wtransChar(SEXP x)
 {
     void * obj;
     const char *inbuf, *ans = CHAR(x);

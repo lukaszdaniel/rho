@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2003  R Core Team
+ *  Copyright (C) 2003-2016  R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -22,6 +22,8 @@
  *  along with this program; if not, a copy is available at
  *  https://www.R-project.org/Licenses/
  */
+
+/* Unix-only header */
 
 #ifndef GETX11IMAGE_H_
 #define GETX11IMAGE_H_

@@ -7,7 +7,7 @@
 
 compilerOptions <- new.env(hash = TRUE, parent = emptyenv())
 compilerOptions$optimize <- 2
-compilerOptions$suppressAll <- FALSE
+compilerOptions$suppressAll <- TRUE
 compilerOptions$suppressUndefined <-
     c(".Generic", ".Method", ".Random.seed", ".self")
 

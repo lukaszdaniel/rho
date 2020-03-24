@@ -45,11 +45,7 @@ extern "C" {
 # include <stdio.h>
 #endif
 
-#if defined(__GNUC__) && __GNUC__ >= 3
-# define NORET __attribute__((noreturn))
-#else
-# define NORET
-#endif
+#include <R_ext/Visibility.h>
 
 /* from Defn.h */
 /* this duplication will be removed in due course */

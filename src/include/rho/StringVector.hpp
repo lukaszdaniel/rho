@@ -124,9 +124,10 @@ inline SEXP STRING_ELT(SEXP x, R_xlen_t i)
 {
     using namespace rho;
     if(TYPEOF(x) != STRSXP)
-      Rf_error("%s() can only be applied to a '%s', not a '%s'",
-               "STRING_ELT", "character vector", Rf_type2char(TYPEOF(x)));
-    return (*SEXP_downcast<StringVector*>(x, false))[VectorBase::size_type(i)];
+      Rf_error("'%s' function can only be applied to a character vector, not a '%s'",
+               "STRING_ELT()", Rf_type2char(TYPEOF(x)));
+    StringVector* sv = SEXP_downcast<StringVector*>(x, false);
+    return (*sv)[VectorBase::size_type(i)];
 }
 #endif
 

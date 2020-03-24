@@ -64,11 +64,7 @@ using namespace rho;
 #define min(a, b) (a<b?a:b)
 #endif
 
-#if defined(__GNUC__) && __GNUC__ >= 3
-#define NORET __attribute__((noreturn))
-#else
-#define NORET
-#endif
+#include <R_ext/Visibility.h>
 
 
 /* Total line length, in chars, before splitting in warnings/errors */
@@ -637,8 +633,8 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 	    SEXP opt = GetOption1(install("show.error.locations"));
 	    if (!isNull(opt)) {
 		if (TYPEOF(opt) == STRSXP && Rf_length(opt) == 1) {
-		    if (pmatch(ScalarString(mkChar("top")), opt, RHO_FALSE)) skip = 0;
-		    else if (pmatch(ScalarString(mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
+		    if (Rf_pmatch(ScalarString(mkChar("top")), opt, RHO_FALSE)) skip = 0;
+		    else if (Rf_pmatch(ScalarString(mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
 		} else if (TYPEOF(opt) == LGLSXP)
 		    skip = asLogical(opt) == 1 ? 0 : NA_INTEGER;
 		else

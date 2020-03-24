@@ -128,7 +128,7 @@ INLINE_FUN void R_Reprotect(SEXP s, PROTECT_INDEX i)
 /* In rho, Rf_length() are Rf_xlength() are not inlined, and are
    defined in dstruct.cpp. */
 
-/* TODO: a  Length(.) {say} which is  length() + dispatch (S3 + S4) if needed
+/* TODO: a  Length(.) {say} which is length() + dispatch (S3 + S4) if needed
          for one approach, see do_seq_along() in ../main/seq.cpp
 */
 R_len_t Rf_length(SEXP s);

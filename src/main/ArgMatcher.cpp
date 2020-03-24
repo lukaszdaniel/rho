@@ -513,8 +513,7 @@ void ArgMatcher::match(const ArgList& supplied,
 		unsigned int findex = (*fmit).second;
 		// Has this formal already been partially matched? :
 		if (formals_status[(*fmit).second] == PARTIAL_TAG)
-		    Rf_error(_("formal argument '%s' matched by "
-			       "multiple actual arguments"),
+		    Rf_error(_("formal argument '%s' matched by multiple actual arguments"),
 			     (*fmit).first->c_str());
 		// Does supplied arg partially match anything else? :
 		do {
@@ -585,8 +584,7 @@ void ArgMatcher::propagateFormalBindings(const Environment* fromenv,
 	const Symbol* symbol = fdata.symbol;
 	const Frame::Binding* frombdg = fromf->binding(symbol);
 	if (!frombdg)
-	    Rf_error(_("could not find symbol \"%s\" "
-		       "in environment of the generic function"),
+	    Rf_error(_("could not find symbol \"%s\" in environment of the generic function"),
 		     symbol->name()->c_str());
 	RObject* val = frombdg->unforcedValue();
 	if (frombdg->origin() == Frame::Binding::EXPLICIT) {

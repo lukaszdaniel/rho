@@ -1214,7 +1214,7 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
     REPROTECT(ans = lengthgets(ans, count), idx);
     if (pattern) tre_regfree(&reg);
     StringVector* sv = static_cast<StringVector*>(ans);
-    ssort(sv, count);
+    Rf_ssort(sv, count);
     UNPROTECT(1);
     return ans;
 }
@@ -1307,7 +1307,7 @@ SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunct
     }
     REPROTECT(ans = lengthgets(ans, count), idx);
     StringVector* sv = static_cast<StringVector*>(ans);
-    ssort(sv, count);
+    Rf_ssort(sv, count);
     UNPROTECT(1);
     return ans;
 }

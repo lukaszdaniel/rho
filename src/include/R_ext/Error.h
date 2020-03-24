@@ -32,11 +32,7 @@
 extern "C" {
 #endif
 
-#if defined(__GNUC__) && __GNUC__ >= 3
-#define NORET __attribute__((noreturn))
-#else
-#define NORET
-#endif
+#include <R_ext/Visibility.h>
 
 void NORET Rf_error(const char *, ...);
 void NORET UNIMPLEMENTED(const char *);

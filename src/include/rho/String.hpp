@@ -147,7 +147,7 @@ namespace rho {
 	 */
 	static cetype_t GPBits2Encoding(unsigned int gpbits);
 
-	/** @brief Is this Stringpure ASCII?
+	/** @brief Is this String pure ASCII?
 	 *
 	 * @return true iff the String contains only ASCII characters.
 	 */
@@ -156,6 +156,41 @@ namespace rho {
 	    return m_ascii;
 	}
 
+	/** @brief Is this String encoded in UTF8?
+	 *
+	 * @return true iff the String is encoded in UTF8.
+	 */
+	bool isUTF8() const
+	{
+		return encodingEquals(CE_UTF8);
+	}
+
+	/** @brief Is this String encoded in LATIN1?
+	 *
+	 * @return true iff the String is encoded in LATIN1.
+	 */
+	bool isLATIN1() const
+	{
+		return encodingEquals(CE_LATIN1);
+	}
+
+	/** @brief Is this String encoded in BYTES?
+	 *
+	 * @return true iff the String is encoded in BYTES.
+	 */
+	bool isBYTES() const
+	{
+		return encodingEquals(CE_BYTES);
+	}
+
+	/** @brief Check if String is encoded in \a t?
+	 *
+	 * @return true iff the String is encoded in \a t.
+	 */
+	bool encodingEquals(const cetype_t &t) const
+	{
+		return encoding() == t;
+	}
 	/** @brief Test if 'not available'.
 	 *
 	 * @return true iff this is the 'not available' string.

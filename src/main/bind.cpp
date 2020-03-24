@@ -769,7 +769,7 @@ static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
 	    else
 		SETCDR(last, next);
 	}
-	else if (n != R_NilValue && pmatch(R_UseNamesSymbol, n, RHO_TRUE)) {
+	else if (n != R_NilValue && Rf_pmatch(R_UseNamesSymbol, n, RHO_TRUE)) {
 	    if (n_usenames++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'use.names'"));
 	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {

@@ -190,12 +190,12 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
     if(!patlen)
 	error(_("'pattern' must be a non-empty character string"));
 
-    /* wtransChar and translateChar can R_alloc */
+    /* Rf_wtransChar and translateChar can R_alloc */
     vmax = vmaxget();
     if(useBytes)
 	rc = tre_regcompb(&reg, CHAR(STRING_ELT(pattern, 0)), cflags);
     else if(useWC)
-	rc = tre_regwcomp(&reg, wtransChar(STRING_ELT(pattern, 0)), cflags);
+	rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pattern, 0)), cflags);
     else {
 	const char *spat = translateChar(STRING_ELT(pattern, 0));
 	if(mbcslocale && !mbcsValid(spat))
@@ -231,7 +231,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 			       &match, params, 0);
 	else if(useWC) {
 	    rc = tre_regawexec(&reg,
-			       wtransChar(STRING_ELT(vec, i)),
+			       Rf_wtransChar(STRING_ELT(vec, i)),
 			       &match, params, 0);
 	    vmaxset(vmax);
 	} else {
@@ -588,7 +588,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	PROTECT(offsets = alloc3DArray(INTSXP, nx, ny, 2));
     }
 
-    /* wtransChar and translateChar can R_alloc */
+    /* Rf_wtransChar and translateChar can R_alloc */
     vmax = vmaxget();
     for(i = 0; i < nx; i++) {
 	elt = STRING_ELT(x, i);
@@ -607,7 +607,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	    if(useBytes)
 		rc = tre_regcompb(&reg, CHAR(elt), cflags);
 	    else if(useWC) {
-		rc = tre_regwcomp(&reg, wtransChar(elt), cflags);
+		rc = tre_regwcomp(&reg, Rf_wtransChar(elt), cflags);
 		vmaxset(vmax);
 	    } else {
 		s = translateChar(elt);
@@ -652,7 +652,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 			rc = tre_regaexecb(&reg, CHAR(elt),
 					   &match, params, 0);
 		    else if(useWC) {
-			rc = tre_regawexec(&reg, wtransChar(elt),
+			rc = tre_regawexec(&reg, Rf_wtransChar(elt),
 					   &match, params, 0);
 			vmaxset(vmax);
 		    } else {
@@ -816,7 +816,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     if(useBytes)
 	rc = tre_regcompb(&reg, CHAR(STRING_ELT(pattern, 0)), cflags);
     else if(useWC)
-	rc = tre_regwcomp(&reg, wtransChar(STRING_ELT(pattern, 0)), cflags);
+	rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pattern, 0)), cflags);
     else {
 	s = translateChar(STRING_ELT(pattern, 0));
 	if(mbcslocale && !mbcsValid(s))
@@ -858,7 +858,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 		rc = tre_regaexecb(&reg, CHAR(STRING_ELT(vec, i)),
 				   &match, params, 0);
 	    else if(useWC) {
-		rc = tre_regawexec(&reg, wtransChar(STRING_ELT(vec, i)),
+		rc = tre_regawexec(&reg, Rf_wtransChar(STRING_ELT(vec, i)),
 				   &match, params, 0);
 		vmaxset(vmax);
 	    }

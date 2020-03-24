@@ -161,7 +161,7 @@ static DllInfo *R_RegisterDLL(HINSTANCE handle, const char *path);
 attribute_hidden OSDynSymbol Rf_osDynSymbol;
 attribute_hidden OSDynSymbol *R_osDynSymbol = &Rf_osDynSymbol;
 
-void R_init_base(DllInfo *); /* In Registration.c */
+void R_init_base(DllInfo *); /* In registration.cpp */
 DL_FUNC R_dlsym(DllInfo *dll, char const *name,
 		R_RegisteredNativeSymbol *symbol);
 

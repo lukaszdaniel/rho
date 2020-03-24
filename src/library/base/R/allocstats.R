@@ -21,9 +21,11 @@
 
 # Builds a data frame with current allocation statistics.
 .allocstats <- function() {
-    stats <- data.frame(.Call('allocstats', PACKAGE='base'))
-    colnames(stats) <- c('size', 'alloc', 'free')
+    stats <- data.frame(.Call(.C_allocstats, PACKAGE="base"))
+    if(ncol(stats) == 3L) {
+    colnames(stats) <- c("size", "alloc", "free")
     stats$live <- (stats$alloc - stats$free) * stats$size # Live bytes.
     stats$percent <- as.numeric(100 * stats$live / sum(stats$live))
     stats
+    } else cat("allocation statistics are not enabled.\n");
 }

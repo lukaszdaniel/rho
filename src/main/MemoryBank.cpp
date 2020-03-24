@@ -76,7 +76,7 @@ const unsigned char MemoryBank::s_pooltab[]
 // counted in the 256 byte bin.
 size_t alloc_counts[32];
 size_t free_counts[32];
-#endif
+
 
 // Computes the bin to update in an allocation frequency table.
 static int get_bin_number(size_t bytes) {
@@ -91,6 +91,7 @@ static int get_bin_number(size_t bytes) {
         return 0;
     }
 }
+#endif
 
 void MemoryBank::adjustFreedSize(size_t original, size_t actual)
 {

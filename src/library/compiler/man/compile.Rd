@@ -1,6 +1,6 @@
 % File src/library/compiler/man/compile.Rd
 % Part of the R package, https://www.R-project.org
-% Copyright 2011 R Core Team
+% Copyright 2011-2016 R Core Team
 % Distributed under GPL 2 or later
 
 \name{compile}
@@ -28,21 +28,21 @@ setCompilerOptions(...)
 }
 \arguments{
   \item{f}{a closure.}
-  \item{options}{list of named compiler options}
+  \item{options}{list of named compiler options: see \sQuote{Details}.}
   \item{env}{the top level environment for the compiling.}
   \item{srcref}{initial source reference for the expression.}
-  \item{file,infile,outfile}{pathnames; outfile defaults to infile with a .Rc
-                             extension in place of any existing extension.}
+  \item{file,infile,outfile}{pathnames; outfile defaults to infile with
+    a \file{.Rc} extension in place of any existing extension.}
   \item{ascii}{logical; should the compiled file be saved in ascii format?}
-  \item{verbose}{logical; should the compiler show what is being compiled}
+  \item{verbose}{logical; should the compiler show what is being compiled?}
   \item{envir}{environment to evaluate loaded expressions in.}
   \item{chdir}{logical; change directory before evaluation?}
   \item{code}{byte code expression or compiled closure}
-  \item{e}{expression to compile}
-  \item{level}{integer; the JIT level to use}
-  \item{enable}{logical; enable compiling packages if \code{TRUE}}
-  \item{name}{character string; name of option to return}
-  \item{...}{named compiler options to set}
+  \item{e}{expression to compile.}
+  \item{level}{integer; the JIT level to use (\code{0} to \code{3}).}
+  \item{enable}{logical; enable compiling packages if \code{TRUE}.}
+  \item{name}{character string; name of option to return.}
+  \item{...}{named compiler options to set.}
 }
 \description{
   Stubs for API compatibility with GNU R.

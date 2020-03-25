@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1998-2001  Daniel Veillard.
- *  Copyright (C) 2001-2015   The R Core Team.
+ *  Copyright (C) 2001-2016   The R Core Team.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
  *  Rho is not part of the R project, and bugs and other issues should
@@ -47,17 +47,7 @@
 
 #undef HAVE_ZLIB_H
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#ifdef Win32
-#define _(String) libintl_gettext (String)
-#undef gettext /* needed for graphapp */
-#else
-#define _(String) gettext (String)
-#endif
-#else /* not NLS */
-#define _(String) (String)
-#endif
+#include <Localization.h>
 
 extern void R_ProcessEvents(void);
 
@@ -1479,7 +1469,11 @@ RxmlNanoHTTPMethod(const char *URL, const char *method, const char *input,
 
     if ((ctxt->location != NULL) && (ctxt->returnValue >= 300) &&
         (ctxt->returnValue < 400)) {
-	RxmlMessage(1, _("redirect to: '%s'"), ctxt->location);
+	if(strncmp(ctxt->location, "https://", 8) == 0)
+	    RxmlMessage(2, _("cannot handle https redirection to: '%s'"),
+			ctxt->location);
+	else
+	    RxmlMessage(1, _("redirect to: '%s'"), ctxt->location);
 	while (RxmlNanoHTTPRecv(ctxt)) 
 	    ;  // clang likes this on a separate line
         if (nbRedirects < XML_NANO_HTTP_MAX_REDIR) {

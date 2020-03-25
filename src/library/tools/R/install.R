@@ -105,6 +105,12 @@
         if (!keep.tmpdir && dir.exists(tmpdir)) unlink(tmpdir, recursive=TRUE)
     }
 
+    # This produces a (by default single) quoted string for use in a 
+    # command sent to another R process.  Currently it only fixes backslashes;
+    # more extensive escaping might be a good idea
+    quote_path <- function(path, quote = "'") 
+    	paste0(quote, gsub("\\\\", "\\\\\\\\", path), quote)
+    	
     on.exit(do_exit_on_error())
     WINDOWS <- .Platform$OS.type == "windows"
 
@@ -201,7 +207,7 @@
             paste0("for this one it is ",
 		   if(static_html) "--html" else "--no-html", "."),
             "",
-            "Report bugs at bugs.r-project.org .", sep = "\n")
+            "Report bugs at <https://bugs.R-project.org>.", sep = "\n")
     }
 
 
@@ -415,7 +421,7 @@
             }
             if(length(archs))
                 for(arch in archs) {
-                    ss <- paste("src", arch, sep = "-")
+                    ss <- paste0("src-", arch)
                     ## it seems fixing permissions is sometimes needed
                     .Call(C_dirchmod, ss, group.writable)
                     unlink(ss, recursive = TRUE)
@@ -774,7 +780,7 @@
                         for(arch in archs) {
                             message("", domain = NA) # a blank line
                             starsmsg("***", "arch - ", arch)
-                            ss <- paste("src", arch, sep = "-")
+                            ss <- paste0("src-", arch)
                             dir.create(ss, showWarnings = FALSE)
                             file.copy(Sys.glob("src/*"), ss, recursive = TRUE)
                             ## avoid read-only files/dir such as nested .svn
@@ -833,7 +839,7 @@
                                     has_error <- run_shlib(pkg_name, srcs, instdir, "")
                                 } else {
                                     starsmsg("***", "arch - ", arch)
-                                    ss <- paste("src", arch, sep = "-")
+                                    ss <- paste0("src-", arch)
                                     dir.create(ss, showWarnings = FALSE)
                                     file.copy(Sys.glob("src/*"), ss, recursive = TRUE)
                                     setwd(ss)
@@ -1189,7 +1195,7 @@
             ## FIXME: maybe the quoting as 'lib' is not quite good enough
             ## On a Unix-alike this calls system(input=)
             ## and that uses a temporary file and redirection.
-            cmd <- paste0("tools:::.test_load_package('", pkg_name, "', '", lib, "')")
+            cmd <- paste0("tools:::.test_load_package('", pkg_name, "', ", quote_path(lib), ")")
             ## R_LIBS was set already, but Rprofile/Renviron may change it
             ## R_runR is in check.R
             deps_only <-
@@ -1553,7 +1559,7 @@
         if (WINDOWS) {
             ## file.access is unreliable on Windows
             ## the only known reliable way is to try it
-            fn <- file.path(lib, paste("_test_dir", Sys.getpid(), sep = "_"))
+            fn <- file.path(lib, paste0("_test_dir_", Sys.getpid()))
             unlink(fn, recursive = TRUE) # precaution
             res <- try(dir.create(fn, showWarnings = FALSE))
             if (inherits(res, "try-error") || !res) ok <- FALSE
@@ -1639,7 +1645,7 @@
 
     for(pkg in allpkgs) {
         if (pkglock) {
-            lockdir <- file.path(lib, paste("00LOCK", basename(pkg), sep = "-"))
+            lockdir <- file.path(lib, paste0("00LOCK-", basename(pkg)))
             mk_lockdir(lockdir)
         }
         do_install(pkg)
@@ -1678,7 +1684,7 @@
             "Windows only:",
             "  -d, --debug		build a debug DLL",
             "",
-            "Report bugs at bugs@r-project.org .",
+            "Report bugs at <https://bugs.R-project.org>.",
             sep = "\n")
 
     ## FIXME shQuote here?
@@ -2342,9 +2348,8 @@ function()
         if(!is.na(f <- Sys.getenv("R_MAKEVARS_USER", NA_character_))) {
             if(file.exists(f)) m <- f
         }
-        else if(file.exists(f <- path.expand(paste("~/.R/Makevars",
-                                                   Sys.getenv("R_PLATFORM"),
-                                                   sep = "-"))))
+        else if(file.exists(f <- path.expand(paste0("~/.R/Makevars-",
+                                                    Sys.getenv("R_PLATFORM")))))
             m <- f
         else if(file.exists(f <- path.expand("~/.R/Makevars")))
             m <- f

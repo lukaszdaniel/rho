@@ -385,8 +385,8 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
           }
       }
     default:
-	error(_("incompatible types (from %s to %s) in subassignment type fix"),
-	      type2char(RHOCONSTRUCT(SEXPTYPE, which%100)), type2char(RHOCONSTRUCT(SEXPTYPE, which/100)));
+	Rf_error(_("incompatible types (from %s to %s) in subassignment type fix"),
+	      Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which%100)), Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which/100)));
     }
 
     return(100 * TYPEOF(*x) + TYPEOF(*y));
@@ -471,7 +471,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	Rf_setAttrib(xnew, R_NamesSymbol, xnewnames);
 	UNPROTECT(1);
     }
-    copyMostAttrib(x, xnew);
+    Rf_copyMostAttrib(x, xnew);
     UNPROTECT(2);
     return xnew;
 }
@@ -958,7 +958,7 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
     R_xlen_t i, k, n;
     n = Rf_xlength(x);
     if (0 <= which && which < n) {
-	PROTECT(y = allocVector(TYPEOF(x), n - 1));
+	PROTECT(y = Rf_allocVector(TYPEOF(x), n - 1));
 	k = 0;
 	switch (TYPEOF(x)) {
 	case VECSXP:
@@ -975,7 +975,7 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
 	    Rf_error(_("Internal error:"
 		       " unexpected type in DeleteOneVectorListItem"));
 	}
-	xnames = getAttrib(x, R_NamesSymbol);
+	xnames = Rf_getAttrib(x, R_NamesSymbol);
 	if (xnames != R_NilValue) {
 	    PROTECT(ynames = Rf_allocVector(STRSXP, n - 1));
 	    k = 0;
@@ -1068,7 +1068,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
     if( TYPEOF(x) == ENVSXP) {
 	if( nsubs!=1 || !Rf_isString(CAR(subs)) || Rf_length(CAR(subs)) != 1 )
 	    Rf_error(_("wrong args for environment subassignment"));
-	Rf_defineVar(installTrChar(STRING_ELT(CAR(subs), 0)), y, x);
+	Rf_defineVar(Rf_installTrChar(STRING_ELT(CAR(subs), 0)), y, x);
 	UNPROTECT(1);
 	return(S4 ? xOrig : x);
     }
@@ -1349,25 +1349,10 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 */
 SEXP attribute_hidden do_subassign3(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP nlist, input;
-    int iS;
+    SEXP nlist = nullptr;
 
-    ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
-    nlist = arglist.get(1);
-    if (TYPEOF(nlist) == PROMSXP) {
-	nlist = Rf_eval(nlist, env);
-    }
-    iS = Rf_isSymbol(nlist);
-    if (iS)
-	input = Rf_ScalarString(PRINTNAME(nlist));
-    else if(Rf_isString(nlist) )
-	input = Rf_ScalarString(STRING_ELT(nlist, 0));
-    else {
-	Rf_error(_("invalid subscript type '%s'"), Rf_type2char(TYPEOF(nlist)));
-    }
+    ArgList arglist(SEXP_downcast<PairList*>(Rf_fixSubset3Args(call, args, env, &nlist)), ArgList::RAW);
 
-    /* replace the second argument with a string */
-    arglist.set(1, input);
     auto dispatched = Rf_DispatchOrEval(SEXP_downcast<Expression*>(call),
                                         SEXP_downcast<BuiltInFunction*>(op),
                                         &arglist,
@@ -1376,8 +1361,8 @@ SEXP attribute_hidden do_subassign3(SEXP call, SEXP op, SEXP args, SEXP env)
     if (dispatched.first)
         return dispatched.second;
 
-    if (! iS)
-	nlist = Rf_installTrChar(STRING_ELT(input, 0));
+    if (nlist == R_NilValue)
+	nlist = Rf_installTrChar(STRING_ELT(arglist.get(1), 0));
 
     return R_subassign3_dflt(call, arglist.get(0), nlist, arglist.get(2));
 }
@@ -1459,38 +1444,38 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 	     TYPEOF(x) == CLOSXP ||
 	     TYPEOF(x) == SPECIALSXP ||
 	     TYPEOF(x) == BUILTINSXP) {
-	error(R_MSG_ob_nonsub, type2char(TYPEOF(x)));
+	Rf_error(R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
     }
     else {
 	R_xlen_t i, imatch, nx;
 	SEXP names;
 	SEXPTYPE type = VECSXP;
 
-	if (isExpression(x))
+	if (Rf_isExpression(x))
 	    type = EXPRSXP;
-	else if (!isNewList(x)) {
-	    warning(_("Coercing LHS to a list"));
-	    REPROTECT(x = coerceVector(x, VECSXP), pxidx);
+	else if (!Rf_isNewList(x)) {
+	    Rf_warning(_("Coercing LHS to a list"));
+	    REPROTECT(x = Rf_coerceVector(x, VECSXP), pxidx);
 	}
-	names = getAttrib(x, R_NamesSymbol);
-	nx = xlength(x);
+	names = Rf_getAttrib(x, R_NamesSymbol);
+	nx = Rf_xlength(x);
 	nlist = PRINTNAME(nlist);
-	if (isNull(val)) {
+	if (Rf_isNull(val)) {
 	    /* If "val" is NULL, this is an element deletion */
 	    /* if there is a match to "nlist" otherwise "x" */
 	    /* is unchanged.  The attributes need adjustment. */
 	    if (names != R_NilValue) {
 		imatch = -1;
 		for (i = 0; i < nx; i++)
-		    if (NonNullStringMatch(STRING_ELT(names, i), nlist)) {
+		    if (Rf_NonNullStringMatch(STRING_ELT(names, i), nlist)) {
 			imatch = i;
 			break;
 		    }
 		if (imatch >= 0) {
 		    SEXP ans, ansnames;
 		    int ii;
-		    PROTECT(ans = allocVector(type, nx - 1));
-		    PROTECT(ansnames = allocVector(STRSXP, nx - 1));
+		    PROTECT(ans = Rf_allocVector(type, nx - 1));
+		    PROTECT(ansnames = Rf_allocVector(STRSXP, nx - 1));
 		    for (i = 0, ii = 0; i < nx; i++)
 			if (i != imatch) {
 			    if (type == EXPRSXP)
@@ -1499,8 +1484,8 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 			    SET_STRING_ELT(ansnames, ii, STRING_ELT(names, i));
 			    ii++;
 			}
-		    setAttrib(ans, R_NamesSymbol, ansnames);
-		    copyMostAttrib(x, ans);
+		    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+		    Rf_copyMostAttrib(x, ans);
 		    UNPROTECT(2);
 		    x = ans;
 		}
@@ -1512,7 +1497,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 	    /* an existing list element or we are adding a new */
 	    /* element. */
 	    imatch = -1;
-	    if (!isNull(names)) {
+	    if (!Rf_isNull(names)) {
 		for (i = 0; i < nx; i++)
 		    if (NonNullStringMatch(STRING_ELT(names, i), nlist)) {
 			imatch = i;

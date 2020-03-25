@@ -316,8 +316,8 @@ testInstalledPackage <-
         Rfile <- .createExdotR(pkg, pkgdir, silent = TRUE, ...)
         if (length(Rfile)) {
             outfile <- paste0(pkg, "-Ex.Rout")
-            failfile <- paste(outfile, "fail", sep = "." )
-            savefile <- paste(outfile, "prev", sep = "." )
+            failfile <- paste0(outfile, ".fail")
+            savefile <- paste0(outfile, ".prev")
             if (file.exists(outfile)) file.rename(outfile, savefile)
             unlink(failfile)
             ## Create as .fail in case this R session gets killed
@@ -329,7 +329,7 @@ testInstalledPackage <-
             res <- system(cmd)
             if (res) return(invisible(1L)) else file.rename(failfile, outfile)
 
-            savefile <- paste(outfile, "save", sep = "." )
+            savefile <- paste0(outfile, ".save")
             if (!is.null(srcdir)) savefile <- file.path(srcdir, savefile)
             else {
                 tfile <- file.path(pkgdir, "tests", "Examples" , savefile)
@@ -359,7 +359,7 @@ testInstalledPackage <-
                    }
                 }
             } else {
-                prevfile <- paste(outfile, "prev", sep = "." )
+                prevfile <- paste0(outfile, ".prev")
                 if (file.exists(prevfile)) {
                     message(gettextf("  comparing %s to %s ...",
                             sQuote(outfile), sQuote(basename(prevfile))),
@@ -383,7 +383,7 @@ testInstalledPackage <-
 
     ## FIXME merge with code in .runPackageTests
     if ("tests" %in% types && dir.exists(d <- file.path(pkgdir, "tests"))) {
-        this <- paste(pkg, "tests", sep = "-")
+        this <- paste0(pkg, "-tests")
         unlink(this, recursive = TRUE)
         dir.create(this)
         ## system(paste("cp -pR", file.path(d, "*"), this))
@@ -402,10 +402,10 @@ testInstalledPackage <-
             else paste("LANGUAGE=C", cmd)
            res <- system(cmd)
             if (res) {
-                file.rename(outfile, paste(outfile, "fail", sep = "."))
+                file.rename(outfile, paste0(outfile, ".fail"))
                 return(invisible(1L))
             }
-            savefile <- paste(outfile, "save", sep = "." )
+            savefile <- paste0(outfile, ".save")
             if (file.exists(savefile)) {
                 message(gettextf("  comparing %s to %s ...",
                                  sQuote(outfile), sQuote(savefile)),
@@ -438,7 +438,7 @@ testInstalledPackage <-
 }
 
 .runPackageTests <-
-    function(use_gct = FALSE, use_valgrind = FALSE, Log = NULL, ...)
+    function(use_gct = FALSE, use_valgrind = FALSE, Log = NULL, stop_on_error = TRUE, ...)
 {
     if (!is.null(Log)) Log <- file(Log, "wt")
     WINDOWS <- .Platform$OS.type == "windows"
@@ -482,10 +482,10 @@ testInstalledPackage <-
         t2 <- proc.time()
         print_time(t1, t2, Log)
         if (res) {
-            file.rename(outfile, paste(outfile, "fail", sep = "."))
+            file.rename(outfile, paste0(outfile, ".fail"))
             return(1L)
         }
-        savefile <- paste(outfile, "save", sep = "." )
+        savefile <- paste0(outfile, ".save")
         if (file.exists(savefile)) {
             message(gettextf("  Comparing %s to %s ...",
                              sQuote(outfile), sQuote(savefile)),
@@ -530,7 +530,7 @@ testInstalledPackage <-
     Rfiles <- dir(".", pattern="\\.[rR]$")
     for(f in Rfiles) {
         nfail <- nfail + runone(f)
-        if (nfail > 0) return(nfail)
+        if (nfail > 0 && stop_on_error) return(nfail)
     }
     if (!is.null(Log)) close(Log)
     return(nfail)
@@ -560,7 +560,7 @@ testInstalledPackage <-
     for(f in files) {
         nm <- sub("\\.[Rr]d$", "", basename(f))
         Rd2ex(db[[f]],
-              file.path(filedir, paste(nm, "R", sep = ".")),
+              file.path(filedir, paste0(nm, ".R")),
               defines = NULL, commentDontrun = commentDontrun,
               commentDonttest = commentDonttest)
         cnt <- cnt + 1L
@@ -594,7 +594,7 @@ testInstalledBasic <- function(scope = c("basic", "devel", "both", "internet"))
 
     runone <- function(f, diffOK = FALSE, inC = TRUE)
     {
-        f <- paste(f, "R", sep = ".")
+        f <- paste0(f, ".R")
         if (!file.exists(f)) {
             if (!file.exists(fin <- paste0(f, "in")))
                 stop("file ", sQuote(f), " not found", domain = NA)
@@ -624,11 +624,11 @@ testInstalledBasic <- function(scope = c("basic", "devel", "both", "internet"))
         } else cmd <- paste(extra, cmd)
         res <- system(cmd)
         if (res) {
-            file.rename(outfile, paste(outfile, "fail", sep = "."))
+            file.rename(outfile, paste0(outfile, ".fail"))
             message("FAILED")
             return(1L)
         }
-        savefile <- paste(outfile, "save", sep = "." )
+        savefile <- paste0(outfile, ".save")
         if (file.exists(savefile)) {
             message(gettextf("  comparing %s to %s ...",
                              sQuote(outfile), sQuote(savefile)),
@@ -727,7 +727,7 @@ detachPackages <- function(pkgs, verbose = TRUE)
     ## unloading 'grid' kills all devices
     ## tcltk is unhappy to have its DLL unloaded repeatedly
     exclusions <- c("grid", "tcltk")
-    exclusions <- paste("package", exclusions, sep = ":")
+    exclusions <- paste0("package:", exclusions)
     while(length(deps)) {
         unl <- unlist(deps)
         for(i in seq_along(deps)) {
@@ -758,7 +758,7 @@ detachPackages <- function(pkgs, verbose = TRUE)
             "  -h, --help     print this help message and exit",
             "  -v, --version  print version info and exit",
             "",
-            "Report bugs at bugs.r-project.org .",
+            "Report bugs at <https://bugs.R-project.org>.",
             sep = "\n")
     }
 

@@ -155,7 +155,7 @@ SEXP Rf_duplicate(SEXP s){
 
 SEXP Rf_shallow_duplicate(SEXP s) {
     // TODO(kmillar): implement shallow duplicates.
-    return duplicate(s);
+    return Rf_duplicate(s);
 }
 
 SEXP Rf_lazy_duplicate(SEXP s) {
@@ -280,16 +280,16 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
     int i, j, nr, nc;
     R_xlen_t ns;
 
-    nr = nrows(s);
-    nc = ncols(s);
+    nr = Rf_nrows(s);
+    nc = Rf_ncols(s);
     ns = (R_xlen_t( nr)) * nc;
     pt = t;
     if(byrow) {
 	R_xlen_t NR = nr;
-	PROTECT(tmp = allocVector(STRSXP, ns));
+	PROTECT(tmp = Rf_allocVector(STRSXP, ns));
 	for (i = 0; i < nr; i++)
 	    for (j = 0; j < nc; j++) {
-		SET_STRING_ELT(tmp, i + j * NR, duplicate(CAR(pt)));
+		SET_STRING_ELT(tmp, i + j * NR, Rf_duplicate(CAR(pt)));
 		pt = CDR(pt);
 		if(pt == R_NilValue) pt = t;
 	    }
@@ -301,7 +301,7 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
     }
     else {
 	for (i = 0; i < ns; i++) {
-	    SETCAR(s, duplicate(CAR(pt)));
+	    SETCAR(s, Rf_duplicate(CAR(pt)));
 	    s = CDR(s);
 	    pt = CDR(pt);
 	    if(pt == R_NilValue) pt = t;

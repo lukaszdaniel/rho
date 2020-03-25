@@ -161,7 +161,7 @@ static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
 	case LANGSXP:
 #ifdef LONG_VECTOR_SUPPORT
 	    if (ii > R_SHORT_LEN_MAX)
-		error("invalid subscript for pairlist");
+		Rf_error("invalid subscript for pairlist");
 #endif
 	    if (0 <= ii && ii < nx && ii != NA_INTEGER) {
 		SEXP tmp2 = Rf_nthcdr(x, int( ii));
@@ -473,7 +473,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    R_xlen_t k = i - 1 + nrow * (j - 1);
 		    switch (TYPEOF(x)) {
 		    case REALSXP:
-			if (k < LENGTH(x))
+			if (k < XLENGTH(x))
 			    return Rf_ScalarReal( REAL(x)[k] );
 			break;
 		    case INTSXP:
@@ -566,25 +566,21 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (TYPEOF(x) == LANGSXP) {
 	ax = ans;
-	{
-	    ans = nullptr;
-	    size_t len = LENGTH(ax);
-	    if (len > 0) {
-		GCStackRoot<PairList> tl(PairList::make(len - 1));
-		ans = new CachingExpression(nullptr, tl);
-	    }
+	ans = nullptr;
+	size_t len = LENGTH(ax);
+	if (len > 0) {
+	    GCStackRoot<PairList> tl(PairList::make(len - 1));
+	    ans = new CachingExpression(nullptr, tl);
+
+	    int i = 0;
+	    for (SEXP px = ans; px != R_NilValue; px = CDR(px))
+		SETCAR(px, VECTOR_ELT(ax, i++));
+	    Rf_setAttrib(ans, R_DimSymbol, Rf_getAttrib(ax, R_DimSymbol));
+	    Rf_setAttrib(
+		ans, R_DimNamesSymbol, Rf_getAttrib(ax, R_DimNamesSymbol));
+	    Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(ax, R_NamesSymbol));
+	    SET_NAMED(ans, NAMED(ax)); /* PR#7924 */
 	}
-	int i = 0;
-	for (SEXP px = ans; px != R_NilValue ; px = CDR(px))
-	    SETCAR(px, VECTOR_ELT(ax, i++));
-	if (ans)  // 2007/07/23 arr
-	    {
-		Rf_setAttrib(ans, R_DimSymbol, Rf_getAttrib(ax, R_DimSymbol));
-		Rf_setAttrib(ans, R_DimNamesSymbol,
-			  Rf_getAttrib(ax, R_DimNamesSymbol));
-		Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(ax, R_NamesSymbol));
-		SET_NAMED(ans, NAMED(ax)); /* PR#7924 */
-	    }
     }
     if (ATTRIB(ans) != R_NilValue) { /* remove probably erroneous attr's */
 	Rf_setAttrib(ans, R_TspSymbol, R_NilValue);
@@ -841,6 +837,41 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
     }
 }
 
+SEXP attribute_hidden
+Rf_fixSubset3Args(SEXP call, SEXP args, SEXP env, SEXP* syminp)
+{
+    SEXP input, nlist;
+	//ArgList arglist({ CAR(args), input }, ArgList::RAW);
+    /* first translate CADR of args into a string so that we can
+       pass it down to DispatchorEval and have it behave correctly */
+
+    PROTECT(input = Rf_allocVector(STRSXP, 1));
+    nlist = CADR(args);
+    if (TYPEOF(nlist) == PROMSXP)
+	nlist = Rf_eval(nlist, env);
+    if(Rf_isSymbol(nlist)) {
+	if (syminp != NULL)
+	    *syminp = nlist;
+	SET_STRING_ELT(input, 0, PRINTNAME(nlist));
+    } else if(Rf_isString(nlist) )
+	SET_STRING_ELT(input, 0, STRING_ELT(nlist, 0));
+    else {
+	Rf_errorcall(call,_("invalid subscript type '%s'"),
+		  Rf_type2char(TYPEOF(nlist)));
+	return R_NilValue; /*-Wall*/
+    }
+
+    /* replace the second argument with a string */
+
+    /* Previously this was SETCADR(args, input); */
+    /* which could cause problems when nlist was */
+    /* ..., as in PR#8718 */
+
+    args = Rf_shallow_duplicate(args);
+    SETCADR(args, input);
+    UNPROTECT(1); /* input */
+    return args;
+}
 
 /* The $ subset operator.
    We need to be sure to only evaluate the first argument.
@@ -848,30 +879,8 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
 */
 SEXP attribute_hidden do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP input, nlist;
-    /* first translate CADR of args into a string so that we can
-       pass it down to DispatchorEval and have it behave correctly */
-    nlist = CADR(args);
-    if (TYPEOF(nlist) == PROMSXP)
-	nlist = Rf_eval(nlist, env);
-    if(Rf_isSymbol(nlist) )
-	input = Rf_ScalarString(PRINTNAME(nlist));
-    else if(Rf_isString(nlist) ) {
-      input = Rf_length(nlist) == 1
-          ? nlist : Rf_ScalarString(STRING_ELT(nlist, 0));
-    }
-    else {
-	Rf_errorcall(call,_("invalid subscript type '%s'"),
-		  Rf_type2char(TYPEOF(nlist)));
-    }
-    PROTECT(input);
-
-    /* replace the second argument with a string */
-
-    /* Previously this was SETCADR(args, input); */
-    /* which could cause problems when nlist was */
-    /* ..., as in PR#8718 */
-    ArgList arglist({ CAR(args), input }, ArgList::RAW);
+	SEXP ans;
+	ArgList arglist(SEXP_downcast<PairList*>(Rf_fixSubset3Args(call, args, env, nullptr)), ArgList::RAW);
 
     auto dispatched = Rf_DispatchOrEval(SEXP_downcast<Expression*>(call),
                                         SEXP_downcast<BuiltInFunction*>(op),
@@ -879,18 +888,16 @@ SEXP attribute_hidden do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
                                         SEXP_downcast<Environment*>(env),
                                         MissingArgHandling::Keep);
     if (dispatched.first) {
-        SEXP ans = dispatched.second;
-	UNPROTECT(1);
+        ans = dispatched.second;
 	if (NAMED(ans))
 	    SET_NAMED(ans, 2);
 	return(ans);
     }
 
-    UNPROTECT(1); /* input, args */
-    return R_subset3_dflt(arglist.get(0), STRING_ELT(input, 0), call);
+    return R_subset3_dflt(arglist.get(0), STRING_ELT(arglist.get(1), 0), call);
 }
 
-/* used in eval.c */
+/* used in eval.cpp */
 SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 {
     SEXP y, nlist;

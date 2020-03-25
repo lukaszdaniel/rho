@@ -2880,7 +2880,7 @@ this is to minimize differences between platforms.
 Use @kbd{R CMD check --help} to obtain more information about the usage
 of the @R{} package checker.  A subset of the checking steps can be
 selected by adding command-line options. It also allows customization by
-setting environment variables @w{@env{_R_CHECK_*_}:}, as described in
+setting environment variables @w{@env{_R_CHECK_*_}} as described in
 @ifset UseExternalXrefs
 @ref{Tools, , Tools, R-ints, R Internals}:
 @end ifset
@@ -2907,7 +2907,7 @@ _R_CHECK_CODETOOLS_PROFILE_="suppressLocalUnused=FALSE"
 @noindent
 which reports unused local assignments.  Not only does this point out
 computations which are unnecessary because their results are unused, it
-also can show errors.  (Two such are to intend to update an object by
+also can uncover errors.  (Two such are to intend to update an object by
 assigning a value but mistype its name or assign in the wrong scope,
 for example using @code{<-} where @code{<<-} was intended.)  This can
 give false positives, most commonly because of non-standard evaluation
@@ -3174,7 +3174,7 @@ or underscore.
 A special case is @emph{package vignettes}.  Vignettes are documents in
 PDF or @HTML{} format obtained from plain text literate source files
 from which @R{} knows how to extract @R{} code and create output (in
-PDF/@HTML{} or intermediate (La)@TeX{}).  Vignette engines do this work,
+PDF/@HTML{} or intermediate @LaTeX{}).  Vignette engines do this work,
 using ``tangle'' and ``weave'' functions respectively.  Sweave, provided
 by the R distribution, is the default engine.  Since @R{} version 3.0.0,
 other vignette engines besides Sweave are supported; see @ref{Non-Sweave
@@ -4831,6 +4831,10 @@ which compares a pointer to the integer @code{0}.  This could just use
 pointers can be tested against @code{nullptr} (C++11 and later) or
 @code{NULL}.
 
+@c gcc6 accepts it, gcc5 does not, it seems.
+Note that although @code{nullptr} was only introduced in C++11, some
+compilers accept it in C++98 mode (but most do not).
+
 @item
 Macros defined by the compiler/OS can cause problems.  Identifiers
 starting with an underscore followed by an upper-case letter or another
@@ -4851,8 +4855,9 @@ before including any system headers, but it is better to only use
 all-upper-case names which have a unique prefix such as the package name.
 
 @item
-@code{typedef}s in OS headers can conflict with those in the package: an
-example is @code{index_t} defined in @file{<sys/types.h>} on Solaris.
+@code{typedef}s in OS headers can conflict with those in the package:
+two examples are @code{ulong} on several OSes and @code{index_t} on
+Solaris.
 
 @item
 If you use OpenMP, check carefully that you have followed the advice in
@@ -8133,8 +8138,8 @@ Recent versions return symbolic addresses for the location of the error
 provided @command{llvm-symbolizer}@footnote{part of the LLVM project and
 in distributed in @code{llvm} RPMs and @code{.deb}s on Linux.  It is not
 currently shipped by Apple.} is on the path: if it is available but not
-on the path or has been renamed@footnote{as Ubuntu does.}, one can use an
-environment variable, e.g.@:
+on the path or has been renamed@footnote{as Ubuntu is said to do.}, one
+can use an environment variable, e.g.@:
 
 @example
 ASAN_SYMBOLIZER_PATH=/path/to/llvm-symbolizer
@@ -8194,6 +8199,12 @@ break __asan_report_error
 @end example
 (See
 @uref{https://code.google.com/@/p/@/address-sanitizer/@/wiki@//AddressSanitizer#gdb}.)
+
+Recent versions@footnote{This is expected to be in @command{gcc} 7 and
+@command{clang} 4.0.0.  Currently for @command{gcc} it is implied by
+@option{-fsanitize=address}.} added the flag
+@option{-fsanitize-address-use-after-scope}: see
+@uref{https://github.com//google//sanitizers//wiki//AddressSanitizerUseAfterScope}.
 
 @menu
 * Using Leak Sanitizer::        

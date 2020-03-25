@@ -15,7 +15,7 @@
       to do so.
 
       \item \code{summary.default()} no longer rounds, but its print
-      method does, resulting in much less extraneous rounding notably of
+      method does resulting in less extraneous rounding, notably of
       numbers in the ten thousands.
 
       \item \code{factor(x, exclude = L)} behaves more rationally when
@@ -31,6 +31,19 @@
       gives a warning and will signal an error in the future, as it has
       always for logic and comparison operations in these cases (e.g.,
       compare \code{matrix(1,1) + 2:3} and \code{matrix(1,1) < 2:3}).
+
+      \item The JIT (\sQuote{Just In Time}) byte code compiler is now
+      enabled by default at level 3. This means functions will be
+      compiled on first or second use and top-level loops will be
+      compiled and then run.  Thanks to Tomas Kalibera for extensive
+      work to make this possible.
+
+      For now, the compiler will not compile code containing explicit
+      calls to \code{browser()}: this is to support single stepping from
+      the \code{browser()} call.
+
+      JIT compilation can be disabled using \code{compiler::enableJIT(0)}
+      or by setting environment variable \env{R_ENABLE_JIT} to \code{0}.
     }
   }
 
@@ -280,6 +293,10 @@
       \item Headers for Unix-only facilities \file{R_ext/GetX11Image.h},
       \file{R_ext/QuartzDevice.h} and \file{R_ext/eventloop.h} are no
       longer installed on Windows.
+
+      \item No-longer installed headers \file{GraphicsBase.h},
+      \file{RGraphics.h}, \file{Rmodules/RX11.h} and
+      \file{Rmodules/Rlapack.h} which had a LGPL license no longer do so.
     }
   }
 
@@ -365,13 +382,22 @@
       as tests by \command{R CMD check}. (Wish of \PR{17143})
 
       \item \command{R CMD build} and \command{R CMD check} now use the
-      \emph{union} of \env{R_LIBS} \code{.libPaths()}.  They may not be
-      equivalent, e.g., when the latter is determined by \env{R_PROFILE}.
+      \emph{union} of \env{R_LIBS} and \code{.libPaths()}.  They may not
+      be equivalent, e.g., when the latter is determined by
+      \env{R_PROFILE}.
 
       \item \command{R CMD build} now preserves dates when it copies files
       in preparing the tarball.  (Previously on Windows it changed the
       dates on all files; on Unix, it changed some dates when installing
       vignettes.)
+
+      \item The new option \command{R CMD check --no-stop-on-test-error}
+      allows running the remaining tests (under \file{tests/}) even if
+      one gave an error.
+
+      \item Check customization via environment variables to detect side
+      effects of \code{.Call()} and \code{.External()} calls which alter
+      their arguments is described in §8 of the \sQuote{R Internals} manual.
     }
   }
 
@@ -384,6 +410,9 @@
 
       \item Use of the C/C++ macro \samp{NO_C_HEADERS} is defunct and
       silently ignored.
+
+      \item \code{unix.time()}, a traditional synonym for
+      \code{system.time()}, has been deprecated.
     }
   }
 
@@ -434,10 +463,6 @@
       \code{NaN} with a warning and \code{qgeom(1, 1)} is \code{0}.
       (\PR{16972})
 
-      \item Package installation into a library where the package exists
-      via symbolic link now should work wherever \code{Sys.readlink()}
-      works, resolving \PR{16725}.
-
       \item \code{table()} no longer drops an \code{"NaN"} factor level,
       and better obeys \code{exclude = <chr>}, thanks to Suharto Anggono's
       patch for \PR{16936}.  Also, in the case of \code{exclude = NULL}
@@ -480,6 +505,72 @@
 
       \item \code{formatC(x, flag=f)} allows two new flags, and signals an
       error for invalid flags also in the case of character formatting.
+
+      \item Reading from stdin now also closes the connection and
+      hence no longer leaks memory when reading from a full pipe, thanks
+      to Gábor Csárdi, see thread starting at
+      \url{https://stat.ethz.ch/pipermail/r-devel/2016-November/073360.html}.
+
+      \item Failure to create file in \code{tempdir()} for compressed
+      \code{pdf()} graphics device no longer errors (then later
+      segfaults).  There is now a warning instead of error and
+      compression is turned off for the device.  Thanks to Alec
+      Wysoker (\PR{17191}).
+
+      \item Asking for \code{methods()} on \code{"|"} returns only S3
+      methods. See
+      \url{https://stat.ethz.ch/pipermail/r-devel/2016-December/073476.html}.
+    }
+  }
+}
+
+\section{\Rlogo CHANGES IN R 3.3.2 patched}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item The internal methods of \code{download.file()} and
+      \code{url()} now report if they are unable to follow the
+      redirection of a \samp{http://} URL to a \samp{https://} URL
+      (rather than failing silently).
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{rep(x, times)} and \code{rep.int(x, times)} now both
+      work also when \code{times} is larger than the maximal integer.
+      (\PR{16932})
+
+      \item \code{vapply(x, *)} now works with long vectors \code{x}.
+      (\PR{17174})
+
+      \item \code{isS3method("is.na.data.frame")} and similar are
+      correct now.  (\PR{17171})
+
+      \item \code{grepRaw(<long>, <short>, fixed = TRUE)} now works,
+      thanks to a patch by Mikko Korpela.  (\PR{17132})
+
+      \item Package installation into a library where the package exists
+      via symbolic link now should work wherever \code{\link{Sys.readlink}()}
+      works, resolving \PR{16725}.
+
+      \item \code{"Cincinnati"} was missing an \code{"n"} in the
+      \code{precip} dataset.
+
+      \item Fix buffer overflow vulnerability in \code{pdf()} when
+      loading an encoding file.  Reported by Talos (TALOS-2016-0227).
+
+      \item \code{getDLLRegisteredRoutines()} now produces its warning
+      correctly when multiple DLLs match, thanks to Matt Dowle's \PR{17184}.
+
+      \item \code{Sys.timezone()} now returns non-NA also on platforms
+      such as \samp{Ubuntu 14.04.5 LTS}, thanks to Mikko Korpela's
+      \PR{17186}.
+
+      \item \code{format(x)} for an illegal \code{"POSIXlt"} object
+      \code{x} no longer segfaults.
+
+      \item \code{methods(f)} now also works for \code{f} \code{"("}
+      or \code{"{"}.
     }
   }
 }
@@ -656,6 +747,10 @@
 
       \item \code{findInterval(x, vec, left.open = TRUE)} misbehaved in some
       cases. (Reported by Dmitriy Chernykh.)
+
+      \item \code{dev.capture()} using Quartz Cocoa device (macOS) returned
+      invalid components if the back-end chose to use ARGB instead of RGBA
+      image format. (Reported by Noam Ross.)
     }
   }
 }

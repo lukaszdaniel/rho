@@ -2231,7 +2231,7 @@ static void reportModifiedConstant(SEXP crec, SEXP orig, SEXP copy, int idx)
 	Rf_PrintValue(copy);
 	REprintf(_("ERROR: the modified constant is at index %d\n"), idx);
 	REprintf(_("ERROR: the modified constant is in this function body:\n"));
-	Rf_PrintValue(VECTOR_ELT(consts, 0));
+	Rf_PrintValue(orig);
     } else {
 	REprintf(_("ERROR: the modified constant is function body:\n"));
 	Rf_PrintValue(orig);

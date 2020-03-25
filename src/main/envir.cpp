@@ -587,18 +587,24 @@ SEXP dynamicfindVar(SEXP symbol, ClosureContext *cptr)
   This could call findVar1.  NB: they behave differently on failure.
 */
 
-SEXP Rf_findFun(SEXP symbol, SEXP rho)
+attribute_hidden
+SEXP Rf_findFun3(SEXP symbol, SEXP rho, SEXP call)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
     FunctionBase* fun = findFunction(sym, env);
     if (fun)
 	return fun;
-    Rf_error(_("could not find function \"%s\""), sym->name()->c_str());
+    Rf_errorcall(call,_("could not find function \"%s\""), sym->name()->c_str());
     /* NOT REACHED */
     return R_UnboundValue;
 }
 
+SEXP Rf_findFun(SEXP symbol, SEXP rho)
+{
+    FunctionContext *c = FunctionContext::innermost();
+    return Rf_findFun3(symbol, rho, c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr));
+}
 
 /*----------------------------------------------------------------------
 

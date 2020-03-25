@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2000-2015  The R Core Team
+ *  Copyright (C) 2000-2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -47,20 +47,20 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP X, XX, FUN;
     PROTECT_WITH_INDEX(X =CAR(args), &px);
-    XX = PROTECT(eval(CAR(args), rho));
-    R_xlen_t n = xlength(XX);  // a vector, so will be valid.
+    XX = PROTECT(Rf_eval(CAR(args), rho));
+    R_xlen_t n = Rf_xlength(XX);  // a vector, so will be valid.
     FUN = CADR(args);
     Rboolean realIndx = Rboolean(n > INT_MAX);
 
-    SEXP ans = PROTECT(allocVector(VECSXP, n));
-    SEXP names = getAttrib(XX, R_NamesSymbol);
-    if(!isNull(names)) setAttrib(ans, R_NamesSymbol, names);
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, n));
+    SEXP names = Rf_getAttrib(XX, R_NamesSymbol);
+    if(!Rf_isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
 
     /* Build call: FUN(XX[[<ind>]], ...) */
 
-    SEXP ind = PROTECT(allocVector(realIndx ? REALSXP : INTSXP, 1));
+    SEXP ind = PROTECT(Rf_allocVector(realIndx ? REALSXP : INTSXP, 1));
     static Symbol* isym = Symbol::obtain("i");
-    defineVar(isym, ind, rho);
+    Rf_defineVar(isym, ind, rho);
     SET_NAMED(ind, 1);
 
     Expression* item = new Expression(R_Bracket2Symbol,
@@ -71,7 +71,7 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (realIndx) REAL(ind)[0] = (double)(i + 1);
 	else INTEGER(ind)[0] = (int)(i + 1);
 	SEXP tmp = R_forceAndCall(R_fcall, 1, rho);
-	if (MAYBE_REFERENCED(tmp)) tmp = lazy_duplicate(tmp);
+	if (MAYBE_REFERENCED(tmp)) tmp = Rf_lazy_duplicate(tmp);
 	SET_VECTOR_ELT(ans, i, tmp);
     }
 
@@ -94,37 +94,37 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT_INDEX index = 0; /* initialize to avoid a warning */
 
     PROTECT(X = CAR(args));
-    PROTECT(XX = eval(CAR(args), rho));
+    PROTECT(XX = Rf_eval(CAR(args), rho));
     FUN = CADR(args);  /* must be unevaluated for use in e.g. bquote */
-    PROTECT(value = eval(CADDR(args), rho));
-    if (!isVector(value)) error(_("'FUN.VALUE' must be a vector"));
-    useNames = asLogical(eval(CADDDR(args), rho));
-    if (useNames == NA_LOGICAL) error(_("invalid '%s' value"), "USE.NAMES");
+    PROTECT(value = Rf_eval(CADDR(args), rho));
+    if (!Rf_isVector(value)) Rf_error(_("'FUN.VALUE' must be a vector"));
+    useNames = Rf_asLogical(Rf_eval(CADDDR(args), rho));
+    if (useNames == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "USE.NAMES");
 
-    n = xlength(XX);
-    if (n == NA_INTEGER) error(_("invalid length"));
+    n = Rf_xlength(XX);
+    if (n == NA_INTEGER) Rf_error(_("invalid length"));
     Rboolean realIndx = RHOCONSTRUCT(Rboolean, n > INT_MAX);
 
     commonLen = Rf_length(value);
     if (commonLen > 1 && n > INT_MAX)
-	error(_("long vectors are not supported for matrix/array results"));
+	Rf_error(_("long vectors are not supported for matrix/array results"));
     commonType = TYPEOF(value);
     // check once here
     if (commonType != CPLXSXP && commonType != REALSXP &&
 	commonType != INTSXP  && commonType != LGLSXP &&
 	commonType != RAWSXP  && commonType != STRSXP &&
 	commonType != VECSXP)
-	error(_("type '%s' is not supported"), type2char(commonType));
-    dim_v = getAttrib(value, R_DimSymbol);
+	Rf_error(_("type '%s' is not supported"), Rf_type2char(commonType));
+    dim_v = Rf_getAttrib(value, R_DimSymbol);
     array_value = RHOCONSTRUCT(Rboolean, (TYPEOF(dim_v) == INTSXP && LENGTH(dim_v) >= 1));
-    PROTECT(ans = allocVector(commonType, n*commonLen));
+    PROTECT(ans = Rf_allocVector(commonType, n*commonLen));
     if (useNames) {
-	PROTECT(names = getAttrib(XX, R_NamesSymbol));
-	if (isNull(names) && TYPEOF(XX) == STRSXP) {
+	PROTECT(names = Rf_getAttrib(XX, R_NamesSymbol));
+	if (Rf_isNull(names) && TYPEOF(XX) == STRSXP) {
 	    UNPROTECT(1);
 	    PROTECT(names = XX);
 	}
-	PROTECT_WITH_INDEX(rowNames = getAttrib(value,
+	PROTECT_WITH_INDEX(rowNames = Rf_getAttrib(value,
 						array_value ? R_DimNamesSymbol
 						: R_NamesSymbol),
 			   &index);
@@ -138,8 +138,8 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* Build call: FUN(XX[[<ind>]], ...) */
 
 	static Symbol* isym = Symbol::obtain("i");
-	PROTECT(ind = allocVector(INTSXP, 1));
-	defineVar(isym, ind, rho);
+	PROTECT(ind = Rf_allocVector(INTSXP, 1));
+	Rf_defineVar(isym, ind, rho);
 	SET_NAMED(ind, 1);
 
 	Expression* item = new Expression(R_Bracket2Symbol, { X, isym });
@@ -153,10 +153,10 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    else INTEGER(ind)[0] = (int)(i + 1);
 	    val = R_forceAndCall(R_fcall, 1, rho);
 	    if (MAYBE_REFERENCED(val))
-		val = lazy_duplicate(val); // Need to duplicate? Copying again anyway
+		val = Rf_lazy_duplicate(val); // Need to duplicate? Copying again anyway
 	    PROTECT_WITH_INDEX(val, &indx);
 	    if (Rf_length(val) != commonLen)
-		error(_("values must be length %d,\n but FUN(X[[%d]]) result is length %d"),
+		Rf_error(_("values must be length %d,\n but FUN(X[[%d]]) result is length %d"),
 	               commonLen, i+1, Rf_length(val));
 	    valType = TYPEOF(val);
 	    if (valType != commonType) {
@@ -170,13 +170,13 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    Rf_error(_("Internal error: unexpected SEXPTYPE"));
 		}
 		if (!okay)
-		    error(_("values must be type '%s',\n but FUN(X[[%d]]) result is type '%s'"),
-			  type2char(commonType), i+1, type2char(valType));
-		REPROTECT(val = coerceVector(val, commonType), indx);
+		    Rf_error(_("values must be type '%s',\n but FUN(X[[%d]]) result is type '%s'"),
+			  Rf_type2char(commonType), i+1, Rf_type2char(valType));
+		REPROTECT(val = Rf_coerceVector(val, commonType), indx);
 	    }
 	    /* Take row names from the first result only */
-	    if (i == 0 && useNames && isNull(rowNames))
-		REPROTECT(rowNames = getAttrib(val,
+	    if (i == 0 && useNames && Rf_isNull(rowNames))
+		REPROTECT(rowNames = Rf_getAttrib(val,
 					       array_value ? R_DimNamesSymbol : R_NamesSymbol),
 			  index);
 	    // two cases - only for efficiency
@@ -189,7 +189,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		case RAWSXP:  RAW(ans)    [i] = RAW    (val)[0]; break;
 		case STRSXP:  SET_STRING_ELT(ans, i, STRING_ELT(val, 0)); break;
 		case VECSXP:  SET_VECTOR_ELT(ans, i, VECTOR_ELT(val, 0)); break;
-		default: error(_("invalid type")); break;
+		default: Rf_error(_("invalid type")); break;
 		}
 	    } else { // commonLen > 1 (typically, or == 0) :
 		switch (commonType) {
@@ -216,7 +216,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    for (int j = 0; j < commonLen; j++)
 			SET_VECTOR_ELT(ans, common_len_offset + j, VECTOR_ELT(val, j));
 		    break;
-		default: error(_("invalid type")); break;
+		default: Rf_error(_("invalid type")); break;
 		}
 		common_len_offset += commonLen;
 	    }
@@ -228,28 +228,28 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (commonLen != 1) {
 	SEXP dim;
 	rnk_v = array_value ? LENGTH(dim_v) : 1;
-	PROTECT(dim = allocVector(INTSXP, rnk_v+1));
+	PROTECT(dim = Rf_allocVector(INTSXP, rnk_v+1));
 	if(array_value)
 	    for(int j = 0; j < rnk_v; j++)
 		INTEGER(dim)[j] = INTEGER(dim_v)[j];
 	else
 	    INTEGER(dim)[0] = commonLen;
 	INTEGER(dim)[rnk_v] = int( n);  // checked above
-	setAttrib(ans, R_DimSymbol, dim);
+	Rf_setAttrib(ans, R_DimSymbol, dim);
 	UNPROTECT(1);
     }
 
     if (useNames) {
 	if (commonLen == 1) {
-	    if(!isNull(names)) setAttrib(ans, R_NamesSymbol, names);
+	    if(!Rf_isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
 	} else {
-	    if (!isNull(names) || !isNull(rowNames)) {
+	    if (!Rf_isNull(names) || !Rf_isNull(rowNames)) {
 		SEXP dimnames;
-		PROTECT(dimnames = allocVector(VECSXP, rnk_v+1));
-		if(array_value && !isNull(rowNames)) {
+		PROTECT(dimnames = Rf_allocVector(VECSXP, rnk_v+1));
+		if(array_value && !Rf_isNull(rowNames)) {
 		    if(TYPEOF(rowNames) != VECSXP || LENGTH(rowNames) != rnk_v)
 			// should never happen ..
-			error(_("dimnames(<value>) is neither NULL nor list of length %d"),
+			Rf_error(_("dimnames(<value>) is neither NULL nor list of length %d"),
 			      rnk_v);
 		    for(int j = 0; j < rnk_v; j++)
 			SET_VECTOR_ELT(dimnames, j, VECTOR_ELT(rowNames, j));
@@ -257,7 +257,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    SET_VECTOR_ELT(dimnames, 0, rowNames);
 
 		SET_VECTOR_ELT(dimnames, rnk_v, names);
-		setAttrib(ans, R_DimNamesSymbol, dimnames);
+		Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
 		UNPROTECT(1);
 	    }
 	}
@@ -274,14 +274,14 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
     Rboolean matched = FALSE;
 
     /* if X is a list, recurse.  Otherwise if it matches classes call f */
-    if(isNewList(X)) {
+    if(Rf_isNewList(X)) {
 	n = Rf_length(X);
   if (replace) {
-    PROTECT(ans = shallow_duplicate(X));
+    PROTECT(ans = Rf_shallow_duplicate(X));
   } else {
-    PROTECT(ans = allocVector(VECSXP, n));
-    names = getAttrib(X, R_NamesSymbol);
-    if(!isNull(names)) setAttrib(ans, R_NamesSymbol, names);
+    PROTECT(ans = Rf_allocVector(VECSXP, n));
+    names = Rf_getAttrib(X, R_NamesSymbol);
+    if(!Rf_isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
   }
 	for(i = 0; i < n; i++)
 	    SET_VECTOR_ELT(ans, i, do_one(VECTOR_ELT(X, i), FUN, classes,
@@ -289,13 +289,13 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
 	UNPROTECT(1);
 	return ans;
     }
-    if(strcmp(CHAR(STRING_ELT(classes, 0)), "ANY") == 0) /* ASCII */
+    if(strcmp(R_CHAR(STRING_ELT(classes, 0)), "ANY") == 0) /* ASCII */
 	matched = TRUE;
     else {
 	PROTECT(klass = R_data_class(X, FALSE));
 	for(i = 0; i < LENGTH(klass); i++)
 	    for(j = 0; j < Rf_length(classes); j++)
-		if(Seql(STRING_ELT(klass, i), STRING_ELT(classes, j)))
+		if(Rf_Seql(STRING_ELT(klass, i), STRING_ELT(classes, j)))
 		    matched = TRUE;
 	UNPROTECT(1);
     }
@@ -304,18 +304,18 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
 	   a variable X in the environment of the rapply closure call
 	   that calls into the rapply .Internal. */
 	SEXP R_fcall; /* could allocate once and preserve for re-use */
-	SEXP Xsym = install("X");
-	defineVar(Xsym, X, rho);
+	SEXP Xsym = Rf_install("X");
+	Rf_defineVar(Xsym, X, rho);
 	INCREMENT_NAMED(X);
 	/* PROTECT(R_fcall = lang2(FUN, Xsym)); */
-	PROTECT(R_fcall = lang3(FUN, Xsym, R_DotsSymbol));
+	PROTECT(R_fcall = Rf_lang3(FUN, Xsym, R_DotsSymbol));
 	ans = R_forceAndCall(R_fcall, 1, rho);
 	if (MAYBE_REFERENCED(ans))
-	    ans = lazy_duplicate(ans);
+	    ans = Rf_lazy_duplicate(ans);
 	UNPROTECT(1);
 	return(ans);
-    } else if(replace) return lazy_duplicate(X);
-    else return lazy_duplicate(deflt);
+    } else if(replace) return Rf_lazy_duplicate(X);
+    else return Rf_lazy_duplicate(deflt);
 }
 
 SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
@@ -326,20 +326,20 @@ SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunctio
 
     X = args[0]; args = (args + 1);
     FUN = args[0]; args = (args + 1);
-    if(!isFunction(FUN)) error(_("invalid '%s' argument"), "f");
+    if(!Rf_isFunction(FUN)) Rf_error(_("invalid '%s' argument"), "f");
     classes = args[0]; args = (args + 1);
-    if(!isString(classes)) error(_("invalid '%s' argument"), "classes");
+    if(!Rf_isString(classes)) Rf_error(_("invalid '%s' argument"), "classes");
     deflt = args[0]; args = (args + 1);
     how = args[0];
-    if(!isString(how)) error(_("invalid '%s' argument"), "how");
-    replace = RHOCONSTRUCT(Rboolean, strcmp(CHAR(STRING_ELT(how, 0)), "replace") == 0); /* ASCII */
+    if(!Rf_isString(how)) Rf_error(_("invalid '%s' argument"), "how");
+    replace = RHOCONSTRUCT(Rboolean, strcmp(R_CHAR(STRING_ELT(how, 0)), "replace") == 0); /* ASCII */
     n = Rf_length(X);
     if (replace) {
-      PROTECT(ans = shallow_duplicate(X));
+      PROTECT(ans = Rf_shallow_duplicate(X));
     } else {
-      PROTECT(ans = allocVector(VECSXP, n));
-      names = getAttrib(X, R_NamesSymbol);
-      if(!isNull(names)) setAttrib(ans, R_NamesSymbol, names);
+      PROTECT(ans = Rf_allocVector(VECSXP, n));
+      names = Rf_getAttrib(X, R_NamesSymbol);
+      if(!Rf_isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
     }
     for(i = 0; i < n; i++)
 	SET_VECTOR_ELT(ans, i, do_one(VECTOR_ELT(X, i), FUN, classes, deflt,
@@ -368,7 +368,7 @@ static Rboolean islistfactor(SEXP X)
     default:  // -Wswitch
 	break;
     }
-    return isFactor(X);
+    return Rf_isFactor(X);
 }
 
 
@@ -381,15 +381,15 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
     int i, n;
 
     X = x_;
-    recursive = RHOCONSTRUCT(Rboolean, asLogical(recursive_));
+    recursive = RHOCONSTRUCT(Rboolean, Rf_asLogical(recursive_));
     n = Rf_length(X);
-    if(n == 0 || !isVectorList(X)) {
+    if(n == 0 || !Rf_isVectorList(X)) {
 	lans = FALSE;
 	goto do_ans;
     }
     if(!recursive) {
     for(i = 0; i < LENGTH(X); i++)
-	if(!isFactor(VECTOR_ELT(X, i))) {
+	if(!Rf_isFactor(VECTOR_ELT(X, i))) {
 	    lans = FALSE;
 	    break;
 	}
@@ -422,5 +422,5 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
 	}
     }
 do_ans:
-    return ScalarLogical(lans);
+    return Rf_ScalarLogical(lans);
 }

@@ -270,10 +270,20 @@ static R_INLINE void RprintTrunc(char *buf)
     }
 }
 
+static SEXP getCurrentCall()
+{
+    FunctionContext *c = FunctionContext::innermost();
+
+    /* This can be called before R_GlobalContext is defined, so... */
+    /* If profiling is on, this can be a CTXT_BUILTIN */
+
+	return c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr);
+}
+
+
 void warning(const char *format, ...)
 {
     char buf[BUFSIZE], *p;
-    FunctionContext *c = FunctionContext::innermost();
 
     va_list ap;
     va_start(ap, format);
@@ -282,7 +292,7 @@ void warning(const char *format, ...)
     p = buf + strlen(buf) - 1;
     if(strlen(buf) > 0 && *p == '\n') *p = '\0';
     RprintTrunc(buf);
-    warningcall(c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr), "%s", buf);
+    warningcall(getCurrentCall(), "%s", buf);
 }
 
 /* declarations for internal condition handling */
@@ -458,7 +468,7 @@ void Rf_PrintWarnings(void)
 		REprintf("%s \n", R_CHAR(STRING_ELT(names, 0)));
 	    else {
 		const char *dcall, *msg = R_CHAR(STRING_ELT(names, 0));
-		dcall = R_CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, 0)), 0));
+		dcall = R_CHAR(STRING_ELT(Rf_deparse1s(VECTOR_ELT(R_Warnings, 0)), 0));
 		REprintf(_("In %s :"), dcall);
 		if (mbcslocale) {
 		    int msgline1;
@@ -486,7 +496,7 @@ void Rf_PrintWarnings(void)
 		    REprintf("%d: %s \n", i+1, R_CHAR(STRING_ELT(names, i)));
 		} else {
 		    const char *dcall, *msg = R_CHAR(STRING_ELT(names, i));
-		    dcall = R_CHAR(STRING_ELT(deparse1s(VECTOR_ELT(R_Warnings, i)), 0));
+		    dcall = R_CHAR(STRING_ELT(Rf_deparse1s(VECTOR_ELT(R_Warnings, i)), 0));
 		    REprintf("%d: ", i + 1); 
 		    REprintf(_("In %s :"), dcall); 
 		    if (mbcslocale) {
@@ -557,7 +567,7 @@ void Rf_PrintWarnings(void)
 static SEXP GetSrcLoc(SEXP srcref)
 {
     if (TYPEOF(srcref) != INTSXP || Rf_length(srcref) < 4)
-	return ScalarString(mkChar(""));
+	return Rf_ScalarString(Rf_mkChar(""));
 
     SEXP srcfile = R_GetSrcFilename(srcref);
     static Symbol* basename = Symbol::obtain("basename");
@@ -630,18 +640,18 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 	    SEXP srcloc = R_NilValue; // -Wall
 	    size_t len = 0;	// indicates if srcloc has been set
 	    int protectct = 0, skip = NA_INTEGER;
-	    SEXP opt = GetOption1(install("show.error.locations"));
-	    if (!isNull(opt)) {
+	    SEXP opt = Rf_GetOption1(Rf_install("show.error.locations"));
+	    if (!Rf_isNull(opt)) {
 		if (TYPEOF(opt) == STRSXP && Rf_length(opt) == 1) {
-		    if (Rf_pmatch(ScalarString(mkChar("top")), opt, RHO_FALSE)) skip = 0;
-		    else if (Rf_pmatch(ScalarString(mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
+		    if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("top")), opt, RHO_FALSE)) skip = 0;
+		    else if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
 		} else if (TYPEOF(opt) == LGLSXP)
-		    skip = asLogical(opt) == 1 ? 0 : NA_INTEGER;
+		    skip = Rf_asLogical(opt) == 1 ? 0 : NA_INTEGER;
 		else
-		    skip = asInteger(opt);
+		    skip = Rf_asInteger(opt);
 	    }
 
-	    const char *dcall = R_CHAR(STRING_ELT(deparse1s(call), 0));
+	    const char *dcall = R_CHAR(STRING_ELT(Rf_deparse1s(call), 0));
 	    snprintf(tmp2, BUFSIZE,  "%s", head); 
 	    if (skip != NA_INTEGER) {
 		PROTECT(srcloc = GetSrcLoc(R_GetCurrentSrcref(skip)));
@@ -705,7 +715,7 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 	    
 	if( R_ShowErrorMessages && R_CollectWarnings ) {
 	    REprintf(_("In addition: "));
-	    PrintWarnings();
+	    Rf_PrintWarnings();
 	}
 	
 	DisableStackCheckingScope scope;
@@ -758,13 +768,12 @@ SEXP attribute_hidden do_geterrmessage(/*const*/ Expression* call, const BuiltIn
 void error(const char *format, ...)
 {
     char buf[BUFSIZE];
-    FunctionContext *c = FunctionContext::innermost();
 
     va_list ap;
     va_start(ap, format);
     Rvsnprintf(buf, min(BUFSIZE, R_WarnLength), format, ap);
     va_end(ap);
-    errorcall(c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr), "%s", buf);
+    errorcall(getCurrentCall(), "%s", buf);
 }
 
 static void try_jump_to_restart(void)
@@ -805,20 +814,20 @@ static void jump_to_top_ex(Rboolean traceback,
 		inError = 1;
 
 	    /* now see if options("error") is set */
-	    s = GetOption1(install("error"));
+	    s = Rf_GetOption1(Rf_install("error"));
 	    haveHandler = ( s != R_NilValue );
 	    if (haveHandler) {
-		if( !isLanguage(s) &&  ! isExpression(s) )  /* shouldn't happen */
+		if( !Rf_isLanguage(s) &&  ! Rf_isExpression(s) )  /* shouldn't happen */
 		    REprintf(_("invalid option \"error\"\n"));
 		else {
 		    inError = 3;
-		    if (isLanguage(s))
+		    if (Rf_isLanguage(s))
 			s->evaluate(Environment::global());
 		    else /* expression */
 			{
 			    int i, n = LENGTH(s);
 			    for (i = 0 ; i < n ; i++)
-				eval(XVECTOR_ELT(s, i), R_GlobalEnv);
+				Rf_eval(XVECTOR_ELT(s, i), R_GlobalEnv);
 			}
 		    inError = oldInError;
 		}
@@ -828,7 +837,7 @@ static void jump_to_top_ex(Rboolean traceback,
 
 	/* print warnings if there are any left to be printed */
 	if( processWarnings && R_CollectWarnings )
-	    PrintWarnings();
+	    Rf_PrintWarnings();
 
 	/* reset some stuff--not sure (all) this belongs here */
 	if (resetConsole) {
@@ -864,7 +873,7 @@ static void jump_to_top_ex(Rboolean traceback,
 	    if (traceback && inError < 2 && inError == oldInError) {
 		inError = 2;
 		PROTECT(s = R_GetTraceback(0));
-		SET_SYMVALUE(install(".Traceback"), s);
+		SET_SYMVALUE(Rf_install(".Traceback"), s);
 		/* should have been defineVar
 		   setVar(install(".Traceback"), s, R_GlobalEnv); */
 		UNPROTECT(1);
@@ -903,11 +912,11 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
     SEXP ans, string = domain_;
     int i, n = LENGTH(string);
 
-    if(isNull(string) || !n) return string;
+    if(Rf_isNull(string) || !n) return string;
 
-    if(!isString(string)) error(_("invalid '%s' value"), "string");
+    if(!Rf_isString(string)) Rf_error(_("invalid '%s' value"), "string");
 
-    if(isNull(dots_)) {
+    if(Rf_isNull(dots_)) {
 	ClosureContext *cptr
 	    = ClosureContext::innermost(Evaluator::Context::innermost()->nextOut());
 	SEXP rho = R_BaseEnv;
@@ -915,7 +924,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	     cptr != nullptr;
 	     cptr = ClosureContext::innermost(cptr->nextOut())) {
 	    /* stop() etc have internal call to .makeMessage */
-	    cfn = R_CHAR(STRING_ELT(deparse1s(CAR(RHO_C_CAST(Expression*, cptr->call()))), 0));
+	    cfn = R_CHAR(STRING_ELT(Rf_deparse1s(CAR(RHO_C_CAST(Expression*, cptr->call()))), 0));
 	    if(streql(cfn, "stop") || streql(cfn, "warning")
 	       || streql(cfn, "message")) continue;
 	    rho = cptr->workingEnvironment();
@@ -925,7 +934,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	while(rho != R_EmptyEnv) {
 	    if (rho == R_GlobalEnv) break;
 	    else if (R_IsNamespaceEnv(rho)) {
-		domain = translateChar(STRING_ELT(R_NamespaceEnvSpec(rho), 0));
+		domain = Rf_translateChar(STRING_ELT(R_NamespaceEnvSpec(rho), 0));
 		break;
 	    }
 	    rho = ENCLOS(rho);
@@ -937,19 +946,19 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	    snprintf(buf, len, "R-%s", domain);
 	    domain = buf;
 	}
-    } else if(isString(dots_))
-	domain = translateChar(STRING_ELT(dots_,0));
-    else if(isLogical(dots_) && LENGTH(dots_) == 1 && LOGICAL(dots_)[0] == NA_LOGICAL) ;
-    else error(_("invalid '%s' value"), "domain");
+    } else if(Rf_isString(dots_))
+	domain = Rf_translateChar(STRING_ELT(dots_,0));
+    else if(Rf_isLogical(dots_) && LENGTH(dots_) == 1 && LOGICAL(dots_)[0] == NA_LOGICAL) ;
+    else Rf_error(_("invalid '%s' value"), "domain");
 
     if(strlen(domain)) {
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for(i = 0; i < n; i++) {
 	    int ihead = 0, itail = 0;
-	    const char * This = translateChar(STRING_ELT(string, i));
+	    const char * This = Rf_translateChar(STRING_ELT(string, i));
 	    char *tmp, *head = nullptr, *tail = nullptr, *p, *tr;
 	    R_CheckStack2(strlen(This) + 1);
-	    tmp = static_cast<char *>( alloca(strlen(This) + 1));
+	    tmp = static_cast<char *>(alloca(strlen(This) + 1));
 	    strcpy(tmp, This);
 	    /* strip leading and trailing white spaces and
 	       add back after translation */
@@ -958,7 +967,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 		p++, ihead++) ;
 	    if(ihead > 0) {
 		R_CheckStack2(ihead + 1);
-		head = static_cast<char *>( alloca(ihead + 1));
+		head = static_cast<char *>(alloca(ihead + 1));
 		strncpy(head, tmp, ihead);
 		head[ihead] = '\0';
 		tmp += ihead;
@@ -969,7 +978,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 		    p--, itail++) ;
 	    if(itail > 0) {
 		R_CheckStack2(itail + 1);
-		tail = static_cast<char *>( alloca(itail + 1));
+		tail = static_cast<char *>(alloca(itail + 1));
 		strcpy(tail, tmp+strlen(tmp)-itail);
 		tmp[strlen(tmp)-itail] = '\0';
 	    }
@@ -979,14 +988,14 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 #endif
 		tr = dgettext(domain, tmp);
 		R_CheckStack2(strlen(tr) + ihead + itail + 1);
-		tmp = static_cast<char *>( alloca(strlen(tr) + ihead + itail + 1));
+		tmp = static_cast<char *>(alloca(strlen(tr) + ihead + itail + 1));
 		tmp[0] ='\0';
 		if(ihead > 0) strcat(tmp, head);
 		strcat(tmp, tr);
 		if(itail > 0) strcat(tmp, tail);
-		SET_STRING_ELT(ans, i, mkChar(tmp));
+		SET_STRING_ELT(ans, i, Rf_mkChar(tmp));
 	    } else
-		SET_STRING_ELT(ans, i, mkChar(This));
+		SET_STRING_ELT(ans, i, Rf_mkChar(This));
 	}
 	UNPROTECT(1);
 	return ans;
@@ -1005,13 +1014,13 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
     SEXP ans, sdom = domain_;
 #endif
     SEXP msg1 = msg1_, msg2 = msg2_;
-    int n = asInteger(n_);
+    int n = Rf_asInteger(n_);
 
-    if(n == NA_INTEGER || n < 0) error(_("invalid '%s' argument"), "n");
-    if(!isString(msg1) || LENGTH(msg1) != 1)
-	error(_("'%s' must be a character string"), "msg1");
-    if(!isString(msg2) || LENGTH(msg2) != 1)
-	error(_("'%s' must be a character string"), "msg2");
+    if(n == NA_INTEGER || n < 0) Rf_error(_("invalid '%s' argument"), "n");
+    if(!Rf_isString(msg1) || LENGTH(msg1) != 1)
+	Rf_error(_("'%s' must be a character string"), "msg1");
+    if(!Rf_isString(msg2) || LENGTH(msg2) != 1)
+	Rf_error(_("'%s' must be a character string"), "msg2");
 
 #ifdef ENABLE_NLS
     if(isNull(sdom)) {
@@ -1031,7 +1040,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 	while(rho != R_EmptyEnv) {
 	    if (rho == R_GlobalEnv) break;
 	    else if (R_IsNamespaceEnv(rho)) {
-		domain = translateChar(STRING_ELT(R_NamespaceEnvSpec(rho), 0));
+		domain = Rf_translateChar(STRING_ELT(R_NamespaceEnvSpec(rho), 0));
 		break;
 	    }
 	    rho = rho->enclosingEnvironment();
@@ -1039,22 +1048,22 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 	if(strlen(domain)) {
 	    size_t len = strlen(domain)+3;
 	    R_CheckStack2(len);
-	    buf = static_cast<char *>( alloca(len));
+	    buf = static_cast<char *>(alloca(len));
 	    snprintf(buf, len, "R-%s", domain);
 	    domain = buf;
 	}
-    } else if(isString(sdom))
+    } else if(Rf_isString(sdom))
 	domain = R_CHAR(STRING_ELT(sdom,0));
-    else if(isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == NA_LOGICAL) ;
-    else error(_("invalid '%s' value"), "domain");
+    else if(Rf_isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == NA_LOGICAL) ;
+    else Rf_error(_("invalid '%s' value"), "domain");
 
     /* libintl seems to malfunction if given a message of "" */
     if(strlen(domain) && Rf_length(STRING_ELT(msg1, 0))) {
 	char *fmt = dngettext(domain,
-			      translateChar(STRING_ELT(msg1, 0)),
-			      translateChar(STRING_ELT(msg2, 0)),
+			      Rf_translateChar(STRING_ELT(msg1, 0)),
+			      Rf_translateChar(STRING_ELT(msg2, 0)),
 			      n);
-	PROTECT(ans = mkString(fmt));
+	PROTECT(ans = Rf_mkString(fmt));
 	UNPROTECT(1);
 	return ans;
     } else
@@ -1069,17 +1078,17 @@ SEXP attribute_hidden do_bindtextdomain(/*const*/ Expression* call, const BuiltI
 #ifdef ENABLE_NLS
     char *res;
 
-    if(!isString(domain_) || LENGTH(domain_) != 1)
-	error(_("invalid '%s' value"), "domain");
-    if(isNull(dirname_)) {
-	res = bindtextdomain(translateChar(STRING_ELT(domain_,0)), nullptr);
+    if(!Rf_isString(domain_) || LENGTH(domain_) != 1)
+	Rf_error(_("invalid '%s' value"), "domain");
+    if(Rf_isNull(dirname_)) {
+	res = bindtextdomain(Rf_translateChar(STRING_ELT(domain_,0)), nullptr);
     } else {
-	if(!isString(dirname_) || LENGTH(dirname_) != 1)
-	    error(_("invalid '%s' value"), "dirname");
-	res = bindtextdomain(translateChar(STRING_ELT(domain_,0)),
-			     translateChar(STRING_ELT(dirname_,0)));
+	if(!Rf_isString(dirname_) || LENGTH(dirname_) != 1)
+	    Rf_error(_("invalid '%s' value"), "dirname");
+	res = bindtextdomain(Rf_translateChar(STRING_ELT(domain_,0)),
+			     Rf_translateChar(STRING_ELT(dirname_,0)));
     }
-    if(res) return mkString(res);
+    if(res) return Rf_mkString(res);
     /* else this failed */
 #endif
     return R_NilValue;
@@ -1098,7 +1107,7 @@ SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP c_call;
     checkArity(op, args);
 
-    if(asLogical(CAR(args))) /* find context -> "Error in ..:" */
+    if(Rf_asLogical(CAR(args))) /* find context -> "Error in ..:" */
 	c_call = findCall();
     else
 	c_call = R_NilValue;
@@ -1106,13 +1115,13 @@ SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
     args = CDR(args);
 
     if (CAR(args) != R_NilValue) { /* message */
-      SETCAR(args, coerceVector(CAR(args), STRSXP));
-      if(!isValidString(CAR(args)))
-	  errorcall(c_call, _(" [invalid string in stop(.)]"));
-      errorcall(c_call, "%s", translateChar(STRING_ELT(CAR(args), 0)));
+      SETCAR(args, Rf_coerceVector(CAR(args), STRSXP));
+      if(!Rf_isValidString(CAR(args)))
+	  Rf_errorcall(c_call, _(" [invalid string in stop(.)]"));
+      Rf_errorcall(c_call, "%s", Rf_translateChar(STRING_ELT(CAR(args), 0)));
     }
     else
-      errorcall(c_call, "");
+      Rf_errorcall(c_call, "");
     /* never called: */
 }
 
@@ -1121,31 +1130,31 @@ SEXP attribute_hidden do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP c_call;
     checkArity(op, args);
 
-    if(asLogical(CAR(args))) /* find context -> "... in: ..:" */
+    if(Rf_asLogical(CAR(args))) /* find context -> "... in: ..:" */
 	c_call = findCall();
     else
 	c_call = R_NilValue;
 
     args = CDR(args);
-    if(asLogical(CAR(args))) { /* immediate = TRUE */
+    if(Rf_asLogical(CAR(args))) { /* immediate = TRUE */
 	immediateWarning = 1;
     } else
 	immediateWarning = 0;
     args = CDR(args);
-    if(asLogical(CAR(args))) { /* noBreak = TRUE */
+    if(Rf_asLogical(CAR(args))) { /* noBreak = TRUE */
 	noBreakWarning = 1;
     } else
 	noBreakWarning = 0;
     args = CDR(args);
     if (CAR(args) != R_NilValue) {
-	SETCAR(args, coerceVector(CAR(args), STRSXP));
-	if(!isValidString(CAR(args)))
-	    warningcall(c_call, _(" [invalid string in warning(.)]"));
+	SETCAR(args, Rf_coerceVector(CAR(args), STRSXP));
+	if(!Rf_isValidString(CAR(args)))
+	    Rf_warningcall(c_call, _(" [invalid string in warning(.)]"));
 	else
-	    warningcall(c_call, "%s", translateChar(STRING_ELT(CAR(args), 0)));
+	    Rf_warningcall(c_call, "%s", Rf_translateChar(STRING_ELT(CAR(args), 0)));
     }
     else
-	warningcall(c_call, "");
+	Rf_warningcall(c_call, "");
     immediateWarning = 0; /* reset to internal calls */
     noBreakWarning = 0;
 
@@ -1156,13 +1165,13 @@ SEXP attribute_hidden do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
 attribute_hidden
 void NORET WrongArgCount(const char *s)
 {
-    error(_("incorrect number of arguments to \"%s\""), s);
+    Rf_error(_("incorrect number of arguments to \"%s\""), s);
 }
 
 
 void NORET UNIMPLEMENTED(const char *s)
 {
-    error(_("unimplemented feature in %s"), s);
+    Rf_error(_("unimplemented feature in %s"), s);
 }
 
 /* ERROR_.. codes in Errormsg.h */
@@ -1211,7 +1220,7 @@ void NORET ErrorMessage(SEXP call, int which_error, ...)
     va_start(ap, which_error);
     Rvsnprintf(buf, BUFSIZE, _(ErrorDB[i].format), ap);
     va_end(ap);
-    errorcall(call, "%s", buf);
+    Rf_errorcall(call, "%s", buf);
 }
 
 attribute_hidden
@@ -1235,7 +1244,7 @@ void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
     va_start(ap, which_warn);
     Rvsnprintf(buf, BUFSIZE, _(WarningDB[i].format), ap);
     va_end(ap);
-    warningcall(call, "%s", buf);
+    Rf_warningcall(call, "%s", buf);
 }
 
 #ifdef UNUSED
@@ -1263,7 +1272,7 @@ static void R_PrintDeferredWarnings(void)
 {
     if( R_ShowErrorMessages && R_CollectWarnings ) {
 	REprintf(_("In addition: "));
-	PrintWarnings();
+	Rf_PrintWarnings();
     }
 }
 
@@ -1282,7 +1291,7 @@ SEXP R_GetTraceback(int skip)
 	else
 	    nback++;
 
-    PROTECT(s = allocList(nback));
+    PROTECT(s = Rf_allocList(nback));
     t = s;
     for (c = FunctionContext::innermost() ;
 	 c != nullptr;
@@ -1303,10 +1312,10 @@ SEXP attribute_hidden do_traceback(/*const*/ Expression* call, const BuiltInFunc
 {
     int skip;
 
-    skip = asInteger(x_);
+    skip = Rf_asInteger(x_);
 
     if (skip == NA_INTEGER || skip < 0 )
-	error(_("invalid '%s' value"), "skip");
+	Rf_error(_("invalid '%s' value"), "skip");
 
     return R_GetTraceback(skip);
 }
@@ -1504,19 +1513,19 @@ namespace {
 
 SEXP attribute_hidden do_addCondHands(/*const*/ Expression* call, const BuiltInFunction* op, RObject* classes, RObject* handlers, RObject* parentenv, RObject* target, RObject* calling_)
 {
-    int calling = asLogical(calling_);
+    int calling = Rf_asLogical(calling_);
 
     if (classes == R_NilValue || handlers == R_NilValue)
 	return R_HandlerStack;
 
     if (TYPEOF(classes) != STRSXP || TYPEOF(handlers) != VECSXP ||
 	LENGTH(classes) != LENGTH(handlers))
-	error(_("bad handler data"));
+	Rf_error(_("bad handler data"));
 
     int n = LENGTH(handlers);
     SEXP oldstack = R_HandlerStack;
     
-    SEXP result = allocVector(VECSXP, RESULT_SIZE);
+    SEXP result = Rf_allocVector(VECSXP, RESULT_SIZE);
 
     for (int i = n - 1; i >= 0; i--) {
 	SEXP klass = STRING_ELT(classes, i);
@@ -1595,7 +1604,7 @@ static void vsignalError(SEXP call, const char *format, va_list ap)
 		Expression* qcall = new Expression(R_QuoteSymbol, { call });
 		Expression* hcall = new Expression(
 		    hooksym,
-		    { ENTRY_HANDLER(entry), mkString(buf), qcall });
+		    { ENTRY_HANDLER(entry), Rf_mkString(buf), qcall });
 		hcall->evaluate(Environment::global());
 	    }
 	}
@@ -1634,8 +1643,8 @@ SEXP attribute_hidden do_signalCondition(/*const*/ Expression* call, const Built
 	    if (!h) {
 		const char *msgstr = nullptr;
 		if (TYPEOF(msg) == STRSXP && LENGTH(msg) > 0)
-		    msgstr = translateChar(STRING_ELT(msg, 0));
-		else error(_("error message not a string"));
+		    msgstr = Rf_translateChar(STRING_ELT(msg, 0));
+		else Rf_error(_("error message not a string"));
 		errorcall_dflt(ecall, "%s", msgstr);
 	    }
 	    else {
@@ -1664,11 +1673,11 @@ static SEXP getInterruptCondition(void)
 {
     /**** FIXME: should probably pre-allocate this */
     SEXP cond, klass;
-    PROTECT(cond = allocVector(VECSXP, 0));
-    PROTECT(klass = allocVector(STRSXP, 2));
-    SET_STRING_ELT(klass, 0, mkChar("interrupt"));
-    SET_STRING_ELT(klass, 1, mkChar("condition"));
-    classgets(cond, klass);
+    PROTECT(cond = Rf_allocVector(VECSXP, 0));
+    PROTECT(klass = Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(klass, 0, Rf_mkChar("interrupt"));
+    SET_STRING_ELT(klass, 1, Rf_mkChar("condition"));
+    Rf_classgets(cond, klass);
     UNPROTECT(2);
     return cond;
 }
@@ -1691,7 +1700,7 @@ static void signalInterrupt(void)
     }
     R_HandlerStack = oldstack;
 
-    SEXP h = GetOption1(install("interrupt"));
+    SEXP h = Rf_GetOption1(Rf_install("interrupt"));
     if (h != R_NilValue) {
 	SEXP call = PROTECT(LCONS(h, R_NilValue));
 	eval(call, R_GlobalEnv);
@@ -1704,19 +1713,19 @@ R_InsertRestartHandlers(ClosureContext *cptr, const char *cname)
     SEXP klass, rho, entry, name;
 
     if (cptr->handlerStack() != R_HandlerStack)
-	error(_("handler or restart stack mismatch in old restart"));
+	Rf_error(_("handler or restart stack mismatch in old restart"));
 
     /**** need more here to keep recursive errors in browser? */
     rho = cptr->workingEnvironment();
-    PROTECT(klass = mkChar("error"));
+    PROTECT(klass = Rf_mkChar("error"));
     entry = mkHandlerEntry(klass, rho, nullptr, rho, R_NilValue, TRUE);
     push_handler(entry);
     UNPROTECT(1);
-    PROTECT(name = mkString(cname));
-    PROTECT(entry = allocVector(VECSXP, 2));
+    PROTECT(name = Rf_mkString(cname));
+    PROTECT(entry = Rf_allocVector(VECSXP, 2));
     SET_VECTOR_ELT(entry, 0, name);
     SET_VECTOR_ELT(entry, 1, R_MakeExternalPtr(cptr, R_NilValue, R_NilValue));
-    setAttrib(entry, R_ClassSymbol, mkString("restart"));
+    Rf_setAttrib(entry, R_ClassSymbol, Rf_mkString("restart"));
     push_restart(entry);
     UNPROTECT(2);
 }
@@ -1727,8 +1736,8 @@ SEXP attribute_hidden do_dfltWarn(/*const*/ Expression* call, const BuiltInFunct
     SEXP ecall;
 
     if (TYPEOF(message_) != STRSXP || LENGTH(message_) != 1)
-	error(_("bad error message"));
-    msg = translateChar(STRING_ELT(message_, 0));
+	Rf_error(_("bad error message"));
+    msg = Rf_translateChar(STRING_ELT(message_, 0));
     ecall = call_;
 
     warningcall_dflt(ecall, "%s", msg);
@@ -1741,8 +1750,8 @@ SEXP attribute_hidden NORET do_dfltStop(/*const*/ Expression* call, const BuiltI
     SEXP ecall;
 
     if (TYPEOF(message_) != STRSXP || LENGTH(message_) != 1)
-	error(_("bad error message"));
-    msg = translateChar(STRING_ELT(message_, 0));
+	Rf_error(_("bad error message"));
+    msg = Rf_translateChar(STRING_ELT(message_, 0));
     ecall = call_;
 
     errorcall_dflt(ecall, "%s", msg);
@@ -1757,7 +1766,7 @@ SEXP attribute_hidden do_getRestart(/*const*/ Expression* call, const BuiltInFun
 {
     int i;
     SEXP list;
-    i = asInteger(i_);
+    i = Rf_asInteger(i_);
     for (list = R_RestartStack;
 	 list != R_NilValue && i > 1;
 	 list = CDR(list), i--);
@@ -1765,11 +1774,11 @@ SEXP attribute_hidden do_getRestart(/*const*/ Expression* call, const BuiltInFun
 	return CAR(list);
     else if (i == 1) {
 	/**** need to pre-allocate */
-        GCStackRoot<> name(mkString("abort"));
-	GCStackRoot<> entry(allocVector(VECSXP, 2));
+        GCStackRoot<> name(Rf_mkString("abort"));
+	GCStackRoot<> entry(Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(entry, 0, name);
 	SET_VECTOR_ELT(entry, 1, R_NilValue);
-	setAttrib(entry, R_ClassSymbol, mkString("restart"));
+	Rf_setAttrib(entry, R_ClassSymbol, Rf_mkString("restart"));
 	return entry;
     }
     else return R_NilValue;

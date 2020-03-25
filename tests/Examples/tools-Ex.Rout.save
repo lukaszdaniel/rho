@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-22 r0a129c0855) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-24 r92ec3e439d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-10-28 r71600) -- "Frisbee Sailing"
+R Under development (unstable) (2016-12-16 r71800) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -194,7 +194,7 @@ Error in assertWarning(ff()) :
 > bibstyle("unsorted", sortKeys = function(refs) seq_along(refs),
 +     fmtPrefix = function(paper) paste0("[", paper$.index, "]"),
 +        .init = TRUE)
-<environment: 0x7f565c460a90>
+<environment: 0x7f49164aab40>
 > print(refs, .bibstyle = "unsorted")
 [1] R Core Team (2013). _R: A Language and Environment for Statistical
 Computing_. R Foundation for Statistical Computing, Vienna, Austria.
@@ -597,49 +597,6 @@ attr(,"match.length")
 > 
 > 
 > cleanEx()
-> nameEx("getDepList")
-> ### * getDepList
-> 
-> flush(stderr()); flush(stdout())
-> 
-> ### Name: getDepList
-> ### Title: Functions to Retrieve Dependency Information
-> ### Aliases: getDepList pkgDepends
-> ### Keywords: utilities
-> 
-> ### ** Examples
-> 
-> pkgDepends("tools", local = FALSE)
-Warning: 'pkgDepends' is deprecated.
-Use 'package_dependencies()' instead.
-See help("Deprecated")
-Warning: 'package.dependencies' is deprecated.
-Use 'package_dependencies' instead.
-See help("Deprecated")
-Warning: 'getDepList' is deprecated.
-Use 'dependsOnPkgs() or package_dependencies()' instead.
-See help("Deprecated")
-$Depends
-character(0)
-
-$Installed
-character(0)
-
-$Found
-list()
-
-$NotFound
-character(0)
-
-$R
-character(0)
-
-attr(,"class")
-[1] "DependsList"
-> 
-> 
-> 
-> cleanEx()
 > nameEx("getVignetteInfo")
 > ### * getVignetteInfo
 > 
@@ -652,40 +609,6 @@ attr(,"class")
 > 
 > ### ** Examples
 > 
-> 
-> 
-> 
-> cleanEx()
-> nameEx("installFoundDepends")
-> ### * installFoundDepends
-> 
-> flush(stderr()); flush(stdout())
-> 
-> ### Name: installFoundDepends
-> ### Title: A function to install unresolved dependencies
-> ### Aliases: installFoundDepends
-> ### Keywords: utilities
-> 
-> ### ** Examples
-> 
-> ## Set up a temporary directory to install packages to
-> tmp <- tempfile()
-> dir.create(tmp)
-> 
-> pDL <- pkgDepends("tools", local = FALSE)
-Warning: 'pkgDepends' is deprecated.
-Use 'package_dependencies()' instead.
-See help("Deprecated")
-Warning: 'package.dependencies' is deprecated.
-Use 'package_dependencies' instead.
-See help("Deprecated")
-Warning: 'getDepList' is deprecated.
-Use 'dependsOnPkgs() or package_dependencies()' instead.
-See help("Deprecated")
-> installFoundDepends(pDL$Found, destdir = tmp)
-Warning: 'installFoundDepends()' is deprecated: It is misleading nowadays
- since it has never taken 'Imports' into consideration
-NULL
 > 
 > 
 > 
@@ -1022,7 +945,7 @@ List of 6
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.29 0.003 0.294 0 0 
+Time elapsed:  0.259 0.004 0.263 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -322,14 +322,12 @@ static Rboolean have_broken_mktime(void)
 }
 
 #ifndef HAVE_POSIX_LEAPSECONDS
-/* There have (2015/07) been 26 leapseconds: see .leap.seconds in R
- */
-static int n_leapseconds = 26;
-static const time_t leapseconds[] =
+static int n_leapseconds = 27; // 2017-01, sync with .leap.seconds in R (!)
+static const time_t leapseconds[] = // dput(unclass(.leap.seconds)) :
 {  78796800, 94694400,126230400,157766400,189302400,220924800,252460800,
   283996800,315532800,362793600,394329600,425865600,489024000,567993600,
   631152000,662688000,709948800,741484800,773020800,820454400,867715200,
-   915148800,1136073600,1230768000,1341100800,1435708800};
+   915148800,1136073600,1230768000,1341100800,1435708800,1483228800};
 #endif
 
 static double guess_offset (stm *tm)
@@ -571,23 +569,23 @@ static int set_tz(const char *tz, char *oldtz)
     p = getenv("TZ");
     if(p) {
 	if (strlen(p) > 1000)
-	    error("time zone specification is too long");
+	    Rf_error("time zone specification is too long");
 	strcpy(oldtz, p);
     }
 #ifdef HAVE_SETENV
-    if(setenv("TZ", tz, 1)) warning(_("problem with setting timezone"));
+    if(setenv("TZ", tz, 1)) Rf_warning(_("problem with setting timezone"));
     settz = 1;
 #elif defined(HAVE_PUTENV)
     {
 	static char buff[1010];
 	if (strlen(tz) > 1000)
-	    error("time zone specification is too long");
+	    Rf_error("time zone specification is too long");
 	strcpy(buff, "TZ="); strcat(buff, tz);
-	if(putenv(buff)) warning(_("problem with setting timezone"));
+	if(putenv(buff)) Rf_warning(_("problem with setting timezone"));
     }
     settz = 1;
 #else
-    warning(_("cannot set timezones on this system"));
+    Rf_warning(_("cannot set timezones on this system"));
 #endif
     tzset();
     return settz;
@@ -597,21 +595,21 @@ static void reset_tz(char *tz)
 {
     if(strlen(tz)) {
 #ifdef HAVE_SETENV
-	if(setenv("TZ", tz, 1)) warning(_("problem with setting timezone"));
+	if(setenv("TZ", tz, 1)) Rf_warning(_("problem with setting timezone"));
 #elif defined(HAVE_PUTENV)
 	{
 	    static char buff[200];
 	    strcpy(buff, "TZ="); strcat(buff, tz);
-	    if(putenv(buff)) warning(_("problem with setting timezone"));
+	    if(putenv(buff)) Rf_warning(_("problem with setting timezone"));
 	}
 #endif
     } else {
 #ifdef HAVE_UNSETENV
 	unsetenv("TZ"); /* FreeBSD variants do not return a value */
 #elif defined(HAVE_PUTENV_UNSET)
-	if(putenv("TZ")) warning(_("problem with unsetting timezone"));
+	if(putenv("TZ")) Rf_warning(_("problem with unsetting timezone"));
 #elif defined(HAVE_PUTENV_UNSET2)
-	if(putenv("TZ=")) warning(_("problem with unsetting timezone"));
+	if(putenv("TZ=")) Rf_warning(_("problem with unsetting timezone"));
 #endif
     }
     tzset();
@@ -698,21 +696,21 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
     char oldtz[1001] = "";
     const char *tz = nullptr;
 
-    PROTECT(x = coerceVector(x_, REALSXP));
-    if(!isString((stz = tz_)) || LENGTH(stz) != 1)
-	error(_("invalid '%s' value"), "tz");
-    tz = CHAR(STRING_ELT(stz, 0));
+    PROTECT(x = Rf_coerceVector(x_, REALSXP));
+    if(!Rf_isString((stz = tz_)) || LENGTH(stz) != 1)
+	Rf_error(_("invalid '%s' value"), "tz");
+    tz = R_CHAR(STRING_ELT(stz, 0));
     if(strlen(tz) == 0) {
 	/* do a direct look up here as this does not otherwise
 	   work on Windows */
 	char *p = getenv("TZ");
 	if(p) {
-	    stz = mkString(p); /* make a copy */
-	    tz = CHAR(STRING_ELT(stz, 0));
+	    stz = Rf_mkString(p); /* make a copy */
+	    tz = R_CHAR(STRING_ELT(stz, 0));
 	}
     }
     PROTECT(stz); /* it might be new */
-    if(strcmp(tz, "GMT") == 0  || strcmp(tz, "UTC") == 0) isgmt = 1;
+    if(streql(tz, "GMT") || streql(tz, "UTC")) isgmt = 1;
     if(!isgmt && strlen(tz) > 0) settz = set_tz(tz, oldtz);
 #ifdef USE_INTERNAL_MKTIME
     else R_tzsetwall(); // to get the system timezone recorded
@@ -722,12 +720,12 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
 
     // localtime may change tzname.
     if (isgmt) {
-	PROTECT(tzone = mkString(tz));
+	PROTECT(tzone = Rf_mkString(tz));
     } else {
-	PROTECT(tzone = allocVector(STRSXP, 3));
-	SET_STRING_ELT(tzone, 0, mkChar(tz));
-	SET_STRING_ELT(tzone, 1, mkChar(R_tzname[0]));
-	SET_STRING_ELT(tzone, 2, mkChar(R_tzname[1]));
+	PROTECT(tzone = Rf_allocVector(STRSXP, 3));
+	SET_STRING_ELT(tzone, 0, Rf_mkChar(tz));
+	SET_STRING_ELT(tzone, 1, Rf_mkChar(R_tzname[0]));
+	SET_STRING_ELT(tzone, 2, Rf_mkChar(R_tzname[1]));
     }
 
     R_xlen_t n = XLENGTH(x);
@@ -736,19 +734,19 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
 #else
     int nans = 10 - isgmt;
 #endif
-    PROTECT(ans = allocVector(VECSXP, nans));
+    PROTECT(ans = Rf_allocVector(VECSXP, nans));
     for(int i = 0; i < 9; i++)
-	SET_VECTOR_ELT(ans, i, allocVector(i > 0 ? INTSXP : REALSXP, n));
+	SET_VECTOR_ELT(ans, i, Rf_allocVector(i > 0 ? INTSXP : REALSXP, n));
     if(!isgmt) {
-	SET_VECTOR_ELT(ans, 9, allocVector(STRSXP, n));
+	SET_VECTOR_ELT(ans, 9, Rf_allocVector(STRSXP, n));
 #ifdef HAVE_TM_GMTOFF
-	SET_VECTOR_ELT(ans, 10, allocVector(INTSXP, n));
+	SET_VECTOR_ELT(ans, 10, Rf_allocVector(INTSXP, n));
 #endif
     }
 
-    PROTECT(ansnames = allocVector(STRSXP, nans));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, nans));
     for(int i = 0; i < nans; i++)
-	SET_STRING_ELT(ansnames, i, mkChar(ltnames[i]));
+	SET_STRING_ELT(ansnames, i, Rf_mkChar(ltnames[i]));
 
     for(R_xlen_t i = 0; i < n; i++) {
 	stm dummy, *ptm = &dummy;
@@ -766,26 +764,27 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
 	    // or ptm->tm_zone
 	    if(valid && ptm->tm_isdst >= 0)
 		p = R_tzname[ptm->tm_isdst];
-	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, mkChar(p));
+	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, Rf_mkChar(p));
 #ifdef HAVE_TM_GMTOFF
 	    INTEGER(VECTOR_ELT(ans, 10))[i] =
 		valid ? (int)ptm->tm_gmtoff : NA_INTEGER;
 #endif
 	}
     }
-    setAttrib(ans, R_NamesSymbol, ansnames);
-    PROTECT(klass = allocVector(STRSXP, 2));
-    SET_STRING_ELT(klass, 0, mkChar("POSIXlt"));
-    SET_STRING_ELT(klass, 1, mkChar("POSIXt"));
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    PROTECT(klass = Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
+    SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
     classgets(ans, klass);
-    setAttrib(ans, install("tzone"), tzone);
-    SEXP nm = getAttrib(x, R_NamesSymbol);
-    if(nm != R_NilValue) setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
+    Rf_setAttrib(ans, Rf_install("tzone"), tzone);
+    SEXP nm = Rf_getAttrib(x, R_NamesSymbol);
+    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
     if(settz) reset_tz(oldtz);
     UNPROTECT(6);
     return ans;
 }
 
+// .Internal(as.POSIXct(x, tz)) -- called only from  as.POSIXct.POSIXlt()
 SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* tz_)
 {
     SEXP stz, x, ans;
@@ -796,24 +795,24 @@ SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::B
     stm tm;
     double tmp;
 
-    PROTECT(x = duplicate(x_)); /* coerced below */
-    if(!isVectorList(x) || LENGTH(x) < 9)
-	error(_("invalid '%s' argument"), "x");
-    if(!isString((stz = tz_)) || LENGTH(stz) != 1)
-	error(_("invalid '%s' value"), "tz");
+    PROTECT(x = Rf_duplicate(x_)); /* coerced below */
+    if(!Rf_isVectorList(x) || LENGTH(x) < 9) // must be 'POSIXlt'
+	Rf_error(_("invalid '%s' argument"), "x");
+    if(!Rf_isString((stz = tz_)) || LENGTH(stz) != 1)
+	Rf_error(_("invalid '%s' value"), "tz");
 
-    tz = CHAR(STRING_ELT(stz, 0));
+    tz = R_CHAR(STRING_ELT(stz, 0));
     if(strlen(tz) == 0) {
 	/* do a direct look up here as this does not otherwise
 	   work on Windows */
 	char *p = getenv("TZ");
 	if(p) {
-	    stz = mkString(p);
-	    tz = CHAR(STRING_ELT(stz, 0));
+	    stz = Rf_mkString(p);
+	    tz = R_CHAR(STRING_ELT(stz, 0));
 	}
     }
     PROTECT(stz); /* it might be new */
-    if(strcmp(tz, "GMT") == 0  || strcmp(tz, "UTC") == 0) isgmt = 1;
+    if(streql(tz, "GMT") || streql(tz, "UTC")) isgmt = 1;
     if(!isgmt && strlen(tz) > 0) settz = set_tz(tz, oldtz);
 #ifdef USE_INTERNAL_MKTIME
     else R_tzsetwall(); // to get the system timezone recorded
@@ -827,18 +826,19 @@ SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::B
     if(n > 0) {
 	for(int i = 0; i < 6; i++)
 	    if(nlen[i] == 0)
-		error(_("zero-length component in non-empty \"POSIXlt\" structure"));
+		Rf_error(_("zero-length component [[%d]] in non-empty \"POSIXlt\" structure"),
+		      i+1);
 	if(nlen[8] == 0)
-	    error(_("zero-length component in non-empty \"POSIXlt\" structure"));
+	    Rf_error(_("zero-length component [[%d]] in non-empty \"POSIXlt\" structure"), 9);
     }
     /* coerce fields to integer or real */
-    SET_VECTOR_ELT(x, 0, coerceVector(VECTOR_ELT(x, 0), REALSXP));
+    SET_VECTOR_ELT(x, 0, Rf_coerceVector(VECTOR_ELT(x, 0), REALSXP));
     for(int i = 0; i < 6; i++)
-	SET_VECTOR_ELT(x, i, coerceVector(VECTOR_ELT(x, i),
+	SET_VECTOR_ELT(x, i, Rf_coerceVector(VECTOR_ELT(x, i),
 					  i > 0 ? INTSXP: REALSXP));
-    SET_VECTOR_ELT(x, 8, coerceVector(VECTOR_ELT(x, 8), INTSXP));
+    SET_VECTOR_ELT(x, 8, Rf_coerceVector(VECTOR_ELT(x, 8), INTSXP));
 
-    PROTECT(ans = allocVector(REALSXP, n));
+    PROTECT(ans = Rf_allocVector(REALSXP, n));
     for(R_xlen_t i = 0; i < n; i++) {
 	double secs = REAL(VECTOR_ELT(x, 0))[i%nlen[0]], fsecs = floor(secs);
 	// avoid (int) NAN
@@ -849,7 +849,7 @@ SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::B
 	tm.tm_mon   = INTEGER(VECTOR_ELT(x, 4))[i%nlen[4]];
 	tm.tm_year  = INTEGER(VECTOR_ELT(x, 5))[i%nlen[5]];
 	/* mktime ignores tm.tm_wday and tm.tm_yday */
-	tm.tm_isdst = isgmt ? 0:INTEGER(VECTOR_ELT(x, 8))[i%nlen[8]];
+	tm.tm_isdst = isgmt ? 0 : INTEGER(VECTOR_ELT(x, 8))[i%nlen[8]];
 	if(!R_FINITE(secs) || tm.tm_min == NA_INTEGER ||
 	   tm.tm_hour == NA_INTEGER || tm.tm_mday == NA_INTEGER ||
 	   tm.tm_mon == NA_INTEGER || tm.tm_year == NA_INTEGER)
@@ -883,25 +883,25 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
     char oldtz[1001] = "";
     stm tm;
 
-    SEXP x = PROTECT(duplicate(x_)); /* coerced below */
-    if(!isVectorList(x) || LENGTH(x) < 9)
-	error(_("invalid '%s' argument"), "x");
+    SEXP x = PROTECT(Rf_duplicate(x_)); /* coerced below */
+    if(!Rf_isVectorList(x) || LENGTH(x) < 9)
+	Rf_error(_("invalid '%s' argument"), "x");
     SEXP sformat;
-    if(!isString((sformat = format_)) || XLENGTH(sformat) == 0)
-	error(_("invalid '%s' argument"), "format");
+    if(!Rf_isString((sformat = format_)) || XLENGTH(sformat) == 0)
+	Rf_error(_("invalid '%s' argument"), "format");
     R_xlen_t m = XLENGTH(sformat);
-    int UseTZ = asLogical(usetz_);
+    int UseTZ = Rf_asLogical(usetz_);
     if(UseTZ == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "usetz");
-    SEXP tz = getAttrib(x, install("tzone"));
+	Rf_error(_("invalid '%s' argument"), "usetz");
+    SEXP tz = Rf_getAttrib(x, Rf_install("tzone"));
 
     const char *tz1;
-    if (!isNull(tz) && strlen(tz1 = CHAR(STRING_ELT(tz, 0)))) {
+    if (!isNull(tz) && strlen(tz1 = R_CHAR(STRING_ELT(tz, 0)))) {
 	/* If the format includes %Z or %z
 	   we need to try to set TZ accordingly */
 	int needTZ = 0;
 	for(R_xlen_t i = 0; i < m; i++) {
-	    const char *p = translateChar(STRING_ELT(sformat, i));
+	    const char *p = Rf_translateChar(STRING_ELT(sformat, i));
 	    if (strstr(p, "%Z") || strstr(p, "%z")) {needTZ = 1; break;}
 	}
 	if(needTZ) settz = set_tz(tz1, oldtz);
@@ -918,16 +918,17 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 	nlen[i] = XLENGTH(VECTOR_ELT(x, i));
 	if(nlen[i] > n) n = nlen[i];
 	// real for 'sec', the first; integer for the rest:
-	SET_VECTOR_ELT(x, i, coerceVector(VECTOR_ELT(x, i),
+	SET_VECTOR_ELT(x, i, Rf_coerceVector(VECTOR_ELT(x, i),
 					  i > 0 ? INTSXP : REALSXP));
     }
     if(n > 0) {
 	for(int i = 0; i < 9; i++)
 	    if(nlen[i] == 0)
-		error(_("zero length component in non-empty \"POSIXlt\" structure"));
+		Rf_error(_("zero-length component [[%d]] in non-empty \"POSIXlt\" structure"),
+		      i+1);
     }
     R_xlen_t N = (n > 0) ? ((m > n) ? m : n) : 0;
-    SEXP ans = PROTECT(allocVector(STRSXP, N));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, N));
     char tm_zone[20];
 #ifdef HAVE_TM_GMTOFF
     Rboolean have_zone = Rboolean(
@@ -937,6 +938,8 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
     Rboolean have_zone = Rboolean(
 	LENGTH(x) >= 10 && XLENGTH(VECTOR_ELT(x, 9)) == n);
 #endif
+    if(have_zone && !Rf_isString(VECTOR_ELT(x, 9)))
+	Rf_error(_("invalid component [[10]] in \"POSIXlt\" should be 'zone'"));
     for(R_xlen_t i = 0; i < N; i++) {
 	double secs = REAL(VECTOR_ELT(x, 0))[i%nlen[0]], fsecs = floor(secs);
 	// avoid (int) NAN
@@ -950,7 +953,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 	tm.tm_yday  = INTEGER(VECTOR_ELT(x, 7))[i%nlen[7]];
 	tm.tm_isdst = INTEGER(VECTOR_ELT(x, 8))[i%nlen[8]];
 	if(have_zone) {
-	    strncpy(tm_zone, CHAR(STRING_ELT(VECTOR_ELT(x, 9), i%n)), 20);
+	    strncpy(tm_zone, R_CHAR(STRING_ELT(VECTOR_ELT(x, 9), i%n)), 20);
 	    tm_zone[20 - 1] = '\0';
 #ifdef HAVE_TM_ZONE
 	    tm.tm_zone = tm_zone;
@@ -972,7 +975,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 	} else if(validate_tm(&tm) < 0) {
 	    SET_STRING_ELT(ans, i, NA_STRING);
 	} else {
-	    const char *q = translateChar(STRING_ELT(sformat, i%m));
+	    const char *q = Rf_translateChar(STRING_ELT(sformat, i%m));
 	    int nn = (int) strlen(q) + 50;
 	    vector<char> buf2v(nn);
             char* buf2 = &buf2v[0];
@@ -1000,7 +1003,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 		*p2 = '\0';
 		ns = *(p+3) - '0';
 		if(ns < 0 || ns > 9) { /* not a digit */
-		    ns = asInteger(GetOption1(install("digits.secs")));
+		    ns = Rf_asInteger(Rf_GetOption1(Rf_install("digits.secs")));
 		    if(ns == NA_INTEGER) ns = 0;
 		    nused = 3;
 		}
@@ -1028,20 +1031,20 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 	    // but they are currently 3 or 4 bytes.
 	    if(UseTZ) {
 		if(have_zone) {
-		    const char *p = CHAR(STRING_ELT(VECTOR_ELT(x, 9), i%n));
+		    const char *p = R_CHAR(STRING_ELT(VECTOR_ELT(x, 9), i%n));
 		    if(strlen(p)) {strcat(buff, " "); strcat(buff, p);}
-		} else if(!isNull(tz)) {
+		} else if(!Rf_isNull(tz)) {
 		    int ii = 0;
 		    if(LENGTH(tz) == 3) {
 			if(tm.tm_isdst > 0) ii = 2;
 			else if(tm.tm_isdst == 0) ii = 1;
 			else ii = 0; /* Use base timezone name */
 		    }
-		    const char *p = CHAR(STRING_ELT(tz, ii));
+		    const char *p = R_CHAR(STRING_ELT(tz, ii));
 		    if(strlen(p)) {strcat(buff, " "); strcat(buff, p);}
 		}
 	    }
-	    SET_STRING_ELT(ans, i, mkChar(buff));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(buff));
 	}
     }
     if(settz) reset_tz(oldtz);
@@ -1059,24 +1062,24 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
     double psecs = 0.0;
     R_xlen_t n, m, N;
 
-    if(!isString((x = x_)))
-	error(_("invalid '%s' argument"), "x");
-    if(!isString((sformat = format_)) || XLENGTH(sformat) == 0)
-	error(_("invalid '%s' argument"), "x");
-    if(!isString((stz = tz_)) || LENGTH(stz) != 1)
-	error(_("invalid '%s' value"), "tz");
-    tz = CHAR(STRING_ELT(stz, 0));
+    if(!Rf_isString((x = x_)))
+	Rf_error(_("invalid '%s' argument"), "x");
+    if(!Rf_isString((sformat = format_)) || XLENGTH(sformat) == 0)
+	Rf_error(_("invalid '%s' argument"), "x");
+    if(!Rf_isString((stz = tz_)) || LENGTH(stz) != 1)
+	Rf_error(_("invalid '%s' value"), "tz");
+    tz = R_CHAR(STRING_ELT(stz, 0));
     if(strlen(tz) == 0) {
 	/* do a direct look up here as this does not otherwise
 	   work on Windows */
 	char *p = getenv("TZ");
 	if(p) {
-	    stz = mkString(p);
-	    tz = CHAR(STRING_ELT(stz, 0));
+	    stz = Rf_mkString(p);
+	    tz = R_CHAR(STRING_ELT(stz, 0));
 	}
     }
     PROTECT(stz); /* it might be new */
-    if(strcmp(tz, "GMT") == 0  || strcmp(tz, "UTC") == 0) isgmt = 1;
+    if(streql(tz, "GMT") || streql(tz, "UTC")) isgmt = 1;
     if(!isgmt && strlen(tz) > 0) settz = set_tz(tz, oldtz);
 #ifdef USE_INTERNAL_MKTIME
     else R_tzsetwall(); // to get the system timezone recorded
@@ -1086,12 +1089,12 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 
     // in case this gets changed by conversions.
     if (isgmt) {
-	PROTECT(tzone = mkString(tz));
+	PROTECT(tzone = Rf_mkString(tz));
     } else if(strlen(tz)) {
-	PROTECT(tzone = allocVector(STRSXP, 3));
-	SET_STRING_ELT(tzone, 0, mkChar(tz));
-	SET_STRING_ELT(tzone, 1, mkChar(R_tzname[0]));
-	SET_STRING_ELT(tzone, 2, mkChar(R_tzname[1]));
+	PROTECT(tzone = Rf_allocVector(STRSXP, 3));
+	SET_STRING_ELT(tzone, 0, Rf_mkChar(tz));
+	SET_STRING_ELT(tzone, 1, Rf_mkChar(R_tzname[0]));
+	SET_STRING_ELT(tzone, 2, Rf_mkChar(R_tzname[1]));
 
     } else PROTECT(tzone); // for balance
 
@@ -1103,19 +1106,19 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 #else
     int nans = 10 - isgmt;
 #endif
-    PROTECT(ans = allocVector(VECSXP, nans));
+    PROTECT(ans = Rf_allocVector(VECSXP, nans));
     for(int i = 0; i < 9; i++)
-	SET_VECTOR_ELT(ans, i, allocVector(i > 0 ? INTSXP : REALSXP, N));
+	SET_VECTOR_ELT(ans, i, Rf_allocVector(i > 0 ? INTSXP : REALSXP, N));
     if(!isgmt) {
-	SET_VECTOR_ELT(ans, 9, allocVector(STRSXP, n));
+	SET_VECTOR_ELT(ans, 9, Rf_allocVector(STRSXP, n));
 #ifdef HAVE_TM_GMTOFF
-	SET_VECTOR_ELT(ans, 10, allocVector(INTSXP, n));
+	SET_VECTOR_ELT(ans, 10, Rf_allocVector(INTSXP, n));
 #endif
     }
 
-    PROTECT(ansnames = allocVector(STRSXP, nans));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, nans));
     for(int i = 0; i < nans; i++)
-	SET_STRING_ELT(ansnames, i, mkChar(ltnames[i]));
+	SET_STRING_ELT(ansnames, i, Rf_mkChar(ltnames[i]));
 
 
     for(R_xlen_t i = 0; i < N; i++) {
@@ -1131,8 +1134,8 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 #endif
 	offset = NA_INTEGER;
 	invalid = STRING_ELT(x, i%n) == NA_STRING ||
-	    !R_strptime(translateChar(STRING_ELT(x, i%n)),
-			translateChar(STRING_ELT(sformat, i%m)),
+	    !R_strptime(Rf_translateChar(STRING_ELT(x, i%n)),
+			Rf_translateChar(STRING_ELT(sformat, i%m)),
 			&tm, &psecs, &offset);
 	if(!invalid) {
 	    /* Solaris sets missing fields to 0 */
@@ -1176,7 +1179,7 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 #endif
 		    p = R_tzname[tm.tm_isdst];
 	    }
-	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, mkChar(p));
+	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, Rf_mkChar(p));
 #ifdef HAVE_TM_GMTOFF
 	    INTEGER(VECTOR_ELT(ans, 10))[i] =
 		invalid ? NA_INTEGER : (int)tm.tm_gmtoff;
@@ -1184,13 +1187,13 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 	}
     }
 
-    setAttrib(ans, R_NamesSymbol, ansnames);
-    PROTECT(klass = allocVector(STRSXP, 2));
-    SET_STRING_ELT(klass, 0, mkChar("POSIXlt"));
-    SET_STRING_ELT(klass, 1, mkChar("POSIXt"));
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    PROTECT(klass = Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
+    SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
     classgets(ans, klass);
     if(settz) reset_tz(oldtz);
-    if(isString(tzone)) setAttrib(ans, install("tzone"), tzone);
+    if(Rf_isString(tzone)) Rf_setAttrib(ans, Rf_install("tzone"), tzone);
 
     UNPROTECT(5);
     return ans;
@@ -1203,15 +1206,15 @@ SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::B
     int valid, day, y, tmp, mon;
     stm tm;
 
-    PROTECT(x = coerceVector(x_, REALSXP));
+    PROTECT(x = Rf_coerceVector(x_, REALSXP));
     n = XLENGTH(x);
-    PROTECT(ans = allocVector(VECSXP, 9));
+    PROTECT(ans = Rf_allocVector(VECSXP, 9));
     for(int i = 0; i < 9; i++)
-	SET_VECTOR_ELT(ans, i, allocVector(i > 0 ? INTSXP : REALSXP, n));
+	SET_VECTOR_ELT(ans, i, Rf_allocVector(i > 0 ? INTSXP : REALSXP, n));
 
-    PROTECT(ansnames = allocVector(STRSXP, 9));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, 9));
     for(int i = 0; i < 9; i++)
-	SET_STRING_ELT(ansnames, i, mkChar(ltnames[i]));
+	SET_STRING_ELT(ansnames, i, Rf_mkChar(ltnames[i]));
 
     for(R_xlen_t i = 0; i < n; i++) {
 	if(R_FINITE(REAL(x)[i])) {
@@ -1243,15 +1246,15 @@ SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::B
 	} else valid = 0;
 	makelt(&tm, ans, i, valid, 0.0);
     }
-    setAttrib(ans, R_NamesSymbol, ansnames);
-    PROTECT(klass = allocVector(STRSXP, 2));
-    SET_STRING_ELT(klass, 0, mkChar("POSIXlt"));
-    SET_STRING_ELT(klass, 1, mkChar("POSIXt"));
-    classgets(ans, klass);
-    SEXP s_tzone = install("tzone");
-    setAttrib(ans, s_tzone, mkString("UTC"));
-    SEXP nm = getAttrib(x, R_NamesSymbol);
-    if(nm != R_NilValue) setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    PROTECT(klass = Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
+    SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
+    Rf_classgets(ans, klass);
+    SEXP s_tzone = Rf_install("tzone");
+    Rf_setAttrib(ans, s_tzone, Rf_mkString("UTC"));
+    SEXP nm = Rf_getAttrib(x, R_NamesSymbol);
+    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
     UNPROTECT(4);
 
     return ans;
@@ -1263,9 +1266,9 @@ SEXP attribute_hidden do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::B
     R_xlen_t n = 0, nlen[9];
     stm tm;
 
-    PROTECT(x = duplicate(x_));
-    if(!isVectorList(x) || LENGTH(x) < 9)
-	error(_("invalid '%s' argument"), "x");
+    PROTECT(x = Rf_duplicate(x_));
+    if(!Rf_isVectorList(x) || LENGTH(x) < 9)
+	Rf_error(_("invalid '%s' argument"), "x");
 
     for(int i = 3; i < 6; i++)
 	if((nlen[i] = XLENGTH(VECTOR_ELT(x, i))) > n) n = nlen[i];
@@ -1273,15 +1276,16 @@ SEXP attribute_hidden do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::B
     if(n > 0) {
 	for(int i = 3; i < 6; i++)
 	    if(nlen[i] == 0)
-		error(_("zero-length component in non-empty \"POSIXlt\" structure"));
+		Rf_error(_("zero-length component [[%d]] in non-empty \"POSIXlt\" structure"),
+		      i+1);
 	if(nlen[8] == 0)
-	    error(_("zero-length component in non-empty \"POSIXlt\" structure"));
+	    Rf_error(_("zero-length component [[%d]] in non-empty \"POSIXlt\" structure"), 9);
     }
     /* coerce relevant fields to integer */
     for(int i = 3; i < 6; i++)
-	SET_VECTOR_ELT(x, i, coerceVector(VECTOR_ELT(x, i), INTSXP));
+	SET_VECTOR_ELT(x, i, Rf_coerceVector(VECTOR_ELT(x, i), INTSXP));
 
-    PROTECT(ans = allocVector(REALSXP, n));
+    PROTECT(ans = Rf_allocVector(REALSXP, n));
     for(R_xlen_t i = 0; i < n; i++) {
 	tm.tm_sec = tm.tm_min = tm.tm_hour = 0;
 	tm.tm_mday  = INTEGER(VECTOR_ELT(x, 3))[i%nlen[3]];
@@ -1299,8 +1303,8 @@ SEXP attribute_hidden do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::B
 	}
     }
 
-    PROTECT(klass = mkString("Date"));
-    classgets(ans, klass);
+    PROTECT(klass = Rf_mkString("Date"));
+    Rf_classgets(ans, klass);
     UNPROTECT(3);
     return ans;
 }

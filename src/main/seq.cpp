@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998-2015  The R Core Team.
+ *  Copyright (C) 1998-2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -344,29 +344,29 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
     R_xlen_t nc;
     SEXP a;
 
-    if (!isVector(ncopy))
-	error(_("incorrect type for second argument"));
+    if (!Rf_isVector(ncopy))
+	Rf_error(_("incorrect type for second argument"));
 
-    if (!isVector(s) && s != R_NilValue)
-	error(_("attempt to replicate an object of type '%s'"),
-	      type2char(TYPEOF(s)));
+    if (!Rf_isVector(s) && s != R_NilValue)
+	Rf_error(_("attempt to replicate an object of type '%s'"),
+	      Rf_type2char(TYPEOF(s)));
 
-    nc = xlength(ncopy); // might be 0
-    if (nc == xlength(s))
+    nc = Rf_xlength(ncopy); // might be 0
+    if (nc != 1 && nc == Rf_xlength(s))
 	PROTECT(a = rep2(s, ncopy));
     else {
-	if (nc != 1) error(_("invalid '%s' value"), "times");
+	if (nc != 1) Rf_error(_("invalid '%s' value"), "times");
 
 #ifdef LONG_VECTOR_SUPPORT
-	double snc = asReal(ncopy);
+	double snc = Rf_asReal(ncopy);
 	if (!R_FINITE(snc) || snc < 0)
-	    error(_("invalid '%s' value"), "times");
+	    Rf_error(_("invalid '%s' value"), "times");
 	nc = R_xlen_t( snc);
 #else
 	if ((nc = asInteger(ncopy)) == NA_INTEGER || nc < 0)/* nc = 0 ok */
 	    error(_("invalid '%s' value"), "times");
 #endif
-	R_xlen_t ns = xlength(s);
+	R_xlen_t ns = Rf_xlength(s);
 	PROTECT(a = rep3(s, ns, nc * ns));
     }
 
@@ -449,7 +449,8 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
     return a;
 }
 
-/* rep(), allowing for both times and each */
+/* rep(), allowing for both times and each ;
+ * -----  nt == length(times) ;  if (nt == 1)  'times' is *not* accessed  */
 static SEXP rep4(SEXP x, SEXP times, R_xlen_t len, int each, R_xlen_t nt)
 {
     SEXP a;
@@ -645,7 +646,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (R_FINITE(slen)) {
 	if(slen < 0)
 	    errorcall(call, _("invalid '%s' argument"), "length.out");
-	len = R_xlen_t( slen);
+	len = R_xlen_t(slen);
     } else {
 	len = asInteger(length_out);
 	if(len != NA_INTEGER && len < 0)
@@ -683,18 +684,33 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	nt = 1;
     } else {
 	R_xlen_t sum = 0;
-	if(times == R_MissingArg) PROTECT(times = ScalarInteger(1));
-	else PROTECT(times = coerceVector(times, INTSXP));
-	nprotect++;
-	nt = XLENGTH(times);
-	if(nt != 1 && nt != lx * each)
-	    errorcall(call, _("invalid '%s' argument"), "times");
+	nt = times == R_MissingArg ? 1 : XLENGTH(times);
 	if(nt == 1) {
-	    int it = INTEGER(times)[0];
-	    if (it == NA_INTEGER || it < 0)
-		errorcall(call, _("invalid '%s' argument"), "times");
+	    R_xlen_t it;
+	    if(times == R_MissingArg) it = 1; else {
+		if(!isVectorAtomic(times)) {
+		    warningcall(call, _("'%s' is not an atomic vector.  This is deprecated."),
+				"times");
+		    PROTECT(times = coerceVector(times, REALSXP)); nprotect++;
+		}// else times = CADR(args);
+#ifdef LONG_VECTOR_SUPPORT
+		double rt = asReal(times); // asReal(CADR(args));
+		if (!R_FINITE(rt) || rt < 0)
+		    errorcall(call, _("invalid '%s' argument"), "times");
+		it = (R_xlen_t) rt;
+#else
+		it = asInteger(times); // asInteger(CADR(args));
+		if (it == NA_INTEGER || it < 0)
+		    errorcall(call, _("invalid '%s' argument"), "times");
+#endif
+	    }
 	    len = lx * it * each;
-	} else {
+	} else { // nt != 1 -- only for this case 'times' is accessed, here and in rep4()
+	    if(nt != lx * each)
+		errorcall(call, _("invalid '%s' argument"), "times");
+	    // FIXME: 1. allow large int., i.e. REALSXP; would need even more changes in rep4()
+	    //        2. this does still work with  list(1,2) [which should be deprecated]
+	    PROTECT(times = coerceVector(times, INTSXP)); nprotect++;
 	    for(i = 0; i < nt; i++) {
 		int it = INTEGER(times)[i];
 		if (it == NA_INTEGER || it < 0)

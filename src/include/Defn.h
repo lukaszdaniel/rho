@@ -466,7 +466,7 @@ extern attribute_hidden int R_compile_pkgs;
 extern attribute_hidden int R_check_constants;
 extern SEXP R_cmpfun(SEXP);
 extern void R_init_jit_enabled(void);
-extern void R_initAsignSymbols(void);
+extern void R_initAssignSymbols(void);
 
 LibExtern int R_num_math_threads;
 LibExtern int R_max_num_math_threads;

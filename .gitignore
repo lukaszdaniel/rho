@@ -289,5 +289,6 @@ doc/NEWS.pdf
 doc/manual/stamp-images-html
 tests/Examples/methods-Ex.Rout
 tests/Examples/methods-Ex.Rout.prev
-
+tests/reg-tests-1d.Rout
+tests/reg-tests-1d.pdf
 .Rproj.user

@@ -519,13 +519,15 @@ LoadEncoding(const char *encpath, char *encname,
 	if (!(fp = R_fopen(R_ExpandFileName(buf), "r"))) return 0;
     }
     if (GetNextItem(fp, buf, -1, &state)) return 0; /* encoding name */
-    strcpy(encname, buf+1);
+    strncpy(encname, buf+1, 99); 
+    encname[99] = '\0';
     if (!isPDF) snprintf(enccode, 5000, "/%s [\n", encname);
     else enccode[0] = '\0';
     if (GetNextItem(fp, buf, 0, &state)) { fclose(fp); return 0;} /* [ */
     for(i = 0; i < 256; i++) {
 	if (GetNextItem(fp, buf, i, &state)) { fclose(fp); return 0; }
-	strcpy(encnames[i].cname, buf+1);
+	strncpy(encnames[i].cname, buf+1, 39);
+	encnames[i].cname[39] = '\0';
 	strcat(enccode, " /"); strcat(enccode, encnames[i].cname);
 	if(i%8 == 7) strcat(enccode, "\n");
     }
@@ -7225,10 +7227,16 @@ static void PDF_NewPage(const pGEcontext gc,
 	/* assume tmpname is less than PATH_MAX */
 	strcpy(pd->tmpname, tmp);
 	pd->pdffp = fopen(tmp, "w+b");
+	if (! pd->pdffp) {
+            pd->pdffp = pd->mainfp;
+            pd->useCompression = 0;
+            warning(_("Cannot open temporary file '%s' for compression (reason: %s); compression has been turned off for this device"), 
+                    tmp, strerror(errno));
+        }
 	free(tmp);
-	if(! pd->pdffp) error("cannot open file '%s', reason %s", 
-			      tmp, strerror(errno));
-    } else {
+    } 
+    /* May have turned compression off in previous block */
+    if (!pd->useCompression) {
 	fprintf(pd->pdffp, "%d 0 obj\n<<\n/Length %d 0 R\n>>\nstream\n",
 		pd->nobjs, pd->nobjs + 1);
 	pd->startstream = (int) ftell(pd->pdffp);

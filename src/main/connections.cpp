@@ -608,10 +608,10 @@ static Rboolean file_open(Rconnection con)
 	    }
 	} else
 #endif
-	    fp = R_fopen(name, con->mode);
+    fp = R_fopen(name, con->mode);
     } else {  /* use file("stdin") to refer to the file and not the console */
 #ifdef HAVE_FDOPEN
-	fp = fdopen(0, con->mode);
+        fp = fdopen(dup(0), con->mode);
 #else
 	Rf_warning(_("cannot open file '%s': %s"), name,
 		"fdopen is not supported on this platform");
@@ -668,7 +668,7 @@ static Rboolean file_open(Rconnection con)
 static void file_close(Rconnection con)
 {
     Rfileconn thisconn = RHO_S_CAST(fileconn*, con->connprivate);
-    if(con->isopen && strcmp(con->description, "stdin"))
+    if(con->isopen) // && strcmp(con->description, "stdin"))
 	con->status = fclose(thisconn->fp);
     con->isopen = FALSE;
 #ifdef Win32
@@ -3654,7 +3654,8 @@ SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunc
     no_more_lines:
 	if(!wasopen) con->close(con);
 	if(nbuf > 0) { /* incomplete last line */
-	    if(con->text && !con->blocking) {
+	if(con->text && !con->blocking &&
+	   !streql(con->connclass, "gzfile")) {
 		/* push back the rest */
 		con_pushback(con, RHO_FALSE, buf);
 		con->incomplete = TRUE;
@@ -5532,7 +5533,7 @@ SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction
     text = Rboolean(Rf_asLogical(text_));
     if(text == NA_INTEGER)
         Rf_error(_("'text' must be TRUE or FALSE"));
-    
+
     if(incon->isGzcon) {
 	Rf_warning(_("this is already a 'gzcon' connection"));
 	return con_;

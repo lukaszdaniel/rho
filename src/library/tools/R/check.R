@@ -164,7 +164,7 @@ setRlibs <-
     if (nzchar(lib0)) rlibs <- c(lib0, rlibs)
     rlibs <- paste(rlibs, collapse = .Platform$path.sep)
     if(quote) rlibs <- shQuote(rlibs)
-    c(paste("R_LIBS", rlibs, sep = "="),
+    c(paste0("R_LIBS=", rlibs),
       if(WINDOWS) " R_ENVIRON_USER='no_such_file'" else "R_ENVIRON_USER=''",
       if(WINDOWS) " R_LIBS_USER='no_such_dir'" else "R_LIBS_USER=''",
       " R_LIBS_SITE='no_such_dir'")
@@ -2699,20 +2699,45 @@ setRlibs <-
                                       colClasses = c("character", rep("numeric", 3)))
                 o <- order(times[[1L]] + times[[2L]], decreasing = TRUE)
                 times <- times[o, ]
+                
                 keep <- ((times[[1L]] + times[[2L]] > theta) |
                          (times[[3L]] > theta))
                 if(any(keep)) {
-                    if(!any && check_incoming)
+                    if(!any && check_incoming) {
                         noteLog(Log)
+                        any <- TRUE
+                    }
                     printLog(Log,
                              sprintf("Examples with CPU or elapsed time > %gs\n",
                                      theta))
-                    times <- utils::capture.output(format(times[keep, ]))
-                    printLog0(Log, paste(times, collapse = "\n"), "\n")
-                } else {
-                    if(!any && check_incoming)
-                        resultLog(Log, "OK")
+                    out <- utils::capture.output(format(times[keep, ]))
+                    printLog0(Log, paste(out, collapse = "\n"), "\n")
                 }
+
+                theta <-
+                    as.numeric(Sys.getenv("_R_CHECK_EXAMPLE_TIMING_USER_TO_ELAPSED_THRESHOLD_",
+                                          NA_character_))
+                if(!is.na(theta)) {
+                    keep <- (times[[1L]] >= pmax(theta * times[[3L]], 1))
+                    if(any(keep)) {
+                        if(!any && check_incoming) {
+                            noteLog(Log)
+                            any <- TRUE
+                        }
+                        printLog(Log,
+                                 sprintf("Examples with user time > %g times elapsed time\n",
+                                         theta))
+                        bad <- times[keep, ]
+                        bad <- cbind(bad,
+                                     ratio = round(bad[[1L]] / bad[[3L]], 3L))
+                        bad <- bad[order(bad$ratio, decreasing = TRUE), ]
+                        out <- utils::capture.output(format(bad))
+                        printLog0(Log, paste(out, collapse = "\n"), "\n")
+                    }
+                }
+
+                if(!any && check_incoming)
+                    resultLog(Log, "OK")
             }
 
             ## Try to compare results from running the examples to
@@ -2759,7 +2784,7 @@ setRlibs <-
             ## It ran, but did it create any examples?
             if (file.exists(exfile)) {
                 enc <- if (!is.na(e <- desc["Encoding"])) {
-                    paste("--encoding", e, sep="=")
+                    paste0("--encoding=", e)
                 } else ""
                 if (!this_multiarch) {
                     exout <- paste0(pkgname, "-Ex.Rout")
@@ -2842,66 +2867,74 @@ setRlibs <-
             file.copy(Sys.glob(paste0(testsrcdir, "/*")),
                       testdir, recursive = TRUE)
             setwd(testdir)
-            extra <- character()
-            if (use_gct) extra <- c(extra, "use_gct = TRUE")
-            if (use_valgrind) extra <- c(extra, "use_valgrind = TRUE")
-            tf <- gsub("\\", "/", tempfile(), fixed=TRUE)
-            extra <- c(extra, paste0('Log="', tf, '"'))
+	    logf <- gsub("\\", "/", tempfile(), fixed=TRUE)
+	    extra <- c(if(use_gct) "use_gct = TRUE",
+		       if(use_valgrind) "use_valgrind = TRUE",
+		       if(!stop_on_test_error) "stop_on_error = FALSE",
+		       paste0('Log="', logf, '"'))
             ## might be diff-ing results against tests/*.R.out.save
             ## so force LANGUAGE=en
             cmd <- paste0("tools:::.runPackageTestsR(",
-                         paste(extra, collapse = ", "), ")")
+                          paste(extra, collapse = ", "), ")")
             t1 <- proc.time()
             status <- R_runR(cmd,
                              if(nzchar(arch)) R_opts4 else R_opts2,
-                             env = c("LANGUAGE=en",
-                             "_R_CHECK_INTERNALS2_=1",
-                             if(nzchar(arch)) env0,
-                             jitstr, elibs),
+			     env = c("LANGUAGE=en",
+				     "_R_CHECK_INTERNALS2_=1",
+				     if(nzchar(arch)) env0,
+				     jitstr, elibs),
                              stdout = "", stderr = "", arch = arch)
             t2 <- proc.time()
             if (status) {
+                print_time(t1, t2, Log)
                 errorLog(Log)
+                if (Log$con > 0L && file.exists(logf)) {
+                    ## write individual results only to 00check.log
+                    cat(readLines(logf, warn = FALSE),
+                        sep = "\n", file = Log$con)
+                }
                 ## Don't just fail: try to log where the problem occurred.
-                ## First, find the test which failed.
+                ## First, find the test(s) which failed.
                 ## (Maybe there was an error without a failing test.)
                 bad_files <- dir(".", pattern="\\.Rout\\.fail$")
                 if (length(bad_files)) {
-                    ## Read in output from the (first) failed test.
-                    file <- bad_files[1L]
-                    lines <- readLines(file, warn = FALSE)
-                    file <- file.path(test_dir, sub("out\\.fail$", "", file))
-                    src_files <- dir(".", pattern = "\\.[rR]$")
-                    if (!(basename(file) %in% src_files)) {
-                    	file <- sub("R$", "r", file)  # This assumes only one of foo.r and foo.R exists.
-                    	if (!(basename(file) %in% src_files))
-                    	    file <- sub("r$", "[rR]", file)  # Just in case the test script got deleted somehow, show the pattern.
+                    ## Read in output from the failed test(s)
+                    ## (As from R 3.4.0 there can be more than one
+                    ## with option --no-stop-on-test-error.)
+                    for(f in bad_files) {
+                        lines <- readLines(f, warn = FALSE)
+                        f <- file.path(test_dir, sub("out\\.fail$", "", f))
+                        src_files <- dir(".", pattern = "\\.[rR]$")
+                        if (!(basename(f) %in% src_files)) {
+                            f <- sub("R$", "r", f) # This assumes only one of foo.r and foo.R exists.
+                            if (!(basename(f) %in% src_files))
+                                f <- sub("r$", "[rR]", f) # Just in case the test script got deleted somehow, show the pattern.
+                        }
+                        ll <- length(lines)
+                        keep <- as.integer(Sys.getenv("_R_CHECK_TESTS_NLINES_",
+                                                      "13"))
+                        if (keep > 0L)
+                            lines <- lines[max(1L, ll-keep-1L):ll]
+                        if (R_check_suppress_RandR_message)
+                            lines <- grep('^Xlib: *extension "RANDR" missing on display',
+                                          lines, invert = TRUE, value = TRUE,
+                                          useBytes = TRUE)
+                        printLog(Log, sprintf("Running the tests in %s failed.\n",
+                                              sQuote(f)))
+                        printLog(Log, if(keep > 0L) sprintf("Last %i lines of output:\n", keep)
+                                 else "Complete output:\n")
+                        printLog0(Log, .format_lines_with_indent(lines), "\n")
                     }
-                    ll <- length(lines)
-                    keep <- as.integer(Sys.getenv("_R_CHECK_TESTS_NLINES_",
-                                                  "13"))
-                    if (keep > 0L)
-                        lines <- lines[max(1L, ll-keep-1L):ll]
-                    if (R_check_suppress_RandR_message)
-                        lines <- grep('^Xlib: *extension "RANDR" missing on display',
-                                      lines, invert = TRUE, value = TRUE,
-                                      useBytes = TRUE)
-                    printLog(Log, sprintf("Running the tests in %s failed.\n", sQuote(file)))
-                    if (keep > 0L)
-                        printLog(Log, sprintf("Last %i lines of output:\n", keep))
-                    else
-                        printLog(Log, "Complete output:\n")
-                    printLog0(Log, .format_lines_with_indent(lines), "\n")
                 }
                 return(FALSE)
             } else {
                 print_time(t1, t2, Log)
                 resultLog(Log, "OK")
-                if (Log$con > 0L && file.exists(tf)) {
+                if (Log$con > 0L && file.exists(logf)) {
                     ## write results only to 00check.log
-                    lines <- readLines(tf, warn = FALSE)
+                    lines <- readLines(logf, warn = FALSE)
                     cat(lines, sep="\n", file = Log$con)
-                    unlink(tf)
+                    unlink(logf)
                 }
             }
             setwd(pkgoutdir)
@@ -3665,7 +3698,9 @@ setRlibs <-
                              ": warning: .* \\[-Wvla-extension\\]",
                              ": warning: format string contains '[\\]0'",
                              ": warning: .* \\[-Wc[+][+]11-long-long\\]",
-                             ": warning: empty macro arguments are a C99 feature"
+                             ": warning: empty macro arguments are a C99 feature",
+                             ## for non-portable flags (seen in sub-Makefiles)
+                             "warning: .* \\[-Wunknown-warning-option\\]"
                              )
 
                 warn_re <- paste0("(", paste(warn_re, collapse = "|"), ")")
@@ -4289,6 +4324,7 @@ setRlibs <-
             "      --timings         record timings for examples",
             "      --install-args=	command-line args to be passed to INSTALL",
 	    "      --test-dir=       look in this subdirectory for test scripts (default tests)",
+            "      --no-stop-on-test-error   do not stop running tests after first error",
             "      --check-subdirs=default|yes|no",
             "			run checks on the package subdirectories",
             "			(default is yes for a tarball, no otherwise)",
@@ -4305,7 +4341,7 @@ setRlibs <-
             "",
             "By default, all test sections are turned on.",
             "",
-            "Report bugs at bugs.r-project.org .", sep="\n")
+            "Report bugs at <https://bugs.R-project.org>.", sep="\n")
     }
 
 ###--- begin{.check_packages()} "main" ---
@@ -4322,7 +4358,7 @@ setRlibs <-
         ## Read in ~/.R/check.Renviron[.rarch] (if it exists).
         rarch <- .Platform$r_arch
         if (nzchar(rarch) &&
-            file.exists(Renv <- paste("~/.R/check.Renviron", rarch, sep = ".")))
+            file.exists(Renv <- paste0("~/.R/check.Renviron.", rarch)))
             readRenviron(Renv)
         else if (file.exists(Renv <- "~/.R/check.Renviron"))
             readRenviron(Renv)
@@ -4368,6 +4404,7 @@ setRlibs <-
     as_cran <- FALSE
     run_dontrun <- FALSE
     run_donttest <- FALSE
+    stop_on_test_error <- TRUE
 
     libdir <- ""
     outdir <- ""
@@ -4421,7 +4458,7 @@ setRlibs <-
             ignore_vignettes  <- TRUE
             do_vignettes  <- FALSE
             do_build_vignettes  <- FALSE
-       } else if (a == "--no-manual") {
+	} else if (a == "--no-manual") {
             do_manual  <- FALSE
         } else if (a == "--no-latex") {
             stop("'--no-latex' is defunct: use '--no-manual' instead",
@@ -4452,6 +4489,8 @@ setRlibs <-
             force_multiarch  <- TRUE
         } else if (a == "--as-cran") {
             as_cran  <- TRUE
+	} else if (a == "--no-stop-on-test-error") {
+	    stop_on_test_error <- FALSE
         } else if (substr(a, 1, 9) == "--rcfile=") {
             warning("configuration files are not supported as from R 2.12.0")
         } else if (substr(a, 1, 1) == "-") {
@@ -4726,7 +4765,7 @@ setRlibs <-
                     domain = NA, call. = FALSE, immediate. = TRUE)
             next
         }
-        pkgoutdir <- file.path(outdir, paste(pkgname0, "Rcheck", sep = "."))
+        pkgoutdir <- file.path(outdir, paste0(pkgname0, ".Rcheck"))
         if (clean && dir.exists(pkgoutdir)) {
             unlink(pkgoutdir, recursive = TRUE)
             if(WINDOWS) Sys.sleep(0.5) # allow for antivirus interference
@@ -4803,6 +4842,7 @@ setRlibs <-
         }
         if (use_gct) opts <- c(opts, "--use-gct")
         if (use_valgrind) opts <- c(opts, "--use-valgrind")
+	if (!stop_on_test_error) opts <- c(opts, "--no-stop-on-test-error")
         if (as_cran) opts <- c(opts, "--as-cran")
         if (length(opts) > 1L)
             messageLog(Log, "using options ", sQuote(paste(opts, collapse=" ")))

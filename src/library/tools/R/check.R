@@ -1,7 +1,7 @@
 #  File src/library/tools/R/check.R
 #  Part of the R package, https://www.R-project.org
 #
-#  Copyright (C) 1995-2016 The R Core Team
+#  Copyright (C) 1995-2017 The R Core Team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -687,20 +687,12 @@ setRlibs <-
             if(check_incoming && any(!is.na(yorig))) {
                 enc <- db["Encoding"]
                 aar <- utils:::.read_authors_at_R_field(aar)
-                tmp <- utils:::.format_authors_at_R_field_for_author(aar)
-                ## <FIXME>
-                ## ## uses strwrap, so will be in current locale
-                ## if(!is.na(enc)) tmp <- iconv(tmp, "", enc)
-                ## </FIXME>
-                y <- c(Author = tmp,
+                y <- c(Author =
+                       utils:::.format_authors_at_R_field_for_author(aar),
                        Maintainer =
                        utils:::.format_authors_at_R_field_for_maintainer(aar))
                 ## ignore formatting as far as possible
-                clean_up <- function(x) {
-                    x <- gsub("[[:space:]]+", " ", x)
-                    x <- sub("^[[:space:]]+", " ", x)
-                    sub("^[[:space:]]+$", " ", x)
-                }
+                clean_up <- function(x) trimws(gsub("[[:space:]]+", " ", x))
                 yorig <- sapply(yorig, clean_up)
                 y <- sapply(y, clean_up)
                 diff <- y != yorig
@@ -737,6 +729,51 @@ setRlibs <-
                 any <- TRUE
                 printLog(Log, "NeedsCompilation field must take value 'yes' or 'no'", "\n")
             }
+            if((ncomp == "no") && dir.exists("src")) {
+                if(!any) noteLog(Log)
+                any <- TRUE
+                printLog(Log, "NeedsCompilation field should likely be 'yes'", "\n")
+            }
+        }
+
+        ## check for BugReports field added at R 3.4.0
+        if(!is.na(BR0 <- db["BugReports"])) {
+            if (nzchar(BR0)) {
+                BR <- trimws(BR0)
+                msg <- ""
+                ## prior to 3.4.0 this was said to be
+                ## 'a URL to which bug reports about the package
+                ## should be submitted'
+                ## We will take that to mean a http[s]:// URL,
+                isURL <- grepl("^https?://[^ ]*$", BR)
+                ## As from 3.4.0 bug,report() is able to extract
+                ## an email addr.
+                if(!isURL) {
+                    findEmail <- function(x) {
+                        x <- paste(x, collapse = " ")
+                        if (grepl("mailto:", x))
+                            sub(".*mailto:([^ ]+).*", "\\1", x)
+                        else if (grepl("[^<]*<([^>]+)", x))
+                            sub("[^<]*<([^>]+)>.*", "\\1", x)
+                        else NA_character_
+                    }
+                    msg <- if (is.na(findEmail(BR))) {
+                        if (grepl("(^|.* )[^ ]+@[[:alnum:]._]+", BR))
+                            "BugReports field is not a suitable URL but appears to contain an email address\n  not specified by mailto: nor contained in < >"
+                        else
+                            "BugReports field should be the URL of a single webpage"
+                    } else
+                        "BugReports field is not a suitable URL but contains an email address\n  which will be used as from R 3.4.0"
+                } else if (grepl("^\n *http", BR0))
+                    msg <- "BugReports field has an empty first line and will not work in R <= 3.3.2"
+            } else {
+                msg <- "BugReports field should not be empty"
+            }
+            if (nzchar(msg)) {
+                if(!any) noteLog(Log)
+                any <- TRUE
+                printLog(Log, msg, "\n")
+           }
         }
 
 
@@ -2415,6 +2452,7 @@ setRlibs <-
             else noteLog(Log)
             printLog0(Log, paste(c(out, ""), collapse = "\n"))
             nAPIs <- length(grep("Found non-API", out))
+            nRS <- length(grep("Found no call", out))
             nBad <- length(grep(", possibly from ", out))
             msg <- if (nBad) {
                 if(haveObjs)
@@ -2432,6 +2470,9 @@ setRlibs <-
             if(nAPIs)
                 msg <- c(msg,
                          "Compiled code should not call non-API entry points in R.\n")
+            if(nRS)
+                msg <- c(msg,
+                         "It is good practice to use registered native symbols and to disable symbol search.\n")
             wrapLog("\n", paste(msg, collapse = " "), "\n",
                     "See 'Writing portable packages'",
                     "in the 'Writing R Extensions' manual.\n")
@@ -2699,7 +2740,7 @@ setRlibs <-
                                       colClasses = c("character", rep("numeric", 3)))
                 o <- order(times[[1L]] + times[[2L]], decreasing = TRUE)
                 times <- times[o, ]
-                
+
                 keep <- ((times[[1L]] + times[[2L]] > theta) |
                          (times[[3L]] > theta))
                 if(any(keep)) {
@@ -2910,9 +2951,17 @@ setRlibs <-
                             if (!(basename(f) %in% src_files))
                                 f <- sub("r$", "[rR]", f) # Just in case the test script got deleted somehow, show the pattern.
                         }
-                        ll <- length(lines)
                         keep <- as.integer(Sys.getenv("_R_CHECK_TESTS_NLINES_",
                                                       "13"))
+                        ## keep = 0 means keep all of it, but we will
+                        ## always omit the R preamble and start at the first
+                        ## line with an R prompt.
+                        ll <- length(lines)
+                        st <- grep("^>", lines, useBytes = TRUE)
+                        if (length(st)) {
+                            lines <- lines[st[1L]:ll]
+                            ll <- length(lines)
+                        }
                         if (keep > 0L)
                             lines <- lines[max(1L, ll-keep-1L):ll]
                         if (R_check_suppress_RandR_message)
@@ -2921,7 +2970,8 @@ setRlibs <-
                                           useBytes = TRUE)
                         printLog(Log, sprintf("Running the tests in %s failed.\n",
                                               sQuote(f)))
-                        printLog(Log, if(keep > 0L) sprintf("Last %i lines of output:\n", keep)
+                        printLog(Log, if(keep > 0L && keep < ll)
+                                 sprintf("Last %i lines of output:\n", keep)
                                  else "Complete output:\n")
                         printLog0(Log, .format_lines_with_indent(lines), "\n")
                     }
@@ -3177,18 +3227,33 @@ setRlibs <-
                     if(length(grep("^  When (running|tangling|sourcing)", out,
                                    useBytes = TRUE))) {
                         cat(" failed\n")
-                        res <- c(res,
-                                 paste("when running code in", sQuote(basename(file))),
-                                 "  ...",
-                                 utils::tail(out, as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_", "10"))))
+                        keep <- as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_",
+                                                      "10"))
+                        res <- if (keep > 0)
+                            c(res,
+                              paste("when running code in", sQuote(basename(file))),
+                              "  ...",
+                              utils::tail(out, keep))
+                        else
+                            c(res,
+                              paste("when running code in", sQuote(basename(file))),
+                              out)
+
                     } else if(status || ! " *** Run successfully completed ***" %in% out) {
                         ## (Need not be the final line if running under valgrind)
+                        keep <- as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_",
+                                                      "10"))
                         cat(" failed to complete the test\n")
                         out <- c(out, "", "... incomplete output.  Crash?")
-                        res <- c(res,
+                        res <- if (keep > 0)
+                            c(res,
                                  paste("when running code in", sQuote(basename(file))),
                                  "  ...",
-                                 utils::tail(out, as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_", "10"))))
+                                 utils::tail(out, keep))
+                        else
+                            c(res,
+                                 paste("when running code in", sQuote(basename(file))),
+                                 out)
                     } else if (file.exists(savefile)) {
                         cmd <- paste0("invisible(tools::Rdiff('",
                                       outfile, "', '", savefile, "',TRUE,TRUE))")
@@ -3250,7 +3315,7 @@ setRlibs <-
                 Sys.setenv(PATH = paste(R.home("bin"), oPATH,
                                         sep = .Platform$path.sep))
                 on.exit(Sys.setenv(PATH = oPATH))
-                ## And too many inst/doc/Makefile are not safe for
+                ## And too many 'vignettes/Makefile's are not safe for
                 ## parallel makes
                 Sys.setenv(MAKEFLAGS="")
                 ## we could use clean = FALSE, but that would not be
@@ -3271,9 +3336,12 @@ setRlibs <-
                                 useBytes = TRUE)
                 warns <- grep("^Warning: file .* is not portable",
                               out, value = TRUE, useBytes = TRUE)
+                print_time(t1, t2, Log)
                 if (status) {
+                    keep <- as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_",
+                                                  "25"))
                     if(skip_run_maybe || !ran) warningLog(Log) else noteLog(Log)
-                    out <- utils::tail(out, as.numeric(Sys.getenv("_R_CHECK_VIGNETTES_NLINES_", "25")))
+                    if(keep > 0) out <- utils::tail(out, keep)
                     printLog0(Log,
                               paste(c("Error in re-building vignettes:",
                                       "  ...", out, "", ""), collapse = "\n"))
@@ -3291,7 +3359,6 @@ setRlibs <-
                         unlink(vd2, recursive = TRUE)
                     if (!config_val_to_logical(Sys.getenv("_R_CHECK_ALWAYS_LOG_VIGNETTE_OUTPUT_", "false")))
                             unlink(outfile)
-                    print_time(t1, t2, Log)
                     resultLog(Log, "OK")
                 }
             } else {
@@ -4662,6 +4729,8 @@ setRlibs <-
         Sys.setenv("_R_CHECK_S3_METHODS_NOT_REGISTERED_" = "TRUE")
         Sys.setenv("_R_CHECK_PACKAGE_DATASETS_SUPPRESS_NOTES_" = "TRUE")
         Sys.setenv("_R_CHECK_PACKAGES_USED_IGNORE_UNUSED_IMPORTS_" = "TRUE")
+### to come once fully documented
+###        Sys.setenv("_R_CHECK_SYMBOL_REGISTRATION_" = "TRUE")
         R_check_vc_dirs <- TRUE
         R_check_executables_exclusions <- FALSE
         R_check_doc_sizes2 <- TRUE

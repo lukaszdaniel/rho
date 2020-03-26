@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995--2015  The R Core Team.
+ *  Copyright (C) 1995--2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -758,6 +758,21 @@ void NORET Rf_errorcall(SEXP call, const char *format,...)
     va_start(ap, format);
     verrorcall_dflt(call, format, ap);
     va_end(ap);
+}
+
+/* Like errorcall, but copies all data for the error message into a buffer
+   before doing anything else. */
+attribute_hidden
+void NORET errorcall_cpy(SEXP call, const char *format, ...)
+{
+    char buf[BUFSIZE];
+
+    va_list ap;
+    va_start(ap, format);
+    Rvsnprintf(buf, BUFSIZE, format, ap);
+    va_end(ap);
+
+    errorcall(call, "%s", buf);
 }
 
 SEXP attribute_hidden do_geterrmessage(/*const*/ Expression* call, const BuiltInFunction* op)

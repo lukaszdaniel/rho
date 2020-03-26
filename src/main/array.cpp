@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998-2015   The R Core Team
+ *  Copyright (C) 1998-2017   The R Core Team
  *  Copyright (C) 2002-2015   The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -397,11 +397,11 @@ SEXP attribute_hidden do_lengths(/*const*/ Expression* call, const BuiltInFuncti
     SEXP x = args[0], ans;
     R_xlen_t x_len, i;
     int *ans_elt;
-    int useNames = asLogical(args[1]);
+    int useNames = Rf_asLogical(args[1]);
     if (useNames == NA_LOGICAL)
-	error(_("invalid '%s' value"), "use.names");
-    bool isList = isVectorList(x) || isS4(x);
-    if(!isList) switch(TYPEOF(x)) {
+	Rf_error(_("invalid '%s' value"), "use.names");
+    bool isList_ = Rf_isVectorList(x) || Rf_isS4(x);
+    if(!isList_) switch(TYPEOF(x)) {
 	case NILSXP:
 	case CHARSXP:
 	case LGLSXP:
@@ -412,11 +412,11 @@ SEXP attribute_hidden do_lengths(/*const*/ Expression* call, const BuiltInFuncti
 	case RAWSXP:
 	    break;
 	default:
-	    error(_("'%s' must be a list or atomic vector"), "x");
+	    Rf_error(_("'%s' must be a list or atomic vector"), "x");
     }
     x_len = dispatch_xlength(x, call, rho);
-    PROTECT(ans = allocVector(INTSXP, x_len));
-    if(isList) {
+    PROTECT(ans = Rf_allocVector(INTSXP, x_len));
+    if(isList_) {
 	for (i = 0, ans_elt = INTEGER(ans); i < x_len; i++, ans_elt++) {
 	    R_xlen_t x_elt_len = getElementLength(x, i, call, rho);
 #ifdef LONG_VECTOR_SUPPORT
@@ -433,9 +433,15 @@ SEXP attribute_hidden do_lengths(/*const*/ Expression* call, const BuiltInFuncti
 	for (i = 0, ans_elt = INTEGER(ans); i < x_len; i++, ans_elt++)
 	    *ans_elt = 1;
     }
+    SEXP dim = Rf_getAttrib(x, R_DimSymbol);
+    if(!Rf_isNull(dim)) {
+        Rf_setAttrib(ans, R_DimSymbol, dim);
+    }
     if(useNames) {
-	SEXP names = getAttrib(x, R_NamesSymbol);
-	if(!isNull(names)) setAttrib(ans, R_NamesSymbol, names);
+	SEXP names = Rf_getAttrib(x, R_NamesSymbol);
+	if(!isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
+    SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
+    if(!Rf_isNull(dimnames)) Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);	
     }
     UNPROTECT(1);
     return ans;

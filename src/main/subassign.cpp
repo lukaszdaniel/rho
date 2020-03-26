@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997-2015   The R Core Team
+ *  Copyright (C) 1997-2017   The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -103,14 +103,35 @@
 
 using namespace rho;
 
+static R_INLINE SEXP getNames(SEXP x)
+{
+    /* defer to getAttrib if a 'dim' attribute is present */
+    for (SEXP attr = ATTRIB(x); attr != R_NilValue; attr = CDR(attr))
+	if (TAG(attr) == R_DimSymbol)
+	    return Rf_getAttrib(x, R_NamesSymbol);
+
+    /* don't use getAttrib since that would mark as immutable */
+    for (SEXP attr = ATTRIB(x); attr != R_NilValue; attr = CDR(attr))
+	if (TAG(attr) == R_NamesSymbol)
+	    return CAR(attr);
+
+    return R_NilValue;
+}
+
 /* EnlargeVector() takes a vector "x" and changes its length to "newlen".
    This allows to assign values "past the end" of the vector or list.
-   Note that, unlike S, we only extend as much as is necessary.
+   Overcommit by a small percentage to allow more efficient vector growth.
 */
+static SEXP EnlargeNames(SEXP, R_xlen_t, R_xlen_t);
+
 static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 {
-    R_xlen_t i, len;
+    R_xlen_t len, newtruelen;
     SEXP newx, names, newnames;
+    static SEXP R_CheckBoundsSymbol = NULL;
+
+    if (R_CheckBoundsSymbol == NULL)
+	R_CheckBoundsSymbol = Rf_install("check.bounds");
 
     /* Sanity Checks */
     if (!Rf_isVector(x))
@@ -121,74 +142,128 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     if (LOGICAL(Rf_GetOption1(Rf_install("check.bounds")))[0])
 	Rf_warning(_("assignment outside vector/list limits (extending from %d to %d)"),
 		len, newlen);
+
+    /* if the vector is not shared, is growable. and has room, then
+       increase its length */
+    if (RHO_FALSE && ! MAYBE_SHARED(x) &&
+	//IS_GROWABLE(x) &&
+	TRUELENGTH(x) >= newlen) {
+	SETLENGTH(x, newlen);
+	names = getNames(x);
+	if (!Rf_isNull(names)) {
+	    newnames = EnlargeNames(names, len, newlen);
+	    if (names != newnames)
+		Rf_setAttrib(x, R_NamesSymbol, newnames);
+	}
+	return x;
+    }
+
+    /* over-committing by 5% seems to be reasonable, but for
+       experimenting the environment variable R_EXPAND_Frac can be
+       used to adjust this */
+    /**** for now, the default 1.00 preserves the current no
+	  over-commit behavior */
+    static double expand_dflt = 1.00;
+    static double expand = 0;
+    if (expand == 0) {
+	char *envval = getenv("R_EXPAND_FRAC");
+	expand = envval != NULL ? atof(envval) : expand_dflt;
+	if (expand < 1 || expand > 2) {
+	    expand = expand_dflt;
+	    Rf_error("bad expand value");
+	}
+    }
+
+    if (newlen > len)
+	newtruelen = (R_xlen_t) (newlen * expand);
+    else
+	/* sometimes this is called when no expansion is needed */
+	newtruelen = newlen;
+
+    /**** for now, don't cross the long vector boundary; drop when
+	  ALTREP is merged */
+#ifdef ALTREP
+#error drop the limitation to short vectors
+#endif
+    if (newtruelen > R_LEN_T_MAX) newtruelen = newlen;
+
     PROTECT(x);
-    PROTECT(newx = Rf_allocVector(TYPEOF(x), newlen));
+    PROTECT(newx = Rf_allocVector(TYPEOF(x), newtruelen));
+    // if (newlen < newtruelen)
+	// SET_GROWABLE_BIT(newx);
 
     /* Copy the elements into place. */
     switch(TYPEOF(x)) {
     case LGLSXP:
     case INTSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    INTEGER(newx)[i] = INTEGER(x)[i];
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newlen; i++)
 	    INTEGER(newx)[i] = NA_INTEGER;
 	break;
     case REALSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    REAL(newx)[i] = REAL(x)[i];
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newlen; i++)
 	    REAL(newx)[i] = NA_REAL;
 	break;
     case CPLXSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    COMPLEX(newx)[i] = COMPLEX(x)[i];
-	for (i = len; i < newlen; i++) {
+	for (R_xlen_t i = len; i < newtruelen; i++) {
 	    COMPLEX(newx)[i].r = NA_REAL;
 	    COMPLEX(newx)[i].i = NA_REAL;
 	}
 	break;
     case STRSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    SET_STRING_ELT(newx, i, STRING_ELT(x, i));
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newtruelen; i++)
 	    SET_STRING_ELT(newx, i, NA_STRING); /* was R_BlankString  < 1.6.0 */
 	break;
     case EXPRSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    SET_XVECTOR_ELT(newx, i, XVECTOR_ELT(x, i));
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newtruelen; i++)
 	    SET_XVECTOR_ELT(newx, i, R_NilValue);
 	break;
     case VECSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    SET_VECTOR_ELT(newx, i, VECTOR_ELT(x, i));
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newtruelen; i++)
 	    SET_VECTOR_ELT(newx, i, R_NilValue);
 	break;
     case RAWSXP:
-	for (i = 0; i < len; i++)
+	for (R_xlen_t i = 0; i < len; i++)
 	    RAW(newx)[i] = RAW(x)[i];
-	for (i = len; i < newlen; i++)
+	for (R_xlen_t i = len; i < newtruelen; i++)
 	    RAW(newx)[i] = Rbyte( 0);
 	break;
     default:
 	UNIMPLEMENTED_TYPE("EnlargeVector", x);
     }
+    if (newtruelen > newlen)
+	SET_TRUELENGTH(newx, newtruelen);
+    SETLENGTH(newx, newlen);
 
     /* Adjust the attribute list. */
-    names = Rf_getAttrib(x, R_NamesSymbol);
-    if (!Rf_isNull(names)) {
-	PROTECT(newnames = Rf_allocVector(STRSXP, newlen));
-	for (i = 0; i < len; i++)
-	    SET_STRING_ELT(newnames, i, STRING_ELT(names, i));
-	for (i = len; i < newlen; i++)
-	    SET_STRING_ELT(newnames, i, R_BlankString);
-	setAttrib(newx, R_NamesSymbol, newnames);
-	UNPROTECT(1);
-    }
+    names = getNames(x);
+    if (!Rf_isNull(names))
+	Rf_setAttrib(newx, R_NamesSymbol, EnlargeNames(names, len, newlen));
     Rf_copyMostAttrib(x, newx);
     UNPROTECT(2);
     return newx;
+}
+
+static SEXP EnlargeNames(SEXP names, R_xlen_t len, R_xlen_t newlen)
+{
+    if (TYPEOF(names) != STRSXP || XLENGTH(names) != len)
+	Rf_error(_("bad names attribute"));
+    SEXP newnames = PROTECT(EnlargeVector(names, newlen));
+    for (R_xlen_t i = len; i < newlen; i++)
+	SET_STRING_ELT(newnames, i, R_BlankString);
+    UNPROTECT(1);
+    return newnames;
 }
 
 /* used instead of coerceVector to embed a non-vector in a list for

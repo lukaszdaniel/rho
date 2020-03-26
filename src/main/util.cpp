@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1685,7 +1685,16 @@ double R_strtod5(const char *str, char **endptr, char dec,
 	    for (n = 0; *p >= '0' && *p <= '9'; p++) n = (n < MAX_EXPONENT_PREFIX) ? n * 10 + (*p - '0') : n;
 	    if (ans != 0.0) { /* PR#15976:  allow big exponents on 0 */
 		expn += expsign * n;
-		if(exph > 0) expn -= exph;
+		if(exph > 0) {
+		    if (expn - exph < -122) {	/* PR#17199:  fac may overflow below if expn - exph is too small.  
+		                                   2^-122 is a bit bigger than 1E-37, so should be fine on all systems */
+		    	for (n = exph, fac = 1.0; n; n >>= 1, p2 *= p2)
+			    if (n & 1) fac *= p2;
+			ans /= fac;
+			p2 = 2.0;
+		    } else
+			expn -= exph;
+		}
 		if (expn < 0) {
 		    for (n = -expn, fac = 1.0; n; n >>= 1, p2 *= p2)
 			if (n & 1) fac *= p2;
@@ -1778,7 +1787,7 @@ SEXP attribute_hidden do_enc2(/*const*/ Expression* call, const BuiltInFunction*
     Rboolean duped = FALSE;
 
     if (!Rf_isString(ans))
-	Rf_errorcall(call, "argumemt is not a character vector");
+	Rf_errorcall(call, "argument is not a character vector");
     for (i = 0; i < XLENGTH(ans); i++) {
 	el = STRING_ELT(ans, i);
 	if (el == NA_STRING) continue;

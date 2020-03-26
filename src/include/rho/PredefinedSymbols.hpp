@@ -88,6 +88,7 @@ PREDEFINED_SYMBOL2(ModeSymbol, "mode");
 PREDEFINED_SYMBOL2(NameSymbol, "name");
 PREDEFINED_SYMBOL2(NamesSymbol, "names");
 PREDEFINED_SYMBOL2(NamespaceEnvSymbol, ".__NAMESPACE__.");
+PREDEFINED_SYMBOL2(AsCharacterSymbol, "as.character");
 PREDEFINED_SYMBOL2(NaRmSymbol, "na.rm");
 PREDEFINED_SYMBOL2(PackageSymbol, "package");
 PREDEFINED_SYMBOL2(PreviousSymbol, "previous");

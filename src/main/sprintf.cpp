@@ -329,7 +329,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 				    size_t nc = strlen(outputString);
 				    char *z = Calloc(nc+1, char);
 				    strcpy(z, outputString);
-				    PROTECT(tmp = lang2(install("as.character"), _this));
+				    PROTECT(tmp = Rf_lang2(R_AsCharacterSymbol, _this));
 
 				    COERCE_THIS_TO_A
 				    strcpy(outputString, z);

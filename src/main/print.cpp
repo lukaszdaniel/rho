@@ -202,13 +202,13 @@ static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
     if (!Rf_isInteger(t) || !useSource)
 	t = Rf_deparse1w(s, RHO_FALSE, useSource | DEFAULTDEPARSE);
     else {
-	PROTECT(t = Rf_lang2(Rf_install("as.character"), t));
+	PROTECT(t = Rf_lang2(R_AsCharacterSymbol, t));
 	t = Rf_eval(t, R_BaseEnv);
 	UNPROTECT(1);
     }
     PROTECT(t);
     for (i = 0; i < LENGTH(t); i++)
-	Rprintf("%s\n", CHAR(STRING_ELT(t, i))); /* translated */
+	Rprintf("%s\n", R_CHAR(STRING_ELT(t, i))); /* translated */
     UNPROTECT(1);
     if (isClosure) {
 	if (isByteCode(BODY(s))) Rprintf("<bytecode: %p>\n", BODY(s));

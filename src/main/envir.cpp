@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2015  The R Core Team.
+ *  Copyright (C) 1999-2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -595,7 +595,9 @@ SEXP Rf_findFun3(SEXP symbol, SEXP rho, SEXP call)
     FunctionBase* fun = findFunction(sym, env);
     if (fun)
 	return fun;
-    Rf_errorcall(call,_("could not find function \"%s\""), sym->name()->c_str());
+    errorcall_cpy(call,
+                  _("could not find function \"%s\""),
+                  sym->name()->c_str());
     /* NOT REACHED */
     return R_UnboundValue;
 }

@@ -1254,7 +1254,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	if((isMatrix(u) ? nrows(u) : Rf_length(u)) > 0) {
+	if((Rf_isMatrix(u) ? Rf_nrows(u) : Rf_length(u)) > 0) {
 	    lenmin = 1;
 	    break;
 	}
@@ -1265,17 +1265,17 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     int na = 0;
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	dims = getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, R_DimSymbol);
 	if (Rf_length(dims) == 2) {
 	    if (mrows == -1)
 		mrows = INTEGER(dims)[0];
 	    else if (mrows != INTEGER(dims)[0])
-		error(_("number of rows of matrices must match (see arg %d)"),
+		Rf_error(_("number of rows of matrices must match (see arg %d)"),
 		      na + 1);
 	    cols += INTEGER(dims)[1];
 	}
 	else if (Rf_length(u) >= lenmin) {
-	    rows = imax2(rows, Rf_length(u));
+	    rows = std::max(rows, Rf_length(u));
 	    cols += 1;
 	}
         na++;
@@ -1287,9 +1287,9 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     na = 0;
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	dims = getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, R_DimSymbol);
 	if (Rf_length(dims) == 2) {
-	    dn = getAttrib(u, R_DimNamesSymbol);
+	    dn = Rf_getAttrib(u, R_DimNamesSymbol);
 	    if (Rf_length(dn) == 2) {
 		if (VECTOR_ELT(dn, 1) != R_NilValue)
 		    have_cnames = TRUE;
@@ -1300,15 +1300,15 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 	    int k = Rf_length(u);
 	    if (!warned && k > 0 && (k > rows || rows % k)) {
 		warned = TRUE;
-		warning("number of rows of result is not a multiple of vector length (arg %d)", na + 1);
+		Rf_warning("number of rows of result is not a multiple of vector length (arg %d)", na + 1);
 	    }
-	    PROTECT(dn = getAttrib(u, R_NamesSymbol));
+	    PROTECT(dn = Rf_getAttrib(u, R_NamesSymbol));
 	    if (k >= lenmin && (arg.tag() != R_NilValue ||
 				(deparse_level == 2) ||
 				((deparse_level == 1) &&
-				 isSymbol(substitute(arg.car(),R_NilValue)))))
+				 Rf_isSymbol(Rf_substitute(arg.car(),R_NilValue)))))
 		have_cnames = TRUE;
-	    nnames = imax2(nnames, Rf_length(dn));
+	    nnames = std::max(nnames, Rf_length(dn));
 	    UNPROTECT(1); /* dn */
 	}
         na++;
@@ -1316,16 +1316,16 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     if (mnames || nnames == rows)
 	have_rnames = TRUE;
 
-    PROTECT(result = allocMatrix(mode, rows, cols));
+    PROTECT(result = Rf_allocMatrix(mode, rows, cols));
     R_xlen_t n = 0; // index, possibly of long vector
 
     if (mode == STRSXP) {
       for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
-		u = coerceVector(u, STRSXP);
+	    if (Rf_isMatrix(u) || Rf_length(u) >= lenmin) {
+		u = Rf_coerceVector(u, STRSXP);
 		R_xlen_t k = XLENGTH(u);
-		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
+		R_xlen_t idx = (!Rf_isMatrix(u)) ? rows : k;
 		xcopyStringWithRecycle(result, u, n, idx, k);
 		n += idx;
 	    }
@@ -1334,7 +1334,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == VECSXP) {
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    int umatrix = isMatrix(u); /* might be lost in coercion to VECSXP */
+	    int umatrix = Rf_isMatrix(u); /* might be lost in coercion to VECSXP */
 	    if (umatrix || Rf_length(u) >= lenmin) {
 		/* we cannot assume here that coercion will work */
 		switch(TYPEOF(u)) {
@@ -1349,14 +1349,14 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		case VECSXP:
 		case LISTSXP:
 		{
-		    PROTECT(u = coerceVector(u, mode));
+		    PROTECT(u = Rf_coerceVector(u, mode));
 		    R_xlen_t k = XLENGTH(u);
 		    if (k > 0) {
 			R_xlen_t idx = (!umatrix) ? rows : k;
 			R_xlen_t i, i1;
 			MOD_ITERATE1(idx, k, i, i1, {
 			    SET_VECTOR_ELT(result, n++,
-				lazy_duplicate(VECTOR_ELT(u, i1)));
+				Rf_lazy_duplicate(VECTOR_ELT(u, i1)));
 			});
 		    }
 		    UNPROTECT(1);
@@ -1364,7 +1364,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		}
 		default:
 		    for (int i = 0; i < rows; i++)
-			SET_VECTOR_ELT(result, n++, lazy_duplicate(u));
+			SET_VECTOR_ELT(result, n++, Rf_lazy_duplicate(u));
 		}
 	    }
 	}
@@ -1372,10 +1372,10 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == CPLXSXP) {
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
-		u = coerceVector(u, CPLXSXP);
+	    if (Rf_isMatrix(u) || Rf_length(u) >= lenmin) {
+		u = Rf_coerceVector(u, CPLXSXP);
 		R_xlen_t k = XLENGTH(u);
-		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
+		R_xlen_t idx = (!Rf_isMatrix(u)) ? rows : k;
 		xcopyComplexWithRecycle(COMPLEX(result), COMPLEX(u), n, idx, k);
 		n += idx;
 	    }
@@ -1384,10 +1384,10 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else if (mode == RAWSXP) {
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
-	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
-		u = coerceVector(u, RAWSXP);
+	    if (Rf_isMatrix(u) || Rf_length(u) >= lenmin) {
+		u = Rf_coerceVector(u, RAWSXP);
 		R_xlen_t k = XLENGTH(u);
-		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
+		R_xlen_t idx = (!Rf_isMatrix(u)) ? rows : k;
 		xcopyRawWithRecycle(RAW(result), RAW(u), n, idx, k);
 		n += idx;
 	    }
@@ -1396,9 +1396,9 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     else { /* everything else, currently REALSXP, INTSXP, LGLSXP */
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car()); /* type of u can be any of: RAW, LGL, INT, REAL, or NULL */
-	    if (isMatrix(u) || Rf_length(u) >= lenmin) {
-		R_xlen_t k = xlength(u); /* use xlength since u can be NULL */
-		R_xlen_t idx = (!isMatrix(u)) ? rows : k;
+	    if (Rf_isMatrix(u) || Rf_length(u) >= lenmin) {
+		R_xlen_t k = Rf_xlength(u); /* use xlength since u can be NULL */
+		R_xlen_t idx = (!Rf_isMatrix(u)) ? rows : k;
 		if (TYPEOF(u) <= INTSXP) { /* INT or LGL */
 		    if (mode <= INTSXP) {
 			xcopyIntegerWithRecycle(INTEGER(result), INTEGER(u),

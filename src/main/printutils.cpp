@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999--2016  The R Core Team
+ *  Copyright (C) 1999--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -838,7 +838,14 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 }
 
 /* EncodeChar is a simple wrapper for EncodeString
-   called by error messages to display CHARSXP values */
+   called by error messages to display CHARSXP values.
+
+   The pointer returned by EncodeChar points into an internal buffer
+   which is overwritten by subsequent calls to EncodeChar/EncodeString.
+   It is the responsibility of the caller to copy the result before
+   any subsequent call to EncodeChar/EncodeString may happen. Note that
+   particularly it is NOT safe to pass the result of EncodeChar as 3rd
+   argument to errorcall (errorcall_cpy can be used instead). */
 //attribute_hidden
 const char *Rf_EncodeChar(SEXP x)
 {

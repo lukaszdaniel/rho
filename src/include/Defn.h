@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2015  The R Core Team.
+ *  Copyright (C) 1998--2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -162,7 +162,21 @@ extern void R_WaitEvent(void);
 
 /*  Heap and Pointer Protection Stack Sizes.  */
 
-/* These are all required by C99 */
+/* These headers are all required by C99.
+   However, we use types below such as uintptr_t which are optional in C11.
+   And on some older systems they were in inttypes.h but not stdint.h.
+
+   Up to 2.11.1 (r52035, May 2010) we had
+
+#if !defined(HAVE_INTPTR_T) && !defined(intptr_t)
+ typedef long intptr_t;
+#endif
+#if !defined(HAVE_UINTPTR_T) && !defined(uintptr_t)
+ typedef unsigned long uintptr_t;
+#endif
+    but size_t might be better.
+
+ */
 #ifdef HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
@@ -542,6 +556,7 @@ LibExtern SEXP R_LogicalNAValue;
 # define EncodeReal2            Rf_EncodeReal2
 # define EncodeString           Rf_EncodeString
 # define EnsureString 		Rf_EnsureString
+//# define errorcall_cpy		Rf_errorcall_cpy
 # define ErrorMessage		Rf_ErrorMessage
 # define findVar1		Rf_findVar1
 # define framedepth		Rf_framedepth
@@ -848,6 +863,7 @@ SEXP vectorIndex(SEXP, SEXP, int, int, int, SEXP, Rboolean);
 SEXP Rf_ItemName(SEXP, R_xlen_t);
 
 /* ../main/errors.cpp : */
+void NORET errorcall_cpy(SEXP, const char *, ...);
 void NORET ErrorMessage(SEXP, int, ...);
     void WarningMessage(SEXP, int /* R_WARNING */, ...);
 SEXP R_GetTraceback(int);

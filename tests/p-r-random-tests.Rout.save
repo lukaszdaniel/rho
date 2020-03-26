@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-24 r92ec3e439d) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-25 rf90b4e054c) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2016-12-16 r71800) -- "Frisbee Sailing"
+R Under development (unstable) (2017-01-17 r72000) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -284,6 +284,6 @@ f(df1 = 10, df2 = 2, ncp = 3) PASSED
 > 
 > 
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  1.456 0.004 1.461 0 0 
+Time elapsed:  1.436 0.004 1.44 0 0 
 > 
 > 

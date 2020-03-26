@@ -1550,7 +1550,7 @@ static void src2buff1(SEXP srcref, LocalParseData *d)
     const void *vmax = vmaxget();
     PROTECT(srcref);
 
-    PROTECT(srcref = Rf_lang2(Rf_install("as.character"), srcref));
+    PROTECT(srcref = Rf_lang2(R_AsCharacterSymbol, srcref));
     PROTECT(srcref = Rf_eval(srcref, R_BaseEnv));
     n = Rf_length(srcref);
     for(i = 0 ; i < n ; i++) {

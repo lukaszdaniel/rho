@@ -49,6 +49,11 @@ using namespace rho;
  *  promises requires that the promises be forced and
  *  the value duplicated.  */
 
+#define COPY_TRUELENGTH(to, from) do {			\
+	if (! IS_GROWABLE(from))			\
+	    SET_TRUELENGTH(to, XTRUELENGTH(from));	\
+    } while (0)
+
 /* This macro pulls out the common code in copying an atomic vector.
    The special handling of the scalar case (__n__ == 1) seems to make
    a small but measurable difference, at least for some cases
@@ -71,7 +76,7 @@ using namespace rho;
       } while(__n__ > 0); \
   } \
   DUPLICATE_ATTRIB(to, from, deep);		 \
-  SET_TRUELENGTH(to, XTRUELENGTH(from)); \
+  COPY_TRUELENGTH(to, from); \
   UNPROTECT(2); \
 } while (0)
 #else
@@ -82,7 +87,7 @@ using namespace rho;
   if (__n__ == 1) fun(to)[0] = fun(from)[0]; \
   else memcpy(fun(to), fun(from), __n__ * sizeof(type)); \
   DUPLICATE_ATTRIB(to, from, deep); \
-  SET_TRUELENGTH(to, XTRUELENGTH(from)); \
+  COPY_TRUELENGTH(to, from); \
   UNPROTECT(2); \
 } while (0)
 #endif

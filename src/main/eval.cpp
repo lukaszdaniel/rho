@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996	Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2016	The R Core Team.
+ *  Copyright (C) 1998--2017	The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -30,7 +30,6 @@
  * control constructs, and R profiling.
  */
 
-#undef HASHING
 
 #define R_NO_REMAP
 

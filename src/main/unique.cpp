@@ -822,7 +822,7 @@ static SEXP HashLookup(SEXP table, SEXP x, HashData *d)
     R_xlen_t i, n;
 
     n = XLENGTH(x);
-    PROTECT(ans = allocVector(INTSXP, n));
+    PROTECT(ans = Rf_allocVector(INTSXP, n));
     for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	INTEGER(ans)[i] = Lookup(table, x, i, d);
@@ -834,18 +834,18 @@ static SEXP HashLookup(SEXP table, SEXP x, HashData *d)
 static SEXP match_transform(SEXP s, SEXP env)
 {
     if(OBJECT(s)) {
-	if(inherits(s, "factor")) return asCharacterFactor(s);
-	else if(inherits(s, "POSIXlt")) { /* and maybe more classes in the future:
+	if(Rf_inherits(s, "factor")) return Rf_asCharacterFactor(s);
+	else if(Rf_inherits(s, "POSIXlt")) { /* and maybe more classes in the future:
 					   * Call R's (generic)	 as.character(s) : */
 	    SEXP call, r;
-	    PROTECT(call = lang2(install("as.character"), s));
-	    r = eval(call, env);
+	    PROTECT(call = Rf_lang2(R_AsCharacterSymbol, s));
+	    r = Rf_eval(call, env);
 	    UNPROTECT(1);
 	    return r;
 	}
     }
     /* else */
-    return duplicate(s);
+    return Rf_duplicate(s);
 }
 
 // workhorse of R's match() and hence also  " ix %in% itable "
@@ -856,7 +856,7 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
     SEXPTYPE type;
     HashData data;
 
-    R_xlen_t n = xlength(ix);
+    R_xlen_t n = Rf_xlength(ix);
 
     /* handle zero length arguments */
     if (n == 0) return allocVector(INTSXP, 0);

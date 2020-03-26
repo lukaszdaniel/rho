@@ -112,7 +112,7 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
 	    if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
 		s = Rf_getAttrib(vec, R_DimNamesSymbol);
 		if(!Rf_isNull(s)) {
-		    SET_NAMED(VECTOR_ELT(s, 0), 2);
+		    MARK_NOT_MUTABLE(VECTOR_ELT(s, 0));
 		    return VECTOR_ELT(s, 0);
 		}
 	    }
@@ -135,7 +135,7 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
 	    }
 	    UNPROTECT(1);
 	    if (any) {
-		if (!Rf_isNull(s)) SET_NAMED(s, 2);
+		if (!Rf_isNull(s)) MARK_NOT_MUTABLE(s);
 		return (s);
 	    }
 	    return R_NilValue;
@@ -146,7 +146,11 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
     if (!att) return nullptr;
     if (name == R_DimNamesSymbol && TYPEOF(att) == LISTSXP)
 	Rf_error("old list is no longer allowed for dimnames attribute\n");
-    SET_NAMED(att, 2);
+	    /**** this could be dropped for REFCNT or be less
+		  stringend for NAMED for attributes where the setter
+		  does not have a consistency check that could cail
+		  after mutation in a complex assignment LT */
+    MARK_NOT_MUTABLE(att);
     return att;
 }
 
@@ -824,9 +828,10 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
 	    Rf_error(_("invalid to use names()<- to set the 'names' slot in a non-vector class ('%s')"), klass);
 	/* else, go ahead, but can't check validity of replacement*/
     }
-    if (names != R_NilValue) {
-	GCStackRoot<PairList> tl(new PairList);
-      PROTECT(call = new Expression(Rf_install("as.character"), { names }));
+    if (names != R_NilValue &&
+	! (TYPEOF(names) == STRSXP && ATTRIB(names) == R_NilValue)) {
+	//GCStackRoot<PairList> tl(new PairList);
+      PROTECT(call = new Expression(R_AsCharacterSymbol, { names }));
 	names = Rf_eval(call, R_BaseEnv);
 	UNPROTECT(1);
     }
@@ -1019,6 +1024,11 @@ SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
 	    SET_TAG(val, Rf_installTrChar(STRING_ELT(top, i++)));
     }
     UNPROTECT(2);
+
+    /* Mark as immutable so nested complex assignment can't make the
+       dimnames attribute inconsistent with the length */
+    MARK_NOT_MUTABLE(val);
+
     return vec;
 }
 
@@ -1087,7 +1097,7 @@ SEXP Rf_dimgets(SEXP vec, SEXP val)
     removeAttrib(vec, R_DimNamesSymbol);
     vec->setAttribute(static_cast<Symbol*>(R_DimSymbol), val);
 
-    /* Mark as immutable so nested complex assignment can't made the
+    /* Mark as immutable so nested complex assignment can't make the
        dim attribute inconsistent with the length */
     MARK_NOT_MUTABLE(val);
 
@@ -1125,21 +1135,20 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
 	nvalues++;
     }
     while (attrs != R_NilValue) {
-	/* treat R_RowNamesSymbol specially */
-	if (TAG(attrs) == R_RowNamesSymbol)
-	    SET_VECTOR_ELT(value, nvalues,
-			   Rf_getAttrib(x, R_RowNamesSymbol));
-	else
-	    SET_VECTOR_ELT(value, nvalues, CAR(attrs));
-	if (TAG(attrs) == R_NilValue)
-	    SET_STRING_ELT(names, nvalues, R_BlankString);
-	else
+	SEXP tag = TAG(attrs);
+	if (TYPEOF(tag) == SYMSXP) {
+	    SET_VECTOR_ELT(value, nvalues, Rf_getAttrib(x, tag));
 	    SET_STRING_ELT(names, nvalues, PRINTNAME(TAG(attrs)));
+	}
+	else {
+	    MARK_NOT_MUTABLE(CAR(attrs));
+	    SET_VECTOR_ELT(value, nvalues, CAR(attrs));
+	    SET_STRING_ELT(names, nvalues, R_BlankString);
+	}	
 	attrs = CDR(attrs);
 	nvalues++;
     }
     Rf_setAttrib(value, R_NamesSymbol, names);
-    SET_NAMED(value, NAMED(x));
     UNPROTECT(3);
     return value;
 }

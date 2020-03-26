@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2016   The R Core Team.
+ *  Copyright (C) 1999-2017   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -47,7 +47,7 @@
 #else
 # include <stdio.h>
 # include <limits.h> /* for INT_MAX */
-# include <stddef.h> /* for ptrdiff_t */
+# include <stddef.h> /* for ptrdiff_t, which is required by C99 */
 #endif
 
 #include <R_ext/Arith.h>
@@ -482,6 +482,7 @@ LibExtern SEXP	R_MissingArg;	    /* Missing argument marker */
 // SEXP	R_RestartToken;     /* Marker for restarted function calls */
 
 /* Symbol Table Shortcuts */
+LibExtern SEXP	R_AsCharacterSymbol;/* "as.character" */
 LibExtern SEXP	R_baseSymbol; // <-- backcompatible version of:
 LibExtern SEXP	R_BaseSymbol;	// "base"
 LibExtern SEXP	R_BraceSymbol;	    /* "{" */

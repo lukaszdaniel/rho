@@ -927,7 +927,7 @@ function(package, lib.loc = NULL)
     ## Currently, we only return the names of all classes checked.
     ## </NOTE>
 
-    bad_Rd_objects <- structure(NULL, class = "codocClasses")
+    bad_Rd_objects <- structure(list(), class = "codocClasses")
 
     ## Argument handling.
     if(length(package) != 1L)
@@ -1094,7 +1094,7 @@ function(package, lib.loc = NULL)
     ## Currently, we only return the names of all data frames checked.
     ## </NOTE>
 
-    bad_Rd_objects <- structure(NULL, class = "codocData")
+    bad_Rd_objects <- structure(list(), class = "codocData")
 
     ## Argument handling.
     if(length(package) != 1L)
@@ -3518,7 +3518,7 @@ function(aar, strict = FALSE)
                     non_standard_roles <-
                         lapply(aar$role, setdiff,
                                utils:::MARC_relator_db_codes_used_with_R)
-                    ind <- sapply(non_standard_roles, length) > 0L
+                    ind <- lengths(non_standard_roles) > 0L
                     if(any(ind)) {
                         out$bad_authors_at_R_field_has_persons_with_nonstandard_roles <-
                             sprintf("%s: %s",
@@ -4172,20 +4172,20 @@ function(package, dir, lib.loc = NULL)
     if(!missing(package)) {
         aliases1 <- Rd_aliases(package, lib.loc = lib.loc)
         if(!length(aliases1))
-            return(structure(NULL, class = "check_Rd_xrefs"))
+            return(structure(list(), class = "check_Rd_xrefs"))
         aliases <- c(aliases, list(aliases1))
         db <- .build_Rd_xref_db(package, lib.loc = lib.loc)
     } else {
         aliases1 <- Rd_aliases(dir = dir)
         if(!length(aliases1))
-            return(structure(NULL, class = "check_Rd_xrefs"))
+            return(structure(list(), class = "check_Rd_xrefs"))
         aliases <- c(aliases, list(aliases1))
         db <- .build_Rd_xref_db(dir = dir)
     }
 
     ## Flatten the xref db into one big matrix.
     db <- cbind(do.call("rbind", db), rep(names(db), sapply(db, NROW)))
-    if(nrow(db) == 0L) return(structure(NULL, class = "check_Rd_xrefs"))
+    if(nrow(db) == 0L) return(structure(list(), class = "check_Rd_xrefs"))
 
     ## fixup \link[=dest] form
     anchor <- db[, 2L]
@@ -7634,8 +7634,7 @@ function(package, dir, lib.loc = NULL)
 
     files_grouped_by_names <- split(files, names)
     files_with_duplicated_names <-
-        files_grouped_by_names[sapply(files_grouped_by_names,
-                                      length) > 1L]
+        files_grouped_by_names[lengths(files_grouped_by_names) > 1L]
     if(length(files_with_duplicated_names))
         out$files_with_duplicated_names <-
             files_with_duplicated_names
@@ -7644,8 +7643,7 @@ function(package, dir, lib.loc = NULL)
         split(rep.int(files, lengths(aliases)),
               unlist(aliases, use.names = FALSE))
     files_with_duplicated_aliases <-
-        files_grouped_by_aliases[sapply(files_grouped_by_aliases,
-                                      length) > 1L]
+        files_grouped_by_aliases[lengths(files_grouped_by_aliases) > 1L]
     if(length(files_with_duplicated_aliases))
         out$files_with_duplicated_aliases <-
             files_with_duplicated_aliases
@@ -8244,7 +8242,7 @@ function(msg, x)
     xx <- strwrap(paste(sQuote(x), collapse = " "), exdent = 2L)
     if (length(xx) > 1L || nchar(msg) + nchar(xx) + 1L > 75L)
         c(msg, .pretty_format(x))
-    else paste(msg, xx, sep = " ")
+    else paste(msg, xx)
 }
 
 ### ** .pretty_print

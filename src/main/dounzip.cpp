@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  file dounzip.c
- *  first part Copyright (C) 2002-2015  The R Core Team
+ *  first part Copyright (C) 2002-2017  The R Core Team
  *  second part Copyright (C) 1998-2010 Gilles Vollant
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -506,12 +506,14 @@ R_newunz(const char *description, const char *const mode)
     if(!newconn->connclass) {
 	free(newconn);
 	error(_("allocation of 'unz' connection failed"));
+	/* for Solaris 12.5 */ newconn = NULL;
     }
     strcpy(newconn->connclass, "unz");
     newconn->description = static_cast<char *>( malloc(strlen(description) + 1));
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
 	error(_("allocation of 'unz' connection failed"));
+	/* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, description, CE_NATIVE, mode);
 
@@ -529,6 +531,7 @@ R_newunz(const char *description, const char *const mode)
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
 	error(_("allocation of 'unz' connection failed"));
+	/* for Solaris 12.5 */ newconn = NULL;
     }
     return newconn;
 }
@@ -656,9 +659,8 @@ typedef struct
     int isZip64;
 } unz64_s;
 
-
 /* ===========================================================================
-     Read a byte from a gz_stream; update next_in and avail_in. Return EOF
+   Read a byte from a gz_stream; update next_in and avail_in. Return EOF
    for end of file.
    IN assertion: the stream s has been sucessfully opened for reading.
 */

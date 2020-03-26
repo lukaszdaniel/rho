@@ -118,7 +118,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = Rf_lang2(Rf_install("as.character"), xj));
+		PROTECT(call = Rf_lang2(R_AsCharacterSymbol, xj));
 		SET_VECTOR_ELT(x, j, Rf_eval(call, env));
 		UNPROTECT(1);
 	    } else if (Rf_isSymbol(xj))
@@ -318,7 +318,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = Rf_lang2(Rf_install("as.character"), xj));
+		PROTECT(call = Rf_lang2(R_AsCharacterSymbol, xj));
 		SET_VECTOR_ELT(x, j, Rf_eval(call, R_BaseEnv));
 		UNPROTECT(1);
 	    } else if (Rf_isSymbol(xj))

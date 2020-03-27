@@ -356,6 +356,13 @@ typedef enum {
     GTOP
 } RELOP_TYPE;
 
+typedef enum {
+    MATPROD_DEFAULT = 1,
+    MATPROD_INTERNAL,
+    MATPROD_BLAS,
+    MATPROD_DEFAULT_SIMD  /* experimental */
+} MATPROD_TYPE;
+
 /* File Handling */
 /*
 #define R_EOF	65535
@@ -389,6 +396,7 @@ extern attribute_hidden int	R_BrowseLines;	/* lines/per call in browser */
 extern attribute_hidden Rboolean R_KeepSource;	/* options(keep.source) */
 extern attribute_hidden Rboolean R_CBoundsCheck;	/* options(CBoundsCheck) */
 extern attribute_hidden size_t	R_WarnLength;	/* Error/warning max length */
+extern attribute_hidden MATPROD_TYPE R_Matprod; /* options(matprod) */
 extern attribute_hidden int	R_nwarnings;
 extern uintptr_t R_CStackLimit;	/* C stack limit */
 extern uintptr_t R_OldCStackLimit; /* Old value while 
@@ -673,6 +681,7 @@ char	*R_HomeDir(void);
 Rboolean R_FileExists(const char *);
 Rboolean R_HiddenFile(const char *);
 double	R_FileMtime(const char *);
+int	R_GetFDLimit();
 
 /* environment cell access */
 // Used only by src/library/methods/src/methods_list_dispatch.c

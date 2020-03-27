@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-25 rf90b4e054c) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-26 ra04ed1cd38) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-01-17 r72000) -- "Frisbee Sailing"
+R Under development (unstable) (2017-02-17 r72200) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -714,13 +714,15 @@ Loading required package: survival
 4 . . . 1
 5 . . . .
 2 x 2 sparse Matrix of class "dgCMatrix"
-  a b
-a 2 .
-b . 2
+   x2
+x1  a b
+  a 2 .
+  b . 2
 2 x 2 sparse Matrix of class "dgCMatrix"
-  a b
-a 2 .
-b . 1
+   x3
+x1  a b
+  a 2 .
+  b . 1
 > 
 > ## regression tests for dimnames (broken on 2009-07-31)
 > contr.sum(4)

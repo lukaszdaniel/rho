@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -138,7 +138,10 @@ void R_setupHistory()
 }
 
 #if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)
-/* on macOS it seems sys/resource.h needs sys/time.h first */
+/*
+  Needed by AIX and formerly by macOS (but not by POSIX).
+  http://www.ibm.com/support/knowledgecenter/ssw_aix_61/com.ibm.aix.basetrf1/getrlimit_64.htm
+ */
 # ifdef HAVE_SYS_TIME_H
 #  include <sys/time.h>
 # endif
@@ -169,13 +172,33 @@ void R_GetStackLimits()
 
 #if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)
 {
+    /* getrlimit is POSIX:
+       http://pubs.opengroup.org/onlinepubs/9699919799/functions/getrlimit.html
+    */
     struct rlimit rlim;
 
     if(getrlimit(RLIMIT_STACK, &rlim) == 0) {
-	unsigned long lim1, lim2;
-	lim1 = (unsigned long) rlim.rlim_cur;
-	lim2 = (unsigned long) rlim.rlim_max; /* Usually unlimited */
-	R_CStackLimit = lim1 < lim2 ? lim1 : lim2;
+	/* 'unlimited' is represented by RLIM_INFINITY, which is a
+	   very large (but maybe not the largest) representable value.
+
+	   The standard allows the values RLIM_SAVED_CUR and
+	   RLIB_SAVED_MAX, apparently used on 32-bit AIX.  
+	   (http://www.ibm.com/support/knowledgecenter/ssw_aix_61/com.ibm.aix.basetrf1/getrlimit_64.htm)
+
+	   These may or may not be different from RLIM_INFINITY (they
+	   are the same on Linux and macOS but not Solaris where they
+	   are larger).  We will assume that unrepresentable limits
+	   are very large.
+
+	   This is cautious: it is extremely unlikely that the soft
+	   limit is either unlimited or unrepresentable.
+	*/
+	rlim_t lim = rlim.rlim_cur;
+#if defined(RLIM_SAVED_CUR) && defined(RLIM_SAVED_MAX)
+	if (lim == RLIM_SAVED_CUR || lim == RLIM_SAVED_MAX) 
+	    lim = RLIM_INFINITY;
+#endif
+	if (lim != RLIM_INFINITY) R_CStackLimit = (uintptr_t) lim;
     }
 }
 #endif
@@ -469,4 +492,32 @@ int R_EditFiles(int nfile, const char **file, const char **title,
 	return 0;
     }
     return 1;
+}
+
+/* Returns the limit on the number of open files. On error or when no
+   limit is known, returns a negative number. */
+int R_GetFDLimit() {
+
+#if defined(HAVE_SYS_RESOURCE_H) && defined(HAVE_GETRLIMIT)
+    struct rlimit rlim;
+    /* Historically this was RLIMIT_OFILE on BSD, but we require the
+       POSIX version.
+
+       Most often RLIM_INFINITY >= INT_MAX, but not on some 32-bit
+       systems.  On all current systems the limit will be at most a
+       few thousand.
+
+       Note that 'unlimited' here probably does not mean it:
+       e.g. there is a kernel limit of OPEN_MAX on macOS.
+    */
+    if (getrlimit(RLIMIT_NOFILE, &rlim) == 0) {
+	rlim_t lim = rlim.rlim_cur;
+#if defined(RLIM_SAVED_CUR) && defined(RLIM_SAVED_MAX)
+	if (lim == RLIM_SAVED_CUR || lim == RLIM_SAVED_MAX) 
+	    lim = RLIM_INFINITY;
+#endif
+	return (int)((lim > INT_MAX) ? INT_MAX : lim);
+    }
+#endif
+    return -1;
 }

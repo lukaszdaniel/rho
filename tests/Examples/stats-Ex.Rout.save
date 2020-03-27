@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-25 rf90b4e054c) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-26 ra04ed1cd38) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-01-17 r72000) -- "Frisbee Sailing"
+R Under development (unstable) (2017-02-17 r72200) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -3803,7 +3803,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7ff748c25cb0>
+<environment: 0x7fa9ad447620>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -7317,7 +7317,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7ff74953b910>
+<environment: 0x7fa9adefbca0>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -11927,12 +11927,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7ff74a146120>
+<environment: 0x7fa9af2f44a0>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7ff74a146120>
+<environment: 0x7fa9af2f44a0>
 
 > 
 > 
@@ -16009,7 +16009,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7ff749487cb0>
+<environment: 0x7fa9ad664240>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -18172,6 +18172,53 @@ Number of factors: 3
 Test for independence of all factors:
 	Chisq = 2000.3, df = 16, p-value = 0
 > 
+> ## with NA's
+> DN <- DF; DN[cbind(6:9, c(1:2,4,1))] <- NA; DN
+      Admit Gender Dept Freq
+1  Admitted   Male    A  512
+2  Rejected   Male    A  313
+3  Admitted Female    A   89
+4  Rejected Female    A   19
+5  Admitted   Male    B  353
+6      <NA>   Male    B  207
+7  Admitted   <NA>    B   17
+8  Rejected Female    B   NA
+9      <NA>   Male    C  120
+10 Rejected   Male    C  205
+11 Admitted Female    C  202
+12 Rejected Female    C  391
+13 Admitted   Male    D  138
+14 Rejected   Male    D  279
+15 Admitted Female    D  131
+16 Rejected Female    D  244
+17 Admitted   Male    E   53
+18 Rejected   Male    E  138
+19 Admitted Female    E   94
+20 Rejected Female    E  299
+21 Admitted   Male    F   22
+22 Rejected   Male    F  351
+23 Admitted Female    F   24
+24 Rejected Female    F  317
+> tools::assertError(# 'na.fail' should fail :
++      xtabs(Freq ~ Gender + Admit, DN, na.action=na.fail))
+> xtabs(Freq ~ Gender + Admit, DN)
+        Admit
+Gender   Admitted Rejected
+  Male       1078     1286
+  Female      540     1270
+> xtabs(Freq ~ Gender + Admit, DN, na.action = na.pass)
+        Admit
+Gender   Admitted Rejected
+  Male       1078     1286
+  Female      540         
+> ## The Female:Rejected combination has NA 'Freq' (and NA prints 'invisibly' as "")
+> xtabs(Freq ~ Gender + Admit, DN, addNA = TRUE) # ==> count NAs
+        Admit
+Gender   Admitted Rejected <NA>
+  Male       1078     1286  327
+  Female      540             0
+  <NA>         17        0    0
+> 
 > ## Create a nice display for the warp break data.
 > warpbreaks$replicate <- rep_len(1:9, 54)
 > ftable(xtabs(breaks ~ wool + tension + replicate, data = warpbreaks))
@@ -18286,7 +18333,7 @@ Number of Fisher Scoring iterations: 6
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  11.194 0.197 11.394 0 0 
+Time elapsed:  11.408 0.196 11.605 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -162,6 +162,7 @@ attribute_hidden int	R_BrowseLines	= 0;	/* lines/per call in browser */
 attribute_hidden Rboolean R_KeepSource	= FALSE;	/* options(keep.source) */
 attribute_hidden Rboolean R_CBoundsCheck = FALSE;	/* options(CBoundsCheck) */
 attribute_hidden size_t	R_WarnLength	= 1000;	/* Error/warning max length */
+attribute_hidden MATPROD_TYPE R_Matprod = MATPROD_DEFAULT; /* options(matprod) */
 attribute_hidden int    R_nwarnings     = 50;
 attribute_hidden int	R_CStackDir	= 1;	/* C stack direction */
 attribute_hidden Rboolean R_WarnEscapes  = TRUE;   /* Warn on unrecognized escapes */
@@ -279,10 +280,10 @@ static const char *R_PromptString(int browselevel, int type)
 		snprintf(BrowsePrompt, 20, "Browse[%d]> ", browselevel);
 		return BrowsePrompt;
 	    }
-	    return CHAR(STRING_ELT(Rf_GetOption1(Rf_install("prompt")), 0));
+	    return R_CHAR(STRING_ELT(Rf_GetOption1(Rf_install("prompt")), 0));
 	}
 	else {
-	    return CHAR(STRING_ELT(Rf_GetOption1(Rf_install("continue")), 0));
+	    return R_CHAR(STRING_ELT(Rf_GetOption1(Rf_install("continue")), 0));
 	}
     }
 }
@@ -376,7 +377,7 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 	/* The intention here is to break on CR but not on other
 	   null statements: see PR#9063 */
 	if (browselevel && !R_DisableNLinBrowser
-	    && streql(reinterpret_cast<char *>( state->buf), "\n")) return -1;
+	    && streql(reinterpret_cast<char *>(state->buf), "\n")) return -1;
 	R_IoBufferWriteReset(&R_ConsoleIob);
 	state->prompt_type = 1;
 	return 1;
@@ -657,12 +658,12 @@ static void sigactionSegv(int signum, siginfo_t *ip, void *context)
        We assume anything within 16Mb beyond the stack end is a stack overflow.
      */
     if(signum == SIGSEGV && (ip != RHO_NO_CAST(siginfo_t *)nullptr) &&
-       intptr_t( R_CStackStart) != -1) {
+       intptr_t(R_CStackStart) != -1) {
 	uintptr_t addr = uintptr_t( ip->si_addr);
 	intptr_t diff = (R_CStackDir > 0) ? R_CStackStart - addr:
 	    addr - R_CStackStart;
 	uintptr_t upper = 0x1000000;  /* 16Mb */
-	if(intptr_t( R_CStackLimit) != -1) upper += R_CStackLimit;
+	if(intptr_t(R_CStackLimit) != -1) upper += R_CStackLimit;
 	if(diff > 0 && diff < RHOCONSTRUCT(int, upper)) {
 	    REprintf(_("Error: segfault from C stack overflow\n"));
 	    Rf_jump_to_toplevel();
@@ -1452,7 +1453,7 @@ Rf_addTaskCallback(R_ToplevelCallback cb, void *data,
 {
     int which;
     R_ToplevelCallbackEl *el;
-    el = static_cast<R_ToplevelCallbackEl *>( malloc(sizeof(R_ToplevelCallbackEl)));
+    el = static_cast<R_ToplevelCallbackEl *>(malloc(sizeof(R_ToplevelCallbackEl)));
     if(!el)
 	error(_("cannot allocate space for toplevel callback element"));
 
@@ -1671,7 +1672,7 @@ Rboolean
 R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
 		      Rboolean visible, void *userData)
 {
-    SEXP f = static_cast<SEXP>( userData);
+    SEXP f = static_cast<SEXP>(userData);
     SEXP e, tmp, val, cur;
     int errorOccurred;
     Rboolean again, useData = RHOCONSTRUCT(Rboolean, LOGICAL(VECTOR_ELT(f, 2))[0]);
@@ -1728,7 +1729,7 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
 
     PROTECT(index = allocVector(INTSXP, 1));
     el = Rf_addTaskCallback(R_taskCallbackRoutine,  internalData,
-			    reinterpret_cast<void (*)(void*)>( R_ReleaseObject), tmpName,
+			    reinterpret_cast<void (*)(void*)>(R_ReleaseObject), tmpName,
 			    INTEGER(index));
 
     if(Rf_length(name) == 0) {

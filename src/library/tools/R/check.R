@@ -21,7 +21,7 @@
 ## R developers can use this to debug the function by running it
 ## directly as tools:::.check_packages(args), where the args should
 ## be what commandArgs(TRUE) would return, that is a character vector
-## of (space-delimited) terms that would be passed to R CMD checks.
+## of (space-delimited) terms that would be passed to R CMD check.
 
 ## Used for INSTALL and Rd2pdf
 run_Rcmd <- function(args, out = "", env = "")
@@ -737,9 +737,11 @@ setRlibs <-
         }
 
         ## check for BugReports field added at R 3.4.0
-        if(!is.na(BR0 <- db["BugReports"])) {
-            if (nzchar(BR0)) {
-                BR <- trimws(BR0)
+        ## This used to check for empty first line as that
+        ## breaks bug.report() in R <= 3.3.2 -- but read.dcf in those
+        ## versions adds back the newline.
+        if(!is.na(BR <- db["BugReports"])) {
+            if (nzchar(BR)) {
                 msg <- ""
                 ## prior to 3.4.0 this was said to be
                 ## 'a URL to which bug reports about the package
@@ -764,8 +766,7 @@ setRlibs <-
                             "BugReports field should be the URL of a single webpage"
                     } else
                         "BugReports field is not a suitable URL but contains an email address\n  which will be used as from R 3.4.0"
-                } else if (grepl("^\n *http", BR0))
-                    msg <- "BugReports field has an empty first line and will not work in R <= 3.3.2"
+                }
             } else {
                 msg <- "BugReports field should not be empty"
             }
@@ -2472,7 +2473,7 @@ setRlibs <-
                          "Compiled code should not call non-API entry points in R.\n")
             if(nRS)
                 msg <- c(msg,
-                         "It is good practice to use registered native symbols and to disable symbol search.\n")
+                         "It is good practice to register native routines and to disable symbol search.\n")
             wrapLog("\n", paste(msg, collapse = " "), "\n",
                     "See 'Writing portable packages'",
                     "in the 'Writing R Extensions' manual.\n")
@@ -4487,7 +4488,7 @@ setRlibs <-
                 R.version[["major"]], ".",  R.version[["minor"]],
                 " (r", R.version[["svn rev"]], ")\n", sep = "")
             cat("",
-                "Copyright (C) 1997-2013 The R Core Team.",
+                "Copyright (C) 1997-2017 The R Core Team.",
                 "This is free software; see the GNU General Public License version 2",
                 "or later for copying conditions.  There is NO warranty.",
                 sep="\n")
@@ -4729,8 +4730,7 @@ setRlibs <-
         Sys.setenv("_R_CHECK_S3_METHODS_NOT_REGISTERED_" = "TRUE")
         Sys.setenv("_R_CHECK_PACKAGE_DATASETS_SUPPRESS_NOTES_" = "TRUE")
         Sys.setenv("_R_CHECK_PACKAGES_USED_IGNORE_UNUSED_IMPORTS_" = "TRUE")
-### to come once fully documented
-###        Sys.setenv("_R_CHECK_SYMBOL_REGISTRATION_" = "TRUE")
+        Sys.setenv("_R_CHECK_NATIVE_ROUTINE_REGISTRATION_" = "TRUE")
         R_check_vc_dirs <- TRUE
         R_check_executables_exclusions <- FALSE
         R_check_doc_sizes2 <- TRUE

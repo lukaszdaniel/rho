@@ -109,6 +109,7 @@ stopifnot(identical(c0, strtrim(c0, integer(0))))
 
 
 ## Factors with duplicated levels {created via low-level code}:
+set.seed(11)
 f0 <- factor(sample.int(9, 20, replace=TRUE))
 (f <- structure(f0, "levels" = as.character(c(2:7, 2:4))))
 tools::assertWarning(print(f))
@@ -594,6 +595,89 @@ someCET <- paste("Europe", c("Berlin", "Brussels", "Copenhagen", "Madrid",
 if(Sys.t %in% someCET)
     stopifnot(print(TRUE), identical(format(x, tz = ""), "2012-12-12 13:12:12"))
 ## had failed for almost a month in R-devel & R-patched
+
+
+## xtabs() , notably with NA's :
+asArr <- function(x) {
+    attributes(x) <- list(dim=dim(x), dimnames=dimnames(x)); x }
+as_A <- function(x, A) array(x, dim=dim(A), dimnames=dimnames(A))
+eq_A <- function(a,b) ## equality of arrays, notably sparseMatrix vs dense
+    identical(dim(a),dim(b)) && identical(dimnames(a),dimnames(b)) &&
+        identical(as.vector(a), as.vector(b))
+esoph2 <- droplevels(subset(esoph, subset = tobgp > "10-19" & alcgp >= "40-79"))
+(xt <- xtabs(~ agegp + alcgp + tobgp, esoph2))
+stopifnot(identical(dim(xt), c(6L, 3L, 2L)), # of the 6 x 3 x 2 = 36 entries,
+          identical(which(xt == 0), c(7L, 12L, 18L, 23L, 30L, 32L, 36L)),
+          ## the above 8 are zeros and the rest is 1 :
+          all(xt[xt != 0] == 1))
+xtC <- xtabs(ncontrols ~ agegp + alcgp + tobgp, data = esoph2)
+stopifnot(# no NA's in data, hence result should have none, just 0's:
+    identical(asArr(unname(xtC)),
+	      array(c(4, 14, 15, 17, 9, 3,   0, 2, 5, 6, 3, 0,	 1, 4, 3, 3, 1, 0,
+		      7,  8,  7,  6, 0, 1,   2, 1, 4, 4, 1, 0,	 2, 0, 4, 6, 1, 0),
+		    dim = dim(xt))))
+
+DF <- as.data.frame(UCBAdmissions)
+xt <- xtabs(Freq ~ Gender + Admit, DF)
+stopifnot(identical(asArr(xt),
+		    array(c(1198, 557, 1493, 1278), dim = c(2L, 2L),
+			  dimnames = list(Gender = c("Male", "Female"),
+					  Admit = c("Admitted", "Rejected")))))
+options(na.action = "na.omit")
+DN <- DF; DN[cbind(6:9, c(1:2,4,1))] <- NA; DN
+
+tools::assertError(# 'na.fail' should fail :
+	   xtabs(Freq ~ Gender + Admit, DN, na.action=na.fail))
+xt. <- xtabs(Freq ~ Gender + Admit, DN)
+xtp <- xtabs(Freq ~ Gender + Admit, DN, na.action=na.pass)
+xtS <- xtabs(Freq ~ Gender + Admit, DN, na.action=na.pass, sparse=TRUE)# error in R <= 3.3.2
+xtN <- xtabs(Freq ~ Gender + Admit, DN, addNA=TRUE)
+xtNS<- xtabs(Freq ~ Gender + Admit, DN, addNA=TRUE, sparse=TRUE)
+stopifnot(
+    identical(asArr(xt - xt.), as_A(c(120,17, 207, 8 ), xt)),
+    identical(asArr(xt - xtp), as_A(c(120,17, 207, NA), xt)), # not ok in R <= 3.3.2
+    eq_A(xt., xtabs(Freq ~ Gender + Admit, DN, sparse = TRUE)),
+    eq_A(xtp, xtS),
+    eq_A(xtN, xtNS),
+    identical(asArr(-xtN + rbind(cbind(xt, 0), 0)),
+              as_A(c(120, 17, -17, 207, NA, 0, -327, 0, 0), xtN))
+)
+## NA treatment partly wrong in R < 3.4.0; new option 'addNA'
+ee <- esoph[esoph[,"ncases"] > 0, c(1:2,4)]
+ee[,"ncases"] <- as.integer(ee[,"ncases"])
+(tt <- xtabs(ncases ~ ., ee))
+stopifnot(identical(as.vector(tt[1:2,]), # *integer* + first value
+		    c(0L, 1L, 0L, 4L, 0L, 0L, 1L, 4L)))
+## keeping integer in sum()mation of integers
+
+
+## tapply() with FUN returning raw  |  with factor -> returning integer
+stopifnot(identical(tapply(1:3, 1:3, as.raw),
+                    array(as.raw(1:3), 3L, dimnames=list(1:3))), ## failed in R < 3.4.0
+          identical(3:1, as.vector(tapply(1:3, 1:3, factor, levels=3:1))))
+
+
+## str(<list of list>, max.level = 1)
+LoL <- function(lenC, FUN = identity)
+    lapply(seq_along(lenC), function(i) lapply(seq_len(lenC[i]), FUN))
+xx <- LoL(c(7,3,17,798,3))
+str(xx, list.len = 7, max.level = 1)
+str2 <- capture.output(
+ str(xx, list.len = 7, max.level = 2))
+stopifnot(
+    grepl("List of ", capture.output(str(xx, list.len = 7, max.level = 1))),
+    length(str2) == 35, sum(grepl("list output truncated", str2)) == 2,
+    vapply(paste("List of", lengths(xx)), function(pat) any(grepl(pat, str2)), NA)
+)
+## wrongly showed '[list output truncated]'  in R < 3.4.0
+
+
+## stopifnot(all.equal(.)) message abbreviation
+msg <- tryCatch(stopifnot(all.equal(rep(list(pi),4), list(3.1, 3.14, 3.141, 3.1415))),
+		error = conditionMessage)
+writeLines(msg)
+stopifnot(length(strsplit(msg,"\n")[[1]]) == 1+3+1)
+## was wrong for months in R-devel only
 
 
 

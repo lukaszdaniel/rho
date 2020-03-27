@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2000-2016   The R Core Team.
+ *  Copyright (C) 2000-2017   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -5070,6 +5070,9 @@ SEXP attribute_hidden do_url(/*const*/ Expression* call, const BuiltInFunction* 
     // --------- method
     meth = streql(cmeth, "libcurl"); // 1 if "libcurl", else 0
     defmeth = streql(cmeth, "default");
+#ifndef Win32
+    if(defmeth) meth = 1;
+#endif
     if (streql(cmeth, "wininet")) {
 #ifdef Win32
 	urlmeth = 1;  // it already was as this is the default

@@ -1,3 +1,8 @@
+% File src/library/tools/man/CRANtools.Rd
+% Part of the R package, https://www.R-project.org
+% Copyright 2016 R Core Team
+% Distributed under GPL 2 or later
+
 \name{CRANtools}
 \title{CRAN Package Repository Tools}
 \alias{CRAN_package_db}
@@ -59,6 +64,7 @@ summarize_CRAN_check_status(package,
 }
 \examples{
 ## IGNORE_RDIFF_BEGIN
+\dontshow{set.seed(11)}
 pdb <- CRAN_package_db()
 dim(pdb)
 ## DESCRIPTION fields included:

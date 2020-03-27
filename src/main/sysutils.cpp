@@ -876,7 +876,7 @@ next_char:
 	    /* This must be the first byte */
 	    size_t clen;
 	    wchar_t wc;
-	    clen = utf8toucs(&wc, inbuf);
+	    clen = Rf_utf8toucs(&wc, inbuf);
 	    if(clen > 0 && inb >= clen) {
 		inbuf += clen; inb -= clen;
 # ifndef Win32
@@ -914,7 +914,7 @@ const char *Rf_translateChar(SEXP x)
     if(TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP"), "translateChar");
     nttype_t t = needsTranslation(x);
-    const char *ans = CHAR(x);
+    const char *ans = R_CHAR(x);
     assert(ans != nullptr);
     if (t == NT_NONE) return ans;
 
@@ -929,15 +929,16 @@ const char *Rf_translateChar(SEXP x)
     return p;
 }
 
+/* (Install)s (Tr)anslated (Char)acter String */
 SEXP Rf_installTrChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP"), "installTrChar");
     nttype_t t = needsTranslation(x);
-    if (t == NT_NONE) return installChar(x);
+    if (t == NT_NONE) return Rf_installChar(x);
 
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
-    translateToNative(CHAR(x), &cbuff, t);
+    translateToNative(R_CHAR(x), &cbuff, t);
 
     SEXP Sans = Rf_install(cbuff.data);
     R_FreeStringBuffer(&cbuff);

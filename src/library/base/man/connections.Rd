@@ -139,11 +139,10 @@ isIncomplete(con)
   \url{http://curl.haxx.se/libcurl/}) is required on a Unix-alike but
   optional on Windows.  Method \code{"default"} uses method
   \code{"internal"} for \samp{file:} URLs and \code{"libcurl"} for
-  \code{ftps:} URLs.  On a Unix-alike it uses \code{"internal"} for
-  \samp{http:} and \code{ftp:} URLs and \code{"libcurl"} for
-  \samp{https:} URLs; on Windows \code{"wininet"} for \samp{http:},
-  \code{ftp:} and \samp{https:} URLs.  Proxies can be specified: see
-  \code{\link{download.file}}.
+  \code{ftps:} URLs.  On a Unix-alike it uses \code{"libcurl"} for
+  \samp{http:}, \samp{https:} and \samp{ftp:} URLs; on Windows
+  \code{"wininet"} for \samp{http:}, \samp{ftp:} and \samp{https:} URLs.
+  Proxies can be specified: see \code{\link{download.file}}.
 
   For \code{gzfile} the description is the path to a file compressed by
   \command{gzip}: it can also open for reading uncompressed files and
@@ -231,10 +230,9 @@ isIncomplete(con)
 
   No attempt is made to decode a percent-encoded \samp{file:} URL: call
   \code{\link{URLdecode}} if necessary.
-
-  The \code{"internal"} method does not follow re-directed HTTP URLs:
-  both methods \code{"wininet"} (the default on Windows) and
-  \code{"libcurl"} do (including for HTTPS URLs).
+  
+  All the methods attempt to follow redirected HTTP URLs, but the
+  \code{"internal"} method is unable to follow redirections to HTTPS URLs.
 
   Server-side cached data is always accepted.
 
@@ -497,7 +495,6 @@ isIncomplete(con)
   \R's connections are modelled on those in S version 4 (see Chambers,
   1998).  However \R goes well beyond the S model, for example in output
   text connections and URL, compressed and socket connections.
-
   The default open mode in \R is \code{"r"} except for socket connections.
   This differs from S, where it is the equivalent of \code{"r+"},
   known as \code{"*"}.

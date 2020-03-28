@@ -2,7 +2,7 @@
 # src/library/parallel/po/R-ko.po
 #
 # Copyright (C) 1995-2015 The R Core Team
-# 
+#
 # This file is distributed under the same license as the R parallel package.
 # Maintained by Chel Hee Lee <chl948@mail.usask.ca>, 2008-2015.
 #
@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2014-09-21 07:12\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2015-03-30 14:01-0600\n"
 "Last-Translator: Chel Hee Lee <chl948@mail.usask.ca>\n"
 "Language-Team: Chel Hee Lee  <chl948@mail.usask.ca>\n"
@@ -24,7 +24,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-msgid "invalid value of 'seed'"
+#, fuzzy
+msgid "invalid value of %s"
 msgstr "유효하지 않은 'seed'값입니다"
 
 msgid "need at least one argument"

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.13.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2011-04-02 \n"
 "Last-Translator: Murat Alkan <muratalk@gmail.com>\n"
 "Language-Team: Turkish <muratalk@gmail.com>\n"
@@ -92,6 +92,18 @@ msgid "value of 'strip.white' option should be lowercase"
 msgstr ""
 
 msgid "elements of 'what' after the first will be ignored"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+msgid "Unrecognized response"
 msgstr ""
 
 msgid "No suitable spell-checker program found"
@@ -177,6 +189,9 @@ msgstr ""
 msgid "%s should be one of %s"
 msgstr ""
 
+msgid "Argument '%s' is deprecated; rather set '%s' instead."
+msgstr ""
+
 msgid "A BibTeX entry for LaTeX users is"
 msgstr ""
 
@@ -251,6 +266,14 @@ msgid "could not restore variables properly"
 msgstr ""
 
 msgid "did not assign() anything"
+msgstr ""
+
+msgid ""
+"Cannot debug primitive functions unless they are implicit generics (requires "
+"loading the methods package)"
+msgstr ""
+
+msgid "error in trying to evaluate the expression for argument %s (%s)"
 msgstr ""
 
 msgid "Browsing in the environment with call:"
@@ -397,6 +420,12 @@ msgstr ""
 msgid "Saving help page to %s"
 msgstr ""
 
+msgid "Cancelled by user"
+msgstr ""
+
+msgid "Unable to connect to CRAN to check R version."
+msgstr ""
+
 msgid "argument %s must be a single character string"
 msgstr ""
 
@@ -409,13 +438,13 @@ msgstr ""
 msgid "argument 'help.db' is deprecated"
 msgstr ""
 
+msgid "incorrect type specification"
+msgstr ""
+
 msgid "no information in the database for package %s: need 'rebuild = TRUE'?"
 msgstr ""
 
 msgid "incorrect 'agrep' specification"
-msgstr ""
-
-msgid "incorrect type specification"
 msgstr ""
 
 #, fuzzy
@@ -482,6 +511,12 @@ msgid "Enter an item from the menu, or 0 to exit"
 msgstr ""
 
 msgid "invalid query"
+msgstr ""
+
+msgid "For SI units, specify 'standard = \"SI\"'"
+msgstr ""
+
+msgid "Unit \"%s\" is not part of standard \"%s\""
 msgstr ""
 
 msgid "'%s' is a formal generic function; S3 methods will not likely be found"
@@ -596,10 +631,16 @@ msgstr "--- Lütfen bu oturumda kullanılacak bir CRAN yansısı seçin ---"
 msgid "trying to use CRAN without setting a mirror"
 msgstr ""
 
-msgid "cannot choose a CRAN mirror non-interactively"
+msgid "'download.file()' error code '%d'"
 msgstr ""
 
-msgid "cannot choose a BioC mirror non-interactively"
+msgid "failed to download mirrors file (%s); using local file '%s'"
+msgstr ""
+
+msgid "cannot choose a"
+msgstr ""
+
+msgid "mirror non-interactively"
 msgstr ""
 
 msgid "cannot set repositories non-interactively"
@@ -631,8 +672,17 @@ msgstr ""
 msgid "'lib = \"%s\"' is not writable"
 msgstr ""
 
+msgid "Would you like to use a personal library instead?"
+msgstr ""
+
 msgid "unable to install packages"
 msgstr "paketler yüklenemedi"
+
+msgid ""
+"Would you like to create a personal library\n"
+"%s\n"
+"to install packages into?"
+msgstr ""
 
 #, fuzzy
 msgid "unable to create %s"
@@ -644,23 +694,19 @@ msgstr ""
 msgid "unable to create temporary directory %s"
 msgstr ""
 
-msgid ""
-"type == \"both\" can only be used on Windows or a CRAN build for Mac OS X"
+msgid "type == \"both\" can only be used on Windows or a CRAN build for macOS"
 msgstr ""
 
 msgid "type == \"both\" cannot be used with 'repos = NULL'"
 msgstr ""
 
-msgid "Do you want to attempt to install these from sources?"
-msgstr ""
-
 msgid "source repository is unavailable to check versions"
 msgstr ""
 
-msgid "cannot install MacOS X binary packages on Windows"
+msgid "cannot install macOS binary packages on Windows"
 msgstr ""
 
-msgid "cannot install MacOS X binary packages on this platform"
+msgid "cannot install macOS binary packages on this platform"
 msgstr ""
 
 msgid "cannot install Windows binary packages on this platform"
@@ -734,9 +780,6 @@ msgid ""
 msgstr ""
 
 msgid "no methods for %s and no documentation for it as a function"
-msgstr ""
-
-msgid "error in trying to evaluate the expression for argument %s (%s)"
 msgstr ""
 
 msgid "no method defined for function %s and signature %s"
@@ -873,10 +916,16 @@ msgstr ""
 msgid "'str.default': 'le' is NA, so taken as 0"
 msgstr ""
 
+msgid "'nchar.max = %d' is too small"
+msgstr ""
+
 msgid "'object' does not have valid levels()"
 msgstr ""
 
 msgid "'digits' and 'digits.d' are both specified and the latter is not used"
+msgstr ""
+
+msgid "The number of captures in 'pattern' != 'length(proto)'"
 msgstr ""
 
 msgid "no lines found in %s"
@@ -1006,13 +1055,16 @@ msgstr ""
 msgid "'ccaddress' must be of length 1"
 msgstr ""
 
-msgid "no download method found"
-msgstr ""
-
 msgid "'url' must be a length-one character vector"
 msgstr ""
 
 msgid "'destfile' must be a length-one character vector"
+msgstr ""
+
+msgid "'wget' call had nonzero exit status"
+msgstr ""
+
+msgid "'curl' call had nonzero exit status"
 msgstr ""
 
 msgid "download had nonzero exit status"
@@ -1021,7 +1073,7 @@ msgstr ""
 msgid "'tar' returned non-zero exit code %d"
 msgstr ""
 
-msgid "file %s is not an OS X binary package"
+msgid "file %s is not a macOS binary package"
 msgstr ""
 
 msgid "package %s successfully unpacked and MD5 sums checked"
@@ -1124,6 +1176,11 @@ msgstr[1] ""
 
 msgid "package %s is not available (%s)"
 msgid_plural "packages %s are not available (%s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "package %s is a base package, and should not be updated"
+msgid_plural "packages %s are base packages, and should not be updated"
 msgstr[0] ""
 msgstr[1] ""
 

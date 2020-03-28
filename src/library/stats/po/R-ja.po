@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.3.0 \n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2015-03-27 14:18+0900 \n"
 "Last-Translator: Masafumi  \n"
 "Language-Team: RjpWiki Message Translation Team <mokada@md.tsukuba.ac.jp> \n"
@@ -472,10 +472,17 @@ msgstr " カイ自乗近似は不正確かもしれません "
 msgid "NA values not allowed in 'd'"
 msgstr " 'd' 中には NA 値は許されません "
 
+msgid "eig=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
+msgid "x.ret=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
 msgid "distances must be result of 'dist' or a square matrix"
 msgstr " 距離は 'dist' の結果であるか、正方行列である必要があります "
 
-msgid "invalid value of 'n'"
+#, fuzzy
+msgid "invalid value of %s"
 msgstr " 'n' が無効な値です "
 
 msgid "'k' must be in {1, 2, ..  n - 1}"
@@ -483,6 +490,9 @@ msgstr " 'k' は {1, 2, .. n - 1} 内にある必要があります "
 
 msgid "only %d of the first %d eigenvalues are > 0"
 msgstr " %d 個の固有値 (最初の %d 個のうち) だけが正です "
+
+msgid "package 'MASS' must be installed"
+msgstr ""
 
 msgid "initial value is not in the interior of the feasible region"
 msgstr " 初期値は実行可能な範囲の内部にありません "
@@ -524,6 +534,10 @@ msgstr " 1 つ以上のベクトルを与えなければなりません "
 
 msgid "arguments must have the same length"
 msgstr " 引数は同じ長さでなければなりません "
+
+#, fuzzy
+msgid "wrong number of columns in new data:"
+msgstr " 'x' の列数が間違っています "
 
 msgid "contrasts apply only to factors"
 msgstr " 対比は因子にしか適用できません "
@@ -685,9 +699,6 @@ msgstr " 引数 'x' は数値でなければなりません "
 msgid "'x' contains missing values"
 msgstr " 'x' は欠測値を含んでいます "
 
-msgid "invalid value of length(x)"
-msgstr " length(x) の値が不正です "
-
 msgid "'x' and 'weights' have unequal length"
 msgstr " 'x' と 'weights' は同じ長さを持たねばなりません "
 
@@ -748,6 +759,9 @@ msgstr " 正方行列ではありません "
 msgid "specify 'rate' or 'scale' but not both"
 msgstr " 'rate' または 'scale' のどちらか一方を指定してください "
 
+msgid "NAs produced"
+msgstr ""
+
 msgid "x[] and prob[] must be equal length vectors."
 msgstr " x[] と prob[] は等しい長さのベクトルでなければなりません "
 
@@ -767,6 +781,9 @@ msgstr " 'prob' と 'mu' の双方が指定されました "
 
 msgid "some terms will have NAs due to the limits of the method"
 msgstr " メソッドの限界のために幾つかの項は NA 値を持つでしょう "
+
+msgid "multivariate case with missing coefficients is not yet implemented"
+msgstr ""
 
 msgid "'x' must have 1 or more non-missing values"
 msgstr " 'x' は 1 つ以上の非欠損値を持たなければなりません "
@@ -891,7 +908,10 @@ msgstr ""
 msgid "positive values only are allowed for the 'inverse.gaussian' family"
 msgstr " 'inverse.gaussian' ファミリでは正の値しか許されません "
 
-msgid "need CRAN package 'SuppDists' for the 'inverse.gaussian' family"
+#, fuzzy
+msgid ""
+"need CRAN package 'SuppDists' for simulation from the 'inverse.gaussian' "
+"family"
 msgstr ""
 " 'inverse.gaussian' ファミリには CRAN パッケージ 'SuppDists' が必要です "
 
@@ -1176,8 +1196,8 @@ msgstr " 'which' のすべての要素は 1 と %d の間になければなり�
 msgid "invalid parameter values"
 msgstr " 無効なパラメータ値です "
 
-msgid "a limit is missing"
-msgstr " 限界がありません "
+msgid "a limit is NA or NaN"
+msgstr ""
 
 msgid "missing values not allowed"
 msgstr " 欠測値は許されません "
@@ -1244,9 +1264,6 @@ msgstr " 中心の初期値に同じものがあります "
 
 msgid "more cluster centers than data points"
 msgstr " データ点よりも多くのクラスタ中心があります "
-
-msgid "'invalid value of 'k'"
-msgstr " 'k' の値が不正です "
 
 msgid "'iter.max' must be positive"
 msgstr " 'iter.max' は正でなければなりません "
@@ -1328,6 +1345,10 @@ msgstr ""
 " lm オブジェクトは適切な 'qr' 成分を持ちません。 \n"
 " ランクがゼロか lm(.., qr=FALSE) を使うべきではありませんでした。 "
 
+#, fuzzy
+msgid "simulate() is not yet implemented for multivariate lm()"
+msgstr " 'se.fit' は多変量モデルにはまだ実装されていません "
+
 msgid "family '%s' not implemented"
 msgstr " ファミリ '%s' は実装されていません "
 
@@ -1392,6 +1413,10 @@ msgstr " 無効な NCOL(X) "
 msgid "only 1-4 predictors are allowed"
 msgstr " 1-4 個の予測子しか許されません "
 
+#, fuzzy
+msgid "invalid NROW(X)"
+msgstr " 無効な NCOL(X) "
+
 msgid "invalid 'y'"
 msgstr " 無効な 'y' "
 
@@ -1415,6 +1440,13 @@ msgstr " 無効な引数 'cell' です "
 
 msgid "invalid argument 'degree'"
 msgstr " 無効な引数 'degree' です "
+
+msgid "iterTrace ="
+msgstr ""
+
+#, fuzzy
+msgid "not obeyed as iterations ="
+msgstr " 有限な観測値がありません "
 
 msgid "first argument must be a \"loess\" object"
 msgstr " 最初の引数は \"loess\" オブジェクトでなければなりません "
@@ -1898,6 +1930,9 @@ msgstr " y は空か、または NA 値しか持っていません "
 msgid "'formula' missing"
 msgstr " モデル式 ('formula') がありません "
 
+msgid "'type' must be 1 or 3 for ordered factors"
+msgstr ""
+
 msgid "factors are not allowed"
 msgstr " 要因 (factor) は許されません "
 
@@ -1940,8 +1975,8 @@ msgstr " 時間変動変数を名前から推測できませんでした "
 msgid "'varying' arguments must be the same length"
 msgstr " 'varying' 引数は同じ長さでなければなりません "
 
-msgid "'times' is wrong length"
-msgstr " 'times' の長さが誤っています "
+msgid "'lengths(varying)' must all match 'length(times)'"
+msgstr ""
 
 msgid "there are records with missing times, which will be dropped."
 msgstr " 時間が欠損した記録がありますので、取り除きます "
@@ -1964,9 +1999,6 @@ msgid ""
 msgstr ""
 " 'varying' の長さは 'v.names' の長さと 'times' の長さの積でなければなりませ"
 "ん "
-
-msgid "invalid value of 'k'"
-msgstr " 'k' の値が不正です "
 
 msgid "'k' must be positive"
 msgstr " 'k' は正でなければなりません "
@@ -2027,6 +2059,10 @@ msgstr " 重みの幾つかは正である必要があります "
 msgid "'tol' must be strictly positive and finite"
 msgstr " 'tol' は正で有限な数値でなければなりません "
 
+#, fuzzy
+msgid "invalid 'keep.stuff'"
+msgstr " 無効な 'method' です "
+
 msgid "need at least four unique 'x' values"
 msgstr " 'x' には少なくとも 4 つの異なる値が必要です "
 
@@ -2036,6 +2072,17 @@ msgstr " 'df' が特定されているので、'cv' は NA になってはいけ
 msgid "cross-validation with non-unique 'x' values seems doubtful"
 msgstr ""
 " 一意でない 'x' 値によるクロスバリデーションには問題があるかも知れません "
+
+#, fuzzy
+msgid "Numeric 'all.knots' must be strictly increasing"
+msgstr " 'x' は厳密に増加している必要があります (non - NA) "
+
+#, fuzzy
+msgid "'all.knots' is vector of knots; 'nknots' specification is disregarded"
+msgstr " 'all.knots' が TRUE なので 'nknots' の指定は無視されます "
+
+msgid "numeric 'all.knots' must cover [0,1] (= the transformed data-range)"
+msgstr ""
 
 msgid "'all.knots' is TRUE; 'nknots' specification is disregarded"
 msgstr " 'all.knots' が TRUE なので 'nknots' の指定は無視されます "
@@ -2049,13 +2096,14 @@ msgstr " 'nknots' は少なくとも 1 でなければなりません "
 msgid "cannot use more inner knots than unique 'x' values"
 msgstr " 相異なる 'x' 値の数より多くの内部結節点を使用することはできません "
 
+msgid "must not specify both 'spar' and 'lambda'"
+msgstr ""
+
 msgid "'spar' must be of length 1"
 msgstr " 'spar' の長さは 1 でなければなりません "
 
-msgid "specified both 'df' and 'cv'; will disregard the latter"
-msgstr " 'df' と 'cv' の両方が特定されているので、後者は無視されます "
-
-msgid "you must supply 1 < df <= n,  n = #{unique x} ="
+#, fuzzy
+msgid "not using invalid df; must have 1 < df <= n := #{unique x} ="
 msgstr ""
 " 自由度 1 < df < n を与えなければなりません。ここで n = #{unique x} =　 "
 
@@ -2074,6 +2122,9 @@ msgstr " type = \"partial\" はまだ実装されていません "
 msgid "not a valid \"smooth.spline\" object"
 msgstr " 有効な \"smooth.spline\" オブジェクトではありません "
 
+msgid "'span' must be between 0 and 1."
+msgstr " 'span' は 0 と 1 の間になければなりません。 "
+
 msgid "'y' must be numeric vector"
 msgstr " 'y' は数値ベクトルでなければなりません "
 
@@ -2082,9 +2133,6 @@ msgstr " 'x' と 'y' の観測値の数は一致しなければなりません�
 
 msgid "number of weights must match number of observations."
 msgstr " 重みの数は観測値の数と一致する必要があります "
-
-msgid "'span' must be between 0 and 1."
-msgstr " 'span' は 0 と 1 の間になければなりません。 "
 
 msgid "'x' must be between 0 and 1 for periodic smooth"
 msgstr " 周期的な平滑化のためには 'x' は 0 と 1 の間に位置する必要があります "
@@ -2320,7 +2368,9 @@ msgstr " (有限な) 'x' の観察値の数が十分ではありません "
 msgid "requested conf.level not achievable"
 msgstr " 指定された conf.level を達成できませんでした "
 
-msgid "cannot compute confidence interval when all observations are tied"
+#, fuzzy
+msgid ""
+"cannot compute confidence interval when all observations are zero or tied"
 msgstr " すべての観測値がタイの場合信頼区間を計算することができません "
 
 msgid "cannot compute exact confidence interval with ties"
@@ -2334,6 +2384,9 @@ msgstr " ゼロ値のため、正確な信頼区間を計算することがで�
 
 msgid "Requested conf.level not achievable"
 msgstr " 要求された conf.level は達成不能です "
+
+msgid "cannot compute confidence interval when all observations are tied"
+msgstr " すべての観測値がタイの場合信頼区間を計算することができません "
 
 msgid "must supply either 'formula' or 'data'"
 msgstr " 'formula' か 'data' のどちらかを与えなければなりません "
@@ -2495,6 +2548,24 @@ msgstr[0] " NA, NaN および Inf を含む %d 個のの観測値は削除され
 msgid "'start.innov' is too short: need %d point"
 msgid_plural "'start.innov' is too short: need %d points"
 msgstr[0] " 'start.innov' が短すぎます: %d 個の点が必要です "
+
+#~ msgid "invalid value of length(x)"
+#~ msgstr " length(x) の値が不正です "
+
+#~ msgid "a limit is missing"
+#~ msgstr " 限界がありません "
+
+#~ msgid "'invalid value of 'k'"
+#~ msgstr " 'k' の値が不正です "
+
+#~ msgid "'times' is wrong length"
+#~ msgstr " 'times' の長さが誤っています "
+
+#~ msgid "invalid value of 'k'"
+#~ msgstr " 'k' の値が不正です "
+
+#~ msgid "specified both 'df' and 'cv'; will disregard the latter"
+#~ msgstr " 'df' と 'cv' の両方が特定されているので、後者は無視されます "
 
 #~ msgid "non-matched further arguments are disregarded"
 #~ msgstr " 余計な引数は捨てられました "
@@ -2691,9 +2762,6 @@ msgstr[0] " 'start.innov' が短すぎます: %d 個の点が必要です "
 
 #~ msgid "invalid 'method': %s"
 #~ msgstr " 無効な 'method' です: %s "
-
-#~ msgid "invalid 'method'"
-#~ msgstr " 無効な 'method' です "
 
 #~ msgid "'newdata' does not contain the variables needed"
 #~ msgstr " 'newdata' は必要とされる変数を含んでいません "

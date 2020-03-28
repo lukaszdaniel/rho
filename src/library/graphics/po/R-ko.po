@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2015-03-30 14:01-0600\n"
 "Last-Translator: Chel Hee Lee <chl948@mail.usask.ca>\n"
 "Language-Team: Chel Hee Lee  <chl948@mail.usask.ca>\n"
@@ -120,6 +120,9 @@ msgstr "'x'와 'y'의 값은 증가해야만 합니다"
 
 msgid "no proper 'z' matrix specified"
 msgstr "적합한 'z' 행렬이 지정되지 않았습니다"
+
+msgid "'labels' is length zero.  Use 'drawlabels = FALSE' to suppress labels."
+msgstr ""
 
 msgid "invalid conditioning formula"
 msgstr "유효하지 않은 conditioning formula입니다"
@@ -348,6 +351,9 @@ msgstr "'x'의 값은 반드시 양수이어야 합니다"
 
 msgid "invalid table 'x'"
 msgstr "유효하지 않은 테이블 'x'입니다"
+
+msgid "the formula '%s' is treated as '%s'"
+msgstr ""
 
 msgid "cannot handle more than one 'x' coordinate"
 msgstr "한개 이상의 'x'좌표를 처리할 수 없습니다"

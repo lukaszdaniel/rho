@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.15.1\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2012-09-28 22:18+0200\n"
 "Last-Translator: Karl Ove Hufthammer <karl@huftis.org>\n"
 "Language-Team: Norwegian Nynorsk <i18n-nn@lister.ping.uio.no>\n"
@@ -229,6 +229,11 @@ msgstr "ugyldig «dimnames» oppgjeve for dataramme"
 #, fuzzy
 msgid "cannot coerce class \"%s\" to a data.frame"
 msgstr "kan ikkje gjera klassen «%s» om til ei dataramme"
+
+msgid ""
+"'row.names' is not a character vector of length %d -- omitting it. Will be "
+"an error!"
+msgstr ""
 
 msgid "options(\"stringsAsFactors\") not set to TRUE or FALSE"
 msgstr "options(\"stringsAsFactors\") ikkje sett til TRUE eller FALSE"
@@ -521,6 +526,15 @@ msgstr ""
 "Ugyldige linjer begynner med:\n"
 "%s"
 
+msgid "failed to load the methods package for debugging by signature"
+msgstr ""
+
+msgid "failed to load methods package for undebugging by signature"
+msgstr ""
+
+msgid "failed to load methods package for handling signature"
+msgstr ""
+
 msgid "'x' must be a square matrix"
 msgstr "«x» må vera ei kvadratisk matrise"
 
@@ -646,11 +660,13 @@ msgstr "ugyldig «path»-argument"
 msgid "invalid 'time' argument"
 msgstr "ugyldig «time»-argument"
 
-msgid "'vec' contains NAs"
-msgstr "«vec» inneheld NA-verdiar"
-
-msgid "'vec' must be sorted non-decreasingly"
+#, fuzzy
+msgid "'vec' must be sorted non-decreasingly and not contain NAs"
 msgstr "«vec» må vera sortert aukande rekkjefølgja"
+
+#, fuzzy
+msgid "'fun' is not a function"
+msgstr "handsamaren må vera ein funksjon"
 
 #, fuzzy
 msgid "using the first element of 'value' of type \"expression\""
@@ -658,6 +674,14 @@ msgstr "brukar første element av «value» i uttrykket"
 
 msgid "class of 'x' was discarded"
 msgstr ""
+
+#, fuzzy
+msgid "'flag' must be a string, i.e., of length 1"
+msgstr "«arg» må ha eitt element"
+
+#, fuzzy
+msgid "'flag' should contain only characters from [0+- #'I]"
+msgstr "«flag» kan berre innehalda «0+- #»"
 
 msgid "'mode' must be \"double\" (\"real\"), \"integer\" or \"character\""
 msgstr "«mode» må vera «double» («real»), «integer» eller «character»"
@@ -672,20 +696,21 @@ msgstr "«format» må vera éin av «f», «e», «E», «g», «G», «fg» el
 msgid "'digits' reduced to %d"
 msgstr "«digits» redusert til"
 
-msgid "'flag' can contain only '0+- #'"
-msgstr "«flag» kan berre innehalda «0+- #»"
-
 msgid "corrupt data frame: columns will be truncated or padded with NAs"
 msgstr "ugyldig dataramme: kolonnar vert trunkerte eller fylde med NA-verdiar"
-
-msgid "'big.mark' and 'decimal.mark' are both '%s', which could be confusing"
-msgstr ""
 
 msgid "'zero.print' has length > 1"
 msgstr "«zero.print» har lengd > 1"
 
 msgid "'zero.print' must be character, logical or NULL"
 msgstr "«zero.print» må vera ein teiknstreng, ein boolsk verdi eller NULL"
+
+msgid "'big.mark' and 'decimal.mark' are both '%s', which could be confusing"
+msgstr ""
+
+#, fuzzy
+msgid "'input.d.mark' has no characters"
+msgstr "«input» og «target» må vera teiknvektorar"
 
 msgid "'subset' must be logical"
 msgstr "«subset» må vera ein logisk vektor"
@@ -764,24 +789,9 @@ msgid "package %s is not installed for 'arch = %s'"
 msgstr "pakken %s er ikkje installert for «arch = %s»"
 
 msgid ""
-"package %s has a license that you need to accept in an interactive session"
-msgstr "pakken %s har lisensvilkår som du må godta i ei interaktiv økt"
-
-#, fuzzy
-msgid "package %s has a license that you need to accept after viewing"
-msgstr "Pakken %s har lisensvilkår som du må godta etter at du har lese"
-
-#, fuzzy
-msgid ""
-"package %s has a license that you need to accept:\n"
-"according to the DESCRIPTION file it is"
+"package %s was installed by an R version with different internals; it needs "
+"to be reinstalled for use with this R version"
 msgstr ""
-"Pakken %s har lisensvilkår som du må godta:\n"
-"Ifølgje DESCRIPTION-fila er vilkåra"
-
-#, fuzzy
-msgid "license for package %s not accepted"
-msgstr "Lisensvilkåra for pakken %s ikkje godtekne"
 
 msgid "Attaching package: %s"
 msgstr "Koplar til pakke: %s"
@@ -805,11 +815,15 @@ msgid "%s not found on search path, using pos = 2"
 msgstr "fann ikkje «%s» i søkjestigen – brukar «pos = 2»"
 
 #, fuzzy
-msgid "Package %s version %s cannot be unloaded"
+msgid ""
+"Package %s version %s cannot be unloaded:\n"
+" %s"
 msgstr "pakken «%s» er ikkje lasta"
 
 #, fuzzy
-msgid "package or namespace load failed for %s"
+msgid ""
+"package or namespace load failed for %s%s:\n"
+" %s"
 msgstr "feil ved lasting av pakke/namnerom for «%s»"
 
 #, fuzzy
@@ -958,6 +972,15 @@ msgstr "ugyldig «category»-argument"
 msgid "must specify names of formal arguments for 'vectorize'"
 msgstr "må oppgje namn på formelle argument til «vectorize»"
 
+msgid "FUN"
+msgstr ""
+
+msgid "may not have argument(s) named"
+msgstr ""
+
+msgid ","
+msgstr ","
+
 msgid "'arg' must be NULL or a character vector"
 msgstr "«arg» må vera NULL eller ein teiknvektor"
 
@@ -1083,6 +1106,31 @@ msgstr "pakken «%s» har ikkje noko namnerom"
 msgid "namespace %s %s is being loaded, but %s %s is required"
 msgstr "pakken «%s %s» er lasta, men «%s %s» trengst av «%s»"
 
+msgid ""
+"package %s has a license that you need to accept in an interactive session"
+msgstr "pakken %s har lisensvilkår som du må godta i ei interaktiv økt"
+
+#, fuzzy
+msgid "package %s has a license that you need to accept after viewing"
+msgstr "Pakken %s har lisensvilkår som du må godta etter at du har lese"
+
+#, fuzzy
+msgid "package %s has a license that you need to accept:"
+msgstr "Pakken %s har lisensvilkår som du må godta etter at du har lese"
+
+#, fuzzy
+msgid "according to the DESCRIPTION file it is"
+msgstr ""
+"Pakken %s har lisensvilkår som du må godta:\n"
+"Ifølgje DESCRIPTION-fila er vilkåra"
+
+msgid "%s"
+msgstr ""
+
+#, fuzzy
+msgid "license for package %s not accepted"
+msgstr "Lisensvilkåra for pakken %s ikkje godtekne"
+
 msgid "unable to load R code in package %s"
 msgstr "klarte ikkje lasta R-kode i pakken «%s»"
 
@@ -1154,15 +1202,20 @@ msgstr ""
 "fann metodar for import for funksjonen «%s», men ikkje for den generiske "
 "funksjonen sjølv"
 
+#, fuzzy
+msgid "replacing previous import %s by %s when loading %s"
+msgstr "byt ut førre import «%s» ved lasting av «%s»"
+
 msgid "No methods found in \"%s\" for requests: %s"
 msgstr "Fann ingen metodar i «%s» for førespurnader: %s"
 
 msgid "requested methods not found in environment/package %s: %s"
 msgstr "fann ikkje førespurde metodar i omgjevnaden/pakken «%s»: %s"
 
+#, fuzzy
 msgid ""
-"No generic function found corresponding to requested imported methods for "
-"\"%s\" from package \"%s\" (malformed exports?)"
+"No generic function %s found corresponding to requested imported methods "
+"from package %s when loading %s (malformed exports?)"
 msgstr ""
 "Fann ingen generisk funksjon som svarar til førespurde importerte metodar "
 "for «%s» frå pakken «%s» (feilformaterte eksportar?)"
@@ -1300,8 +1353,9 @@ msgstr "lengda av «scale» må vera lik talet på kolonnar til «x»"
 msgid "either specify 'nmax' or 'n', but not both."
 msgstr "oppgje «nmax» eller «n», men ikkje begge"
 
-msgid "'from' cannot be NA, NaN or infinite"
-msgstr ""
+#, fuzzy
+msgid "'from' must be a finite number"
+msgstr "«from» må vera eit «Date»-objekt"
 
 msgid "argument 'length.out' must be of length 1"
 msgstr "argumentet «length.out» må ha lengd 1"
@@ -1309,10 +1363,12 @@ msgstr "argumentet «length.out» må ha lengd 1"
 msgid "first element used of 'length.out' argument"
 msgstr "det første element i «length.out» vert brukt"
 
-msgid "'to' cannot be NA, NaN or infinite"
-msgstr ""
+#, fuzzy
+msgid "'to' must be a finite number"
+msgstr "«to» må vera eit «Date»-objekt"
 
-msgid "invalid (to - from)/by in seq(.)"
+#, fuzzy
+msgid "invalid '(to - from)/by'"
 msgstr "ugyldig (to - from)/by i seq(.)"
 
 msgid "wrong sign in 'by' argument"
@@ -1321,11 +1377,16 @@ msgstr "feil forteikn i «by»-argument"
 msgid "'by' argument is much too small"
 msgstr "«by»-argumentet er for lite"
 
-msgid "length must be non-negative number"
+#, fuzzy
+msgid "'length.out' must be a non-negative number"
 msgstr "lengda må vera eit ikkje-negativt tal"
 
 msgid "too many arguments"
 msgstr "for mange argument"
+
+#, fuzzy
+msgid "invalid 'compress' argument:"
+msgstr "ugyldig «name»-argument"
 
 msgid "'compress' is ignored unless 'file' is a file name"
 msgstr "«compress» vert ignorert med mindre «file» er eit filnamn"
@@ -1364,6 +1425,9 @@ msgstr ""
 "«decreasing» må vera ein boolske vektor med eitt element.\n"
 "Meinte du å bruka «partial»-argumentet?"
 
+msgid "'partial' sorting not supported by radix method"
+msgstr ""
+
 msgid "'index.return' only for non-factors"
 msgstr "«index.return» berre for ikkje-faktorar"
 
@@ -1393,10 +1457,6 @@ msgstr ""
 msgid "method = \"quick\" is only for numeric 'x'"
 msgstr "«method=\"quick\"» er berre for numerisk «x»"
 
-#, fuzzy
-msgid "method = \"radix\" is only for integer 'x'"
-msgstr "«method=\"radix\"» er berre for numerisk «x»"
-
 msgid "'local' must be TRUE, FALSE or an environment"
 msgstr "«local» må vera TRUE, FALSE eller ein omgjevnad"
 
@@ -1421,6 +1481,10 @@ msgstr "kan ikkje køyra «chdir» sidan gjeldande mappe er ukjend"
 msgid "'chdir = TRUE' makes no sense for a connection"
 msgstr "«chdir = TRUE» gjev ikkje meining for eit samband"
 
+#, fuzzy
+msgid "specify either 'file' or 'exprs' but not both"
+msgstr "oppgje «nmax» eller «n», men ikkje begge"
+
 msgid "'%s' is not an existing file"
 msgstr "«%s» er ikkje ei fil som finst"
 
@@ -1435,8 +1499,18 @@ msgstr "«x» og «y» må ha same lengd"
 msgid "additional arguments ignored in stop()"
 msgstr "fleire argument ignorerte i stop()"
 
+msgid ""
+"%s and %s are not equal:\n"
+"  %s"
+msgstr ""
+
 msgid "additional arguments ignored in warning()"
 msgstr "fleire argument ignorerte i warning()"
+
+msgid ""
+"Calling 'structure(NULL, *)' is deprecated, as NULL cannot have attributes.\n"
+"  Consider 'structure(list(), *)' instead."
+msgstr ""
 
 msgid "incorrect value for 'x'"
 msgstr "ugyldig verdi for «x»"
@@ -1444,14 +1518,8 @@ msgstr "ugyldig verdi for «x»"
 msgid "'x' and 'y' must have the same length"
 msgstr "«x» og «y» må ha same lengd"
 
-msgid "incorrect values of 'indent' and 'width'"
-msgstr "ugyldige verdiar til «indent» og «width»"
-
 msgid "probably wrong encoding in names(.) of column"
 msgstr "truleg feil teiknkoding for names(.) til kolonne"
-
-msgid ","
-msgstr ","
 
 msgid "STATS is longer than the extent of 'dim(x)[MARGIN]'"
 msgstr "STATS er lengre enn storleiken til «dim(x)[MARGIN]»"
@@ -1461,6 +1529,9 @@ msgstr "STATS kan ikkje resirkulerast fullstendig over MARGIN"
 
 msgid "length(STATS) or dim(STATS) do not match dim(x)[MARGIN]"
 msgstr "length(STATS) eller dim(STATS) er ikkje i samsvar med dim(x)[MARGIN]"
+
+msgid "'exclude' containing NA and 'useNA' != \"no\"' are a bit contradicting"
+msgstr ""
 
 msgid "nothing to tabulate"
 msgstr "ingenting å tabulera"
@@ -1490,7 +1561,7 @@ msgid "'bin' must be numeric or a factor"
 msgstr "«bin» må vera numerisk eller ein faktor"
 
 #, fuzzy
-msgid "invalid value of 'nbins'"
+msgid "invalid value of %s"
 msgstr "ugyldig verdi for nbins"
 
 msgid "'INDEX' is of length zero"
@@ -1498,6 +1569,10 @@ msgstr "«INDEX» har lengd 0"
 
 msgid "arguments must have same length"
 msgstr "argumenta må vera like lange"
+
+#, fuzzy
+msgid "total number of levels >= 2^31"
+msgstr "talet på nivå er forskjellig"
 
 msgid "handler must be a function"
 msgstr "handsamaren må vera ein funksjon"
@@ -1512,6 +1587,9 @@ msgstr "Fjernar"
 #, fuzzy
 msgid "Registering 'evaluate' as low-level callback"
 msgstr "Registrerer «evaluate» som lågnivå-callback"
+
+msgid "Timing stopped at:"
+msgstr ""
 
 msgid "user"
 msgstr "brukar"
@@ -1548,6 +1626,13 @@ msgstr "«%s» er ikkje definert for «numeric_version»-objekt"
 
 msgid "<0 elements>"
 msgstr "<0 element>"
+
+#, fuzzy
+msgid "'tags' must be a character vector of the same length as 'x'"
+msgstr "«input» må vera ein teiknvektor eller «NULL»"
+
+msgid "Summary of (a total of %d) warning messages:"
+msgstr ""
 
 msgid "invalid 'digits'"
 msgstr "ugyldig «digits»-verdi"
@@ -1803,6 +1888,16 @@ msgid_plural ""
 " extra arguments %s will be disregarded"
 msgstr[0] "ekstraargument(a) «%s» vert ikkje brukt(e)"
 msgstr[1] "ekstraargument(a) «%s» vert ikkje brukt(e)"
+
+#~ msgid "'vec' contains NAs"
+#~ msgstr "«vec» inneheld NA-verdiar"
+
+#, fuzzy
+#~ msgid "method = \"radix\" is only for integer 'x'"
+#~ msgstr "«method=\"radix\"» er berre for numerisk «x»"
+
+#~ msgid "incorrect values of 'indent' and 'width'"
+#~ msgstr "ugyldige verdiar til «indent» og «width»"
 
 #, fuzzy
 #~ msgid "re-exports %s not exported by %s"

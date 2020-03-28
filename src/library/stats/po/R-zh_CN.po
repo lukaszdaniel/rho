@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2005-04-08 08:37+0000\n"
 "Last-Translator: 陈斐 <feic@normipaiva.com>\n"
 "Language-Team: Chinese\n"
@@ -465,10 +465,17 @@ msgstr "Chi-squared近似算法有可能不准"
 msgid "NA values not allowed in 'd'"
 msgstr "'d'里不允许有NA值"
 
+msgid "eig=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
+msgid "x.ret=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
 msgid "distances must be result of 'dist' or a square matrix"
 msgstr "距离必需是'dist'计算出结果或是正方形矩阵"
 
-msgid "invalid value of 'n'"
+#, fuzzy
+msgid "invalid value of %s"
 msgstr "'n'的值不对"
 
 msgid "'k' must be in {1, 2, ..  n - 1}"
@@ -476,6 +483,9 @@ msgstr "'k'必需是{1, 2, ..  n - 1}中的一个"
 
 msgid "only %d of the first %d eigenvalues are > 0"
 msgstr "前%2$d个特征值里只有%1$d个大于零"
+
+msgid "package 'MASS' must be installed"
+msgstr ""
 
 msgid "initial value is not in the interior of the feasible region"
 msgstr "初始值不是在可行区域内"
@@ -517,6 +527,10 @@ msgstr "至少要提供一或多个矢量"
 
 msgid "arguments must have the same length"
 msgstr "参数的长度必需一样"
+
+#, fuzzy
+msgid "wrong number of columns in new data:"
+msgstr "'x'里的列数不对"
 
 msgid "contrasts apply only to factors"
 msgstr "对比只适用于因子"
@@ -673,9 +687,6 @@ msgstr "参数'x'必需是数值"
 msgid "'x' contains missing values"
 msgstr "'x'内含遺漏值"
 
-msgid "invalid value of length(x)"
-msgstr "length(x)的值不对"
-
 msgid "'x' and 'weights' have unequal length"
 msgstr "'x'和'weights'的长度必需相同"
 
@@ -736,6 +747,9 @@ msgstr "非正方形矩阵"
 msgid "specify 'rate' or 'scale' but not both"
 msgstr "'rate'和'scale'两个中只能设定其中一个"
 
+msgid "NAs produced"
+msgstr ""
+
 msgid "x[] and prob[] must be equal length vectors."
 msgstr "x[]和prob[]必需是长度相等的矢量。"
 
@@ -754,6 +768,9 @@ msgstr "'prob'和'mu'不能同时设定"
 
 msgid "some terms will have NAs due to the limits of the method"
 msgstr "因为这个方法的限制，有些项的值为NA"
+
+msgid "multivariate case with missing coefficients is not yet implemented"
+msgstr ""
 
 msgid "'x' must have 1 or more non-missing values"
 msgstr "'x'必需含一个或多个非遺漏值"
@@ -862,7 +879,10 @@ msgstr "inverse.gaussian分布族里没有\"%s\"这一鏈結函数；可以用�
 msgid "positive values only are allowed for the 'inverse.gaussian' family"
 msgstr "'inverse.gaussian'分布族只允许正值"
 
-msgid "need CRAN package 'SuppDists' for the 'inverse.gaussian' family"
+#, fuzzy
+msgid ""
+"need CRAN package 'SuppDists' for simulation from the 'inverse.gaussian' "
+"family"
 msgstr "'inverse.gaussian'分布族需要CRAN程序包'SuppDists'"
 
 msgid "using weights as inverse variances"
@@ -1138,8 +1158,8 @@ msgstr "'which'的所有单元值都必需在一和%d之间"
 msgid "invalid parameter values"
 msgstr "参数值不对"
 
-msgid "a limit is missing"
-msgstr "極限有遺漏"
+msgid "a limit is NA or NaN"
+msgstr ""
 
 msgid "missing values not allowed"
 msgstr "不能有遺漏值"
@@ -1206,9 +1226,6 @@ msgstr "初始中心的值有些是相同的"
 
 msgid "more cluster centers than data points"
 msgstr "群集中心的数目要比数据点数目多"
-
-msgid "'invalid value of 'k'"
-msgstr "参数'k'不对"
 
 msgid "'iter.max' must be positive"
 msgstr "'iter.max'必需是正数"
@@ -1288,6 +1305,10 @@ msgstr ""
 "lm对象的'qr'组件不对。\n"
 " 其秩零，要么不应该调用lm(.., qr=FALSE)."
 
+#, fuzzy
+msgid "simulate() is not yet implemented for multivariate lm()"
+msgstr "'se.fit'没有为多变量的模型实现"
+
 msgid "family '%s' not implemented"
 msgstr "分布族'%s'还没有实现"
 
@@ -1350,6 +1371,10 @@ msgstr "NCOL(X)不对"
 msgid "only 1-4 predictors are allowed"
 msgstr "只允许有一到四个従属変数"
 
+#, fuzzy
+msgid "invalid NROW(X)"
+msgstr "NCOL(X)不对"
+
 msgid "invalid 'y'"
 msgstr "'y'不对"
 
@@ -1373,6 +1398,13 @@ msgstr "参数'cell'不对"
 
 msgid "invalid argument 'degree'"
 msgstr "参数'degree'不对"
+
+msgid "iterTrace ="
+msgstr ""
+
+#, fuzzy
+msgid "not obeyed as iterations ="
+msgstr "没有有限观察量"
 
 msgid "first argument must be a \"loess\" object"
 msgstr "第一个参数必需为\"loess\"对象"
@@ -1846,6 +1878,9 @@ msgstr "y是空的或只含NA"
 msgid "'formula' missing"
 msgstr "没有'formula'"
 
+msgid "'type' must be 1 or 3 for ordered factors"
+msgstr ""
+
 msgid "factors are not allowed"
 msgstr "因子不适用于此"
 
@@ -1888,8 +1923,8 @@ msgstr "没有能够从它们的名字中来猜测时变参数"
 msgid "'varying' arguments must be the same length"
 msgstr "'varying'参数的长度必需相同"
 
-msgid "'times' is wrong length"
-msgstr "'times'的长度不对"
+msgid "'lengths(varying)' must all match 'length(times)'"
+msgstr ""
 
 msgid "there are records with missing times, which will be dropped."
 msgstr "含遺漏时间的记录略过不用。"
@@ -1910,9 +1945,6 @@ msgid ""
 "length of 'varying' must be the product of length of 'v.names' and length of "
 "'times'"
 msgstr "'varying'的长度必需是'v.names'和'times'长度的乘積"
-
-msgid "invalid value of 'k'"
-msgstr "参数'k'不对"
 
 msgid "'k' must be positive"
 msgstr "'k'必需是正数"
@@ -1971,6 +2003,10 @@ msgstr "至少有一些权数应该是正的"
 msgid "'tol' must be strictly positive and finite"
 msgstr "'tol'必需是有限的正数"
 
+#, fuzzy
+msgid "invalid 'keep.stuff'"
+msgstr "'method'不对"
+
 msgid "need at least four unique 'x' values"
 msgstr "至少需要四个相互不同的'x'值"
 
@@ -1979,6 +2015,17 @@ msgstr "当'df'有定义时'cv'不能是NA"
 
 msgid "cross-validation with non-unique 'x' values seems doubtful"
 msgstr "用有重复的'x'来做交叉验证好象不太对"
+
+#, fuzzy
+msgid "Numeric 'all.knots' must be strictly increasing"
+msgstr "'x'必需*严格*增加(非NA)"
+
+#, fuzzy
+msgid "'all.knots' is vector of knots; 'nknots' specification is disregarded"
+msgstr "'all.knots'的值为TRUE；因此'nknots'就略过不用"
+
+msgid "numeric 'all.knots' must cover [0,1] (= the transformed data-range)"
+msgstr ""
 
 msgid "'all.knots' is TRUE; 'nknots' specification is disregarded"
 msgstr "'all.knots'的值为TRUE；因此'nknots'就略过不用"
@@ -1992,13 +2039,14 @@ msgstr "'nknots'必需至少为一"
 msgid "cannot use more inner knots than unique 'x' values"
 msgstr "内部结点数止比相互不同的'x'数目要多"
 
+msgid "must not specify both 'spar' and 'lambda'"
+msgstr ""
+
 msgid "'spar' must be of length 1"
 msgstr "'spar'的长度必需是一"
 
-msgid "specified both 'df' and 'cv'; will disregard the latter"
-msgstr "'df'和'cv'都有设定；后者略过不用"
-
-msgid "you must supply 1 < df <= n,  n = #{unique x} ="
+#, fuzzy
+msgid "not using invalid df; must have 1 < df <= n := #{unique x} ="
 msgstr "你必需提供1 < df <= n,  n = #{unique x} ="
 
 msgid "NA lev[]; probably smoothing parameter 'spar' way too large!"
@@ -2016,6 +2064,9 @@ msgstr "还没有实现type=\"partial\"的算法"
 msgid "not a valid \"smooth.spline\" object"
 msgstr " \"smooth.spline\"对象不对"
 
+msgid "'span' must be between 0 and 1."
+msgstr "'span'必需在零和一之间。"
+
 msgid "'y' must be numeric vector"
 msgstr "'y'必需是数值矢量"
 
@@ -2024,9 +2075,6 @@ msgstr " 'x'和'y'里的观察量数目必需相等。"
 
 msgid "number of weights must match number of observations."
 msgstr "权数数目必需和观察量数目相同。"
-
-msgid "'span' must be between 0 and 1."
-msgstr "'span'必需在零和一之间。"
 
 msgid "'x' must be between 0 and 1 for periodic smooth"
 msgstr "做周期平滑时'x'必需在零和一之间"
@@ -2256,7 +2304,9 @@ msgstr "(有限)'x'观察量数目不够"
 msgid "requested conf.level not achievable"
 msgstr "无法达到所要求的conf.level"
 
-msgid "cannot compute confidence interval when all observations are tied"
+#, fuzzy
+msgid ""
+"cannot compute confidence interval when all observations are zero or tied"
 msgstr "所有观察数据值都是一样的话无法計算精確的置信区间"
 
 msgid "cannot compute exact confidence interval with ties"
@@ -2270,6 +2320,9 @@ msgstr "有零时无法計算精確的置信区间"
 
 msgid "Requested conf.level not achievable"
 msgstr "无法达到所要求的conf.level"
+
+msgid "cannot compute confidence interval when all observations are tied"
+msgstr "所有观察数据值都是一样的话无法計算精確的置信区间"
 
 msgid "must supply either 'formula' or 'data'"
 msgstr "至少要提供'formula'和'data'中间的一个"
@@ -2435,6 +2488,24 @@ msgstr[0] "删除了含NA, NaN或Inf的%d个观察量"
 msgid "'start.innov' is too short: need %d point"
 msgid_plural "'start.innov' is too short: need %d points"
 msgstr[0] "'start.innov'太短了，需要%d个点"
+
+#~ msgid "invalid value of length(x)"
+#~ msgstr "length(x)的值不对"
+
+#~ msgid "a limit is missing"
+#~ msgstr "極限有遺漏"
+
+#~ msgid "'invalid value of 'k'"
+#~ msgstr "参数'k'不对"
+
+#~ msgid "'times' is wrong length"
+#~ msgstr "'times'的长度不对"
+
+#~ msgid "invalid value of 'k'"
+#~ msgstr "参数'k'不对"
+
+#~ msgid "specified both 'df' and 'cv'; will disregard the latter"
+#~ msgstr "'df'和'cv'都有设定；后者略过不用"
 
 #~ msgid "non-matched further arguments are disregarded"
 #~ msgstr "不匹配的额外参数略过不用"
@@ -2626,9 +2697,6 @@ msgstr[0] "'start.innov'太短了，需要%d个点"
 
 #~ msgid "invalid 'method': %s"
 #~ msgstr "'method'有错: %s"
-
-#~ msgid "invalid 'method'"
-#~ msgstr "'method'不对"
 
 #~ msgid "'newdata' does not contain the variables needed"
 #~ msgstr "'newdata'不包含需要的变量"

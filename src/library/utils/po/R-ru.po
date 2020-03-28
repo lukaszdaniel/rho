@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.11.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2015-03-27 19:05-0600\n"
 "Last-Translator: Alexey Shipunov <dactylorhiza@gmail.com>\n"
 "Language-Team: Russian\n"
@@ -103,6 +103,19 @@ msgstr "значение опции 'strip.white' должно быть в нижнем регистре"
 msgid "elements of 'what' after the first will be ignored"
 msgstr "элементы 'what' после первого будут пропущены"
 
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+#, fuzzy
+msgid "Unrecognized response"
+msgstr "Нераспознанное специальное значение данных"
+
 msgid "No suitable spell-checker program found"
 msgstr "Не найдено подходящей программы проверки грамматики"
 
@@ -192,6 +205,10 @@ msgstr "индекс за границами"
 msgid "%s should be one of %s"
 msgstr "%s должен быть одним из %s"
 
+#, fuzzy
+msgid "Argument '%s' is deprecated; rather set '%s' instead."
+msgstr "аргумент 'namespace' устарел и не рекомендуется."
+
 msgid "A BibTeX entry for LaTeX users is"
 msgstr "BibTeX запись для пользователей LaTeX"
 
@@ -271,6 +288,14 @@ msgstr "не могу полностью восстановить переменные"
 
 msgid "did not assign() anything"
 msgstr "не могу ничего assign()"
+
+msgid ""
+"Cannot debug primitive functions unless they are implicit generics (requires "
+"loading the methods package)"
+msgstr ""
+
+msgid "error in trying to evaluate the expression for argument %s (%s)"
+msgstr "ошибка при попытке выполнить выражение для аргумента %s (%s)"
 
 msgid "Browsing in the environment with call:"
 msgstr "Просмотр окружения с вызовом:"
@@ -427,6 +452,12 @@ msgstr "создание %s не удалось"
 msgid "Saving help page to %s"
 msgstr "Сохраняю страницу помощи в %s"
 
+msgid "Cancelled by user"
+msgstr ""
+
+msgid "Unable to connect to CRAN to check R version."
+msgstr ""
+
 msgid "argument %s must be a single character string"
 msgstr "аргумент %s должен быть одной текстовой строкой"
 
@@ -439,14 +470,14 @@ msgstr "непонятно, что искать"
 msgid "argument 'help.db' is deprecated"
 msgstr "аргумент 'help.db' устарел"
 
+msgid "incorrect type specification"
+msgstr "неправильное указание типа"
+
 msgid "no information in the database for package %s: need 'rebuild = TRUE'?"
 msgstr "в базе данных нет информации о пакете %s: надо 'rebuild = TRUE'?"
 
 msgid "incorrect 'agrep' specification"
 msgstr "неправильное указание 'agrep'"
-
-msgid "incorrect type specification"
-msgstr "неправильное указание типа"
 
 msgid "could not find package %s"
 msgstr "не могу найти пакет %s"
@@ -516,6 +547,12 @@ msgstr "Введите пункт из меню или 0 для выхода"
 
 msgid "invalid query"
 msgstr "неправильный запрос"
+
+msgid "For SI units, specify 'standard = \"SI\"'"
+msgstr ""
+
+msgid "Unit \"%s\" is not part of standard \"%s\""
+msgstr ""
 
 msgid "'%s' is a formal generic function; S3 methods will not likely be found"
 msgstr ""
@@ -638,11 +675,19 @@ msgstr ""
 msgid "trying to use CRAN without setting a mirror"
 msgstr "пробую использовать CRAN без установки зеркала"
 
-msgid "cannot choose a CRAN mirror non-interactively"
-msgstr "не могу выбрать зеркало CRAN неинтерактивно"
+#, fuzzy
+msgid "'download.file()' error code '%d'"
+msgstr "Ошибка read.dcf() на файле '%s'"
 
-msgid "cannot choose a BioC mirror non-interactively"
-msgstr "не могу выбрать зеркало BioC неинтерактивно"
+msgid "failed to download mirrors file (%s); using local file '%s'"
+msgstr ""
+
+msgid "cannot choose a"
+msgstr ""
+
+#, fuzzy
+msgid "mirror non-interactively"
+msgstr "не могу выбрать зеркало CRAN неинтерактивно"
 
 msgid "cannot set repositories non-interactively"
 msgstr "не могу установить хранилища неинтерактивно"
@@ -675,8 +720,24 @@ msgstr "не указаны пакеты"
 msgid "'lib = \"%s\"' is not writable"
 msgstr "'lib = \"%s\"' не для записи"
 
+#, fuzzy
+msgid "Would you like to use a personal library instead?"
+msgstr ""
+"Не хотите ли Вы создать персональную библиотеку\n"
+"%s\n"
+"для того чтобы инсталлировать пакеты в нее?"
+
 msgid "unable to install packages"
 msgstr "не могу установить пакеты"
+
+msgid ""
+"Would you like to create a personal library\n"
+"%s\n"
+"to install packages into?"
+msgstr ""
+"Не хотите ли Вы создать персональную библиотеку\n"
+"%s\n"
+"для того чтобы инсталлировать пакеты в нее?"
 
 msgid "unable to create %s"
 msgstr "не удалось создать %s"
@@ -687,8 +748,8 @@ msgstr "выставляю 'repos = NULL' на основе 'pkgs'"
 msgid "unable to create temporary directory %s"
 msgstr "не могу создать временную директорию %s"
 
-msgid ""
-"type == \"both\" can only be used on Windows or a CRAN build for Mac OS X"
+#, fuzzy
+msgid "type == \"both\" can only be used on Windows or a CRAN build for macOS"
 msgstr ""
 "type == \"both\" можно использовать только на Windows или CRAN-сборке для "
 "Mac OS X"
@@ -696,16 +757,15 @@ msgstr ""
 msgid "type == \"both\" cannot be used with 'repos = NULL'"
 msgstr "type == \"both\" нельзя использовать вместе с 'repos = NULL'"
 
-msgid "Do you want to attempt to install these from sources?"
-msgstr "Вы хотите попытаться инсталлировать их из исходников?"
-
 msgid "source repository is unavailable to check versions"
 msgstr "репозиторий исходников недоступен для того, чтобы проверить версии"
 
-msgid "cannot install MacOS X binary packages on Windows"
+#, fuzzy
+msgid "cannot install macOS binary packages on Windows"
 msgstr "не могу установить бинарные пакеты MacOS X под Windows"
 
-msgid "cannot install MacOS X binary packages on this platform"
+#, fuzzy
+msgid "cannot install macOS binary packages on this platform"
 msgstr "не могу установить бинарные пакеты MacOS X на этой платформе"
 
 msgid "cannot install Windows binary packages on this platform"
@@ -790,9 +850,6 @@ msgstr ""
 
 msgid "no methods for %s and no documentation for it as a function"
 msgstr "для %s нет методов и нет документации для него как функции"
-
-msgid "error in trying to evaluate the expression for argument %s (%s)"
-msgstr "ошибка при попытке выполнить выражение для аргумента %s (%s)"
 
 msgid "no method defined for function %s and signature %s"
 msgstr "для функции %s и подписи %s не определено метода"
@@ -934,11 +991,17 @@ msgstr "неправильные компоненты в options('str'): %s"
 msgid "'str.default': 'le' is NA, so taken as 0"
 msgstr "'str.default': 'le' -- это NA, так что беру как 0"
 
+msgid "'nchar.max = %d' is too small"
+msgstr ""
+
 msgid "'object' does not have valid levels()"
 msgstr "'object' не имеет правильных levels()"
 
 msgid "'digits' and 'digits.d' are both specified and the latter is not used"
 msgstr "определены и 'digits', и 'digits.d', последняя не используется"
+
+msgid "The number of captures in 'pattern' != 'length(proto)'"
+msgstr ""
 
 msgid "no lines found in %s"
 msgstr "в '%s' нет строк"
@@ -1077,14 +1140,19 @@ msgstr "пропущен 'subject'"
 msgid "'ccaddress' must be of length 1"
 msgstr "'ccaddress' должен быть длиной 1"
 
-msgid "no download method found"
-msgstr "не найдено метода скачивания"
-
 msgid "'url' must be a length-one character vector"
 msgstr "'url' должен быть текстовым вектором единичной длины"
 
 msgid "'destfile' must be a length-one character vector"
 msgstr "'destfile' должен быть текстовым вектором единичной длины"
+
+#, fuzzy
+msgid "'wget' call had nonzero exit status"
+msgstr "у скачивания ненулевой статус выхода"
+
+#, fuzzy
+msgid "'curl' call had nonzero exit status"
+msgstr "у скачивания ненулевой статус выхода"
 
 msgid "download had nonzero exit status"
 msgstr "у скачивания ненулевой статус выхода"
@@ -1092,7 +1160,8 @@ msgstr "у скачивания ненулевой статус выхода"
 msgid "'tar' returned non-zero exit code %d"
 msgstr "'tar' вернул ненулевой код выхода %d"
 
-msgid "file %s is not an OS X binary package"
+#, fuzzy
+msgid "file %s is not a macOS binary package"
 msgstr "файл %s -- не бинарный пакет OS X"
 
 msgid "package %s successfully unpacked and MD5 sums checked"
@@ -1215,6 +1284,13 @@ msgstr[0] "пакет '%s' недоступен (%s)"
 msgstr[1] "пакета %s недоступны (%s)"
 msgstr[2] "пакетов %s недоступно (%s)"
 
+#, fuzzy
+msgid "package %s is a base package, and should not be updated"
+msgid_plural "packages %s are base packages, and should not be updated"
+msgstr[0] "пакет '%s' сейчас используется и не будет установлен"
+msgstr[1] "пакеты '%s' сейчас используются и не будут установлены"
+msgstr[2] "пакеты '%s' сейчас используются и не будут установлены"
+
 msgid "dependency %s is not available"
 msgid_plural "dependencies %s are not available"
 msgstr[0] "зависимость '%s' недоступна"
@@ -1325,6 +1401,15 @@ msgid_plural "packages %s are in use and will not be installed"
 msgstr[0] "пакет '%s' сейчас используется и не будет установлен"
 msgstr[1] "пакеты '%s' сейчас используются и не будут установлены"
 msgstr[2] "пакеты '%s' сейчас используются и не будут установлены"
+
+#~ msgid "cannot choose a BioC mirror non-interactively"
+#~ msgstr "не могу выбрать зеркало BioC неинтерактивно"
+
+#~ msgid "Do you want to attempt to install these from sources?"
+#~ msgstr "Вы хотите попытаться инсталлировать их из исходников?"
+
+#~ msgid "no download method found"
+#~ msgstr "не найдено метода скачивания"
 
 #~ msgid ","
 #~ msgstr ","
@@ -1454,9 +1539,6 @@ msgstr[2] "пакеты '%s' сейчас используются и не будут установлены"
 #~ msgid "From R 2.14.0 on, every package gets a NAMESPACE."
 #~ msgstr "Начиная с R 2.14.0, каждый пакет получает NAMESPACE."
 
-#~ msgid "Argument 'namespace' is deprecated."
-#~ msgstr "аргумент 'namespace' устарел и не рекомендуется."
-
 #~ msgid "Creating NAMESPACE ..."
 #~ msgstr "Создаю NAMESPACE..."
 
@@ -1486,15 +1568,6 @@ msgstr[2] "пакеты '%s' сейчас используются и не будут установлены"
 
 #~ msgid "Further steps are described in '%s'."
 #~ msgstr "Дальнейшее указано в '%s'."
-
-#~ msgid ""
-#~ "Would you like to create a personal library\n"
-#~ "%s\n"
-#~ "to install packages into?"
-#~ msgstr ""
-#~ "Не хотите ли Вы создать персональную библиотеку\n"
-#~ "%s\n"
-#~ "для того чтобы инсталлировать пакеты в нее?"
 
 #~ msgid "Postscript offline help is deprecated"
 #~ msgstr "Локальная помощь Postscript устарела"
@@ -1538,9 +1611,6 @@ msgstr[2] "пакеты '%s' сейчас используются и не будут установлены"
 
 #~ msgid "updating HTML package descriptions"
 #~ msgstr "обновляю HTML-описания пакетов"
-
-#~ msgid "read.dcf() error on file '%s'"
-#~ msgstr "Ошибка read.dcf() на файле '%s'"
 
 #~ msgid "Could not find aspell or ispell executable."
 #~ msgstr "Не могу найти исполняемого файла aspell или ispell."

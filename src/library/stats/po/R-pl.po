@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Łukasz Daniel <lukasz.daniel@gmail.com>\n"
 "Language-Team: Łukasz Daniel <lukasz.daniel@gmail.com>\n"
@@ -488,10 +488,17 @@ msgstr "Aproksymacja chi-kwadrat może być niepoprawna"
 msgid "NA values not allowed in 'd'"
 msgstr "wartości NA w argumencie 'd' nie są dozwolone"
 
+msgid "eig=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
+msgid "x.ret=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
 msgid "distances must be result of 'dist' or a square matrix"
 msgstr "odległości muszą być wynikiem 'dist' lub być kwadratową macierzą"
 
-msgid "invalid value of 'n'"
+#, fuzzy
+msgid "invalid value of %s"
 msgstr "niepoprawna wartość 'n'"
 
 msgid "'k' must be in {1, 2, ..  n - 1}"
@@ -499,6 +506,9 @@ msgstr "'k' musi być w zakresie {1, 2, ..  n - 1}"
 
 msgid "only %d of the first %d eigenvalues are > 0"
 msgstr "tylko %d pierwszych %d wartości własnych jest > 0"
+
+msgid "package 'MASS' must be installed"
+msgstr ""
 
 msgid "initial value is not in the interior of the feasible region"
 msgstr "wartość początkowa nie jest wewnątrz możliwego regionu"
@@ -542,6 +552,10 @@ msgstr "potrzeba dostarczyć jeden lub więecj wektorów"
 
 msgid "arguments must have the same length"
 msgstr "argumenty muszą mieć tę samą długość"
+
+#, fuzzy
+msgid "wrong number of columns in new data:"
+msgstr "niepoprawna liczba kolumn w 'x'"
 
 msgid "contrasts apply only to factors"
 msgstr "kontrasty mają zastosowanie jedynie do czynników"
@@ -712,9 +726,6 @@ msgstr "argument 'x' musi być liczbą"
 msgid "'x' contains missing values"
 msgstr "argument 'x' zawiera brakujące wartości"
 
-msgid "invalid value of length(x)"
-msgstr "niepoprawna wartość 'length(x)'"
-
 msgid "'x' and 'weights' have unequal length"
 msgstr "argumenty 'x' oraz 'weights' mają niezgodne długości"
 
@@ -776,6 +787,9 @@ msgstr "macierz niekwadratowa"
 msgid "specify 'rate' or 'scale' but not both"
 msgstr "określ 'rate' lub 'scale', ale nie oba jednocześnie"
 
+msgid "NAs produced"
+msgstr ""
+
 msgid "x[] and prob[] must be equal length vectors."
 msgstr "argumenty 'x' oraz 'prob' muszą być wektorami o jednakowej długości"
 
@@ -796,6 +810,9 @@ msgstr "określono jednocześnie argumenty 'prob' oraz 'mu'"
 msgid "some terms will have NAs due to the limits of the method"
 msgstr ""
 "niektóre wyrażenia będą miały wartości NA z uwagi na ograniczenia metody"
+
+msgid "multivariate case with missing coefficients is not yet implemented"
+msgstr ""
 
 msgid "'x' must have 1 or more non-missing values"
 msgstr "'x' musi mieć 1 lub więcej niebrakujących wartości"
@@ -915,7 +932,10 @@ msgstr ""
 msgid "positive values only are allowed for the 'inverse.gaussian' family"
 msgstr "dodanie wartości są dozwolone jedynie dla rodziny 'inverse.gaussian'"
 
-msgid "need CRAN package 'SuppDists' for the 'inverse.gaussian' family"
+#, fuzzy
+msgid ""
+"need CRAN package 'SuppDists' for simulation from the 'inverse.gaussian' "
+"family"
 msgstr "potrzeba pakietu 'SuppDists' z CRAN dla rodziny 'inverse.gaussian'"
 
 msgid "using weights as inverse variances"
@@ -1207,8 +1227,8 @@ msgstr "wszystkie elementy 'which' muszą być pomiędzy 1 a %d"
 msgid "invalid parameter values"
 msgstr "niepoprawne wartości parametrów"
 
-msgid "a limit is missing"
-msgstr "brakuje co najmniej jednej granicy całkowania"
+msgid "a limit is NA or NaN"
+msgstr ""
 
 msgid "missing values not allowed"
 msgstr "brakujące wartości są niedozwolone"
@@ -1275,9 +1295,6 @@ msgstr "początkowe centra nie są różne"
 
 msgid "more cluster centers than data points"
 msgstr "więcej centrów grup niż punktów danych"
-
-msgid "'invalid value of 'k'"
-msgstr "niepoprawna wartość 'k'"
 
 msgid "'iter.max' must be positive"
 msgstr "argument 'iter.max' musi być dodatni"
@@ -1362,6 +1379,12 @@ msgstr ""
 "obiekt 'lm' nie ma poprawnego komponentu 'qr'. Ranga powinna być zerem lub "
 "nie powinieneś był użyć 'lm(.., qr=FALSE)'."
 
+#, fuzzy
+msgid "simulate() is not yet implemented for multivariate lm()"
+msgstr ""
+"funkcja 'se.fit()' nie jest jeszcze zaimplementowana dla wielowymiarowych "
+"modeli"
+
 msgid "family '%s' not implemented"
 msgstr "rodzina '%s' nie jest zaimplementowana"
 
@@ -1431,6 +1454,10 @@ msgstr "niepoprawna wartość 'NCOL(X)'"
 msgid "only 1-4 predictors are allowed"
 msgstr "tylko od 1 do 4 predyktorów jest dozwolone"
 
+#, fuzzy
+msgid "invalid NROW(X)"
+msgstr "niepoprawna wartość 'NCOL(X)'"
+
 msgid "invalid 'y'"
 msgstr "niepoprawna wartość 'y'"
 
@@ -1458,6 +1485,13 @@ msgstr "niepoprawny argument 'cell'"
 
 msgid "invalid argument 'degree'"
 msgstr "niepoprawny argument 'degree'"
+
+msgid "iterTrace ="
+msgstr ""
+
+#, fuzzy
+msgid "not obeyed as iterations ="
+msgstr "brak skończonych obserwacji"
 
 msgid "first argument must be a \"loess\" object"
 msgstr "pierwszy argument musi być obiektem klasu \"loess\""
@@ -1956,6 +1990,9 @@ msgstr "argument 'y' jest pusty lub posiada jedynie wartości NA"
 msgid "'formula' missing"
 msgstr "brakuje argumentu 'formula'"
 
+msgid "'type' must be 1 or 3 for ordered factors"
+msgstr ""
+
 msgid "factors are not allowed"
 msgstr "czynniki nie są dozwolone"
 
@@ -1999,8 +2036,8 @@ msgstr "nie udało się odgadnąć zmiennych zależnych od czasu z ich nazw"
 msgid "'varying' arguments must be the same length"
 msgstr "argumenty 'varying' muszą być tej samej długości"
 
-msgid "'times' is wrong length"
-msgstr "argument 'times' ma niepoprawną długość"
+msgid "'lengths(varying)' must all match 'length(times)'"
+msgstr ""
 
 msgid "there are records with missing times, which will be dropped."
 msgstr "pojawiają się rekordy z brakującymi czasami, które zostaną pominięte."
@@ -2022,9 +2059,6 @@ msgid ""
 "'times'"
 msgstr ""
 "długość 'varying' musi być iloczynem długości 'v.names' oraz długości 'times'"
-
-msgid "invalid value of 'k'"
-msgstr "niepoprawna wartość 'k'"
 
 msgid "'k' must be positive"
 msgstr "argument 'k' musi być dodatni"
@@ -2085,6 +2119,10 @@ msgstr "niektóre wagi powinny być dodatnie"
 msgid "'tol' must be strictly positive and finite"
 msgstr "argument 'tol' musi być ściśle dodatni i skończony"
 
+#, fuzzy
+msgid "invalid 'keep.stuff'"
+msgstr "niepoprawna wartość 'x'"
+
 msgid "need at least four unique 'x' values"
 msgstr "potrzeba przynajmniej czterech unikalnych wartości 'x'"
 
@@ -2093,6 +2131,18 @@ msgstr "argument 'cv' nie może mieć wartości NA, gdy określono argument 'df'
 
 msgid "cross-validation with non-unique 'x' values seems doubtful"
 msgstr "krzyżowa walidacja z nieunikalnymi wartościami 'x' wydaje się wątpliwa"
+
+#, fuzzy
+msgid "Numeric 'all.knots' must be strictly increasing"
+msgstr "'x' musi być *ściśle* rosnące (nie - NA)"
+
+#, fuzzy
+msgid "'all.knots' is vector of knots; 'nknots' specification is disregarded"
+msgstr ""
+"argument 'all.knots' ma wartość TRUE; specyfikacja 'nknots' została odrzucona"
+
+msgid "numeric 'all.knots' must cover [0,1] (= the transformed data-range)"
+msgstr ""
 
 msgid "'all.knots' is TRUE; 'nknots' specification is disregarded"
 msgstr ""
@@ -2107,13 +2157,14 @@ msgstr "argument 'nknots' musi wynosić co najmniej 1"
 msgid "cannot use more inner knots than unique 'x' values"
 msgstr "nie można użyć więcej wewnętrznych węzłów niż unikalnych wartości 'x'"
 
+msgid "must not specify both 'spar' and 'lambda'"
+msgstr ""
+
 msgid "'spar' must be of length 1"
 msgstr "argument 'spar' musi mieć długość 1"
 
-msgid "specified both 'df' and 'cv'; will disregard the latter"
-msgstr "określono jednocześnie 'df' oraz 'cv'; drugi zostanie odrzucony"
-
-msgid "you must supply 1 < df <= n,  n = #{unique x} ="
+#, fuzzy
+msgid "not using invalid df; must have 1 < df <= n := #{unique x} ="
 msgstr "musisz dostarczyć 1 < df <= n,  n = #{unikalne x} ="
 
 msgid "NA lev[]; probably smoothing parameter 'spar' way too large!"
@@ -2133,6 +2184,9 @@ msgstr "'type = \"partial\"' nie jest jeszcze zaimplementowany"
 msgid "not a valid \"smooth.spline\" object"
 msgstr "to nie jest poprawny obiekt klasy \"smooth.spline\""
 
+msgid "'span' must be between 0 and 1."
+msgstr "argument 'span' musi być pomiędzy 0 a 1"
+
 msgid "'y' must be numeric vector"
 msgstr "argument 'y' musi być wektorem liczbowym"
 
@@ -2141,9 +2195,6 @@ msgstr "liczba obserwacji w argumentach 'x' oraz 'y' musi się zgadzać"
 
 msgid "number of weights must match number of observations."
 msgstr "liczba wag musi zgadzać się z liczbą obserwacji"
-
-msgid "'span' must be between 0 and 1."
-msgstr "argument 'span' musi być pomiędzy 0 a 1"
 
 msgid "'x' must be between 0 and 1 for periodic smooth"
 msgstr "'x' musi być pomiedzy 0 a 1 dla periodycznego wygładzania"
@@ -2380,7 +2431,9 @@ msgstr "niewystarczająca liczba skończonych obserwacji"
 msgid "requested conf.level not achievable"
 msgstr "żądany 'conf.level' nie jest osiągalny"
 
-msgid "cannot compute confidence interval when all observations are tied"
+#, fuzzy
+msgid ""
+"cannot compute confidence interval when all observations are zero or tied"
 msgstr ""
 "nie można obliczyć przedziału ufności gdy wszystkie obserwacje są powtórzone"
 
@@ -2396,6 +2449,10 @@ msgstr "nie można obliczyć dokładnego przedziału ufności z zerami"
 
 msgid "Requested conf.level not achievable"
 msgstr "żądany 'conf.level' nie jest osiągalny"
+
+msgid "cannot compute confidence interval when all observations are tied"
+msgstr ""
+"nie można obliczyć przedziału ufności gdy wszystkie obserwacje są powtórzone"
 
 msgid "must supply either 'formula' or 'data'"
 msgstr "potrzeba dostarczyć albo 'formula' albo 'data'"
@@ -2623,6 +2680,24 @@ msgid_plural "'start.innov' is too short: need %d points"
 msgstr[0] "argument 'start.innov' jest zbyt krótki: potrzeba %d punktu"
 msgstr[1] "argument 'start.innov' jest zbyt krótki: potrzeba %d punktów"
 msgstr[2] "argument 'start.innov' jest zbyt krótki: potrzeba %d punktów"
+
+#~ msgid "invalid value of length(x)"
+#~ msgstr "niepoprawna wartość 'length(x)'"
+
+#~ msgid "a limit is missing"
+#~ msgstr "brakuje co najmniej jednej granicy całkowania"
+
+#~ msgid "'invalid value of 'k'"
+#~ msgstr "niepoprawna wartość 'k'"
+
+#~ msgid "'times' is wrong length"
+#~ msgstr "argument 'times' ma niepoprawną długość"
+
+#~ msgid "invalid value of 'k'"
+#~ msgstr "niepoprawna wartość 'k'"
+
+#~ msgid "specified both 'df' and 'cv'; will disregard the latter"
+#~ msgstr "określono jednocześnie 'df' oraz 'cv'; drugi zostanie odrzucony"
 
 #~ msgid "non-matched further arguments are disregarded"
 #~ msgstr "dalsze niedopasowane argumenty zostały odrzucone"

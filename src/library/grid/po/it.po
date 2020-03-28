@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: R 2.1.0\n"
-"Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51+0100\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-03-28 19:51+0100\n"
 "PO-Revision-Date: 2005-04-17 17:30+0200\n"
 "Last-Translator: stefano iacus <>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -22,52 +22,52 @@ msgstr ""
 msgid "cannot clip to rotated viewport"
 msgstr "Impossibile tagliare su una viewport ruotata"
 
-#: grid.c:697 grid.c:702 grid.c:792 grid.c:797
+#: grid.c:697 grid.c:702 grid.c:791 grid.c:796
 #, fuzzy
 msgid "cannot pop the top-level viewport ('grid' and 'graphics' output mixed?)"
 msgstr ""
 "Non posso mostrare la view-port di livello massimo (grid e graphics output "
 "mischiato?)"
 
-#: grid.c:977
+#: grid.c:976
 msgid "attempt to plot on null device"
 msgstr "tentativo di scrivere sul dispositivo null"
 
-#: grid.c:1309
+#: grid.c:1308
 #, fuzzy
 msgid "there is no layout defined"
 msgstr "Il layout non è definito"
 
-#: grid.c:1529
+#: grid.c:1528
 msgid "polygon edge not found (zero-width or zero-height?)"
 msgstr ""
 
-#: grid.c:1538
+#: grid.c:1537
 msgid "polygon edge not found"
 msgstr ""
 
-#: grid.c:1692
+#: grid.c:1691
 msgid "require at least two points to draw arrow"
 msgstr ""
 
-#: grid.c:2008
+#: grid.c:2007
 msgid "non-finite control point in Xspline"
 msgstr ""
 
-#: grid.c:2873
+#: grid.c:2872
 msgid "non-finite x or y in graphics path"
 msgstr ""
 
-#: grid.c:2914
+#: grid.c:2913
 msgid "Empty raster"
 msgstr ""
 
-#: grid.c:3368
+#: grid.c:3367
 #, fuzzy
 msgid "invalid plotting symbol"
 msgstr "layout.pos.col non valido"
 
-#: grid.c:3454
+#: grid.c:3453
 #, fuzzy
 msgid "unable to clip to rotated rectangle"
 msgstr "Impossibile tagliare su una viewport ruotata"
@@ -82,11 +82,11 @@ msgstr "layout.pos.row non valido"
 msgid "invalid 'layout.pos.col'"
 msgstr "layout.pos.col non valido"
 
-#: matrix.c:49
+#: matrix.c:50
 msgid "singular transformation matrix"
 msgstr ""
 
-#: state.c:169
+#: state.c:170
 #, fuzzy
 msgid "unable to store 'grid' state.  Too many devices open?"
 msgstr "Impossibile memorizzare lo stato di grid. Troppi dispositivi aperti?"

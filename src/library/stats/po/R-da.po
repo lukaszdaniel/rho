@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.0.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2012-01-28 01:18+0200\n"
 "Last-Translator: Joe <joedalton2@yahoo.dk>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -466,16 +466,25 @@ msgstr ""
 msgid "NA values not allowed in 'd'"
 msgstr ""
 
+msgid "eig=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
+msgid "x.ret=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
 msgid "distances must be result of 'dist' or a square matrix"
 msgstr ""
 
-msgid "invalid value of 'n'"
+msgid "invalid value of %s"
 msgstr ""
 
 msgid "'k' must be in {1, 2, ..  n - 1}"
 msgstr ""
 
 msgid "only %d of the first %d eigenvalues are > 0"
+msgstr ""
+
+msgid "package 'MASS' must be installed"
 msgstr ""
 
 msgid "initial value is not in the interior of the feasible region"
@@ -517,6 +526,9 @@ msgid "must supply one or more vectors"
 msgstr ""
 
 msgid "arguments must have the same length"
+msgstr ""
+
+msgid "wrong number of columns in new data:"
 msgstr ""
 
 msgid "contrasts apply only to factors"
@@ -674,9 +686,6 @@ msgstr ""
 msgid "'x' contains missing values"
 msgstr ""
 
-msgid "invalid value of length(x)"
-msgstr ""
-
 msgid "'x' and 'weights' have unequal length"
 msgstr ""
 
@@ -737,6 +746,9 @@ msgstr ""
 msgid "specify 'rate' or 'scale' but not both"
 msgstr ""
 
+msgid "NAs produced"
+msgstr ""
+
 msgid "x[] and prob[] must be equal length vectors."
 msgstr ""
 
@@ -753,6 +765,9 @@ msgid "'prob' and 'mu' both specified"
 msgstr ""
 
 msgid "some terms will have NAs due to the limits of the method"
+msgstr ""
+
+msgid "multivariate case with missing coefficients is not yet implemented"
 msgstr ""
 
 msgid "'x' must have 1 or more non-missing values"
@@ -858,7 +873,9 @@ msgstr ""
 msgid "positive values only are allowed for the 'inverse.gaussian' family"
 msgstr ""
 
-msgid "need CRAN package 'SuppDists' for the 'inverse.gaussian' family"
+msgid ""
+"need CRAN package 'SuppDists' for simulation from the 'inverse.gaussian' "
+"family"
 msgstr ""
 
 msgid "using weights as inverse variances"
@@ -1132,7 +1149,7 @@ msgstr ""
 msgid "invalid parameter values"
 msgstr ""
 
-msgid "a limit is missing"
+msgid "a limit is NA or NaN"
 msgstr ""
 
 msgid "missing values not allowed"
@@ -1199,9 +1216,6 @@ msgid "initial centers are not distinct"
 msgstr ""
 
 msgid "more cluster centers than data points"
-msgstr ""
-
-msgid "'invalid value of 'k'"
 msgstr ""
 
 msgid "'iter.max' must be positive"
@@ -1277,6 +1291,11 @@ msgid ""
 " Rank zero or should not have used lm(.., qr=FALSE)."
 msgstr ""
 
+# In mathematics, univariate refers to an expression, equation, function or polynomial of only one variable. 
+#, fuzzy
+msgid "simulate() is not yet implemented for multivariate lm()"
+msgstr "kun implementeret for univariate tidsserier"
+
 msgid "family '%s' not implemented"
 msgstr ""
 
@@ -1339,6 +1358,9 @@ msgstr ""
 msgid "only 1-4 predictors are allowed"
 msgstr ""
 
+msgid "invalid NROW(X)"
+msgstr ""
+
 msgid "invalid 'y'"
 msgstr ""
 
@@ -1362,6 +1384,13 @@ msgstr ""
 
 msgid "invalid argument 'degree'"
 msgstr ""
+
+msgid "iterTrace ="
+msgstr ""
+
+#, fuzzy
+msgid "not obeyed as iterations ="
+msgstr "ikke nok »y-observationer«"
 
 msgid "first argument must be a \"loess\" object"
 msgstr ""
@@ -1824,6 +1853,9 @@ msgstr ""
 msgid "'formula' missing"
 msgstr ""
 
+msgid "'type' must be 1 or 3 for ordered factors"
+msgstr ""
+
 msgid "factors are not allowed"
 msgstr ""
 
@@ -1866,7 +1898,7 @@ msgstr ""
 msgid "'varying' arguments must be the same length"
 msgstr ""
 
-msgid "'times' is wrong length"
+msgid "'lengths(varying)' must all match 'length(times)'"
 msgstr ""
 
 msgid "there are records with missing times, which will be dropped."
@@ -1887,9 +1919,6 @@ msgstr ""
 msgid ""
 "length of 'varying' must be the product of length of 'v.names' and length of "
 "'times'"
-msgstr ""
-
-msgid "invalid value of 'k'"
 msgstr ""
 
 msgid "'k' must be positive"
@@ -1949,6 +1978,9 @@ msgstr ""
 msgid "'tol' must be strictly positive and finite"
 msgstr ""
 
+msgid "invalid 'keep.stuff'"
+msgstr ""
+
 msgid "need at least four unique 'x' values"
 msgstr ""
 
@@ -1956,6 +1988,15 @@ msgid "'cv' must not be NA when 'df' is specified"
 msgstr ""
 
 msgid "cross-validation with non-unique 'x' values seems doubtful"
+msgstr ""
+
+msgid "Numeric 'all.knots' must be strictly increasing"
+msgstr ""
+
+msgid "'all.knots' is vector of knots; 'nknots' specification is disregarded"
+msgstr ""
+
+msgid "numeric 'all.knots' must cover [0,1] (= the transformed data-range)"
 msgstr ""
 
 msgid "'all.knots' is TRUE; 'nknots' specification is disregarded"
@@ -1970,14 +2011,14 @@ msgstr ""
 msgid "cannot use more inner knots than unique 'x' values"
 msgstr ""
 
+msgid "must not specify both 'spar' and 'lambda'"
+msgstr ""
+
 #, fuzzy
 msgid "'spar' must be of length 1"
 msgstr "»acf« skal have længden to eller længere"
 
-msgid "specified both 'df' and 'cv'; will disregard the latter"
-msgstr ""
-
-msgid "you must supply 1 < df <= n,  n = #{unique x} ="
+msgid "not using invalid df; must have 1 < df <= n := #{unique x} ="
 msgstr ""
 
 msgid "NA lev[]; probably smoothing parameter 'spar' way too large!"
@@ -1995,6 +2036,9 @@ msgstr ""
 msgid "not a valid \"smooth.spline\" object"
 msgstr ""
 
+msgid "'span' must be between 0 and 1."
+msgstr ""
+
 msgid "'y' must be numeric vector"
 msgstr ""
 
@@ -2002,9 +2046,6 @@ msgid "number of observations in 'x' and 'y' must match."
 msgstr ""
 
 msgid "number of weights must match number of observations."
-msgstr ""
-
-msgid "'span' must be between 0 and 1."
 msgstr ""
 
 msgid "'x' must be between 0 and 1 for periodic smooth"
@@ -2235,7 +2276,8 @@ msgstr ""
 msgid "requested conf.level not achievable"
 msgstr ""
 
-msgid "cannot compute confidence interval when all observations are tied"
+msgid ""
+"cannot compute confidence interval when all observations are zero or tied"
 msgstr ""
 
 msgid "cannot compute exact confidence interval with ties"
@@ -2248,6 +2290,9 @@ msgid "cannot compute exact confidence interval with zeroes"
 msgstr ""
 
 msgid "Requested conf.level not achievable"
+msgstr ""
+
+msgid "cannot compute confidence interval when all observations are tied"
 msgstr ""
 
 msgid "must supply either 'formula' or 'data'"

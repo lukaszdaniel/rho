@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 2.13.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2011-03-26 08:55-0300\n"
 "Last-Translator: Fernando Henrique <pessoal@fernandohrosa.com.br>\n"
 "Language-Team: http://www.feferraz.net/br/P/Projeto_Traducao_R_Portugues\n"
@@ -112,6 +112,9 @@ msgstr "valores crescentes de 'x' e 'y' esperados"
 
 msgid "no proper 'z' matrix specified"
 msgstr "nenhuma matriz 'z' apropriada especificada"
+
+msgid "'labels' is length zero.  Use 'drawlabels = FALSE' to suppress labels."
+msgstr ""
 
 msgid "invalid conditioning formula"
 msgstr "fórmula de condicionamento inválida"
@@ -353,6 +356,9 @@ msgstr "os valores de 'x' devem ser positivos."
 
 msgid "invalid table 'x'"
 msgstr "tabela 'x' inválida"
+
+msgid "the formula '%s' is treated as '%s'"
+msgstr ""
 
 msgid "cannot handle more than one 'x' coordinate"
 msgstr "não é possível lidar com mais de uma coordenada 'x'"

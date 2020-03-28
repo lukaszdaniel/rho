@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.3.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2005-04-14 18:07+0200\n"
 "Last-Translator: stefano iacus <>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -492,12 +492,18 @@ msgstr "L'approssimazione al Chi-quadrato potrebbe essere inesatta"
 msgid "NA values not allowed in 'd'"
 msgstr "valori NA non ammessi in 'd'"
 
+msgid "eig=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
+msgid "x.ret=TRUE is disregarded when list.=FALSE"
+msgstr ""
+
 msgid "distances must be result of 'dist' or a square matrix"
 msgstr ""
 "le distanze devono essere il risultato di 'dist' o una matrice quadrata"
 
 #, fuzzy
-msgid "invalid value of 'n'"
+msgid "invalid value of %s"
 msgstr "argomento 'omit' non valido"
 
 msgid "'k' must be in {1, 2, ..  n - 1}"
@@ -506,6 +512,9 @@ msgstr "'k' deve essere in {1, 2, ..  n - 1}"
 #, fuzzy
 msgid "only %d of the first %d eigenvalues are > 0"
 msgstr "alcuni dei primi %d autovalori sono < 0"
+
+msgid "package 'MASS' must be installed"
+msgstr ""
 
 #, fuzzy
 msgid "initial value is not in the interior of the feasible region"
@@ -552,6 +561,10 @@ msgstr "fornire uno o più vettori"
 
 msgid "arguments must have the same length"
 msgstr "gli argomenti devono avere la stessa lunghezza"
+
+#, fuzzy
+msgid "wrong number of columns in new data:"
+msgstr "numero di colonne sbagliate in 'x'"
 
 msgid "contrasts apply only to factors"
 msgstr "i contrasti si applicano solo a variabili factor"
@@ -722,9 +735,6 @@ msgstr "l'argomento 'x' deve essere numerico"
 msgid "'x' contains missing values"
 msgstr "'x' contiene valori mancanti"
 
-msgid "invalid value of length(x)"
-msgstr ""
-
 #, fuzzy
 msgid "'x' and 'weights' have unequal length"
 msgstr "'x' e 'g' devono avere la stessa lunghezza"
@@ -790,6 +800,9 @@ msgstr "matrice non quadrata"
 msgid "specify 'rate' or 'scale' but not both"
 msgstr ""
 
+msgid "NAs produced"
+msgstr ""
+
 msgid "x[] and prob[] must be equal length vectors."
 msgstr "x[] e prob[] devono essere vettore della stessa lunghezza."
 
@@ -808,6 +821,9 @@ msgstr "'prob' e 'mu' specificate entrambi"
 
 msgid "some terms will have NAs due to the limits of the method"
 msgstr "alcuni termini saranno NA a causa della limitazione del metodo"
+
+msgid "multivariate case with missing coefficients is not yet implemented"
+msgstr ""
 
 msgid "'x' must have 1 or more non-missing values"
 msgstr "'x' deve avere 1 o più valori non mancanti"
@@ -947,7 +963,9 @@ msgid "positive values only are allowed for the 'inverse.gaussian' family"
 msgstr "sono ammessi solo valori positivi per la famiglia gaussiana inversa"
 
 #, fuzzy
-msgid "need CRAN package 'SuppDists' for the 'inverse.gaussian' family"
+msgid ""
+"need CRAN package 'SuppDists' for simulation from the 'inverse.gaussian' "
+"family"
 msgstr "sono ammessi solo valori positivi per la famiglia gaussiana inversa"
 
 msgid "using weights as inverse variances"
@@ -1241,8 +1259,8 @@ msgstr "tutti gli elementi di 'which' devono essere tra 1 e %d"
 msgid "invalid parameter values"
 msgstr "valori dei parametri non validi"
 
-msgid "a limit is missing"
-msgstr "manca un limite"
+msgid "a limit is NA or NaN"
+msgstr ""
 
 #, fuzzy
 msgid "missing values not allowed"
@@ -1314,10 +1332,6 @@ msgstr "i centri iniziali non sono distinti"
 
 msgid "more cluster centers than data points"
 msgstr "più cluster che dati"
-
-#, fuzzy
-msgid "'invalid value of 'k'"
-msgstr "argomento 'omit' non valido"
 
 msgid "'iter.max' must be positive"
 msgstr "'iter.max' deve essere positivo"
@@ -1401,6 +1415,10 @@ msgid ""
 msgstr ""
 
 #, fuzzy
+msgid "simulate() is not yet implemented for multivariate lm()"
+msgstr "'se.fit' non ancora implementato per modelli multidimensionali"
+
+#, fuzzy
 msgid "family '%s' not implemented"
 msgstr "tipo '%s' non ancora implementato"
 
@@ -1466,6 +1484,10 @@ msgstr "'x' non valida"
 msgid "only 1-4 predictors are allowed"
 msgstr "permessi solo 1-4 predittori"
 
+#, fuzzy
+msgid "invalid NROW(X)"
+msgstr "'x' non valida"
+
 msgid "invalid 'y'"
 msgstr "'y' non valida"
 
@@ -1492,6 +1514,13 @@ msgstr "argomento 'omit' non valido"
 #, fuzzy
 msgid "invalid argument 'degree'"
 msgstr "argomento 'omit' non valido"
+
+msgid "iterTrace ="
+msgstr ""
+
+#, fuzzy
+msgid "not obeyed as iterations ="
+msgstr "non ci sono abbastanza osservazioni finite"
 
 msgid "first argument must be a \"loess\" object"
 msgstr "il primo argomento deve essere un oggetto \"loess\""
@@ -2004,6 +2033,9 @@ msgstr "y è vuota o contiene sonlo NA"
 msgid "'formula' missing"
 msgstr "'formula' mancante"
 
+msgid "'type' must be 1 or 3 for ordered factors"
+msgstr ""
+
 #, fuzzy
 msgid "factors are not allowed"
 msgstr "le interazioni non sono ammesse"
@@ -2054,8 +2086,8 @@ msgstr ""
 msgid "'varying' arguments must be the same length"
 msgstr "gli argomenti 'varying' devono avere la stessa lunghezza"
 
-msgid "'times' is wrong length"
-msgstr "'times' ha lunghezza sbagliata"
+msgid "'lengths(varying)' must all match 'length(times)'"
+msgstr ""
 
 msgid "there are records with missing times, which will be dropped."
 msgstr "ci sono record con 'times' mancanti, saranno ignorati"
@@ -2080,10 +2112,6 @@ msgid ""
 "length of 'varying' must be the product of length of 'v.names' and length of "
 "'times'"
 msgstr ""
-
-#, fuzzy
-msgid "invalid value of 'k'"
-msgstr "argomento 'omit' non valido"
 
 #, fuzzy
 msgid "'k' must be positive"
@@ -2149,6 +2177,10 @@ msgstr "alcuni pesi dovrebbero essere positivi"
 msgid "'tol' must be strictly positive and finite"
 msgstr "'ratio' deve essere un numero positivo"
 
+#, fuzzy
+msgid "invalid 'keep.stuff'"
+msgstr "'method' non valido:"
+
 msgid "need at least four unique 'x' values"
 msgstr "necessari almeno quattro valori distinti 'x'"
 
@@ -2158,6 +2190,16 @@ msgstr ""
 #, fuzzy
 msgid "cross-validation with non-unique 'x' values seems doubtful"
 msgstr "crossvalidation per valori non unici di 'x' sembra essere dubbia"
+
+#, fuzzy
+msgid "Numeric 'all.knots' must be strictly increasing"
+msgstr "'ratio' deve essere un numero positivo"
+
+msgid "'all.knots' is vector of knots; 'nknots' specification is disregarded"
+msgstr ""
+
+msgid "numeric 'all.knots' must cover [0,1] (= the transformed data-range)"
+msgstr ""
 
 msgid "'all.knots' is TRUE; 'nknots' specification is disregarded"
 msgstr ""
@@ -2173,14 +2215,15 @@ msgstr "'lag.max' deve essere almeno 1"
 msgid "cannot use more inner knots than unique 'x' values"
 msgstr "non posso usare più nodi interni che valori unici di 'x'"
 
+msgid "must not specify both 'spar' and 'lambda'"
+msgstr ""
+
 #, fuzzy
 msgid "'spar' must be of length 1"
 msgstr "'acf' deve avere lunghezza due o più"
 
-msgid "specified both 'df' and 'cv'; will disregard the latter"
-msgstr ""
-
-msgid "you must supply 1 < df <= n,  n = #{unique x} ="
+#, fuzzy
+msgid "not using invalid df; must have 1 < df <= n := #{unique x} ="
 msgstr "si deve fornire 1 < df <= n, n = #{x distrinti} ="
 
 msgid "NA lev[]; probably smoothing parameter 'spar' way too large!"
@@ -2199,6 +2242,9 @@ msgstr "SE per il tipo '%s' non ancora implementati"
 msgid "not a valid \"smooth.spline\" object"
 msgstr "oggetto \"smooth.spline\" non valido"
 
+msgid "'span' must be between 0 and 1."
+msgstr "'span' deve essere tra 0 e 1"
+
 msgid "'y' must be numeric vector"
 msgstr "'y' deve essere un vettore numerico"
 
@@ -2207,9 +2253,6 @@ msgstr "il numero di osservazioni in 'x' e 'y' deve coincidere"
 
 msgid "number of weights must match number of observations."
 msgstr "il numero di pesi deve coincidere col numero di osservazioni"
-
-msgid "'span' must be between 0 and 1."
-msgstr "'span' deve essere tra 0 e 1"
 
 msgid "'x' must be between 0 and 1 for periodic smooth"
 msgstr "'x' deve essere tra 0 e 1 per smooth periodici"
@@ -2454,7 +2497,8 @@ msgid "requested conf.level not achievable"
 msgstr ""
 
 #, fuzzy
-msgid "cannot compute confidence interval when all observations are tied"
+msgid ""
+"cannot compute confidence interval when all observations are zero or tied"
 msgstr ""
 "impossibile calcolar eintervalli di confidenza esatti in presenza di zeri"
 
@@ -2471,6 +2515,11 @@ msgstr ""
 
 msgid "Requested conf.level not achievable"
 msgstr ""
+
+#, fuzzy
+msgid "cannot compute confidence interval when all observations are tied"
+msgstr ""
+"impossibile calcolar eintervalli di confidenza esatti in presenza di zeri"
 
 #, fuzzy
 msgid "must supply either 'formula' or 'data'"
@@ -2699,6 +2748,20 @@ msgid_plural "'start.innov' is too short: need %d points"
 msgstr[0] ""
 msgstr[1] ""
 
+#~ msgid "a limit is missing"
+#~ msgstr "manca un limite"
+
+#, fuzzy
+#~ msgid "'invalid value of 'k'"
+#~ msgstr "argomento 'omit' non valido"
+
+#~ msgid "'times' is wrong length"
+#~ msgstr "'times' ha lunghezza sbagliata"
+
+#, fuzzy
+#~ msgid "invalid value of 'k'"
+#~ msgstr "argomento 'omit' non valido"
+
 #, fuzzy
 #~ msgid "non-matched further arguments are disregarded"
 #~ msgstr "argometni extra ignorati"
@@ -2866,10 +2929,6 @@ msgstr[1] ""
 
 #, fuzzy
 #~ msgid "invalid 'method': %s"
-#~ msgstr "'method' non valido:"
-
-#, fuzzy
-#~ msgid "invalid 'method'"
 #~ msgstr "'method' non valido:"
 
 #~ msgid "'newdata' does not contain the variables needed"

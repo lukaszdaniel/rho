@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.13.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2011-04-01 04:29+0200\n"
 "Last-Translator: Murat Alkan <muratalk@gmail.com>\n"
 "Language-Team: Turkish <muratalk@gmail.com>\n"
@@ -219,6 +219,11 @@ msgid "invalid 'dimnames' given for data frame"
 msgstr ""
 
 msgid "cannot coerce class \"%s\" to a data.frame"
+msgstr ""
+
+msgid ""
+"'row.names' is not a character vector of length %d -- omitting it. Will be "
+"an error!"
 msgstr ""
 
 msgid "options(\"stringsAsFactors\") not set to TRUE or FALSE"
@@ -480,6 +485,15 @@ msgid ""
 "%s"
 msgstr ""
 
+msgid "failed to load the methods package for debugging by signature"
+msgstr ""
+
+msgid "failed to load methods package for undebugging by signature"
+msgstr ""
+
+msgid "failed to load methods package for handling signature"
+msgstr ""
+
 msgid "'x' must be a square matrix"
 msgstr ""
 
@@ -593,16 +607,22 @@ msgstr "geçersiz paket ismi"
 msgid "invalid 'time' argument"
 msgstr "geçersiz paket ismi"
 
-msgid "'vec' contains NAs"
+msgid "'vec' must be sorted non-decreasingly and not contain NAs"
 msgstr ""
 
-msgid "'vec' must be sorted non-decreasingly"
+msgid "'fun' is not a function"
 msgstr ""
 
 msgid "using the first element of 'value' of type \"expression\""
 msgstr ""
 
 msgid "class of 'x' was discarded"
+msgstr ""
+
+msgid "'flag' must be a string, i.e., of length 1"
+msgstr ""
+
+msgid "'flag' should contain only characters from [0+- #'I]"
 msgstr ""
 
 msgid "'mode' must be \"double\" (\"real\"), \"integer\" or \"character\""
@@ -617,19 +637,19 @@ msgstr ""
 msgid "'digits' reduced to %d"
 msgstr ""
 
-msgid "'flag' can contain only '0+- #'"
-msgstr ""
-
 msgid "corrupt data frame: columns will be truncated or padded with NAs"
-msgstr ""
-
-msgid "'big.mark' and 'decimal.mark' are both '%s', which could be confusing"
 msgstr ""
 
 msgid "'zero.print' has length > 1"
 msgstr ""
 
 msgid "'zero.print' must be character, logical or NULL"
+msgstr ""
+
+msgid "'big.mark' and 'decimal.mark' are both '%s', which could be confusing"
+msgstr ""
+
+msgid "'input.d.mark' has no characters"
 msgstr ""
 
 msgid "'subset' must be logical"
@@ -706,18 +726,8 @@ msgid "package %s is not installed for 'arch = %s'"
 msgstr ""
 
 msgid ""
-"package %s has a license that you need to accept in an interactive session"
-msgstr ""
-
-msgid "package %s has a license that you need to accept after viewing"
-msgstr ""
-
-msgid ""
-"package %s has a license that you need to accept:\n"
-"according to the DESCRIPTION file it is"
-msgstr ""
-
-msgid "license for package %s not accepted"
+"package %s was installed by an R version with different internals; it needs "
+"to be reinstalled for use with this R version"
 msgstr ""
 
 #, fuzzy
@@ -743,10 +753,14 @@ msgstr ""
 msgid "%s not found on search path, using pos = 2"
 msgstr ""
 
-msgid "Package %s version %s cannot be unloaded"
+msgid ""
+"Package %s version %s cannot be unloaded:\n"
+" %s"
 msgstr ""
 
-msgid "package or namespace load failed for %s"
+msgid ""
+"package or namespace load failed for %s%s:\n"
+" %s"
 msgstr ""
 
 msgid "package %s does not have a namespace and should be re-installed"
@@ -890,6 +904,15 @@ msgstr ""
 msgid "must specify names of formal arguments for 'vectorize'"
 msgstr ""
 
+msgid "FUN"
+msgstr ""
+
+msgid "may not have argument(s) named"
+msgstr ""
+
+msgid ","
+msgstr ""
+
 msgid "'arg' must be NULL or a character vector"
 msgstr ""
 
@@ -1005,6 +1028,25 @@ msgstr ""
 msgid "namespace %s %s is being loaded, but %s %s is required"
 msgstr ""
 
+msgid ""
+"package %s has a license that you need to accept in an interactive session"
+msgstr ""
+
+msgid "package %s has a license that you need to accept after viewing"
+msgstr ""
+
+msgid "package %s has a license that you need to accept:"
+msgstr ""
+
+msgid "according to the DESCRIPTION file it is"
+msgstr ""
+
+msgid "%s"
+msgstr ""
+
+msgid "license for package %s not accepted"
+msgstr ""
+
 msgid "unable to load R code in package %s"
 msgstr ""
 
@@ -1066,6 +1108,9 @@ msgstr ""
 msgid "found methods to import for function %s but not the generic itself"
 msgstr ""
 
+msgid "replacing previous import %s by %s when loading %s"
+msgstr ""
+
 msgid "No methods found in \"%s\" for requests: %s"
 msgstr ""
 
@@ -1073,8 +1118,8 @@ msgid "requested methods not found in environment/package %s: %s"
 msgstr ""
 
 msgid ""
-"No generic function found corresponding to requested imported methods for "
-"\"%s\" from package \"%s\" (malformed exports?)"
+"No generic function %s found corresponding to requested imported methods "
+"from package %s when loading %s (malformed exports?)"
 msgstr ""
 
 msgid "cannot add to exports of a sealed namespace"
@@ -1203,7 +1248,7 @@ msgstr ""
 msgid "either specify 'nmax' or 'n', but not both."
 msgstr ""
 
-msgid "'from' cannot be NA, NaN or infinite"
+msgid "'from' must be a finite number"
 msgstr ""
 
 msgid "argument 'length.out' must be of length 1"
@@ -1212,10 +1257,10 @@ msgstr ""
 msgid "first element used of 'length.out' argument"
 msgstr ""
 
-msgid "'to' cannot be NA, NaN or infinite"
+msgid "'to' must be a finite number"
 msgstr ""
 
-msgid "invalid (to - from)/by in seq(.)"
+msgid "invalid '(to - from)/by'"
 msgstr ""
 
 msgid "wrong sign in 'by' argument"
@@ -1224,11 +1269,15 @@ msgstr ""
 msgid "'by' argument is much too small"
 msgstr ""
 
-msgid "length must be non-negative number"
+msgid "'length.out' must be a non-negative number"
 msgstr ""
 
 msgid "too many arguments"
 msgstr ""
+
+#, fuzzy
+msgid "invalid 'compress' argument:"
+msgstr "geçersiz paket ismi"
 
 msgid "'compress' is ignored unless 'file' is a file name"
 msgstr ""
@@ -1265,6 +1314,9 @@ msgid ""
 "Did you intend to set 'partial'?"
 msgstr ""
 
+msgid "'partial' sorting not supported by radix method"
+msgstr ""
+
 msgid "'index.return' only for non-factors"
 msgstr ""
 
@@ -1291,9 +1343,6 @@ msgstr ""
 msgid "method = \"quick\" is only for numeric 'x'"
 msgstr ""
 
-msgid "method = \"radix\" is only for integer 'x'"
-msgstr ""
-
 msgid "'local' must be TRUE, FALSE or an environment"
 msgstr ""
 
@@ -1318,6 +1367,9 @@ msgstr ""
 msgid "'chdir = TRUE' makes no sense for a connection"
 msgstr ""
 
+msgid "specify either 'file' or 'exprs' but not both"
+msgstr ""
+
 msgid "'%s' is not an existing file"
 msgstr ""
 
@@ -1330,7 +1382,17 @@ msgstr ""
 msgid "additional arguments ignored in stop()"
 msgstr ""
 
+msgid ""
+"%s and %s are not equal:\n"
+"  %s"
+msgstr ""
+
 msgid "additional arguments ignored in warning()"
+msgstr ""
+
+msgid ""
+"Calling 'structure(NULL, *)' is deprecated, as NULL cannot have attributes.\n"
+"  Consider 'structure(list(), *)' instead."
 msgstr ""
 
 msgid "incorrect value for 'x'"
@@ -1339,13 +1401,7 @@ msgstr ""
 msgid "'x' and 'y' must have the same length"
 msgstr ""
 
-msgid "incorrect values of 'indent' and 'width'"
-msgstr ""
-
 msgid "probably wrong encoding in names(.) of column"
-msgstr ""
-
-msgid ","
 msgstr ""
 
 msgid "STATS is longer than the extent of 'dim(x)[MARGIN]'"
@@ -1355,6 +1411,9 @@ msgid "STATS does not recycle exactly across MARGIN"
 msgstr ""
 
 msgid "length(STATS) or dim(STATS) do not match dim(x)[MARGIN]"
+msgstr ""
+
+msgid "'exclude' containing NA and 'useNA' != \"no\"' are a bit contradicting"
 msgstr ""
 
 msgid "nothing to tabulate"
@@ -1381,13 +1440,17 @@ msgstr ""
 msgid "'bin' must be numeric or a factor"
 msgstr ""
 
-msgid "invalid value of 'nbins'"
-msgstr ""
+#, fuzzy
+msgid "invalid value of %s"
+msgstr "geçersiz paket ismi"
 
 msgid "'INDEX' is of length zero"
 msgstr ""
 
 msgid "arguments must have same length"
+msgstr ""
+
+msgid "total number of levels >= 2^31"
 msgstr ""
 
 msgid "handler must be a function"
@@ -1400,6 +1463,9 @@ msgid "Removing %s"
 msgstr ""
 
 msgid "Registering 'evaluate' as low-level callback"
+msgstr ""
+
+msgid "Timing stopped at:"
 msgstr ""
 
 msgid "user"
@@ -1434,6 +1500,12 @@ msgid "%s not defined for \"numeric_version\" objects"
 msgstr ""
 
 msgid "<0 elements>"
+msgstr ""
+
+msgid "'tags' must be a character vector of the same length as 'x'"
+msgstr ""
+
+msgid "Summary of (a total of %d) warning messages:"
 msgstr ""
 
 msgid "invalid 'digits'"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.4.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2005-02-04 08:37+0000\n"
 "Last-Translator: 陈斐 <feic@normipaiva.com>\n"
 "Language-Team: Chinese\n"
@@ -109,6 +109,9 @@ msgstr "需要递增的'x'和'y'值"
 
 msgid "no proper 'z' matrix specified"
 msgstr "没有设定正确的'z'矩阵"
+
+msgid "'labels' is length zero.  Use 'drawlabels = FALSE' to suppress labels."
+msgstr ""
 
 msgid "invalid conditioning formula"
 msgstr "条件公式不对"
@@ -333,6 +336,9 @@ msgstr "'x'必需是正数."
 
 msgid "invalid table 'x'"
 msgstr "'x'表不对"
+
+msgid "the formula '%s' is treated as '%s'"
+msgstr ""
 
 msgid "cannot handle more than one 'x' coordinate"
 msgstr "不能处理多个'x'座标"

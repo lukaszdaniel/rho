@@ -1,8 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: R 3.3.0\n"
-"Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"Project-Id-Version: parallel 3.5.0\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 
-msgid "invalid value of 'seed'"
+msgid "invalid value of %s"
 msgstr ""
 
 msgid "need at least one argument"

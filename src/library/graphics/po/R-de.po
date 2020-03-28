@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2015-03-20 16:03+0100\n"
 "Last-Translator: Detlef Steuer <steuer@hsu-hh.de>\n"
 "Language-Team: R-Core <R-core@r-project.org>\n"
@@ -112,6 +112,9 @@ msgstr "ansteigende 'x' und 'y' Werte erwartet"
 
 msgid "no proper 'z' matrix specified"
 msgstr "keine geeignete 'z' Matrix spezifiziert"
+
+msgid "'labels' is length zero.  Use 'drawlabels = FALSE' to suppress labels."
+msgstr ""
 
 msgid "invalid conditioning formula"
 msgstr "ungeeignete bedingende Formel"
@@ -342,6 +345,9 @@ msgstr "'x' Werte müssen positiv sein."
 
 msgid "invalid table 'x'"
 msgstr "ungültige Tabelle 'x'"
+
+msgid "the formula '%s' is treated as '%s'"
+msgstr ""
 
 msgid "cannot handle more than one 'x' coordinate"
 msgstr "kann nicht mehr als eine 'x' Koordinate behandeln"

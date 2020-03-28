@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 3.2.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Łukasz Daniel <lukasz.daniel@gmail.com>\n"
 "Language-Team: Łukasz Daniel <lukasz.daniel@gmail.com>\n"
@@ -94,6 +94,19 @@ msgstr "wartość opcji 'strip.white' powinna być pisana małymi literami"
 
 msgid "elements of 'what' after the first will be ignored"
 msgstr "elementy 'what' po pierwszym będą zignorowane"
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Cancel"
+msgstr ""
+
+#, fuzzy
+msgid "Unrecognized response"
+msgstr "Nierozpoznana specjalna wartość danej"
 
 msgid "No suitable spell-checker program found"
 msgstr "Nie znaleziono odpowiedniego programu do sprawdzania pisowni"
@@ -188,6 +201,9 @@ msgstr "indeks poza granicami"
 msgid "%s should be one of %s"
 msgstr "%s powinno być jednym z %s"
 
+msgid "Argument '%s' is deprecated; rather set '%s' instead."
+msgstr ""
+
 msgid "A BibTeX entry for LaTeX users is"
 msgstr "Wpis BibTex dla użytkowników LaTeX to"
 
@@ -269,6 +285,14 @@ msgstr "nie można było poprawnie przywrócić zmiennych"
 
 msgid "did not assign() anything"
 msgstr "nic nie przypisano"
+
+msgid ""
+"Cannot debug primitive functions unless they are implicit generics (requires "
+"loading the methods package)"
+msgstr ""
+
+msgid "error in trying to evaluate the expression for argument %s (%s)"
+msgstr "błąd podczas próby obliczenia wyrażenia dla argumentu %s (%s)"
 
 msgid "Browsing in the environment with call:"
 msgstr "Przeglądanie w środowisku z wywołaniem:"
@@ -425,6 +449,12 @@ msgstr "tworzenie %s nie powiodło się"
 msgid "Saving help page to %s"
 msgstr "Zapisywanie strony pomocy w %s"
 
+msgid "Cancelled by user"
+msgstr ""
+
+msgid "Unable to connect to CRAN to check R version."
+msgstr ""
+
 msgid "argument %s must be a single character string"
 msgstr "argument %s musi być pojedynczym łańcuchem tekstowym"
 
@@ -437,15 +467,15 @@ msgstr "nie wiadomo czego szukać"
 msgid "argument 'help.db' is deprecated"
 msgstr "argument 'help.db' jest przestarzały"
 
+msgid "incorrect type specification"
+msgstr "niepoprawne określenie typu"
+
 msgid "no information in the database for package %s: need 'rebuild = TRUE'?"
 msgstr ""
 "brak informacji w bazie danych dla pakietu %s: potrzeba 'rebuild = TRUE'?"
 
 msgid "incorrect 'agrep' specification"
 msgstr "niepoprawne określenie 'agrep'"
-
-msgid "incorrect type specification"
-msgstr "niepoprawne określenie typu"
 
 msgid "could not find package %s"
 msgstr "nie można było znaleźć pakietu %s"
@@ -518,6 +548,12 @@ msgstr "Wprowadź pozycję z menu lub 0 aby wyjść"
 
 msgid "invalid query"
 msgstr "niepoprawne zapytanie"
+
+msgid "For SI units, specify 'standard = \"SI\"'"
+msgstr ""
+
+msgid "Unit \"%s\" is not part of standard \"%s\""
+msgstr ""
 
 msgid "'%s' is a formal generic function; S3 methods will not likely be found"
 msgstr ""
@@ -641,11 +677,18 @@ msgstr "--- Proszę wybrać serwer lustrzany CRAN do użycia w tej sesji ---"
 msgid "trying to use CRAN without setting a mirror"
 msgstr "próba użycia CRAN bez ustawienia serwera lustrzanego"
 
-msgid "cannot choose a CRAN mirror non-interactively"
-msgstr "nie można wybrać serweru lustrzanego CRAN nieinteraktywnie"
+msgid "'download.file()' error code '%d'"
+msgstr ""
 
-msgid "cannot choose a BioC mirror non-interactively"
-msgstr "nie można wybrać serweru lustrzanego BioC nieinteraktywnie"
+msgid "failed to download mirrors file (%s); using local file '%s'"
+msgstr ""
+
+msgid "cannot choose a"
+msgstr ""
+
+#, fuzzy
+msgid "mirror non-interactively"
+msgstr "nie można wybrać serweru lustrzanego CRAN nieinteraktywnie"
 
 msgid "cannot set repositories non-interactively"
 msgstr "nie można wybrać repozytoriów nieinteraktywnie"
@@ -678,8 +721,17 @@ msgstr "nie określono pakietów"
 msgid "'lib = \"%s\"' is not writable"
 msgstr "'lib = \"%s\"' nie jest zapisywalna"
 
+msgid "Would you like to use a personal library instead?"
+msgstr ""
+
 msgid "unable to install packages"
 msgstr "nie można zainstalować pakietów"
+
+msgid ""
+"Would you like to create a personal library\n"
+"%s\n"
+"to install packages into?"
+msgstr ""
 
 msgid "unable to create %s"
 msgstr "nie udało się utworzyć %s"
@@ -690,8 +742,8 @@ msgstr "wnioskowanie 'repos = NULL' z 'pkgs'"
 msgid "unable to create temporary directory %s"
 msgstr "nie udało się utworzyć katalogu %s"
 
-msgid ""
-"type == \"both\" can only be used on Windows or a CRAN build for Mac OS X"
+#, fuzzy
+msgid "type == \"both\" can only be used on Windows or a CRAN build for macOS"
 msgstr ""
 "'type == \"both\"' może być użyte jedynie w systemie Windows lub kompilacji "
 "CRAN dla systemów Mac OS X"
@@ -699,16 +751,15 @@ msgstr ""
 msgid "type == \"both\" cannot be used with 'repos = NULL'"
 msgstr "'type == \"both\"' nie może być użyte z 'repos = NULL'"
 
-msgid "Do you want to attempt to install these from sources?"
-msgstr "Czy chcesz spróbować zainstalować je ze źródeł?"
-
 msgid "source repository is unavailable to check versions"
 msgstr "repozytorium źródeł nie jest w stanie sprawdzić wersji"
 
-msgid "cannot install MacOS X binary packages on Windows"
+#, fuzzy
+msgid "cannot install macOS binary packages on Windows"
 msgstr "nie można zainstalować pakietów binarnych dla MacOS w systemie Windows"
 
-msgid "cannot install MacOS X binary packages on this platform"
+#, fuzzy
+msgid "cannot install macOS binary packages on this platform"
 msgstr "nie można zainstalować pakietów binarnych dla MacOS na tej platformie"
 
 msgid "cannot install Windows binary packages on this platform"
@@ -797,9 +848,6 @@ msgstr ""
 
 msgid "no methods for %s and no documentation for it as a function"
 msgstr "brak metod dla %s oraz brak dla niego dokumentacji jako funkcji"
-
-msgid "error in trying to evaluate the expression for argument %s (%s)"
-msgstr "błąd podczas próby obliczenia wyrażenia dla argumentu %s (%s)"
 
 msgid "no method defined for function %s and signature %s"
 msgstr "brak zdefiniowanej metody dla funkcji %s oraz sygnatury %s"
@@ -943,12 +991,18 @@ msgstr ""
 "'str.default': argument 'le' ma wartość NA, w związku z tym została przyjęta "
 "wartość 0"
 
+msgid "'nchar.max = %d' is too small"
+msgstr ""
+
 msgid "'object' does not have valid levels()"
 msgstr "'object' nie posiada poprawnych wartości 'levels()'"
 
 msgid "'digits' and 'digits.d' are both specified and the latter is not used"
 msgstr ""
 "obydwa 'digits' oraz 'digits.d' są zdefiniowane i ostatni nie jest używany"
+
+msgid "The number of captures in 'pattern' != 'length(proto)'"
+msgstr ""
 
 msgid "no lines found in %s"
 msgstr "nie znaleziono linii w %s"
@@ -1088,14 +1142,19 @@ msgstr "brakuje 'subject'"
 msgid "'ccaddress' must be of length 1"
 msgstr "argument 'ccaddress' musi być długości 1"
 
-msgid "no download method found"
-msgstr "nie znaleziono metody pobierania"
-
 msgid "'url' must be a length-one character vector"
 msgstr "argument 'url' musi być wektorem tekstowym o długości 1"
 
 msgid "'destfile' must be a length-one character vector"
 msgstr "argument 'destfile' musi wektorem tekstowym o długości 1"
+
+#, fuzzy
+msgid "'wget' call had nonzero exit status"
+msgstr "pobieranie miało niezerowy status wyjściowy"
+
+#, fuzzy
+msgid "'curl' call had nonzero exit status"
+msgstr "pobieranie miało niezerowy status wyjściowy"
 
 msgid "download had nonzero exit status"
 msgstr "pobieranie miało niezerowy status wyjściowy"
@@ -1103,7 +1162,8 @@ msgstr "pobieranie miało niezerowy status wyjściowy"
 msgid "'tar' returned non-zero exit code %d"
 msgstr "funkcja 'tar' zwróciła niezerowy kod %d wyjścia"
 
-msgid "file %s is not an OS X binary package"
+#, fuzzy
+msgid "file %s is not a macOS binary package"
 msgstr "plik %s nie jest pakietem binarnym OS X"
 
 msgid "package %s successfully unpacked and MD5 sums checked"
@@ -1227,6 +1287,13 @@ msgstr[0] "pakiet %s nie jest dostępny (%s)"
 msgstr[1] "pakiety %s nie są dostępne (%s)"
 msgstr[2] "pakiety %s nie są dostępne (%s)"
 
+#, fuzzy
+msgid "package %s is a base package, and should not be updated"
+msgid_plural "packages %s are base packages, and should not be updated"
+msgstr[0] "pakiet %s jest w użyciu i nie zostanie zainstalowany"
+msgstr[1] "pakiety %s są w użyciu i nie zostaną zainstalowane"
+msgstr[2] "pakiety %s są w użyciu i nie zostaną zainstalowane"
+
 msgid "dependency %s is not available"
 msgid_plural "dependencies %s are not available"
 msgstr[0] "zależność %s nie jest dostępna"
@@ -1342,6 +1409,15 @@ msgid_plural "packages %s are in use and will not be installed"
 msgstr[0] "pakiet %s jest w użyciu i nie zostanie zainstalowany"
 msgstr[1] "pakiety %s są w użyciu i nie zostaną zainstalowane"
 msgstr[2] "pakiety %s są w użyciu i nie zostaną zainstalowane"
+
+#~ msgid "cannot choose a BioC mirror non-interactively"
+#~ msgstr "nie można wybrać serweru lustrzanego BioC nieinteraktywnie"
+
+#~ msgid "Do you want to attempt to install these from sources?"
+#~ msgstr "Czy chcesz spróbować zainstalować je ze źródeł?"
+
+#~ msgid "no download method found"
+#~ msgstr "nie znaleziono metody pobierania"
 
 #~ msgid "function '%s' appears not to be an S3 generic"
 #~ msgstr "wygląda na to, że funkcja '%s' nie jest ogólną funkcją S3"

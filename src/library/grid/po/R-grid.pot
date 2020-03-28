@@ -1,8 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: R 3.3.0\n"
-"Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2015-06-06 13:51\n"
+"Project-Id-Version: grid 3.5.0\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -84,6 +83,9 @@ msgid "invalid 'f'"
 msgstr ""
 
 msgid "'gpar' element '%s' must not be length 0"
+msgstr ""
+
+msgid "mixture of missing and non-missing values for %s"
 msgstr ""
 
 msgid "'gamma' 'gpar' element is defunct"
@@ -242,9 +244,6 @@ msgstr ""
 msgid "grob '%s' not found"
 msgstr ""
 
-msgid "invalid element in the display list"
-msgstr ""
-
 msgid "Invalid force target"
 msgstr ""
 
@@ -300,9 +299,6 @@ msgid "invalid listing"
 msgstr ""
 
 msgid "invalid 'listing'"
-msgstr ""
-
-msgid "Nothing on the display list"
 msgstr ""
 
 msgid "invalid 'origin'"
@@ -435,6 +431,9 @@ msgid "index out of bounds (unit arithmetic subsetting)"
 msgstr ""
 
 msgid "index out of bounds (unit list subsetting)"
+msgstr ""
+
+msgid "Value being assigned must be a unit"
 msgstr ""
 
 msgid "it is invalid to combine 'unit' objects with other types"

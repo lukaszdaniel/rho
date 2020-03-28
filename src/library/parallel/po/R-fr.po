@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: R 2.14.0\n"
 "Report-Msgid-Bugs-To: bugs.r-project.org\n"
-"POT-Creation-Date: 2014-09-21 07:12\n"
+"POT-Creation-Date: 2020-03-28 19:51\n"
 "PO-Revision-Date: 2013-03-18 22:08+0100\n"
 "Last-Translator: Philippe Grosjean <phgrosjean@sciviews.org>\n"
 "Language-Team: French <R-core@r-project.org>\n"
@@ -18,7 +18,8 @@ msgstr ""
 "Plural-Forms: nplurals=2;plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.5\n"
 
-msgid "invalid value of 'seed'"
+#, fuzzy
+msgid "invalid value of %s"
 msgstr "valeur incorrecte pour 'seed'"
 
 msgid "need at least one argument"

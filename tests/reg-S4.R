@@ -879,3 +879,62 @@ stopifnot(!identical(firstclass, secondclass))
 stopifnot(identical(firstclass, class.list[[1]]))
 stopifnot(identical(secondclass, class.list[[2]]))
 stopifnot(identical(alsofirstclass, class.list[[1]]))
+
+## implicit coercion of S4 object to vector via as.vector() in sub-assignment
+setClass("A", representation(stuff="numeric"))
+as.vector.A <- function (x, mode="any") x@stuff
+v <- c(3.5, 0.1)
+a <- new("A", stuff=v)
+x <- y <- numeric(10)
+x[3:4] <- a
+y[3:4] <- v
+stopifnot(identical(x, y))
+
+## callNextMethod() was broken when augmenting args of primitive generics
+foo <- setClass("foo")
+bar <- setClass("bar", contains = "foo")
+
+setMethod("[", "foo",  function(x, i, j, ..., flag = FALSE, drop = FALSE) {
+    flag
+})
+
+setMethod("[", "bar", function(x, i, j, ..., flag = FALSE, drop = FALSE) {
+    callNextMethod()
+})
+
+BAR <- new("bar")
+stopifnot(identical(BAR[1L], FALSE))
+stopifnot(identical(BAR[1L, , flag=TRUE], TRUE))
+
+## avoid infinite recursion on Ops,structure methods
+setClass("MyInteger",
+         representation("integer")
+         )
+i <- new("MyInteger", 1L)
+m <- matrix(rnorm(300), 30,10)
+stopifnot(identical(i*m, m))
+
+## when rematching, do not drop arg with NULL default
+setGeneric("genericExtraArg",
+           function(x, y, extra) standardGeneric("genericExtraArg"),
+           signature="x")
+
+setMethod("genericExtraArg", "ANY", function(x, y=NULL) y)
+
+stopifnot(identical(genericExtraArg("foo", 1L), 1L))
+
+## callNextMethod() was broken for ... dispatch
+f <- function(...) length(list(...))
+setGeneric("f")
+setMethod("f", "character", function(...){ callNextMethod() })
+stopifnot(identical(f(1, 2, 3), 3L))
+stopifnot(identical(f("a", "b", "c"), 3L))
+
+## ... dispatch was evaluating missing arguments in the generic frame
+f <- function(x, ..., a = b) {
+    b <- "a"
+    a
+}
+setGeneric("f", signature = "...")
+stopifnot(identical(f(a=1), 1))
+stopifnot(identical(f(), "a"))

@@ -46,7 +46,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     SEXP vnames = PROTECT(getAttrib(varyingArgs, R_NamesSymbol));
     Rboolean named = RHOCONSTRUCT(Rboolean, vnames != nullptr);
 
-    lengths = static_cast<R_xlen_t *>(  RHO_alloc(m, sizeof(R_xlen_t)));
+    lengths = static_cast<R_xlen_t *>( RHO_alloc(m, sizeof(R_xlen_t)));
     for (int i = 0; i < m; i++) {
 	SEXP tmp1 = VECTOR_ELT(varyingArgs, i);
 	lengths[i] = dispatch_xlength(tmp1, call, rho);
@@ -56,7 +56,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     if (zero && longest)
 	error(_("zero-length inputs cannot be mixed with those of non-zero length"));
 
-    counters = static_cast<R_xlen_t *>( RHO_alloc(m, sizeof(R_xlen_t)));
+    counters = static_cast<R_xlen_t *>(RHO_alloc(m, sizeof(R_xlen_t)));
     if (m) memset(counters, 0, m * sizeof(R_xlen_t));
 
     SEXP mindex = PROTECT(allocVector(VECSXP, m));

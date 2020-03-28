@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
+ *  Copyright (C) 1995, 1996, 2017  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -102,7 +102,7 @@ static size_t lhash(SEXP x, R_xlen_t indx, HashData *d)
 static size_t ihash(SEXP x, R_xlen_t indx, HashData *d)
 {
     if (INTEGER(x)[indx] == NA_INTEGER) return 0;
-    return scatter(static_cast<unsigned int>( (INTEGER(x)[indx])), d);
+    return scatter(static_cast<unsigned int>((INTEGER(x)[indx])), d);
 }
 
 /* We use unions here because Solaris gcc -O2 has trouble with
@@ -186,7 +186,7 @@ static size_t shash(SEXP x, R_xlen_t indx, HashData *d)
     p = translateCharUTF8(STRING_ELT(x, indx));
     k = 0;
     while (*p++)
-	k = 11 * k + static_cast<unsigned int>( *p); /* was 8 but 11 isn't a power of 2 */
+	k = 11 * k + static_cast<unsigned int>(*p); /* was 8 but 11 isn't a power of 2 */
     vmaxset(vmax); /* discard any memory used by translateChar */
     return scatter(k, d);
 }
@@ -221,14 +221,15 @@ static int cplx_eq(Rcomplex x, Rcomplex y)
 {
     if (!ISNAN(x.r) && !ISNAN(x.i) && !ISNAN(y.r) && !ISNAN(y.i))
 	return x.r == y.r && x.i == y.i;
-    else if ((R_IsNA(x.r) || R_IsNA(x.i)) &&
-	     (R_IsNA(y.r) || R_IsNA(y.i)))
-	return 1;
-    else if ((R_IsNaN(x.r) || R_IsNaN(x.i)) &&
-	     (R_IsNaN(y.r) || R_IsNaN(y.i)))
-	return 1;
-    else
+    else if (R_IsNA(x.r) || R_IsNA(x.i)) // x is NA
+	return (R_IsNA(y.r) || R_IsNA(y.i)) ? 1 : 0;
+    else if (R_IsNA(y.r) || R_IsNA(y.i)) // y is NA but x is not
 	return 0;
+    // else : none is NA but there's at least one NaN;  hence  ISNAN(.) == R_IsNaN(.)
+    return
+	(((ISNAN(x.r) && ISNAN(y.r)) || (!ISNAN(x.r) && !ISNAN(y.r) && x.r == y.r)) && // Re
+	 ((ISNAN(x.i) && ISNAN(y.i)) || (!ISNAN(x.i) && !ISNAN(y.i) && x.i == y.i))    // Im
+	    ) ? 1 : 0;
 }
 
 static int cequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
@@ -267,7 +268,7 @@ static size_t vhash(SEXP x, R_xlen_t indx, HashData *d)
     unsigned int key;
     SEXP _this = VECTOR_ELT(x, indx);
 
-    key = OBJECT(_this) + 2*TYPEOF(_this) + 100U*static_cast<unsigned int>( Rf_length(_this));
+    key = OBJECT(_this) + 2*TYPEOF(_this) + 100U*static_cast<unsigned int>(Rf_length(_this));
     /* maybe we should also look at attributes, but that slows us down */
     switch (TYPEOF(_this)) {
     case LGLSXP:
@@ -938,27 +939,15 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
     }
     else { // regular case
 
-    if (incomp) { PROTECT(incomp = coerceVector(incomp, type)); nprot++; }
-    data.nomatch = nmatch;
-    HashTableSetup(table, &data, NA_INTEGER);
-    if(type == STRSXP) {
-	Rboolean useBytes = FALSE;
-	Rboolean useUTF8 = FALSE;
-	Rboolean useCache = TRUE;
-	for(R_xlen_t i = 0; i < Rf_length(x); i++) {
-	    SEXP s = STRING_ELT(x, i);
-	    if(IS_BYTES(s)) {
-		useBytes = TRUE;
-		useUTF8 = FALSE;
-		break;
-	    }
-	    if(ENC_KNOWN(s)) {
-		useUTF8 = TRUE;
-	    }
-        }
-	if(!useBytes || useCache) {
-	    for(int i = 0; i < Rf_length(table); i++) {
-		SEXP s = STRING_ELT(table, i);
+	if (incomp) { PROTECT(incomp = Rf_coerceVector(incomp, type)); nprot++; }
+	data.nomatch = nmatch;
+	HashTableSetup(table, &data, NA_INTEGER);
+	if(type == STRSXP) {
+	    Rboolean useBytes = FALSE;
+	    Rboolean useUTF8 = FALSE;
+	    Rboolean useCache = TRUE;
+	    for(R_xlen_t i = 0; i < Rf_length(x); i++) {
+		SEXP s = STRING_ELT(x, i);
 		if(IS_BYTES(s)) {
 		    useBytes = TRUE;
 		    useUTF8 = FALSE;
@@ -968,15 +957,27 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
 		    useUTF8 = TRUE;
 		}
 	    }
+	    if(!useBytes || useCache) {
+		for(int i = 0; i < Rf_length(table); i++) {
+		    SEXP s = STRING_ELT(table, i);
+		    if(IS_BYTES(s)) {
+			useBytes = TRUE;
+			useUTF8 = FALSE;
+			break;
+		    }
+		    if(ENC_KNOWN(s)) {
+			useUTF8 = TRUE;
+		    }
+		}
+	    }
+	    data.useUTF8 = useUTF8;
+	    data.useCache = useCache;
 	}
-	data.useUTF8 = useUTF8;
-	data.useCache = useCache;
+	PROTECT(data.HashTable); nprot++;
+	DoHashing(table, &data);
+	if (incomp) UndoHashing(incomp, table, &data);
+	ans = HashLookup(table, x, &data);
     }
-    PROTECT(data.HashTable); nprot++;
-    DoHashing(table, &data);
-    if (incomp) UndoHashing(incomp, table, &data);
-    ans = HashLookup(table, x, &data);
-  }
     UNPROTECT(nprot);
     return ans;
 }
@@ -1047,7 +1048,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
 	error(_("argument is not of mode character"));
 
     if(no_dups) {
-	used = static_cast<int *>( RHO_alloc(size_t( n_target), sizeof(int)));
+	used = static_cast<int *>(RHO_alloc(size_t( n_target), sizeof(int)));
 	for (int j = 0; j < n_target; j++) used[j] = 0;
     }
 
@@ -1072,8 +1073,8 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
 	}
     }
 
-    in = static_cast<const char **>( RHO_alloc(size_t( n_input), sizeof(char *)));
-    tar = static_cast<const char **>( RHO_alloc(size_t( n_target), sizeof(char *)));
+    in = static_cast<const char **>(RHO_alloc(size_t( n_input), sizeof(char *)));
+    tar = static_cast<const char **>(RHO_alloc(size_t( n_target), sizeof(char *)));
     PROTECT(ans = allocVector(INTSXP, n_input));
     ians = INTEGER(ans);
     if(useBytes) {
@@ -1108,7 +1109,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
 	    if (strlen(ss) == 0) continue;
 	    for (int j = 0; j < n_target; j++) {
 		if (no_dups && used[j]) continue;
-		if (strcmp(ss, tar[j]) == 0) {
+		if (streql(ss, tar[j])) {
 		    ians[i] = j + 1;
 		    if (no_dups) used[j] = 1;
 		    nexact++;
@@ -1145,7 +1146,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
 	    mtch_count = 0;
 	    for (int j = 0; j < n_target; j++) {
 		if (no_dups && used[j]) continue;
-		if (strncmp(ss, tar[j], temp) == 0) {
+		if (streqln(ss, tar[j], temp)) {
 		    mtch = j + 1;
 		    mtch_count++;
 		}
@@ -1738,13 +1739,6 @@ SEXP Rf_csduplicated(SEXP x)
 
 #include <R_ext/Random.h>
 
-// more fine-grained  unif_rand() for n > INT_MAX
-static R_INLINE double ru()
-{
-    double U = 33554432.0;
-    return (floor(U*unif_rand()) + unif_rand())/U;
-}
-
 // sample.int(.) --> .Internal(sample2(n, size)) :
 SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_, RObject* size_)
 {
@@ -1764,7 +1758,7 @@ SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFuncti
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)
 	    for(int j = 0; j < 100; j++) { // average < 2
-		ry[i] = floor(dn * ru() + 1);
+		ry[i] = R_unif_index(dn) + 1;
 		if(!isDuplicated(ans, i, &data)) break;
 	    }
    } else {
@@ -1774,7 +1768,7 @@ SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFuncti
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)
 	    for(int j = 0; j < 100; j++) { // average < 2
-		iy[i] = int(dn * unif_rand() + 1);
+		iy[i] = R_unif_index(dn) + 1;
 		if(!isDuplicated(ans, i, &data)) break;
 	    }
     }

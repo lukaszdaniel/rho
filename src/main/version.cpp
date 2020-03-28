@@ -125,7 +125,7 @@ void attribute_hidden Rf_PrintVersionString(char *s, size_t len)
     } else if(strlen(R_STATUS) == 0) {
 	snprintf(s, len, "R version %s.%s (%s-%s-%s)",
 		R_MAJOR, R_MINOR, R_BASEYEAR, R_BASEMONTH, R_BASEDAY);
-    } else if(strcmp(R_STATUS, "Under development (unstable)") == 0) {
+    } else if(streql(R_STATUS, "Under development (unstable)")) {
 	snprintf(s, len, "R %s (%s-%s-%s r%d)",
 		R_STATUS, R_BASEYEAR, R_BASEMONTH, R_BASEDAY, R_SVN_BASEREVISION);
     } else {
@@ -145,7 +145,7 @@ void attribute_hidden Rf_PrintRhoVersionString(char *s, size_t len)
     } else if(strlen(R_STATUS) == 0) {
 	snprintf(s, len, "Rho version %s.%s (%s-%s-%s)",
 		R_MAJOR, R_MINOR, R_YEAR, R_MONTH, R_DAY);
-    } else if(strcmp(R_STATUS, "Under development (unstable)") == 0) {
+    } else if(streql(R_STATUS, "Under development (unstable)")) {
 	snprintf(s, len, "Rho %s (%s-%s-%s r%s)",
 		R_STATUS, R_YEAR, R_MONTH, R_DAY, R_GIT_REVISION);
     } else {

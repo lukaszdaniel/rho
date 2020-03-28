@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1998--2017  The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -473,7 +473,7 @@ void R_chk_free(void *ptr)
 
 /* External Pointer Objects */
 
-/* 
+/*
    Added to API in R 3.4.0.
    Work around casting issues: works where it is needed.
  */
@@ -606,16 +606,16 @@ void *R_AllocStringBuffer(std::size_t blen, R_StringBuffer *buf)
     if(blen < blen1) blen += bsize;
 
     if(buf->data == nullptr) {
-	buf->data = static_cast<char *>( malloc(blen));
+	buf->data = static_cast<char *>(malloc(blen));
 	buf->data[0] = '\0';
     } else
-	buf->data = static_cast<char *>( realloc(buf->data, blen));
+	buf->data = static_cast<char *>(realloc(buf->data, blen));
     buf->bufsize = blen;
     if(!buf->data) {
 	buf->bufsize = 0;
 	/* don't translate internal error message */
 	Rf_error("could not allocate memory (%u Mb) in C function 'R_AllocStringBuffer'",
-	      static_cast<unsigned int>( blen)/1024/1024);
+	      static_cast<unsigned int>(blen)/1024/1024);
     }
     return buf->data;
 }

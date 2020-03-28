@@ -123,6 +123,8 @@ int IS_BYTES(SEXP x);
 void SET_BYTES(SEXP x);
 int IS_ASCII(SEXP x);
 int ENC_KNOWN(SEXP x);
+//Rboolean IS_CACHED(SEXP x) { return TRUE; }; //always true in rho
+//void SET_CACHED(SEXP x);
 
 extern void R_ProcessEvents(void);
 #ifdef Win32
@@ -333,8 +335,8 @@ inline size_t PTR2VEC(int n)
 
 /* Miscellaneous Definitions */
 //#define streql(s, t)	(!strcmp((s), (t)))
-inline int streql(const char *s, const char *t) { return !strcmp(s, t); }
-inline int streqln(const char *s, const char *t, size_t n) { return !strncmp(s, t, n); }
+inline Rboolean streql(const char *s, const char *t) { return (Rboolean)(strcmp(s, t) == 0); }
+inline Rboolean streqln(const char *s, const char *t, size_t n) { return (Rboolean)(strncmp(s, t, n) == 0); }
 
 /* Arithmetic and Relation Operators */
 typedef enum {
@@ -528,6 +530,12 @@ extern attribute_hidden Rboolean known_to_be_utf8;
 LibExtern SEXP R_TrueValue;
 LibExtern SEXP R_FalseValue;
 LibExtern SEXP R_LogicalNAValue;
+
+/* for PCRE as from R 3.4.0 */
+extern attribute_hidden Rboolean R_PCRE_use_JIT;
+extern attribute_hidden int R_PCRE_study;
+extern attribute_hidden int R_PCRE_limit_recursion;
+
 
 
 #define checkArity(a,b) Rf_checkArityCall(a,b,call)

@@ -909,7 +909,7 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     if (!Rf_isLogical(v))
 	Rf_error(_("argument to 'which' is not logical"));
     len = Rf_length(v);
-    buf = reinterpret_cast<int *>( R_alloc(len, sizeof(int)));
+    buf = reinterpret_cast<int *>(R_alloc(len, sizeof(int)));
 
     for (i = 0; i < len; i++) {
 	if (LOGICAL(v)[i] == TRUE) {

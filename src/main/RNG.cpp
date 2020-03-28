@@ -35,7 +35,7 @@
 #include <R_ext/Random.h>
 #include <S.h>
 
-/* Normal generator is not actually set here but in nmath/snorm.c */
+/* Normal generator is not actually set here but in ../nmath/snorm.c */
 #define RNG_DEFAULT MERSENNE_TWISTER
 #define N01_DEFAULT INVERSION
 
@@ -59,6 +59,7 @@ static RNGtype RNG_kind = RNG_DEFAULT;
 
 /* .Random.seed == (RNGkind, i_seed[0],i_seed[1],..,i_seed[n_seed-1])
  * or           == (RNGkind) or missing  [--> Randomize]
+ * where  RNGkind :=  RNG_kind  +  100 * N01_kind   currently in  outer(0:7, 100*(0:5), "+")
  */
 
 typedef struct {
@@ -145,7 +146,7 @@ double unif_rand(void)
 	return fixup(KT_next() * KT);
 
     case USER_UNIF:
-	return *(static_cast<double *>( User_unif_fun()));
+	return *(static_cast<double *>(User_unif_fun()));
 
     case LECUYER_CMRG:
     {
@@ -307,7 +308,7 @@ static void RNG_Init(RNGtype kind, Int32 seed)
     case USER_UNIF:
 	User_unif_fun = R_FindSymbol("user_unif_rand", "", nullptr);
 	if (!User_unif_fun) error(_("'user_unif_rand' not in load table"));
-	User_unif_init = reinterpret_cast<UnifInitFun>( R_FindSymbol("user_unif_init", "", nullptr));
+	User_unif_init = reinterpret_cast<UnifInitFun>(R_FindSymbol("user_unif_init", "", nullptr));
 	if (User_unif_init) (void) User_unif_init(seed);
 	User_unif_nseed = R_FindSymbol("user_unif_nseed", "", nullptr);
 	User_unif_seedloc = R_FindSymbol("user_unif_seedloc", "",  nullptr);
@@ -317,13 +318,13 @@ static void RNG_Init(RNGtype kind, Int32 seed)
 		warning(_("cannot read seeds unless 'user_unif_nseed' is supplied"));
 		break;
 	    }
-	    ns = *(static_cast<int *>( User_unif_nseed()));
+	    ns = *(static_cast<int *>(User_unif_nseed()));
 	    if (ns < 0 || ns > 625) {
 		warning(_("seed length must be in 0...625; ignored"));
 		break;
 	    }
 	    RNG_Table[kind].n_seed = ns;
-	    RNG_Table[kind].i_seed = static_cast<Int32 *>( User_unif_seedloc());
+	    RNG_Table[kind].i_seed = static_cast<Int32 *>(User_unif_seedloc());
 	}
 	break;
     default:
@@ -783,4 +784,32 @@ static void RNG_Init_R_KT(Int32 seed)
     memcpy(dummy, INTEGER(ans), 100*sizeof(int));
     UNPROTECT(3);
     KT_pos = 100;
+}
+
+/* Our PRNGs have at most 32 bit of precision. All generators except
+   Knuth-TAOCP, Knuth-TAOCP-2002, and possibly the user-supplied ones
+   have 31 or 32 bits bits of precision; the others are assumed to
+   have at least at least 25. */
+static R_INLINE double ru()
+{
+    double U = 33554432.0;
+    return (floor(U*unif_rand()) + unif_rand())/U;
+}
+
+double R_unif_index(double dn)
+{
+    double cut = INT_MAX;
+
+    switch(RNG_kind) {
+    case KNUTH_TAOCP:
+    case USER_UNIF:
+    case KNUTH_TAOCP2:
+	cut = 33554431.0; /* 2^25 - 1 */
+ 	break;
+    default:
+ 	break;
+   }
+
+    double u = dn > cut ? ru() : unif_rand();
+    return floor(dn * u);
 }

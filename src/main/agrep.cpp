@@ -625,7 +625,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	    }
 	    if(opt_counts) {
 		nmatch = reg.re_nsub + 1;
-		pmatch = static_cast<regmatch_t *>( malloc(nmatch * sizeof(regmatch_t)));
+		pmatch = static_cast<regmatch_t *>(malloc(nmatch * sizeof(regmatch_t)));
 	    }
 
 	    for(j = 0; j < ny; j++) {
@@ -743,8 +743,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     regmatch_t *pmatch;
     regaparams_t params;
     regamatch_t match;
-    int j, so, patlen;
-    R_xlen_t i, n;
+    int so, patlen;
     int rc, cflags = REG_EXTENDED;
 
     int opt_icase = asLogical(ignore_case_);
@@ -772,12 +771,12 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     if(!isString(vec))
 	error(_("invalid '%s' argument"), "text");
 
-    n = XLENGTH(vec);
+    R_xlen_t n = XLENGTH(vec);
 
     if(!useBytes) {
         haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pattern, 0)));
 	if(!haveBytes)
-	    for(i = 0; i < n; i++) {
+	    for(R_xlen_t i = 0; i < n; i++) {
 		if(IS_BYTES(STRING_ELT(vec, i))) {
 		    haveBytes = TRUE;
 		    break;
@@ -789,7 +788,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     if(!useBytes) {
         useWC = RHOCONSTRUCT(Rboolean, !IS_ASCII(STRING_ELT(pattern, 0)));
 	if(!useWC) {
-	    for(i = 0 ; i < n ; i++) {
+	    for(R_xlen_t i = 0 ; i < n ; i++) {
 		if(STRING_ELT(vec, i) == NA_STRING) continue;
 		if(!IS_ASCII(STRING_ELT(vec, i))) {
 		    useWC = TRUE;
@@ -831,7 +830,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 
     nmatch = reg.re_nsub + 1;
 
-    pmatch = static_cast<regmatch_t *>( malloc(nmatch * sizeof(regmatch_t)));
+    pmatch = static_cast<regmatch_t *>(malloc(nmatch * sizeof(regmatch_t)));
 
     tre_regaparams_default(&params);
     amatch_regaparams(&params, patlen,
@@ -839,7 +838,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 
     PROTECT(ans = allocVector(VECSXP, n));
 
-    for(i = 0; i < n; i++) {
+    for(R_xlen_t i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if(STRING_ELT(vec, i) == NA_STRING) {
 	    PROTECT(matchpos = ScalarInteger(NA_INTEGER));
@@ -874,7 +873,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 	    if(rc == REG_OK) {
 		PROTECT(matchpos = allocVector(INTSXP, nmatch));
 		PROTECT(matchlen = allocVector(INTSXP, nmatch));
-		for(j = 0; j < RHOCONSTRUCT(int, match.nmatch); j++) {
+		for(R_xlen_t j = 0; j < RHOCONSTRUCT(int, match.nmatch); j++) {
 		    so = match.pmatch[j].rm_so;
 		    INTEGER(matchpos)[j] = so + 1;
 		    INTEGER(matchlen)[j] = match.pmatch[j].rm_eo - so;

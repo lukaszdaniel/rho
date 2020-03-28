@@ -663,7 +663,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 		}
 	    }
 	top_of_loop:
-	    inbuf = isRawlist ? reinterpret_cast<const char *>( RAW(si)) : CHAR(si); 
+	    inbuf = isRawlist ? reinterpret_cast<const char *>(RAW(si)) : CHAR(si); 
 	    inb = LENGTH(si);
 	    outbuf = cbuff.data; outb = cbuff.bufsize - 1;
 	    /* First initialize output */
@@ -680,7 +680,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	    } else if(res == RHOCONSTRUCT(size_t, -1) && sub && 
 		      (errno == EILSEQ || errno == EINVAL)) {
 		/* it seems this gets thrown for non-convertible input too */
-		if(strcmp(sub, "byte") == 0) {
+		if(streql(sub, "byte")) {
 		    if(outb < 5) {
 			R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 			goto top_of_loop;
@@ -743,6 +743,7 @@ cetype_t Rf_getCharCE(SEXP x)
 void * Riconv_open (const char* tocode, const char* fromcode)
 {
 #if defined Win32 || __APPLE__
+// These two support "utf8"
 # ifdef Win32
     const char *cp = "ASCII";
 #  ifndef SUPPORT_UTF8_WIN32 /* Always, at present */
@@ -759,7 +760,11 @@ void * Riconv_open (const char* tocode, const char* fromcode)
     else if(!*fromcode) return iconv_open(tocode, cp);
     else return iconv_open(tocode, fromcode);
 #else
-    return iconv_open(tocode, fromcode);
+// "utf8" is not valid but people keep on using it
+    const char *to = tocode, *from = fromcode;
+    if(strcasecmp(tocode, "utf8") == 0) to = "UTF-8";
+    if(strcasecmp(fromcode, "utf8") == 0) from = "UTF-8";
+    return iconv_open(to, from);
 #endif
 }
 
@@ -773,7 +778,7 @@ size_t Riconv (void *cd, const char **inbuf, size_t *inbytesleft,
 	       char **outbuf, size_t *outbytesleft)
 {
     /* here libiconv has const char **, glibc has char ** for inbuf */
-    return iconv(static_cast<iconv_t>( cd), const_cast<ICONV_CONST char **>( inbuf), inbytesleft,
+    return iconv(static_cast<iconv_t>(cd), const_cast<ICONV_CONST char **>(inbuf), inbytesleft,
 		 outbuf, outbytesleft);
 }
 
@@ -1107,7 +1112,7 @@ next_char:
     if(!knownEnc) Riconv_close(obj);
     res = (top - outb);
     /* terminator is 2 or 4 null bytes */
-    p = reinterpret_cast<wchar_t *>( R_alloc(res+4, 1));
+    p = reinterpret_cast<wchar_t *>(R_alloc(res+4, 1));
     memset(p, 0, res+4);
     memcpy(p, cbuff.data, res);
     R_FreeStringBuffer(&cbuff);
@@ -1477,7 +1482,7 @@ size_t Rf_ucstomb(char *s, const unsigned int wc)
     char* buf = &bufv[0];
     void    *cd = nullptr ;
     unsigned int  wcs[2];
-    const char *inbuf = reinterpret_cast<const char *>( wcs);
+    const char *inbuf = reinterpret_cast<const char *>(wcs);
     size_t   inbytesleft = sizeof(unsigned int); /* better be 4 */
     char    *outbuf = buf;
     size_t   outbytesleft = sizeof(buf);
@@ -1534,7 +1539,7 @@ Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
     void    *cd;
     const char *inbuf = s;
     size_t   inbytesleft = strlen(s);
-    char    *outbuf = reinterpret_cast<char *>( wcs);
+    char    *outbuf = reinterpret_cast<char *>(wcs);
     size_t   outbytesleft = sizeof(buf);
     size_t   status;
 
@@ -1567,7 +1572,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
     char     buf[16];
     void    *cd = nullptr ;
     unsigned int  wcs[2];
-    const char *inbuf = reinterpret_cast<const char *>( wcs);
+    const char *inbuf = reinterpret_cast<const char *>(wcs);
     size_t   inbytesleft = sizeof(unsigned int); /* better be 4 */
     char    *outbuf = buf;
     size_t   outbytesleft = sizeof(buf);
@@ -1719,7 +1724,7 @@ void attribute_hidden Rf_InitTempDir()
     }
 
     size_t len = strlen(tmp) + 1;
-    p = static_cast<char *>( malloc(len));
+    p = static_cast<char *>(malloc(len));
     if(!p)
 	R_Suicide(_("cannot allocate 'R_TempDir'"));
     else {
@@ -1774,7 +1779,7 @@ char * R_tmpnam2(const char *prefix, const char *tempdir, const char *fileext)
     }
     if(!done)
 	Rf_error(_("cannot find unused tempfile name"));
-    res = static_cast<char *>( malloc((strlen(tm)+1) * sizeof(char)));
+    res = static_cast<char *>(malloc((strlen(tm)+1) * sizeof(char)));
     if(!res)
 	Rf_error(_("allocation failed in R_tmpnam2"));
     strcpy(res, tm);

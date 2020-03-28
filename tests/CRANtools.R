@@ -16,6 +16,6 @@ foo <- tryCatch(readLines(paste0(mirror, "/web/packages")),
                 })
 
 library(tools)
-example("CRAN_package_db", run.donttest = TRUE)
+#example("CRAN_package_db", run.donttest = TRUE)
 
 cat("Time elapsed: ", proc.time() - .ptime,"\n")

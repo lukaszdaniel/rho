@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2000-2016  The R Core Team.
+ *  Copyright (C) 2000-2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1052,6 +1052,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
     return ans;
 }
 
+// .Internal(strptime(as.character(x), format, tz))
 SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* tz_)
 {
     SEXP x, sformat, ans, ansnames, klass, stz, tzone = R_NilValue;

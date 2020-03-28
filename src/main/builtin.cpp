@@ -113,7 +113,7 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
     if (!Rf_isEnvironment(aenv)) Rf_error(_("invalid '%s' argument"), "assign.env");
 
     for(i = 0; i < XLENGTH(names); i++) {
-	SEXP name = Rf_installChar(STRING_ELT(names, i));
+	SEXP name = Rf_installTrChar(STRING_ELT(names, i));
 	PROTECT(val = Rf_eval(VECTOR_ELT(values, i), eenv));
 	PROTECT(expr0 = Rf_duplicate(expr));
 	SETCAR(CDR(expr0), val);
@@ -382,7 +382,7 @@ static const char *trChar(SEXP x)
 	const char *p = R_CHAR(x), *q;
 	char *pp = R_alloc(4*n+1, 1), *qq = pp, buf[5];
 	for (q = p; *q; q++) {
-	    unsigned char k = static_cast<unsigned char>( *q);
+	    unsigned char k = static_cast<unsigned char>(*q);
 	    if (k >= 0x20 && k < 0x80) {
 		*qq++ = *q;
 	    } else {

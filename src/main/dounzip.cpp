@@ -331,7 +331,7 @@ SEXP Runzip(SEXP args)
     if (ntopics > 0) {
 	if (!isString(fn))
 	    error(_("invalid '%s' argument"), "files");
-	topics = static_cast<const char **>( RHO_alloc(ntopics, sizeof(char *)));
+	topics = static_cast<const char **>(RHO_alloc(ntopics, sizeof(char *)));
 	for (i = 0; i < ntopics; i++)
 	    topics[i] = translateChar(STRING_ELT(fn, i));
     }
@@ -500,16 +500,16 @@ Rconnection attribute_hidden
 R_newunz(const char *description, const char *const mode)
 {
     Rconnection newconn;
-    newconn = static_cast<Rconnection>( malloc(sizeof(struct Rconn)));
+    newconn = static_cast<Rconnection>(malloc(sizeof(struct Rconn)));
     if(!newconn) error(_("allocation of 'unz' connection failed"));
-    newconn->connclass = static_cast<char *>( malloc(strlen("unz") + 1));
+    newconn->connclass = static_cast<char *>(malloc(strlen("unz") + 1));
     if(!newconn->connclass) {
 	free(newconn);
 	error(_("allocation of 'unz' connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     strcpy(newconn->connclass, "unz");
-    newconn->description = static_cast<char *>( malloc(strlen(description) + 1));
+    newconn->description = static_cast<char *>(malloc(strlen(description) + 1));
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
 	error(_("allocation of 'unz' connection failed"));

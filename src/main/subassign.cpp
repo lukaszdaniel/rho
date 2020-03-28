@@ -280,13 +280,14 @@ static SEXP embedInVector(SEXP v, SEXP call)
 static std::pair<bool, SEXP> dispatch_asvector(SEXP x, const Expression* call,
                                                Environment* rho)
 {
-    static GCRoot<BuiltInFunction> op
-        = BuiltInFunction::obtainPrimitive("as.vector");
-    static GCRoot<> any = Rf_mkString("any");
-    ArgList args({ x, any }, ArgList::EVALUATED);
-    return Rf_Dispatch(call, op, args, rho);
-}
+    static GCRoot<BuiltInFunction> op = nullptr;
+    if (op == nullptr)
+        op = SEXP_downcast<BuiltInFunction*>(INTERNAL(Rf_install("as.vector")));
 
+    static GCRoot<> any = Rf_mkString("any");
+    ArgList args({ x, any }, ArgList::RAW);
+    return Rf_DispatchOrEval(call, op, &args, rho, MissingArgHandling::Keep);
+}
 
 /* Level 1 is used in VectorAssign, ArrayAssign.
    That coerces RHS to a list or expression.

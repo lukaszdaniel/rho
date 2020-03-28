@@ -468,7 +468,7 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 	}
     } else // not MBCS nor marked as UTF-8
 	for (i = 0; i < slen; i++) {
-	    if(static_cast<unsigned char>( *p) < 0x80) {
+	    if(static_cast<unsigned char>(*p) < 0x80) {
 		/* ASCII */
 		if(isprint(int(*p))) {
 		    switch(*p) {
@@ -584,7 +584,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		const char *q;
 		char *pp = R_alloc(4*cnt+1, 1), *qq = pp, buf[5];
 		for (q = p; *q; q++) {
-		    unsigned char k = static_cast<unsigned char>( *q);
+		    unsigned char k = static_cast<unsigned char>(*q);
 		    if (k >= 0x20 && k < 0x80) {
 			*qq++ = *q;
 			if (quote && *q == '"') cnt++;
@@ -727,7 +727,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	for (i = 0; i < cnt; i++) {
 
 	    /* ASCII */
-	    if(static_cast<unsigned char>( *p) < 0x80) {
+	    if(static_cast<unsigned char>(*p) < 0x80) {
 		if(*p != '\t' && isprint(int(*p))) { /* Windows has \t as printable */
 		    switch(*p) {
 		    case '\\': *q++ = '\\'; *q++ = '\\'; break;
@@ -754,7 +754,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 
 		    default:
 			/* print in octal */
-			snprintf(buf, 5, "\\%03o", static_cast<unsigned char>( *p));
+			snprintf(buf, 5, "\\%03o", static_cast<unsigned char>(*p));
 			for(j = 0; j < 4; j++) *q++ = buf[j];
 			break;
 		    }
@@ -765,7 +765,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 #else
 		if(!isprint(int(*p) & 0xff)) {
 		    /* print in octal */
-		    snprintf(buf, 5, "\\%03o", static_cast<unsigned char>( *p));
+		    snprintf(buf, 5, "\\%03o", static_cast<unsigned char>(*p));
 		    for(j = 0; j < 4; j++) *q++ = buf[j];
 		    p++;
 		} else *q++ = *p++;

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996	Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1998--2017	The R Core Team.
+ *  Copyright (C) 1995, 1996	Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -433,7 +433,7 @@ static void R_InitProfiling(SEXP filename, int append, double dinterval,
 	size_t len1 = R_Srcfile_bufcount*sizeof(char *), len2 = bufsize;
 	R_PreserveObject( R_Srcfiles_buffer = Rf_allocVector(RAWSXP, len1 + len2) );
  //	memset(RAW(R_Srcfiles_buffer), 0, len1+len2);
-	R_Srcfiles = reinterpret_cast<char **>( RAW(R_Srcfiles_buffer));
+	R_Srcfiles = reinterpret_cast<char **>(RAW(R_Srcfiles_buffer));
 	R_Srcfiles[0] = reinterpret_cast<char *>(RAW(R_Srcfiles_buffer)) + len1;
 	*(R_Srcfiles[0]) = '\0';
     }
@@ -784,7 +784,11 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
     if (Rf_length(s) > 1)
     {
 	GCStackRoot<> gc_protect(s);
-	Rf_warningcall(call,
+	char *check = getenv("_R_CHECK_LENGTH_1_CONDITION_");
+	if((check != NULL) ? StringTrue(check) : FALSE) // warn by default
+	    Rf_errorcall(call, _("the condition has length > 1"));
+        else
+	    Rf_warningcall(call,
 		    _("the condition has length > 1 and only the first element will be used"));
     }
     if (Rf_length(s) > 0) {
@@ -2011,7 +2015,7 @@ Rf_DispatchGroup(const char *group, const Expression* call,
 	  || (arg2val && arg2val->hasClass())))
         return std::make_pair(false, nullptr);
 
-    bool isOps = (strcmp(group, "Ops") == 0);
+    bool isOps = (streql(group, "Ops"));
 
     /* try for formal method */
     bool useS4 = ((arg1val && arg1val->isS4Object())

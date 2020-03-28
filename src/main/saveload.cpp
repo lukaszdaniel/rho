@@ -207,7 +207,7 @@ static int AsciiInInteger(FILE *fp, SaveLoadData *d)
     int x, res;
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) error(_("read error"));
-    if (strcmp(d->smbuf, "NA") == 0)
+    if (streql(d->smbuf, "NA"))
 	return NA_INTEGER;
     else {
 	res = sscanf(d->smbuf, "%d", &x);
@@ -221,11 +221,11 @@ static double AsciiInReal(FILE *fp, SaveLoadData *d)
     double x;
     int res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) error(_("read error"));
-    if (strcmp(d->smbuf, "NA") == 0)
+    if (streql(d->smbuf, "NA"))
 	x = NA_REAL;
-    else if (strcmp(d->smbuf, "Inf") == 0)
+    else if (streql(d->smbuf, "Inf"))
 	x = R_PosInf;
-    else if (strcmp(d->smbuf, "-Inf") == 0)
+    else if (streql(d->smbuf, "-Inf"))
 	x = R_NegInf;
     else
 	res  = sscanf(d->smbuf, "%lg", &x);
@@ -239,11 +239,11 @@ static Rcomplex AsciiInComplex(FILE *fp, SaveLoadData *d)
     int res;
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) error(_("read error"));
-    if (strcmp(d->smbuf, "NA") == 0)
+    if (streql(d->smbuf, "NA"))
 	x.r = NA_REAL;
-    else if (strcmp(d->smbuf, "Inf") == 0)
+    else if (streql(d->smbuf, "Inf"))
 	x.r = R_PosInf;
-    else if (strcmp(d->smbuf, "-Inf") == 0)
+    else if (streql(d->smbuf, "-Inf"))
 	x.r = R_NegInf;
     else {
 	res  = sscanf(d->smbuf, "%lg", &x.r);
@@ -252,11 +252,11 @@ static Rcomplex AsciiInComplex(FILE *fp, SaveLoadData *d)
 
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) error(_("read error"));
-    if (strcmp(d->smbuf, "NA") == 0)
+    if (streql(d->smbuf, "NA"))
 	x.i = NA_REAL;
-    else if (strcmp(d->smbuf, "Inf") == 0)
+    else if (streql(d->smbuf, "Inf"))
 	x.i = R_PosInf;
-    else if (strcmp(d->smbuf, "-Inf") == 0)
+    else if (streql(d->smbuf, "-Inf"))
 	x.i = R_NegInf;
     else {
 	res = sscanf(d->smbuf, "%lg", &x.i);
@@ -1322,7 +1322,7 @@ static SEXP NewReadItem (SEXP sym_table, SEXP env_table, FILE *fp,
     default:
 	error(_("NewReadItem: unknown type %i"), type);
     }
-    SETLEVELS(s, static_cast<unsigned short>( levs));
+    SETLEVELS(s, static_cast<unsigned short>(levs));
     SET_ATTRIB(s, NewReadItem(sym_table, env_table, fp, m, d));
     UNPROTECT(1); /* s */
     return s;
@@ -1409,7 +1409,7 @@ static int InIntegerAscii(FILE *fp, SaveLoadData *unused)
     int x, res;
     res = fscanf(fp, SMBUF_SIZED_STRING, buf);
     if(res != 1) error(_("read error"));
-    if (strcmp(buf, "NA") == 0)
+    if (streql(buf, "NA"))
 	return NA_INTEGER;
     else {
 	res = sscanf(buf, "%d", &x);
@@ -1443,7 +1443,7 @@ static void OutStringAscii(FILE *fp, const char *x, SaveLoadData *unused)
 	       is handled above, x[i] > 126 can't happen, but
 	       I'm superstitious...  -pd */
 	    if (x[i] <= 32 || x[i] > 126)
-		fprintf(fp, "\\%03o", static_cast<unsigned char>( x[i]));
+		fprintf(fp, "\\%03o", static_cast<unsigned char>(x[i]));
 	    else
 		fputc(x[i], fp);
 	}
@@ -1464,8 +1464,8 @@ static char *InStringAscii(FILE *fp, SaveLoadData *unused)
     if (nbytes >= buflen) {
 	char *newbuf;
 	/* Protect against broken realloc */
-	if(buf) newbuf = static_cast<char *>( realloc(buf, nbytes + 1));
-	else newbuf = static_cast<char *>( malloc(nbytes + 1));
+	if(buf) newbuf = static_cast<char *>(realloc(buf, nbytes + 1));
+	else newbuf = static_cast<char *>(malloc(nbytes + 1));
 	if (newbuf == nullptr) /* buf remains allocated */
 	    error(_("out of memory reading ascii string"));
 	buf = newbuf;
@@ -1526,11 +1526,11 @@ static double InDoubleAscii(FILE *fp, SaveLoadData *unused)
     int res;
     res = fscanf(fp, "%127s", buf);
     if(res != 1) error(_("read error"));
-    if (strcmp(buf, "NA") == 0)
+    if (streql(buf, "NA"))
 	x = NA_REAL;
-    else if (strcmp(buf, "Inf") == 0)
+    else if (streql(buf, "Inf"))
 	x = R_PosInf;
-    else if (strcmp(buf, "-Inf") == 0)
+    else if (streql(buf, "-Inf"))
 	x = R_NegInf;
     else {
 	res = sscanf(buf, "%lg", &x);
@@ -1604,8 +1604,8 @@ static char *InStringBinary(FILE *fp, SaveLoadData *unused)
     if (nbytes >= buflen) {
 	char *newbuf;
 	/* Protect against broken realloc */
-	if(buf) newbuf = static_cast<char *>( realloc(buf, nbytes + 1));
-	else newbuf = static_cast<char *>( malloc(nbytes + 1));
+	if(buf) newbuf = static_cast<char *>(realloc(buf, nbytes + 1));
+	else newbuf = static_cast<char *>(malloc(nbytes + 1));
 	if (newbuf == nullptr)
 	    error(_("out of memory reading binary string"));
 	buf = newbuf;
@@ -1685,7 +1685,7 @@ static int InIntegerXdr(FILE *fp, SaveLoadData *d)
 
 static void OutStringXdr(FILE *fp, const char *s, SaveLoadData *d)
 {
-    unsigned int n = static_cast<unsigned int>( strlen(s));
+    unsigned int n = static_cast<unsigned int>(strlen(s));
     char *t = CallocCharBuf(n);
     bool_t res;
     /* This copy may not be needed, will xdr_bytes ever modify 2nd arg? */
@@ -1705,8 +1705,8 @@ static char *InStringXdr(FILE *fp, SaveLoadData *d)
     if (RHOCONSTRUCT(int, nbytes) >= buflen) {
 	char *newbuf;
 	/* Protect against broken realloc */
-	if(buf) newbuf = static_cast<char *>( realloc(buf, nbytes + 1));
-	else newbuf = static_cast<char *>( malloc(nbytes + 1));
+	if(buf) newbuf = static_cast<char *>(realloc(buf, nbytes + 1));
+	else newbuf = static_cast<char *>(malloc(nbytes + 1));
 	if (newbuf == nullptr)
 	    error(_("out of memory reading binary string"));
 	buf = newbuf;
@@ -1827,25 +1827,25 @@ static int R_ReadMagic(FILE *fp)
 	    return R_MAGIC_CORRUPT;
     }
 
-    if (strncmp(reinterpret_cast<char*>(buf), "RDA1\n", 5) == 0) {
+    if (streqln(reinterpret_cast<char*>(buf), "RDA1\n", 5)) {
 	return R_MAGIC_ASCII_V1;
     }
-    else if (strncmp(reinterpret_cast<char*>(buf), "RDB1\n", 5) == 0) {
+    else if (streqln(reinterpret_cast<char*>(buf), "RDB1\n", 5)) {
 	return R_MAGIC_BINARY_V1;
     }
-    else if (strncmp(reinterpret_cast<char*>(buf), "RDX1\n", 5) == 0) {
+    else if (streqln(reinterpret_cast<char*>(buf), "RDX1\n", 5)) {
 	return R_MAGIC_XDR_V1;
     }
-    if (strncmp(reinterpret_cast<char*>(buf), "RDA2\n", 5) == 0) {
+    if (streqln(reinterpret_cast<char*>(buf), "RDA2\n", 5)) {
 	return R_MAGIC_ASCII_V2;
     }
-    else if (strncmp(reinterpret_cast<char*>(buf), "RDB2\n", 5) == 0) {
+    else if (streqln(reinterpret_cast<char*>(buf), "RDB2\n", 5)) {
 	return R_MAGIC_BINARY_V2;
     }
-    else if (strncmp(reinterpret_cast<char*>(buf), "RDX2\n", 5) == 0) {
+    else if (streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5)) {
 	return R_MAGIC_XDR_V2;
     }
-    else if (strncmp(reinterpret_cast<char *>(buf), "RD", 2) == 0)
+    else if (streqln(reinterpret_cast<char *>(buf), "RD", 2))
 	return R_MAGIC_MAYBE_TOONEW;
 
     /* Intel gcc seems to screw up a single expression here */
@@ -1988,7 +1988,7 @@ SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction*
 
 	t = s;
 	for (j = 0; j < len; j++, t = CDR(t)) {
-	    SET_TAG(t, installChar(STRING_ELT(list_, j)));
+	    SET_TAG(t, Rf_installTrChar(STRING_ELT(list_, j)));
 	    GCStackRoot<> tmp(findVar(TAG(t), source));
 	    if (tmp == R_UnboundValue)
 		error(_("object '%s' not found"), EncodeChar(PRINTNAME(TAG(t))));
@@ -2026,7 +2026,7 @@ static SEXP RestoreToEnv(SEXP ans, SEXP aenv)
 	    error(_("not a valid named list"));
 	ProvenanceTracker::flagXenogenesis();
 	for (i = 0; i < LENGTH(ans); i++) {
-	    SEXP sym = installChar(STRING_ELT(names, i));
+	    SEXP sym = Rf_installTrChar(STRING_ELT(names, i));
 	    obj = VECTOR_ELT(ans, i);
 	    defineVar(sym, obj, aenv);
 	    if(R_seemsOldStyleS4Object(obj))
@@ -2110,7 +2110,7 @@ void attribute_hidden R_XDREncodeDouble(double d, void *buf)
     XDR xdrs;
     int success;
 
-    xdrmem_create(&xdrs, static_cast<char *>( buf), R_XDR_DOUBLE_SIZE, XDR_ENCODE);
+    xdrmem_create(&xdrs, static_cast<char *>(buf), R_XDR_DOUBLE_SIZE, XDR_ENCODE);
     success = xdr_double(&xdrs, &d);
     xdr_destroy(&xdrs);
     if (! success)
@@ -2123,7 +2123,7 @@ double attribute_hidden R_XDRDecodeDouble(void *buf)
     double d;
     int success;
 
-    xdrmem_create(&xdrs, static_cast<char *>( buf), R_XDR_DOUBLE_SIZE, XDR_DECODE);
+    xdrmem_create(&xdrs, static_cast<char *>(buf), R_XDR_DOUBLE_SIZE, XDR_DECODE);
     success = xdr_double(&xdrs, &d);
     xdr_destroy(&xdrs);
     if (! success)
@@ -2136,7 +2136,7 @@ void attribute_hidden R_XDREncodeInteger(int i, void *buf)
     XDR xdrs;
     int success;
 
-    xdrmem_create(&xdrs, static_cast<char *>( buf), R_XDR_INTEGER_SIZE, XDR_ENCODE);
+    xdrmem_create(&xdrs, static_cast<char *>(buf), R_XDR_INTEGER_SIZE, XDR_ENCODE);
     success = xdr_int(&xdrs, &i);
     xdr_destroy(&xdrs);
     if (! success)
@@ -2148,7 +2148,7 @@ int attribute_hidden R_XDRDecodeInteger(void *buf)
     XDR xdrs;
     int i, success;
 
-    xdrmem_create(&xdrs, static_cast<char *>( buf), R_XDR_INTEGER_SIZE, XDR_DECODE);
+    xdrmem_create(&xdrs, static_cast<char *>(buf), R_XDR_INTEGER_SIZE, XDR_DECODE);
     success = xdr_int(&xdrs, &i);
     xdr_destroy(&xdrs);
     if (! success)
@@ -2291,7 +2291,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 
 	t = s;
 	for (j = 0; j < len; j++, t = CDR(t)) {
-	    SET_TAG(t, installChar(STRING_ELT(list, j)));
+	    SET_TAG(t, Rf_installTrChar(STRING_ELT(list, j)));
 	    SETCAR(t, findVar(TAG(t), source));
 	    tmp = findVar(TAG(t), source);
 	    if (tmp == R_UnboundValue)
@@ -2353,9 +2353,9 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
 	memset(buf, 0, 6);
 	count = con->read(buf, sizeof(char), 5, con);
 	if (count == 0) error(_("no input is available"));
-	if (strncmp(reinterpret_cast<char*>(buf), "RDA2\n", 5) == 0 ||
-	    strncmp(reinterpret_cast<char*>(buf), "RDB2\n", 5) == 0 ||
-	    strncmp(reinterpret_cast<char*>(buf), "RDX2\n", 5) == 0) {
+	if (streqln(reinterpret_cast<char*>(buf), "RDA2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDB2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5)) {
 	    R_InitConnInPStream(&in, con, R_pstream_any_format, nullptr, nullptr);
 	    GCStackRoot<> unser(R_Unserialize(&in));
 	    R_InitReadItemDepth = R_ReadItemDepth = -asInteger(verbose_);

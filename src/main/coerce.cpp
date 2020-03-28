@@ -441,7 +441,7 @@ static SEXP coerceToSymbol(SEXP v)
 	UNIMPLEMENTED_TYPE("coerceToSymbol", v);
     }
     if (warn) Rf_CoercionWarning(warn);/*2000/10/23*/
-    ans = Rf_installChar(ans);
+    ans = Rf_installTrChar(ans);
     UNPROTECT(1);
     return ans;
 }
@@ -1252,7 +1252,7 @@ SEXP Rf_CreateTag(SEXP x)
 	&& Rf_length(STRING_ELT(x, 0)) >= 1) {
 	x = Rf_installTrChar(STRING_ELT(x, 0));
     } else
-	x = Rf_installChar(STRING_ELT(Rf_deparse1(x, TRUE, SIMPLEDEPARSE), 0));
+	x = Rf_installTrChar(STRING_ELT(Rf_deparse1(x, TRUE, SIMPLEDEPARSE), 0));
     return x;
 }
 
@@ -1309,7 +1309,7 @@ static SEXP ascommon(SEXP call, SEXP u, SEXPTYPE type)
 	if ((type == LISTSXP) &&
 	    !(TYPEOF(u) == LANGSXP || TYPEOF(u) == LISTSXP ||
 	      TYPEOF(u) == EXPRSXP || TYPEOF(u) == VECSXP)) {
-      if (MAYBE_REFERENCED(v)) v = Rf_shallow_duplicate(v);
+	    if (MAYBE_REFERENCED(v)) v = Rf_shallow_duplicate(v);
 	    CLEAR_ATTRIB(v);
 	}
 	return v;
@@ -2653,12 +2653,13 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	const char *valueString;
 	int whichType;
 
-	SEXP cur_class;
-	valueString = CHAR(Rf_asChar(value)); /* ASCII */
+	SEXP cur_class; SEXPTYPE valueType;
+	valueString = R_CHAR(Rf_asChar(value)); /* ASCII */
 	whichType = class2type(valueString);
+	valueType = (whichType == -1) ? (SEXPTYPE) -1 : classTable[whichType].sexp;
 	PROTECT(cur_class = R_data_class(obj, FALSE)); nProtect++;
 	/*  assigning type as a class deletes an explicit class attribute. */
-	if(whichType != -1) {
+	if(valueType != (SEXPTYPE)-1) {
             SEXPTYPE valueType = classTable[whichType].sexp;
 	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */

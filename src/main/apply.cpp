@@ -289,7 +289,7 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
 	UNPROTECT(1);
 	return ans;
     }
-    if(strcmp(R_CHAR(STRING_ELT(classes, 0)), "ANY") == 0) /* ASCII */
+    if(streql(R_CHAR(STRING_ELT(classes, 0)), "ANY")) /* ASCII */
 	matched = TRUE;
     else {
 	PROTECT(klass = R_data_class(X, FALSE));
@@ -332,7 +332,7 @@ SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunctio
     deflt = args[0]; args = (args + 1);
     how = args[0];
     if(!Rf_isString(how)) Rf_error(_("invalid '%s' argument"), "how");
-    replace = RHOCONSTRUCT(Rboolean, strcmp(R_CHAR(STRING_ELT(how, 0)), "replace") == 0); /* ASCII */
+    replace = RHOCONSTRUCT(Rboolean, streql(R_CHAR(STRING_ELT(how, 0)), "replace")); /* ASCII */
     n = Rf_length(X);
     if (replace) {
       PROTECT(ans = Rf_shallow_duplicate(X));

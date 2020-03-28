@@ -620,7 +620,7 @@ SEXP attribute_hidden do_psort(/*const*/ Expression* call, const BuiltInFunction
     if(!IS_LONG_VEC(x) || TYPEOF(p) != REALSXP)
 	p = coerceVector(p, INTSXP);
     int nind = LENGTH(p);
-    R_xlen_t *l = static_cast<R_xlen_t *>( RHO_alloc(nind, sizeof(R_xlen_t)));
+    R_xlen_t *l = static_cast<R_xlen_t *>(RHO_alloc(nind, sizeof(R_xlen_t)));
     if (TYPEOF(p) == REALSXP) {
 	double *rl = REAL(p);
 	for (int i = 0; i < nind; i++) {
@@ -1283,7 +1283,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 #ifdef LONG_VECTOR_SUPPORT
 	    if (n > INT_MAX)  {
 		PROTECT(ans = allocVector(REALSXP, n));
-		R_xlen_t *in = static_cast<R_xlen_t *>( RHO_alloc(n, sizeof(R_xlen_t)));
+		R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 		for (R_xlen_t i = 0; i < n; i++) in[i] = i;
 		orderVector1l(in, n, CAR(args), nalast, decreasing,
 			      R_NilValue);
@@ -1301,7 +1301,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 #ifdef LONG_VECTOR_SUPPORT
 	    if (n > INT_MAX)  {
 		PROTECT(ans = allocVector(REALSXP, n));
-		R_xlen_t *in = static_cast<R_xlen_t *>( RHO_alloc(n, sizeof(R_xlen_t)));
+		R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 		for (R_xlen_t i = 0; i < n; i++) in[i] = i;
 		orderVectorl(in, n, CAR(args), nalast, decreasing,
 			     listgreaterl);
@@ -1371,7 +1371,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 #ifdef LONG_VECTOR_SUPPORT
 	if(isLong) {
 	    R_xlen_t i, j, k;
-	    R_xlen_t *in = static_cast<R_xlen_t *>( RHO_alloc(n, sizeof(R_xlen_t)));
+	    R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 	    for (i = 0; i < n; i++) in[i] = i;
 	    orderVector1l(in, n, x, TRUE, FALSE, rho);
 	    for (i = 0; i < n; i = j+1) {
@@ -1394,7 +1394,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 #endif
 	{
 	    int i, j, k;
-	    int *in = static_cast<int *>( RHO_alloc(n, sizeof(int)));
+	    int *in = static_cast<int *>(RHO_alloc(n, sizeof(int)));
 	    for (i = 0; i < n; i++) in[i] = i;
 	    orderVector1(in, int( n), x, TRUE, FALSE, rho);
 	    for (i = 0; i < n; i = j+1) {

@@ -21,7 +21,10 @@ if(.Platform$OS.type == "windows") {
     {
         ## reasonable to assume this on the path
         DLL_nm <- "objdump.exe"
-        if(!nzchar(Sys.which(DLL_nm))) return()
+        if(!nzchar(Sys.which(DLL_nm))) {
+            warning("this requires 'objdump.exe' to be on the PATH")
+            return()
+        }
         f <- file_path_as_absolute(f)
         s0 <- suppressWarnings(system2(DLL_nm, c("-x", shQuote(f)),
                                        stdout = TRUE, stderr = TRUE))
@@ -30,7 +33,7 @@ if(.Platform$OS.type == "windows") {
         l1 <- grep("^\tDLL Name:", s0)
         l2 <- grep("^The Export Tables", s0)
         if (!length(l1) || !length(l2)) return()
-        s1 <- s0[(l1[1L] + 3L):(l2 - 4L)]
+        s1 <- s0[(l1[1L] + 2L):(l2 - 4L)]
         s2 <- grep("\t[0-9a-f]+\t +[0-9]+", s1, value = TRUE)
         sub(".* ([_A-Za-z0-9]+)$", "\\1", s2)
     }
@@ -39,7 +42,10 @@ if(.Platform$OS.type == "windows") {
 read_symbols_from_object_file <- function(f)
 {
     ## reasonable to assume this on the path
-    if(!nzchar(nm <- Sys.which("nm"))) return()
+    if(!nzchar(nm <- Sys.which("nm"))) {
+        warning("this requires 'nm' to be on the PATH")
+        return()
+    }
     f <- file_path_as_absolute(f)
     if(!(file.size(f))) return()
     s <- strsplit(system(sprintf("%s -Pg %s", shQuote(nm), shQuote(f)),
@@ -751,6 +757,8 @@ function(calls, dir = NULL, character_only = TRUE)
                    ## positionally (the other ff interface named
                    ## arguments come after '...').
                    if(length(pos)) e <- e[-pos]
+                   ## drop calls with only ...
+                   if(length(e) < 2L) return(NULL)
                    cname <- as.character(e[[1L]])
                    ## The help says
                    ##
@@ -936,7 +944,7 @@ function(nrdb, align = TRUE, include_declarations = FALSE)
       "",
       if(length(symbols)) {
           c("/*",
-            "  The following symbols/expresssions for .NAME have been omitted",
+            "  The following symbols/expressions for .NAME have been omitted",
             "", strwrap(symbols, indent = 4, exdent = 4), "",
             "  Most likely possible values need to be added below.",
             "*/", "")

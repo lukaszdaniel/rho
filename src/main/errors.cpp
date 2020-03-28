@@ -957,7 +957,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	if(strlen(domain)) {
 	    size_t len = strlen(domain)+3;
 	    R_CheckStack2(len);
-	    buf = static_cast<char *>( alloca(len));
+	    buf = static_cast<char *>(alloca(len));
 	    snprintf(buf, len, "R-%s", domain);
 	    domain = buf;
 	}

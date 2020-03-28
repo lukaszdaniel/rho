@@ -133,7 +133,7 @@ checkValidSymbolId(SEXP op, SEXP call, DL_FUNC *fun,
 	   *fun = R_ExternalPtrAddrFn(op);
 	else if(R_ExternalPtrTag(op) == registered_native_symbol) {
 	   R_RegisteredNativeSymbol *tmp;
-	   tmp = static_cast<R_RegisteredNativeSymbol *>( R_ExternalPtrAddr(op));
+	   tmp = static_cast<R_RegisteredNativeSymbol *>(R_ExternalPtrAddr(op));
 	   if(tmp) {
 	      if(symbol->type != R_ANY_SYM && symbol->type != tmp->type)
 		 errorcall(call, _("NULL value passed as symbol address"));
@@ -216,9 +216,9 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     DllReference dll;
     /* This is used as shorthand for 'all' in R_FindSymbol, but
        should never be supplied */
-    strcpy(dll.DLLname, ""); 
+    strcpy(dll.DLLname, "");
     dll.dll = nullptr; dll.obj = nullptr; dll.type = NOT_DEFINED;
-    
+
     op = CAR(args);  // value of .NAME =
     /* NB, this sets fun, symbol and buf and is not just a check! */
     checkValidSymbolId(op, call, fun, symbol, buf);
@@ -272,7 +272,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
 	    error(_("symbol '%s' is too long"), p);
 	q = buf;
 	while ((*q = *p) != '\0') {
-	    if(symbol->type == R_FORTRAN_SYM) *q = char( tolower(*q));
+	    if(symbol->type == R_FORTRAN_SYM) *q = char(tolower(*q));
 	    p++;
 	    q++;
 	}
@@ -346,17 +346,18 @@ checkNativeType(int targetType, int actualType)
     return(TRUE);
 }
 
+
 static Rboolean
 comparePrimitiveTypes(R_NativePrimitiveArgType type, SEXP s)
 {
-    SEXPTYPE stype = SEXPTYPE(type);
-    if(stype == ANYSXP || TYPEOF(s) == stype)
-	return(TRUE);
+   SEXPTYPE stype = SEXPTYPE(type);
+   if(stype == ANYSXP || TYPEOF(s) == stype)
+      return(TRUE);
 
    if(type == SINGLESXP)
-       return(Rboolean(asLogical(getAttrib(s, install("Csingle"))) == TRUE));
+      return(Rboolean(Rf_asLogical(getAttrib(s, install("Csingle"))) == TRUE));
 
-    return(FALSE);
+   return(FALSE);
 }
 
 
@@ -397,18 +398,17 @@ static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll)
 	    } else {
 		/* Have a DLL object, which is not something documented .... */
 		if(TYPEOF(CAR(s)) == EXTPTRSXP) {
-		    dll->dll = static_cast<HINSTANCE>( R_ExternalPtrAddr(CAR(s)));
+		    dll->dll = static_cast<HINSTANCE>(R_ExternalPtrAddr(CAR(s)));
 		    dll->type = DLL_HANDLE;
 		} else if(TYPEOF(CAR(s)) == VECSXP) {
 		    dll->type = R_OBJECT;
 		    dll->obj = s;
 		    strcpy(dll->DLLname,
 			   translateChar(STRING_ELT(VECTOR_ELT(CAR(s), 1), 0)));
-		    dll->dll = static_cast<HINSTANCE>( R_ExternalPtrAddr(VECTOR_ELT(s, 4)));
-		} else 
+		    dll->dll = static_cast<HINSTANCE>(R_ExternalPtrAddr(VECTOR_ELT(s, 4)));
+		} else
 		    error("incorrect type (%s) of PACKAGE argument\n",
 			  type2char(TYPEOF(CAR(s))));
-
 	    }
 	} else {
 	    nargs++;
@@ -434,7 +434,7 @@ static void setDLLname(SEXP s, char *DLLname)
 	error(_("PACKAGE argument must be a single character string"));
     name = translateChar(STRING_ELT(ss, 0));
     /* allow the package: form of the name, as returned by find */
-    if(strncmp(name, "package:", 8) == 0)
+    if(streqln(name, "package:", 8))
 	name += 8;
     if(strlen(name) > PATH_MAX - 1)
 	error(_("PACKAGE argument is too long"));
@@ -454,14 +454,14 @@ static SEXP pkgtrim(SEXP args, DllReference *dll)
 	   this is the last one (which will only happen for one arg),
 	   and remove it */
 	if(ss == R_NilValue && TAG(s) == PkgSymbol) {
-	    if(pkgused++ == 1) 
+	    if(pkgused++ == 1)
 		warning(_("'%s' used more than once"), "PACKAGE");
 	    setDLLname(s, dll->DLLname);
 	    dll->type = FILENAME;
 	    return R_NilValue;
 	}
 	if(TAG(ss) == PkgSymbol) {
-	    if(pkgused++ == 1) 
+	    if(pkgused++ == 1)
 		warning(_("'%s' used more than once"), "PACKAGE");
 	    setDLLname(ss, dll->DLLname);
 	    dll->type = FILENAME;
@@ -517,10 +517,10 @@ SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 	if(!isValidString(CADDR(args)))
 	    error(_("invalid '%s' argument"), "type");
 	type = CHAR(STRING_ELT(CADDR(args), 0)); /* ASCII */
-	if(strcmp(type, "C") == 0) symbol.type = R_C_SYM;
-	else if(strcmp(type, "Fortran") == 0) symbol.type = R_FORTRAN_SYM;
-	else if(strcmp(type, "Call") == 0) symbol.type = R_CALL_SYM;
-	else if(strcmp(type, "External") == 0) symbol.type = R_EXTERNAL_SYM;
+	if(streql(type, "C")) symbol.type = R_C_SYM;
+	else if(streql(type, "Fortran")) symbol.type = R_FORTRAN_SYM;
+	else if(streql(type, "Call")) symbol.type = R_CALL_SYM;
+	else if(streql(type, "External")) symbol.type = R_EXTERNAL_SYM;
     }
     if(!(R_FindSymbol(sym, pkg, &symbol))) val = 0;
     return ScalarLogical(val);
@@ -554,10 +554,10 @@ SEXP attribute_hidden do_External(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     if (PRIMVAL(op) == 1) {
-	R_ExternalRoutine2 fun = R_ExternalRoutine2( ofun);
+	R_ExternalRoutine2 fun = R_ExternalRoutine2(ofun);
 	retval = fun(call, op, args, env);
     } else {
-	R_ExternalRoutine fun = R_ExternalRoutine( ofun);
+	R_ExternalRoutine fun = R_ExternalRoutine(ofun);
 	retval = fun(args);
     }
     vmaxset(vmax);
@@ -665,7 +665,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 			" (number %d, type %s, length %d)\n",
 			buf,
 			i + 1,
-			CHAR(Rf_type2str(TYPEOF(cargscp[i]))),
+			R_CHAR(Rf_type2str(TYPEOF(cargscp[i]))),
 			Rf_length(cargscp[i])
 		    );
 	    R_Suicide("compiler constants were modified (in .Call?)!\n");
@@ -783,7 +783,7 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
 
     if(dll->obj == nullptr) {
 	/* Rprintf("\nsearching for %s\n", name); */
-	dll->obj = Rf_getCallingDLL();
+	//dll->obj = Rf_getCallingDLL();
 	if (env != R_NilValue) {
 	    SEXP e;
 	    PROTECT(e = lang2(install("getCallingDLLe"), env));
@@ -796,7 +796,7 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
     if(inherits(dll->obj, "DLLInfo")) {
 	SEXP tmp;
 	tmp = VECTOR_ELT(dll->obj, 4);
-	info = static_cast<DllInfo *>( R_ExternalPtrAddr(tmp));
+	info = static_cast<DllInfo *>(R_ExternalPtrAddr(tmp));
 	if(!info)
 	    error(_("NULL value for DLLInfoReference when looking for DLL"));
 	fun = R_dlsym(info, name, symbol);
@@ -834,7 +834,6 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP ans, pa, s;
     R_RegisteredNativeSymbol symbol = {R_C_SYM, {nullptr}, nullptr};
     R_NativePrimitiveArgType *checkTypes = nullptr;
-    R_NativeArgStyle *argStyles = nullptr;
     const void *vmax;
     char symName[MaxSymbolBytes];
 
@@ -854,7 +853,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     args = enctrim(args);
     args = resolveNativeRoutine(args, &ofun, &symbol, symName, &nargs,
 				&naok, call, env);
-    fun = reinterpret_cast<VarFun>( ofun);
+    fun = reinterpret_cast<VarFun>(ofun);
 
     if(symbol.symbol.c && symbol.symbol.c->numArgs > -1) {
 	if(symbol.symbol.c->numArgs != nargs)
@@ -863,7 +862,6 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		      nargs, symbol.symbol.c->numArgs, symName);
 
 	checkTypes = symbol.symbol.c->types;
-	argStyles = symbol.symbol.c->styles;
     }
 
     /* Construct the return value */
@@ -889,8 +887,8 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     /* Convert the arguments for use in foreign function calls. */
-    cargs = static_cast<void**>( RHO_alloc(nargs, sizeof(void*)));
-    if (copy) cargs0 = static_cast<void**>( RHO_alloc(nargs, sizeof(void*)));
+    cargs = static_cast<void**>(RHO_alloc(nargs, sizeof(void*)));
+    if (copy) cargs0 = static_cast<void**>(RHO_alloc(nargs, sizeof(void*)));
     for(na = 0, pa = args ; pa != R_NilValue; pa = CDR(pa), na++) {
 	if(checkTypes &&
 	   !comparePrimitiveTypes(checkTypes[na], CAR(pa))) {
@@ -989,7 +987,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 			if(!R_FINITE(rptr[i]))
 			    error(_("NA/NaN/Inf in foreign function call (arg %d)"), na + 1);
 		if (asLogical(getAttrib(s, CSingSymbol)) == 1) {
-		    float *sptr = static_cast<float*>( RHO_alloc(n, sizeof(float)));
+		    float *sptr = static_cast<float*>(RHO_alloc(n, sizeof(float)));
 		    for (R_xlen_t i = 0 ; i < n ; i++) sptr[i] = float( REAL(s)[i]);
 		    cargs[na] = RHO_NO_CAST(void*) sptr;
 #ifdef R_MEMORY_PROFILING
@@ -1043,16 +1041,16 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		const char *ss = translateChar(STRING_ELT(s, 0));
 		if (n > 1)
 		    warning(_("only first string in char vector used in .Fortran"));
-		char *fptr = static_cast<char*>( RHO_alloc(max(255, strlen(ss)) + 1, sizeof(char)));
+		char *fptr = static_cast<char*>(RHO_alloc(max(255, strlen(ss)) + 1, sizeof(char)));
 		strcpy(fptr, ss);
 		cargs[na] =  RHO_NO_CAST(void*) fptr;
 	    } else if (copy) {
-		char **cptr = static_cast<char**>( RHO_alloc(n, sizeof(char*))),
-		    **cptr0 = static_cast<char**>( RHO_alloc(n, sizeof(char*)));
+		char **cptr = static_cast<char**>(RHO_alloc(n, sizeof(char*))),
+		    **cptr0 = static_cast<char**>(RHO_alloc(n, sizeof(char*)));
 		for (R_xlen_t i = 0 ; i < n ; i++) {
 		    const char *ss = translateChar(STRING_ELT(s, i));
 		    size_t nn = strlen(ss) + 1 + 2 * NG;
-		    char *ptr = static_cast<char*>( RHO_alloc(nn, sizeof(char)));
+		    char *ptr = static_cast<char*>(RHO_alloc(nn, sizeof(char)));
 		    memset(ptr, FILL, nn);
 		    cptr[i] = cptr0[i] = ptr + NG;
 		    strcpy(cptr[i], ss);
@@ -1063,18 +1061,18 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		if (RTRACE(s)) memtrace_report(s, cargs[na]);
 #endif
 	    } else {
-		char **cptr = static_cast<char**>( RHO_alloc(n, sizeof(char*)));
+		char **cptr = static_cast<char**>(RHO_alloc(n, sizeof(char*)));
 		for (R_xlen_t i = 0 ; i < n ; i++) {
 		    const char *ss = translateChar(STRING_ELT(s, i));
 		    size_t nn = strlen(ss) + 1;
 		    if(nn > 1) {
-			cptr[i] = static_cast<char*>( RHO_alloc(nn, sizeof(char)));
+			cptr[i] = static_cast<char*>(RHO_alloc(nn, sizeof(char)));
 			strcpy(cptr[i], ss);
 		    } else {
 			/* Protect ourselves against those who like to
 			   extend "", maybe using strncpy */
 			nn = 128;
-			cptr[i] = static_cast<char*>( RHO_alloc(nn, sizeof(char)));
+			cptr[i] = static_cast<char*>(RHO_alloc(nn, sizeof(char)));
 			memset(cptr[i], 0, nn);
 		    }
 		    cargs[na] = RHO_NO_CAST(void*) cptr;
@@ -1090,7 +1088,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 				type2char(t), na + 1);
 		/* Used read-only, so this is safe */
 		n = XLENGTH(s);
-		SEXP *lptr = static_cast<SEXP *>( RHO_alloc(n, sizeof(SEXP)));
+		SEXP *lptr = static_cast<SEXP *>(RHO_alloc(n, sizeof(SEXP)));
 		for (R_xlen_t i = 0 ; i < n ; i++) lptr[i] = VECTOR_ELT(s, i);
 		cargs[na] = RHO_NO_CAST(void*) lptr;
 	    }
@@ -1154,197 +1152,194 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     for (na = 0, pa = args ; pa != R_NilValue ; pa = CDR(pa), na++) {
-	if(argStyles && argStyles[na] == R_ARG_IN) {
-	    SET_VECTOR_ELT(ans, na, R_NilValue);
-	    continue;
-	} else {
-	    void *p = cargs[na];
-	    SEXP arg = CAR(pa);
-	    s = VECTOR_ELT(ans, na);
-	    R_NativePrimitiveArgType type_ =
-		checkTypes ? checkTypes[na] : TYPEOF(arg);
-	    SEXPTYPE type;
-	    bool single_precision;
-	    if (type_ == SINGLESXP) {
+	void *p = cargs[na];
+	SEXP arg = CAR(pa);
+	s = VECTOR_ELT(ans, na);
+	R_NativePrimitiveArgType type_ =
+	    checkTypes ? checkTypes[na] : TYPEOF(arg);
+	SEXPTYPE type;
+	bool single_precision;
+	 if (type_ == SINGLESXP) {
 		type = REALSXP;
 		single_precision = true;
-	    } else {
+	 } else {
 		type = static_cast<SEXPTYPE>(type_);
 		single_precision = false;
-	    }
-	    R_xlen_t n = xlength(arg);
+	 }
+	R_xlen_t n = Rf_xlength(arg);
 
-	    switch(type) {
-	    case RAWSXP:
-		if (copy) {
-		    s = allocVector(type, n);
-		    unsigned char *ptr = (unsigned char *) p;
-		    memcpy(RAW(s), ptr, n * sizeof(Rbyte));
-		    ptr += n * sizeof(Rbyte);
-		    for (int i = 0; i < NG; i++)
-			if(*ptr++ != FILL)
-			    error("array over-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		    ptr = (unsigned char *) p;
-		    for (int i = 0; i < NG; i++)
-			if(*--ptr != FILL)
-			    error("array under-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		}
-		break;
-	    case INTSXP:
-		if (copy) {
-		    s = allocVector(type, n);
-		    unsigned char *ptr = (unsigned char *) p;
-		    memcpy(INTEGER(s), ptr, n * sizeof(int));
-		    ptr += n * sizeof(int);
-		    for (int i = 0; i < NG; i++)
-			if(*ptr++ != FILL)
-			    error("array over-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		    ptr = (unsigned char *) p;
-		    for (int i = 0; i < NG; i++)
-			if(*--ptr != FILL)
-			    error("array under-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		}
-		break;
-	    case LGLSXP:
-		if (copy) {
-		    s = allocVector(type, n);
-		    unsigned char *ptr = (unsigned char *) p;
-		    int *iptr = (int*) ptr, tmp;
-		    for (R_xlen_t i = 0 ; i < n ; i++) {
-			tmp =  iptr[i];
-			LOGICAL(s)[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
-		    }
-		    ptr += n * sizeof(int);
-		    for (int i = 0; i < NG;  i++)
-			if(*ptr++ != FILL)
-			    error("array over-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		    ptr = (unsigned char *) p;
-		    for (int i = 0; i < NG; i++)
-			if(*--ptr != FILL)
-			    error("array under-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		} else {
-		    int *iptr = INTEGER(arg), tmp;
-		    for (R_xlen_t i = 0 ; i < n ; i++) {
-			tmp =  iptr[i];
-			iptr[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
-		    }
-		}
-		break;
-	    case REALSXP:
-		if (copy) {
-		    s = allocVector(REALSXP, n);
-		    if (single_precision || asLogical(getAttrib(arg, CSingSymbol)) == 1) {
-			float *sptr = (float*) p;
-			for(R_xlen_t i = 0 ; i < n ; i++)
-			    REAL(s)[i] = (double) sptr[i];
-		    } else {
-			unsigned char *ptr = (unsigned char *) p;
-			memcpy(REAL(s), ptr, n * sizeof(double));
-			ptr += n * sizeof(double);
-			for (int i = 0; i < NG; i++)
-			    if(*ptr++ != FILL)
-				error("array over-run in %s(\"%s\") in %s argument %d\n",
-				      Fort ? ".Fortran" : ".C",
-				      symName, type2char(RHOCONSTRUCT(SEXPTYPE, type)), na+1);
-			ptr = static_cast<unsigned char *>( p);
-			for (int i = 0; i < NG; i++)
-			    if(*--ptr != FILL)
-				error("array under-run in %s(\"%s\") in %s argument %d\n",
-				      Fort ? ".Fortran" : ".C",
-				      symName, type2char(RHOCONSTRUCT(SEXPTYPE, type)), na+1);
-		    }
-		} else {
-		    if (single_precision || asLogical(getAttrib(arg, CSingSymbol)) == 1) {
-			s = allocVector(REALSXP, n);
-			float *sptr = (float*) p;
-			for(int i = 0 ; i < n ; i++)
-			    REAL(s)[i] = (double) sptr[i];
-		    }
-		}
-		break;
-	    case CPLXSXP:
-		if (copy) {
-		    s = allocVector(type, n);
-		    unsigned char *ptr = (unsigned char *) p;
-		    memcpy(COMPLEX(s), p, n * sizeof(Rcomplex));
-		    ptr += n * sizeof(Rcomplex);
-		    for (int i = 0; i < NG;  i++)
-			if(*ptr++ != FILL)
-			    error("array over-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		    ptr = (unsigned char *) p;
-		    for (int i = 0; i < NG; i++)
-			if(*--ptr != FILL)
-			    error("array under-run in %s(\"%s\") in %s argument %d\n",
-				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
-		}
-		break;
-	    case STRSXP:
-		if(Fort) {
-		    char buf[256];
-		    /* only return one string: warned on the R -> Fortran step */
-		    strncpy(buf, (char*)p, 255);
-		    buf[255] = '\0';
-		    s = Rf_ScalarString(mkChar(buf));
-		} else if (copy) {
-		    SEXP ss = arg;
-		    PROTECT(s = allocVector(type, n));
-		    char **cptr = (char**) p, **cptr0 = (char**) cargs0[na];
-		    for (R_xlen_t i = 0 ; i < n ; i++) {
-			unsigned char *ptr = (unsigned char *) cptr[i];
-			SET_STRING_ELT(s, i, mkChar(cptr[i]));
-			if (cptr[i] == cptr0[i]) {
-			    const char *z = translateChar(STRING_ELT(ss, i));
-			    for (int j = 0; j < NG; j++)
-				if(*--ptr != FILL)
-				    error("array under-run in .C(\"%s\") in character argument %d, element %d",
-					  symName, na+1, (int)(i+1));
-			    ptr = (unsigned char *) cptr[i];
-			    ptr += strlen(z) + 1;
-			    for (int j = 0; j < NG;  j++)
-				if(*ptr++ != FILL) {
-				    // force termination
-				    unsigned char *p = ptr;
-				    for (int k = 1; k < NG - j; k++, p++)
-					if (*p == FILL) *p = '\0';
-				    error("array over-run in .C(\"%s\") in character argument %d, element %d\n'%s'->'%s'\n",
-					  symName, na+1, (int)(i+1),
-					  z, cptr[i]);
-				}
-			}
-		    }
-		    UNPROTECT(1);
-		} else {
-		    PROTECT(s = allocVector(type, n));
-		    char **cptr = (char**) p;
-		    for (R_xlen_t i = 0 ; i < n ; i++)
-			SET_STRING_ELT(s, i, mkChar(cptr[i]));
-		    UNPROTECT(1);
-		}
-		break;
-	    default:
-		break;
+	switch(type) {
+	case RAWSXP:
+	    if (copy) {
+		s = allocVector(type, n);
+		unsigned char *ptr = (unsigned char *) p;
+		memcpy(RAW(s), ptr, n * sizeof(Rbyte));
+		ptr += n * sizeof(Rbyte);
+		for (int i = 0; i < NG; i++)
+		    if(*ptr++ != FILL)
+			error("array over-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+		ptr = (unsigned char *) p;
+		for (int i = 0; i < NG; i++)
+		    if(*--ptr != FILL)
+			error("array under-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
 	    }
-	    if (s != arg) {
-		PROTECT(s);
-		SHALLOW_DUPLICATE_ATTRIB(s, arg);
-		SET_VECTOR_ELT(ans, na, s);
+	    break;
+	case INTSXP:
+	    if (copy) {
+		s = allocVector(type, n);
+		unsigned char *ptr = (unsigned char *) p;
+		memcpy(INTEGER(s), ptr, n * sizeof(int));
+		ptr += n * sizeof(int);
+		for (int i = 0; i < NG; i++)
+		    if(*ptr++ != FILL)
+			error("array over-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+		ptr = (unsigned char *) p;
+		for (int i = 0; i < NG; i++)
+		    if(*--ptr != FILL)
+			error("array under-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+	    }
+	    break;
+	case LGLSXP:
+	    if (copy) {
+		s = allocVector(type, n);
+		unsigned char *ptr = (unsigned char *) p;
+		int *iptr = (int*) ptr, tmp;
+		for (R_xlen_t i = 0 ; i < n ; i++) {
+		    tmp =  iptr[i];
+		    LOGICAL(s)[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
+		}
+		ptr += n * sizeof(int);
+		for (int i = 0; i < NG;  i++)
+		    if(*ptr++ != FILL)
+			error("array over-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+		ptr = (unsigned char *) p;
+		for (int i = 0; i < NG; i++)
+		    if(*--ptr != FILL)
+			error("array under-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+	    } else {
+		int *iptr = INTEGER(arg), tmp;
+		for (R_xlen_t i = 0 ; i < n ; i++) {
+		    tmp =  iptr[i];
+		    iptr[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
+		}
+	    }
+	    break;
+	case REALSXP:
+	    if (copy) {
+		s = allocVector(REALSXP, n);
+		if (single_precision || asLogical(getAttrib(arg, CSingSymbol)) == 1) {
+		    float *sptr = (float*) p;
+		    for(R_xlen_t i = 0 ; i < n ; i++)
+			REAL(s)[i] = (double) sptr[i];
+		} else {
+		    unsigned char *ptr = (unsigned char *) p;
+		    memcpy(REAL(s), ptr, n * sizeof(double));
+		    ptr += n * sizeof(double);
+		    for (int i = 0; i < NG; i++)
+			if(*ptr++ != FILL)
+			    error("array over-run in %s(\"%s\") in %s argument %d\n",
+				  Fort ? ".Fortran" : ".C",
+				  symName, type2char(type), na+1);
+		    ptr = (unsigned char *) p;
+		    for (int i = 0; i < NG; i++)
+			if(*--ptr != FILL)
+			    error("array under-run in %s(\"%s\") in %s argument %d\n",
+				  Fort ? ".Fortran" : ".C",
+				  symName, type2char(type), na+1);
+		}
+	    } else {
+		if (single_precision || asLogical(getAttrib(arg, CSingSymbol)) == 1) {
+		    s = allocVector(REALSXP, n);
+		    float *sptr = (float*) p;
+		    for(int i = 0 ; i < n ; i++)
+			REAL(s)[i] = (double) sptr[i];
+		}
+	    }
+	    break;
+	case CPLXSXP:
+	    if (copy) {
+		s = allocVector(type, n);
+		unsigned char *ptr = (unsigned char *) p;
+		memcpy(COMPLEX(s), p, n * sizeof(Rcomplex));
+		ptr += n * sizeof(Rcomplex);
+		for (int i = 0; i < NG;  i++)
+		    if(*ptr++ != FILL)
+			error("array over-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+		ptr = (unsigned char *) p;
+		for (int i = 0; i < NG; i++)
+		    if(*--ptr != FILL)
+			error("array under-run in %s(\"%s\") in %s argument %d\n",
+			      Fort ? ".Fortran" : ".C",
+			      symName, type2char(type), na+1);
+	    }
+	    break;
+	case STRSXP:
+	    if(Fort) {
+		char buf[256];
+		/* only return one string: warned on the R -> Fortran step */
+		strncpy(buf, (char*)p, 255);
+		buf[255] = '\0';
+		PROTECT(s = allocVector(type, 1));
+		SET_STRING_ELT(s, 0, mkChar(buf));
+		UNPROTECT(1);
+	    } else if (copy) {
+		SEXP ss = arg;
+		PROTECT(s = allocVector(type, n));
+		char **cptr = (char**) p, **cptr0 = (char**) cargs0[na];
+		for (R_xlen_t i = 0 ; i < n ; i++) {
+		    unsigned char *ptr = (unsigned char *) cptr[i];
+		    SET_STRING_ELT(s, i, mkChar(cptr[i]));
+		    if (cptr[i] == cptr0[i]) {
+			const char *z = translateChar(STRING_ELT(ss, i));
+			for (int j = 0; j < NG; j++)
+			    if(*--ptr != FILL)
+				error("array under-run in .C(\"%s\") in character argument %d, element %d",
+				      symName, na+1, (int)(i+1));
+			ptr = (unsigned char *) cptr[i];
+			ptr += strlen(z) + 1;
+			for (int j = 0; j < NG;  j++)
+			    if(*ptr++ != FILL) {
+				// force termination
+				unsigned char *p = ptr;
+				for (int k = 1; k < NG - j; k++, p++)
+				    if (*p == FILL) *p = '\0';
+				error("array over-run in .C(\"%s\") in character argument %d, element %d\n'%s'->'%s'\n",
+				      symName, na+1, (int)(i+1),
+				      z, cptr[i]);
+			    }
+		    }
+		}
+		UNPROTECT(1);
+	    } else {
+		PROTECT(s = allocVector(type, n));
+		char **cptr = (char**) p;
+		for (R_xlen_t i = 0 ; i < n ; i++)
+		    SET_STRING_ELT(s, i, mkChar(cptr[i]));
 		UNPROTECT(1);
 	    }
+	    break;
+	default:
+	    break;
+	}
+	if (s != arg) {
+	    PROTECT(s);
+	    SHALLOW_DUPLICATE_ATTRIB(s, arg);
+	    SET_VECTOR_ELT(ans, na, s);
+	    UNPROTECT(1);
 	}
     }
     UNPROTECT(1);
@@ -1394,7 +1389,7 @@ static void *RObjToCPtr2(SEXP s)
 	{
 	    n = LENGTH(s);
 	    int *iptr = INTEGER(s);
-	    iptr = static_cast<int*>( RHO_alloc(n, sizeof(int)));
+	    iptr = static_cast<int*>(RHO_alloc(n, sizeof(int)));
 	    for (int i = 0 ; i < n ; i++) iptr[i] = INTEGER(s)[i];
 	    return RHO_NO_CAST(void*) iptr;
 	}
@@ -1403,7 +1398,7 @@ static void *RObjToCPtr2(SEXP s)
 	{
 	    n = LENGTH(s);
 	    double *rptr = REAL(s);
-	    rptr = static_cast<double*>( RHO_alloc(n, sizeof(double)));
+	    rptr = static_cast<double*>(RHO_alloc(n, sizeof(double)));
 	    for (int i = 0 ; i < n ; i++) rptr[i] = REAL(s)[i];
 	    return RHO_NO_CAST(void*) rptr;
 	}
@@ -1412,7 +1407,7 @@ static void *RObjToCPtr2(SEXP s)
 	{
 	    n = LENGTH(s);
 	    Rcomplex *zptr = COMPLEX(s);
-	    zptr = static_cast<Rcomplex*>( RHO_alloc(n, sizeof(Rcomplex)));
+	    zptr = static_cast<Rcomplex*>(RHO_alloc(n, sizeof(Rcomplex)));
 	    for (int i = 0 ; i < n ; i++) zptr[i] = COMPLEX(s)[i];
 	    return RHO_NO_CAST(void*) zptr;
 	}
@@ -1420,7 +1415,7 @@ static void *RObjToCPtr2(SEXP s)
     case STRSXP:
 	{
 	    n = LENGTH(s);
-	    char **cptr = static_cast<char**>( RHO_alloc(n, sizeof(char*)));
+	    char **cptr = static_cast<char**>(RHO_alloc(n, sizeof(char*)));
 	    for (int i = 0 ; i < n ; i++) {
 		const char *ss = translateChar(STRING_ELT(s, i));
 		cptr[i] = RHO_NO_CAST(char*) R_alloc(strlen(ss) + 1, sizeof(char));
@@ -1433,7 +1428,7 @@ static void *RObjToCPtr2(SEXP s)
     case VECSXP:
 	{
 	    n = Rf_length(s);
-	    SEXP *lptr = static_cast<SEXP *>( RHO_alloc(n, sizeof(SEXP)));
+	    SEXP *lptr = static_cast<SEXP *>(RHO_alloc(n, sizeof(SEXP)));
 	    for (int i = 0 ; i < n ; i++) lptr[i] = VECTOR_ELT(s, i);
 	    return RHO_NO_CAST(void*) lptr;
 	}
@@ -1453,7 +1448,7 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
     SEXPTYPE type;
     int i, j, n;
 
-    if (!isFunction(reinterpret_cast<SEXP>(func)))
+    if (!Rf_isFunction(reinterpret_cast<SEXP>(func)))
 	error("invalid function in call_R");
     if (nargs < 0)
 	error("invalid argument count in call_R");
@@ -1469,25 +1464,25 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
 	switch(type) {
 	case LGLSXP:
 	case INTSXP:
-	    n = int( lengths[i]);
+	    n = int(lengths[i]);
 	    SETCAR(pcall, allocVector(type, n));
 	    memcpy(INTEGER(CAR(pcall)), arguments[i], n * sizeof(int));
 	    break;
 	case REALSXP:
-	    n = int( lengths[i]);
+	    n = int(lengths[i]);
 	    SETCAR(pcall, allocVector(REALSXP, n));
 	    memcpy(REAL(CAR(pcall)), arguments[i], n * sizeof(double));
 	    break;
 	case CPLXSXP:
-	    n = int( lengths[i]);
+	    n = int(lengths[i]);
 	    SETCAR(pcall, allocVector(CPLXSXP, n));
 	    memcpy(REAL(CAR(pcall)), arguments[i], n * sizeof(Rcomplex));
 	    break;
 	case STRSXP:
-	    n = int( lengths[i]);
+	    n = int(lengths[i]);
 	    SETCAR(pcall, allocVector(STRSXP, n));
 	    for (j = 0 ; j < n ; j++) {
-		char *str = static_cast<char*>((arguments[i]));
+		char *str = static_cast<char*>(arguments[i]);
 		SET_STRING_ELT(CAR(pcall), i, mkChar(str));
 	    }
 	    break;
@@ -1506,19 +1501,19 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
     case CPLXSXP:
     case STRSXP:
 	if(nres > 0)
-	    results[0] = static_cast<char *>( RObjToCPtr2(s));
+	    results[0] = static_cast<char *>(RObjToCPtr2(s));
 	break;
     case VECSXP:
 	n = Rf_length(s);
 	if (nres < n) n = int( nres);
 	for (i = 0 ; i < n ; i++)
-	    results[i] = static_cast<char *>( RObjToCPtr2(VECTOR_ELT(s, i)));
+	    results[i] = static_cast<char *>(RObjToCPtr2(VECTOR_ELT(s, i)));
 	break;
     case LISTSXP:
 	n = Rf_length(s);
 	if(nres < n) n = int( nres);
 	for(i = 0 ; i < n ; i++) {
-	    results[i] = static_cast<char *>( RObjToCPtr2(s));
+	    results[i] = static_cast<char *>(RObjToCPtr2(s));
 	    s = CDR(s);
 	}
 	break;

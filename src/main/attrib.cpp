@@ -1153,6 +1153,7 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
     return value;
 }
 
+//  levels(.) <- newlevs :
 SEXP attribute_hidden do_levelsgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     RObject* object = x_;
@@ -1330,7 +1331,7 @@ SEXP attribute_hidden do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
     /* Unless a full match has been found, check for a "names" attribute.
        This is stored via TAGs on pairlists, and via rownames on 1D arrays.
     */
-    if (match != FULL && strncmp("names", str, n) == 0) {
+    if (match != FULL && streqln("names", str, n)) {
 	if (strlen("names") == n) {
 	    /* we have a full match on "names", if there is such an
 	       attribute */
@@ -1578,7 +1579,7 @@ int R_has_slot(SEXP obj, SEXP name) {
 	Rf_error(_("invalid type or length for slot name"));		\
     if(!s_dot_Data)							\
 	init_slot_handling();						\
-    if(Rf_isString(name)) name = Rf_installChar(STRING_ELT(name, 0))
+    if(Rf_isString(name)) name = Rf_installTrChar(STRING_ELT(name, 0))
 
     R_SLOT_INIT;
     if(name == s_dot_Data && TYPEOF(obj) != S4SXP)

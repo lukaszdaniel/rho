@@ -38,6 +38,10 @@
 #include <R_ext/Itermacros.h>
 
 #include "duplicate.h"
+
+#include <complex.h>
+#include "Rcomplex.h"	/* toC99 */
+
 #include "rho/GCStackRoot.hpp"
 #include "rho/RAllocStack.hpp"
 #include "rho/Subscripting.hpp"
@@ -333,8 +337,12 @@ SEXP attribute_hidden do_length(/*const*/ Expression* call, const BuiltInFunctio
 	if (Rf_length(ans) == 1 && TYPEOF(ans) == REALSXP) {
 	    GCStackRoot<> ansrt(ans);
 	    double d = REAL(ans)[0];
-	    if (R_FINITE(d) && d >= 0. && d <= INT_MAX && floor(d) == d)
-		return Rf_coerceVector(ans, INTSXP);
+	    if (R_FINITE(d) && d >= 0. && d <= INT_MAX && floor(d) == d) {
+                PROTECT(ans);
+                ans = Rf_coerceVector(ans, INTSXP);
+                UNPROTECT(1);
+                return(ans);
+            }
 	}
 	return(ans);
     }
@@ -693,19 +701,17 @@ static void internal_cmatprod(Rcomplex *x, int nrx, int ncx,
     LDOUBLE sum_i, sum_r;
 #define CMATPROD_BODY					    \
     int i, j, k;					    \
-    double xij_r, xij_i, yjk_r, yjk_i;			    \
+    std::complex<double> xij, yjk;				    \
     R_xlen_t NRX = nrx, NRY = nry;			    \
     for (i = 0; i < nrx; i++)				    \
 	for (k = 0; k < ncy; k++) {			    \
 	    sum_r = 0.0;				    \
 	    sum_i = 0.0;				    \
 	    for (j = 0; j < ncx; j++) {			    \
-		xij_r = x[i + j * NRX].r;		    \
-		xij_i = x[i + j * NRX].i;		    \
-		yjk_r = y[j + k * NRY].r;		    \
-		yjk_i = y[j + k * NRY].i;		    \
-		sum_r += (xij_r * yjk_r - xij_i * yjk_i);   \
-		sum_i += (xij_r * yjk_i + xij_i * yjk_r);   \
+		xij = toC99(x + (i + j * NRX));		    \
+		yjk = toC99(y + (j + k * NRY));		    \
+		sum_r += (xij * yjk).real();		    \
+		sum_i += (xij * yjk).imag();		    \
 	    }						    \
 	    z[i + k * NRX].r = (double) sum_r;		    \
 	    z[i + k * NRX].i = (double) sum_i;		    \
@@ -726,19 +732,17 @@ static void internal_ccrossprod(Rcomplex *x, int nrx, int ncx,
     LDOUBLE sum_i, sum_r;
 #define CCROSSPROD_BODY					    \
     int i, j, k;					    \
-    double xji_r, xji_i, yjk_r, yjk_i;			    \
+    std::complex<double> xji, yjk;				    \
     R_xlen_t NRX = nrx, NRY = nry, NCX = ncx;		    \
     for (i = 0; i < ncx; i++)				    \
 	for (k = 0; k < ncy; k++) {			    \
 	    sum_r = 0.0;				    \
 	    sum_i = 0.0;				    \
 	    for (j = 0; j < nrx; j++) {			    \
-		xji_r = x[j + i * NRX].r;		    \
-		xji_i = x[j + i * NRX].i;		    \
-		yjk_r = y[j + k * NRY].r;		    \
-		yjk_i = y[j + k * NRY].i;		    \
-		sum_r += (xji_r * yjk_r - xji_i * yjk_i);   \
-		sum_i += (xji_r * yjk_i + xji_i * yjk_r);   \
+		xji = toC99(x + (j + i * NRX));		    \
+		yjk = toC99(y + (j + k * NRY));		    \
+		sum_r += (xji * yjk).real();		    \
+		sum_i += (xji * yjk).imag();		    \
 	    }						    \
 	    z[i + k * NCX].r = (double) sum_r;		    \
 	    z[i + k * NCX].i = (double) sum_i;		    \
@@ -759,19 +763,17 @@ static void internal_tccrossprod(Rcomplex *x, int nrx, int ncx,
     LDOUBLE sum_i, sum_r;
 #define TCCROSSPROD_BODY				    \
     int i, j, k;					    \
-    double xij_r, xij_i, ykj_r, ykj_i;			    \
+    std::complex<double> xij, ykj;				    \
     R_xlen_t NRX = nrx, NRY = nry;			    \
     for (i = 0; i < nrx; i++)				    \
 	for (k = 0; k < nry; k++) {			    \
 	    sum_r = 0.0;				    \
 	    sum_i = 0.0;				    \
 	    for (j = 0; j < ncx; j++) {			    \
-		xij_r = x[i + j * NRX].r;		    \
-		xij_i = x[i + j * NRX].i;		    \
-		ykj_r = y[k + j * NRY].r;		    \
-		ykj_i = y[k + j * NRY].i;		    \
-		sum_r += (xij_r * ykj_r - xij_i * ykj_i);   \
-		sum_i += (xij_r * ykj_i + xij_i * ykj_r);   \
+		xij = toC99(x + (i + j * NRX));		    \
+		ykj = toC99(y + (k + j * NRY));		    \
+		sum_r += (xij * ykj).real();		    \
+		sum_i += (xij * ykj).imag();		    \
 	    }						    \
 	    z[i + k * NRX].r = (double) sum_r;		    \
 	    z[i + k * NRX].i = (double) sum_i;		    \
@@ -1617,7 +1619,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 	}
     }
 
-    R_xlen_t *iip = static_cast<R_xlen_t *>( RHO_alloc(size_t( n), sizeof(R_xlen_t)));
+    R_xlen_t *iip = static_cast<R_xlen_t *>(RHO_alloc(size_t( n), sizeof(R_xlen_t)));
     for (i = 0; i < n; iip[i++] = 0);
     for (i = 0; i < n; i++)
 	if (pp[i] >= 0 && pp[i] < n) iip[pp[i]]++;
@@ -1627,7 +1629,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 
     /* create the stride object and permute */
 
-    R_xlen_t *stride = static_cast<R_xlen_t *>( RHO_alloc(size_t( n), sizeof(R_xlen_t)));
+    R_xlen_t *stride = static_cast<R_xlen_t *>(RHO_alloc(size_t( n), sizeof(R_xlen_t)));
     for (iip[0] = 1, i = 1; i<n; i++) iip[i] = iip[i-1] * isa[i-1];
     for (i = 0; i < n; i++) stride[i] = iip[pp[i]];
 

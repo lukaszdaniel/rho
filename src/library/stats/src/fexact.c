@@ -59,11 +59,11 @@ static Rboolean f6xact(int nrow, int *irow, int *kyy,
 		       int *key, int *ldkey, int *last, int *ipn);
 static void f7xact(int nrow, int *imax, int *idif, int *k, int *ks,
 		   int *iflag);
-static void f8xact(int *irow, int is, int i1, int izero, int *new);
+static void f8xact(int *irow, int is, int i1, int izero, int *new_);
 static double f9xact(int n, int ntot, int *ir, double *fact);
 static Rboolean f10act(int nrow, int *irow, int ncol, int *icol, double *val,
 		       double *fact, int *nd, int *ne, int *m);
-static void f11act(int *irow, int i1, int i2, int *new);
+static void f11act(int *irow, int i1, int i2, int *new_);
 static void NORET prterr(int icode, const char *mes);
 static int iwork(int iwkmax, int *iwkpt, int number, int itype);
 
@@ -1641,7 +1641,7 @@ f7xact(int nrow, int *imax, int *idif, int *k, int *ks, int *iflag)
 }
 
 
-void f8xact(int *irow, int is, int i1, int izero, int *new)
+void f8xact(int *irow, int is, int i1, int izero, int *new_)
 {
 /*
   -----------------------------------------------------------------------
@@ -1653,33 +1653,33 @@ void f8xact(int *irow, int is, int i1, int izero, int *new)
      IS	    - Indicator.					(Input)
      I1	    - Indicator.					(Input)
      IZERO  - Position of the zero.				(Input)
-     NEW    - Vector of new row counts.				(Output)
+     NEW_   - Vector of new row counts.				(Output)
   -----------------------------------------------------------------------
   */
 
     int i;
 
     /* Parameter adjustments */
-    --new;
+    --new_;
     --irow;
 
     /* Function Body */
     for (i = 1; i < i1; ++i)
-	new[i] = irow[i];
+	new_[i] = irow[i];
 
     for (i = i1; i <= izero - 1; ++i) {
 	if (is >= irow[i + 1])
 	    break;
-	new[i] = irow[i + 1];
+	new_[i] = irow[i + 1];
     }
 
-    new[i] = is;
+    new_[i] = is;
 
     for(;;) {
 	++i;
 	if (i > izero)
 	    return;
-	new[i] = irow[i];
+	new_[i] = irow[i];
     }
 }
 
@@ -1777,7 +1777,7 @@ f10act(int nrow, int *irow, int ncol, int *icol, double *val,
 }
 
 
-void f11act(int *irow, int i1, int i2, int *new)
+void f11act(int *irow, int i1, int i2, int *new_)
 {
 /*
   -----------------------------------------------------------------------
@@ -1793,8 +1793,8 @@ void f11act(int *irow, int i1, int i2, int *new)
   */
     int i;
 
-    for (i = 0;  i < (i1 - 1); ++i)	new[i] = irow[i];
-    for (i = i1; i <= i2; ++i)	      new[i-1] = irow[i];
+    for (i = 0;  i < (i1 - 1); ++i)	new_[i] = irow[i];
+    for (i = i1; i <= i2; ++i)	      new_[i-1] = irow[i];
 
     return;
 }

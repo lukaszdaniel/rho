@@ -54,18 +54,18 @@ SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(CAR(args)) != CLOSXP &&
 	TYPEOF(CAR(args)) != SPECIALSXP &&
 	TYPEOF(CAR(args)) != BUILTINSXP)
-	error(_("argument must be a function"));
+	Rf_error(_("argument must be a function"));
     switch(PRIMVAL(op)) {
     case 0: // debug()
 	SET_RDEBUG(CAR(args), RHO_TRUE);
 	break;
     case 1: // undebug()
 	if( RDEBUG(CAR(args)) != 1 )
-	    warning("argument is not being debugged");
+	    Rf_warning("argument is not being debugged");
 	SET_RDEBUG(CAR(args), RHO_FALSE);
 	break;
     case 2: // isdebugged()
-	ans = ScalarLogical(RDEBUG(CAR(args)));
+	ans = Rf_ScalarLogical(RDEBUG(CAR(args)));
 	break;
     case 3: // debugonce()
 	SET_RSTEP(CAR(args), 1);
@@ -82,7 +82,7 @@ SEXP attribute_hidden do_trace(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(CAR(args)) != CLOSXP &&
 	TYPEOF(CAR(args)) != SPECIALSXP &&
 	TYPEOF(CAR(args)) != BUILTINSXP)
-	    errorcall(call, _("argument must be a function"));
+	    Rf_errorcall(call, _("argument must be a function"));
 
     switch(PRIMVAL(op)) {
     case 0:
@@ -105,7 +105,7 @@ SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFun
     Rboolean prev = Rboolean(trace ? FunctionBase::tracingEnabled()
 			     : Closure::debuggingEnabled());
     if(Rf_length(onOff) > 0) {
-	Rboolean _new = RHOCONSTRUCT(Rboolean, asLogical(onOff));
+	Rboolean _new = RHOCONSTRUCT(Rboolean, Rf_asLogical(onOff));
 	if(_new == TRUE || _new == FALSE) {
 	    if (trace)
 		FunctionBase::enableTracing(_new);
@@ -113,10 +113,10 @@ SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFun
 		Closure::enableDebugging(_new);
 	}
 	else
-	    error(_("Value for '%s' must be TRUE or FALSE"),
+	    Rf_error(_("Value for '%s' must be TRUE or FALSE"),
 		  trace ? "tracingState" : "debuggingState");
     }
-    return ScalarLogical(prev);
+    return Rf_ScalarLogical(prev);
 }
 
 // GUIs, packages, etc can query:
@@ -138,13 +138,13 @@ SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunct
 
     object = args[0];
     if(object == R_NilValue)
-	errorcall(call, _("cannot trace NULL"));
+	Rf_errorcall(call, _("cannot trace NULL"));
 
     if(TYPEOF(object) == ENVSXP || TYPEOF(object) == PROMSXP)
-	warningcall(call,
+	Rf_warningcall(call,
 		    _("'tracemem' is not useful for promise and environment objects"));
     if(TYPEOF(object) == EXTPTRSXP || TYPEOF(object) == WEAKREFSXP)
-	warningcall(call,
+	Rf_warningcall(call,
 		    _("'tracemem' is not useful for weak reference or external pointer objects"));
 
     object->setMemoryTracing(true);
@@ -166,12 +166,12 @@ SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFun
 
 SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    errorcall(call, _("R was not compiled with support for memory profiling"));
+    Rf_errorcall(call, _("R was not compiled with support for memory profiling"));
 }
 
 SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    errorcall(call, _("R was not compiled with support for memory profiling"));
+    Rf_errorcall(call, _("R was not compiled with support for memory profiling"));
 }
 
 #endif /* R_MEMORY_PROFILING */
@@ -189,7 +189,7 @@ static void memtrace_stack_dump(void)
 	    FunctionContext* fctxt = static_cast<FunctionContext*>(cptr);
 	    SEXP fun = fctxt->call()->car();
 	    Rprintf("%s ",
-		    TYPEOF(fun) == SYMSXP ? translateChar(PRINTNAME(fun)) :
+		    TYPEOF(fun) == SYMSXP ? Rf_translateChar(PRINTNAME(fun)) :
 		    "<Anonymous>");
 	}
     }
@@ -236,8 +236,8 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
     if (previous == R_MissingArg)
 	previous = R_NilValue;
 
-    if(!isNull(previous) && !isString(previous))
-	    errorcall(call, _("invalid '%s' argument"), "previous");
+    if(!Rf_isNull(previous) && (!Rf_isString(previous) || LENGTH(previous) != 1))
+	    Rf_errorcall(call, _("invalid '%s' argument"), "previous");
 
     if (object->memoryTraced()){
 	snprintf(buffer, 21, "<%p>", (void *) object);
@@ -253,7 +253,7 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
 	    /* FIXME: previous will have <0x....> whereas other values are
 	       without the < > */
 	    Rprintf("tracemem[%s -> %p]: ",
-		    translateChar(STRING_ELT(previous, 0)), (void *) object);
+		    Rf_translateChar(STRING_ELT(previous, 0)), (void *) object);
 	    memtrace_stack_dump();
 	}
     }

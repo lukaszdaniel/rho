@@ -155,7 +155,7 @@ pGEDevDesc GEcurrentDevice(void)
     if (NoDevices()) {
 	SEXP defdev = Rf_GetOption1(Rf_install("device"));
 	if (Rf_isString(defdev) && Rf_length(defdev) > 0) {
-	    SEXP devName = Rf_installChar(STRING_ELT(defdev, 0));
+	    SEXP devName = Rf_installTrChar(STRING_ELT(defdev, 0));
 	    /*  Not clear where this should be evaluated, since
 		grDevices need not be in the search path.
 		So we look for it first on the global search path.
@@ -501,7 +501,7 @@ pGEDevDesc GEcreateDevDesc(pDevDesc dev)
      * device description (add graphics engine information
      * to the device description).
      */
-    pGEDevDesc gdd = static_cast<GEDevDesc*>( calloc(1, sizeof(GEDevDesc)));
+    pGEDevDesc gdd = static_cast<GEDevDesc*>(calloc(1, sizeof(GEDevDesc)));
     /* NULL the gesd array
      */
     int i;

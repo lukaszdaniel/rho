@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998-2015   The R Core Team.
+ *  Copyright (C) 1998-2017   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -197,7 +197,7 @@ strtoc(const char *nptr, char **endptr, Rboolean NA, LocalData *d)
 	    endp++;
 	} else {
 	    z.r = 0; z.i = 0;
-	    endp = const_cast<char *>( nptr); /* -Wall */
+	    endp = const_cast<char *>(nptr); /* -Wall */
 	}
     }
     *endptr = endp;
@@ -219,7 +219,7 @@ strtoraw (const char *nptr, char **endptr)
 	else if (*p >= 'a' && *p <= 'f') val += *p - 'a' + 10;
 	else {val = 0; break;}
     }
-    *endptr = const_cast<char *>( p);
+    *endptr = const_cast<char *>(p);
     return Rbyte( val);
 }
 
@@ -476,7 +476,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
 
     if(!mode && strlen(buf) == 0) return 1;
     for (i = 0; i < Rf_length(d->NAstrings); i++)
-	if (streql(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
+	if (streql(R_CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
     return 0;
 }
 
@@ -487,7 +487,7 @@ static R_INLINE void NORET expected(const char *what, char *got, LocalData *d)
 	while ((c = scanchar(FALSE, d)) != R_EOF && c != '\n')
 	    ;
     }
-    error(_("scan() expected '%s', got '%s'"), what, got);
+    Rf_error(_("scan() expected '%s', got '%s'"), what, got);
 }
 
 static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
@@ -570,7 +570,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
 
     if (d->ttyflag) sprintf(ConsolePrompt, "1: ");
 
-    strip = asLogical(stripwhite);
+    strip = Rf_asLogical(stripwhite);
 
     for (;;) {
 	if(n % 10000 == 9999) R_CheckUserInterrupt();
@@ -588,7 +588,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
 	if (n == blocksize) {
 	    /* enlarge the vector*/
 	    bns = ans;
-	    if(blocksize > INT_MAX/2) error(_("too many items"));
+	    if(blocksize > INT_MAX/2) Rf_error(_("too many items"));
 	    blocksize = 2 * blocksize;
 	    ans = allocVector(type, blocksize);
 	    UNPROTECT(1);
@@ -674,7 +674,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 
     nc = Rf_length(what);
     if (!nc) {
-	    error(_("empty 'what' specified"));
+	    Rf_error(_("empty 'what' specified"));
     }
 
     if (maxitems > 0) blksize = maxitems;
@@ -685,9 +685,9 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
     PROTECT(ans = allocVector(VECSXP, nc));
     for (i = 0; i < nc; i++) {
 	w = VECTOR_ELT(what, i);
-	if (!isNull(w)) {
+	if (!Rf_isNull(w)) {
 	    if (!isVector(w)) {
-		error(_("invalid '%s' argument"), "what");
+		Rf_error(_("invalid '%s' argument"), "what");
 	    }
 	    if(TYPEOF(w) == STRSXP) nstring++;
 	    SET_VECTOR_ELT(ans, i, allocVector(TYPEOF(w), blksize));
@@ -728,7 +728,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 		} else if (!badline && !multiline)
 		    badline = linesread;
 		if(badline && !multiline)
-		error(_("line %d did not have %d elements"), badline, nc);
+		Rf_error(_("line %d did not have %d elements"), badline, nc);
 	    }
 	    if (maxitems > 0 && n >= maxitems)
 		goto done;
@@ -738,11 +738,11 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 		sprintf(ConsolePrompt, "%d: ", n + 1);
 	}
 	if (n == blksize && colsread == 0) {
-	    if(blksize > INT_MAX/2) error(_("too many items"));
+	    if(blksize > INT_MAX/2) Rf_error(_("too many items"));
 	    blksize = 2 * blksize;
 	    for (i = 0; i < nc; i++) {
 		old = VECTOR_ELT(ans, i);
-		if(!isNull(old)) {
+		if(!Rf_isNull(old)) {
 		    newv = allocVector(TYPEOF(old), blksize);
 		    copyVector(newv, old);
 		    SET_VECTOR_ELT(ans, i, newv);
@@ -832,32 +832,32 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 	escapes, skipNul;
     const char *p, *encoding;
     LocalData data = {nullptr, 0, 0, '.', nullptr, NO_COMCHAR, 0, nullptr, FALSE,
-		      FALSE, 0, FALSE, FALSE, FALSE, FALSE};
+		      FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, {FALSE}};
     data.NAstrings = R_NilValue;
 
     file = file_;
     what = what_;
-    nmax = asInteger(nmax_);
+    nmax = Rf_asInteger(nmax_);
     sep = sep_;
     dec = dec_;
     quotes = quote_;
-    nskip = asInteger(skip_);
-    nlines = asInteger(nlines_);
+    nskip = Rf_asInteger(skip_);
+    nlines = Rf_asInteger(nlines_);
     data.NAstrings = na_strings_;
-    flush = asLogical(flush_);
-    fill  = asLogical(fill_);
+    flush = Rf_asLogical(flush_);
+    fill  = Rf_asLogical(fill_);
     stripwhite = strip_white_;
-    data.quiet = asLogical(quiet_);
-    blskip = asLogical(blank_lines_skip_);
-    multiline = asLogical(multi_line_);
+    data.quiet = Rf_asLogical(quiet_);
+    blskip = Rf_asLogical(blank_lines_skip_);
+    multiline = Rf_asLogical(multi_line_);
     comstr = comment_char_;
-    escapes = asLogical(allowEscapes_);
-    if(!isString(encoding_) || LENGTH(encoding_) != 1)
-	error(_("invalid '%s' argument"), "encoding");
-    encoding = CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
+    escapes = Rf_asLogical(allowEscapes_);
+    if(!Rf_isString(encoding_) || LENGTH(encoding_) != 1)
+	Rf_error(_("invalid '%s' argument"), "encoding");
+    encoding = R_CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
     if(streql(encoding, "latin1")) data.isLatin1 = TRUE;
     if(streql(encoding, "UTF-8"))  data.isUTF8 = TRUE;
-    skipNul = asLogical(skipNul_);
+    skipNul = Rf_asLogical(skipNul_);
 
     if (data.quiet == NA_LOGICAL)		data.quiet = 0;
     if (blskip == NA_LOGICAL)			blskip = 1;
@@ -867,60 +867,60 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     if (nmax < 0 || nmax == NA_INTEGER)		nmax = 0;
 
     if (TYPEOF(stripwhite) != LGLSXP)
-	error(_("invalid '%s' argument"), "strip.white");
+	Rf_error(_("invalid '%s' argument"), "strip.white");
     if (Rf_length(stripwhite) != 1 && Rf_length(stripwhite) != Rf_length(what))
-	error(_("invalid 'strip.white' length"));
+	Rf_error(_("invalid 'strip.white' length"));
     if (TYPEOF(data.NAstrings) != STRSXP)
-	error(_("invalid '%s' argument"), "na.strings");
+	Rf_error(_("invalid '%s' argument"), "na.strings");
     if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
-	error(_("invalid '%s' argument"), "comment.char");
+	Rf_error(_("invalid '%s' argument"), "comment.char");
 
-    if (isString(sep) || isNull(sep)) {
+    if (Rf_isString(sep) || Rf_isNull(sep)) {
 	if (Rf_length(sep) == 0) data.sepchar = 0;
 	else {
-	    const char *sc = translateChar(STRING_ELT(sep, 0));
+	    const char *sc = Rf_translateChar(STRING_ELT(sep, 0));
 	    if(strlen(sc) > 1)
-		error(_("invalid 'sep' value: must be one byte"));
-	    data.sepchar = static_cast<unsigned char>( sc[0]);
+		Rf_error(_("invalid 'sep' value: must be one byte"));
+	    data.sepchar = static_cast<unsigned char>(sc[0]);
 	}
 	/* gets compared to chars: bug prior to 1.7.0 */
-    } else error(_("invalid '%s' argument"), "sep");
+    } else Rf_error(_("invalid '%s' argument"), "sep");
 
-    if (isString(dec) || isNull(dec)) {
+    if (Rf_isString(dec) || Rf_isNull(dec)) {
 	if (Rf_length(dec) == 0)
 	    data.decchar = '.';
 	else {
-	    const char *dc = translateChar(STRING_ELT(dec, 0));
+	    const char *dc = Rf_translateChar(STRING_ELT(dec, 0));
 	    if(strlen(dc) != 1)
-		error(_("invalid decimal separator: must be one byte"));
+		Rf_error(_("invalid decimal separator: must be one byte"));
 	    data.decchar = dc[0];
 	}
     }
     else
-	error(_("invalid decimal separator"));
+	Rf_error(_("invalid decimal separator"));
 
-    if (isString(quotes)) {
-	const char *sc = translateChar(STRING_ELT(quotes, 0));
+    if (Rf_isString(quotes)) {
+	const char *sc = Rf_translateChar(STRING_ELT(quotes, 0));
 	if (strlen(sc)) data.quoteset = strdup(sc);
 	else data.quoteset = "";
-    } else if (isNull(quotes))
+    } else if (Rf_isNull(quotes))
 	data.quoteset = "";
     else
-	error(_("invalid quote symbol set"));
+	Rf_error(_("invalid quote symbol set"));
 
-    p = translateChar(STRING_ELT(comstr, 0));
+    p = Rf_translateChar(STRING_ELT(comstr, 0));
     data.comchar = NO_COMCHAR; /*  here for -Wall */
     if (strlen(p) > 1)
-	error(_("invalid '%s' argument"), "comment.char");
+	Rf_error(_("invalid '%s' argument"), "comment.char");
     else if (strlen(p) == 1) data.comchar = static_cast<unsigned char>(*p);
     if(escapes == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "allowEscapes");
+	Rf_error(_("invalid '%s' argument"), "allowEscapes");
     data.escapes = RHOCONSTRUCT(Rboolean, escapes != 0);
     if(skipNul == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "skipNul");
+	Rf_error(_("invalid '%s' argument"), "skipNul");
     data.skipNul = Rboolean(skipNul != 0);
 
-    i = asInteger(file);
+    i = Rf_asInteger(file);
     data.con = getConnection(i);
     if(i == 0) {
 	data.atStart = FALSE;
@@ -933,14 +933,14 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 	    data.con->UTF8out = TRUE;  /* a request */
 	    strcpy(data.con->mode, "r");
 	    if(!data.con->open(data.con))
-		error(_("cannot open the connection"));
+		Rf_error(_("cannot open the connection"));
 	    if(!data.con->canread) {
 		data.con->close(data.con);
-		error(_("cannot read from this connection"));
+		Rf_error(_("cannot read from this connection"));
 	    }
 	} else {
 	    if(!data.con->canread)
-		error(_("cannot read from this connection"));
+		Rf_error(_("cannot read from this connection"));
 	}
 	for (i = 0; i < nskip; i++) /* MBCS-safe */
 	    while ((c = scanchar(FALSE, &data)) != '\n' && c != R_EOF);
@@ -968,7 +968,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 			    blskip, multiline, &data);
 	    break;
 	default:
-	    error(_("invalid '%s' argument"), "what");
+	    Rf_error(_("invalid '%s' argument"), "what");
 	}
     }
     catch (...) {
@@ -1004,9 +1004,9 @@ SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunctio
 	ConsolePrompt[0] = '\0'; /* precaution */
 	PROTECT(prompt);
     } else {
-	PROTECT(prompt = coerceVector(prompt, STRSXP));
+	PROTECT(prompt = Rf_coerceVector(prompt, STRSXP));
 	if(Rf_length(prompt) > 0) {
-	    strncpy(ConsolePrompt, translateChar(STRING_ELT(prompt, 0)),
+	    strncpy(ConsolePrompt, Rf_translateChar(STRING_ELT(prompt, 0)),
 		    CONSOLE_PROMPT_SIZE - 1);
 	    ConsolePrompt[CONSOLE_PROMPT_SIZE - 1] = '\0';
 	}
@@ -1028,11 +1028,11 @@ SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunctio
 	*++bufp = '\0';
 	ConsolePrompt[0] = '\0';
 
-	ans = mkString(buffer);
+	ans = Rf_mkString(buffer);
     } else {
 	/* simulate CR as response */
 	Rprintf("%s\n", ConsolePrompt);
-	ans = mkString("");
+	ans = Rf_mkString("");
     }
     UNPROTECT(1);
     return ans;

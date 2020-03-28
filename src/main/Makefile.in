@@ -97,7 +97,7 @@ SOURCES = $(SOURCES_C) $(SOURCES_CXX) $(SOURCES_F)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_F:.f=.o) \
           @LIBOBJS@ @ALLOCA@
 HEADERS = \
-	RBufferUtils.h Rstrptime.h \
+	RBufferUtils.h Rcomplex.h Rstrptime.h \
 	arithmetic.h \
 	basedecl.h \
 	contour-common.h \

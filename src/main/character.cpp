@@ -249,9 +249,9 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
     size_t ntype = strlen(type);
     if (ntype == 0) error(_("invalid '%s' argument"), "type");
     nchar_type type_;
-    if (strncmp(type, "bytes", ntype) == 0)	 type_ = Bytes;
-    else if (strncmp(type, "chars", ntype) == 0) type_ = Chars;
-    else if (strncmp(type, "width", ntype) == 0) type_ = Width;
+    if (streqln(type, "bytes", ntype))	 type_ = Bytes;
+    else if (streqln(type, "chars", ntype)) type_ = Chars;
+    else if (streqln(type, "width", ntype)) type_ = Width;
     else error(_("invalid '%s' argument"), "type");
     int allowNA = asLogical( allowNA_);
     if (allowNA == NA_LOGICAL) allowNA = 0;
@@ -389,7 +389,7 @@ do_startsWith(Expression* call, const BuiltInFunction* op,
 		} else {
 		    cp x0 = need_translate ? translateCharUTF8(el) : CHAR(el);
 		    if(op->variant() == 0) { // startsWith
-			LOGICAL(ans)[i] = strncmp(x0, y0, ylen) == 0;
+			LOGICAL(ans)[i] = streqln(x0, y0, ylen);
 		    } else { // endsWith
 			int off = (int)strlen(x0) - ylen;
 			if (off < 0)
@@ -1345,13 +1345,13 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    s = CHAR(STRING_ELT(old, 0));
 	    nc = int( utf8towcs(nullptr, s, 0));
 	    if (nc < 0) error(_("invalid UTF-8 string 'old'"));
-	    wc = static_cast<wchar_t *>( R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
+	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    utf8towcs(wc, s, nc + 1);
 	} else {
 	    s = translateChar(STRING_ELT(old, 0));
 	    nc = int( mbstowcs(nullptr, s, 0));
 	    if (nc < 0) error(_("invalid multibyte string 'old'"));
-	    wc = static_cast<wchar_t *>( R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
+	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    mbstowcs(wc, s, nc + 1);
 	}
 	wtr_build_spec(wc, trs_old);
@@ -1364,13 +1364,13 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    s = CHAR(STRING_ELT(_new, 0));
 	    nc = int( utf8towcs(nullptr, s, 0));
 	    if (nc < 0) error(_("invalid UTF-8 string 'new'"));
-	    wc = static_cast<wchar_t *>( R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
+	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    utf8towcs(wc, s, nc + 1);
 	} else {
 	    s = translateChar(STRING_ELT(_new, 0));
 	    nc = int( mbstowcs(nullptr, s, 0));
 	    if (nc < 0) error(_("invalid multibyte string 'new'"));
-	    wc = static_cast<wchar_t *>( R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
+	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    mbstowcs(wc, s, nc + 1);
 	}
 	wtr_build_spec(wc, trs_new);
@@ -1385,7 +1385,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	      xtable_cnt++) ;
 	wtr_free_spec(trs_cnt);
 	Free(trs_cnt_ptr);
-	xtable = static_cast<xtable_t *>( RHO_alloc(xtable_cnt+1, sizeof(xtable_t)));
+	xtable = static_cast<xtable_t *>(RHO_alloc(xtable_cnt+1, sizeof(xtable_t)));
 
 	trs_old_ptr = Calloc(1, struct wtr_spec *);
 	*trs_old_ptr = trs_old->next;
@@ -1430,7 +1430,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 		}
 		if (nc < 0)
 		    error(_("invalid input multibyte string %d"), i+1);
-                wc = static_cast<wchar_t *>( R_AllocStringBuffer((nc+1)*sizeof(wchar_t),
+                wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t),
 								 &cbuff));
 		if (ienc == CE_UTF8) utf8towcs(wc, xi, nc + 1);
 		else mbstowcs(wc, xi, nc + 1);
@@ -1461,7 +1461,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	struct tr_spec *trs_new, **trs_new_ptr;
 
 	for (unsigned int ii = 0; ii <= UCHAR_MAX; ii++)
-	    xtable[ii] = static_cast<unsigned char>( ii);
+	    xtable[ii] = static_cast<unsigned char>(ii);
 
 	/* Initialize the old and new tr_spec lists. */
 	trs_old = Calloc(1, struct tr_spec);
@@ -1505,7 +1505,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 		const char *xi = translateChar(STRING_ELT(x, i));
 		cbuf = CallocCharBuf(strlen(xi));
 		strcpy(cbuf, xi);
-		for (p = reinterpret_cast<unsigned char *>( cbuf); *p != '\0'; p++)
+		for (p = reinterpret_cast<unsigned char *>(cbuf); *p != '\0'; p++)
 		    *p = xtable[*p];
 		SET_STRING_ELT(y, i, markKnown(cbuf, STRING_ELT(x, i)));
 		Free(cbuf);
@@ -1639,7 +1639,7 @@ SEXP attribute_hidden Rf_stringSuffix(SEXP string, int fromIndex) {
 
 SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, RObject* x, RObject* n)
 {
-    SEXP d, s;
+    SEXP d, s, el;
     R_xlen_t is, ix, in, ns, nx, nn;
     const char *xi;
     int j, ni, nc;
@@ -1650,21 +1650,22 @@ SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, ROb
     nx = XLENGTH(x);
     nn = XLENGTH(n);
     if((nx == 0) || (nn == 0))
-	return allocVector(STRSXP, 0);
+	return Rf_allocVector(STRSXP, 0);
 
-    ns = (nx > nn) ? nx : nn;
+    ns = std::max(nx, nn);
 
-    PROTECT(s = allocVector(STRSXP, ns));
+    PROTECT(s = Rf_allocVector(STRSXP, ns));
     vmax = vmaxget();
     is = ix = in = 0;
     for(; is < ns; is++) {
+	el = STRING_ELT(x, ix);
 	ni = INTEGER(n)[in];
-	if((STRING_ELT(x, ix) == NA_STRING) || (ni == NA_INTEGER)) {
+	if((el == NA_STRING) || (ni == NA_INTEGER)) {
 	    SET_STRING_ELT(s, is, NA_STRING);
 	} else {
 	    if(ni < 0)
-		error(_("invalid '%s' value"), "times");
-	    xi = CHAR(STRING_ELT(x, ix));
+		Rf_error(_("invalid '%s' value"), "times");
+	    xi = R_CHAR(el);
 	    nc = (int) strlen(xi);
 
 	    /* check for feasible result length; use double to protect
@@ -1678,7 +1679,7 @@ SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, ROb
 		strcpy(buf, xi);
 		buf += nc;
 	    }
-	    SET_STRING_ELT(s, is, markKnown(cbuf, STRING_ELT(x, ix)));
+	    SET_STRING_ELT(s, is, Rf_mkCharCE(cbuf, Rf_getCharCE(el)));
 	    Free(cbuf);
 	    vmaxset(vmax);
 	}

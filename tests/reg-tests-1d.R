@@ -27,6 +27,7 @@ for(ex in list(c(tmp, tmp2), c("foo","foo"))) {
 	    stop("differing: ", i1, ", ", i2)
     }
 }
+##
 outerID <- function(x,y, ...) outer(x,y, Vectorize(identical,c("x","y")), ...)
 ## b) complex 'x' with different kinds of NaN
 x0 <- c(0,1, NA_real_, NaN)
@@ -48,9 +49,16 @@ is.NA <- function(.) is.na(.) & !is.nan(.)
 ## use iNA for consistency check once FIXME happened
 m1z <- sapply(z, match, table = z)
 stopifnot(identical(m1z, mz),
-	  identical(m1z == 1L, iNA),
-	  identical(m1z == 2L, !iNA))
+	  identical(m1z == 1L,             iNA),
+          identical(match(z, NA, 0) == 1L, iNA),
+	  identical(mz[mz != 1L], c(2L, 4L, 9L, 10L, 12L, 2L, 2L, 2L, 9L)))
 ## m1z uses match(x, *) with length(x) == 1 and failed in R 3.3.0
+set.seed(17)
+for(. in 1:20) {
+    zz <- sample(z)
+    stopifnot(identical(match(zz,zz), vapply(zz, match, -1L, table = zz)))
+}
+##
 ## PR#16909 - a consequence of the match() bug; check here too:
 dvn <- paste0("var\xe9", 1:2); Encoding(dvn) <- "latin1"
 dv <- data.frame(1:3, 3); names(dv) <- dvn; dv[,"var\u00e92"] <- 2
@@ -627,21 +635,26 @@ options(na.action = "na.omit")
 DN <- DF; DN[cbind(6:9, c(1:2,4,1))] <- NA; DN
 
 tools::assertError(# 'na.fail' should fail :
-	   xtabs(Freq ~ Gender + Admit, DN, na.action=na.fail))
+	   xtabs(Freq ~ Gender + Admit, DN, na.action = na.fail))
 xt. <- xtabs(Freq ~ Gender + Admit, DN)
-xtp <- xtabs(Freq ~ Gender + Admit, DN, na.action=na.pass)
-xtS <- xtabs(Freq ~ Gender + Admit, DN, na.action=na.pass, sparse=TRUE)# error in R <= 3.3.2
-xtN <- xtabs(Freq ~ Gender + Admit, DN, addNA=TRUE)
-xtNS<- xtabs(Freq ~ Gender + Admit, DN, addNA=TRUE, sparse=TRUE)
+xtp <- xtabs(Freq ~ Gender + Admit, DN, na.action = na.pass)
+xtN <- xtabs(Freq ~ Gender + Admit, DN, addNA = TRUE)
 stopifnot(
     identical(asArr(xt - xt.), as_A(c(120,17, 207, 8 ), xt)),
     identical(asArr(xt - xtp), as_A(c(120,17, 207, NA), xt)), # not ok in R <= 3.3.2
-    eq_A(xt., xtabs(Freq ~ Gender + Admit, DN, sparse = TRUE)),
-    eq_A(xtp, xtS),
-    eq_A(xtN, xtNS),
     identical(asArr(-xtN + rbind(cbind(xt, 0), 0)),
               as_A(c(120, 17, -17, 207, NA, 0, -327, 0, 0), xtN))
 )
+## 'sparse = TRUE requires recommended package Matrix
+if(requireNamespace('Matrix')) {
+    xtS <- xtabs(Freq ~ Gender + Admit, DN, na.action = na.pass, sparse = TRUE)# error in R <= 3.3.2
+    xtNS <- xtabs(Freq ~ Gender + Admit, DN, addNA = TRUE, sparse = TRUE)
+    stopifnot(
+        eq_A(xt., xtabs(Freq ~ Gender + Admit, DN, sparse = TRUE)),
+        eq_A(xtp, xtS),
+        eq_A(xtN, xtNS)
+   )
+}
 ## NA treatment partly wrong in R < 3.4.0; new option 'addNA'
 ee <- esoph[esoph[,"ncases"] > 0, c(1:2,4)]
 ee[,"ncases"] <- as.integer(ee[,"ncases"])
@@ -679,6 +692,44 @@ writeLines(msg)
 stopifnot(length(strsplit(msg,"\n")[[1]]) == 1+3+1)
 ## was wrong for months in R-devel only
 
+
+## available.packages() (not) caching in case of errors
+tools::assertWarning(ap1 <- available.packages(repos = "http://foo.bar"))
+tools::assertWarning(ap2 <- available.packages(repos = "http://foo.bar"))
+stopifnot(nrow(ap1) == 0, identical(ap1, ap2))
+## had failed for a while in R-devel (left empty *.rds file)
+
+
+## rep()/rep.int() : when 'times' is a list
+stopifnot(identical(rep    (4,   list(3)), c(4,4,4)),
+          identical(rep.int(4,   list(3)), c(4,4,4)),
+          identical(rep.int(4:5, list(2,1)), c(4L,4:5)),
+          identical(rep    (4:5, list(2,1)), c(4L,4:5)))
+## partly failed in R 3.3.{2,3}
+
+
+## quantile(ordered(.)) - error message more directly useful
+OL <- ordered(sample(LETTERS, 20, replace=TRUE))
+(e <- tryCatch(quantile(OL), error = conditionMessage))
+stopifnot(grepl("type.*1.*3", e),# typically works in several locales
+	  is.ordered(quantile(OL, type = 1)),
+	  is.ordered(quantile(OL, type = 3)))
+## gave  "factors are not allowed" in R <= 3.3.x
+
+## terms() ignored arg names (PR#17235)
+a1 <- attr(terms(y ~ f(x, a = z) + f(x, a = z)),
+           "term.labels")
+a2 <- attr(terms(y ~ f(x, a = z) + f(x, b = z)),
+           "term.labels")
+stopifnot(length(a1) == 1, length(a2) == 2)
+## both gave length 1
+
+
+## by.data.frame() called not from toplevel w different arg names
+dby <- function(dat, ind, F) by(dat, ind, FUN=F)
+dby(warpbreaks, warpbreaks[,"tension"], summary)
+stopifnot(is.list(r <- .Last.value), inherits(r, "by"))
+## failed after r72531
 
 
 ## keep at end

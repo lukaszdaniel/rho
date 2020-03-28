@@ -234,7 +234,7 @@ extern "C" const char *locale2charset(const char *);
 								     \
   strncpy(fromcode, locale2charset(NULL), sizeof(fromcode));         \
   fromcode[sizeof(fromcode) - 1] = '\0';                             \
-  if(0 == strcmp(fromcode, "UTF-8"))				     \
+  if(streql(fromcode, "UTF-8"))				     \
        return wcsearch(wc,table_w ## ISWNAME , table_w ## ISWNAME ## _count);\
   memset(mb_buf, 0, sizeof(mb_buf));				     \
   memset(ucs4_buf, 0, sizeof(ucs4_buf));			     \

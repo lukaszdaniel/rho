@@ -677,14 +677,10 @@ R_PROG_CPP_CPPFLAGS
 userFFLAGS=${FFLAGS}
 R_PROG_F77
 
-## User may have set CXXSTD but not set CXX, so add to flags pro tem
-r_save_CXXFLAGS="${CXXFLAGS}"
-CXXFLAGS="${CXXSTD} ${CXXFLAGS}"
 ## AC_PROG_CXX
 ## check this actually compiles
 ## R_PROG_CXX
-## CXXFLAGS="${r_save_CXXFLAGS}"
-## 
+
 ### R_PROG_CXX98FLAG
 ## 
 ## AC_PROG_CXXCPP
@@ -1752,9 +1748,10 @@ AC_SUBST(STATICR2)
 AC_SUBST(R_DYLIB_EXT)
 
 ## Test support for C++ standards
-R_STDCXX([98], [CXX98])
-R_STDCXX([11], [CXX1X])
-R_STDCXX([14], [CXX1Y])
+R_STDCXX([98], [CXX98], [CXX])
+R_STDCXX([11], [CXX11], [CXX])
+R_STDCXX([14], [CXX14], [CXX11])
+R_STDCXX([17], [CXX17], [CXX14])
 
 ### OpenMP.
 
@@ -1963,6 +1960,9 @@ AC_CHECK_DECLS([realpath], , , [#include <stdlib.h>
 R_CHECK_FUNCS([glob], [#ifdef HAVE_GLOB_H
 # include <glob.h>
 #endif])
+AC_CHECK_FUNCS([dladdr dlsym])
+AC_CHECK_DECLS([dladdr,dlsym], , , [#include<dlfcn.h>])
+AC_CHECK_DECLS([RTLD_DEFAULT,RTLD_NEXT], , , [#include<dlfcn.h>])
 
 ## Lots of uses of getwd(), file.access(), Sys.glob().
 ## We don't need times() except as a fallback for getrusage and
@@ -2823,8 +2823,9 @@ AC_OUTPUT
 r_c_compiler="${CC} ${R_XTRA_CFLAGS} ${CFLAGS}"
 r_cxx_compiler="${CXX} ${CXXSTD} ${R_XTRA_CXXFLAGS} ${CXXFLAGS}"
 r_cxx98_compiler="${CXX98} ${CXX98STD} ${CXX98FLAGS}"
-r_cxx1x_compiler="${CXX1X} ${CXX1XSTD} ${CXX1XFLAGS}"
-r_cxx1y_compiler="${CXX1Y} ${CXX1YSTD} ${CXX1YFLAGS}"
+r_cxx11_compiler="${CXX11} ${CXX11STD} ${CXX11FLAGS}"
+r_cxx14_compiler="${CXX14} ${CXX14STD} ${CXX14FLAGS}"
+r_cxx17_compiler="${CXX17} ${CXX17STD} ${CXX17FLAGS}"
 r_f77_compiler="${F77} ${R_XTRA_FFLAGS} ${FFLAGS}"
 r_f95_compiler="${FC} ${FCFLAGS}"
 r_objc_compiler="${OBJC} ${OBJCFLAGS}"
@@ -2962,8 +2963,9 @@ rho is now configured for ${host}
 
   Default C++ compiler:      ${r_cxx_compiler}
   C++98 compiler:            ${r_cxx98_compiler}
-  C++11 compiler:            ${r_cxx1x_compiler}
-  C++14 compiler:            ${r_cxx1y_compiler}
+  C++11 compiler:            ${r_cxx11_compiler}
+  C++14 compiler:            ${r_cxx14_compiler}
+  C++17 compiler:            ${r_cxx17_compiler}
   Fortran 90/95 compiler:    ${r_f95_compiler}
   Obj-C compiler:	     ${r_objc_compiler}
 

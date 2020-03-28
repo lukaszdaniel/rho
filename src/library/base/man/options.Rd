@@ -116,9 +116,9 @@ getOption(x, default = NULL)
       and upon entry to a function whose debugging flag is set.
       Initially unset, and only used if set to a positive integer.}
 
-    \item{\code{digits}:}{controls the number of digits to print when
-      printing numeric values.  It is a suggestion only.  Valid values
-      are 1\dots{}22 with default 7.  See the note in
+    \item{\code{digits}:}{controls the number of significant digits to
+      print when printing numeric values.  It is a suggestion only.
+      Valid values are 1\dots{}22 with default 7.  See the note in
       \code{\link{print.default}} about values greater than 15.}
 
     \item{\code{digits.secs}:}{controls the maximum number of digits to
@@ -261,7 +261,30 @@ getOption(x, default = NULL)
       \code{"a4"}, or \code{"letter"} in US and Canadian locales.
 #endif
     }
+    
+    \item{\code{PCRE_limit_recursion}:}{Logical: should
+      \code{\link{grep}(perl = TRUE)} and similar limit the maximal
+      recursion allowed when matching?  PCRE can be built not to use a
+      recursion stack (see \code{\link{pcre_config}}, but it is by
+      default with a recursion limit of 10000000 which potentially needs
+      a very large C stack: see the discussion at
+      \url{http://www.pcre.org/original/doc/html/pcrestack.html}.  If
+      true, the limit is reduced using \R's estimate of the C stack size
+      available (if known), otherwise 10000.  If \code{NA}, the limit is
+      imposed only if any input string has 1000 or more bytes.}
+       
+     \item{\code{PCRE_study}:}{Logical or integer: should
+      \code{\link{grep}(perl = TRUE)} and similar \sQuote{study} the
+      patterns?  Either logical or a numerical threshold for the minimum
+      number of strings to be matched for the pattern to be studied (the
+      default is \code{10})).  Missing values and negative numbers are
+      treated as false.}
 
+    \item{\code{PCRE_use_JIT}:}{Logical: should \code{\link{grep}(perl =
+	TRUE)}, \code{\link{strsplit}(perl = TRUE)} and similar make use
+      of PCRE's Just-In-Time compiler for studied patterns, if
+      available?  Missing values are treated as false.}
+      
     \item{\code{pdfviewer}:}{default PDF viewer.
       The default is set from the environment variable \env{R_PDFVIEWER},
 #ifdef unix
@@ -599,7 +622,7 @@ getOption(x, default = NULL)
       for binary installs on macOS and Windows, but can be used in a
       startup file for source installs \emph{via}
       \command{R CMD \link{INSTALL}}.  For binary installs, can also be
-      the character string \code{"pkgloack"}.}
+      the character string \code{"pkglock"}.}
 
     \item{\code{internet.info}:}{The minimum level of information to be
       printed on URL downloads etc, using the \code{"internal"} and
@@ -642,15 +665,15 @@ getOption(x, default = NULL)
 #ifdef windows
       Possible values are \code{"win.binary"}, \code{"source"} and
       \code{"both"} (the default).  Some macOS builds use
-      \code{"mac.binary"} and \code{"mac.binary.mavericks"}.
+      \code{"mac.binary.el-capitan"}.
 #endif
 #ifdef unix
       Possible values are \code{"source"} (the default except under a
-      CRAN macOS build), \code{"mac.binary."},
-      \code{"mac.binary.mavericks"} and \code{"both"} (the default for
-      CRAN macOS builds).  Windows uses
-      \code{"win.binary"}. (\code{"mac.binary.leopard"} and
-      \code{"mac.binary.universal"} are no longer in use.)
+      CRAN macOS build), \code{"mac.binary.el-capitan"} and
+      \code{"both"} (the default for CRAN macOS builds).  Windows uses
+      \code{"win.binary"}. (\code{"mac.binary.mavericks"},
+      \code{"mac.binary.leopard"}, \code{"mac.binary.universal"} are no
+      longer in use.)
 #endif
       Value \code{"binary"} is a synonym for the native binary type (if
       there is one); \code{"both"} is used by
@@ -686,9 +709,6 @@ getOption(x, default = NULL)
       used.
 #endif
     }
-
-    \item{\code{useHTTPS}:}{logical.  Used by \code{\link{chooseCRANmirror}}:
-      are secure mirrors preferred?  If not set, \code{TRUE} is assumed.}
   }
 }
 \section{Options set in package parallel}{

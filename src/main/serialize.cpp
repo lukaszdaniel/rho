@@ -353,7 +353,7 @@ static void OutString(R_outpstream_t stream, const char *s, int length)
 		   is handled above, s[i] > 126 can't happen, but
 		   I'm superstitious...  -pd */
 		if (s[i] <= 32 || s[i] > 126)
-		    sprintf(buf, "\\%03o", static_cast<unsigned char>( s[i]));
+		    sprintf(buf, "\\%03o", static_cast<unsigned char>(s[i]));
 		else
 		    sprintf(buf, "%c", s[i]);
 	    }
@@ -398,7 +398,7 @@ static int InInteger(R_inpstream_t stream)
     case R_pstream_ascii_format:
 	InWord(stream, word, sizeof(word));
 	if(sscanf(word, "%s", buf) != 1) Rf_error(_("read error"));
-	if (strcmp(buf, "NA") == 0)
+	if (streql(buf, "NA"))
 	    return NA_INTEGER;
 	else
 	    if(sscanf(buf, "%d", &i) != 1) Rf_error(_("read error"));
@@ -429,13 +429,13 @@ static double InReal(R_inpstream_t stream)
     case R_pstream_ascii_format:
 	InWord(stream, word, sizeof(word));
 	if(sscanf(word, "%s", buf) != 1) Rf_error(_("read error"));
-	if (strcmp(buf, "NA") == 0)
+	if (streql(buf, "NA"))
 	    return NA_REAL;
-	else if (strcmp(buf, "NaN") == 0)
+	else if (streql(buf, "NaN"))
 	    return R_NaN;
-	else if (strcmp(buf, "Inf") == 0)
+	else if (streql(buf, "Inf"))
 	    return R_PosInf;
-	else if (strcmp(buf, "-Inf") == 0)
+	else if (streql(buf, "-Inf"))
 	    return R_NegInf;
 	else
 	    if(
@@ -1416,7 +1416,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	R_ReadItemDepth++;
 	PROTECT(s = ReadItem(ref_table, stream)); /* print name */
 	R_ReadItemDepth--;
-	s = Rf_install(CHAR(s));
+	s = Rf_installTrChar(s);
 	AddReadRef(ref_table, s);
 	UNPROTECT(1);
 	return s;
@@ -1962,7 +1962,7 @@ static void CheckOutConn(Rconnection con)
 
 static void InBytesConn(R_inpstream_t stream, void *buf, int length)
 {
-    Rconnection con = static_cast<Rconnection>( stream->data);
+    Rconnection con = static_cast<Rconnection>(stream->data);
     CheckInConn(con);
     if (con->text) {
 	int i;
@@ -1994,7 +1994,7 @@ static void InBytesConn(R_inpstream_t stream, void *buf, int length)
 static int InCharConn(R_inpstream_t stream)
 {
     char buf[1];
-    Rconnection con = static_cast<Rconnection>( stream->data);
+    Rconnection con = static_cast<Rconnection>(stream->data);
     CheckInConn(con);
     if (con->text)
 	return Rconn_fgetc(con);
@@ -2007,7 +2007,7 @@ static int InCharConn(R_inpstream_t stream)
 
 static void OutBytesConn(R_outpstream_t stream, RHOCONST void *buf, int length)
 {
-    Rconnection con = static_cast<Rconnection>( stream->data);
+    Rconnection con = static_cast<Rconnection>(stream->data);
     CheckOutConn(con);
     if (con->text) {
 	int i;
@@ -2023,7 +2023,7 @@ static void OutBytesConn(R_outpstream_t stream, RHOCONST void *buf, int length)
 
 static void OutCharConn(R_outpstream_t stream, int c)
 {
-    Rconnection con = static_cast<Rconnection>( stream->data);
+    Rconnection con = static_cast<Rconnection>(stream->data);
     CheckOutConn(con);
     if (con->text)
 	Rconn_printf(con, "%c", c);
@@ -2535,7 +2535,7 @@ do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 
     /* fprintf(stderr, "flushing file %s", cfile); */
     for (i = 0; i < used; i++)
-	if(strcmp(cfile, names[i]) == 0) {
+	if(streql(cfile, names[i])) {
 	    strcpy(names[i], "");
 	    free(ptr[i]);
 	    /* fprintf(stderr, " found at pos %d in cache", i); */
@@ -2570,7 +2570,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
     val = Rf_allocVector(RAWSXP, len);
     /* Do we have this database cached? */
     for (i = 0; i < used; i++)
-	if(strcmp(cfile, names[i]) == 0) {icache = i; break;}
+	if(streql(cfile, names[i])) {icache = i; break;}
     if (icache >= 0) {
 	memcpy(RAW(val), ptr[icache]+offset, len);
 	return val;
@@ -2578,7 +2578,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 
     /* find a vacant slot? */
     for (i = 0; i < used; i++)
-	if(strcmp("", names[i]) == 0) {icache = i; break;}
+	if(streql("", names[i])) {icache = i; break;}
     if(icache < 0 && used < NC) icache = used++;
 
     if(icache >= 0) {
@@ -2593,7 +2593,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 	    char *p;
 	    /* fprintf(stderr, "adding file '%s' at pos %d in cache, length %d\n",
 	       cfile, icache, filelen); */
-	    p = static_cast<char *>( malloc(filelen));
+	    p = static_cast<char *>(malloc(filelen));
 	    if (p) {
 		strcpy(names[icache], cfile);
 		ptr[icache] = p;
@@ -2659,7 +2659,7 @@ static SEXP R_getVarsFromFrame(SEXP vars, SEXP env, SEXP forcesxp)
     len = LENGTH(vars);
     PROTECT(val = Rf_allocVector(VECSXP, len));
     for (i = 0; i < len; i++) {
-	sym = Rf_installChar(STRING_ELT(vars, i));
+	sym = Rf_installTrChar(STRING_ELT(vars, i));
 
 	tmp = Rf_findVarInFrame(env, sym);
 	if (tmp == R_UnboundValue) {

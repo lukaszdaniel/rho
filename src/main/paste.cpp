@@ -520,7 +520,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 		    const char *p = CHAR(tmp), *q;
 		    char *pp = R_alloc(4*strlen(p)+1, 1), *qq = pp, buf[5];
 		    for (q = p; *q; q++) {
-			unsigned char k = static_cast<unsigned char>( *q);
+			unsigned char k = static_cast<unsigned char>(*q);
 			if (k >= 0x20 && k < 0x80) {
 			    *qq++ = *q;
 			} else {

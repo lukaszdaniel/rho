@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -110,18 +110,18 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* Argument Sanity Checks */
 
     if (!isNewList(variables))
-	error(_("invalid variables"));
-    if (!isString(varnames))
-	error(_("invalid variable names"));
+	Rf_error(_("invalid variables"));
+    if (!Rf_isString(varnames))
+	Rf_error(_("invalid variable names"));
     if ((nvars = Rf_length(variables)) != Rf_length(varnames))
-	error(_("number of variables != number of variable names"));
+	Rf_error(_("number of variables != number of variable names"));
 
     if (!isNewList(dots))
-	error(_("invalid extra variables"));
+	Rf_error(_("invalid extra variables"));
     if ((ndots = Rf_length(dots)) != Rf_length(dotnames))
-	error(_("number of variables != number of variable names"));
-    if ( ndots && !isString(dotnames))
-	error(_("invalid extra variable names"));
+	Rf_error(_("number of variables != number of variable names"));
+    if ( ndots && !Rf_isString(dotnames))
+	Rf_error(_("invalid extra variable names"));
 
     /*  check for NULL extra arguments -- moved from interpreted code */
 
@@ -142,7 +142,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 	const char *ss;
 	if (VECTOR_ELT(dots, i) == R_NilValue) continue;
 	ss = translateChar(STRING_ELT(dotnames, i));
-	if(strlen(ss) + 3 > 256) error(_("overlong names in '%s'"), ss);
+	if(strlen(ss) + 3 > 256) Rf_error(_("overlong names in '%s'"), ss);
 	snprintf(buf, 256, "(%s)", ss);
 	SET_VECTOR_ELT(data, nvars + j, VECTOR_ELT(dots, i));
 	SET_STRING_ELT(names, nvars + j,  mkChar(buf));
@@ -169,12 +169,12 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    case RAWSXP:
 		break;
 	    default:
-		error(_("invalid type (%s) for variable '%s'"),
+		Rf_error(_("invalid type (%s) for variable '%s'"),
 		      type2char(TYPEOF(ans)),
 		      translateChar(STRING_ELT(names, i)));
 	    }
 	    if (nrows(ans) != nr)
-		error(_("variable lengths differ (found for '%s')"),
+		Rf_error(_("variable lengths differ (found for '%s')"),
 		      translateChar(STRING_ELT(names, i)));
 	}
     } else nr = Rf_length(row_names);
@@ -222,13 +222,13 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* some na.actions need this to distinguish responses from
 	   explanatory variables */
 	setAttrib(data, install("terms"), terms);
-	if (isString(na_action) && Rf_length(na_action) > 0)
+	if (Rf_isString(na_action) && Rf_length(na_action) > 0)
 	    na_action = installTrChar(STRING_ELT(na_action, 0));
 	PROTECT(na_action);
 	PROTECT(tmp = lang2(na_action, data));
 	PROTECT(ans = eval(tmp, rho));
 	if (!isNewList(ans) || Rf_length(ans) != Rf_length(data))
-	    error(_("invalid result from na.action"));
+	    Rf_error(_("invalid result from na.action"));
 	/* need to transfer _all but tsp and dim_ attributes, possibly lost
 	   by subsetting in na.action. */
 	/* But if data is unchanged, don't mess with it (PR#16436) */
@@ -376,7 +376,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(factors = duplicate(getAttrib(terms, install("factors"))));
     if (Rf_length(factors) == 0) {
 	/* if (intrcept == 0)
-	   error("invalid model (zero parameters).");*/
+	   Rf_error("invalid model (zero parameters).");*/
 	nVar = 1;
 	nterms = 0;
     }
@@ -384,15 +384,15 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 	nVar = nrows(factors);
 	nterms = ncols(factors);
     }
-    else error(_("invalid '%s' argument"), "terms");
+    else Rf_error(_("invalid '%s' argument"), "terms");
 
     /* Get the variable names from the factor matrix */
 
     vnames = getAttrib(factors, R_DimNamesSymbol);
     if (Rf_length(factors) > 0) {
 	if (Rf_length(vnames) < 1 ||
-	    (nVar - intrcept > 0 && !isString(VECTOR_ELT(vnames, 0))))
-	    error(_("invalid '%s' argument"), "terms");
+	    (nVar - intrcept > 0 && !Rf_isString(VECTOR_ELT(vnames, 0))))
+	    Rf_error(_("invalid '%s' argument"), "terms");
 	vnames = VECTOR_ELT(vnames, 0);
     }
 
@@ -403,9 +403,9 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     vars = CADR(args);
     if (!isNewList(vars) || Rf_length(vars) < nVar)
-	error(_("invalid model frame"));
+	Rf_error(_("invalid model frame"));
     if (Rf_length(vars) == 0)
-	error(_("do not know how many cases"));
+	Rf_error(_("do not know how many cases"));
 
     nn = n = nrows(VECTOR_ELT(vars, 0));
     /* This could be generated, so need to protect it */
@@ -429,18 +429,18 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
     for (i = 0; i < nVar; i++) {
 	var_i = SET_VECTOR_ELT(variable, i, VECTOR_ELT(vars, i));
 	if (nrows(var_i) != n)
-	    error(_("variable lengths differ (found for variable %d)"), i);
+	    Rf_error(_("variable lengths differ (found for variable %d)"), i);
 	if (isOrdered_int(var_i)) {
 	    LOGICAL(ordered)[i] = 1;
 	    if((INTEGER(nlevs)[i] = nlevels(var_i)) < 1)
-		error(_("variable %d has no levels"), i+1);
+		Rf_error(_("variable %d has no levels"), i+1);
 	    /* will get updated later when contrasts are set */
 	    INTEGER(columns)[i] = ncols(var_i);
 	}
 	else if (isUnordered_int(var_i)) {
 	    LOGICAL(ordered)[i] = 0;
 	    if((INTEGER(nlevs)[i] = nlevels(var_i)) < 1)
-		error(_("variable %d has no levels"), i+1);
+		Rf_error(_("variable %d has no levels"), i+1);
 	    /* will get updated later when contrasts are set */
 	    INTEGER(columns)[i] = ncols(var_i);
 	}
@@ -449,7 +449,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    INTEGER(nlevs)[i] = 2;
 	    INTEGER(columns)[i] = ncols(var_i);
 	}
-	else if (isNumeric(var_i)) {
+	else if (Rf_isNumeric(var_i)) {
 	    SET_VECTOR_ELT(variable, i, coerceVector(var_i, REALSXP));
 	    var_i = VECTOR_ELT(variable, i);
 	    LOGICAL(ordered)[i] = 0;
@@ -462,7 +462,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    INTEGER(columns)[i] = ncols(var_i);
 	}
 /*	else
-	    error(_("invalid variable type for '%s'"),
+	    Rf_error(_("invalid variable type for '%s'"),
 	    CHAR(STRING_ELT(vnames, i))); */
     }
 
@@ -573,11 +573,11 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 		else dk *= INTEGER(columns)[i];
 	    }
 	}
-	if (dk > INT_MAX) error(_("term %d would require %.0g columns"), j+1, dk);
+	if (dk > INT_MAX) Rf_error(_("term %d would require %.0g columns"), j+1, dk);
 	INTEGER(count)[j] = int( dk);
 	dnc = dnc + dk;
     }
-    if (dnc > INT_MAX) error(_("matrix would require %.0g columns"), dnc);
+    if (dnc > INT_MAX) Rf_error(_("matrix would require %.0g columns"), dnc);
     nc = int( dnc);
 
     /* Record which columns of the design matrix are associated */
@@ -651,8 +651,8 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 				warning(_("term names will be truncated"));
 			}
 		    } else if (isComplex(var_i)) {
-			error(_("complex variables are not currently allowed in model matrices"));
-		    } else if(isNumeric(var_i)) { /* numeric */
+			Rf_error(_("complex variables are not currently allowed in model matrices"));
+		    } else if(Rf_isNumeric(var_i)) { /* numeric */
 			x = ColumnNames(var_i);
 			ll = ncols(var_i);
 			addp = translateChar(STRING_ELT(vnames, i));
@@ -675,7 +675,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 			    }
 			}
 		    } else
-			error(_("variables of type '%s' are not allowed in model matrices"),
+			Rf_error(_("variables of type '%s' are not allowed in model matrices"),
 			      type2char(TYPEOF(var_i)));
 		    indx /= ll;
 		}
@@ -887,7 +887,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
     else return object;
 
  badformula:
-    error(_("invalid formula in 'update'"));
+    Rf_error(_("invalid formula in 'update'"));
     return R_NilValue; /*NOTREACHED*/
 }
 
@@ -921,7 +921,7 @@ SEXP updateform(SEXP old, SEXP newf)
     if (TYPEOF(old) != LANGSXP ||
        (TYPEOF(_new) != LANGSXP && CAR(old) != tildeSymbol) ||
        CAR(_new) != tildeSymbol)
-	error(_("formula expected"));
+	Rf_error(_("formula expected"));
 
     if (Rf_length(old) == 3) {
 	SEXP lhs = CADR(old);
@@ -977,20 +977,20 @@ static Rboolean haveDot;	/* does RHS of formula contain `.'? */
 
 static int isZeroOne(SEXP x)
 {
-    if (!isNumeric(x)) return 0;
+    if (!Rf_isNumeric(x)) return 0;
     return (asReal(x) == 0.0 || asReal(x) == 1.0);
 }
 
 static int isZero(SEXP x)
 {
-    if (!isNumeric(x)) return 0;
-    return asReal(x) == 0.0;
+    if (!Rf_isNumeric(x)) return 0;
+    return Rf_asReal(x) == 0.0;
 }
 
 static int isOne(SEXP x)
 {
-    if (!isNumeric(x)) return 0;
-    return asReal(x) == 1.0;
+    if (!Rf_isNumeric(x)) return 0;
+    return Rf_asReal(x) == 1.0;
 }
 
 
@@ -1008,7 +1008,7 @@ static int Seql2(SEXP a, SEXP b)
 	return 0;
     else {
     	const void *vmax = vmaxget();
-    	int result = streql(translateCharUTF8(a), translateCharUTF8(b));
+    	int result = streql(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
     	vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
     	return result;
     }
@@ -1020,23 +1020,24 @@ static int MatchVar(SEXP var1, SEXP var2)
     if ( var1 == var2 )
 	return 1;
     /* Handle Nulls */
-    if (isNull(var1) && isNull(var2))
+    if (Rf_isNull(var1) && Rf_isNull(var2))
 	return 1;
-    if (isNull(var1) || isNull(var2))
+    if (Rf_isNull(var1) || Rf_isNull(var2))
 	return 0;
-    /* Non-atomic objects - compare CARs & CDRs */
-    if ((isList(var1) || isLanguage(var1)) &&
-	(isList(var2) || isLanguage(var2)))
+    /* Non-atomic objects - compare CARs & CDRs (and TAGs:  PR#17235) */
+    if ((Rf_isList(var1) || Rf_isLanguage(var1)) &&
+	(Rf_isList(var2) || Rf_isLanguage(var2)))
 	return MatchVar(CAR(var1), CAR(var2)) &&
-	       MatchVar(CDR(var1), CDR(var2));
+	       MatchVar(CDR(var1), CDR(var2)) &&
+	       MatchVar(TAG(var1), TAG(var2));
     /* Symbols */
     if (isSymbol(var1) && isSymbol(var2))
 	return (var1 == var2);
     /* Literal Numerics */
-    if (isNumeric(var1) && isNumeric(var2))
+    if (Rf_isNumeric(var1) && Rf_isNumeric(var2))
 	return (asReal(var1) == asReal(var2));
     /* Literal Strings */
-    if (isString(var1) && isString(var2))
+    if (Rf_isString(var1) && Rf_isString(var2))
 	return Seql2(STRING_ELT(var1, 0), STRING_ELT(var2, 0));
     /* Nothing else matches */
     return 0;
@@ -1051,8 +1052,8 @@ static int InstallVar(SEXP var)
     SEXP v;
     int indx;
     /* Check that variable is legitimate */
-    if (!isSymbol(var) && !isLanguage(var) && !isZeroOne(var))
-	error(_("invalid term in model formula"));
+    if (!isSymbol(var) && !Rf_isLanguage(var) && !isZeroOne(var))
+	Rf_error(_("invalid term in model formula"));
     /* Lookup/Install it */
     indx = 0;
     for (v = varlist; CDR(v) != R_NilValue; v = CDR(v)) {
@@ -1074,7 +1075,7 @@ static void CheckRHS(SEXP v)
 {
     int i, j;
     SEXP s, t;
-    while ((isList(v) || isLanguage(v)) && v != R_NilValue) {
+    while ((Rf_isList(v) || Rf_isLanguage(v)) && v != R_NilValue) {
 	CheckRHS(CAR(v));
 	v = CDR(v);
     }
@@ -1107,7 +1108,7 @@ static void ExtractVars(SEXP formula, int checkonly)
     int len, i;
     SEXP v;
 
-    if (isNull(formula) || isZeroOne(formula))
+    if (Rf_isNull(formula) || isZeroOne(formula))
 	return;
     if (isSymbol(formula)) {
 	if (formula == dotSymbol) haveDot = TRUE;
@@ -1123,12 +1124,12 @@ static void ExtractVars(SEXP formula, int checkonly)
 	}
 	return;
     }
-    if (isLanguage(formula)) {
+    if (Rf_isLanguage(formula)) {
 	len = Rf_length(formula);
 	if (CAR(formula) == tildeSymbol) {
 	    if (response)
-		error(_("invalid model formula"));
-	    if (isNull(CDDR(formula))) {
+		Rf_error(_("invalid model formula"));
+	    if (Rf_isNull(CDDR(formula))) {
 		response = 0;
 		ExtractVars(CADR(formula), 0);
 	    }
@@ -1152,8 +1153,8 @@ static void ExtractVars(SEXP formula, int checkonly)
 	    return;
 	}
 	if (CAR(formula) == powerSymbol) {
-	    if (!isNumeric(CADDR(formula)))
-		error(_("invalid power in formula"));
+	    if (!Rf_isNumeric(CADDR(formula)))
+		Rf_error(_("invalid power in formula"));
 	    ExtractVars(CADR(formula), checkonly);
 	    return;
 	}
@@ -1189,7 +1190,7 @@ static void ExtractVars(SEXP formula, int checkonly)
 	InstallVar(formula);
 	return;
     }
-    error(_("invalid model formula in ExtractVars"));
+    Rf_error(_("invalid model formula in ExtractVars"));
 }
 
 
@@ -1413,7 +1414,7 @@ static SEXP PowerTerms(SEXP left, SEXP right)
     int i, ip;
     ip = asInteger(right);
     if (ip==NA_INTEGER || ip <= 1)
-	error(_("invalid power in formula"));
+	Rf_error(_("invalid power in formula"));
     term = R_NilValue;		/* -Wall */
     PROTECT(left = EncodeVars(left));
     right = left;
@@ -1510,7 +1511,7 @@ static SEXP EncodeVars(SEXP formula)
     SEXP term;
     int len;
 
-    if (isNull(formula))
+    if (Rf_isNull(formula))
 	return R_NilValue;
 
     if (isOne(formula)) {
@@ -1536,7 +1537,7 @@ static SEXP EncodeVars(SEXP formula)
 		c = translateChar(STRING_ELT(framenames, i));
 		for(j = 0; j < i; j++)
 		    if(streql(c, translateChar(STRING_ELT(framenames, j))))
-			error(_("duplicated name '%s' in data frame using '.'"),
+			Rf_error(_("duplicated name '%s' in data frame using '.'"),
 			      c);
 		int cIndex = InstallVar(install(c));
 		term = AllocTerm();
@@ -1555,10 +1556,10 @@ static SEXP EncodeVars(SEXP formula)
 	    return CONS(term, R_NilValue);
 	}
     }
-    if (isLanguage(formula)) {
+    if (Rf_isLanguage(formula)) {
 	len = Rf_length(formula);
 	if (CAR(formula) == tildeSymbol) {
-	    if (isNull(CDDR(formula)))
+	    if (Rf_isNull(CDDR(formula)))
 		return EncodeVars(CADR(formula));
 	    else
 		return EncodeVars(CADDR(formula));
@@ -1597,7 +1598,7 @@ static SEXP EncodeVars(SEXP formula)
 	SetBit(term, formulaIndex, 1);
 	return CONS(term, R_NilValue);
     }
-    error(_("invalid model formula in EncodeVars"));
+    Rf_error(_("invalid model formula in EncodeVars"));
     return R_NilValue;/*NOTREACHED*/
 }
 
@@ -1680,10 +1681,10 @@ SEXP termsform(SEXP args)
     /* Do we have a model formula? */
     /* Check for unary or binary ~ */
 
-    if (!isLanguage(CAR(args)) ||
+    if (!Rf_isLanguage(CAR(args)) ||
 	CAR(CAR(args)) != tildeSymbol ||
 	(Rf_length(CAR(args)) != 2 && Rf_length(CAR(args)) != 3))
-	error(_("argument is not a valid model"));
+	Rf_error(_("argument is not a valid model"));
 
     haveDot = FALSE;
 
@@ -1692,20 +1693,20 @@ SEXP termsform(SEXP args)
     /* The formula will be returned, modified if haveDot becomes TRUE */
 
     specials = CADR(args);
-    if(Rf_length(specials) && !isString(specials))
-	error(_("'specials' must be NULL or a character vector"));
+    if(Rf_length(specials) && !Rf_isString(specials))
+	Rf_error(_("'specials' must be NULL or a character vector"));
     a = CDDR(args);
 
     /* We use data to get the value to substitute for "." in formulae */
 
     data = CAR(a);
     a = CDR(a);
-    if (isNull(data) || isEnvironment(data))
+    if (Rf_isNull(data) || isEnvironment(data))
 	framenames = R_NilValue;
     else if (isFrame(data))
 	framenames = getAttrib(data, R_NamesSymbol);
     else
-	error(_("'data' argument is of the wrong type"));
+	Rf_error(_("'data' argument is of the wrong type"));
     PROTECT_WITH_INDEX(framenames, &vpi);
 
     if (framenames != R_NilValue) {
@@ -1744,6 +1745,7 @@ SEXP termsform(SEXP args)
     a = CDR(a);
 
     nvar = Rf_length(varlist) - 1;
+
     /* in allocating words need to allow for intercept term */
     nwords = (int)(nvar/ WORDSIZE + 1);
 //    printf("nvar = %d, nwords = %d\n", nvar, nwords);
@@ -1964,13 +1966,13 @@ SEXP termsform(SEXP args)
 				      installTrChar(STRING_ELT(framenames, i))),
 			  ind);
 	    }
-	    if (!isNull(CADDR(ans)))
+	    if (!Rf_isNull(CADDR(ans)))
 		SETCADDR(ans, ExpandDots(CADDR(ans), rhs));
 	    else
 		SETCADR(ans, ExpandDots(CADR(ans), rhs));
 	    UNPROTECT(1);
 	} else if(!allowDot && !hadFrameNames) {
-	    error(_("'.' in formula and no 'data' argument"));
+	    Rf_error(_("'.' in formula and no 'data' argument"));
 	}
     }
 

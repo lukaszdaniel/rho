@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -85,6 +85,39 @@ strsplit grep [g]sub [g]regexpr
 # include <pcre.h>
 #endif
 
+/* 
+   Default maximum stack size: note this is reserved but not allocated
+   until needed.  The help says 1M suffices, but we found more was
+   needed for strings around a million bytes.
+*/
+#define JIT_STACK_MAX 64*1024*1024
+/* 
+   This will stay reserved until the end of the sesiion, but at 64MB
+   that is not an issue -- and most sessions will not use PCRE with
+   more than 10 strings.
+ */
+static pcre_jit_stack *jit_stack = NULL; // allocated at first use.
+
+static void setup_jit(pcre_extra *re_pe)
+{
+    if (!jit_stack) {
+	int stmax = JIT_STACK_MAX;
+	char *p = getenv("R_PCRE_JIT_STACK_MAXSIZE");
+	if (p) {
+	    char *endp;
+	    double xdouble = R_strtod(p, &endp);
+	    if (xdouble >= 0 && xdouble <= 1000) 
+		stmax = (int)(xdouble*1024*1024);
+	    else warning ("R_PCRE_JIT_STACK_MAXSIZE invalid and ignored");
+	}
+	jit_stack = pcre_jit_stack_alloc(32*1024, stmax);
+    }
+    if (jit_stack)
+	pcre_assign_jit_stack(re_pe, NULL, jit_stack);
+}
+
+
+
 #ifndef MAX
 # define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
@@ -110,11 +143,11 @@ static SEXP mkCharWLen(const wchar_t *wc, int nc)
 {
     size_t nb; char *xi; wchar_t *wt;
     R_CheckStack2(sizeof(wchar_t)*(nc+1));
-    wt = static_cast<wchar_t *>( alloca((nc+1)*sizeof(wchar_t)));
+    wt = static_cast<wchar_t *>(alloca((nc+1)*sizeof(wchar_t)));
     wcsncpy(wt, wc, nc); wt[nc] = 0;
     nb = wcstoutf8(nullptr, wt, nc);
     R_CheckStack2(sizeof(char)*(nb+1));
-    xi = static_cast<char *>( alloca((nb+1)*sizeof(char)));
+    xi = static_cast<char *>(alloca((nb+1)*sizeof(char)));
     wcstoutf8(xi, wt, nb + 1);
     if (nb > INT_MAX)
 	Rf_error("R character strings are limited to 2^31-1 bytes");
@@ -124,12 +157,103 @@ static SEXP mkCharWLen(const wchar_t *wc, int nc)
 static SEXP mkCharW(const wchar_t *wc)
 {
     size_t nb = wcstoutf8(nullptr, wc, 0);
-    char *xi = static_cast<char *>( Calloc(nb+1, char));
+    char *xi = static_cast<char *>(Calloc(nb+1, char));
     SEXP ans;
     wcstoutf8(xi, wc, nb + 1);
     ans = Rf_mkCharCE(xi, CE_UTF8);
     Free(xi);
     return ans;
+}
+
+
+static void pcre_exec_error(int rc, R_xlen_t i)
+{
+    if (rc > -2) return;
+    // too mucn effort to handle long-vector indices, including on Windows
+    switch (rc) {
+#ifdef PCRE_ERROR_JIT_STACKLIMIT
+    case PCRE_ERROR_JIT_STACKLIMIT:
+	Rf_warning("JIT stack limit reached in PCRE for element %d",
+		(int) i + 1);
+	break;
+#endif
+    case PCRE_ERROR_MATCHLIMIT:
+	Rf_warning("back-tracking limit reached in PCRE for element %d",
+		(int) i + 1);
+	break;
+    case PCRE_ERROR_RECURSIONLIMIT:
+	Rf_warning("recursion limit reached in PCRE for element %d\n  consider increasing the C stack size for the R process",
+		(int) i + 1);
+	break;
+    case PCRE_ERROR_INTERNAL:
+    case PCRE_ERROR_UNKNOWN_OPCODE:
+	Rf_warning("unexpected internal error in PCRE for element %d",
+		(int) i + 1);
+	break;
+#ifdef PCRE_ERROR_RECURSELOOP
+   case PCRE_ERROR_RECURSELOOP:
+	Rf_warning("PCRE detected a recursive loop in the pattern for element %d",
+		(int) i + 1);
+	break;
+#endif
+    }
+}
+
+static long R_pcre_max_recursions()
+{
+    uintptr_t ans, stack_used, current_frame;
+    /* Approximate size of stack frame in PCRE match(), actually
+       platform / compiler dependent.  Estimate found at
+       https://bugs.r-project.org/bugzilla3/show_bug.cgi?id=16757
+       However, it seems that on Solaris compiled with cc, the size is
+       much larger (not too surprising as that happens with R's
+       parser). OTOH, OpenCSW's builds of PCRE are built to use the
+       heap for recursion.
+    */
+    const uintptr_t recursion_size = 600;
+
+    const uintptr_t fallback_used = 10000;
+    /* This is about 6MB stack, reasonable since stacks are usually >= 8MB
+       OTOH, the out-of-box limit is 10000000.
+    */
+    const long fallback_limit = 10000;
+    /* Was PCRE compiled to use stack or heap for recursion? 1=stack */
+    int use_recursion;
+    pcre_config(PCRE_CONFIG_STACKRECURSE, &use_recursion);
+    if (!use_recursion) return -1L;
+    if (R_CStackLimit == uintptr_t(-1)) return fallback_limit;
+    current_frame = (uintptr_t) &ans;
+    /* Approximate number of bytes used in the stack, or fallback */
+    if (R_CStackDir == 1) {
+	stack_used =  (R_CStackStart >= current_frame) ?
+	    R_CStackStart - current_frame : fallback_used;
+    } else {
+	stack_used = (current_frame >= R_CStackStart) ?
+	    current_frame - R_CStackStart : fallback_used;
+    }
+    if (stack_used >= R_CStackLimit) return 0L;
+    ans = (R_CStackLimit - stack_used) / recursion_size;
+    return (long) ((ans <= LONG_MAX) ? ans : -1L);
+}
+
+static void 
+set_pcre_recursion_limit(pcre_extra **re_pe_ptr, const long limit)
+{
+    if (limit >= 0) {
+	pcre_extra *re_pe = *re_pe_ptr;
+	if (!re_pe) {
+	    // this will be freed by pcre_free_study so cannot use Calloc
+	    re_pe = (pcre_extra *) calloc(1, sizeof(pcre_extra));
+	    if (!re_pe) {
+		Rf_warning("allocation failure in set_pcre_recursion_limit");
+		return;
+	    }
+	    re_pe->flags = PCRE_EXTRA_MATCH_LIMIT_RECURSION;
+	    *re_pe_ptr = re_pe;
+	} else
+	    re_pe->flags |= PCRE_EXTRA_MATCH_LIMIT_RECURSION;
+	re_pe->match_limit_recursion = (unsigned long) limit;
+    }
 }
 
 
@@ -147,7 +271,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
     size_t j, ntok;
     int fixed_opt, perl_opt, useBytes;
     char *pt = nullptr; wchar_t *wpt = nullptr;
-    const char *buf, *split = "", *bufp;
+    const char *buf, *split = "", *bufp = nullptr;
     const unsigned char *tables = nullptr;
     Rboolean use_UTF8 = FALSE, haveBytes = FALSE;
     const void *vmax, *vmax2;
@@ -302,7 +426,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    Rf_error(_("'split' string %d is invalid in this locale"),
 			  itok+1);
 	    }
-	    int slen = int( strlen(split));
+	    int slen = int(strlen(split));
 
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
@@ -383,7 +507,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	    }
 	} else if (perl_opt) {
 	    pcre *re_pcre;
-	    pcre_extra *re_pe;
+	    pcre_extra *re_pe = NULL;
 	    int erroffset, ovector[30];
 	    const char *errorptr;
 	    int options = 0;
@@ -411,9 +535,24 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			    errorptr, split+erroffset);
 		Rf_error(_("invalid split pattern '%s'"), split);
 	    }
-	    re_pe = pcre_study(re_pcre, 0, &errorptr);
+	    re_pe = pcre_study(re_pcre,
+			       R_PCRE_use_JIT ?  PCRE_STUDY_JIT_COMPILE : 0, 
+			       &errorptr);
 	    if (errorptr)
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
+	    if(R_PCRE_limit_recursion == NA_LOGICAL) {
+		// use recursion limit only on long strings
+		Rboolean use = FALSE;
+		for (i = 0 ; i < len ; i++)
+		    if(strlen(R_CHAR(STRING_ELT(x, i))) >= 1000) {
+			use = TRUE;
+			break;
+		    }
+		if (use)
+		    set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
+	    } else if (R_PCRE_limit_recursion)
+		set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
 
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
@@ -446,14 +585,17 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		ntok = 0;
 		bufp = buf;
 		if (*bufp) {
-		    while(pcre_exec(re_pcre, re_pe, bufp, int( strlen(bufp)),
-				    0, 0, ovector, 30) >= 0) {
+		    int rc;
+		    while((rc = pcre_exec(re_pcre, re_pe, bufp, 
+					  int(strlen(bufp)),
+					  0, 0, ovector, 30)) >= 0) {
 			/* Empty matches get the next char, so move by one. */
 			bufp += MAX(ovector[1], 1);
 			ntok++;
 			if (*bufp == '\0')
 			    break;
 		    }
+		    pcre_exec_error(rc, i);
 		}
 		SET_VECTOR_ELT(ans, i,
 			       t = Rf_allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
@@ -461,8 +603,10 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		bufp = buf;
 		pt = Realloc(pt, strlen(buf)+1, char);
 		for (j = 0; j < ntok; j++) {
-		    pcre_exec(re_pcre, re_pe, bufp, int( strlen(bufp)), 0, 0,
-			      ovector, 30);
+		    int rc = pcre_exec(re_pcre, re_pe, bufp, 
+				       int(strlen(bufp)), 0, 0,
+				       ovector, 30);
+		    pcre_exec_error(rc, i);
 		    if (ovector[1] > 0) {
 			/* Match was non-empty. */
 			if (ovector[0] > 0)
@@ -488,7 +632,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		}
 		vmaxset(vmax2);
 	    }
-	    pcre_free(re_pe);
+	    if(re_pe) pcre_free_study(re_pe);
 	    pcre_free(re_pcre);
 	} else if (!useBytes && use_UTF8) { /* ERE in wchar_t */
 	    regex_t reg;
@@ -552,7 +696,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		}
 		if (*wbufp)
 		    SET_STRING_ELT(t, ntok,
-				   mkCharWLen(wbufp, int( wcslen(wbufp))));
+				   mkCharWLen(wbufp, int(wcslen(wbufp))));
 		vmaxset(vmax2);
 	    }
 	    tre_regfree(&reg);
@@ -603,12 +747,16 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		ntok = 0;
 		bufp = buf;
 		if (*bufp) {
-		    while(tre_regexec(&reg, bufp, 1, regmatch, 0) == 0) {
+		    while((rc = tre_regexec(&reg, bufp, 1, regmatch, 0)) == 0) {
 			/* Empty matches get the next char, so move by one. */
 			bufp += MAX(regmatch[0].rm_eo, 1);
 			ntok++;
 			if (*bufp == '\0') break;
 		    }
+		    // AFAICS the only possible error report is REG_ESPACE
+		    if (rc == REG_ESPACE)
+			warning("Out-of-memory error in regexp matching for element %d",
+				(int) i + 1);
 		}
 		SET_VECTOR_ELT(ans, i,
 			       t = Rf_allocVector(STRSXP, ntok + (*bufp ? 1 : 0)));
@@ -616,7 +764,11 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		bufp = buf;
 		pt = Realloc(pt, strlen(buf)+1, char);
 		for (j = 0; j < ntok; j++) {
-		    tre_regexec(&reg, bufp, 1, regmatch, 0);
+		    int rc = tre_regexec(&reg, bufp, 1, regmatch, 0);
+		    // AFAICS the only possible error report is REG_ESPACE
+		    if (rc == REG_ESPACE)
+			warning("Out-of-memory error in regexp matching for element %d",
+				(int) i + 1);
 		    if (regmatch[0].rm_eo > 0) {
 			/* Match was non-empty. */
 			if (regmatch[0].rm_so > 0)
@@ -654,7 +806,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 static int fgrep_one(const char *pat, const char *target,
 		     Rboolean useBytes, Rboolean use_UTF8, int *next)
 {
-    int plen = int( strlen(pat)), len = int( strlen(target));
+    int plen = int(strlen(pat)), len = int(strlen(target));
     int i = -1;
     const char *p;
 
@@ -671,10 +823,10 @@ static int fgrep_one(const char *pat, const char *target,
 	    }
 	return -1;
     }
-    if (!useBytes && use_UTF8) {	
+    if (!useBytes && use_UTF8) {
         int ib, used;
 	for (ib = 0, i = 0; ib <= len-plen; i++) {
-	    if (strncmp(pat, target+ib, plen) == 0) {
+	    if (streqln(pat, target+ib, plen)) {
 		if (next != nullptr) *next = ib + plen;
 		return i;
 	    }
@@ -687,7 +839,7 @@ static int fgrep_one(const char *pat, const char *target,
 	int ib, used;
 	mbs_init(&mb_st);
 	for (ib = 0, i = 0; ib <= len-plen; i++) {
-	    if (strncmp(pat, target+ib, plen) == 0) {
+	    if (streqln(pat, target+ib, plen)) {
 		if (next != nullptr) *next = ib + plen;
 		return i;
 	    }
@@ -697,7 +849,7 @@ static int fgrep_one(const char *pat, const char *target,
 	}
     } else
 	for (i = 0; i <= len-plen; i++)
-	    if (strncmp(pat, target+i, plen) == 0) {
+	    if (streqln(pat, target+i, plen)) {
 		if (next != nullptr) *next = i + plen;
 		return i;
 	    }
@@ -711,7 +863,7 @@ static int fgrep_one(const char *pat, const char *target,
 static int fgrep_one_bytes(const char *pat, const char *target, int len,
 			   Rboolean useBytes, Rboolean use_UTF8)
 {
-    int i = -1, plen = int( strlen(pat));
+    int i = -1, plen = int(strlen(pat));
     const char *p;
 
     if (plen == 0) return 0;
@@ -724,7 +876,7 @@ static int fgrep_one_bytes(const char *pat, const char *target, int len,
     if (!useBytes && use_UTF8) { /* not really needed */
 	int ib, used;
 	for (ib = 0, i = 0; ib <= len-plen; i++) {
-	    if (strncmp(pat, target+ib, plen) == 0) return ib;
+	    if (streqln(pat, target+ib, plen)) return ib;
 	    used = utf8clen(target[ib]);
 	    if (used <= 0) break;
 	    ib += used;
@@ -734,14 +886,14 @@ static int fgrep_one_bytes(const char *pat, const char *target, int len,
 	int ib, used;
 	mbs_init(&mb_st);
 	for (ib = 0, i = 0; ib <= len-plen; i++) {
-	    if (strncmp(pat, target+ib, plen) == 0) return ib;
+	    if (streqln(pat, target+ib, plen)) return ib;
 	    used = (int) Rf_mbrtowc(NULL, target+ib, MB_CUR_MAX, &mb_st);
 	    if (used <= 0) break;
 	    ib += used;
 	}
     } else
 	for (i = 0; i <= len-plen; i++)
-	    if (strncmp(pat, target+i, plen) == 0) return i;
+	    if (streqln(pat, target+i, plen)) return i;
     return -1;
 }
 
@@ -796,12 +948,12 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
 	    if (!isNull(nmold))
-		Rf_setAttrib(ans, R_NamesSymbol, duplicate(nmold));
+		setAttrib(ans, R_NamesSymbol, duplicate(nmold));
+	    UNPROTECT(2); /* ans, nmold */
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
 	    for (i = 0; i < n; i++)  INTEGER(ans)[i] = NA_INTEGER;
 	}
-	UNPROTECT(1);
 	return ans;
     }
 
@@ -862,6 +1014,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     else if (perl_opt) {
 	int cflags = 0, erroffset;
 	const char *errorptr;
+	Rboolean pcre_st = R_PCRE_study == -2 ?  FALSE : Rboolean(n >= R_PCRE_study);
 	if (igcase_opt) cflags |= PCRE_CASELESS;
 	if (!useBytes && use_UTF8) cflags |= PCRE_UTF8;
 	// PCRE docs say this is not needed, but it is on Windows
@@ -870,14 +1023,29 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	if (!re_pcre) {
 	    if (errorptr)
 		Rf_warning(_("PCRE pattern compilation error\n\t'%s'\n\tat '%s'\n"),
-			errorptr, spat+erroffset);
+			errorptr, spat + erroffset);
 	    Rf_error(_("invalid regular expression '%s'"), spat);
-	    if (n > 10) {
-		re_pe = pcre_study(re_pcre, 0, &errorptr);
-		if (errorptr)
-		    Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
-	    }
 	}
+	if (pcre_st) {
+	    re_pe = pcre_study(re_pcre,
+			       R_PCRE_use_JIT ?  PCRE_STUDY_JIT_COMPILE : 0, 
+			       &errorptr);
+	    if (errorptr)
+		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
+	}
+	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	    // use recursion limit only on long strings
+	    Rboolean use = FALSE;
+	    for (i = 0 ; i < n ; i++)
+		if(strlen(R_CHAR(STRING_ELT(text, i))) >= 1000) {
+		    use = TRUE;
+		    break;
+		}
+	    if (use)
+		set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
+	} else if (R_PCRE_limit_recursion)
+	    set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
     } else {
 	int cflags = REG_NOSUB | REG_EXTENDED;
 	if (igcase_opt) cflags |= REG_ICASE;
@@ -917,8 +1085,13 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    if (fixed_opt)
 		LOGICAL(ind)[i] = fgrep_one(spat, s, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8, nullptr) >= 0;
 	    else if (perl_opt) {
-		if (pcre_exec(re_pcre, re_pe, s, int( strlen(s)), 0, 0, ov, 0) >= 0)
-		    INTEGER(ind)[i] = 1;
+		int rc =
+		    pcre_exec(re_pcre, re_pe, s, int(strlen(s)), 0, 0, ov, 0);
+		if(rc >= 0) INTEGER(ind)[i] = 1;
+		else {
+		    INTEGER(ind)[i] = 0;
+		    pcre_exec_error(rc, i);
+		}
 	    } else {
 		if (!use_WC)
 		    rc = tre_regexecb(&reg, s, 0, nullptr, 0);
@@ -926,6 +1099,10 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 		    rc = tre_regwexec(&reg, Rf_wtransChar(STRING_ELT(text, i)),
 				      0, nullptr, 0);
 		if (rc == 0) LOGICAL(ind)[i] = 1;
+		// AFAICS the only possible error report is REG_ESPACE
+		if (rc == REG_ESPACE)
+		    Rf_warning("Out-of-memory error in regexp matching for element %d",
+			    (int) i + 1);
 	    }
 	}
 	vmaxset(vmax);
@@ -934,7 +1111,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 
     if (fixed_opt);
     else if (perl_opt) {
-	if (re_pe) pcre_free(re_pe);
+	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
 	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
     } else
@@ -959,14 +1136,14 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 		    SET_STRING_ELT(nm, j++, STRING_ELT(nmold, i));
 	    Rf_setAttrib(ans, R_NamesSymbol, nm);
 	}
-	UNPROTECT(1);
+	UNPROTECT(2); /* ans, nmold */
     } else {
 #ifdef LONG_VECTOR_SUPPORT
 	if (n > INT_MAX) {
 	    ans = Rf_allocVector(REALSXP, nmatches);
 	    j = 0;
 	    for (i = 0 ; i < n ; i++)
-	        if (invert ^ LOGICAL(ind)[i]) REAL(ans)[j++] = double( (i + 1));
+		if (invert ^ LOGICAL(ind)[i]) REAL(ans)[j++] = double( (i + 1));
 	} else
 #endif
 	{
@@ -974,10 +1151,10 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    j = 0;
 	    for (i = 0 ; i < n ; i++)
 		if (invert ^ LOGICAL(ind)[i])
-		    INTEGER(ans)[j++] = int( (i + 1));
+		    INTEGER(ans)[j++] = int((i + 1));
 	}
     }
-    UNPROTECT(1);
+    UNPROTECT(1); /* ind */
     return ans;
 }
 
@@ -1222,12 +1399,12 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
     cflags = REG_EXTENDED;
     if (igcase_opt) cflags |= REG_ICASE;
 
-    rc = tre_regncompb(&reg, reinterpret_cast<const char*>( RAW(pat)), LENGTH(pat), cflags);
+    rc = tre_regncompb(&reg, reinterpret_cast<const char*>(RAW(pat)), LENGTH(pat), cflags);
     if (rc) reg_report(rc, &reg, nullptr /* pat is not necessarily a C string */ );
 
     if (!all) { /* match only once */
 	regmatch_t ptag;
-	rc = tre_regnexecb(&reg, reinterpret_cast<const char*>( RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, 0);
+	rc = tre_regnexecb(&reg, reinterpret_cast<const char*>(RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, 0);
 	tre_regfree(&reg);
 	if (value) {
 	    if (rc != REG_OK || ptag.rm_eo == ptag.rm_so) /* TODO: is this good enough? it is the same as matching an empty string ... */
@@ -1262,7 +1439,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
     res_ptr = 0;
     while (1) {
 	regmatch_t ptag;
-	rc = tre_regnexecb(&reg, reinterpret_cast<const char*>( RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, eflags);
+	rc = tre_regnexecb(&reg, reinterpret_cast<const char*>(RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, eflags);
 	if (rc)
 	    break;
 	if (!nmatches) eflags |= REG_NOTBOL;
@@ -1281,7 +1458,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	    int infinite_match = 1;
 	    /* the only place where this is acceptable is "^" as that will go away in the next step */
 	    if (nmatches == 1) { /* to see if that is true, re-run the match with REG_NOTBOL (added above) */
-		rc = tre_regnexecb(&reg, reinterpret_cast<const char*>( RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, eflags);
+		rc = tre_regnexecb(&reg, reinterpret_cast<const char*>(RAW(text)) + offset, LENGTH(text) - offset, 1, &ptag, eflags);
 		if (rc != REG_OK || ptag.rm_eo != 0)
 		    infinite_match = 0;
 	    }
@@ -1411,13 +1588,13 @@ char *pcre_string_adj(char *target, const char *orig, const char *repl,
 		    char *xi, *p;
 		    wchar_t *wc;
 		    R_CheckStack2((nb+1)*sizeof(char));
-		    p = xi = static_cast<char *>( alloca((nb+1)*sizeof(char)));
+		    p = xi = static_cast<char *>(alloca((nb+1)*sizeof(char)));
 		    for (j = 0; j < nb; j++) *p++ = orig[ovec[2*k]+j];
 		    *p = '\0';
 		    nc = int(Rf_utf8towcs(nullptr, xi, 0));
 		    if (nc >= 0) {
 			R_CheckStack2((nc+1)*sizeof(wchar_t));
-			wc = static_cast<wchar_t *>( alloca((nc+1)*sizeof(wchar_t)));
+			wc = static_cast<wchar_t *>(alloca((nc+1)*sizeof(wchar_t)));
 			Rf_utf8towcs(wc, xi, nc + 1);
 			for (j = 0; j < nc; j++) wc[j] = towctrans(wc[j], tr);
 			nb = int(Rf_wcstoutf8(nullptr, wc, 0));
@@ -1617,6 +1794,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
     } else if (perl_opt) {
 	int cflags = 0, erroffset;
 	const char *errorptr;
+	Rboolean pcre_st = R_PCRE_study == -2 ?  FALSE : Rboolean(n >= R_PCRE_study);
 	if (use_UTF8) cflags |= PCRE_UTF8;
 	if (igcase_opt) cflags |= PCRE_CASELESS;
 	// PCRE docs say this is not needed, but it is on Windows
@@ -1628,11 +1806,26 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 			errorptr, spat+erroffset);
 	    Rf_error(_("invalid regular expression '%s'"), spat);
 	}
-	if (n > 10) {
-	    re_pe = pcre_study(re_pcre, 0, &errorptr);
+	if (pcre_st) {
+	    re_pe = pcre_study(re_pcre,
+			       R_PCRE_use_JIT ?  PCRE_STUDY_JIT_COMPILE : 0, 
+			       &errorptr);
 	    if (errorptr)
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
 	}
+	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	    // use recursion limit only on long strings
+	    Rboolean use = FALSE;
+	    for (i = 0 ; i < n ; i++)
+		if(strlen(R_CHAR(STRING_ELT(text, i))) >= 1000) {
+		    use = TRUE;
+		    break;
+		}
+	    if (use)
+		set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
+	} else if (R_PCRE_limit_recursion)
+	    set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
 	replen = strlen(srep);
     } else {
 	int cflags = REG_EXTENDED;
@@ -1687,7 +1880,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		    do {
 			nr++;
 			ss += sst+patlen;
-                        slen -= int(sst+patlen);
+			slen -= int(sst+patlen);
 		    } while((sst = fgrep_one_bytes(spat, ss, slen, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8)) >= 0);
 		} else nr = 1;
 		cbuf = u = Calloc(ns + nr*(replen - patlen) + 1, char);
@@ -1697,7 +1890,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		    strncpy(u, s, st);
 		    u += st;
 		    s += st+patlen;
-                    slen -= int(st+patlen);
+		    slen -= int(st+patlen);
 		    strncpy(u, srep, replen);
 		    u += replen;
 		} while(global && (st = fgrep_one_bytes(spat, s, slen, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8)) >= 0);
@@ -1713,7 +1906,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	} else if (perl_opt) {
 	   int ncap, maxrep, ovector[30], eflag;
 	   memset(ovector, 0, 30*sizeof(int)); /* zero for unknown patterns */
-	   ns = int( strlen(s));
+	   ns = int(strlen(s));
 	   /* worst possible scenario is to put a copy of the
 	      replacement after every character, unless there are
 	      backrefs */
@@ -1722,7 +1915,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	       /* Integer overflow has been seen */
 	       double dnns = ns * (maxrep + 1.) + 1000;
 	       if (dnns > 10000) dnns = double(2*ns + replen + 1000);
-	       nns = int( dnns);
+	       nns = int(dnns);
 	   } else nns = ns + maxrep + 1000;
 	   u = cbuf = Calloc(nns, char);
 	   offset = 0; nmatch = 0; eflag = 0; last_end = -1;
@@ -1764,6 +1957,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	       }
 	       eflag = PCRE_NOTBOL;  /* probably not needed */
 	   }
+	   pcre_exec_error(ncap, i);
 	   if (nmatch == 0)
 	       SET_STRING_ELT(ans, i, STRING_ELT(text, i));
 	   else if (STRING_ELT(rep, 0) == NA_STRING)
@@ -1789,10 +1983,10 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	   }
 	   Free(cbuf);
        } else if (!use_WC) {
-	    int maxrep;
+	    int maxrep, rc;
 	    /* extended regexp in bytes */
 
-	    ns = int( strlen(s));
+	    ns = int(strlen(s));
 	    /* worst possible scenario is to put a copy of the
 	       replacement after every character, unless there are
 	       backrefs */
@@ -1800,11 +1994,12 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	    if (global) {
 		double dnns = ns * (maxrep + 1.) + 1000;
 		if (dnns > 10000) dnns = double(2*ns + replen + 1000);
-		nns = int( dnns);
+		nns = int(dnns);
 	    } else nns = ns + maxrep + 1000;
 	    u = cbuf = Calloc(nns, char);
 	    offset = 0; nmatch = 0; eflags = 0; last_end = -1;
-	    while (tre_regexecb(&reg, s+offset, 10, regmatch, eflags) == 0) {
+	    while ((rc = tre_regexecb(&reg, s+offset, 10, regmatch, eflags))
+		   == 0) {
 		/* printf("%s, %d %d\n", &s[offset],
 		   regmatch[0].rm_so, regmatch[0].rm_eo); */
 		nmatch++;
@@ -1828,6 +2023,11 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		}
 		eflags = REG_NOTBOL;
 	    }
+	    // AFAICS the only possible error report is REG_ESPACE
+	    if (rc == REG_ESPACE)
+		Rf_warning("Out-of-memory error in regexp matching for element %d",
+			(int) i + 1);
+
 	    if (nmatch == 0)
 		SET_STRING_ELT(ans, i, STRING_ELT(text, i));
 	    else if (STRING_ELT(rep, 0) == NA_STRING)
@@ -1863,7 +2063,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		   replacement after every character */
 		double dnns = ns * (maxrep + 1.) + 1000;
 		if (dnns > 10000) dnns = 2*ns + maxrep + 1000;
-		nns = int( dnns);
+		nns = int(dnns);
 	    } else nns = ns + maxrep + 1000;
 	    u = cbuf = Calloc(nns, wchar_t);
 	    offset = 0; nmatch = 0; eflags = 0; last_end = -1;
@@ -1916,7 +2116,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 
     if (fixed_opt) ;
     else if (perl_opt) {
-	if (re_pe) pcre_free(re_pe);
+	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
 	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
     } else tre_regfree(&reg);
@@ -1938,9 +2138,10 @@ static int getNc(const char *s, int st)
 
 
 static SEXP
-gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
+gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC,
+		R_xlen_t i)
 {
-    int matchIndex = -1, j, st, foundAll = 0, foundAny = 0;
+    int matchIndex = -1, j, st, foundAll = 0, foundAny = 0, rc;
     size_t len, offset = 0;
     regmatch_t regmatch[10];
     SEXP ans, matchlen;         /* Return vect and its attribute */
@@ -1968,7 +2169,7 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
 
     while (!foundAll) {
 	if ( offset < len &&
-	     (!use_WC ? tre_regexecb(reg, string+offset, 1, regmatch, eflags) :
+	     (rc = !use_WC ? tre_regexecb(reg, string+offset, 1, regmatch, eflags) :
 	      tre_regwexec(reg, ws+offset, 1, regmatch, eflags))
 	     == 0) {
 	    if ((matchIndex + 1) == bufsize) {
@@ -2008,6 +2209,10 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC)
 	    }
 	}
 	eflags = REG_NOTBOL;
+	// AFAICS the only possible error report is REG_ESPACE
+	if (rc == REG_ESPACE)
+	    Rf_warning("Out-of-memory error in regexp matching for element %d",
+		    (int) i + 1);
     }
     PROTECT(ans = Rf_allocVector(INTSXP, matchIndex + 1));
     PROTECT(matchlen = Rf_allocVector(INTSXP, matchIndex + 1));
@@ -2171,7 +2376,7 @@ gregexpr_perl(const char *pattern, const char *string,
 	      pcre *re_pcre, pcre_extra *re_pe,
 	      Rboolean useBytes, Rboolean use_UTF8,
 	      int *ovector, int ovector_size,
-	      int capture_count, SEXP capture_names)
+	      int capture_count, SEXP capture_names, R_xlen_t n)
 {
     Rboolean foundAll = FALSE, foundAny = FALSE;
     int matchIndex = -1, start = 0;
@@ -2191,6 +2396,7 @@ gregexpr_perl(const char *pattern, const char *string,
 	int rc, slen = int(strlen(string));
 	rc = pcre_exec(re_pcre, re_pe, string, slen, start, 0, ovector,
 		       ovector_size);
+	pcre_exec_error(rc, n);
 	if (rc >= 0) {
 	    if ((matchIndex + 1) == bufsize) {
 		/* Reallocate match buffers */
@@ -2291,6 +2497,7 @@ static SEXP gregexpr_NAInputAns(void)
     SEXP ans, matchlen;
     PROTECT(ans = Rf_ScalarInteger(R_NaInt));
     PROTECT(matchlen = Rf_ScalarInteger(R_NaInt));
+    INTEGER(ans)[0] = INTEGER(matchlen)[0] = R_NaInt;
     Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     UNPROTECT(2);
     return ans;
@@ -2301,6 +2508,7 @@ static SEXP gregexpr_BadStringAns(void)
     SEXP ans, matchlen;
     PROTECT(ans = Rf_ScalarInteger(-1));
     PROTECT(matchlen = Rf_ScalarInteger(-1));
+    INTEGER(ans)[0] = INTEGER(matchlen)[0] = -1;
     Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     UNPROTECT(2);
     return ans;
@@ -2412,6 +2620,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     else if (perl_opt) {
 	int cflags = 0, erroffset;
 	const char *errorptr;
+	Rboolean pcre_st = R_PCRE_study == -2 ?  FALSE : Rboolean(n >= R_PCRE_study);
 	if (igcase_opt) cflags |= PCRE_CASELESS;
 	if (!useBytes && use_UTF8) cflags |= PCRE_UTF8;
 	// PCRE docs say this is not needed, but it is on Windows
@@ -2423,11 +2632,26 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 			errorptr, spat+erroffset);
 	    Rf_error(_("invalid regular expression '%s'"), spat);
 	}
-	if (n > 10) {
-	    re_pe = pcre_study(re_pcre, 0, &errorptr);
+	if (pcre_st) {
+	    re_pe = pcre_study(re_pcre,
+			       R_PCRE_use_JIT ?  PCRE_STUDY_JIT_COMPILE : 0, 
+			       &errorptr);
 	    if (errorptr)
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
+	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
 	}
+	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	    // use recursion limit only on long strings
+	    Rboolean use = FALSE;
+	    for (i = 0 ; i < n ; i++)
+		if(strlen(R_CHAR(STRING_ELT(text, i))) >= 1000) {
+		    use = TRUE;
+		    break;
+		}
+	    if (use)
+		set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
+	} else if (R_PCRE_limit_recursion)
+	    set_pcre_recursion_limit(&re_pe, R_pcre_max_recursions());
 	/* also extract info for named groups */
 	pcre_fullinfo(re_pcre, re_pe, PCRE_INFO_NAMECOUNT, &name_count);
 	pcre_fullinfo(re_pcre, re_pe, PCRE_INFO_NAMEENTRYSIZE, &name_entry_size);
@@ -2438,7 +2662,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	if(info_code < 0)
 	    Rf_error(_("'pcre_fullinfo' returned '%d' "), info_code);
 	ovector_size = (capture_count + 1) * 3;
-	ovector = static_cast<int *>( malloc(ovector_size*sizeof(int)));
+	ovector = static_cast<int *>(malloc(ovector_size*sizeof(int)));
 	SEXP thisname;
 	PROTECT(capture_names = Rf_allocVector(STRSXP, capture_count));
 	for(i = 0; i < name_count; i++) {
@@ -2471,7 +2695,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	UNPROTECT(1);
 	if (perl_opt && capture_count) {
 	    if (n > INT_MAX) Rf_error("too long a vector");
-	    int nn = int( n);
+	    int nn = int(n);
 	    SEXP dmn;
 	    PROTECT(dmn = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dmn, 1, capture_names);
@@ -2520,33 +2744,34 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 		    INTEGER(ans)[i] = (st > -1)?(st+1):-1;
 		    if (!useBytes && use_UTF8) {
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
-			    int( utf8towcs(nullptr, spat, 0)):-1;
+			    int(utf8towcs(nullptr, spat, 0)):-1;
 		    } else if (!useBytes && mbcslocale) {
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
-			    int( mbstowcs(nullptr, spat, 0)):-1;
+			    int(mbstowcs(nullptr, spat, 0)):-1;
 		    } else
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
-			    int( strlen(spat)):-1;
+			    int(strlen(spat)):-1;
 		} else if (perl_opt) {
 		    int rc;
-		    rc = pcre_exec(re_pcre, re_pe, s, int( strlen(s)), 0, 0, 
+		    rc = pcre_exec(re_pcre, re_pe, s, int(strlen(s)), 0, 0, 
 				   ovector, ovector_size);
+		    pcre_exec_error(rc, i);
 		    if (rc >= 0) {
 			if (capture_count > 0) {  // rho change
-			    extract_match_and_groups(use_UTF8, ovector, 
+			    extract_match_and_groups(use_UTF8, ovector,
 						     capture_count,
 						     // don't use this for large i
 						     INTEGER(ans) + i,
 						     INTEGER(matchlen) + i,
 						     is + i, il + i,
-						     s, int( n));
+						     s, int(n));
 			} else {
-			    extract_match_and_groups(use_UTF8, ovector, 
+			    extract_match_and_groups(use_UTF8, ovector,
 						     capture_count,
 						     INTEGER(ans) + i,
 						     INTEGER(matchlen) + i,
 						     nullptr, nullptr,
-						     s, int( n));
+						     s, int(n));
 			}
 		    } else {
 			INTEGER(ans)[i] = INTEGER(matchlen)[i] = -1;
@@ -2566,6 +2791,10 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 			INTEGER(ans)[i] = st + 1; /* index from one */
 			INTEGER(matchlen)[i] = regmatch[0].rm_eo - st;
 		    } else INTEGER(ans)[i] = INTEGER(matchlen)[i] = -1;
+		    // AFAICS the only possible error report is REG_ESPACE
+		    if (rc == REG_ESPACE)
+			Rf_warning("Out-of-memory error in regexp matching for element %d",
+				(int) i + 1);
 		}
 	    }
 	    vmaxset(vmax);
@@ -2598,11 +2827,11 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 			    elt = gregexpr_perl(spat, s, re_pcre, re_pe,
 						RHOCONSTRUCT(Rboolean, useBytes), use_UTF8, ovector,
 						ovector_size, capture_count,
-						capture_names);
+						capture_names, i);
 		    }
 		} else
 		    elt = gregexpr_Regexc(&reg, STRING_ELT(text, i),
-					  useBytes, use_WC);
+					  useBytes, use_WC, i);
 	    }
 	    SET_VECTOR_ELT(ans, i, elt);
 	    vmaxset(vmax);
@@ -2611,7 +2840,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 
     if (fixed_opt) ;
     else if (perl_opt) {
-	if (re_pe) pcre_free(re_pe);
+	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
 	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
 	UNPROTECT(1);
@@ -2725,7 +2954,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 
     nmatch = reg.re_nsub + 1;
 
-    pmatch = static_cast<regmatch_t *>( malloc(nmatch * sizeof(regmatch_t)));
+    pmatch = static_cast<regmatch_t *>(malloc(nmatch * sizeof(regmatch_t)));
 
     PROTECT(ans = Rf_allocVector(VECSXP, n));
 
@@ -2774,7 +3003,11 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 	    } else {
 		/* No match (or could there be an error?). */
 		/* Alternatively, could return nmatch -1 values.
-		*/
+		 */
+		// AFAICS the only possible error report is REG_ESPACE
+		if (rc == REG_ESPACE)
+		    Rf_warning("Out-of-memory error in regexp matching for element %d",
+			    (int) i + 1);
 		PROTECT(matchpos = Rf_ScalarInteger(-1));
 		PROTECT(matchlen = Rf_ScalarInteger(-1));
 		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
@@ -2804,9 +3037,9 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     int res;
 
-    SEXP ans = PROTECT(Rf_allocVector(LGLSXP, 3));
+    SEXP ans = PROTECT(Rf_allocVector(LGLSXP, 4));
     int *lans = LOGICAL(ans);
-    SEXP nm = Rf_allocVector(STRSXP, 3);
+    SEXP nm = Rf_allocVector(STRSXP, 4);
     Rf_setAttrib(ans, R_NamesSymbol, nm);
     SET_STRING_ELT(nm, 0, mkChar("UTF-8"));
     pcre_config(PCRE_CONFIG_UTF8, &res); lans[0] = res;
@@ -2820,6 +3053,8 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
     res = FALSE;
 #endif
     lans[2] = res;
+    pcre_config(PCRE_CONFIG_STACKRECURSE, &res); lans[3] = res;
+    SET_STRING_ELT(nm, 3, mkChar("stack"));
     UNPROTECT(1);
     return ans;
 }

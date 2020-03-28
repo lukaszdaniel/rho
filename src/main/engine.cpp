@@ -120,7 +120,7 @@ void* GEsystemState(pGEDevDesc dd, int index)
 static void registerOne(pGEDevDesc dd, int systemNumber, GEcallback cb) {
     SEXP result;
     dd->gesd[systemNumber] =
-	static_cast<GESystemDesc*>( calloc(1, sizeof(GESystemDesc)));
+	static_cast<GESystemDesc*>(calloc(1, sizeof(GESystemDesc)));
     if (dd->gesd[systemNumber] == nullptr)
 	error(_("unable to allocate memory (in GEregister)"));
     result = cb(GE_InitState, dd, R_NilValue);
@@ -189,7 +189,7 @@ void GEregisterSystem(GEcallback cb, int *systemRegisterIndex) {
     /* Store the information for adding to any new devices
      */
     registeredSystems[*systemRegisterIndex] =
-	static_cast<GESystemDesc*>( calloc(1, sizeof(GESystemDesc)));
+	static_cast<GESystemDesc*>(calloc(1, sizeof(GESystemDesc)));
     if (registeredSystems[*systemRegisterIndex] == nullptr)
 	error(_("unable to allocate memory (in GEregister)"));
     registeredSystems[*systemRegisterIndex]->callback = cb;
@@ -804,8 +804,8 @@ static void CScliplines(int n, double *x, double *y,
     else
 	getClipRect(&cr.xl, &cr.yb, &cr.xr, &cr.yt, dd);
 
-    xx = static_cast<double *>( RHO_alloc(n, sizeof(double)));
-    yy = static_cast<double *>( RHO_alloc(n, sizeof(double)));
+    xx = static_cast<double *>(RHO_alloc(n, sizeof(double)));
+    yy = static_cast<double *>(RHO_alloc(n, sizeof(double)));
     if (xx == nullptr || yy == nullptr)
 	error(_("out of memory while clipping polyline"));
 
@@ -1071,8 +1071,8 @@ static void clipPolygon(int n, double *x, double *y,
      * If bg was NA then it has been converted to fully transparent */
     if (R_TRANSPARENT(gc->fill)) {
 	int i;
-	xc = static_cast<double*>( RHO_alloc(n + 1, sizeof(double)));
-	yc = static_cast<double*>( RHO_alloc(n + 1, sizeof(double)));
+	xc = static_cast<double*>(RHO_alloc(n + 1, sizeof(double)));
+	yc = static_cast<double*>(RHO_alloc(n + 1, sizeof(double)));
 	for (i=0; i<n; i++) {
 	    xc[i] = x[i];
 	    yc[i] = y[i];
@@ -1086,8 +1086,8 @@ static void clipPolygon(int n, double *x, double *y,
 	xc = yc = nullptr;		/* -Wall */
 	npts = clipPoly(x, y, n, 0, toDevice, xc, yc, dd);
 	if (npts > 1) {
-	    xc = static_cast<double*>( RHO_alloc(npts, sizeof(double)));
-	    yc = static_cast<double*>( RHO_alloc(npts, sizeof(double)));
+	    xc = static_cast<double*>(RHO_alloc(npts, sizeof(double)));
+	    yc = static_cast<double*>(RHO_alloc(npts, sizeof(double)));
 	    npts = clipPoly(x, y, n, 1, toDevice, xc, yc, dd);
 	    dd->dev->polygon(npts, xc, yc, gc, dd->dev);
 	}
@@ -1734,7 +1734,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 	    for(s = str; *s ; s++)
 		if (*s == '\n') n++;
 	    /* Allocate a temporary buffer */
-	    sb = sbuf = static_cast<char*>( R_alloc(strlen(str) + 1, sizeof(char)));
+	    sb = sbuf = static_cast<char*>(R_alloc(strlen(str) + 1, sizeof(char)));
 	    i = 0;
 	    sin_rot = DEG2RAD * rot;
 	    cos_rot = cos(sin_rot);
@@ -1850,7 +1850,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 				}
 				if(!done) {
 				    for (ss = str; *ss; ss++) {
-					GEMetricInfo(static_cast<unsigned char>( *ss), gc,
+					GEMetricInfo(static_cast<unsigned char>(*ss), gc,
 						     &h, &d, &w, dd);
 					h = fromDeviceHeight(h, GE_INCHES, dd);
 					d = fromDeviceHeight(d, GE_INCHES, dd);
@@ -1943,7 +1943,7 @@ SEXP GEXspline(int n, double *x, double *y, double *s, Rboolean open,
      * after any R_alloc's done by functions I call.
      */
     const void *vmaxsave = vmaxget();
-    ys = static_cast<double *>( RHO_alloc(n, sizeof(double)));
+    ys = static_cast<double *>(RHO_alloc(n, sizeof(double)));
     for (i = 0; i < n; i++) ys[i] = y[i]*asp;
     if (open) {
       compute_open_spline(n, x, ys, s, repEnds, LOW_PRECISION, dd);
@@ -3168,7 +3168,7 @@ int GEstring_to_pch(SEXP pch)
     if (pch == NA_STRING) return NA_INTEGER;
     if (CHAR(pch)[0] == 0) return NA_INTEGER;  /* pch = "" */
     if (pch == last_pch) return last_ipch;/* take advantage of CHARSXP cache */
-    ipch = static_cast<unsigned char>( CHAR(pch)[0]);
+    ipch = static_cast<unsigned char>(CHAR(pch)[0]);
     if (IS_LATIN1(pch)) {
 	if (ipch > 127) ipch = -ipch;  /* record as Unicode */
     } else if (IS_UTF8(pch) || utf8locale) {

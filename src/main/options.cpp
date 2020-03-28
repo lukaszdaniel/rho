@@ -85,7 +85,9 @@ using namespace rho;
  *	"nwarnings"
 
  *	"matprod"
-
+ *  "PCRE_study"
+ *  "PCRE_use_JIT"
+ 
  *
  * S additionally/instead has (and one might think about some)
  * "free",	"keep"
@@ -256,9 +258,9 @@ void attribute_hidden Rf_InitOptions(void)
     const char *p = nullptr;
 
 #ifdef HAVE_RL_COMPLETION_MATCHES
-    PROTECT(v = val = Rf_allocList(18));
+    PROTECT(v = val = Rf_allocList(21));
 #else
-    PROTECT(v = val = Rf_allocList(17));
+    PROTECT(v = val = Rf_allocList(20));
 #endif
 
     SET_TAG(v, Rf_install("prompt"));
@@ -298,7 +300,7 @@ void attribute_hidden Rf_InitOptions(void)
     v = CDR(v);
 
     p = getenv("R_KEEP_PKG_SOURCE");
-    R_KeepSource = (p && (strcmp(p, "yes") == 0)) ? RHO_TRUE : RHO_FALSE;
+    R_KeepSource = (p && streql(p, "yes")) ? RHO_TRUE : RHO_FALSE;
 
     SET_TAG(v, Rf_install("keep.source")); /* overridden in common.R */
     SETCAR(v, Rf_ScalarLogical(R_KeepSource));
@@ -325,7 +327,7 @@ void attribute_hidden Rf_InitOptions(void)
     v = CDR(v);
 
     p = getenv("R_C_BOUNDS_CHECK");
-    R_CBoundsCheck = RHOCONSTRUCT(Rboolean, (p && (strcmp(p, "yes") == 0)) ? 1 : 0);
+    R_CBoundsCheck = Rboolean(p && streql(p, "yes"));
 
     SET_TAG(v, Rf_install("CBoundsCheck"));
     SETCAR(v, Rf_ScalarLogical(R_CBoundsCheck));
@@ -339,6 +341,24 @@ void attribute_hidden Rf_InitOptions(void)
 	case MATPROD_DEFAULT_SIMD: p = "default.simd"; break;
     }
     SETCAR(v, Rf_mkString(p));
+    v = CDR(v);
+
+    SET_TAG(v, Rf_install("PCRE_study"));
+    if (R_PCRE_study == -1) 
+	SETCAR(v, Rf_ScalarLogical(TRUE));
+    else if (R_PCRE_study == -2) 
+	SETCAR(v, Rf_ScalarLogical(FALSE));
+    else
+	SETCAR(v, Rf_ScalarInteger(R_PCRE_study));
+    v = CDR(v);
+
+    SET_TAG(v, Rf_install("PCRE_use_JIT"));
+    SETCAR(v, Rf_ScalarLogical(R_PCRE_use_JIT));
+    v = CDR(v);
+
+    SET_TAG(v, Rf_install("PCRE_limit_recursion"));
+    R_PCRE_limit_recursion = NA_LOGICAL;
+    SETCAR(v, Rf_ScalarLogical(R_PCRE_limit_recursion));
     v = CDR(v);
 
 #ifdef HAVE_RL_COMPLETION_MATCHES
@@ -358,7 +378,7 @@ SEXP attribute_hidden do_getOption(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP x = CAR(args);
     if (!Rf_isString(x) || LENGTH(x) != 1)
 	Rf_error(_("'%s' must be a character string"), "x");
-    return Rf_duplicate(Rf_GetOption1(Rf_install(R_CHAR(STRING_ELT(x, 0)))));
+    return Rf_duplicate(Rf_GetOption1(Rf_installTrChar(STRING_ELT(x, 0))));
 }
 
 
@@ -666,21 +686,52 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		R_CBoundsCheck = RHOCONSTRUCT(Rboolean, k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
-	    else if (streql(CHAR(namei), "matprod")) {
+	    else if (streql(R_CHAR(namei), "matprod")) {
 		SEXP s = Rf_asChar(argi);
 		if (s == NA_STRING || LENGTH(s) == 0)
-		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
-		if (streql(CHAR(s), "default"))
+		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
+		if (streql(R_CHAR(s), "default"))
 		    R_Matprod = MATPROD_DEFAULT;
-		else if (streql(CHAR(s), "internal"))
+		else if (streql(R_CHAR(s), "internal"))
 		    R_Matprod = MATPROD_INTERNAL;
-		else if (streql(CHAR(s), "blas"))
+		else if (streql(R_CHAR(s), "blas"))
 		    R_Matprod = MATPROD_BLAS;
-		else if (streql(CHAR(s), "default.simd"))
+		else if (streql(R_CHAR(s), "default.simd")) {
 		    R_Matprod = MATPROD_DEFAULT_SIMD;
-		else
-		    Rf_error(_("invalid value for '%s'"), CHAR(namei));
+#if !defined(_OPENMP) || !defined(HAVE_OPENMP_SIMDRED)
+		    Rf_warning(_("OpenMP SIMD is not supported in this build of R"));
+#endif
+		} else
+		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_duplicate(argi)));
+	    }
+	    else if (streql(R_CHAR(namei), "PCRE_study")) {
+		if (TYPEOF(argi) == LGLSXP) {
+		    int k = Rf_asLogical(argi) > 0;
+		    R_PCRE_study = k ? -1 : -2;
+		    SET_VECTOR_ELT(value, i, 
+				   SetOption(tag, Rf_ScalarLogical(k)));
+		} else {
+		    R_PCRE_study = Rf_asInteger(argi);
+		    if (R_PCRE_study < 0) {
+			R_PCRE_study = -2;
+			SET_VECTOR_ELT(value, i, 
+				       SetOption(tag, Rf_ScalarLogical(-2)));
+		    } else
+			SET_VECTOR_ELT(value, i, 
+				       SetOption(tag, Rf_ScalarInteger(R_PCRE_study)));
+		}
+	    }
+	    else if (streql(R_CHAR(namei), "PCRE_use_JIT")) {
+		int use_JIT = Rf_asLogical(argi);
+		R_PCRE_use_JIT = Rboolean(use_JIT > 0); // NA_LOGICAL is < 0
+		SET_VECTOR_ELT(value, i, 
+			       SetOption(tag, Rf_ScalarLogical(R_PCRE_use_JIT)));
+	    }
+	    else if (streql(R_CHAR(namei), "PCRE_limit_recursion")) {
+		R_PCRE_limit_recursion = Rf_asLogical(argi);
+		SET_VECTOR_ELT(value, i, 
+			       SetOption(tag, Rf_ScalarLogical(R_PCRE_limit_recursion)));
 	    }
 	    else {
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_duplicate(argi)));
@@ -691,7 +742,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    const char *tag;
 	    if (!Rf_isString(argi) || LENGTH(argi) <= 0)
 		Rf_error(_("invalid argument"));
-	    tag = R_CHAR(STRING_ELT(argi, 0));
+	    tag = Rf_translateChar(STRING_ELT(argi, 0));
 	    if (streql(tag, "par.ask.default")) {
 		Rf_error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
 	    }

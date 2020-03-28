@@ -995,7 +995,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 		    font = prevfont;
 		    SetFont(prevfont, gc);
 		}
-		glyphBBox = GlyphBBox(static_cast<unsigned int>( wc), gc, dd);
+		glyphBBox = GlyphBBox(static_cast<unsigned int>(wc), gc, dd);
 		if (UsingItalics(gc))
 		    bboxItalic(glyphBBox) =
 			ItalicFactor * bboxHeight(glyphBBox);
@@ -1027,7 +1027,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 		    font = prevfont;
 		    SetFont(prevfont, gc);
 		}
-		glyphBBox = GlyphBBox(static_cast<unsigned char>( *s), gc, dd);
+		glyphBBox = GlyphBBox(static_cast<unsigned char>(*s), gc, dd);
 		if (UsingItalics(gc))
 		    bboxItalic(glyphBBox) =
 			ItalicFactor * bboxHeight(glyphBBox);
@@ -1099,7 +1099,7 @@ static BBOX RenderStr(const char *str, int draw, mathContext *mc,
 	    mbs_init(&mb_st);
 	    while ((used = Rf_mbrtowc(&wc, p, n, &mb_st)) > 0) {
 		/* On Windows could have sign extension here */
-		glyphBBox = GlyphBBox(static_cast<unsigned int>( wc), gc, dd);
+		glyphBBox = GlyphBBox(static_cast<unsigned int>(wc), gc, dd);
 		resultBBox = CombineBBoxes(resultBBox, glyphBBox);
 		p += used; n -= used; nc++;
 	    }
@@ -1107,7 +1107,7 @@ static BBOX RenderStr(const char *str, int draw, mathContext *mc,
 	    const char *s = str;
 	    while (*s) {
 		/* Watch for sign extension here - fixed > 2.7.1 */
-		glyphBBox = GlyphBBox(static_cast<unsigned char>( *s), gc, dd);
+		glyphBBox = GlyphBBox(static_cast<unsigned char>(*s), gc, dd);
 		resultBBox = CombineBBoxes(resultBBox, glyphBBox);
 		s++; nc++;
 	    }
@@ -1272,6 +1272,7 @@ static BBOX RenderSpace(SEXP expr, int draw, mathContext *mc,
 }
 
 static SymTab BinTable[] = {
+    { "!",               041 },
     { "*",		 052 },	/* Binary Operators */
     { "+",		 053 },
     { "-",		 055 },
@@ -1371,7 +1372,7 @@ static BBOX RenderBin(SEXP expr, int draw, mathContext *mc,
 						 gc, dd));
     }
     else
-	error(_("invalid mathematical annotation"));
+	Rf_error(_("invalid mathematical annotation"));
 
     return NullBBox();		/* -Wall */
 

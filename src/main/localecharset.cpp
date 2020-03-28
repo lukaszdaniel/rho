@@ -603,7 +603,7 @@ const char *locale2charset(const char *locale)
     RHOCONST char *value;
 #endif
 
-    if ((locale == nullptr) || (0 == strcmp(locale, "NULL")))
+    if ((locale == nullptr) || streql(locale, "NULL"))
 	locale = setlocale(LC_CTYPE,nullptr);
 
     /* in some rare circumstances Darwin may return NULL */
@@ -665,21 +665,21 @@ const char *locale2charset(const char *locale)
     */
 
     /* for AIX */
-    if (0 == strcmp(enc, "UTF-8")) strcpy(enc, "utf8");
+    if (streql(enc, "UTF-8")) strcpy(enc, "utf8");
 
     if(strcmp(enc, "") && strcmp(enc, "utf8")) {
 	for(i = 0; enc[i]; i++) enc[i] = char( tolower(enc[i]));
 
 	for(i = 0; i < known_count; i++)
-	    if (0 == strcmp(known[i].name,enc)) return known[i].value;
+	    if (streql(known[i].name,enc)) return known[i].value;
 
 	/* cut encoding old linux cp- */
-	if (0 == strncmp(enc, "cp-", 3)){
+	if (streqln(enc, "cp-", 3)){
 	    snprintf(charset, 128, "CP%s", enc+3);
 	    return charset;
 	}
 	/* cut encoding IBM ibm- */
-	if (0 == strncmp(enc, "ibm", 3)){
+	if (streqln(enc, "ibm", 3)){
 	    cp = atoi(enc + 3);
 	    snprintf(charset, 128, "IBM-%d", abs(cp));
 	    /* IBM-[0-9]+ case */
@@ -700,13 +700,13 @@ const char *locale2charset(const char *locale)
 	}
 
 	/* let's hope it is a ll_* name */
-	if (0 == strcmp(enc, "euc")) {
+	if (streql(enc, "euc")) {
 	    /* This is OK as encoding names are ASCII */
 	    if(isalpha(int(la_loc[0])) && isalpha(int(la_loc[1]))
 	       && (la_loc[2] == '_')) {
-		if (0 == strncmp("ja", la_loc, 2)) return "EUC-JP";
-		if (0 == strncmp("ko", la_loc, 2)) return "EUC-KR";
-		if (0 == strncmp("zh", la_loc, 2)) return "GB2312";
+		if (streqln("ja", la_loc, 2)) return "EUC-JP";
+		if (streqln("ko", la_loc, 2)) return "EUC-KR";
+		if (streqln("zh", la_loc, 2)) return "GB2312";
 	    }
 	}
 
@@ -718,7 +718,7 @@ const char *locale2charset(const char *locale)
     return "UTF-8";
 #else
 
-    if(0 == strcmp(enc, "utf8")) return "UTF-8";
+    if(streql(enc, "utf8")) return "UTF-8";
 
     value = name_value_search(la_loc, guess, guess_count);
     return value == nullptr ? "ASCII" : value;

@@ -1250,7 +1250,7 @@ static SEXP math3B(SEXP sa, SEXP sb, SEXP sc,
     }
     const void *vmax = vmaxget();
     nw = 1 + long(floor(amax));
-    work = static_cast<double *>( RHO_alloc(size_t(nw), sizeof(double)));
+    work = static_cast<double *>(RHO_alloc(size_t(nw), sizeof(double)));
 
     MOD_ITERATE3 (n, na, nb, nc, i, ia, ib, ic, {
 	ai = a[ia];

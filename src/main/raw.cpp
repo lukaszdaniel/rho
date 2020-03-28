@@ -116,7 +116,7 @@ SEXP attribute_hidden do_rawToBits(/*const*/ rho::Expression* call, const rho::B
 	error(_("argument 'x' must be a raw vector"));
     PROTECT(ans = Rf_allocVector(RAWSXP, 8*XLENGTH(x)));
     for (i = 0; i < XLENGTH(x); i++) {
-	tmp = static_cast<unsigned int>( RAW(x)[i]);
+	tmp = static_cast<unsigned int>(RAW(x)[i]);
 	for (int k = 0; k < 8; k++, tmp >>= 1)
 	    RAW(ans)[j++] = tmp & 0x1;
     }
@@ -135,7 +135,7 @@ SEXP attribute_hidden do_intToBits(/*const*/ rho::Expression* call, const rho::B
 	Rf_error(_("argument 'x' must be an integer vector"));
     PROTECT(ans = Rf_allocVector(RAWSXP, 32*XLENGTH(x)));
     for (i = 0; i < XLENGTH(x); i++) {
-	tmp = static_cast<unsigned int>( INTEGER(x)[i]);
+	tmp = static_cast<unsigned int>(INTEGER(x)[i]);
 	for (int k = 0; k < 32; k++, tmp >>= 1)
 	    RAW(ans)[j++] = tmp & 0x1;
     }
@@ -281,7 +281,7 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
     const char *s = R_CHAR(STRING_ELT(x, 0));
     if (!utf8Valid(s)) return Rf_ScalarInteger(NA_INTEGER);
     nc = XLENGTH(STRING_ELT(x, 0)); /* ints will be shorter */
-    int *ians = static_cast<int *>( RHO_alloc(nc, sizeof(int)));
+    int *ians = static_cast<int *>(RHO_alloc(nc, sizeof(int)));
     for (i = 0, j = 0; i < nc; i++) {
 	used = mbrtoint(&tmp, s);
 	if (used <= 0) break;

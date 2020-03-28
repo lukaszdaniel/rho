@@ -79,7 +79,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996, 1997  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2009--2011  Romain Francois
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -2589,22 +2589,15 @@ static int prevparse[PUSHBACK_BUFSIZE];
 
 static int xxgetc(void)
 {
-    int c, oldpos;
+    int c;
 
     if(npush) c = pushback[--npush]; else  c = ptr_getc();
 
-    oldpos = prevpos;
     prevpos = (prevpos + 1) % PUSHBACK_BUFSIZE;
     prevbytes[prevpos] = ParseState.xxbyteno;
     prevlines[prevpos] = ParseState.xxlineno;  
     prevparse[prevpos] = ParseState.xxparseno;
-
-    /* We only advance the column for the 1st byte in UTF-8, so handle later bytes specially */
-    if (0x80 <= (unsigned char)c && (unsigned char)c <= 0xBF && known_to_be_utf8)  {
-    	ParseState.xxcolno--;   
-    	prevcols[prevpos] = prevcols[oldpos];
-    } else 
-    	prevcols[prevpos] = ParseState.xxcolno;
+    prevcols[prevpos] = ParseState.xxcolno;
     	
     if (c == EOF) {
 	EndOfFile = 1;
@@ -2619,7 +2612,9 @@ static int xxgetc(void)
     	ParseState.xxbyteno = 0;
     	ParseState.xxparseno += 1;
     } else {
-        ParseState.xxcolno++;
+        /* We only advance the column for the 1st byte in UTF-8, so handle later bytes specially */
+	if (!known_to_be_utf8 || (unsigned char)c < 0x80 || 0xC0 <= (unsigned char)c)
+            ParseState.xxcolno++;
     	ParseState.xxbyteno++;
     }
 
@@ -3021,7 +3016,7 @@ static SEXP xxfuncall(SEXP expr, SEXP args)
     SEXP ans, sav_expr = expr;
     if(GenerateCode) {
 	if (isString(expr))
-	    expr = installChar(STRING_ELT(expr, 0));
+	    expr = installTrChar(STRING_ELT(expr, 0));
 	PROTECT(expr);
 	if (Rf_length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == R_NilValue )
 	    ans = lang1(expr);
@@ -3838,7 +3833,7 @@ static int KeywordLookup(const char *s)
 {
     int i;
     for (i = 0; keywords[i].name; i++) {
-	if (strcmp(keywords[i].name, s) == 0) {
+	if (streql(keywords[i].name, s)) {
 	    switch (keywords[i].token) {
 	    case NULL_CONST:
 		PROTECT(yylval = R_NilValue);
@@ -4701,10 +4696,10 @@ int Rf_isValidName(const char *name)
 	if (c != '\0') return 0;
     }
 
-    if (strcmp(name, "...") == 0) return 1;
+    if (streql(name, "...")) return 1;
 
     for (i = 0; keywords[i].name != NULL; i++)
-	if (strcmp(keywords[i].name, name) == 0) return 0;
+	if (streql(keywords[i].name, name)) return 0;
 
     return 1;
 }

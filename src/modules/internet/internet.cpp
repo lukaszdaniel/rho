@@ -237,7 +237,7 @@ static Rboolean url_open2(Rconnection con)
 {
     void *ctxt;
     char *url = con->description;
-    UrlScheme type = ((Rurlconn)(con->private))->type;
+    UrlScheme type = ((Rurlconn)(con->connprivate))->type;
 
     if(con->mode[0] != 'r') {
 	REprintf("can only open URLs for reading");
@@ -265,7 +265,7 @@ static Rboolean url_open2(Rconnection con)
 	  /* error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
-	((Rurlconn)(con->private))->ctxt = ctxt;
+	((Rurlconn)(con->connprivate))->ctxt = ctxt;
     }
 	break;
     case FTPsh:
@@ -276,7 +276,7 @@ static Rboolean url_open2(Rconnection con)
 	  /* error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
-	((Rurlconn)(con->private))->ctxt = ctxt;
+	((Rurlconn)(con->connprivate))->ctxt = ctxt;
 	break;
 
     default:
@@ -296,12 +296,12 @@ static Rboolean url_open2(Rconnection con)
 
 static void url_close2(Rconnection con)
 {
-    UrlScheme type = ((Rurlconn)(con->private))->type;
+    UrlScheme type = ((Rurlconn)(con->connprivate))->type;
     switch(type) {
     case HTTPsh:
     case HTTPSsh:
     case FTPsh:
-	in_R_HTTPClose2(((Rurlconn)(con->private))->ctxt);
+	in_R_HTTPClose2(((Rurlconn)(con->connprivate))->ctxt);
 	break;
     default:
 	break;
@@ -311,8 +311,8 @@ static void url_close2(Rconnection con)
 
 static int url_fgetc_internal2(Rconnection con)
 {
-    UrlScheme type = ((Rurlconn)(con->private))->type;
-    void * ctxt = ((Rurlconn)(con->private))->ctxt;
+    UrlScheme type = ((Rurlconn)(con->connprivate))->type;
+    void * ctxt = ((Rurlconn)(con->connprivate))->ctxt;
     unsigned char c;
     size_t n = 0; /* -Wall */
 
@@ -331,8 +331,8 @@ static int url_fgetc_internal2(Rconnection con)
 static size_t url_read2(void *ptr, size_t size, size_t nitems,
 			Rconnection con)
 {
-    UrlScheme type = ((Rurlconn)(con->private))->type;
-    void * ctxt = ((Rurlconn)(con->private))->ctxt;
+    UrlScheme type = ((Rurlconn)(con->connprivate))->type;
+    void * ctxt = ((Rurlconn)(con->connprivate))->ctxt;
     size_t n = 0; /* -Wall */
 
     switch(type) {

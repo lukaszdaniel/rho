@@ -50,7 +50,8 @@ function(contriburl = contrib.url(repos, type), method,
                 readRDS(dest)
             else
                 read.dcf(file = tmpf)
-            if(length(res0)) rownames(res0) <- res0[, "Package"]
+            if(length(res0))
+                rownames(res0) <- res0[, "Package"]
         } else {
             dest <- file.path(tempdir(),
                               paste0("repos_", URLencode(repos, TRUE), ".rds"))
@@ -63,7 +64,7 @@ function(contriburl = contrib.url(repos, type), method,
                 ## read.dcf(), catching problems from both missing or
                 ## invalid files.
                 need_dest <- FALSE
-                op <- options(warn = -1L)                
+                op <- options(warn = -1L)
                 z <- tryCatch({
                     download.file(url = paste0(repos, "/PACKAGES.rds"),
                                   destfile = dest, method = method,
@@ -73,7 +74,7 @@ function(contriburl = contrib.url(repos, type), method,
                 if(!inherits(z, "error"))
                     z <- res0 <- tryCatch(readRDS(dest),
                                           error = identity)
-                
+
                 if(inherits(z, "error")) {
                     ## Downloading or reading .rds failed, so try the
                     ## DCF variants.
@@ -101,7 +102,7 @@ function(contriburl = contrib.url(repos, type), method,
                     if (!inherits(z, "error"))
                         z <- res0 <- tryCatch(read.dcf(file = tmpf),
                                               error = identity)
-                    
+
                     unlink(tmpf)
                     on.exit()
                 }
@@ -114,9 +115,15 @@ function(contriburl = contrib.url(repos, type), method,
                     next
                 }
 
-                ## Do we want to cache an empty result?
-                if(length(res0)) rownames(res0) <- res0[, "Package"]
-                if(need_dest) saveRDS(res0, dest, compress = TRUE)
+                if(length(res0)) {
+                    rownames(res0) <- res0[, "Package"]
+                    ## Do not cache empty results.
+                    if(need_dest)
+                        saveRDS(res0, dest, compress = TRUE)
+                } else if(!need_dest) {
+                    ## download.file() gave an empty .rds
+                    unlink(dest)
+                }
             } # end of download vs cached
         } # end of localcran vs online
         if (length(res0)) {
@@ -615,9 +622,9 @@ installed.packages <-
             ## it is actually 32-bit on some systems)
             enc <- sprintf("%d_%s", nchar(base), .Call(C_crc64, base))
             dest <- file.path(tempdir(), paste0("libloc_", enc, ".rds"))
-            if(file.exists(dest) &&
-               file.mtime(dest) > file.mtime(lib) &&
-               (val <- readRDS(dest))$base == base)
+            test <- file.exists(dest) && file.mtime(dest) > file.mtime(lib) &&
+                (val <- readRDS(dest))$base == base
+            if(isTRUE(test))
                 ## use the cache file
                 retval <- rbind(retval, val$value)
             else {
@@ -840,35 +847,27 @@ getCRANmirrors <- function(all = FALSE, local.only = FALSE)
                 all = all, local.only = local.only)
 }
 
-.chooseMirror <- function(m, label, graphics, ind, useHTTPS)
+.chooseMirror <- function(m, label, graphics, ind)
 {
     if(is.null(ind) && !interactive())
         stop("cannot choose a ", label, " mirror non-interactively")
     if (length(ind))
         res <- as.integer(ind)[1L]
     else {
-    	isHTTPS <- startsWith(m[, "URL"], "https")
+    	isHTTPS <- (startsWith(m[, "URL"], "https") &
+                    grepl("secure_mirror_from_master",
+                          m[, "Comment"],
+                          fixed = TRUE))
     	mHTTPS <- m[isHTTPS,]
     	mHTTP <- m[!isHTTPS,]
-    	if (useHTTPS) {
-    	    m <- mHTTPS
-    	    if (!nrow(m)) {
-    	    	useHTTPS <- FALSE
-    	    	m <- mHTTP
-    	    }
-    	}
-    	httpLabel <- paste("HTTP", label, "mirror")
-    	if (useHTTPS) {
-    	    httpsLabel <- paste("HTTPS", label, "mirror")
-    	    res <- menu(c(m[, 1L], "(HTTP mirrors)"), graphics, httpsLabel)
-    	    if (res > nrow(m)) {
-    	    	m <- mHTTP
-    	    	res <- menu(m[, 1L], graphics, httpLabel)
-    	    }
-    	} else {
-    	    m <- mHTTP
-    	    res <- menu(m[, 1L], graphics, httpLabel)
-    	}
+        httpsLabel <- paste("Secure", label, "mirrors")
+        httpLabel <- paste("Other", label, "mirrors")
+        m <- mHTTPS
+        res <- menu(c(m[, 1L], "(other mirrors)"), graphics, httpsLabel)
+        if (res > nrow(m)) {
+            m <- mHTTP
+            res <- menu(m[, 1L], graphics, httpLabel)
+        }
     }
     if (res > 0L) {
         URL <- m[res, "URL"]
@@ -878,11 +877,10 @@ getCRANmirrors <- function(all = FALSE, local.only = FALSE)
 }
 
 chooseCRANmirror <- function(graphics = getOption("menu.graphics"), ind = NULL,
-                             useHTTPS = getOption("useHTTPS", TRUE),
                              local.only = FALSE)
 {
     m <- getCRANmirrors(all = FALSE, local.only = local.only)
-    url <- .chooseMirror(m, "CRAN", graphics, ind, useHTTPS)
+    url <- .chooseMirror(m, "CRAN", graphics, ind)
     if (length(url)) {
         repos <- getOption("repos")
         repos["CRAN"] <- url
@@ -892,13 +890,12 @@ chooseCRANmirror <- function(graphics = getOption("menu.graphics"), ind = NULL,
 }
 
 chooseBioCmirror <- function(graphics = getOption("menu.graphics"), ind = NULL,
-                             useHTTPS = getOption("useHTTPS", TRUE),
                              local.only = FALSE)
 {
     m <- .getMirrors("https://bioconductor.org/BioC_mirrors.csv",
                      file.path(R.home("doc"), "BioC_mirrors.csv"),
                      all = FALSE, local.only = local.only)
-    url <- .chooseMirror(m, "BioC", graphics, ind, useHTTPS)
+    url <- .chooseMirror(m, "BioC", graphics, ind)
     if (length(url))
         options(BioC_mirror = url)
     invisible()

@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-25 rf90b4e054c) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-03-27 rb8e9211b0d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-01-17 r72000) -- "Frisbee Sailing"
+R Under development (unstable) (2017-04-23 r72600) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -1055,20 +1055,26 @@ Warning in plot.histogram(r, freq = freq1, col = col, border = border, angle = a
 > 
 > ## A function to use identify to select points, and overplot the
 > ## points with another symbol as they are selected
-> identifyPch <- function(x, y = NULL, n = length(x), pch = 19, ...)
+> identifyPch <- function(x, y = NULL, n = length(x), plot = FALSE, pch = 19, ...)
 + {
 +     xy <- xy.coords(x, y); x <- xy$x; y <- xy$y
-+     sel <- rep(FALSE, length(x)); res <- integer(0)
++     sel <- rep(FALSE, length(x))
 +     while(sum(sel) < n) {
-+         ans <- identify(x[!sel], y[!sel], n = 1, plot = FALSE, ...)
++         ans <- identify(x[!sel], y[!sel], labels = which(!sel), n = 1, plot = plot, ...)
 +         if(!length(ans)) break
 +         ans <- which(!sel)[ans]
 +         points(x[ans], y[ans], pch = pch)
 +         sel[ans] <- TRUE
-+         res <- c(res, ans)
 +     }
-+     res
++     ## return indices of selected points
++     which(sel)
 + }
+> 
+> if(dev.interactive()) { ## use it
++   x <- rnorm(50); y <- rnorm(50)
++   plot(x,y); identifyPch(x,y) # how fast to get all?
++ }
+> 
 > 
 > 
 > 
@@ -3029,7 +3035,7 @@ function (xy = 1, warn.log = TRUE)
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  3.688 0.044 3.733 0 0 
+Time elapsed:  3.723 0.076 3.8 0 0 
 > grDevices::dev.off()
 null device 
           1 

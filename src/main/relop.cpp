@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -473,7 +473,7 @@ SEXP attribute_hidden do_bitwise_not(/*const*/ Expression* call, const BuiltInFu
 	}
 	break;
     default:
-	UNIMPLEMENTED_TYPE("bitNot", a);
+	UNIMPLEMENTED_TYPE("bitwNot", a);
     }
     if(np) UNPROTECT(np);
     return ans;

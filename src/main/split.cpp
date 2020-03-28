@@ -85,7 +85,8 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
 # undef _L_INTSXP_
 # undef _L_INTEG_
 # undef _L_int_
-    Rf_setAttrib(vec, R_NamesSymbol, Rf_getAttrib(f, R_LevelsSymbol));
+
+    setAttrib(vec, R_NamesSymbol, getAttrib(f, R_LevelsSymbol));
     UNPROTECT(2);
     return vec;
 }

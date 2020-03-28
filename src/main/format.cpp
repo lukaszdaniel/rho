@@ -245,7 +245,7 @@ scientific(double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens
         }
 #ifdef HAVE_POWL
 	else
-            r_prec /= powl(10.0, static_cast<long double>( kp));
+            r_prec /= powl(10.0, static_cast<long double>(kp));
 #else
         else if (kp <= R_dec_min_exponent)
             r_prec = (r_prec * 1e+303)/Rexp10((double)(kp+303));

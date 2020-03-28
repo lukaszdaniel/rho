@@ -828,7 +828,7 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
     default:  // -Wswitch
 	break;
     }
-    if(strncmp(st, Rf_translateChar(input), slen) == 0) {
+    if(streqln(st, Rf_translateChar(input), slen)) {
 	vmaxset(vmax);
 	return (strlen(st) == slen) ?  EXACT_MATCH : PARTIAL_MATCH;
     } else {

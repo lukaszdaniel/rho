@@ -219,7 +219,7 @@ SEXP Rsockconnect(SEXP sport, SEXP shost)
     if (Rf_length(sport) != 1) error("invalid 'socket' argument");
     int port = asInteger(sport);
     char *host[1];
-    host[0] = const_cast<char *>( translateChar(STRING_ELT(shost, 0)));
+    host[0] = const_cast<char *>(translateChar(STRING_ELT(shost, 0)));
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockconnect)(&port, host);
@@ -294,7 +294,7 @@ SEXP Rsockwrite(SEXP ssock, SEXP sstring)
 {
     if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock), start = 0, end, len;
-    char *buf = const_cast<char *>( translateChar(STRING_ELT(sstring, 0))), *abuf[1];
+    char *buf = const_cast<char *>(translateChar(STRING_ELT(sstring, 0))), *abuf[1];
     end = len = int( strlen(buf));
     abuf[0] = buf;
     if(!initialized) internet_Init();

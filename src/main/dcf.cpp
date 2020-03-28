@@ -101,7 +101,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 	PROTECT(fold_excludes = coerceVector(keep_white_, STRSXP));
 	has_fold_excludes = RHOCONSTRUCT(Rboolean, (LENGTH(fold_excludes) > 0));
 
-	buf = static_cast<char *>( malloc(buflen));
+	buf = static_cast<char *>(malloc(buflen));
 	if(!buf) error(_("could not allocate memory for 'read.dcf'"));
 	nret = 20;
 	/* it is easier if we first have a record per column */
@@ -173,7 +173,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			    need += int(strlen(line + offset)) + n_eblanklines;
 			}
 			if(buflen < need) {
-			    char *tmp = static_cast<char *>( realloc(buf, need));
+			    char *tmp = static_cast<char *>(realloc(buf, need));
 			    if(!tmp) {
 				free(buf);
 				error(_("could not allocate memory for 'read.dcf'"));
@@ -254,7 +254,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			    /* Make sure enough space was used */
 			    need = int( (Rf_strchr(line, ':') - line + 1));
 			    if(buflen < need){
-				char *tmp = static_cast<char *>( realloc(buf, need));
+				char *tmp = static_cast<char *>(realloc(buf, need));
 				if(!tmp) {
 				    free(buf);
 				    error(_("could not allocate memory for 'read.dcf'"));
@@ -347,7 +347,7 @@ static Rboolean field_is_foldable_p(const char *field, SEXP excludes)
 {
     int i, n = LENGTH(excludes);
     for(i = 0; i < n; i++) {
-	if(strcmp(field, CHAR(STRING_ELT(excludes, i))) == 0)
+	if(streql(field, CHAR(STRING_ELT(excludes, i))))
 	    return FALSE;
     }
     return TRUE;

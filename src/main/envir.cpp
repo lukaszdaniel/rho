@@ -1446,7 +1446,7 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(ind = Rf_allocVector(INTSXP, 1));
     /* tmp :=  `[`(<elist>, i) */
     PROTECT(tmp = new Expression(R_Bracket2Symbol, { Xsym, ind }));
-    /* fcall :=  <FUN>( tmp, ... ) */
+    /* fcall :=  <FUN>(tmp, ... ) */
     Expression* R_fcall = new Expression(FUN, { tmp, R_DotsSymbol });
 
     Rf_defineVar(Xsym, tmp2, rho);

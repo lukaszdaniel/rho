@@ -218,7 +218,7 @@ new BuiltInFunction("any",		do_logic3,	2,	1,	-1,	{PP_FUNCALL, PREC_FN,	  0}, nul
 
 new BuiltInFunction("length",	do_length,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x", DispatchType::INTERNAL),
 new BuiltInFunction("length<-",	do_lengthgets,	0,	1,	2,	{PP_FUNCALL, PREC_LEFT,	1}, "x", Dispatch::INTERNAL),
-new BuiltInFunction("c",/* bind.c:*/do_c,		0,	1,	-1,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("c",/* bind.cpp:*/do_c,		0,	1,	-1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("oldClass",	do_class,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x"),
 new BuiltInFunction("oldClass<-",	do_classgets,	0,	1,	2,	{PP_FUNCALL, PREC_LEFT, 1}, "x"),
 new BuiltInFunction("class",	R_do_data_class,0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}),
@@ -843,7 +843,7 @@ new BuiltInFunction("qr_qy_cmplx",	do_lapack,	304,	11,	3,	{PP_FUNCALL, PREC_FN,	
 new BuiltInFunction("La_svd",	do_lapack,	400,	11,	5,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_svd_cmplx",do_lapack,	401,	11,	5,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_version",	do_lapack,	1000,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
-
+new BuiltInFunction("La_library",	do_lapack,	1001,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 // new BuiltInFunction("bcprofcounts",do_bcprofcounts,0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 // new BuiltInFunction("bcprofstart",	do_bcprofstart,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 // new BuiltInFunction("bcprofstop",	do_bcprofstop,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
@@ -966,6 +966,9 @@ const char *getPRIMNAME(SEXP object)
 }
 
 // TODO: move to Symbol.h
+/* This function is equivalent to install(CHAR(charSXP)), but faster.
+   Like the equivalent code pattern, it discards the encoding information,
+   hence in almost all cases installTrChar should be used, instead. */
 extern "C"
 SEXP Rf_installChar(SEXP charSXP)
 {

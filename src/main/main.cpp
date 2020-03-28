@@ -134,7 +134,9 @@ LibExport AccuracyInfo R_AccuracyInfo;
 LibExport SEXP R_TrueValue = NULL;
 LibExport SEXP R_FalseValue = NULL;
 LibExport SEXP R_LogicalNAValue = NULL;
-
+LibExport Rboolean R_PCRE_use_JIT = TRUE;
+LibExport int R_PCRE_study = 10;
+LibExport int R_PCRE_limit_recursion;
 // Data declared extern in Defn.h :
 
 int	gc_inhibit_torture = 1;
@@ -1052,7 +1054,7 @@ void setup_Rmainloop(void)
       check_session_exit();
     }
 
-    if (strcmp(R_GUIType, "Tk") == 0) {
+    if (streql(R_GUIType, "Tk")) {
 	char buf[PATH_MAX];
 
 	snprintf(buf, PATH_MAX, "%s/library/tcltk/exec/Tk-frontend.R", R_Home);
@@ -1500,7 +1502,7 @@ Rf_removeTaskCallbackByName(const char *name)
     }
 
     while(el) {
-	if(strcmp(el->name, name) == 0) {
+	if(streql(el->name, name)) {
 	    if(prev == nullptr) {
 		Rf_ToplevelTaskHandlers = el->next;
 	    } else {
@@ -1533,7 +1535,7 @@ Rf_removeTaskCallbackByIndex(int id)
     Rboolean status = TRUE;
 
     if(id < 0)
-	error(_("negative index passed to R_removeTaskCallbackByIndex"));
+	Rf_error(_("negative index passed to R_removeTaskCallbackByIndex"));
 
     if(Rf_ToplevelTaskHandlers) {
 	if(id == 0) {
@@ -1580,13 +1582,15 @@ R_removeTaskCallback(SEXP which)
     Rboolean val;
 
     if(TYPEOF(which) == STRSXP) {
-	val = Rf_removeTaskCallbackByName(CHAR(STRING_ELT(which, 0)));
-    } else {
-	id = asInteger(which);
+	if (LENGTH(which) == 0)
+	    val = FALSE;
+	else
+	    val = Rf_removeTaskCallbackByName(CHAR(STRING_ELT(which, 0)));    } else {
+	id = Rf_asInteger(which);
 	if (id != NA_INTEGER) val = Rf_removeTaskCallbackByIndex(id - 1);
 	else val = FALSE;
     }
-    return ScalarLogical(val);
+    return Rf_ScalarLogical(val);
 }
 
 SEXP
@@ -1601,11 +1605,11 @@ R_getTaskCallbackNames(void)
 	n++;
 	el = el->next;
     }
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     n = 0;
     el = Rf_ToplevelTaskHandlers;
     while(el) {
-	SET_STRING_ELT(ans, n, mkChar(el->name));
+	SET_STRING_ELT(ans, n, Rf_mkChar(el->name));
 	n++;
 	el = el->next;
     }
@@ -1645,7 +1649,7 @@ Rf_callToplevelHandlers(SEXP expr, SEXP value, Rboolean succeeded,
 	if(R_CollectWarnings) {
 	    REprintf(_("warning messages from top-level task callback '%s'\n"),
 		     h->name);
-	    PrintWarnings();
+	    Rf_PrintWarnings();
 	}
 	if(again) {
 	    prev = h;
@@ -1677,18 +1681,18 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
     int errorOccurred;
     Rboolean again, useData = RHOCONSTRUCT(Rboolean, LOGICAL(VECTOR_ELT(f, 2))[0]);
 
-    PROTECT(e = allocVector(LANGSXP, 5 + useData));
+    PROTECT(e = Rf_allocVector(LANGSXP, 5 + useData));
     SETCAR(e, VECTOR_ELT(f, 0));
     cur = CDR(e);
-    SETCAR(cur, tmp = allocVector(LANGSXP, 2));
+    SETCAR(cur, tmp = Rf_allocVector(LANGSXP, 2));
 	SETCAR(tmp, R_QuoteSymbol);
 	SETCAR(CDR(tmp), expr);
     cur = CDR(cur);
     SETCAR(cur, value);
     cur = CDR(cur);
-    SETCAR(cur, ScalarLogical(succeeded));
+    SETCAR(cur, Rf_ScalarLogical(succeeded));
     cur = CDR(cur);
-    SETCAR(cur, tmp = ScalarLogical(visible));
+    SETCAR(cur, tmp = Rf_ScalarLogical(visible));
     if(useData) {
 	cur = CDR(cur);
 	SETCAR(cur, VECTOR_ELT(f, 1));
@@ -1699,9 +1703,9 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
 	PROTECT(val);
 	if(TYPEOF(val) != LGLSXP) {
 	      /* It would be nice to identify the function. */
-	    warning(_("top-level task callback did not return a logical value"));
+	    Rf_warning(_("top-level task callback did not return a logical value"));
 	}
-	again = RHOCONSTRUCT(Rboolean, asLogical(val));
+	again = RHOCONSTRUCT(Rboolean, Rf_asLogical(val));
 	UNPROTECT(1);
     } else {
 	/* warning("error occurred in top-level task callback\n"); */
@@ -1718,22 +1722,22 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
     R_ToplevelCallbackEl *el;
     const char *tmpName = nullptr;
 
-    internalData = allocVector(VECSXP, 3);
+    internalData = Rf_allocVector(VECSXP, 3);
     R_PreserveObject(internalData);
     SET_VECTOR_ELT(internalData, 0, f);
     SET_VECTOR_ELT(internalData, 1, data);
     SET_VECTOR_ELT(internalData, 2, useData);
 
     if(Rf_length(name))
-	tmpName = CHAR(STRING_ELT(name, 0));
+	tmpName = R_CHAR(STRING_ELT(name, 0));
 
-    PROTECT(index = allocVector(INTSXP, 1));
+    PROTECT(index = Rf_allocVector(INTSXP, 1));
     el = Rf_addTaskCallback(R_taskCallbackRoutine,  internalData,
 			    reinterpret_cast<void (*)(void*)>(R_ReleaseObject), tmpName,
 			    INTEGER(index));
 
     if(Rf_length(name) == 0) {
-	PROTECT(name = mkString(el->name));
+	PROTECT(name = Rf_mkString(el->name));
 	setAttrib(index, R_NamesSymbol, name);
 	UNPROTECT(1);
     } else {

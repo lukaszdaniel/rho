@@ -664,8 +664,8 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 	Rf_error(_("'all.y' must be TRUE or FALSE"));
 
     /* 0. sort the indices */
-    int* ix = static_cast<int *>( RHO_alloc(size_t( nx), sizeof(int)));
-    int* iy = static_cast<int *>( RHO_alloc(size_t( ny), sizeof(int)));
+    int* ix = static_cast<int *>(RHO_alloc(size_t( nx), sizeof(int)));
+    int* iy = static_cast<int *>(RHO_alloc(size_t( ny), sizeof(int)));
     for(i = 0; i < nx; i++) ix[i] = i+1;
     for(i = 0; i < ny; i++) iy[i] = i+1;
     isort_with_index(INTEGER(xi), ix, nx);
@@ -1221,7 +1221,7 @@ Rf_utf8toucs(wchar_t *wc, const char *s)
 	    *w = wchar_t (((byte & 0x0F) << 12)
 			  | static_cast<unsigned int>((s[1] & 0x3F) << 6)
 			  | (s[2] & 0x3F));
-	    byte = static_cast<unsigned int>( *w);
+	    byte = static_cast<unsigned int>(*w);
 	    /* Surrogates range */
 	    if(byte >= 0xD800 && byte <= 0xDFFF) return size_t(-1);
 	    if(byte == 0xFFFE || byte == 0xFFFF) return size_t(-1);
@@ -1233,25 +1233,25 @@ Rf_utf8toucs(wchar_t *wc, const char *s)
     if (byte < 0xf8) {
 	if(strlen(s) < 4) return size_t(-2);
 	*w = wchar_t (((byte & 0x0F) << 18)
-		      | static_cast<unsigned int>( ((s[1] & 0x3F) << 12))
-		      | static_cast<unsigned int>( ((s[2] & 0x3F) << 6))
+		      | static_cast<unsigned int>(((s[1] & 0x3F) << 12))
+		      | static_cast<unsigned int>(((s[2] & 0x3F) << 6))
 		      | (s[3] & 0x3F));
 	return 4;
     } else if (byte < 0xFC) {
 	if(strlen(s) < 5) return size_t(-2);
 	*w = wchar_t (((byte & 0x0F) << 24)
-		      | static_cast<unsigned int>( ((s[1] & 0x3F) << 12))
-		      | static_cast<unsigned int>( ((s[2] & 0x3F) << 12))
-		      | static_cast<unsigned int>( ((s[3] & 0x3F) << 6))
+		      | static_cast<unsigned int>(((s[1] & 0x3F) << 12))
+		      | static_cast<unsigned int>(((s[2] & 0x3F) << 12))
+		      | static_cast<unsigned int>(((s[3] & 0x3F) << 6))
 		      | (s[4] & 0x3F));
 	return 5;
     } else {
 	if(strlen(s) < 6) return size_t(-2);
 	*w = wchar_t (((byte & 0x0F) << 30)
-		      | static_cast<unsigned int>( ((s[1] & 0x3F) << 24))
-		      | static_cast<unsigned int>( ((s[2] & 0x3F) << 18))
-		      | static_cast<unsigned int>( ((s[3] & 0x3F) << 12))
-		      | static_cast<unsigned int>( ((s[4] & 0x3F) << 6))
+		      | static_cast<unsigned int>(((s[1] & 0x3F) << 24))
+		      | static_cast<unsigned int>(((s[2] & 0x3F) << 18))
+		      | static_cast<unsigned int>(((s[3] & 0x3F) << 12))
+		      | static_cast<unsigned int>(((s[4] & 0x3F) << 6))
 		      | (s[5] & 0x3F));
 	return 6;
     }
@@ -1581,20 +1581,20 @@ static int s2u[224] = {
 
 void *Rf_AdobeSymbol2utf8(char *work, const char *c0, int nwork)
 {
-    const unsigned char *c = reinterpret_cast<RHOCONST unsigned char *>( c0);
-    unsigned char *t = reinterpret_cast<unsigned char *>( work);
+    const unsigned char *c = reinterpret_cast<RHOCONST unsigned char *>(c0);
+    unsigned char *t = reinterpret_cast<unsigned char *>(work);
     while (*c) {
 	if (*c < 32) *t++ = ' ';
 	else {
-	    unsigned int u = static_cast<unsigned int>( s2u[*c - 32]);
-	    if (u < 128) *t++ = static_cast<unsigned char>( u);
+	    unsigned int u = static_cast<unsigned int>(s2u[*c - 32]);
+	    if (u < 128) *t++ = static_cast<unsigned char>(u);
 	    else if (u < 0x800) {
-		*t++ = static_cast<unsigned char>( (0xc0 | (u >> 6)));
-		*t++ = static_cast<unsigned char>( (0x80 | (u & 0x3f)));
+		*t++ = static_cast<unsigned char>((0xc0 | (u >> 6)));
+		*t++ = static_cast<unsigned char>((0x80 | (u & 0x3f)));
 	    } else {
-		*t++ = static_cast<unsigned char>( (0xe0 | (u >> 12)));
-		*t++ = static_cast<unsigned char>( (0x80 | ((u >> 6) & 0x3f)));
-		*t++ = static_cast<unsigned char>( (0x80 | (u & 0x3f)));
+		*t++ = static_cast<unsigned char>((0xe0 | (u >> 12)));
+		*t++ = static_cast<unsigned char>((0x80 | ((u >> 6) & 0x3f)));
+		*t++ = static_cast<unsigned char>((0x80 | (u & 0x3f)));
 	    }
 	}
 	if (t+6 > reinterpret_cast<unsigned char *>(work + nwork)) break;
@@ -1620,7 +1620,7 @@ double R_strtod5(const char *str, char **endptr, char dec,
     /* optional whitespace */
     while (isspace(*p)) p++;
 
-    if (NA && strncmp(p, "NA", 2) == 0) {
+    if (NA && streqln(p, "NA", 2)) {
 	ans = NA_REAL;
 	p += 2;
 	goto done;
@@ -2334,10 +2334,10 @@ SEXP attribute_hidden do_formatC(/*const*/ Expression* call, const BuiltInFuncti
     const char *fmt = R_CHAR(STRING_ELT(format_, 0));
     const char *flag = R_CHAR(STRING_ELT(flag_, 0));
     SEXP i_strlen = PROTECT(Rf_coerceVector(i_strlen_, INTSXP));
-    char **cptr = static_cast<char **>( RHO_alloc(n, sizeof(char*)));
+    char **cptr = static_cast<char **>(RHO_alloc(n, sizeof(char*)));
     for (R_xlen_t i = 0; i < n; i++) {
 	int ix = INTEGER(i_strlen)[i] + 2;
-	cptr[i] = static_cast<char *>( RHO_alloc(ix + 1, sizeof(char)));
+	cptr[i] = static_cast<char *>(RHO_alloc(ix + 1, sizeof(char)));
 	memset(cptr[i], ' ', ix);
 	cptr[i][ix] = 0;
     }
@@ -2432,7 +2432,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
     if (width == 0)
 	Rf_error("width cannot be zero");
 
-    if (strcmp("d", format) == 0) {
+    if (streql("d", format)) {
 	if (len_flag == 0)
 	    strcpy(form, "%*d");
 	else {
@@ -2440,7 +2440,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 	    strcat(form, flag);
 	    strcat(form, "*d");
 	}
-	if (strcmp("integer", type) == 0)
+	if (streql("integer", type))
 	    for (R_xlen_t i = 0; i < n; i++)
 		snprintf(result[i], strlen(result[i]) + 1,
 			 form, width, (static_cast<int *>(x))[i]);
@@ -2469,7 +2469,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 		form, width, dig);
 	if(do_fg) fprintf(stderr, "\t\"fg\": f0='%s'.", f0);
 #endif
-	if (strcmp("double", type) == 0) {
+	if (streql("double", type)) {
 	    if(do_fg) /* do smart "f" : */
 		for (R_xlen_t i = 0; i < n; i++) {
 		    xx = (static_cast<double *>(x))[i];

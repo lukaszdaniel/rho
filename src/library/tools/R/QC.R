@@ -1,7 +1,7 @@
 #  File src/library/tools/R/QC.R
 #  Part of the R package, https://www.R-project.org
 #
-#  Copyright (C) 1995-2016 The R Core Team
+#  Copyright (C) 1995-2017 The R Core Team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -674,7 +674,7 @@ function(package, dir, lib.loc = NULL,
         ## by comparing the explicit \usage entries for S4 methods to
         ## what is actually in the code.  We most likely also should do
         ## something similar for S3 methods.
-        ind <- grep(.S4_method_markup_regexp, functions)
+        ind <- grepl(.S4_method_markup_regexp, functions)
         if(any(ind))
             functions <- functions[!ind]
         ## </FIXME>
@@ -3813,7 +3813,7 @@ function(dir, makevars = c("Makevars.in", "Makevars"))
     if(!length(lines) || inherits(lines, "error"))
         return(bad_flags)
 
-    prefixes <- c("CPP", "C", "CXX", "CXX98", "CXX1X", "CXX1Y", "F", "FC", "OBJC", "OBJCXX")
+    prefixes <- c("CPP", "C", "CXX", "CXX98", "CXX11", "CXX14", "CXX17", "F", "FC", "OBJC", "OBJCXX")
 
     uflags_re <- sprintf("^(%s)FLAGS: *(.*)$",
                          paste(prefixes, collapse = "|"))
@@ -6602,6 +6602,33 @@ function(dir, localOnly = FALSE)
     out$Maintainer_needs_quotes <-
         grepl("[,]", display, useBytes = TRUE) && !grepl('^".*"$', display, useBytes = TRUE)
     out$empty_Maintainer_name <- !nzchar(display)
+    ## Try to catch bad maintainer fields which give more than one
+    ## person.  In principle, the field should be of the form
+    ##   DISPLAY-NAME <ANGLE-ADDR>
+    ## with the former (for simplicity) either a single quoted string,
+    ## or several atoms.  (There are cases where <ANGLE-ADDR> does not
+    ## follow whitespace, so simple tokenizing via scan() does not quite
+    ## work.)
+    check_maintainer_address <- function(s) {
+        re <- paste0("^",
+                     "[[:space:]]*",
+                     "([^<]*|\"([^\"]|\\\\\")*\")", # display-name
+                     "[[:space:]]*",
+                     "(<[^>]+>)",           # angle-addr
+                     "[[:space:]]*",
+                     "(.*)",                # rest?
+                     "[[:space:]]*",
+                     "$")
+        s <- unlist(regmatches(s, regexec(re, s)))
+        length(s) && (s[5L] == "") ## && (s[2L] != "")
+        ## (Adding the test for s[2L] would check for non-empty
+        ## display-name which we already do separately.)
+    }
+    ## NOTE: perhaps whitespace should be canonicalized further above?
+    maintainer <- gsub("\n", " ", meta["Maintainer"])
+    out$Maintainer_invalid_or_multi_person <-
+        ((maintainer != "ORPHANED") &&
+         !check_maintainer_address(maintainer))
 
     ver <- meta["Version"]
     if(is.na(ver))
@@ -7294,7 +7321,9 @@ function(x, ...)
                                            collapse = " ")))))
       else
           "No maintainer field in DESCRIPTION file",
-      fmt(c(if(x$empty_Maintainer_name)
+      fmt(c(if(x$Maintainer_invalid_or_multi_person)
+                "The maintainer field is invalid or specifies more than one person",
+            if(x$empty_Maintainer_name)
                 'The maintainer field lacks a name',
             if(x$Maintainer_needs_quotes)
                 'The display-name part of the maintainer field should be enclosed in ""')

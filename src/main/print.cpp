@@ -51,7 +51,7 @@
  *	-> printMatrix			>>>>> ./printarray.c
  *
  *
- *  See ./printutils.c	 for general remarks on Printing
+ *  See ./printutils.cpp	 for general remarks on Printing
  *			 and the Encode.. utils.
  *
  *  Also ./printvector.cpp,  ./printarray.cpp

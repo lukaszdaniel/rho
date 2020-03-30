@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2005-2015   The R Core Team
+ *  Copyright (C) 2005-2017   The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -158,8 +158,8 @@ static cjk_locale_name_t cjk_locale_name[] = {
     {"",				        MB_Default},
 };
 
-// used in character.c, ../gnuwin32/console.c , ../library/grDevices/src/devP*.c :
-int Ri18n_wcwidth(wchar_t c)
+// used in character.cpp, ../gnuwin32/console.c , ../library/grDevices/src/devP*.c :
+int Ri18n_wcwidth(Rwchar_t c)
 {
     char lc_str[128];
     unsigned int i, j;
@@ -190,7 +190,7 @@ int Ri18n_wcwidth(wchar_t c)
     return zw ? 0 : 1; // assume unknown chars are width one.
 }
 
-/* Used in character.c, errors.c, ../gnuwin32/console.c */
+/* Used in character.cpp, errors.cpp, ../gnuwin32/console.c */
 attribute_hidden
 int Ri18n_wcswidth (const wchar_t *s, size_t n)
 {

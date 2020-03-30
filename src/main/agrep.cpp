@@ -23,7 +23,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
-/* This at times needed to be separate from grep.c, as TRE has a
+/* This at times needed to be separate from grep.cpp, as TRE has a
    conflicting regcomp and the two headers cannot both be included in
    one file
 */

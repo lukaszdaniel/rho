@@ -249,7 +249,7 @@ void R_csort(Rcomplex *x, int n)
 }
 
 
-/* used in platform.c */
+/* used in platform.cpp */
 void attribute_hidden Rf_ssort(StringVector* sv, int n)
 {
     StringVector& x(*sv);

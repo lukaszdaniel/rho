@@ -79,8 +79,8 @@ void rho::strdump(std::ostream& os, const StringVector& sv, std::size_t margin)
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
     if(TYPEOF(x) != STRSXP)
-	error("%s() can only be applied to a '%s', not a '%s'",
-	      "SET_STRING_ELT", "character vector", Rf_type2char(TYPEOF(x)));
+	error("%s() can only be applied to a character vector, not a '%s'",
+	      "SET_STRING_ELT", Rf_type2char(TYPEOF(x)));
     StringVector* sv = SEXP_downcast<StringVector*>(x, false);
 
     if(TYPEOF(v) != CHARSXP)

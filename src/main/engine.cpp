@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2001-2015  The R Core Team.
+ *  Copyright (C) 2001-2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1612,8 +1612,8 @@ VFontTable[] = {
    saving further table lookups.
 
    (Done by GEText and GEStrWidth/Height, and also set that way in the
-   graphics package's plot.c for C_text, C_strWidth and C_strheight,
-   and in plot3d.c for C_contour.)
+   graphics package's plot.cpp for C_text, C_strWidth and C_strheight,
+   and in plot3d.cpp for C_contour.)
 */
 static int VFontFamilyCode(char *fontfamily)
 {
@@ -1830,7 +1830,10 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 					size_t used;
 					wchar_t wc;
 					while ((used = utf8toucs(&wc, ss)) > 0) {
-					    GEMetricInfo(-int( wc), gc, &h, &d, &w, dd);
+					    if (IS_HIGH_SURROGATE(wc))
+					    	GEMetricInfo(-int(utf8toucs32(wc, ss)), gc, &h, &d, &w, dd);
+					    else
+					    	GEMetricInfo(-int(wc), gc, &h, &d, &w, dd);
 					    h = fromDeviceHeight(h, GE_INCHES, dd);
 					    d = fromDeviceHeight(d, GE_INCHES, dd);
 #ifdef DEBUG_MI
@@ -1932,7 +1935,7 @@ SEXP GEXspline(int n, double *x, double *y, double *s, Rboolean open,
 	       const pGEcontext gc, pGEDevDesc dd)
 {
     /*
-     * Use xspline.c code to generate points to draw
+     * Use xspline.cpp code to generate points to draw
      * Draw polygon or polyline from points
      */
     SEXP result = R_NilValue;
@@ -2045,7 +2048,7 @@ void GESymbol(double x, double y, int pch, double size,
 	       pixels are not square, but only on low resolution
 	       devices where we can do nothing better.
 
-	       For this symbol only, size is cex (see engine.c).
+	       For this symbol only, size is cex (see engine.cpp).
 
 	       Prior to 2.1.0 the offsets were always 0.5.
 	    */
@@ -2619,7 +2622,7 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 	else if (dd->dev->wantSymbolUTF8 == NA_LOGICAL) {
 	    enc = CE_LATIN1;
 	    enc2 = CE_UTF8;
-	}
+        }
 
 	/* Put the first line in a string */
 	sb = sbuf = (char*)R_alloc(strlen(str) + 1, sizeof(char));
@@ -2650,7 +2653,10 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 		    size_t used;
 		    wchar_t wc;
 		    while ((used = utf8toucs(&wc, s)) > 0) {
-			GEMetricInfo(-(int)wc, gc, &asc, &dsc, &wid, dd);
+                    	if (IS_HIGH_SURROGATE(wc))
+                    	    GEMetricInfo(-utf8toucs32(wc, s), gc, &asc, &dsc, &wid, dd);
+                    	else
+                            GEMetricInfo(-int(wc), gc, &asc, &dsc, &wid,dd);
 			if (asc > *ascent)
 			    *ascent = asc;
 			s += used;
@@ -2707,11 +2713,14 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 		} else if (enc2 == CE_UTF8) {
 		    size_t used;
 		    wchar_t wc;
-		    while ((used = utf8toucs(&wc, s)) > 0) {
-			GEMetricInfo(-(int)wc, gc, &asc, &dsc, &wid, dd);
-			if (dsc > *descent)
-			    *descent = dsc;
-			s += used;
+                    while ((used = utf8toucs(&wc, s)) > 0) {
+                        if (IS_HIGH_SURROGATE(wc))
+                            GEMetricInfo(-utf8toucs32(wc, s), gc, &asc, &dsc, &wid, dd);
+                        else
+                            GEMetricInfo(-int(wc), gc, &asc, &dsc, &wid,dd);
+                        if (dsc > *descent)
+                            *descent = dsc;
+                        s += used;
 		    }
 		}
 	    } else {
@@ -2847,7 +2856,7 @@ void GEinitDisplayList(pGEDevDesc dd)
  ****************************************************************
  */
 
-/* from colors.c */
+/* from colors.cpp */
 void savePalette(Rboolean save);
 
 void GEplayDisplayList(pGEDevDesc dd)
@@ -3112,7 +3121,7 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
     /*
      * If there is an error or user-interrupt in the above
      * evaluation, dd->recordGraphics is set to TRUE
-     * on all graphics devices (see GEonExit(); called in errors.c)
+     * on all graphics devices (see GEonExit(); called in errors.cpp)
      */
     dd->recordGraphics = record;
     if (GErecording(call, dd)) {
@@ -3174,8 +3183,12 @@ int GEstring_to_pch(SEXP pch)
     } else if (IS_UTF8(pch) || utf8locale) {
 	wchar_t wc = 0;
 	if (ipch > 127) {
-	    if ( int( utf8toucs(&wc, CHAR(pch))) > 0) ipch = -wc;
-	    else error(_("invalid multibyte char in pch=\"c\""));
+	    if ( int(utf8toucs(&wc, CHAR(pch))) > 0) {
+	    	if (IS_HIGH_SURROGATE(wc))
+	    	    ipch = -utf8toucs32(wc, CHAR(pch));
+	    	else
+	    	    ipch = -wc;
+	    } else error(_("invalid multibyte char in pch=\"c\""));
 	}
     } else if(mbcslocale) {
 	/* Could we safely assume that 7-bit first byte means ASCII?
@@ -3191,7 +3204,7 @@ int GEstring_to_pch(SEXP pch)
     return ipch;
 }
 
-/* moved from graphics.c as used by grid */
+/* moved from graphics.cpp as used by grid */
 /*  LINE TEXTURE CODE */
 
 /*
@@ -3223,7 +3236,7 @@ static LineTYPE linetype[] = {
     { nullptr,	 0	     },
 };
 
-/* Duplicated from graphics.c */
+/* Duplicated from graphics.cpp */
 static char HexDigits[] = "0123456789ABCDEF";
 static unsigned int hexdigit(int digit)
 {

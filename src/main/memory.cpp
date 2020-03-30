@@ -174,7 +174,7 @@ SEXP attribute_hidden do_gcinfo(/*const*/ Expression* call, const BuiltInFunctio
     return Rf_ScalarLogical(report_os != nullptr);
 }
 
-/* reports memory use to profiler in eval.c */
+/* reports memory use to profiler in eval.cpp */
 
 void attribute_hidden get_current_mem(size_t *smallvsize,
 				      size_t *largevsize,
@@ -587,7 +587,7 @@ SEXP do_Rprofmem(SEXP args)
 
 #endif /* R_MEMORY_PROFILING */
 
-/* RBufferUtils, moved from deparse.c */
+/* RBufferUtils, moved from deparse.cpp */
 
 #include "RBufferUtils.h"
 

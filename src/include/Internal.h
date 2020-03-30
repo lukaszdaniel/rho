@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -153,6 +153,8 @@ SEXP do_direxists(SEXP, SEXP, SEXP, SEXP);
 SEXP do_dirname(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_);
 SEXP do_docall(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* what_, rho::RObject* args_, rho::RObject* envir_);
 SEXP do_dotcall(SEXP, SEXP, SEXP, SEXP);
+SEXP do_dotsElt(SEXP, SEXP, SEXP, SEXP);
+SEXP do_dotsLength(SEXP, SEXP, SEXP, SEXP);
 SEXP do_dotcallgr(SEXP, SEXP, SEXP, SEXP);
 SEXP do_dotCode(SEXP, SEXP, SEXP, SEXP);
 SEXP do_dput(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* file_, rho::RObject* control_);
@@ -418,7 +420,7 @@ SEXP do_sysbrowser(rho::Expression* call, const rho::BuiltInFunction* op, rho::R
 SEXP do_sysgetpid(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_systime(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_tabulate(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* bin_, rho::RObject* nbins_);
-SEXP do_tempdir(rho::Expression* call, const rho::BuiltInFunction* op);
+SEXP do_tempdir(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* check_);
 SEXP do_tempfile(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* tmpdir_, rho::RObject* fileext_);
 SEXP do_tilde(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_tolower(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);

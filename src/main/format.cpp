@@ -27,10 +27,10 @@
  *
  * Object Formatting
  *
- *  See ./paste.c for do_paste() , do_format() and do_formatinfo() and
- *       ./util.c for do_formatC()
- *  See ./printutils.c for general remarks on Printing and the Encode.. utils.
- *  See ./print.c  for do_printdefault, do_prmatrix, etc.
+ *  See ./paste.cpp for do_paste() , do_format() and do_formatinfo() and
+ *       ./util.cpp for do_formatC()
+ *  See ./printutils.cpp for general remarks on Printing and the Encode.. utils.
+ *  See ./print.cpp  for do_printdefault, do_prmatrix, etc.
  *
  * Exports
  *	formatString  (not in rho)

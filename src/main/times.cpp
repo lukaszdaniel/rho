@@ -78,7 +78,7 @@
 
     devPS.c uses time() and localtime() for timestamps.
 
-    do_date (platform.c) uses ctime.
+    do_date (platform.cpp) uses ctime.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -152,7 +152,7 @@ SEXP attribute_hidden do_systime(/*const*/ rho::Expression* call, const rho::Bui
 #include <unistd.h> /* for getpid */
 #endif
 
-/* For RNG.c, main.c, mkdtemp.c */
+/* For RNG.cpp, main.cpp, mkdtemp.cpp */
 attribute_hidden unsigned int TimeToSeed(void)
 {
     unsigned int seed, pid = getpid();

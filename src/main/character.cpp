@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -41,7 +41,7 @@ The regex functions
 
 strsplit grep [g]sub [g]regexpr agrep
 
-here prior to 2.10.0 are now in grep.c and agrep.c
+here prior to 2.10.0 are now in grep.cpp and agrep.cpp
 
 make.unique, duplicated, unique, match, pmatch, charmatch are in unique.c
 iconv is in sysutils.c
@@ -199,10 +199,15 @@ int R_nchar(SEXP string, nchar_type type_,
 		return NA_INTEGER;
 	    } else {
 		wchar_t wc1;
+		Rwchar_t ucs;
 		int nc = 0;
 		for( ; *p; p += utf8clen(*p)) {
 		    utf8toucs(&wc1, p);
-		    nc += Ri18n_wcwidth(wc1);
+		    if (IS_HIGH_SURROGATE(wc1)) 
+		    	ucs = utf8toucs32(wc1, p);
+		    else
+		    	ucs = wc1;
+		    nc += Ri18n_wcwidth(ucs); 
 		}
 		return nc;
 	    }
@@ -1561,7 +1566,7 @@ SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFuncti
 	    mbs_init(&mb_st);
 	    for (p = This, w0 = 0, q = buf; *p ;) {
 		nb =  (int) Rf_mbrtowc(&wc, p, MB_CUR_MAX, &mb_st);
-		w0 = Ri18n_wcwidth(wc);
+		w0 = Ri18n_wcwidth(Rwchar_t(wc));
 		if (w0 < 0) { p += nb; continue; } /* skip non-printable chars */
 		wsum += w0;
 		if (wsum <= w) {

@@ -1216,9 +1216,9 @@ static void SetBit(SEXP term, int whichBit, int value)
     word = int((whichBit - 1) / WORDSIZE);
     offset = (WORDSIZE - whichBit) % WORDSIZE;
     if (value)
-	(reinterpret_cast<unsigned int*>( INTEGER(term)))[word] |= (1U << offset);
+	(reinterpret_cast<unsigned int*>(INTEGER(term)))[word] |= (1U << offset);
     else
-	(reinterpret_cast<unsigned int*>( INTEGER(term)))[word] &= ~(1U << offset);
+	(reinterpret_cast<unsigned int*>(INTEGER(term)))[word] &= ~(1U << offset);
 }
 
 
@@ -1230,7 +1230,7 @@ static int GetBit(SEXP term, int whichBit)
     unsigned int word, offset;
     word = int((whichBit - 1) / WORDSIZE);
     offset = (WORDSIZE - whichBit) % WORDSIZE;
-    return (((reinterpret_cast<unsigned int*>( INTEGER(term)))[word]) >> offset) & 1;
+    return (((reinterpret_cast<unsigned int*>(INTEGER(term)))[word]) >> offset) & 1;
 }
 
 

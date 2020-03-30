@@ -36,6 +36,10 @@
    It should have been resolved (after a decade) in 2012.
 */
 
+#if defined(HAVE_CTANH) && !defined(HAVE_WORKING_CTANH)
+#undef HAVE_CTANH
+#endif
+
 #if 0
 /* For testing substitute fns */
 #undef HAVE_CARG
@@ -331,7 +335,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
     return y;
 }
 
-/* used in format.c and printutils.c */
+/* used in format.cpp and printutils.cpp */
 #define MAX_DIGITS 22
 void attribute_hidden z_prec_r(Rcomplex *r, Rcomplex *x, double digits)
 {

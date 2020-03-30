@@ -222,9 +222,12 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
-    if (TYPEOF(fun_) == CLOSXP)
-	return Rf_duplicate(FORMALS(fun_));
-    else {
+    if (TYPEOF(fun_) == CLOSXP) {
+	SEXP f = FORMALS(fun_);
+	if (NAMED(fun_) > NAMED(f))
+	    SET_NAMED(f, NAMED(fun_));
+	return f;
+    } else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
 	    Rf_warningcall(call, _("argument is not a function"));
@@ -234,9 +237,12 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
 
 SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
-    if (TYPEOF(fun_) == CLOSXP)
-	return Rf_duplicate(BODY(fun_));
-    else {
+    if (TYPEOF(fun_) == CLOSXP) {
+	SEXP b = BODY_EXPR(fun_);
+	if (NAMED(fun_) > NAMED(b))
+	    SET_NAMED(b, NAMED(fun_));
+	return b;
+    } else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
 	    Rf_warningcall(call, _("argument is not a function"));
@@ -865,7 +871,10 @@ static SEXP expandDots(SEXP el, SEXP rho)
 	    SEXP h = PROTECT(Rf_findVar(CAR(el), rho));
 	    if (TYPEOF(h) == DOTSXP || h == R_NilValue) {
 		while (h != R_NilValue) {
-		    SETCDR(tail, CONS(CAR(h), R_NilValue));
+		    if (TYPEOF(CAR(h)) == PROMSXP || CAR(h) == R_MissingArg)
+		      SETCDR(tail, CONS(CAR(h), R_NilValue));
+                    else
+		      SETCDR(tail, CONS(Rf_mkPROMISE(CAR(h), rho), R_NilValue));
 		    tail = CDR(tail);
 		    if(TAG(h) != R_NilValue) SET_TAG(tail, TAG(h));
 		    h = CDR(h);
@@ -917,7 +926,7 @@ static SEXP setDflt(SEXP arg, SEXP dflt)
  condition.
 
  This is a SPECIALSXP, so arguments need to be evaluated as needed.
-  And (see names.c) X=2, so it defaults to a visible value.
+  And (see names.cpp) X=2, so it defaults to a visible value.
 */
 
 

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997-2017   The R Core Team
  *  Copyright (C) 1995-1996   Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997-2014   The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -38,6 +38,7 @@
 #include <R_ext/Riconv.h>
 #include <Rinterface.h>
 #include <errno.h>
+#include <rlocale.h>
 #include <vector>
 
 using namespace std;
@@ -61,6 +62,8 @@ using namespace std;
 #ifdef HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
+
+static int isDir(RHOCONST char *path);
 
 #ifdef HAVE_AQUA
 int (*ptr_CocoaSystem)(const char*);
@@ -116,11 +119,11 @@ Rboolean attribute_hidden R_HiddenFile(const char *name)
 
 static char * fixmode(const char *mode)
 {
-    /* Rconnection can have a mode of 4 chars plus a null; we might
-     * add one char */
-    static char fixedmode[6];
-    fixedmode[4] = '\0';
-    strncpy(fixedmode, mode, 4);
+    /* Rconnection can have a mode of 4 chars plus a ccs= setting plus a null; we might
+     * add one char if neither b nor t is specified. */
+    static char fixedmode[20];
+    fixedmode[19] = '\0';
+    strncpy(fixedmode, mode, 19);
     if (!strpbrk(fixedmode, "bt")) {
 	strcat(fixedmode, "t");
     }
@@ -129,9 +132,9 @@ static char * fixmode(const char *mode)
 
 static wchar_t * wcfixmode(const wchar_t *mode)
 {
-    static wchar_t wcfixedmode[6];
-    wcfixedmode[4] = L'\0';
-    wcsncpy(wcfixedmode, mode, 4);
+    static wchar_t wcfixedmode[20];
+    wcfixedmode[19] = L'\0';
+    wcsncpy(wcfixedmode, mode, 19);
     if (!wcspbrk(wcfixedmode, L"bt")) {
 	wcscat(wcfixedmode, L"t");
     }
@@ -237,8 +240,13 @@ SEXP attribute_hidden do_interactive(/*const*/ rho::Expression* call, const rho:
     return Rf_ScalarLogical( (R_Interactive) ? 1 : 0 );
 }
 
-SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* check_)
 {
+    Rboolean check = Rboolean(Rf_asLogical(check_));
+    if(check && !isDir(R_TempDir)) {
+	R_TempDir = NULL;
+	R_reInitTempDir(/* die_on_fail = */ FALSE);
+    }
     return Rf_mkString(R_TempDir);
 }
 
@@ -881,21 +889,22 @@ next_char:
 	    /* This must be the first byte */
 	    size_t clen;
 	    wchar_t wc;
+	    Rwchar_t ucs;
 	    clen = Rf_utf8toucs(&wc, inbuf);
 	    if(clen > 0 && inb >= clen) {
+	    	if (IS_HIGH_SURROGATE(wc))
+	    	    ucs = utf8toucs32(wc, inbuf);
+	    	else
+	    	    ucs = (Rwchar_t) wc;
 		inbuf += clen; inb -= clen;
-# ifndef Win32
-		if((unsigned int) wc < 65536) {
-# endif
+		if(ucs < 65536) {
 		// gcc 7 objects to this with unsigned int
-		    snprintf(outbuf, 9, "<U+%04X>", (unsigned short) wc);
+		    snprintf(outbuf, 9, "<U+%04X>", (unsigned short) ucs);
 		    outbuf += 8; outb -= 8;
-# ifndef Win32
 		} else {
-		    snprintf(outbuf, 13, "<U+%08X>", (unsigned int) wc);
+		    snprintf(outbuf, 13, "<U+%08X>", ucs);
 		    outbuf += 12; outb -= 12;
 		}
-# endif
 	    } else {
 		snprintf(outbuf, 5, "<%02x>", (unsigned char)*inbuf);
 		outbuf += 4; outb -= 4;
@@ -1475,7 +1484,7 @@ static const char UNICODE[] = "UCS-4BE";
 static const char UNICODE[] = "UCS-4LE";
 #endif
 
-/* used in gram.c and devX11.c */
+/* used in gram.cpp and devX11.c */
 size_t Rf_ucstomb(char *s, const unsigned int wc)
 {
     vector<char> bufv(MB_CUR_MAX+1);
@@ -1530,7 +1539,7 @@ size_t Rf_ucstomb(char *s, const unsigned int wc)
     return strlen(buf);
 }
 
-/* used in plot.c for non-UTF-8 MBCS */
+/* used in plot.cpp for non-UTF-8 MBCS */
 size_t attribute_hidden
 Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
 {
@@ -1626,7 +1635,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 # define S_IFDIR __S_IFDIR
 #endif
 
-static int Rf_isDir(RHOCONST char *path)
+static int isDir(RHOCONST char *path)
 {
 #ifdef Win32
     struct _stati64 sb;
@@ -1650,7 +1659,7 @@ static int Rf_isDir(RHOCONST char *path)
     return isdir;
 }
 #else
-static int Rf_isDir(RHOCONST char *path)
+static int isDir(RHOCONST char *path)
 {
     return 1;
 }
@@ -1664,7 +1673,7 @@ extern char * mkdtemp (char *template);
 # include <ctype.h>
 #endif
 
-void attribute_hidden Rf_InitTempDir()
+void R_reInitTempDir(int die_on_fail)
 {
     char *tmp, tmp1[PATH_MAX+11], *p;
     RHOCONST char* tm;
@@ -1673,15 +1682,21 @@ void attribute_hidden Rf_InitTempDir()
     int hasspace = 0;
 #endif
 
+#define ERROR_MAYBE_DIE(MSG_)			\
+    if(die_on_fail)				\
+	R_Suicide(MSG_);			\
+    else					\
+	Rf_errorcall(R_NilValue, MSG_)
+
     if(R_TempDir) return; /* someone else set it */
     tmp = nullptr; /* getenv("R_SESSION_TMPDIR");   no longer set in R.sh */
     if (!tmp) {
 	tm = getenv("TMPDIR");
-	if (!Rf_isDir(tm)) {
+	if (!isDir(tm)) {
 	    tm = getenv("TMP");
-	    if (!Rf_isDir(tm)) {
+	    if (!isDir(tm)) {
 		tm = getenv("TEMP");
-		if (!Rf_isDir(tm))
+		if (!isDir(tm))
 #ifdef Win32
 		    tm = getenv("R_USER"); /* this one will succeed */
 #else
@@ -1702,7 +1717,9 @@ void attribute_hidden Rf_InitTempDir()
 	snprintf(tmp1, PATH_MAX+11, "%s/RtmpXXXXXX", tm);
 #endif
 	tmp = mkdtemp(tmp1);
-	if(!tmp) R_Suicide(_("cannot create 'R_TempDir'"));
+	if(!tmp) {
+	    ERROR_MAYBE_DIE(_("cannot create 'R_TempDir'"));
+	}
 #ifndef Win32
 # ifdef HAVE_SETENV
 	if(setenv("R_SESSION_TMPDIR", tmp, 1))
@@ -1726,12 +1743,16 @@ void attribute_hidden Rf_InitTempDir()
     size_t len = strlen(tmp) + 1;
     p = static_cast<char *>(malloc(len));
     if(!p)
-	R_Suicide(_("cannot allocate 'R_TempDir'"));
+	ERROR_MAYBE_DIE(_("cannot allocate 'R_TempDir'"));
     else {
 	R_TempDir = p;
 	strcpy(R_TempDir, tmp);
 	Sys_TempDir = R_TempDir;
     }
+}
+
+void attribute_hidden InitTempDir() {
+    R_reInitTempDir(/* die_on_fail = */ TRUE);
 }
 
 char * R_tmpnam(const char * prefix, const char * tempdir)
@@ -1741,7 +1762,7 @@ char * R_tmpnam(const char * prefix, const char * tempdir)
 
 /* NB for use with multicore: parent and all children share the same
    session directory and run in parallel.
-   So as from 2.14.1, we make sure getpic() is part of the process.
+   So as from 2.14.1, we make sure getpid() is part of the process.
 */
 char * R_tmpnam2(const char *prefix, const char *tempdir, const char *fileext)
 {
@@ -1872,7 +1893,7 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     return R_NilValue;
 }
 
-/* moved from character.c in 2.10.0: configure requires this */
+/* moved from character.cpp in 2.10.0: configure requires this */
 
 #ifdef HAVE_GLOB_H
 # include <glob.h>

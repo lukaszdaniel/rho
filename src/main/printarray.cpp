@@ -28,10 +28,10 @@
  *  EXPORTS	printMatrix()
  *		printArray()
  *
- *  See ./printutils.c	 for general remarks on Printing
+ *  See ./printutils.cpp	 for general remarks on Printing
  *			 and the Encode.. utils.
  *
- *  See ./format.c	 for the  format_FOO_  functions used below.
+ *  See ./format.cpp	 for the  format_FOO_  functions used below.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -56,7 +56,7 @@ using namespace rho;
    Used only for row/column names found by GetMatrixDimnames,
    so in native encoding.  (NULL ones from do_prmatrix are skipped.)
 */
-int Rstrwid(const char *str, int slen, cetype_t enc, int quote);  /* from printutils.c */
+int Rstrwid(const char *str, int slen, cetype_t enc, int quote);  /* from printutils.cpp */
 #define strwidth(x) Rstrwid(x, (int) strlen(x), CE_NATIVE, 0)
 
 /* ceil_DIV(a,b) :=  ceil(a / b)  in _int_ arithmetic : */
@@ -67,7 +67,7 @@ int ceil_DIV(int a, int b)
     return div_res.quot + ((div_res.rem != 0) ? 1 : 0);
 }
 
-/* moved from printutils.c */
+/* moved from printutils.cpp */
 
 static void MatrixColumnLabel(SEXP cl, int j, int w)
 {

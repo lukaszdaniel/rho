@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 2003--2017  The R Foundation
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
- *  Copyright (C) 2003--2016  The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -216,9 +216,11 @@ new BuiltInFunction("any",		do_logic3,	2,	1,	-1,	{PP_FUNCALL, PREC_FN,	  0}, nul
 
 /* Primitives */
 
-new BuiltInFunction("length",	do_length,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x", DispatchType::INTERNAL),
+new BuiltInFunction("...elt",      do_dotsElt,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("...length",   do_dotsLength,	0,	1,	0,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("length",	do_length,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x", Dispatch::INTERNAL),
 new BuiltInFunction("length<-",	do_lengthgets,	0,	1,	2,	{PP_FUNCALL, PREC_LEFT,	1}, "x", Dispatch::INTERNAL),
-new BuiltInFunction("c",/* bind.cpp:*/do_c,		0,	1,	-1,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("c",/* bind.cpp: */ do_c,		0,	1,	-1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("oldClass",	do_class,	0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x"),
 new BuiltInFunction("oldClass<-",	do_classgets,	0,	1,	2,	{PP_FUNCALL, PREC_LEFT, 1}, "x"),
 new BuiltInFunction("class",	R_do_data_class,0,	1,	1,	{PP_FUNCALL, PREC_FN,	0}),
@@ -451,7 +453,7 @@ new BuiltInFunction("strtrim",	do_strtrim,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("strtoi",	do_strtoi,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("strrep",	do_strrep,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 
-/* Type Checking (typically implemented in ./coerce.c ) */
+/* Type Checking (typically implemented in ./coerce.cpp ) */
 
 new BuiltInFunction("is.null",	do_is,		NILSXP,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x"),
 new BuiltInFunction("is.logical",	do_is,		LGLSXP,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "x"),
@@ -655,7 +657,7 @@ new BuiltInFunction("file.access",	do_fileaccess,	0,	11,	2,	{PP_FUNCALL, PREC_FN
 new BuiltInFunction("dir.exists",	do_direxists,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("dir.create",	do_dircreate,	0,	111,	4,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("tempfile",	do_tempfile,	0,	11,	3,	{PP_FUNCALL, PREC_FN,	0}),
-new BuiltInFunction("tempdir",	do_tempdir,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("tempdir",	do_tempdir,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("R.home",	do_Rhome,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("date",	do_date,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("Sys.getenv",	do_getenv,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),

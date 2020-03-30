@@ -14,7 +14,7 @@
  * to the Rho website.
  * */
 
-/* strdup.c -- return a newly allocated copy of a string
+/* strdup.cpp -- return a newly allocated copy of a string
    Copyright (C) 1990 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify

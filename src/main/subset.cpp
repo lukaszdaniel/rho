@@ -976,7 +976,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    case PARTIAL_MATCH:
 		havematch++;
 		if (havematch == 1) {
-		    /* partial matches can cause aliasing in eval.c:evalseq
+		    /* partial matches can cause aliasing in eval.cpp:evalseq
 		       This is overkill, but alternative ways to prevent
 		       the aliasing appear to be even worse */
 		    y = VECTOR_ELT(x,i);

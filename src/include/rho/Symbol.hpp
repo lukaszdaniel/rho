@@ -105,11 +105,8 @@ namespace rho {
 	/** @brief Index of a double-dot symbol.
 	 *
 	 * @return If this is a Symbol whose name is of the form
-	 * <tt>..<em>n</em></tt>, where <em>n</em> is a positive integer,
-	 * returns <em>n</em>.  Otherwise returns <em>0</em>.
-	 *
-	 * @note This function returns 0 in the (pathological)
-	 * case of a Symbol called <tt>..0</tt>.
+	 * <tt>..<em>n</em></tt>, where <em>n</em> is a nonnegative integer,
+	 * returns <em>n</em>.  Otherwise returns <em>-1</em>.
 	 */
 	unsigned int dotDotIndex() const
 	{
@@ -123,7 +120,7 @@ namespace rho {
 	 */
 	bool isDotDotSymbol() const
 	{
-	    return m_dd_index != 0;
+	    return m_dd_index != -1;
 	}
 
 	/** @brief Is this a special symbol?
@@ -274,7 +271,7 @@ namespace rho {
 
 	GCEdge<const String> m_name;
 
-	unsigned int m_dd_index : 31;
+	int m_dd_index : 31;
         bool m_is_special_symbol : 1;
 	enum S11nType {NORMAL = 0, MISSINGARG, UNBOUNDVALUE};
 

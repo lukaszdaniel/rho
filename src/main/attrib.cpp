@@ -94,12 +94,12 @@ static SEXP row_names_gets(SEXP vec , SEXP val)
     return ans;
 }
 
-/* NOTE: For environments serialize.c calls this function to find if
+/* NOTE: For environments serialize.cpp calls this function to find if
    there is a class attribute in order to reconstruct the object bit
    if needed.  This means the function cannot use OBJECT(vec) == 0 to
    conclude that the class attribute is R_NilValue.  If you want to
    rewrite this function to use such a pre-test, be sure to adjust
-   serialize.c accordingly.  LT */
+   serialize.cpp accordingly.  LT */
 SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
 {
     SEXP s;

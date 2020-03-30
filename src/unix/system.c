@@ -158,6 +158,12 @@ static uintptr_t align(uintptr_t pointer) {
   return (pointer + alignment - 1) & ~(alignment - 1);
 }
 
+/* for thr_stksegment */
+#if defined(HAVE_THREAD_H)
+# include <thread.h>
+#endif
+#include <signal.h> /* thr_stksegment */
+
 attribute_hidden
 void R_GetStackLimits()
 {

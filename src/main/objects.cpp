@@ -1056,7 +1056,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
     return Rf_ScalarLogical(ival);
 }
 
-/* simpler version for internal use, in attrib.c and print.c */
+/* simpler version for internal use, in attrib.cpp and print.cpp */
 attribute_hidden
 Rboolean isMethodsDispatchOn(void)
 {

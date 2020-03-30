@@ -61,7 +61,7 @@ SEXP R_UnboundValue;
 // Symbol::s_special_symbol_names is in names.cpp
 
 Symbol::Symbol(const String* the_name)
-    : RObject(SYMSXP), m_dd_index(0), m_is_special_symbol(false)
+    : RObject(SYMSXP), m_dd_index(-1), m_is_special_symbol(false)
 {
     m_name = the_name;
     // If this is a ..n symbol, extract the value of n.
@@ -106,9 +106,10 @@ RObject* Symbol::evaluate(Environment* env)
     if (this == DotsSymbol)
 	Rf_error(_("'...' used in an incorrect context"));
     GCStackRoot<> val;
-    if (isDotDotSymbol())
+    if (isDotDotSymbol()) {
 	val = Rf_ddfindVar(this, env);
-    else {
+   // printf("I'm in isDotDotSymbol()\n");
+    } else {
 	Frame::Binding* bdg = env->findBinding(this);
 	if (bdg)
 	    val = bdg->unforcedValue();
@@ -119,7 +120,7 @@ RObject* Symbol::evaluate(Environment* env)
     if (!val)
 	return nullptr;
     if (val == unboundValue())
-	Rf_error(_("object '%s' not found"), name()->c_str());
+	Rf_error(_("object '%s' not found 2"), name()->c_str());
     if (val == missingArgument() && !isDotDotSymbol()) {
 	if (m_name && m_name != String::blank())
 	    Rf_error(_("argument \"%s\" is missing, with no default"),

@@ -208,7 +208,7 @@ extern void R_WaitEvent(void);
 
 /*  R_VSIZE	   The initial heap size in bytes */
 /*  This is a default value and can be overridden in config.h
-    The maxima and minima are in startup.cpp */
+    The maxima and minima are in ../main/startup.cpp */
 #ifndef R_VSIZE
 #define	R_VSIZE		16000000L
 #endif
@@ -488,7 +488,6 @@ void resetTimeLimits(void);
 extern attribute_hidden int R_jit_enabled;
 extern attribute_hidden int R_compile_pkgs;
 extern attribute_hidden int R_check_constants;
-extern SEXP R_cmpfun(SEXP);
 extern void R_init_jit_enabled(void);
 extern void R_initAssignSymbols(void);
 
@@ -801,6 +800,7 @@ void Rf_InitNames(void);
 void Rf_InitOptions(void);
 void Init_R_Variables(SEXP);
 void Rf_InitTempDir(void);
+void R_reInitTempDir(int);
 void Rf_internalTypeCheck(SEXP, SEXP, SEXPTYPE);
 void Rf_InitTypeTables(void);
 void Rf_InitS3DefaultTypes(void);
@@ -1004,7 +1004,7 @@ extern const char *locale2charset(const char *);
 
 
 
-/* 
+/*
    alloca is neither C99 nor POSIX.
 
    It might be better to try alloca.h first, see

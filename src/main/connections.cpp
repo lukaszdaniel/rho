@@ -68,9 +68,9 @@
    need to be selected explicitly (even on Win64).
 
    There are also issues with the glob(), readdir(), stat() system
-   calls: see platform.c and sysutils.c
+   calls: see platform.cpp and sysutils.c
 
-   saveload.c uses f[gs]etpos: they have 64-bit versions on LFS Linux
+   saveload.cpp uses f[gs]etpos: they have 64-bit versions on LFS Linux
    and Solaris.  But this only used for pre-1.4.0 formats, and fpos_t
    is 64-bit on Windows.
 */
@@ -108,7 +108,7 @@ using namespace rho;
 #include <trioremap.h>
 #endif
 
-int attribute_hidden R_OutputCon; /* used in printutils.c */
+int attribute_hidden R_OutputCon; /* used in printutils.cpp */
 
 static void con_destroy(int i);
 
@@ -573,6 +573,9 @@ typedef struct fileconn {
     Rboolean raw;
 #ifdef Win32
     Rboolean anon_file;
+    Rboolean use_fgetwc;
+    Rboolean have_wcbuffered;
+    char wcbuf;
     char name[PATH_MAX+1];
 #endif
 } *Rfileconn;
@@ -595,20 +598,36 @@ static Rboolean file_open(Rconnection con)
     errno = 0; /* some systems require this */
     if(strcmp(name, "stdin")) {
 #ifdef Win32
+	char mode[20]; /* 4 byte mode plus "t,ccs=UTF-16LE" plus one for luck. */
+	strncpy(mode, con->mode, 4);
+	mode[4] = '\0';
+	if (!strpbrk(mode, "bt")) 
+	    strcat(mode, "t");
+	if (strchr(mode, 't') 
+	    && (!strcmp(con->encname, "UTF-16LE") || !strcmp(con->encname, "UCS-2LE"))) {
+	    strcat(mode, ",ccs=UTF-16LE");
+	    if (con->canread) {
+	    	this->use_fgetwc = TRUE;
+	    	this->have_wcbuffered = FALSE;
+	    }
+	}
 	if(con->enc == CE_UTF8) {
 	    int n = strlen(name);
-	    wchar_t wname[2 * (n+1)], wmode[10];
+	    wchar_t wname[2 * (n+1)], wmode[20];
+	    mbstowcs(wmode, mode, 19);
 	    R_CheckStack();
 	    Rf_utf8towcs(wname, name, n+1);
-	    mbstowcs(wmode, con->mode, 10);
 	    fp = _wfopen(wname, wmode);
 	    if(!fp) {
 		Rf_warning(_("cannot open file '%ls': %s"), wname, strerror(errno));
 		return FALSE;
 	    }
-	} else
-#endif
+	} else {
+	    fp = R_fopen(name, mode);
+	}
+#else
     fp = R_fopen(name, con->mode);
+#endif
     } else {  /* use file("stdin") to refer to the file and not the console */
 #ifdef HAVE_FDOPEN
         fp = fdopen(dup(0), con->mode);
@@ -700,6 +719,19 @@ static int file_fgetc_internal(Rconnection con)
 	thisconn->last_was_write = FALSE;
 	f_seek(thisconn->fp, thisconn->rpos, SEEK_SET);
     }
+#ifdef Win32
+    if (thisconn->use_fgetwc) {
+    	if (thisconn->have_wcbuffered) {
+    	    c = thisconn->wcbuf;
+    	    thisconn->have_wcbuffered = FALSE;
+    	} else {
+    	    wint_t wc = fgetwc(fp);
+    	    c = (char) wc & 0xFF;
+    	    thisconn->wcbuf = (char) wc >> 8;
+    	    thisconn->have_wcbuffered = TRUE;
+    	}
+    } else
+#endif  
     c =fgetc(fp);
     return feof(fp) ? R_EOF : c;
 }
@@ -845,6 +877,9 @@ static Rconnection newfile(const char *description, int enc, const char *mode,
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     (static_cast<Rfileconn>(newconn->connprivate))->raw = RHOCONSTRUCT(Rboolean, raw);
+#ifdef Win32
+    (static_cast<Rfileconn>(newconn->connprivate))->use_fgetwc = FALSE;
+#endif
     return newconn;
 }
 
@@ -1010,7 +1045,7 @@ static char* win_getlasterror_str(void)
 
 static Rboolean	fifo_open(Rconnection con)
 {
-    Rfifoconn this = con->connprivate;
+    Rfifoconn thisconn = con->connprivate;
     unsigned int uin_pipname_len = strlen(con->description);
     unsigned int uin_mode_len = strlen(con->mode);
     char *hch_pipename = NULL;
@@ -1048,9 +1083,9 @@ static Rboolean	fifo_open(Rconnection con)
     ** http://msdn.microsoft.com/en-us/library/windows/desktop/aa363858(v=vs.85).aspx
     ** http://msdn.microsoft.com/en-us/library/windows/desktop/aa365150(v=vs.85).aspx
     */
-    this->hdl_namedpipe = NULL;
-    this->overlapped_write = (LPOVERLAPPED)malloc(sizeof(OVERLAPPED));
-    this->overlapped_write = CreateEventA(NULL, TRUE, TRUE, NULL);
+    thisconn->hdl_namedpipe = NULL;
+    thisconn->overlapped_write = (LPOVERLAPPED)malloc(sizeof(OVERLAPPED));
+    thisconn->overlapped_write = CreateEventA(NULL, TRUE, TRUE, NULL);
     if (con->canwrite) {
 	SECURITY_ATTRIBUTES win_namedpipe_secattr = {0};
 	win_namedpipe_secattr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -1063,7 +1098,7 @@ static Rboolean	fifo_open(Rconnection con)
 			      PIPE_ACCESS_OUTBOUND) | FILE_FLAG_OVERLAPPED,
 			     PIPE_TYPE_BYTE, PIPE_UNLIMITED_INSTANCES , 0, 0,
 			     FILE_FLAG_NO_BUFFERING, &win_namedpipe_secattr);
-	if (this->hdl_namedpipe == INVALID_HANDLE_VALUE) {
+	if (thisconn->hdl_namedpipe == INVALID_HANDLE_VALUE) {
 	    /*
 	    ** If GetLastError() return 231 (All pipe instances are busy) == File
 	    ** already exist on Unix/Linux...
@@ -1080,17 +1115,17 @@ static Rboolean	fifo_open(Rconnection con)
 
     /* Open existing named pipe */
     if ((boo_retvalue || GetLastError() == 231) &&
-	this->hdl_namedpipe <= (HANDLE)(LONG_PTR) 0) {
+	thisconn->hdl_namedpipe <= (HANDLE)(LONG_PTR) 0) {
 	DWORD dwo_openmode = 0;
 	if (con->canread) dwo_openmode |= GENERIC_READ;
 	if (con->canwrite) dwo_openmode |= GENERIC_WRITE;
-	this->hdl_namedpipe =
+	thisconn->hdl_namedpipe =
 	    CreateFileA(hch_pipename, dwo_openmode,
 			FILE_SHARE_READ | FILE_SHARE_WRITE,
 			NULL, OPEN_EXISTING,
 			FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED,
 			NULL);
-	if (this->hdl_namedpipe == INVALID_HANDLE_VALUE) {
+	if (thisconn->hdl_namedpipe == INVALID_HANDLE_VALUE) {
 	    char *hch_err_msg = win_getlasterror_str();
 	    Rf_warning(_("cannot open fifo '%s', reason '%s'"),
 		    hch_pipename, hch_err_msg);
@@ -1104,7 +1139,7 @@ static Rboolean	fifo_open(Rconnection con)
     if (hch_tempname) free((void*) hch_tempname);
 
     /* Finalize FIFO configuration (only if FIFO is opened/created) */
-    if (boo_retvalue && this->hdl_namedpipe) {
+    if (boo_retvalue && thisconn->hdl_namedpipe) {
 	con->isopen = TRUE;
 	con->text = uin_mode_len >= 2 && con->mode[uin_mode_len - 1] == 'b';
 	set_iconv(con);
@@ -1117,15 +1152,15 @@ static Rboolean	fifo_open(Rconnection con)
 
 static void fifo_close(Rconnection con)
 {
-    Rfifoconn this = con->connprivate;
+    Rfifoconn thisconn = con->connprivate;
     con->isopen = FALSE;
-    con->status = CloseHandle(this->hdl_namedpipe) ? 0 : -1;
-    if (this->overlapped_write) CloseHandle(this->overlapped_write);
+    con->status = CloseHandle(thisconn->hdl_namedpipe) ? 0 : -1;
+    if (thisconn->overlapped_write) CloseHandle(thisconn->overlapped_write);
 }
 
 static size_t fifo_read(void* ptr, size_t size, size_t nitems, Rconnection con)
 {
-    Rfifoconn this = con->connprivate;
+    Rfifoconn thisconn = con->connprivate;
     size_t read_byte = 0;
 
     // avoid integer overflow
@@ -1134,9 +1169,9 @@ static size_t fifo_read(void* ptr, size_t size, size_t nitems, Rconnection con)
 
     wchar_t *buffer = (wchar_t*)malloc((size * sizeof(wchar_t)) * nitems);
     if (!buffer) Rf_error(_("allocation of fifo buffer failed"));
-    ReadFile(this->hdl_namedpipe, buffer,
+    ReadFile(thisconn->hdl_namedpipe, buffer,
 	     (size * sizeof(wchar_t)) * nitems, (LPDWORD)&read_byte,
-	     this->overlapped_write);
+	     thisconn->overlapped_write);
     wcstombs(ptr, buffer, read_byte / sizeof(wchar_t));
     free(buffer);
     return (read_byte / sizeof(wchar_t)) / size;
@@ -1145,14 +1180,14 @@ static size_t fifo_read(void* ptr, size_t size, size_t nitems, Rconnection con)
 static size_t
 fifo_write(const void *ptr, size_t size, size_t nitems, Rconnection con)
 {
-    Rfifoconn this = con->connprivate;
+    Rfifoconn thisconn = con->connprivate;
     size_t written_bytes = 0;
 
     if (size * sizeof(wchar_t) * nitems > UINT_MAX)
 	Rf_error(_("too large a block specified"));
 
     /* Wait for a client process to connect */
-    ConnectNamedPipe(this->hdl_namedpipe, NULL);
+    ConnectNamedPipe(thisconn->hdl_namedpipe, NULL);
 
     /* Convert char* to wchar_t* */
     int str_len = size * nitems;
@@ -1161,7 +1196,7 @@ fifo_write(const void *ptr, size_t size, size_t nitems, Rconnection con)
     mbstowcs(buffer, (const char*) ptr, str_len);
 
     /* Write data */
-    if (WriteFile(this->hdl_namedpipe, buffer,
+    if (WriteFile(thisconn->hdl_namedpipe, buffer,
 		  size * sizeof(wchar_t) * nitems, (LPDWORD) &written_bytes,
 		  NULL) == FALSE && GetLastError() != ERROR_IO_PENDING) {
 	char *hch_err_msg = win_getlasterror_str();
@@ -1178,18 +1213,18 @@ fifo_write(const void *ptr, size_t size, size_t nitems, Rconnection con)
 
 static int fifo_fgetc_internal(Rconnection con)
 {
-    Rfifoconn  this = con->connprivate;
+    Rfifoconn  thisconn = con->connprivate;
     DWORD available_bytes = 0;
     DWORD read_byte = 0;
     DWORD len = 1 * sizeof(wchar_t);
     wchar_t c;
 
     /* Check available bytes on named pipe */
-    PeekNamedPipe(this->hdl_namedpipe, NULL, 0, NULL, &available_bytes, NULL);
+    PeekNamedPipe(thisconn->hdl_namedpipe, NULL, 0, NULL, &available_bytes, NULL);
 
     /* Read char if available bytes > 0, otherwize, return R_EOF */
     if (available_bytes > 0) {
-	ReadFile(this->hdl_namedpipe, &c, len, &read_byte, NULL);
+	ReadFile(thisconn->hdl_namedpipe, &c, len, &read_byte, NULL);
 	return (read_byte == len) ? (char) c : R_EOF;
     }
     return R_EOF;
@@ -3235,7 +3270,7 @@ SEXP attribute_hidden do_sockconn(/*const*/ Expression* call, const BuiltInFunct
 
 /* ------------------- unz connections  --------------------- */
 
-/* see dounzip.c for the details */
+/* see dounzip.cpp for the details */
 SEXP attribute_hidden do_unz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sfile, RObject* sopen, RObject* enc)
 {
     SEXP ans, connclass;
@@ -5628,7 +5663,7 @@ static inline unsigned int uiSwap (unsigned int x)
 }
 #endif
 
-/* These are all hidden and used only in serialize.c,
+/* These are all hidden and used only in serialize.cpp,
    so managing R_alloc stack is prudence. */
 attribute_hidden
 SEXP R_compress1(SEXP in)

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998-2015   The R Core Team
+ *  Copyright (C) 1998-2017   The R Core Team
  *  Copyright (C) 2002-2005  The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -456,7 +456,7 @@ static RObject* R_ReplConsole_impl(SEXP rho, int savestack)
     /* stopgap measure if line > CONSOLE_BUFFER_SIZE chars */
     state.bufp = state.buf;
     if(R_Verbose)
-	REprintf(" >R_ReplConsole(): before \"for(;;)\" {main.c}\n");
+	REprintf(" >R_ReplConsole(): before \"for(;;)\" {main.cpp}\n");
     for(;;) {
 	status = Rf_ReplIteration(rho, savestack, &state);
 	if(status < 0) {
@@ -857,7 +857,7 @@ static void R_LoadProfile(FILE *fparg, SEXP env)
 
 int R_SignalHandlers = 1;  /* Exposed in R_interface.h */ // 2007/07/23 arr
 
-const char* get_workspace_name();  /* from startup.c */
+const char* get_workspace_name();  /* from startup.cpp */
 
 extern "C"
 void attribute_hidden BindDomain(char *R_Home)
@@ -883,6 +883,29 @@ void setup_Rmainloop(void)
     SEXP cmd;
     char deferred_warnings[11][250];
     volatile int ndeferred_warnings = 0;
+
+#if 0 
+    /* testing stack base and size detection */
+    printf("stack limit %ld, start %lx dir %d \n",
+	(unsigned long) R_CStackLimit,
+        (unsigned long) R_CStackStart,
+	R_CStackDir);
+    uintptr_t firstb = R_CStackStart - R_CStackDir;
+    printf("first accessible byte %lx\n", (unsigned long) firstb);
+    if (R_CStackLimit != (uintptr_t)(-1)) {
+        uintptr_t lastb = R_CStackStart - R_CStackDir * R_CStackLimit;
+	printf("last accessible byte %lx\n", (unsigned long) lastb);
+    }
+    printf("accessing first byte...\n");
+    volatile char dummy = *(char *)firstb;
+    if (R_CStackLimit != (uintptr_t)(-1)) {
+	printf("accessing all bytes...\n");
+	/* have to access all bytes in order to map stack, e.g. on Linux */
+	for(uintptr_t o = 0; o < R_CStackLimit; o++)
+	    /* with exact bounds, o==-1 and o==R_CStackLimit will segfault */
+	    dummy = *((char *)firstb - R_CStackDir * o);
+    }
+#endif
 
     /* In case this is a silly limit: 2^32 -3 has been seen and
      * casting to intptr_r relies on this being smaller than 2^31 on a
@@ -1134,13 +1157,13 @@ void setup_Rmainloop(void)
 	PrintWarnings();
     }
     if(R_Verbose)
-	REprintf(" ending setup_Rmainloop(): R_Interactive = %d {main.c}\n",
+	REprintf(" ending setup_Rmainloop(): R_Interactive = %d {main.cpp}\n",
 		 R_Interactive);
 
     R_Is_Running = 2;
 }
 
-extern SA_TYPE SaveAction; /* from src/main/startup.c */
+extern SA_TYPE SaveAction; /* from src/main/startup.cpp */
 
 static void end_Rmainloop(void)
 {
@@ -1264,7 +1287,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
     return rval;
 }
 
-/* There's another copy of this in eval.c */
+/* There's another copy of this in eval.cpp */
 static void PrintCall(SEXP call, SEXP rho)
 {
     int old_bl = R_BrowseLines,
@@ -1276,7 +1299,7 @@ static void PrintCall(SEXP call, SEXP rho)
 }
 
 /* browser(text = "", condition = NULL, expr = TRUE, skipCalls = 0L)
- * ------- but also called from ./eval.c */
+ * ------- but also called from ./eval.cpp */
 SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int savestack;

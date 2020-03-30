@@ -46,7 +46,7 @@
 
 #include "rho/RAllocStack.hpp"
 
-/* cf do_dircreate in platform.c */
+/* cf do_dircreate in platform.cpp */
 static int R_mkdir(char *path)
 {
 #ifdef Win32
@@ -544,7 +544,7 @@ R_newunz(const char *description, const char *const mode)
 
 /* From minizip contribution to zlib 1.2.3, updated for 1.2.5 */
 
-/* unzip.c -- IO for uncompress .zip files using zlib
+/* unzip.cpp -- IO for uncompress .zip files using zlib
    Version 1.01e, February 12th, 2005
 
    Copyright (C) 1998-2005 Gilles Vollant

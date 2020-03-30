@@ -40,7 +40,7 @@
 #include "basedecl.h"
 
 /* filled contours and perspective plots were originally here,
-   now in graphics/src/plot3d.c .
+   now in graphics/src/plot3d.cpp.
  */
 
 #include "contour-common.h"

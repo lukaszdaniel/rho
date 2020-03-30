@@ -3229,10 +3229,10 @@ static SEXP NextArg(SEXP l, SEXP s, SEXP tag)
  *
  *
  *	SEXP R_Parse1File(FILE *fp, int gencode, ParseStatus *status, Rboolean first)
- *   (used for R_ReplFile in main.c)
+ *   (used for R_ReplFile in main.cpp)
  *
  *	SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status, Rboolean first)
- *   (used for ReplIteration and R_ReplDLLdo1 in main.c)
+ *   (used for ReplIteration and R_ReplDLLdo1 in main.cpp)
  *
  *  The success of the parse is indicated as folllows:
  *
@@ -3248,16 +3248,16 @@ static SEXP NextArg(SEXP l, SEXP s, SEXP tag)
  *  their values in a single expression vector.
  *
  *	SEXP R_ParseFile(FILE *fp, int n, ParseStatus *status, SEXP srcfile)
- *    (used for do_edit in file edit.c)
+ *    (used for do_edit in file edit.cpp)
  *
  *	SEXP R_ParseVector(SEXP *text, int n, ParseStatus *status, SEXP srcfile)
- *    (public, and used by parse(text=) in file source.c)
+ *    (public, and used by parse(text=) in file source.cpp)
  *
  *	SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt, SEXP srcfile)
- *    (used by parse(file="") in file source.c)
+ *    (used by parse(file="") in file source.cpp)
  *
  *      SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile)
- *    (used by parse(file=) in file source.c)
+ *    (used by parse(file=) in file source.cpp)
  *
  *  Here, status is 1 for a successful parse and 0 if parsing failed
  *  for some reason.
@@ -3444,7 +3444,7 @@ static int file_getc(void)
     return R_fgetc(fp_parse);
 }
 
-/* used in main.c */
+/* used in main.cpp */
 attribute_hidden
 SEXP R_Parse1File(FILE *fp, int gencode, ParseStatus *status)
 {
@@ -3467,7 +3467,7 @@ static int buffer_getc(void)
     return R_IoBufferGetc(iob);
 }
 
-/* Used only in main.c */
+/* Used only in main.cpp */
 attribute_hidden
 SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 {
@@ -3585,7 +3585,7 @@ finish:
     return rval;
 }
 
-/* used in edit.c */
+/* used in edit.cpp */
 attribute_hidden
 SEXP R_ParseFile(FILE *fp, int n, ParseStatus *status, SEXP srcfile)
 {
@@ -3609,7 +3609,7 @@ static int con_getc(void)
     return (last = c);
 }
 
-/* used in source.c */
+/* used in source.cpp */
 attribute_hidden
 SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile)
 {
@@ -3619,7 +3619,7 @@ SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile)
     return R_Parse(n, status, srcfile);
 }
 
-/* This one is public, and used in source.c */
+/* This one is public, and used in source.cpp */
 SEXP R_ParseVector(SEXP text, int n, ParseStatus *status, SEXP srcfile)
 {
     SEXP rval;
@@ -3647,7 +3647,7 @@ static const char *Prompt(SEXP prompt, int type)
     }
 }
 
-/* used in source.c */
+/* used in source.cpp */
 attribute_hidden
 SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt, 
 		   SEXP srcfile)
@@ -4530,7 +4530,14 @@ static int StringValue(int c, Rboolean forSymbol)
 		    else CTEXT_PUSH(c);
 		}
 		if (!val)
-		    error(_("nul character not allowed (line %d)"), ParseState.xxlineno);		
+		    error(_("nul character not allowed (line %d)"), ParseState.xxlineno);
+#ifdef Win32
+		if (0x010000 <= val && val <= 0x10FFFF) {   /* Need surrogate pair in Windows */
+		    val = val - 0x010000;
+		    WTEXT_PUSH( 0xD800 | (val >> 10) );
+		    val = 0xDC00 | (val & 0x03FF);
+		}
+#endif
 		WTEXT_PUSH(val);
 		use_wcs = TRUE;
 		continue;

@@ -83,7 +83,7 @@ unsigned int R_GE_str2col(const char *s)
     return (ptr_R_GE_str2col)(s);
 }
 
-/* used in engine.c */
+/* used in engine.cpp */
 attribute_hidden
 void savePalette(Rboolean save)
 {

@@ -105,6 +105,10 @@ namespace rho {
 	{
 	    return m_function;
 	}
+	inline const RObject* callfun() const
+	{
+		return m_function->clone();
+	}
 
 	/** @brief Search outwards for a FunctionContext.
 	 *

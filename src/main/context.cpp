@@ -42,6 +42,11 @@
 using namespace std;
 using namespace rho;
 
+inline ClosureContext* R_GlobalContext()
+{
+    return ClosureContext::innermost();
+}
+
 /* R_sysframe - look back up the context stack until the */
 /* nth closure context and return that cloenv. */
 /* R_sysframe(0) means the R_GlobalEnv environment */
@@ -237,7 +242,7 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
     ClosureContext *cptr;
 
     /* first find the context that sys.xxx needs to be evaluated in */
-    cptr = ClosureContext::innermost();
+    cptr = R_GlobalContext();
     t = cptr->callEnvironment();
     while (cptr && cptr->workingEnvironment() != t)
 	cptr = ClosureContext::innermost(cptr->nextOut());
@@ -285,7 +290,7 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	return rval;
     case 7: /* sys.on.exit */
 	{
-	    ClosureContext* ctxt = ClosureContext::innermost();
+	    ClosureContext* ctxt = R_GlobalContext();
 	    if (ctxt->nextOut()) {
 		Evaluator::Context* nxt = ctxt->nextOut();
 		if (nxt->type() == Evaluator::Context::CLOSURE)
@@ -318,7 +323,7 @@ SEXP attribute_hidden do_parentframe(/*const*/ Expression* call, const BuiltInFu
     if(n == NA_INTEGER || n < 1 )
 	Rf_error(_("invalid '%s' value"), "n");
 
-    cptr = ClosureContext::innermost();
+    cptr = R_GlobalContext();
     SEXP t = cptr->callEnvironment();
     while (cptr){
 	if (cptr->workingEnvironment() == t)

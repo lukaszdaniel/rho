@@ -83,7 +83,7 @@ using namespace rho;
    each give the call stack found at a sampling point with the inner
    most function first.
 
-   To enable profiling, recompile eval.c with R_PROFILING defined.  It
+   To enable profiling, recompile eval.cpp with R_PROFILING defined.  It
    would be possible to selectively turn profiling on and off from R
    and to specify the file name from R as well, but for now I won't
    bother.
@@ -122,9 +122,9 @@ using namespace rho;
 
 static FILE *R_ProfileOutfile = nullptr;
 static int R_Mem_Profiling=0;
-extern void get_current_mem(unsigned long *,unsigned long *,unsigned long *); /* in memory.c */
-extern unsigned long get_duplicate_counter(void);  /* in duplicate.c */
-extern void reset_duplicate_counter(void);         /* in duplicate.c */
+extern void get_current_mem(unsigned long *,unsigned long *,unsigned long *); /* in memory.cpp */
+extern unsigned long get_duplicate_counter(void);  /* in duplicate.cpp */
+extern void reset_duplicate_counter(void);         /* in duplicate.cpp */
 static int R_GC_Profiling = 0;                     /* indicates GC profiling */
 static int R_Line_Profiling = 0;                   /* indicates line profiling, and also counts the filenames seen (+1) */
 static char **R_Srcfiles;			   /* an array of pointers into the filename buffer */
@@ -557,7 +557,7 @@ static R_INLINE SEXP getSrcref(SEXP srcrefs, int ind)
     return R_NilValue;
 }
 
-/* There's another copy of this in main.c */
+/* There's another copy of this in main.cpp */
 static void PrintCall(SEXP call, SEXP rho)
 {
     int old_bl = R_BrowseLines,
@@ -1190,6 +1190,7 @@ SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP s = R_NilValue;
     if (args != R_NilValue) {
 	GCStackRoot<> srcrefs(getBlockSrcrefs(call));
+	PROTECT(srcrefs);
 	int i = 1;
 	while (args != R_NilValue) {
 	    R_Srcref = getSrcref(srcrefs, i++);
@@ -1209,6 +1210,7 @@ SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    args = CDR(args);
 	}
 	R_Srcref = R_NilValue;
+	UNPROTECT(1); /* srcrefs */
     }
     return s;
 }
@@ -1234,7 +1236,7 @@ SEXP attribute_hidden do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
     return propagateBailout(rbo);
 }
 
-/* Declared with a variable number of args in names.c */
+/* Declared with a variable number of args in names.cpp */
 SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> rval;

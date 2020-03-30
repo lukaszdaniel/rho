@@ -467,7 +467,7 @@ static Rcomplex InComplex(R_inpstream_t stream)
 
 /* These utilities for reading characters with an unget option are
    defined so the code in InString can match the code in
-   saveload.c:InStringAscii--that way it is easier to match changes in
+   saveload.cpp:InStringAscii--that way it is easier to match changes in
    one to the other. */
 typedef struct R_instring_stream_st {
     int last;
@@ -1373,7 +1373,7 @@ static R_xlen_t ReadLENGTH (R_inpstream_t stream)
 #endif
 }
 
-/* differs when it fails from version in envir.c */
+/* differs when it fails from version in envir.cpp */
 static SEXP R_FindNamespace1(SEXP info)
 {
     SEXP where = Rf_mkString(lastname);
@@ -2684,7 +2684,7 @@ static SEXP R_getVarsFromFrame(SEXP vars, SEXP env, SEXP forcesxp)
     return val;
 }
 
-/* from connections.c */
+/* from connections.cpp */
 SEXP R_compress1(SEXP in);
 SEXP R_decompress1(SEXP in, Rboolean *err);
 SEXP R_compress2(SEXP in);

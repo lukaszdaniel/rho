@@ -681,7 +681,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 
     If there is an error or user-interrupt in the above
     evaluation, dd->recordGraphics is set to TRUE
-    on all graphics devices (see GEonExit(); called in errors.c)
+    on all graphics devices (see GEonExit(); called in errors.cpp)
 
     NOTE: if someone uses try() around this call and there
     is an error, then dd->recordGraphics stays FALSE, so

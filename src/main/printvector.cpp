@@ -29,8 +29,8 @@
  *		printIntegerVector()
  *		printComplexVector()
  *
- *  See ./printutils.c	 for remarks on Printing and the Encoding utils.
- *  See ./format.c	 for the formatXXXX functions used below.
+ *  See ./printutils.cpp	 for remarks on Printing and the Encoding utils.
+ *  See ./format.cpp	 for the formatXXXX functions used below.
  */
 
 #ifdef HAVE_CONFIG_H

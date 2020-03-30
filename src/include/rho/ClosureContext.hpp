@@ -167,6 +167,18 @@ namespace rho {
 	    return m_working_env;
 	}
 
+	/** @brief CR-style method name for the working environment of the Context's Closure.
+	 *
+	 * @return Pointer to the working environment of this
+	 * Context's Closure, i.e. the environment in which
+	 * assignments create bindings, and in which default values of
+	 * parameters are evaluated.
+	 */
+	inline Environment* cloenv() const
+	{
+		return  workingEnvironment();
+	}
+
 	static ClosureContext* findClosureWithWorkingEnvironment(
 	    const Environment* env,
 	    ClosureContext* start = ClosureContext::innermost())

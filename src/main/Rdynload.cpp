@@ -72,7 +72,7 @@
  *  Accessing native routines in base (the R executable).
  *
  *  In this case, we use the registration mechanism and the DllInfo array
- *  in ../main/Rdynload.c to locate functions in the executable. We do this
+ *  in ../main/Rdynload.cpp to locate functions in the executable. We do this
  *  by straight linear search through the table.
  *  Note that the base routines registered are listed in
  *               ../main/registration.c

@@ -29,7 +29,7 @@
 
    The 'stat' structure returns a file size as 'off_t'.  On some
    32-bit systems this will fail if called on a file > 2GB.  On
-   systems with LFS selected (see the notes in connections.c) the call
+   systems with LFS selected (see the notes in connections.cpp) the call
    is re-mapped to *stat64, which uses off64_t for the file size.
 
    file.info() returns file sizes as an R double.
@@ -893,8 +893,9 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
 		FILETIME c_ft, a_ft, m_ft; 
 		HANDLE h;
 		int success = 0;
-		h = CreateFileW(wfn, GENERIC_READ, 0, NULL, OPEN_EXISTING,
-				    FILE_FLAG_BACKUP_SEMANTICS, NULL);
+		h = CreateFileW(wfn, 0,
+		                FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+		                NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 		if (h != INVALID_HANDLE_VALUE) {
 		    int res  = GetFileTime(h, &c_ft, &a_ft, &m_ft);
 		    CloseHandle(h);
@@ -2674,7 +2675,7 @@ SEXP attribute_hidden do_l10n_info(/*const*/ Expression* call, const BuiltInFunc
     return ans;
 }
 
-/* do_normalizepath moved to util.c in R 2.13.0 */
+/* do_normalizepath moved to util.cpp in R 2.13.0 */
 
 SEXP attribute_hidden do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_, RObject* mode_, RObject* use_umask_)
 {

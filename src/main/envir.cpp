@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1999--2017  The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -170,7 +170,7 @@ RObject* Frame::Binding::unforcedValue() const
 
 */
 
-/* was extern: used in this file and names.c (for the symbol table).
+/* was extern: used in this file and names.cpp (for the symbol table).
 
    This hash function seems to work well enough for symbol tables,
    and hash tables get saved as part of environments so changing it
@@ -522,29 +522,55 @@ static int ddVal(SEXP symbol)
 
 */
 
-attribute_hidden
-SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
-{
-    int i;
-    SEXP vl;
+#define length_DOTS(_v_) (TYPEOF(_v_) == DOTSXP ? Rf_length(_v_) : 0)
 
+SEXP ddfind(int i, SEXP rho)
+{
+    if(i <= 0)
+	Rf_error(_("indexing '...' with non-positive index %d"), i);
     /* first look for ... symbol  */
-    vl = Rf_findVar(R_DotsSymbol, rho);
-    i = ddVal(symbol);
+    SEXP vl = Rf_findVar(R_DotsSymbol, rho);
     if (vl != R_UnboundValue) {
-	if (Rf_length(vl) >= i) {
+	if (length_DOTS(vl) >= i) {
 	    vl = Rf_nthcdr(vl, i - 1);
 	    return(CAR(vl));
 	}
-	else
-	    Rf_error(_("the ... list does not contain %d elements"), i);
+	else // length(...) < i
+	    Rf_error(n_("the ... list does not contain any elements",
+			   "the ... list does not contain %d elements", i), i);
     }
     else Rf_error(_("..%d used in an incorrect context, no ... to look in"), i);
 
     return R_NilValue;
 }
 
+attribute_hidden
+SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
+{
+    int i = ddVal(symbol);
+    return ddfind(i, rho);
+}
 
+SEXP attribute_hidden do_dotsElt(SEXP call, SEXP op, SEXP args, SEXP env)
+{
+    checkArity(op, args);
+    Rf_check1arg(args, call, "n");
+
+    int i = Rf_asInteger(CAR(args));
+    return Rf_eval(ddfind(i, env), env);
+}
+
+SEXP attribute_hidden do_dotsLength(SEXP call, SEXP op, SEXP args, SEXP env)
+{
+    checkArity(op, args);
+    SEXP vl = Rf_findVar(R_DotsSymbol, env);
+    if (vl == R_UnboundValue)
+	Rf_error(_("incorrect context: the current call has no '...' to look in"));
+    // else
+    return Rf_ScalarInteger(length_DOTS(vl));
+}
+
+#undef length_DOTS
 
 /*----------------------------------------------------------------------
 
@@ -864,10 +890,10 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
     */
 
     if (Rf_isString(mode)) {
-	if (streql(CHAR(STRING_ELT(mode, 0)), "function")) /* ASCII */
+	if (streql(R_CHAR(STRING_ELT(mode, 0)), "function")) /* ASCII */
 	    gmode = FUNSXP;
 	else
-	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
+	    gmode = Rf_str2type(R_CHAR(STRING_ELT(mode, 0))); /* ASCII */
     } else {
 	Rf_error(_("invalid '%s' argument"), "mode");
 	gmode = FUNSXP;/* -Wall */
@@ -881,7 +907,7 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
     rval = findVar1mode(t1, genv, gmode, ginherits, op->variant());
     if (rval == R_MissingArg)
 	Rf_error(_("argument \"%s\" is missing, with no default"),
-	      CHAR(PRINTNAME(t1)));
+	      R_CHAR(PRINTNAME(t1)));
 
     return rval;
 }
@@ -898,12 +924,12 @@ SEXP attribute_hidden do_get(Expression* call, const BuiltInFunction* op,
     case 1: //  have get(.)
 	if (value == R_UnboundValue) {
 	    SEXP x_printname = PRINTNAME(Rf_installTrChar(STRING_ELT(x, 0)));
-	    if (Rf_str2type(CHAR(STRING_ELT(mode, 0))) == ANYSXP)
+	    if (Rf_str2type(R_CHAR(STRING_ELT(mode, 0))) == ANYSXP)
 		Rf_error(_("object '%s' not found"), Rf_EncodeChar(x_printname));
 	    else
 		Rf_error(_("object '%s' of mode '%s' was not found"),
-		      CHAR(x_printname),
-		      CHAR(STRING_ELT(mode, 0))); /* ASCII */
+		      R_CHAR(x_printname),
+		      R_CHAR(STRING_ELT(mode, 0))); /* ASCII */
 	}
 	return forceIfPromise(value);
     default:
@@ -965,7 +991,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
     if (!Rf_isString(x) )
 	Rf_error(_("invalid first argument"));
     for(int i = 0; i < nvals; i++)
-	if( Rf_isNull(STRING_ELT(x, i)) || !CHAR(STRING_ELT(x, 0))[0] )
+	if( Rf_isNull(STRING_ELT(x, i)) || !R_CHAR(STRING_ELT(x, 0))[0] )
 	    Rf_error(_("invalid name in position %d"), i+1);
 
     Environment* env = downcast_to_env(envir);
@@ -995,10 +1021,10 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
 
     for(int i = 0; i < nvals; i++) {
 	SEXPTYPE gmode;
-	if (streql(CHAR(STRING_ELT(mode, i % nmode)), "function"))
+	if (streql(R_CHAR(STRING_ELT(mode, i % nmode)), "function"))
 	    gmode = FUNSXP;
 	else {
-	    gmode = Rf_str2type(CHAR(STRING_ELT(mode, i % nmode)));
+	    gmode = Rf_str2type(R_CHAR(STRING_ELT(mode, i % nmode)));
 	    if(gmode == SEXPTYPE( (-1)))
 		Rf_error(_("invalid '%s' argument"), "mode");
 	}
@@ -1026,7 +1052,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
   passed down.  So 'symbol' is the promise value, and 'rho' its
   evaluation argument.
 
-  It is also called in arithmetic.c. for e.g. do_log
+  It is also called in arithmetic.cpp. for e.g. do_log
 */
 
 static SEXP findRootPromise(SEXP p) {
@@ -1258,7 +1284,7 @@ static int FrameSize(SEXP frame, int all)
 {
     int count = 0;
     while (frame != R_NilValue) {
-	if ((all || CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
+	if ((all || R_CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
 				      CAR(frame) != R_UnboundValue)
 	    count += 1;
 	frame = CDR(frame);
@@ -1269,7 +1295,7 @@ static int FrameSize(SEXP frame, int all)
 static void FrameNames(SEXP frame, int all, SEXP names, int *indx)
 {
     while (frame != R_NilValue) {
-	if ((all || CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
+	if ((all || R_CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
 				      CAR(frame) != R_UnboundValue) {
 	    SET_STRING_ELT(names, *indx, PRINTNAME(TAG(frame)));
 	    (*indx)++;
@@ -1281,7 +1307,7 @@ static void FrameNames(SEXP frame, int all, SEXP names, int *indx)
 static void FrameValues(SEXP frame, int all, SEXP values, int *indx)
 {
     while (frame != R_NilValue) {
-	if ((all || CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
+	if ((all || R_CHAR(PRINTNAME(TAG(frame)))[0] != '.') &&
 				      CAR(frame) != R_UnboundValue) {
 	    SEXP value = CAR(frame);
 	    if (TYPEOF(value) == PROMSXP) {
@@ -1802,7 +1828,7 @@ Rboolean R_IsPackageEnv(SEXP rho)
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
-	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
+	   ! strncmp(packprefix, R_CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return TRUE;
 	else
 	    return FALSE;
@@ -1818,7 +1844,7 @@ SEXP R_PackageEnvName(SEXP rho)
 	RHOCONST char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
-	   ! strncmp(packprefix, CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
+	   ! strncmp(packprefix, R_CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
 	    return name;
 	else
 	    return R_NilValue;
@@ -2027,7 +2053,7 @@ SEXP attribute_hidden do_importIntoEnv(/*const*/ Expression* call, const BuiltIn
 	if (TYPEOF(binding) == SYMSXP) {
 	    if (SYMVALUE(expsym) == R_UnboundValue)
 		Rf_error(_("exported symbol '%s' has no value"),
-		      CHAR(PRINTNAME(expsym)));
+		      R_CHAR(PRINTNAME(expsym)));
 	    val = SYMVALUE(expsym);
 	}
 	else val = CAR(binding);
@@ -2111,12 +2137,12 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
     SEXP names = PROTECT(Rf_getAttrib(elist, R_NamesSymbol));
     for(i = 0; i < n; i++) {
 	SEXP value = VECTOR_ELT(elist, i);
-	const char *vname = CHAR(STRING_ELT(names, i));
+	const char *vname = R_CHAR(STRING_ELT(names, i));
 	/* the constants checking requires shallow comparison */
 	if (TYPEOF(value) == CLOSXP && R_ClosureExpr(value) == body)
 	    REprintf("Function %s in namespace %s has this body.\n",
 		vname,
-		CHAR(PRINTNAME(nsname)));
+		R_CHAR(PRINTNAME(nsname)));
 	/* search S4 registry */
 	const char *s4prefix = ".__T__";
 	if (TYPEOF(value) == ENVSXP &&
@@ -2135,8 +2161,8 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
 		    REprintf("S4 Method %s defined in namespace %s with "
 			"signature %s has this body.\n",
 			vname + strlen(s4prefix),
-			CHAR(PRINTNAME(nsname)),
-			CHAR(STRING_ELT(rnames, ri)));
+			R_CHAR(PRINTNAME(nsname)),
+			R_CHAR(STRING_ELT(rnames, ri)));
 	    }
 	    UNPROTECT(2); /* rlist, rnames */
 	}

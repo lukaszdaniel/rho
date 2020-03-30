@@ -105,7 +105,6 @@ doc/FAQ
 doc/NEWS
 doc/RESOURCES
 doc/doxygen/doxygen.conf.bak
-doc/doxygen/html/
 doc/html/NEWS.html
 doc/html/resources.html
 doc/rho.1
@@ -291,4 +290,10 @@ tests/Examples/methods-Ex.Rout
 tests/Examples/methods-Ex.Rout.prev
 tests/reg-tests-1d.Rout
 tests/reg-tests-1d.pdf
+tests/CRANtools.Rout
+tests/Examples/example-1_def.R
+tests/Examples/example-1_myA-noF.R
+tests/Examples/example-1_myA.R
+tests/PCRE.Rout
+tests/p-qbeta-strict-tst.pdf
 .Rproj.user

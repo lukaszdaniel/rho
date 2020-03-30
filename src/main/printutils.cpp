@@ -37,9 +37,9 @@
  * ``standard error'' and is useful for error messages and warnings.
  * It is not redirected by sink().
  *
- *  See ./format.c  for the  format_FOO_  functions which provide
+ *  See ./format.cpp  for the  format_FOO_  functions which provide
  *	~~~~~~~~~~  the	 length, width, etc.. that are used here.
- *  See ./print.c  for do_printdefault, do_prmatrix, etc.
+ *  See ./print.cpp  for do_printdefault, do_prmatrix, etc.
  *
  *
  * Here, the following UTILITIES are provided:
@@ -386,7 +386,7 @@ const char
 
 /* strlen() using escaped rather than literal form.
    In MBCS locales it works in characters, and reports in display width.
-   Rstrwid is also used in printarray.c.
+   Rstrwid is also used in printarray.cpp.
 
    This supported embedded nuls when we had those.
  */
@@ -412,15 +412,18 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 	int res;
 	mbstate_t mb_st;
 	wchar_t wc;
-	unsigned int k; /* not wint_t as it might be signed */
+	Rwchar_t k; /* not wint_t as it might be signed */
 
 	if(ienc != CE_UTF8)  mbs_init(&mb_st);
 	for (i = 0; i < slen; i++) {
 	    res = (ienc == CE_UTF8) ? int( utf8toucs(&wc, p)):
 		int( mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
 	    if(res >= 0) {
-		k = wc;
-		if(0x20 <= k && k < 0x7f && iswprint(wc)) {
+		if (ienc == CE_UTF8 && IS_HIGH_SURROGATE(wc))
+		    k = utf8toucs32(wc, p);
+		else
+		    k = wc;
+		if(0x20 <= k && k < 0x7f && iswprint((wint_t)k)) {
 		    switch(wc) {
 		    case L'\\':
 			len += 2;
@@ -452,12 +455,8 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 		    }
 		    p++;
 		} else {
-		    len += iswprint(wint_t(wc)) ? Ri18n_wcwidth(wc) :
-#ifdef Win32
-			6;
-#else
-		    (k > 0xffff ? 10 : 6);
-#endif
+		    len += iswprint(wint_t(k)) ? Ri18n_wcwidth(wc) :
+		    	(k > 0xffff ? 10 : 6);
 		    i += (res - 1);
 		    p += res;
 		}
@@ -564,15 +563,15 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		i = Rstrlen(s, quote);
 		cnt = LENGTH(s);
 	    } else {
-		p = translateChar0(s);
+		p = translateCharUTF8(s);
 		if(p == CHAR(s)) {
 		    i = Rstrlen(s, quote);
 		    cnt = LENGTH(s);
 		} else {
 		    cnt = strlen(p);
-		    i = Rstrwid(p, cnt, CE_NATIVE, quote);
+		    i = Rstrwid(p, cnt, CE_UTF8, quote);
 		}
-		ienc = CE_NATIVE;
+		ienc = CE_UTF8;
 	    }
 	} else
 #endif
@@ -650,10 +649,13 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	    res = int((ienc == CE_UTF8) ? utf8toucs(&wc, p):
 		      mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
 	    if(res >= 0) { /* res = 0 is a terminator */
-		k = wc;
+		if (ienc == CE_UTF8 && IS_HIGH_SURROGATE(wc))
+		    k = utf8toucs32(wc, p);
+		else
+		    k = wc;
 		/* To be portable, treat \0 explicitly */
 		if(res == 0) {k = 0; wc = L'\0';}
-		if(0x20 <= k && k < 0x7f && iswprint(wc)) {
+		if(0x20 <= k && k < 0x7f && iswprint((wint_t) k)) {
 		    switch(wc) {
 		    case L'\\': *q++ = '\\'; *q++ = '\\'; p++; break;
 		    case L'\'':
@@ -696,14 +698,12 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 			   device concerned. */
 			for(j = 0; j < res; j++) *q++ = *p++;
 		    } else {
-#ifndef Win32
-# ifndef __STDC_ISO_10646__
+# if !defined (__STDC_ISO_10646__) && !defined (Win32)
 			Unicode_warning = TRUE;
 # endif
 			if(k > 0xffff)
 			    snprintf(buf, 11, "\\U%08x", k);
 			else
-#endif
 			    snprintf(buf, 11, "\\u%04x", k);
 			j = int( strlen(buf));
 			memcpy(q, buf, j);
@@ -712,7 +712,6 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		    }
 		    i += (res - 1);
 		}
-
 	    } else { /* invalid char */
 		snprintf(q, 5, "\\x%02x", *(reinterpret_cast<RHOCONST unsigned char *>(p)));
 		q += 4; p++;
@@ -760,16 +759,12 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		    }
 		p++;
 	    } else {  /* 8 bit char */
-#ifdef Win32 /* It seems Windows does not know what is printable! */
-		*q++ = *p++;
-#else
 		if(!isprint(int(*p) & 0xff)) {
 		    /* print in octal */
 		    snprintf(buf, 5, "\\%03o", static_cast<unsigned char>(*p));
 		    for(j = 0; j < 4; j++) *q++ = buf[j];
 		    p++;
 		} else *q++ = *p++;
-#endif
 	    }
 	}
 

@@ -223,7 +223,7 @@ if(mbyte.lc != oloc) Sys.setlocale("LC_CTYPE", oloc)
 
 # R rev: 70724
 # "Internal S4 dispatch sets .Generic in the method frame for consistency with standardGeneric() (PR#16929)."
-# not yet implemented in rho
+# TODO Rho: not yet implemented in Rho
 if(require("Matrix", .Library)) {
     M <- Matrix(diag(1:10), sparse=TRUE) # a "dsCMatrix"
     setClass("TestM", slots = c(M='numeric'))

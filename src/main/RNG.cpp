@@ -122,7 +122,7 @@ double unif_rand(void)
 	I2 = I2 * 172 % 30307;
 	I3 = I3 * 170 % 30323;
 	value = I1 / 30269.0 + I2 / 30307.0 + I3 / 30323.0;
-	return fixup(value - int( value));/* in [0,1) */
+	return fixup(value - int(value));/* in [0,1) */
 
     case MARSAGLIA_MULTICARRY:/* 0177777(octal) == 65535(decimal)*/
 	I1= 36969*(I1 & 0177777) + (I1>>16);
@@ -168,13 +168,13 @@ double unif_rand(void)
 
 	p1 = a12 * static_cast<unsigned int>(II(1)) - a13n * static_cast<unsigned int>(II(0));
 	/* p1 % m1 would surely do */
-	k = int( (p1 / m1));
+	k = int((p1 / m1));
 	p1 -= k * m1;
 	if (p1 < 0.0) p1 += m1;
 	II(0) = II(1); II(1) = II(2); II(2) = Int32( p1);
 
 	p2 = a21 * static_cast<unsigned int>(II(5)) - a23n * static_cast<unsigned int>(II(3));
-	k = int( (p2 / m2));
+	k = int((p2 / m2));
 	p2 -= k * m2;
 	if (p2 < 0.0) p2 += m2;
 	II(3) = II(4); II(4) = II(5); II(5) = Int32( p2);

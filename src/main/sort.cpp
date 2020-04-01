@@ -1292,7 +1292,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 	    {
 		PROTECT(ans = allocVector(INTSXP, n));
-		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int( i);
+		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int(i);
 		orderVector1(INTEGER(ans), int(n), CAR(args), nalast,
 			     decreasing, R_NilValue);
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i]++;
@@ -1310,8 +1310,8 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 	    {
 		PROTECT(ans = allocVector(INTSXP, n));
-		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int( i);
-		orderVector(INTEGER(ans), int( n), args, nalast,
+		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int(i);
+		orderVector(INTEGER(ans), int(n), args, nalast,
 			    decreasing, listgreater);
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i]++;
 	    }
@@ -1396,7 +1396,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 	    int i, j, k;
 	    int *in = static_cast<int *>(RHO_alloc(n, sizeof(int)));
 	    for (i = 0; i < n; i++) in[i] = i;
-	    orderVector1(in, int( n), x, TRUE, FALSE, rho);
+	    orderVector1(in, int(n), x, TRUE, FALSE, rho);
 	    for (i = 0; i < n; i = j+1) {
 		j = i;
 		while ((j < n - 1) && equal(in[j], in[j + 1], x, TRUE, rho)) j++;

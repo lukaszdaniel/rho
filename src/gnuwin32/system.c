@@ -495,7 +495,7 @@ void R_CleanUp(SA_TYPE saveact, int status, int runLast)
     if (R_CollectWarnings && saveact != SA_SUICIDE
 	&& CharacterMode == RTerm)   /* no point in doing this for Rgui
 					as the console is about to close */
-	PrintWarnings();        /* from device close and (if run) .Last */
+	Rf_PrintWarnings(NULL);        /* from device close and (if run) .Last */
     app_cleanup();
     RConsole = NULL;
     // Add some protection against calling this more than once:

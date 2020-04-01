@@ -2292,7 +2292,7 @@ static SEXP mkStringUTF8(const ucs_t *wcs, int cnt)
 #ifdef WC_NOT_UNICODE
     for(char *ss = s; *wcs; wcs++) ss += ucstoutf8(ss, *wcs);
 #else
-    wcstoutf8(s, wcs, nb);
+    wcstoutf8(s, wcs, sizeof(s));
 #endif
     return Rf_ScalarString(mkCharCE(s, CE_UTF8));
 }
@@ -2499,6 +2499,8 @@ static int StringValue(int c, Rboolean forSymbol)
 	    ucs_t wc;
 	    clen = mbcs_get_next2(c, &wc);
 	    WTEXT_PUSH(wc);
+	    ParseState.xxbyteno += clen-1;
+	    
 	    for(i = 0; i < clen - 1; i++){
 		STEXT_PUSH(c);
 		c = xxgetc();

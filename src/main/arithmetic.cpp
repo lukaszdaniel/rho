@@ -343,7 +343,7 @@ namespace {
 
 SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 {
-    ARITHOP_TYPE oper = ARITHOP_TYPE( PRIMVAL(op));
+    ARITHOP_TYPE oper = ARITHOP_TYPE(PRIMVAL(op));
 
     GCStackRoot<VectorBase> x(FIXUP_NULL_AND_CHECK_TYPES(xarg));
     GCStackRoot<VectorBase> y(FIXUP_NULL_AND_CHECK_TYPES(yarg));
@@ -855,7 +855,7 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);
     } else
-	errorcall(call, R_MSG_NONNUM_MATH);
+	Rf_errorcall(call, R_MSG_NONNUM_MATH);
 
     if (x != s && ATTRIB(x) != R_NilValue)
 	SHALLOW_DUPLICATE_ATTRIB(s, x);

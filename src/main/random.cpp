@@ -129,7 +129,7 @@ walker_ProbSampleReplace(int n, double *p, int *a, int nans, int *ans)
     /* generate sample */
     for (i = 0; i < nans; i++) {
 	rU = unif_rand() * n;
-	k = int( rU);
+	k = int(rU);
 	ans[i] = (rU < q[k]) ? k+1 : a[k]+1;
     }
     if(n > SMALL) {
@@ -267,7 +267,7 @@ SEXP attribute_hidden do_sample(/*const*/ Expression* call, const BuiltInFunctio
 #endif
 	    }
 	} else {
-	    int n = int( dn);
+	    int n = int(dn);
 	    PROTECT(y = Rf_allocVector(INTSXP, k));
 	    int *iy = INTEGER(y);
 	    /* avoid allocation for a single sample */

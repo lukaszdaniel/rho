@@ -1505,13 +1505,13 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
 	break;
     case VECSXP:
 	n = Rf_length(s);
-	if (nres < n) n = int( nres);
+	if (nres < n) n = int(nres);
 	for (i = 0 ; i < n ; i++)
 	    results[i] = static_cast<char *>(RObjToCPtr2(VECTOR_ELT(s, i)));
 	break;
     case LISTSXP:
 	n = Rf_length(s);
-	if(nres < n) n = int( nres);
+	if(nres < n) n = int(nres);
 	for(i = 0 ; i < n ; i++) {
 	    results[i] = static_cast<char *>(RObjToCPtr2(s));
 	    s = CDR(s);

@@ -689,7 +689,7 @@ const char *locale2charset(const char *locale)
             charset[sizeof(charset) - 1] = '\0';
 	    if(strncmp(charset, "euc", 3)) {
 		if (charset[3] != '-') {
-		    for(i = int( strlen(charset))-3; 0 < i; i--)
+		    for(i = int(strlen(charset))-3; 0 < i; i--)
 			charset[i+1] = charset[i];
 		    charset[3] = '-';
 		}

@@ -214,7 +214,7 @@ FILE *RC_fopen(const SEXP fn, const char *mode, const Rboolean expand)
 FILE *RC_fopen(const SEXP fn, const char *mode, const Rboolean expand)
 {
     const void *vmax = vmaxget();
-    const char *filename = translateChar(fn), *res;
+    const char *filename = Rf_translateChar(fn), *res;
     if(fn == NA_STRING || !filename) return nullptr;
     if(expand) res = R_ExpandFileName(filename);
     else res = filename;
@@ -244,7 +244,7 @@ SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::Bui
 {
     Rboolean check = Rboolean(Rf_asLogical(check_));
     if(check && !isDir(R_TempDir)) {
-	R_TempDir = NULL;
+	R_TempDir = nullptr;
 	R_reInitTempDir(/* die_on_fail = */ FALSE);
     }
     return Rf_mkString(R_TempDir);
@@ -273,8 +273,8 @@ SEXP attribute_hidden do_tempfile(/*const*/ rho::Expression* call, const rho::Bu
 	Rf_error(_("no 'tempdir'"));
     if (n3 < 1)
 	Rf_error(_("no 'fileext'"));
-    slen = (n1 > n2) ? n1 : n2;
-    slen = (n3 > slen) ? n3 : slen;
+    slen = std::max(n1, n2);
+    slen = std::max(n3, slen);
     PROTECT(ans = Rf_allocVector(STRSXP, slen));
     for(i = 0; i < slen; i++) {
 	tn = Rf_translateChar( STRING_ELT( pattern , i%n1 ) );
@@ -381,12 +381,12 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 	wchar_t **w;
 	for (i = 0, w = _wenviron; *w != NULL; i++, w++)
 	    n = max(n, wcslen(*w));
-	N = 3*n+1;
+	N = 4*n+1;
 	vector<char> bufv(N);
 	char* buf = &bufv[0];
 	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (i = 0, w = _wenviron; *w != NULL; i++, w++) {
-	    wcstoutf8(buf, *w, N); buf[N-1] = '\0';
+	    wcstoutf8(buf, *w, sizeof(buf));
 	    SET_STRING_ELT(ans, i, mkCharCE(buf, CE_UTF8));
 	}
 #else
@@ -405,10 +405,10 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 	    if (w == NULL)
 		SET_STRING_ELT(ans, j, STRING_ELT(CADR(args), 0));
 	    else {
-		int n = wcslen(w), N = 3*n+1; /* UCS-2 maps to <=3 UTF-8 */
+		int n = wcslen(w), N = 4*n+1; /* UTF-16 maps to <= 4 UTF-8 */
 		vector<char> bufv(N);
 		char* buf = &bufv[0];
-		wcstoutf8(buf, w, N); buf[N-1] = '\0'; /* safety */
+		wcstoutf8(buf, w, sizeof(buf));
 		SET_STRING_ELT(ans, j, mkCharCE(buf, CE_UTF8));
 	    }
 #else
@@ -726,7 +726,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 			else if(isUTF8) ienc = CE_UTF8;
 		    }
 		    SET_STRING_ELT(ans, i,
-				   Rf_mkCharLenCE(cbuff.data, int( nout), ienc));
+				   Rf_mkCharLenCE(cbuff.data, int(nout), ienc));
 		} else SET_STRING_ELT(ans, i, NA_STRING);
 	    }
 	}
@@ -1751,7 +1751,7 @@ void R_reInitTempDir(int die_on_fail)
     }
 }
 
-void attribute_hidden InitTempDir() {
+void attribute_hidden Rf_InitTempDir() {
     R_reInitTempDir(/* die_on_fail = */ TRUE);
 }
 
@@ -1963,9 +1963,9 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
     {
 	wchar_t *w = globbuf.gl_pathv[i];
 	char *buf;
-	int nb = wcstoutf8(NULL, w, 0);
-	buf = R_AllocStringBuffer(nb+1, &cbuff);
-	wcstoutf8(buf, w, nb+1); buf[nb] = '\0'; /* safety check */
+	int nb = wcstoutf8(NULL, w, INT_MAX);
+	buf = R_AllocStringBuffer(nb, &cbuff);
+	wcstoutf8(buf, w, nb);
 	SET_STRING_ELT(ans, i, mkCharCE(buf, CE_UTF8));
     }
 #else

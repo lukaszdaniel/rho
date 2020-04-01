@@ -234,7 +234,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 		INTEGER(dim)[j] = INTEGER(dim_v)[j];
 	else
 	    INTEGER(dim)[0] = commonLen;
-	INTEGER(dim)[rnk_v] = int( n);  // checked above
+	INTEGER(dim)[rnk_v] = int(n);  // checked above
 	Rf_setAttrib(ans, R_DimSymbol, dim);
 	UNPROTECT(1);
     }

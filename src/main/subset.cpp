@@ -164,7 +164,7 @@ static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
 		Rf_error("invalid subscript for pairlist");
 #endif
 	    if (0 <= ii && ii < nx && ii != NA_INTEGER) {
-		SEXP tmp2 = Rf_nthcdr(x, int( ii));
+		SEXP tmp2 = Rf_nthcdr(x, int(ii));
 		SETCAR(tmp, CAR(tmp2));
 		SET_TAG(tmp, TAG(tmp2));
 	    }

@@ -1028,7 +1028,7 @@ Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
 	error(n_("cannot allocate memory for registered native symbol (%d byte)",
 		       "cannot allocate memory for registered native symbol (%d bytes)",
 		      (int) sizeof(R_RegisteredNativeSymbol)),
-	      int( sizeof(R_RegisteredNativeSymbol)));
+	      int(sizeof(R_RegisteredNativeSymbol)));
     }
     *copy = *symbol;
 

@@ -71,11 +71,11 @@ int ceil_DIV(int a, int b)
 
 static void MatrixColumnLabel(SEXP cl, int j, int w)
 {
-    if (!isNull(cl)) {
+    if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
 	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("%*s%s", w-l, "",
-		EncodeString(tmp, l, 0, Rprt_adj_left));
+		Rf_EncodeString(tmp, l, 0, Rprt_adj_left));
     }
     else {
 	Rprintf("%*s[,%ld]", w-IndexWidth(j+1)-3, "", j+1);
@@ -84,14 +84,14 @@ static void MatrixColumnLabel(SEXP cl, int j, int w)
 
 static void RightMatrixColumnLabel(SEXP cl, int j, int w)
 {
-    if (!isNull(cl)) {
+    if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
 	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	/* This does not work correctly at least on FC3
 	Rprintf("%*s", R_print.gap+w,
-		EncodeString(tmp, l, 0, Rprt_adj_right)); */
+		Rf_EncodeString(tmp, l, 0, Rprt_adj_right)); */
 	Rprintf("%*s%s", R_print.gap+w-l, "",
-		EncodeString(tmp, l, 0, Rprt_adj_right));
+		Rf_EncodeString(tmp, l, 0, Rprt_adj_right));
     }
     else {
 	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-IndexWidth(j+1)-3, "");
@@ -100,11 +100,11 @@ static void RightMatrixColumnLabel(SEXP cl, int j, int w)
 
 static void LeftMatrixColumnLabel(SEXP cl, int j, int w)
 {
-    if (!isNull(cl)) {
+    if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
 	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("%*s%s%*s", R_print.gap, "",
-		EncodeString(tmp, l, 0, Rprt_adj_left), w-l, "");
+		Rf_EncodeString(tmp, l, 0, Rprt_adj_left), w-l, "");
     }
     else {
 	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-IndexWidth(j+1)-3, "");
@@ -113,11 +113,11 @@ static void LeftMatrixColumnLabel(SEXP cl, int j, int w)
 
 static void MatrixRowLabel(SEXP rl, int i, int rlabw, int lbloff)
 {
-    if (!isNull(rl)) {
+    if (!Rf_isNull(rl)) {
 	SEXP tmp = STRING_ELT(rl, i);
 	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("\n%*s%s%*s", lbloff, "",
-		EncodeString(tmp, l, 0, Rprt_adj_left),
+		Rf_EncodeString(tmp, l, 0, Rprt_adj_left),
 		rlabw-l-lbloff, "");
     }
     else {
@@ -143,7 +143,7 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
     int width, rlabw = -1, clabw = -1; /* -Wall */	\
     int i, j, jmin = 0, jmax = 0, lbloff = 0;		\
 							\
-    if (!isNull(rl)) {					\
+    if (!Rf_isNull(rl)) {					\
 	StringVector::const_iterator beg = rl->begin(); \
         rlabw = std::accumulate(beg, beg + r, 0, stringWidth);  \
     } else						\
@@ -164,11 +164,11 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
     for (j = 0; j < c; j++) {						\
 	if(print_ij) { _FORMAT_j_; } else w[j] = 0;			\
 									\
-	if (!isNull(cl)) {						\
+	if (!Rf_isNull(cl)) {						\
 	    const void *vmax = vmaxget();				\
 	    if(STRING_ELT(cl, j) == NA_STRING)				\
 		clabw = R_print.na_width_noquote;			\
-	    else clabw = strwidth(translateChar(STRING_ELT(cl, j)));	\
+	    else clabw = strwidth(Rf_translateChar(STRING_ELT(cl, j)));	\
 	    vmaxset(vmax);						\
 	} else								\
 	    clabw = IndexWidth(j + 1) + 3;				\
@@ -338,7 +338,7 @@ static void printStringMatrix(const StringVector* sx, int offset, int r_pr,
 		   },
 		   /* ENCODE_I = */
 		   Rprintf("%*s%s", R_print.gap, "",
-			   EncodeString(*(x + i + j * r),
+			   Rf_EncodeString(*(x + i + j * r),
 					w[j], quote, Rprt_adj(right))) );
 }
 
@@ -454,11 +454,11 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	else {
 	    dn0 = SEXP_downcast<StringVector*>(VECTOR_ELT(dimnames, 0));
 	    dn1 = VECTOR_ELT(dimnames, 1);
-	    dnn = getAttrib(dimnames, R_NamesSymbol);
-	    has_dnn = !isNull(dnn);
+	    dnn = Rf_getAttrib(dimnames, R_NamesSymbol);
+	    has_dnn = !Rf_isNull(dnn);
 	    if ( has_dnn ) {
-		rn = (char *) translateChar(STRING_ELT(dnn, 0));
-		cn = (char *) translateChar(STRING_ELT(dnn, 1));
+		rn = (char *) Rf_translateChar(STRING_ELT(dnn, 0));
+		cn = (char *) Rf_translateChar(STRING_ELT(dnn, 1));
 	    }
 	}
 	/* nb := #{entries} in a slice such as x[1,1,..] or equivalently,
@@ -491,10 +491,10 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 			((dn = VECTOR_ELT(dimnames, j)) != R_NilValue)) {
 			if ( has_dnn )
 			    Rprintf(", %s = %s",
-				    translateChar(STRING_ELT(dnn, j)),
-				    translateChar(STRING_ELT(dn, l - 1)));
+				    Rf_translateChar(STRING_ELT(dnn, j)),
+				    Rf_translateChar(STRING_ELT(dn, l - 1)));
 			else
-			    Rprintf(", %s", translateChar(STRING_ELT(dn, l - 1)));
+			    Rprintf(", %s", Rf_translateChar(STRING_ELT(dn, l - 1)));
 		    } else
 			Rprintf(", %d", l);
 		    k *= dims[j];

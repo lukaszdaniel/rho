@@ -92,7 +92,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    Rf_error(_("invalid separator"));
 	sep = STRING_ELT(sep, 0);
 	csep = Rf_translateChar(sep);
-	u_sepw = sepw = int( strlen(csep)); // will be short
+	u_sepw = sepw = int(strlen(csep)); // will be short
 	sepASCII = Rf_strIsASCII(csep);
 	sepKnown = ENC_KNOWN(sep) > 0;
 	sepUTF8 = IS_UTF8(sep);
@@ -309,7 +309,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	Rf_error(_("invalid separator"));
     sep = STRING_ELT(sep, 0);
     csep = CHAR(sep);
-    sepw = int( strlen(csep)); /* hopefully 1 */
+    sepw = int(strlen(csep)); /* hopefully 1 */
 
     /* Any zero-length argument gives zero-length result */
     maxlen = 0; nzero = 0;
@@ -341,7 +341,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	pwidth = 0;
 	for (j = 0; j < nx; j++) {
 	    k = Rf_length(VECTOR_ELT(x, j));
-	    pwidth += int( strlen(Rf_translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k))));
+	    pwidth += int(strlen(Rf_translateChar(STRING_ELT(VECTOR_ELT(x, j), i % k))));
 	}
 	pwidth += (nx - 1) * sepw;
 	cbuf = buf = static_cast<char*>(R_AllocStringBuffer(pwidth, &cbuff));

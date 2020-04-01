@@ -269,7 +269,7 @@ static SEXP ziplist(const char *zipname)
     err = unzGetGlobalInfo64 (uf, &gi);
     if (err != UNZ_OK)
 	error("error %d with zipfile in unzGetGlobalInfo", err);
-    nfiles = int( gi.number_entry);
+    nfiles = int(gi.number_entry);
     /* name, length, datetime */
     PROTECT(ans = allocVector(VECSXP, 3));
     SET_VECTOR_ELT(ans, 0, names = allocVector(STRSXP, nfiles));

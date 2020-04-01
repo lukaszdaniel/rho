@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1998-2016    The R Core Team
+ *  Copyright (C) 1998-2017    The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -73,6 +73,9 @@ void F77_NAME(qsort3)(double *v,            int *ii, int *jj);
 
 /* ../../main/util.cpp  and others : */
 const char *R_ExpandFileName(const char *);
+#ifdef Win32
+const char *R_ExpandFileNameUTF8(const char *);
+#endif
 void	setIVector(int*, int, int);
 void	setRVector(double*, int, double);
 Rboolean StringFalse(const char *);

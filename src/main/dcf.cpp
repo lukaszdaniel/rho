@@ -197,7 +197,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 		} else {
 		    if(tre_regexecb(&regline, line, 1, regmatch, 0) == 0){
 			for(m = 0; m < nwhat; m++){
-			    whatlen = int( strlen(CHAR(STRING_ELT(what, m))));
+			    whatlen = int(strlen(CHAR(STRING_ELT(what, m))));
 			    if(RHO_S_CAST(int, strlen(line)) > whatlen &&
 			       line[whatlen] == ':' &&
 			       strncmp(CHAR(STRING_ELT(what, m)),
@@ -252,7 +252,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			    retval = retval2;
 			    what = what2;
 			    /* Make sure enough space was used */
-			    need = int( (Rf_strchr(line, ':') - line + 1));
+			    need = int((Rf_strchr(line, ':') - line + 1));
 			    if(buflen < need){
 				char *tmp = static_cast<char *>(realloc(buf, need));
 				if(!tmp) {

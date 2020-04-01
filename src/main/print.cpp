@@ -157,7 +157,7 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
 	    Rf_error(_("invalid 'na.print' specification"));
 	R_print.na_string = R_print.na_string_noquote = STRING_ELT(naprint, 0);
 	R_print.na_width = R_print.na_width_noquote =
-	    int( strlen(CHAR(R_print.na_string)));
+	    int(strlen(CHAR(R_print.na_string)));
     }
 
     if (Rf_length(rowlab) == 0) rowlab = R_NilValue;
@@ -207,8 +207,10 @@ static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
 	UNPROTECT(1);
     }
     PROTECT(t);
-    for (i = 0; i < LENGTH(t); i++)
-	Rprintf("%s\n", R_CHAR(STRING_ELT(t, i))); /* translated */
+    for (i = 0; i < LENGTH(t); i++) {
+	const char *ctmp = Rf_EncodeString(STRING_ELT(t, i),  0, 0, Rprt_adj_none);
+	Rprintf("%s\n", ctmp); /* translated */
+    }
     UNPROTECT(1);
     if (isClosure) {
 	if (isByteCode(BODY(s))) Rprintf("<bytecode: %p>\n", BODY(s));
@@ -262,7 +264,7 @@ SEXP attribute_hidden do_printdefault(/*const*/ Expression* call, const BuiltInF
 	    Rf_error(_("invalid 'na.print' specification"));
 	R_print.na_string = R_print.na_string_noquote = STRING_ELT(naprint, 0);
 	R_print.na_width = R_print.na_width_noquote =
-	    int( strlen(CHAR(R_print.na_string)));
+	    int(strlen(CHAR(R_print.na_string)));
     }
     args = (args + 1);
 
@@ -397,7 +399,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		    const void *vmax = vmaxget();
 		    /* This can potentially overflow */
 		    const char *ctmp = Rf_translateChar(STRING_ELT(tmp, 0));
-		    int len = int( strlen(ctmp));
+		    int len = int(strlen(ctmp));
 		    if(len < 100)
 			snprintf(pbuf, 115, "\"%s\"", ctmp);
 		    else {

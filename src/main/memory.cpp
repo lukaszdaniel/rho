@@ -357,7 +357,7 @@ SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
 #ifdef LONG_VECTOR_SUPPORT
 	if (length > R_SHORT_LEN_MAX) Rf_error("invalid length for pairlist");
 #endif
-	return Rf_allocList(int( length));
+	return Rf_allocList(int(length));
     default:
 	Rf_error(_("invalid type/length (%s/%d) in vector allocation"),
 	      Rf_type2char(type), length);
@@ -520,7 +520,6 @@ static FILE *R_MemReportingOutfile;
 
 static void R_OutputStackTrace(FILE *file)
 {
-    int newline = 0;
     Evaluator::Context *cptr;
 
     for (cptr = Evaluator::Context::innermost(); cptr; cptr = cptr->nextOut()) {
@@ -529,19 +528,18 @@ static void R_OutputStackTrace(FILE *file)
 	    || type == Evaluator::Context::CLOSURE) {
 	    FunctionContext* fctxt = static_cast<FunctionContext*>(cptr);
 	    SEXP fun = fctxt->call()->car();
-	    if (!newline) newline = 1;
 	    fprintf(file, "\"%s\" ",
 		    TYPEOF(fun) == SYMSXP ? CHAR(PRINTNAME(fun)) :
 		    "<Anonymous>");
 	}
     }
-    if (newline) fprintf(file, "\n");
 }
 
 static void R_ReportAllocation(R_size_t size)
 {
     fprintf(R_MemReportingOutfile, "%lu :", static_cast<unsigned long>(size));
     R_OutputStackTrace(R_MemReportingOutfile);
+	fprintf(R_MemReportingOutfile, "\n");
 }
 
 static void R_EndMemReporting()

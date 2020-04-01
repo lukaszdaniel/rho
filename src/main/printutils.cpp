@@ -132,7 +132,7 @@ R_size_t R_Decode2Long(char *p, int *ierr)
 const char *EncodeLogical(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, (NB-1)), CHAR(R_print.na_string));
+    if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
     else if(x) snprintf(buff, NB, "%*s", min(w, (NB-1)), "TRUE");
     else snprintf(buff, NB, "%*s", min(w, (NB-1)), "FALSE");
     buff[NB-1] = '\0';
@@ -142,7 +142,7 @@ const char *EncodeLogical(int x, int w)
 const char *EncodeInteger(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, (NB-1)), CHAR(R_print.na_string));
+    if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
     else snprintf(buff, NB, "%*d", min(w, (NB-1)), x);
     buff[NB-1] = '\0';
     return buff;
@@ -194,7 +194,7 @@ const char *EncodeReal0(double x, int w, int d, int e, const char *dec)
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), CHAR(R_print.na_string));
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
 	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
@@ -237,7 +237,7 @@ static const char
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), CHAR(R_print.na_string));
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
 	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
@@ -303,7 +303,7 @@ const char *Rf_EncodeReal2(double x, int w, int d, int e)
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), CHAR(R_print.na_string));
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
 	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
@@ -343,7 +343,7 @@ const char
     if (ISNA(x.r) || ISNA(x.i)) {
 	snprintf(buff, NB,
 		 "%*s", /* was "%*s%*s", R_print.gap, "", */
-		 min(wr+wi+2, (NB-1)), CHAR(R_print.na_string));
+		 min(wr+wi+2, (NB-1)), R_CHAR(R_print.na_string));
     } else {
 	char Re[NB];
 	const char *Im, *tmp;
@@ -416,8 +416,8 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 
 	if(ienc != CE_UTF8)  mbs_init(&mb_st);
 	for (i = 0; i < slen; i++) {
-	    res = (ienc == CE_UTF8) ? int( utf8toucs(&wc, p)):
-		int( mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
+	    res = (ienc == CE_UTF8) ? int(utf8toucs(&wc, p)):
+		int(mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
 	    if(res >= 0) {
 		if (ienc == CE_UTF8 && IS_HIGH_SURROGATE(wc))
 		    k = utf8toucs32(wc, p);
@@ -514,7 +514,7 @@ int Rstrlen(SEXP s, int quote)
 {
     cetype_t ienc = getCharCE(s);
     if (ienc == CE_UTF8 || ienc == CE_BYTES)
-	return Rstrwid(CHAR(s), LENGTH(s), ienc, quote);
+	return Rstrwid(R_CHAR(s), LENGTH(s), ienc, quote);
     const void *vmax = vmaxget();
     const char *p = translateChar(s);
     int len = Rstrwid(p, (int)strlen(p), CE_NATIVE, quote);
@@ -551,20 +551,20 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
     R_StringBuffer *buffer = &gBuffer;
 
     if (s == NA_STRING) {
-	p = quote ? CHAR(R_print.na_string) : CHAR(R_print.na_string_noquote);
-	cnt = i = int(quote ? strlen(CHAR(R_print.na_string)) :
-		      strlen(CHAR(R_print.na_string_noquote)));
+	p = quote ? R_CHAR(R_print.na_string) : R_CHAR(R_print.na_string_noquote);
+	cnt = i = int(quote ? strlen(R_CHAR(R_print.na_string)) :
+		      strlen(R_CHAR(R_print.na_string_noquote)));
 	quote = 0;
     } else {
 #ifdef Win32
 	if(WinUTF8out) {
 	    if(ienc == CE_UTF8) {
-		p = CHAR(s);
+		p = R_CHAR(s);
 		i = Rstrlen(s, quote);
 		cnt = LENGTH(s);
 	    } else {
 		p = translateCharUTF8(s);
-		if(p == CHAR(s)) {
+		if(p == R_CHAR(s)) {
 		    i = Rstrlen(s, quote);
 		    cnt = LENGTH(s);
 		} else {
@@ -578,8 +578,8 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	{
 	    if(IS_BYTES(s)) {
 		ienc = CE_NATIVE;
-		p = CHAR(s);
-		cnt = int( strlen(p));
+		p = R_CHAR(s);
+		cnt = int(strlen(p));
 		const char *q;
 		char *pp = R_alloc(4*cnt+1, 1), *qq = pp, buf[5];
 		for (q = p; *q; q++) {
@@ -597,17 +597,17 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		p = pp;
 		i = cnt;
 	    } else if (useUTF8 && ienc == CE_UTF8) {
-		p = CHAR(s);
+		p = R_CHAR(s);
 		i = Rstrlen(s, quote);
 		cnt = LENGTH(s);
 	    } else {
 		ienc = CE_NATIVE;
 		p = translateChar(s);
-		if(p == CHAR(s)) {
+		if(p == R_CHAR(s)) {
 		    i = Rstrlen(s, quote);
 		    cnt = LENGTH(s);
 		} else {
-		    cnt = int( strlen(p));
+		    cnt = int(strlen(p));
 		    i = Rstrwid(p, cnt, CE_NATIVE, quote);
 		}
 	    }
@@ -705,7 +705,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 			    snprintf(buf, 11, "\\U%08x", k);
 			else
 			    snprintf(buf, 11, "\\u%04x", k);
-			j = int( strlen(buf));
+			j = int(strlen(buf));
 			memcpy(q, buf, j);
 			q += j;
 			p += res;
@@ -940,7 +940,7 @@ void Rcons_vprintf(const char *format, va_list arg)
 	    res = R_BUFSIZE;
     }
 #endif /* HAVE_VA_COPY */
-    R_WriteConsole(p, int( strlen(p)));
+    R_WriteConsole(p, int(strlen(p)));
 #ifdef HAVE_VA_COPY
     if(usedRalloc) vmaxset(vmax);
     if(usedVasprintf) free(p);
@@ -1018,7 +1018,7 @@ void REvprintf(const char *format, va_list arg)
 
 	vsnprintf(buf, BUFSIZE, format, arg);
 	buf[BUFSIZE-1] = '\0';
-	R_WriteConsoleEx(buf, int( strlen(buf)), 1);
+	R_WriteConsoleEx(buf, int(strlen(buf)), 1);
     }
 }
 

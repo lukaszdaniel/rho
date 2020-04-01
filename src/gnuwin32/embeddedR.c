@@ -141,13 +141,13 @@ int Rf_initEmbeddedR(int argc, char **argv)
 void Rf_endEmbeddedR(int fatal)
 {
     R_RunExitFinalizers();
-    CleanEd();
+    Rf_CleanEd();
     R_CleanTempDir();
     if(!fatal){
 	Rf_KillAllDevices();
 	AllDevicesKilled = TRUE;
     }
     if(!fatal && R_CollectWarnings)
-	PrintWarnings();	/* from device close and .Last */
+	Rf_PrintWarnings(NULL);	/* from device close and .Last */
     app_cleanup();
 }

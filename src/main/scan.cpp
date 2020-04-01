@@ -127,11 +127,11 @@ static int ConsoleGetchar(void)
 	    return R_EOF;
 	}
 	ConsoleBufp = ConsoleBuf;
-	ConsoleBufCnt = int( strlen(reinterpret_cast<char *>(ConsoleBuf)));
+	ConsoleBufCnt = int(strlen(reinterpret_cast<char *>(ConsoleBuf)));
 	ConsoleBufCnt--;
     }
     /* at this point we need to use unsigned char or similar */
-    return int( *ConsoleBufp++);
+    return int(*ConsoleBufp++);
 }
 
 /* used by scan() */
@@ -167,7 +167,7 @@ static int Strtoi(const char *nptr, int base)
     /* next can happen on a 64-bit platform */
     if (res > INT_MAX || res < INT_MIN) res = NA_INTEGER;
     if (errno == ERANGE) res = NA_INTEGER;
-    return int( res);
+    return int(res);
 }
 
 static double

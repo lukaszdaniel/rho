@@ -466,7 +466,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
 	    error(_("invalid line end"));
-	code = int( rcode);
+	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlineend + 1;
 	return lineend[code].end;
@@ -531,7 +531,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
 	    error(_("invalid line join"));
-	code = int( rcode);
+	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlinejoin + 1;
 	return linejoin[code].join;
@@ -1813,7 +1813,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 #ifdef DEBUG_MI
 					    printf(" centring %s aka %d in MBCS\n", ss, wc);
 #endif
-					    GEMetricInfo(int( wc), gc, &h, &d, &w, dd);
+					    GEMetricInfo(int(wc), gc, &h, &d, &w, dd);
 					    h = fromDeviceHeight(h, GE_INCHES, dd);
 					    d = fromDeviceHeight(d, GE_INCHES, dd);
 					    if (charNum++ == 0) {
@@ -2374,7 +2374,7 @@ void GEPretty(double *lo, double *up, int *ndiv)
 	    ns++;
 	if(nu > ns + 1 && nu * unit > *up + rounding_eps*unit)
 	    nu--;
-	*ndiv = int( nu - ns);
+	*ndiv = int(nu - ns);
     }
     *lo = ns * unit;
     *up = nu * unit;
@@ -3195,7 +3195,7 @@ int GEstring_to_pch(SEXP pch)
 	   On Windows this only covers CJK locales, so we could.
 	 */
 	unsigned int ucs = 0;
-	if ( int( Rf_mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
+	if ( int(Rf_mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
 	else error(_("invalid multibyte char in pch=\"c\""));
 	if (ipch > 127) ipch = -ipch;
     }
@@ -3288,7 +3288,7 @@ unsigned int GE_LTYpar(SEXP value, int ind)
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
 	    error(_("invalid line type"));
-	code = int( rcode);
+	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlinetype + 1;
 	return linetype[code].pattern;
@@ -3408,13 +3408,13 @@ void R_GE_rasterInterpolate(unsigned int *sraster, int sw, int sh,
 
     /* Iterate over the destination pixels */
     for (i = 0; i < dh; i++) {
-        ypm = int( fmax2(scy * i - 8, 0));
+        ypm = int(fmax2(scy * i - 8, 0));
         yp = ypm >> 4;
         yf = ypm & 0x0f;
         dline = draster + i * dw;
         sline = sraster + yp * sw;
         for (j = 0; j < dw; j++) {
-            xpm = int( fmax2(scx * j - 8, 0));
+            xpm = int(fmax2(scx * j - 8, 0));
             xp = xpm >> 4;
             xf = xpm & 0x0f;
 

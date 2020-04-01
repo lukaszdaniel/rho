@@ -605,7 +605,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 		double ds = REAL(s)[i];
 		int ia;
 		if (!R_FINITE(ds)) ia = NA_INTEGER;
-		else ia = int( ds);
+		else ia = int(ds);
 		if (ia != 0) INTEGER(indx)[cnt++] = ia;
 	    }
 	} else {

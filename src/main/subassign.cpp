@@ -482,7 +482,7 @@ static R_INLINE int gi(SEXP indx, R_xlen_t i)
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL(indx)[i];
 	if (!R_FINITE(d) || d < -R_SHORT_LEN_MAX || d > R_SHORT_LEN_MAX) return NA_INTEGER;
-	return int( d);
+	return int(d);
     } else
 	return INTEGER(indx)[i];
 }
@@ -846,7 +846,7 @@ static SEXP SimpleListAssign(SEXP call, SEXP x, SEXP s, SEXP y, int ind)
 		SET_TAG(z, Rf_installTrChar(STRING_ELT(t, i)));
 	}
 	PROTECT(x = Rf_listAppend(x, yi));
-	nx = int( stretch);
+	nx = int(stretch);
     }
     else PROTECT(x);
 

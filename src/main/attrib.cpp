@@ -815,18 +815,10 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
     if (MAYBE_SHARED(object))
 	object = Rf_shallow_duplicate(object);
 
-    if(IS_S4_OBJECT(object)) {
+    if (TYPEOF(object) == S4SXP) {
 	const char *klass = R_CHAR(STRING_ELT(R_data_class(object, FALSE), 0));
-	if(Rf_getAttrib(object, R_NamesSymbol) == R_NilValue) {
-	    /* S4 class w/o a names slot or attribute */
-	    if(TYPEOF(object) == S4SXP)
-		Rf_error(_("class '%s' has no 'names' slot"), klass);
-	    else
-		Rf_warning(_("class '%s' has no 'names' slot; assigning a names attribute will create an invalid object"), klass);
-	}
-	else if(TYPEOF(object) == S4SXP)
-	    Rf_error(_("invalid to use names()<- to set the 'names' slot in a non-vector class ('%s')"), klass);
-	/* else, go ahead, but can't check validity of replacement*/
+	Rf_error(_("invalid to use names()<- on an S4 object of class '%s'"),
+	      klass);
     }
     if (names != R_NilValue &&
 	! (TYPEOF(names) == STRSXP && ATTRIB(names) == R_NilValue)) {

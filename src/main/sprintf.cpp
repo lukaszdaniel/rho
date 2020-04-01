@@ -288,9 +288,19 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    case 'x':
 			    case 'X':
 				if(TYPEOF(_this) == REALSXP) {
-				    double r = REAL(_this)[0];
 				    // qdapTools manages to call this with NaN
-				    if(R_FINITE(r) && (double)((int) r) == r)
+				    Rboolean exactlyInteger = TRUE;
+				    R_xlen_t i = 0;
+				    R_xlen_t n = XLENGTH(_this);
+				    for(i = 0; i < n; i++) {
+					double r = REAL(_this)[i];
+					if (R_IsNA(r)) continue; // NA_REAL is ok
+					if (!R_FINITE(r) || (double)((int) r) != r) {
+					    exactlyInteger = FALSE;
+					    break;
+					}
+				    } 
+				    if(exactlyInteger)
 					_this = coerceVector(_this, INTSXP);
 				    PROTECT(a[nthis] = _this);
 				    nprotect++;

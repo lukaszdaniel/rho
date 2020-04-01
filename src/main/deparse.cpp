@@ -108,7 +108,6 @@
 #define BUFSIZE 512
 
 #define MIN_Cutoff 20
-#define DEFAULT_Cutoff 60
 #define MAX_Cutoff (BUFSIZE - 12)
 /* ----- MAX_Cutoff  <	BUFSIZE !! */
 
@@ -159,19 +158,25 @@ static Rboolean src2buff(SEXP, int, LocalParseData *);
 static void vec2buff(SEXP, LocalParseData *);
 static void linebreak(Rboolean *lbreak, LocalParseData *);
 static void deparse2(SEXP, SEXP, LocalParseData *);
+static int DEFAULT_Cutoff() {
+	int w;
+    w = Rf_asInteger(Rf_GetOption1(Rf_install("width")));
+    return (w < R_MIN_WIDTH_OPT || w > R_MAX_WIDTH_OPT) ? 80 : w;
+}
 
+// .Internal(deparse(expr, width.cutoff, backtick, .deparseOpts(control), nlines))
 SEXP attribute_hidden do_deparse(/*const*/ Expression* call, const BuiltInFunction* op, RObject* expr_, RObject* width_cutoff_, RObject* backtick_, RObject* control_, RObject* nlines_)
 {
     SEXP ca1;
     int  cut0, backtick, opts, nlines;
 
     ca1 = expr_;
-    cut0 = DEFAULT_Cutoff;
+    cut0 = DEFAULT_Cutoff();
     if(!Rf_isNull(width_cutoff_)) {
 	cut0 = Rf_asInteger(width_cutoff_);
 	if(cut0 == NA_INTEGER|| cut0 < MIN_Cutoff || cut0 > MAX_Cutoff) {
 	    Rf_warning(_("invalid 'cutoff' value for 'deparse', using default"));
-	    cut0 = DEFAULT_Cutoff;
+	    cut0 = DEFAULT_Cutoff();
 	}
     }
     backtick = 0;
@@ -194,7 +199,7 @@ SEXP Rf_deparse1(SEXP call, Rboolean abbrev, int opts)
     SEXP result = R_NilValue;
     if (blines != NA_INTEGER && blines > 0)
         R_BrowseLines = blines;
-    result = deparse1WithCutoff(call, abbrev, DEFAULT_Cutoff, backtick,
+    result = deparse1WithCutoff(call, abbrev, DEFAULT_Cutoff(), backtick,
                                 opts, 0);
     R_BrowseLines = old_bl;
     return result;
@@ -213,7 +218,7 @@ namespace rho {
 	    cout << (*sv)[i]->c_str() << '\n';
     }
 }
-	
+
 /* used for language objects in print() */
 attribute_hidden
 SEXP Rf_deparse1w(SEXP call, Rboolean abbrev, int opts)
@@ -238,7 +243,7 @@ static SEXP deparse1WithCutoff(SEXP call, Rboolean abbrev, int cutoff,
 	    {0, 0, 0, 0, /*startline = */TRUE, 0,
 	     nullptr,
 	     /*DeparseBuffer=*/{nullptr, 0, BUFSIZE},
-	     DEFAULT_Cutoff, FALSE, 0, TRUE, FALSE, INT_MAX, TRUE, 0, FALSE};
+	     DEFAULT_Cutoff(), FALSE, 0, TRUE, FALSE, INT_MAX, TRUE, 0, FALSE};
     localData.cutoff = cutoff;
     localData.backtick = backtick;
     localData.opts = opts;
@@ -337,7 +342,7 @@ SEXP attribute_hidden Rf_deparse1s(SEXP call)
    SEXP temp;
    Rboolean backtick=TRUE;
 
-   temp = deparse1WithCutoff(call, FALSE, DEFAULT_Cutoff, backtick,
+   temp = deparse1WithCutoff(call, FALSE, DEFAULT_Cutoff(), backtick,
 			     DEFAULTDEPARSE, 1);
    return(temp);
 }
@@ -440,7 +445,7 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
 	SET_TAG(o, Rf_installTrChar(STRING_ELT(names, j)));
 	SETCAR(o, Rf_findVar(TAG(o), source));
 	if (CAR(o) == R_UnboundValue)
-	    Rf_warning(_("object '%s' not found"), EncodeChar(PRINTNAME(TAG(o))));
+	    Rf_warning(_("object '%s' not found"), Rf_EncodeChar(PRINTNAME(TAG(o))));
 	else nout++;
     }
     o = objs;
@@ -720,7 +725,6 @@ static void printcomment(SEXP s, LocalParseData *d)
     vmaxset(vmax);
 }
 
-
 static const char * quotify(SEXP name, int quote)
 {
     const char *s = R_CHAR(name);
@@ -920,7 +924,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    op = CAR(s);
 	    if ((TYPEOF(SYMVALUE(op)) == BUILTINSXP) ||
 		(TYPEOF(SYMVALUE(op)) == SPECIALSXP) ||
-		(userbinop = isUserBinop(op))) {
+		(userbinop = Rf_isUserBinop(op))) {
 		s = CDR(s);
 		if (userbinop) {
 		    if (Rf_isNull(Rf_getAttrib(s, R_NamesSymbol))) {
@@ -1327,7 +1331,7 @@ static void print2buff(const char *strng, LocalParseData *d)
     bufflen = strlen(d->buffer.data);
     R_AllocStringBuffer(bufflen + tlen, &(d->buffer));
     strcat(d->buffer.data, strng);
-    d->len += int( tlen);
+    d->len += int(tlen);
 }
 
 /*

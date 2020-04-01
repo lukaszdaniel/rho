@@ -752,7 +752,7 @@ SEXP static intern_getwd(void)
 	wchar_t wbuf[PATH_MAX+1];
 	int res = GetCurrentDirectoryW(PATH_MAX, wbuf);
 	if(res > 0) {
-	    wcstoutf8(buf, wbuf, PATH_MAX+1);
+	    wcstoutf8(buf, wbuf, sizeof(buf));
 	    R_UTF8fixslash(buf);
 	    return Rf_ScalarString(mkCharCE(buf, CE_UTF8));
 	}
@@ -808,7 +808,7 @@ SEXP attribute_hidden do_setwd(/*const*/ Expression* call, const BuiltInFunction
 SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, s = R_NilValue;	/* -Wall */
-    char sp[4*PATH_MAX];
+    char sp[4*PATH_MAX+1];
     wchar_t  buf[PATH_MAX], *p;
     const wchar_t *pp;
     int i, n;
@@ -830,8 +830,7 @@ SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 		while (p >= buf && *p == L'/') *(p--) = L'\0';
 	    }
 	    if ((p = wcsrchr(buf, L'/'))) p++; else p = buf;
-	    memset(sp, 0, 4*PATH_MAX); /* safety */
-	    wcstoutf8(sp, p, 4*wcslen(p) + 1);
+	    wcstoutf8(sp, p, sizeof(sp));
 	    SET_STRING_ELT(ans, i, mkCharCE(sp, CE_UTF8));
 	}
     }
@@ -883,7 +882,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP ans, s = R_NilValue;	/* -Wall */
     wchar_t buf[PATH_MAX], *p;
     const wchar_t *pp;
-    char sp[4*PATH_MAX];
+    char sp[4*PATH_MAX+1];
     int i, n;
 
     if (TYPEOF(s = CAR(args)) != STRSXP)
@@ -911,7 +910,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 			  && (p > buf+2 || *(p-1) != L':')) --p;
 		    p[1] = L'\0';
 		}
-		wcstoutf8(sp, buf, 4*wcslen(buf)+1);
+		wcstoutf8(sp, buf, sizeof(sp));
 	    }
 	    SET_STRING_ELT(ans, i, mkCharCE(sp, CE_UTF8));
 	}
@@ -1250,18 +1249,18 @@ Rf_utf8toucs(wchar_t *wc, const char *s)
 	} else return size_t(-1);
     
     } else if (byte < 0xf8) {
-	if(strlen(s) < 4) return (size_t)-2;
+	if(strlen(s) < 4) return size_t(-2);
 	if (((s[1] & 0xC0) == 0x80) && ((s[2] & 0xC0) == 0x80) && ((s[3] & 0xC0) == 0x80)) {
 	    unsigned int cvalue = (((byte & 0x0F) << 18)
-			| (unsigned int) ((s[1] & 0x3F) << 12)
-			| (unsigned int) ((s[2] & 0x3F) << 6)
+			| static_cast<unsigned int>(((s[1] & 0x3F) << 12))
+			| static_cast<unsigned int>(((s[2] & 0x3F) << 6))
 			| (s[3] & 0x3F));
 	    if(sizeof(wchar_t) < 4) /* Assume UTF-16 and return high surrogate.  Users need to call utf8toutf16low next. */
 		*w = (wchar_t) ((cvalue - 0x10000) >> 10) | 0xD800;
 	    else
 		*w = (wchar_t) cvalue;
 	    return 4;
-	} else return size_t(-1);
+	} else return (size_t)-1;
     }
     if(sizeof(wchar_t) < 4) return (size_t)-2;
     /* So now handle 5.6 byte sequences with no testing */
@@ -1303,7 +1302,7 @@ Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 	    if (IS_HIGH_SURROGATE(*p)) {
 	    	*(++p) = utf8toutf16low(t);
 	    	res ++;
-	    	if (res >= n) break;
+	    	if (res >= ssize_t(n)) break;
 	    }
 	}
     else
@@ -1320,63 +1319,53 @@ static const unsigned int utf8_table1[] =
   { 0x7f, 0x7ff, 0xffff, 0x1fffff, 0x3ffffff, 0x7fffffff};
 static const unsigned int utf8_table2[] = { 0, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc};
 
-static size_t Rwcrtomb32(char *s, Rwchar_t cvalue)
+/* s is NULL, or it contains at least n bytes.  Just write a a terminator if it's not big enough. */
+
+static size_t Rwcrtomb32(char *s, Rwchar_t cvalue, size_t n)
 {
     size_t i, j;
-    char buf[10], *b;
-
-    b = s ? s : buf;
-    if(cvalue == 0) {*b = 0; return 0;}
+    if (!n) return 0;
+    if (s) *s = 0;    /* Simplifies exit later */
+    if(cvalue == 0) return 0;
     for (i = 0; i < RHOCONSTRUCT(int, sizeof(utf8_table1)/sizeof(int)); i++)
 	if (static_cast<unsigned int>(cvalue) <= utf8_table1[i]) break;
-    b += i;
-    for (j = i; j > 0; j--) {
-	*b-- = char( (0x80 | (cvalue & 0x3f)));
-	cvalue >>= 6;
+    if (i >= n - 1) return 0;  /* need space for terminal null */
+    if (s) {
+    	s += i;
+    	for (j = i; j > 0; j--) {
+	    *s-- = (char) (0x80 | (cvalue & 0x3f));
+	    cvalue >>= 6;
+        }
+    	*s = (char) (utf8_table2[i] | cvalue);
     }
-    *b = char( (utf8_table2[i] | cvalue));
     return i + 1;
 }
 
-static size_t Rwcrtomb(char *s, const wchar_t wc)
-{
-    return Rwcrtomb32(s, wc);
-}
-
+/* on input, wc is a string encoded in UTF-16 or UCS-2 or UCS-4.
+   s can be a buffer of size n>=0 chars, or NULL.  If n=0 or s=NULL, nothing is written. 
+   The return value is the number of chars including the terminating null.  If the
+   buffer is not big enough, the result is truncated but still null-terminated */
 attribute_hidden // but used in windlgs
 size_t Rf_wcstoutf8(char *s, const wchar_t *wc, size_t n)
 {
-    ssize_t m, res=0;
+    size_t m, res=0;
     char *t;
     const wchar_t *p;
-    if(s) {
-	for(p = wc, t = s; ; p++) {
-	    if (IS_SURROGATE_PAIR(*p,  *(p+1))) { 
-	    	Rwchar_t cvalue = ((*p & 0x3FF) << 10) + (*(p+1) & 0x3FF) + 0x010000;
-	    	m = ssize_t(Rwcrtomb32(t, cvalue));
-	    	p++;
-	    } else 
-	    	m  = ssize_t(Rwcrtomb(t, *p));
-	    if(m <= 0) break;
-	    res += m;
-	    if(res >= RHOCONSTRUCT(int, n)) break;
+    if (!n) return 0;
+    for(p = wc, t = s; ; p++) {
+    	if (IS_SURROGATE_PAIR(*p, *(p+1))) {
+    	    Rwchar_t cvalue =  ((*p & 0x3FF) << 10) + (*(p+1) & 0x3FF) + 0x010000;
+	    m = Rwcrtomb32(t, cvalue, n - res);
+	    p++;
+    	} else 
+    	    m = Rwcrtomb32(t, (Rwchar_t)(*p), n - res);
+    	if (!m) break;
+	res += m;
+	if (t)
 	    t += m;
-	}
-    } else {
-	for(p = wc; ; p++) {
-	    if (IS_SURROGATE_PAIR(*p, *(p+1))) {
-	    	Rwchar_t cvalue = ((*p & 0x3FF) << 10) + (*(p+1) & 0x3FF) + 0x010000;
-	    	m = ssize_t(Rwcrtomb32(NULL, cvalue));
-	    	p++;
-	    } else 
-	    	m  = ssize_t(Rwcrtomb(NULL, *p));
-	    if(m <= 0) break;
-	    res += m;
-	}
     }
-    return size_t( res);
+    return res + 1;
 }
-
 
 /* A version that reports failure as an error */
 size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
@@ -1385,7 +1374,7 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
 
     if(n <= 0 || !*s) return size_t(0);
     used = mbrtowc(wc, s, n, ps);
-    if(int( used) < 0) {
+    if(int(used) < 0) {
 	/* This gets called from the menu setup in RGui */
 	if (!R_Is_Running) return size_t(-1);
 	/* let's try to print out a readable version */
@@ -1396,7 +1385,7 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
 	    /* don't do the first to keep ps state straight */
 	    if(p > s) used = mbrtowc(nullptr, p, n, ps);
 	    if(used == 0) break;
-	    else if(int( used) > 0) {
+	    else if(int(used) > 0) {
 		memcpy(q, p, used);
 		p += used;
 		q += used;

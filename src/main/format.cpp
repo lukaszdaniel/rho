@@ -176,7 +176,7 @@ static void format_via_sprintf(double r, int d, int *kpower, int *nsig)
     static char buff[NB];
     int i;
     snprintf(buff, NB, "%#.*e", d - 1, r);
-    *kpower = int( strtol(buff + (d + 2), nullptr, 10));
+    *kpower = int(strtol(buff + (d + 2), nullptr, 10));
     for (i = d; i >= 2; i--)
         if (buff[i] != '0') break;
     *nsig = i;
@@ -236,7 +236,7 @@ scientific(double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens
 	    *roundingwidens = FALSE;
             return;
         }
-        kp = int( floor(log10(r))) - R_print.digits + 1;/* r = |x|; 10^(kp + digits - 1) <= r */
+        kp = int(floor(log10(r))) - R_print.digits + 1;/* r = |x|; 10^(kp + digits - 1) <= r */
 #if defined(HAVE_LONG_DOUBLE) && (SIZEOF_LONG_DOUBLE > SIZEOF_DOUBLE)
         long double r_prec = r;
         /* use exact scaling factor in long double precision, if possible */

@@ -99,11 +99,11 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
 	    if (realIndx)
 		REAL(VECTOR_ELT(nindex, j))[0] = double( counters[j]);
 	    else
-		INTEGER(VECTOR_ELT(nindex, j))[0] = int( counters[j]);
+		INTEGER(VECTOR_ELT(nindex, j))[0] = int(counters[j]);
 	}
 	SEXP tmp = R_forceAndCall(fcall, m, rho);
 	if (MAYBE_REFERENCED(tmp))
-	    tmp = duplicate(tmp);
+	    tmp = Rf_lazy_duplicate(tmp);
 	SET_VECTOR_ELT(ans, i, tmp);
     }
 

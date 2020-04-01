@@ -149,7 +149,7 @@ Rf_IntegerFromReal(double x, int *warn)
 	*warn |= WARN_INT_NA;
 	return NA_INTEGER;
     }
-    return int( x);
+    return int(x);
 }
 
 int attribute_hidden
@@ -163,7 +163,7 @@ Rf_IntegerFromComplex(Rcomplex x, int *warn)
     }
     if (x.i != 0)
 	*warn |= WARN_IMAG;
-    return int( x.r);
+    return int(x.r);
 }
 
 
@@ -192,7 +192,7 @@ Rf_IntegerFromString(SEXP x, int *warn)
 	    }
 #endif
 	    else
-		return int( xdouble);
+		return int(xdouble);
 	}
 	else *warn |= WARN_NA;
     }

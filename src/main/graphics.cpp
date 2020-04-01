@@ -103,11 +103,11 @@ static void GLPretty(double *ul, double *uh, int *n)
  * The real work happens when the axis is drawn. */
     int p1, p2;
     double dl = *ul, dh = *uh;
-    p1 = int( ceil(log10(dl)));
-    p2 = int( floor(log10(dh)));
+    p1 = int(ceil(log10(dl)));
+    p2 = int(floor(log10(dh)));
     if(p2 <= p1 &&  dh/dl > 10.0) {
-	p1 = int( ceil(log10(dl) - 0.5));
-	p2 = int( floor(log10(dh) + 0.5));
+	p1 = int(ceil(log10(dl) - 0.5));
+	p2 = int(floor(log10(dh) + 0.5));
     }
 
     if (p2 <= p1) { /* floor(log10(uh)) <= ceil(log10(ul))

@@ -106,10 +106,9 @@ RObject* Symbol::evaluate(Environment* env)
     if (this == DotsSymbol)
 	Rf_error(_("'...' used in an incorrect context"));
     GCStackRoot<> val;
-    if (isDotDotSymbol()) {
+    if (isDotDotSymbol())
 	val = Rf_ddfindVar(this, env);
-   // printf("I'm in isDotDotSymbol()\n");
-    } else {
+    else {
 	Frame::Binding* bdg = env->findBinding(this);
 	if (bdg)
 	    val = bdg->unforcedValue();
@@ -120,7 +119,7 @@ RObject* Symbol::evaluate(Environment* env)
     if (!val)
 	return nullptr;
     if (val == unboundValue())
-	Rf_error(_("object '%s' not found 2"), name()->c_str());
+	Rf_error(_("object '%s' not found"), name()->c_str());
     if (val == missingArgument() && !isDotDotSymbol()) {
 	if (m_name && m_name != String::blank())
 	    Rf_error(_("argument \"%s\" is missing, with no default"),

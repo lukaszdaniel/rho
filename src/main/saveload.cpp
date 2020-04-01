@@ -1422,7 +1422,7 @@ static void OutStringAscii(FILE *fp, const char *x, SaveLoadData *unused)
 {
     size_t i, nbytes;
     nbytes = strlen(x);
-    fprintf(fp, "%d ", int( nbytes));
+    fprintf(fp, "%d ", int(nbytes));
     for (i = 0; i < nbytes; i++) {
 	switch(x[i]) {
 	case '\n': fprintf(fp, "\\n");  break;

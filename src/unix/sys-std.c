@@ -1194,7 +1194,7 @@ void attribute_hidden NORET Rstd_CleanUp(SA_TYPE saveact, int status, int runLas
     if(saveact != SA_SUICIDE) KillAllDevices();
     R_CleanTempDir();
     if(saveact != SA_SUICIDE && R_CollectWarnings)
-	PrintWarnings();	/* from device close and (if run) .Last */
+	Rf_PrintWarnings(NULL);	/* from device close and (if run) .Last */
     if(ifp) {
 	fclose(ifp);    /* input file from -f or --file= */
 	ifp = NULL; 	/* To avoid trying to close it again */

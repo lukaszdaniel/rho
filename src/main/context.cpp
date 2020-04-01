@@ -191,7 +191,7 @@ SEXP attribute_hidden do_sysbrowser(/*const*/ Expression* call, const BuiltInFun
     int n;
 
     n = Rf_asInteger(n_);
-    if(n < 1 ) Rf_error(_("number of contexts must be positive"));
+    if(n < 1) Rf_error(_("number of contexts must be positive"));
 
     switch (op->variant()) {
     case 1: /* text */

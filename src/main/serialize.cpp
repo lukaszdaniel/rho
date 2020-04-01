@@ -1136,7 +1136,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 		R_xlen_t done, thiss;
 		for (done = 0; done < len; done += thiss) {
 		    thiss = min2(CHUNK_SIZE, len - done);
-		    stream->OutBytes(stream, RAW(s) + done, int( thiss));
+		    stream->OutBytes(stream, RAW(s) + done, int(thiss));
 		}
 		break;
 	    }
@@ -1681,7 +1681,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	        R_xlen_t done, thiss;
 		for (done = 0; done < len; done += thiss) {
 		    thiss = min2(CHUNK_SIZE, len - done);
-		    stream->InBytes(stream, RAW(s) + done, int( thiss));
+		    stream->InBytes(stream, RAW(s) + done, int(thiss));
 		}
 	    }
 	    break;
@@ -2515,8 +2515,8 @@ static SEXP appendRawToFile(SEXP file, SEXP bytes)
     if (pos == -1) Rf_error(_("could not determine file position"));
 
     val = Rf_allocVector(INTSXP, 2);
-    INTEGER(val)[0] = int( pos);
-    INTEGER(val)[1] = int( len);
+    INTEGER(val)[0] = int(pos);
+    INTEGER(val)[1] = int(len);
     return val;
 }
 
@@ -2601,7 +2601,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 		    fclose(fp);
 		    Rf_error(_("seek failed on %s"), cfile);
 		}
-		in = int( fread(p, 1, filelen, fp));
+		in = int(fread(p, 1, filelen, fp));
 		fclose(fp);
 		if (filelen != in) Rf_error(_("read failed on %s"), cfile);
 		memcpy(RAW(val), p+offset, len);
@@ -2610,7 +2610,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 		    fclose(fp);
 		    Rf_error(_("seek failed on %s"), cfile);
 		}
-		in = int( fread(RAW(val), 1, len, fp));
+		in = int(fread(RAW(val), 1, len, fp));
 		fclose(fp);
 		if (len != in) Rf_error(_("read failed on %s"), cfile);
 	    }
@@ -2620,7 +2620,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 		fclose(fp);
 		Rf_error(_("seek failed on %s"), cfile);
 	    }
-	    in = int( fread(RAW(val), 1, len, fp));
+	    in = int(fread(RAW(val), 1, len, fp));
 	    fclose(fp);
 	    if (len != in) Rf_error(_("read failed on %s"), cfile);
 	    return val;
@@ -2633,7 +2633,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
 	fclose(fp);
 	Rf_error(_("seek failed on %s"), cfile);
     }
-    in = int( fread(RAW(val), 1, len, fp));
+    in = int(fread(RAW(val), 1, len, fp));
     fclose(fp);
     if (len != in) Rf_error(_("read failed on %s"), cfile);
     return val;

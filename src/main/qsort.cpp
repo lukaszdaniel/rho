@@ -84,7 +84,7 @@ SEXP attribute_hidden do_qsort(/*const*/ rho::Expression* call, const rho::Built
 	{
 	    PROTECT(indx = allocVector(INTSXP, n));
 	    int *ix = INTEGER(indx);
-	    int nn = int( n);
+	    int nn = int(n);
 	    for(int i = 0; i < nn; i++) ix[i] = i+1;
 	    if(x_int) R_qsort_int_I(ivx, ix, 1, nn);
 	    else R_qsort_I(vx, ix, 1, nn);

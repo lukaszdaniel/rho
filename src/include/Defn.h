@@ -831,7 +831,7 @@ void PrintVersion_part_1(char *, size_t len);
 void Rf_PrintVersionString(char *, size_t len);
 void Rf_PrintRhoVersionString(char *, size_t len);
 
-void Rf_PrintWarnings(void);
+void Rf_PrintWarnings(const char *hdr);
 
 void process_site_Renviron(void);
 void process_system_Renviron(void);

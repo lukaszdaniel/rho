@@ -243,7 +243,7 @@ static RObject* R_ReplFile_impl(FILE *fp, SEXP rho)
 	    if (R_Visible)
 		Rf_PrintValueEnv(R_CurrentExpr, rho);
 	    if( R_CollectWarnings )
-		Rf_PrintWarnings();
+		Rf_PrintWarnings(nullptr);
 	    break;
 	case PARSE_ERROR:
 	    R_FinalizeSrcRefState();
@@ -413,7 +413,7 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 	    if (R_Visible)
 		Rf_PrintValueEnv(value, rho);
 	    if (R_CollectWarnings)
-		PrintWarnings();
+		Rf_PrintWarnings(nullptr);
 	    Rf_callToplevelHandlers(thisExpr, value, TRUE, wasDisplayed);
 	    R_CurrentExpr = value; /* Necessary? Doubt it. */
 	    UNPROTECT(1);
@@ -461,7 +461,7 @@ static RObject* R_ReplConsole_impl(SEXP rho, int savestack)
 	status = Rf_ReplIteration(rho, savestack, &state);
 	if(status < 0) {
 	  if (state.status == PARSE_INCOMPLETE)
-	    error(_("unexpected end of input"));
+	    Rf_error(_("unexpected end of input"));
 	  return nullptr;
 	}
     }
@@ -483,7 +483,7 @@ static void printTraceback(SEXP trace) {
 	    SEXP q = CAR(p); /* a character vector */
 	    REprintf("%2d: ", line);
 	    for(int i = 0; i < LENGTH(q); i++)
-		REprintf("%s", CHAR(STRING_ELT(q, i)));
+		REprintf("%s", R_CHAR(STRING_ELT(q, i)));
 	    REprintf("\n");
 	}
 	UNPROTECT(1);
@@ -505,7 +505,7 @@ static void check_session_exit()
             return;
 
         exiting = true;
-	printTraceback(SYMVALUE(install(".Traceback")));;
+	printTraceback(SYMVALUE(Rf_install(".Traceback")));;
         REprintf(_("\nExecution halted\n"));
 
         R_CleanUp(SA_NOSAVE, 1, 0); /* quit, no save, no .Last, status=1 */
@@ -570,7 +570,7 @@ int R_ReplDLLdo1(void)
 	if (R_Visible)
 	    Rf_PrintValueEnv(R_CurrentExpr, rho);
 	if (R_CollectWarnings)
-	    PrintWarnings();
+	    Rf_PrintWarnings(nullptr);
 	Rf_callToplevelHandlers(lastExpr, R_CurrentExpr, TRUE, wasDisplayed);
 	UNPROTECT(1);
 	R_IoBufferWriteReset(&R_ConsoleIob);
@@ -805,9 +805,9 @@ static void init_signal_handlers(void)
 	sigstk.ss_size = SIGSTKSZ + R_USAGE;
 	sigstk.ss_flags = 0;
 	if(sigaltstack(&sigstk, nullptr) < 0)
-	    warning("failed to set alternate signal stack");
+	    Rf_warning("failed to set alternate signal stack");
     } else
-	warning("failed to allocate alternate signal stack");
+	Rf_warning("failed to allocate alternate signal stack");
     sa.sa_sigaction = sigactionSegv;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
@@ -916,7 +916,7 @@ void setup_Rmainloop(void)
     if(R_CStackLimit != (uintptr_t)-1)
 	R_CStackLimit = (uintptr_t)(0.95 * R_CStackLimit);
 
-    InitConnections(); /* needed to get any output at all */
+    Rf_InitConnections(); /* needed to get any output at all */
 
     /* Initialize the interpreter's internal structures. */
 
@@ -991,21 +991,21 @@ void setup_Rmainloop(void)
 #endif
 
     /* make sure srand is called before R_tmpnam, PR#14381 */
-    srand(TimeToSeed());
+    srand(Rf_TimeToSeed());
 
-    InitArithmetic();
+    Rf_InitArithmetic();
     InitParser();
-    InitTempDir(); /* must be before InitEd */
-    InitMemory();
-    InitNames();
-    InitGlobalEnv();
+    Rf_InitTempDir(); /* must be before InitEd */
+    Rf_InitMemory();
+    Rf_InitNames();
+    Rf_InitGlobalEnv();
     InitDynload();
-    InitOptions();
-    InitEd();
-    InitGraphics();
-    InitTypeTables(); /* must be before InitS3DefaultTypes */
-    InitS3DefaultTypes();
-    PrintDefaults();
+    Rf_InitOptions();
+    Rf_InitEd();
+    Rf_InitGraphics();
+    Rf_InitTypeTables(); /* must be before InitS3DefaultTypes */
+    Rf_InitS3DefaultTypes();
+    Rf_PrintDefaults();
 
     R_Is_Running = 1;
     R_check_locale();
@@ -1059,16 +1059,16 @@ void setup_Rmainloop(void)
     /* At least temporarily unlock some bindings used in graphics */
     R_unLockBinding(R_DeviceSymbol, R_BaseEnv);
     R_unLockBinding(R_DevicesSymbol, R_BaseEnv);
-    R_unLockBinding(install(".Library.site"), R_BaseEnv);
+    R_unLockBinding(Rf_install(".Library.site"), R_BaseEnv);
 
     /* require(methods) if it is in the default packages */
     try {
-	PROTECT(cmd = install(".OptRequireMethods"));
-	R_CurrentExpr = findVar(cmd, R_GlobalEnv);
+	PROTECT(cmd = Rf_install(".OptRequireMethods"));
+	R_CurrentExpr = Rf_findVar(cmd, R_GlobalEnv);
 	if (R_CurrentExpr != R_UnboundValue &&
 	    TYPEOF(R_CurrentExpr) == CLOSXP) {
-		PROTECT(R_CurrentExpr = lang1(cmd));
-		R_CurrentExpr = eval(R_CurrentExpr, R_GlobalEnv);
+		PROTECT(R_CurrentExpr = Rf_lang1(cmd));
+		R_CurrentExpr = Rf_eval(R_CurrentExpr, R_GlobalEnv);
 		UNPROTECT(1);
 	}
 	UNPROTECT(1);
@@ -1087,10 +1087,10 @@ void setup_Rmainloop(void)
     /* Print a platform and version dependent greeting and a pointer to
      * the copyleft.
      */
-    if(!R_Quiet) PrintGreeting();
+    if(!R_Quiet) Rf_PrintGreeting();
 
     R_LoadProfile(R_OpenSiteFile(), baseEnv);
-    R_LockBinding(install(".Library.site"), R_BaseEnv);
+    R_LockBinding(Rf_install(".Library.site"), R_BaseEnv);
     R_LoadProfile(R_OpenInitFile(), R_GlobalEnv);
 
     /* This is where we try to load a user's saved data.
@@ -1103,7 +1103,7 @@ void setup_Rmainloop(void)
 	R_InitialData();
     }
     catch (CommandTerminated) {
-	warning(_("unable to restore saved data in %s\n"), get_workspace_name());
+	Rf_warning(_("unable to restore saved data in %s\n"), get_workspace_name());
 	throw;
     }
 
@@ -1112,12 +1112,12 @@ void setup_Rmainloop(void)
        If there is an error we continue. */
 
     try {
-	PROTECT(cmd = install(".First"));
-	R_CurrentExpr = findVar(cmd, R_GlobalEnv);
+	PROTECT(cmd = Rf_install(".First"));
+	R_CurrentExpr = Rf_findVar(cmd, R_GlobalEnv);
 	if (R_CurrentExpr != R_UnboundValue &&
 	    TYPEOF(R_CurrentExpr) == CLOSXP) {
-		PROTECT(R_CurrentExpr = lang1(cmd));
-		R_CurrentExpr = eval(R_CurrentExpr, R_GlobalEnv);
+		PROTECT(R_CurrentExpr = Rf_lang1(cmd));
+		R_CurrentExpr = Rf_eval(R_CurrentExpr, R_GlobalEnv);
 		UNPROTECT(1);
 	}
 	UNPROTECT(1);
@@ -1130,15 +1130,15 @@ void setup_Rmainloop(void)
        If there is an error we continue. */
 
     try {
-	PROTECT(cmd = install(".First.sys"));
-	R_CurrentExpr = findVar(cmd, baseEnv);
+	PROTECT(cmd = Rf_install(".First.sys"));
+	R_CurrentExpr = Rf_findVar(cmd, baseEnv);
 	if (R_CurrentExpr != R_UnboundValue &&
 	    TYPEOF(R_CurrentExpr) == CLOSXP) {
-		PROTECT(R_CurrentExpr = lang1(cmd));
+		PROTECT(R_CurrentExpr = Rf_lang1(cmd));
 #ifdef PROVENANCE_TRACKING
 		ProvenanceTracker::CommandScope scope(R_CurrentExpr);
 #endif		
-		R_CurrentExpr = eval(R_CurrentExpr, R_GlobalEnv);
+		R_CurrentExpr = Rf_eval(R_CurrentExpr, R_GlobalEnv);
 		UNPROTECT(1);
 	}
 	UNPROTECT(1);
@@ -1150,11 +1150,10 @@ void setup_Rmainloop(void)
     {
 	int i;
 	for(i = 0 ; i < ndeferred_warnings; i++)
-	    warning(deferred_warnings[i]);
+	    Rf_warning(deferred_warnings[i]);
     }
     if (R_CollectWarnings) {
-	REprintf(_("During startup - "));
-	PrintWarnings();
+	Rf_PrintWarnings(n_("Warning message during startup:", "Warning messages during startup:", R_CollectWarnings));
     }
     if(R_Verbose)
 	REprintf(" ending setup_Rmainloop(): R_Interactive = %d {main.cpp}\n",
@@ -1212,8 +1211,8 @@ static void printwhere(void)
        cptr = FunctionContext::innermost(cptr->nextOut())) {
       if (TYPEOF(RHO_C_CAST(Expression*, cptr->call())) == LANGSXP) {
 	  Rprintf("where %d", lct++);
-	  SrcrefPrompt("", cptr->sourceLocation());
-	  PrintValue(RHO_C_CAST(Expression*, cptr->call()));
+	  Rf_SrcrefPrompt("", cptr->sourceLocation());
+	  Rf_PrintValue(RHO_C_CAST(Expression*, cptr->call()));
       }
   }
   Rprintf("\n");
@@ -1234,8 +1233,8 @@ static void printBrowserHelp(void)
 static int ParseBrowser(SEXP CExpr, SEXP rho)
 {
     int rval = 0;
-    if (isSymbol(CExpr)) {
-	const char *expr = CHAR(PRINTNAME(CExpr));
+    if (Rf_isSymbol(CExpr)) {
+	const char *expr = R_CHAR(PRINTNAME(CExpr));
 	if (streql(expr, "c") || streql(expr, "cont")) {
 	    rval = 1;
 	    SET_ENV_DEBUG(rho, RHO_FALSE);
@@ -1263,7 +1262,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    /* this is really dynamic state that should be managed as such */
 	    SET_ENV_DEBUG(rho, RHO_FALSE); /*PR#1721*/
 
-	    jump_to_toplevel();
+	    Rf_jump_to_toplevel();
 	} else if (streql(expr, "s")) {
 	    rval = 1;
 	    SET_ENV_DEBUG(rho, RHO_TRUE);
@@ -1273,12 +1272,12 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    printwhere();
 	    /* SET_ENV_DEBUG(rho, RHO_TRUE); */
 	} else if (streql(expr, "r")) {
-	    SEXP hooksym = install(".tryResumeInterrupt");
+	    SEXP hooksym = Rf_install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
 		SEXP hcall;
 		R_Busy(1);
 		PROTECT(hcall = LCONS(hooksym, R_NilValue));
-		eval(hcall, R_GlobalEnv);
+		Rf_eval(hcall, R_GlobalEnv);
 		UNPROTECT(1);
 	    }
 	}
@@ -1291,10 +1290,10 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 static void PrintCall(SEXP call, SEXP rho)
 {
     int old_bl = R_BrowseLines,
-	blines = asInteger(GetOption1(install("deparse.max.lines")));
+	blines = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.max.lines")));
     if(blines != NA_INTEGER && blines > 0)
 	R_BrowseLines = blines;
-    PrintValueRec(call, rho);
+    Rf_PrintValueRec(call, rho);
     R_BrowseLines = old_bl;
 }
 
@@ -1318,16 +1317,16 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* substitute defaults */
     if (text == R_MissingArg)
-	text = mkString("");
+	text = Rf_mkString("");
     if(condition == R_MissingArg)
 	condition = R_NilValue;
     if(expr == R_MissingArg)
-	expr = ScalarLogical(1);
+	expr = Rf_ScalarLogical(1);
     if(skipcalls == R_MissingArg)
-	skipcalls = ScalarInteger(0);
+	skipcalls = Rf_ScalarInteger(0);
 
     /* return if 'expr' is not TRUE */
-    if( !asLogical(expr) ) {
+    if( !Rf_asLogical(expr) ) {
 	return R_NilValue;
     }
 
@@ -1398,19 +1397,19 @@ void R_dot_Last(void)
     /* Errors here should kick us back into the repl. */
 
     Evaluator evalr;
-    PROTECT(cmd = install(".Last"));
-    R_CurrentExpr = findVar(cmd, R_GlobalEnv);
+    PROTECT(cmd = Rf_install(".Last"));
+    R_CurrentExpr = Rf_findVar(cmd, R_GlobalEnv);
     if (R_CurrentExpr != R_UnboundValue && TYPEOF(R_CurrentExpr) == CLOSXP) {
-	PROTECT(R_CurrentExpr = lang1(cmd));
-	R_CurrentExpr = eval(R_CurrentExpr, R_GlobalEnv);
+	PROTECT(R_CurrentExpr = Rf_lang1(cmd));
+	R_CurrentExpr = Rf_eval(R_CurrentExpr, R_GlobalEnv);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
-    PROTECT(cmd = install(".Last.sys"));
-    R_CurrentExpr = findVar(cmd, R_BaseNamespace);
+    PROTECT(cmd = Rf_install(".Last.sys"));
+    R_CurrentExpr = Rf_findVar(cmd, R_BaseNamespace);
     if (R_CurrentExpr != R_UnboundValue && TYPEOF(R_CurrentExpr) == CLOSXP) {
-	PROTECT(R_CurrentExpr = lang1(cmd));
-	R_CurrentExpr = eval(R_CurrentExpr, R_GlobalEnv);
+	PROTECT(R_CurrentExpr = Rf_lang1(cmd));
+	R_CurrentExpr = Rf_eval(R_CurrentExpr, R_GlobalEnv);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
@@ -1427,13 +1426,13 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
 	warning(_("cannot quit from browser"));
 	return R_NilValue;
     }
-    if( !isString(save_) )
-	error(_("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));
-    tmp = CHAR(STRING_ELT(save_, 0)); /* ASCII */
+    if( !Rf_isString(save_) )
+	Rf_error(_("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));
+    tmp = R_CHAR(STRING_ELT(save_, 0)); /* ASCII */
     if( streql(tmp, "ask") ) {
 	ask = SA_SAVEASK;
 	if(!R_Interactive)
-	    warning(_("save=\"ask\" in non-interactive use: command-line default will be used"));
+	    Rf_warning(_("save=\"ask\" in non-interactive use: command-line default will be used"));
     } else if( streql(tmp, "no") )
 	ask = SA_NOSAVE;
     else if( streql(tmp, "yes") )
@@ -1441,15 +1440,15 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
     else if( streql(tmp, "default") )
 	ask = SA_DEFAULT;
     else
-	error(_("unrecognized value of 'save'"));
-    status = asInteger(status_);
+	Rf_error(_("unrecognized value of 'save'"));
+    status = Rf_asInteger(status_);
     if (status == NA_INTEGER) {
-	warning(_("invalid 'status', 0 assumed"));
+	Rf_warning(_("invalid 'status', 0 assumed"));
 	runLast = 0;
     }
-    runLast = asLogical(runLast_);
+    runLast = Rf_asLogical(runLast_);
     if (runLast == NA_LOGICAL) {
-	warning(_("invalid 'runLast', FALSE assumed"));
+	Rf_warning(_("invalid 'runLast', FALSE assumed"));
 	runLast = 0;
     }
     /* run the .Last function. If it gives an error, will drop back to main
@@ -1480,7 +1479,7 @@ Rf_addTaskCallback(R_ToplevelCallback cb, void *data,
     R_ToplevelCallbackEl *el;
     el = static_cast<R_ToplevelCallbackEl *>(malloc(sizeof(R_ToplevelCallbackEl)));
     if(!el)
-	error(_("cannot allocate space for toplevel callback element"));
+	Rf_error(_("cannot allocate space for toplevel callback element"));
 
     el->data = data;
     el->cb = cb;
@@ -1608,7 +1607,7 @@ R_removeTaskCallback(SEXP which)
 	if (LENGTH(which) == 0)
 	    val = FALSE;
 	else
-	    val = Rf_removeTaskCallbackByName(CHAR(STRING_ELT(which, 0)));    } else {
+	    val = Rf_removeTaskCallbackByName(R_CHAR(STRING_ELT(which, 0)));    } else {
 	id = Rf_asInteger(which);
 	if (id != NA_INTEGER) val = Rf_removeTaskCallbackByIndex(id - 1);
 	else val = FALSE;
@@ -1672,7 +1671,7 @@ Rf_callToplevelHandlers(SEXP expr, SEXP value, Rboolean succeeded,
 	if(R_CollectWarnings) {
 	    REprintf(_("warning messages from top-level task callback '%s'\n"),
 		     h->name);
-	    Rf_PrintWarnings();
+	    Rf_PrintWarnings(nullptr);
 	}
 	if(again) {
 	    prev = h;
@@ -1761,10 +1760,10 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
 
     if(Rf_length(name) == 0) {
 	PROTECT(name = Rf_mkString(el->name));
-	setAttrib(index, R_NamesSymbol, name);
+	Rf_setAttrib(index, R_NamesSymbol, name);
 	UNPROTECT(1);
     } else {
-	setAttrib(index, R_NamesSymbol, name);
+	Rf_setAttrib(index, R_NamesSymbol, name);
     }
 
     UNPROTECT(1);

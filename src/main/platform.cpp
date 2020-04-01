@@ -92,7 +92,7 @@ static void Init_R_Machine(SEXP rho)
 	   &R_AccuracyInfo.xmin,
 	   &R_AccuracyInfo.xmax);
 
-    R_dec_min_exponent = int( floor(log10(R_AccuracyInfo.xmin))); /* smallest decimal exponent */
+    R_dec_min_exponent = int(floor(log10(R_AccuracyInfo.xmin))); /* smallest decimal exponent */
     PROTECT(ans = Rf_allocVector(VECSXP, 18));
     PROTECT(nms = Rf_allocVector(STRSXP, 18));
     SET_STRING_ELT(nms, 0, Rf_mkChar("double.eps"));
@@ -1741,6 +1741,7 @@ SEXP attribute_hidden do_setlocale(/*const*/ Expression* call, const BuiltInFunc
 	    resetICUcollator();
 	    setlocale(LC_MONETARY, l);
 	    setlocale(LC_TIME, l);
+	    dt_invalidate_locale();
 	    /* Need to return value of LC_ALL */
 	    p = setlocale(cat, nullptr);
 	}
@@ -1888,7 +1889,13 @@ SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFun
     for (i = 0; i < n; i++) {
 	SEXP tmp = STRING_ELT(fn, i);
 	if (tmp != NA_STRING) {
+#ifndef Win32
 	    tmp = markKnown(R_ExpandFileName(Rf_translateChar(tmp)), tmp);
+#else
+/* Windows can have files and home directories that aren't representable in the native encoding (e.g. latin1), so
+   we need to translate everything to UTF8.  */
+	    tmp = mkCharCE(R_ExpandFileNameUTF8(translateCharUTF8(tmp)), CE_UTF8);
+#endif
 	}
 	SET_STRING_ELT(ans, i, tmp);
     }
@@ -2802,7 +2809,7 @@ SEXP attribute_hidden do_Cstack_info(/*const*/ Expression* call, const BuiltInFu
     PROTECT(ans = Rf_allocVector(INTSXP, 4));
     PROTECT(nms = Rf_allocVector(STRSXP, 4));
     /* FIXME: could be out of range */
-    INTEGER(ans)[0] = (R_CStackLimit == RHOCONSTRUCT(uintptr_t, -1)) ? NA_INTEGER : int( R_CStackLimit);
+    INTEGER(ans)[0] = (R_CStackLimit == RHOCONSTRUCT(uintptr_t, -1)) ? NA_INTEGER : int(R_CStackLimit);
     INTEGER(ans)[1] = (R_CStackLimit ==  RHOCONSTRUCT(uintptr_t, -1)) ? NA_INTEGER : int
 	(R_CStackDir * (R_CStackStart - uintptr_t( &ans)));
     INTEGER(ans)[2] = R_CStackDir;

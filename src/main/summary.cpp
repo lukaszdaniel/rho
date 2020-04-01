@@ -116,7 +116,7 @@ static Rboolean isum(int *x, R_xlen_t n, int *value, Rboolean narm, SEXP call)
 	warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
 	*value = NA_INTEGER;
     }
-    else *value = int( s);
+    else *value = int(s);
 
     return updated;
 }

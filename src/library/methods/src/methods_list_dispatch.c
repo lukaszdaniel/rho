@@ -515,6 +515,7 @@ SEXP R_standardGeneric(SEXP fname, SEXP ev, SEXP fdef)
 	    if (inherits(f, "internalDispatchMethod")) {
                 val = R_deferred_default_method();
             } else {
+                SEXP R_execMethod(SEXP, SEXP);
                 PROTECT(f); nprotect++; /* is this needed?? */
                 val = R_execMethod(f, ev);
             }

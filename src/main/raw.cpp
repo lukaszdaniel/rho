@@ -188,7 +188,7 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
 		    itmp |= j & 0x1;
 		}
 	    }
-	    INTEGER(ans)[i] = int( itmp);
+	    INTEGER(ans)[i] = int(itmp);
 	}
     UNPROTECT(1);
     return ans;
@@ -203,7 +203,7 @@ static int mbrtoint(int *w, const char *s)
 	*w = 0;
 	return 0;
     } else if (byte < 0xC0) {
-	*w = int( byte);
+	*w = int(byte);
 	return 1;
     } else if (byte < 0xE0) {
 	if (!s[1]) return -2;
@@ -369,7 +369,7 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	    strncpy(tmp + len, buf, used);
 	    len += used;
 	}
-	ans = PROTECT(Rf_ScalarString(Rf_mkCharLenCE(tmp, int( len), CE_UTF8)));
+	ans = PROTECT(Rf_ScalarString(Rf_mkCharLenCE(tmp, int(len), CE_UTF8)));
 	if(len >= 10000) Free(tmp);
     }
     UNPROTECT(2);

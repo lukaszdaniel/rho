@@ -537,9 +537,9 @@ new BuiltInFunction("commandArgs", do_commandArgs, 0,	11,	0,	{PP_FUNCALL, PREC_F
 new BuiltInFunction("internalsID", do_internalsID,	0,	11,	0,	{PP_FUNCALL, PREC_FN,   0}),
 
 #ifdef Win32
-new BuiltInFunction("system",	do_system,	0,	211,	5,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("system",	do_system,	0,	211,	6,	{PP_FUNCALL, PREC_FN,	0}),
 #else
-new BuiltInFunction("system",	do_system,	0,	211,	2,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("system",	do_system,	0,	211,	3,	{PP_FUNCALL, PREC_FN,	0}),
 #endif
 
 #ifdef Win32

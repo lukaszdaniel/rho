@@ -594,7 +594,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 			    strncpy(buf, p, 512); buf[511] = '\0';
 			    p = buf;
 			}
-			w = int( strlen(p));
+			w = int(strlen(p));
 			cat_sepwidth(sepr, &sepw, ntot);
 			/* This is inconsistent with the version above.
 			   As from R 2.3.0, fill <= 0 is ignored. */
@@ -714,7 +714,7 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
 	break;
     case LISTSXP:
 	if (len > INT_MAX) Rf_error("too long for a pairlist");
-	s = Rf_allocList(int( len));
+	s = Rf_allocList(int(len));
 	break;
     default:
 	Rf_error(_("vector: cannot make a vector of mode '%s'."),

@@ -135,10 +135,10 @@ SEXP attribute_hidden do_nzchar(/*const*/ Expression* call, const BuiltInFunctio
     va_end(args);
 
     if (isFactor(x))
-	error(_("'%s' requires a character vector"), "nzchar()");
+	Rf_error(_("'%s' requires a character vector"), "nzchar()");
     PROTECT(x = coerceVector(x, STRSXP));
     if (!isString(x))
-	error(_("'%s' requires a character vector"), "nzchar()");
+	Rf_error(_("'%s' requires a character vector"), "nzchar()");
 
     R_xlen_t i, len = XLENGTH(x);
     PROTECT(ans = allocVector(LGLSXP, len));
@@ -167,10 +167,10 @@ int R_nchar(SEXP string, nchar_type type_,
 	break;
     case Chars:
 	if (IS_UTF8(string)) {
-	    const char *p = CHAR(string);
+	    const char *p = R_CHAR(string);
 	    if (!utf8Valid(p)) {
 		if (!allowNA)
-		    error(_("invalid multibyte string, %s"), msg_name);
+		    Rf_error(_("invalid multibyte string, %s"), msg_name);
 		return NA_INTEGER;
 	    } else {
 		int nc = 0;
@@ -179,23 +179,23 @@ int R_nchar(SEXP string, nchar_type type_,
 	    }
 	} else if (IS_BYTES(string)) {
 	    if (!allowNA) /* could do chars 0 */
-		error(_("number of characters is not computable in \"bytes\" encoding, %s"),
+		Rf_error(_("number of characters is not computable in \"bytes\" encoding, %s"),
 		      msg_name);
 	    return NA_INTEGER;
 	} else if (mbcslocale) {
-	    int nc = (int) mbstowcs(NULL, translateChar(string), 0);
+	    int nc = (int) mbstowcs(NULL, Rf_translateChar(string), 0);
 	    if (!allowNA && nc < 0)
-		error(_("invalid multibyte string, %s"), msg_name);
+		Rf_error(_("invalid multibyte string, %s"), msg_name);
 	    return (nc >= 0 ? nc : NA_INTEGER);
 	} else
-	    return ((int) strlen(translateChar(string)));
+	    return ((int) strlen(Rf_translateChar(string)));
 	break;
     case Width:
 	if (IS_UTF8(string)) {
-	    const char *p = CHAR(string);
+	    const char *p = R_CHAR(string);
 	    if (!utf8Valid(p)) {
 		if (!allowNA)
-		    error(_("invalid multibyte string, %s"), msg_name);
+		    Rf_error(_("invalid multibyte string, %s"), msg_name);
 		return NA_INTEGER;
 	    } else {
 		wchar_t wc1;
@@ -213,11 +213,11 @@ int R_nchar(SEXP string, nchar_type type_,
 	    }
 	} else if (IS_BYTES(string)) {
 	    if (!allowNA) /* could do width 0 */
-		error(_("width is not computable for %s in \"bytes\" encoding"),
+		Rf_error(_("width is not computable for %s in \"bytes\" encoding"),
 		      msg_name);
 	    return NA_INTEGER;
 	} else if (mbcslocale) {
-	    const char *xi = translateChar(string);
+	    const char *xi = Rf_translateChar(string);
 	    int nc = (int) mbstowcs(NULL, xi, 0);
 	    if (nc >= 0) {
 		const void *vmax = vmaxget();
@@ -228,11 +228,11 @@ int R_nchar(SEXP string, nchar_type type_,
 		vmaxset(vmax);
 		return (nci18n < 1) ? nc : nci18n;
 	    } else if (allowNA)
-		error(_("invalid multibyte string, %s"), msg_name);
+		Rf_error(_("invalid multibyte string, %s"), msg_name);
 	    else
 		return NA_INTEGER;
 	} else
-	    return (int) strlen(translateChar(string));
+	    return (int) strlen(Rf_translateChar(string));
 
     } // switch
     return NA_INTEGER; // -Wall
@@ -243,21 +243,21 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
     SEXP d, s, x;
 
     if (isFactor(x_))
-	error(_("'%s' requires a character vector"), "nchar()");
+	Rf_error(_("'%s' requires a character vector"), "nchar()");
     PROTECT(x = coerceVector(x_, STRSXP));
     if (!isString(x))
-	error(_("'%s' requires a character vector"), "nchar()");
+	Rf_error(_("'%s' requires a character vector"), "nchar()");
     R_xlen_t len = XLENGTH(x);
     if (!isString(stype) || LENGTH(stype) != 1)
-	error(_("invalid '%s' argument"), "type");
-    const char *type = CHAR(STRING_ELT(stype, 0)); /* always ASCII */
+	Rf_error(_("invalid '%s' argument"), "type");
+    const char *type = R_CHAR(STRING_ELT(stype, 0)); /* always ASCII */
     size_t ntype = strlen(type);
-    if (ntype == 0) error(_("invalid '%s' argument"), "type");
+    if (ntype == 0) Rf_error(_("invalid '%s' argument"), "type");
     nchar_type type_;
     if (streqln(type, "bytes", ntype))	 type_ = Bytes;
     else if (streqln(type, "chars", ntype)) type_ = Chars;
     else if (streqln(type, "width", ntype)) type_ = Width;
-    else error(_("invalid '%s' argument"), "type");
+    else Rf_error(_("invalid '%s' argument"), "type");
     int allowNA = asLogical( allowNA_);
     if (allowNA == NA_LOGICAL) allowNA = 0;
     int keepNA = asLogical( keepNA_);
@@ -302,7 +302,7 @@ static void substr(char *buf, const char *str, int ienc, int sa, int so)
 	    mbs_init(&mb_st);
 	    for (i = 1; i < sa; i++) str += Rf_mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st);
 	    for (i = sa; i <= so && str < end; i++) {
-		used = int( Rf_mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st));
+		used = int(Rf_mbrtowc(nullptr, str, MB_CUR_MAX, &mb_st));
 		for (j = 0; j < used; j++) *buf++ = *str++;
 	    }
 	} else
@@ -317,7 +317,7 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
     RObject* x = x_;
 
     if (!isString(x))
-	error(_("extracting substrings from a non-character object"));
+	Rf_error(_("extracting substrings from a non-character object"));
     R_xlen_t len = XLENGTH(x);
     PROTECT(s = allocVector(STRSXP, len));
     if (len > 0) {
@@ -327,7 +327,7 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
 	    k = LENGTH(sa),
 	    l = LENGTH(so);
 	if (!isInteger(sa) || !isInteger(so) || k == 0 || l == 0)
-	    error(_("invalid substring arguments"));
+	    Rf_error(_("invalid substring arguments"));
 
 	for (R_xlen_t i = 0; i < len; i++) {
 	    int start = INTEGER(sa)[i % k],
@@ -338,14 +338,14 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
 		continue;
 	    }
 	    cetype_t ienc = getCharCE(el);
-	    const char *ss = CHAR(el);
+	    const char *ss = R_CHAR(el);
 	    size_t slen = strlen(ss); /* FIXME -- should handle embedded nuls */
 	    char* buf = static_cast<char*>(R_AllocStringBuffer(slen+1, &cbuff));
 	    if (start < 1) start = 1;
 	    if (start > stop || start > RHOCONSTRUCT(int, slen)) {
 		buf[0] = '\0';
 	    } else {
-		if (stop > RHOCONSTRUCT(int, slen)) stop = int( slen);
+		if (stop > RHOCONSTRUCT(int, slen)) stop = int(slen);
 		substr(buf, ss, ienc, start, stop);
 	    }
 	    SET_STRING_ELT(s, i, mkCharCE(buf, ienc));
@@ -366,7 +366,7 @@ do_startsWith(Expression* call, const BuiltInFunction* op,
 	      RObject* Xfix /* 'prefix' or 'suffix' */)
 {
     if (!isString(x) || !isString(Xfix))
-	error(_("non-character object(s)"));
+	Rf_error(_("non-character object(s)"));
     R_xlen_t
 	n1 = XLENGTH(x),
 	n2 = XLENGTH(Xfix),
@@ -383,16 +383,16 @@ do_startsWith(Expression* call, const BuiltInFunction* op,
 	} else {
 	    // ASCII matching will do for ASCII Xfix except in non-UTF-8 MBCS
 	    Rboolean need_translate = TRUE;
-	    if (strIsASCII(CHAR(el)) && (utf8locale || !mbcslocale)) 
+	    if (strIsASCII(R_CHAR(el)) && (utf8locale || !mbcslocale)) 
 		need_translate = FALSE;
-	    cp y0 = need_translate ? translateCharUTF8(el) : CHAR(el);
+	    cp y0 = need_translate ? translateCharUTF8(el) : R_CHAR(el);
 	    int ylen = (int) strlen(y0);
 	    for (R_xlen_t i = 0; i < n1; i++) {
 		SEXP el = STRING_ELT(x, i);
 		if (el == NA_STRING) {
 		    LOGICAL(ans)[i] = NA_LOGICAL;
 		} else {
-		    cp x0 = need_translate ? translateCharUTF8(el) : CHAR(el);
+		    cp x0 = need_translate ? translateCharUTF8(el) : R_CHAR(el);
 		    if(op->variant() == 0) { // startsWith
 			LOGICAL(ans)[i] = streqln(x0, y0, ylen);
 		    } else { // endsWith
@@ -522,15 +522,15 @@ SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFun
     l = LENGTH(so);
 
     if (!isString(x))
-	error(_("replacing substrings in a non-character object"));
+	Rf_error(_("replacing substrings in a non-character object"));
     len = LENGTH(x);
     PROTECT(s = allocVector(STRSXP, len));
     if (len > 0) {
 	if (!isInteger(sa) || !isInteger(so) || k == 0 || l == 0)
-	    error(_("invalid substring arguments"));
+	    Rf_error(_("invalid substring arguments"));
 
 	v = LENGTH(value);
-	if (!isString(value) || v == 0) error(_("invalid value"));
+	if (!isString(value) || v == 0) Rf_error(_("invalid value"));
 
 	vmax = vmaxget();
 	for (i = 0; i < len; i++) {
@@ -544,7 +544,7 @@ SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFun
 		continue;
 	    }
 	    ienc = getCharCE(el);
-	    ss = CHAR(el);
+	    ss = R_CHAR(el);
 	    slen = strlen(ss);
 	    if (start < 1) start = 1;
 	    if (stop > int(slen)) stop = int(slen); /* SBCS optimization */
@@ -553,15 +553,15 @@ SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFun
 		SET_STRING_ELT(s, i, STRING_ELT(x, i));
 	    } else {
 		cetype_t ienc2 = ienc;
-		v_ss = CHAR(v_el);
+		v_ss = R_CHAR(v_el);
 		/* is the value in the same encoding?
 		   FIXME: could prefer UTF-8 here
 		 */
 		venc = getCharCE(v_el);
 		if (venc != ienc && !strIsASCII(v_ss)) {
-		    ss = translateChar(el);
+		    ss = Rf_translateChar(el);
 		    slen = strlen(ss);
-		    v_ss = translateChar(v_el);
+		    v_ss = Rf_translateChar(v_el);
 		    ienc2 = CE_NATIVE;
 		}
 		/* might expand under MBCS */
@@ -793,9 +793,9 @@ donewsc:
 		if (iswspace((int)wc[i])) mywcscpy(wc + i, wc + i + 1);
     }
 
-    size_t nb = Rf_wcstoutf8(NULL, wc, 0);
-    char *cbuf = CallocCharBuf(nb+1);
-    wcstoutf8(cbuf, wc, nb + 1);
+    int nb = (int) wcstoutf8(NULL, wc, INT_MAX);
+    char *cbuf = CallocCharBuf(nb);
+    wcstoutf8(cbuf, wc, nb);
     SEXP ans = mkCharCE(cbuf, CE_UTF8);
     Free(cbuf);
     return ans;
@@ -806,13 +806,13 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
     RObject* x = these_;
 
     if (!isString(x))
-	error(_("the first argument must be a character vector"));
+	Rf_error(_("the first argument must be a character vector"));
     int minlen = Rf_asInteger(minlength_);
     if (minlen == NA_INTEGER)
-	error(_("invalid '%s' argument"), "minlength");
+	Rf_error(_("invalid '%s' argument"), "minlength");
     int usecl = asLogical(use_classes_);
     if (usecl == NA_INTEGER)
-	error(_("invalid '%s' argument"), "use.classes");
+	Rf_error(_("invalid '%s' argument"), "use.classes");
 
     R_xlen_t len = XLENGTH(x);
     SEXP ans = PROTECT(allocVector(STRSXP, len));
@@ -823,7 +823,7 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
 	if (el  == NA_STRING)
 	    SET_STRING_ELT(ans, i, NA_STRING);
 	else {
-	    const char *s = CHAR(el);
+	    const char *s = R_CHAR(el);
 	    if (strIsASCII(s)) {
 		if(int(strlen(s)) > minlen) {
 		    R_AllocStringBuffer(strlen(s)+1, &cbuff);
@@ -863,16 +863,16 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 
     arg = names_;
     if (!isString(arg))
-	error(_("non-character names"));
+	Rf_error(_("non-character names"));
     n = XLENGTH(arg);
     allow_ = asLogical(allow__);
     if (allow_ == NA_LOGICAL)
-	error(_("invalid '%s' value"), "allow_");
+	Rf_error(_("invalid '%s' value"), "allow_");
     PROTECT(ans = allocVector(STRSXP, n));
     vmax = vmaxget();
     for (i = 0 ; i < n ; i++) {
-	This = translateChar(STRING_ELT(arg, i));
-	l = int( strlen(This));
+	This = Rf_translateChar(STRING_ELT(arg, i));
+	l = int(strlen(This));
 	/* need to prefix names not beginning with alpha or ., as
 	   well as . followed by a number */
 	need_prefix = FALSE;
@@ -892,22 +892,22 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 	    } else if (!iswalpha(wc)) need_prefix = TRUE;
 	} else {
 	    if (This[0] == '.') {
-		if (l >= 1 && isdigit(0xff & int( This[1]))) need_prefix = TRUE;
-	    } else if (!isalpha(0xff & int( This[0]))) need_prefix = TRUE;
+		if (l >= 1 && isdigit(0xff & int(This[1]))) need_prefix = TRUE;
+	    } else if (!isalpha(0xff & int(This[0]))) need_prefix = TRUE;
 	}
 	if (need_prefix) {
 	    tmp = Calloc(l+2, char);
 	    strcpy(tmp, "X");
-	    strcat(tmp, translateChar(STRING_ELT(arg, i)));
+	    strcat(tmp, Rf_translateChar(STRING_ELT(arg, i)));
 	} else {
 	    tmp = Calloc(l+1, char);
-	    strcpy(tmp, translateChar(STRING_ELT(arg, i)));
+	    strcpy(tmp, Rf_translateChar(STRING_ELT(arg, i)));
 	}
 	if (mbcslocale) {
 	    /* This cannot lengthen the string, so safe to overwrite it.
 	       Would also be possible a char at a time.
 	     */
-	    int nc = int( mbstowcs(nullptr, tmp, 0));
+	    int nc = int(mbstowcs(nullptr, tmp, 0));
 	    wchar_t *wstr = Calloc(nc+1, wchar_t), *wc;
 	    if (nc >= 0) {
 		mbstowcs(wstr, tmp, nc+1);
@@ -925,7 +925,7 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 		}
 		wcstombs(tmp, wstr, strlen(tmp)+1);
 		Free(wstr);
-	    } else error(_("invalid multibyte string %d"), i+1);
+	    } else Rf_error(_("invalid multibyte string %d"), i+1);
 	} else {
 	    for (p = tmp; *p; p++) {
 		if (*p == '.' || (allow_ && *p == '_')) /* leave alone */;
@@ -933,7 +933,7 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 		/* else leave alone */
 	    }
 	}
-	l = int( strlen(tmp));        /* needed? */
+	l = int(strlen(tmp));        /* needed? */
 	SET_STRING_ELT(ans, i, mkChar(tmp));
 	/* do we have a reserved word?  If so the name is invalid */
 	if (!isValidName(tmp)) {
@@ -967,7 +967,7 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 
     x = x_;
     /* coercion is done in wrapper */
-    if (!isString(x)) error(_("non-character argument"));
+    if (!isString(x)) Rf_error(_("non-character argument"));
     n = XLENGTH(x);
     PROTECT(y = allocVector(STRSXP, n));
 #if defined(Win32) || defined(__STDC_ISO_10646__) || defined(__APPLE__) || defined(__FreeBSD__)
@@ -993,11 +993,11 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 		const char *xi;
 		ienc = getCharCE(el);
 		if (use_UTF8 && ienc == CE_UTF8) {
-		    xi = CHAR(el);
-		    nc = int( utf8towcs(nullptr, xi, 0));
+		    xi = R_CHAR(el);
+		    nc = int(utf8towcs(nullptr, xi, 0));
 		} else {
-		    xi = translateChar(el);
-		    nc = int( mbstowcs(nullptr, xi, 0));
+		    xi = Rf_translateChar(el);
+		    nc = int(mbstowcs(nullptr, xi, 0));
 		    ienc = CE_NATIVE;
 		}
 		if (nc >= 0) {
@@ -1007,21 +1007,21 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 		    if (ienc == CE_UTF8) {
 			utf8towcs(wc, xi, nc + 1);
 			for (j = 0; j < nc; j++) wc[j] = towctrans(wc[j], tr);
-			nb = int( wcstoutf8(nullptr, wc, 0));
+			nb = int(wcstoutf8(nullptr, wc, INT_MAX));
 			cbuf = CallocCharBuf(nb);
-			wcstoutf8(cbuf, wc, nb + 1);
+			wcstoutf8(cbuf, wc, nb);
 			SET_STRING_ELT(y, i, mkCharCE(cbuf, CE_UTF8));
 		    } else {
 			mbstowcs(wc, xi, nc + 1);
 			for (j = 0; j < nc; j++) wc[j] = towctrans(wc[j], tr);
-			nb = int( wcstombs(nullptr, wc, 0));
+			nb = int(wcstombs(nullptr, wc, 0));
 			cbuf = CallocCharBuf(nb);
 			wcstombs(cbuf, wc, nb + 1);
 			SET_STRING_ELT(y, i, markKnown(cbuf, el));
 		    }
 		    Free(cbuf);
 		} else {
-		    error(_("invalid multibyte string %d"), i+1);
+		    Rf_error(_("invalid multibyte string %d"), i+1);
 		}
 	    }
 	    vmaxset(vmax);
@@ -1034,8 +1034,8 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 	    if (STRING_ELT(x, i) == NA_STRING)
 		SET_STRING_ELT(y, i, NA_STRING);
 	    else {
-		xi = CallocCharBuf(strlen(CHAR(STRING_ELT(x, i))));
-		strcpy(xi, translateChar(STRING_ELT(x, i)));
+		xi = CallocCharBuf(strlen(R_CHAR(STRING_ELT(x, i))));
+		strcpy(xi, Rf_translateChar(STRING_ELT(x, i)));
 		for (p = xi; *p != '\0'; p++)
 		    *p = char( ul ? toupper(*p) : tolower(*p));
 		SET_STRING_ELT(y, i, markKnown(xi, STRING_ELT(x, i)));
@@ -1066,7 +1066,7 @@ struct wtr_spec {
 
 static void
 wtr_build_spec(const wchar_t *s, struct wtr_spec *trs) {
-    int i, len = int( wcslen(s));
+    int i, len = int(wcslen(s));
     struct wtr_spec *This, *_new;
 
     This = trs;
@@ -1076,7 +1076,7 @@ wtr_build_spec(const wchar_t *s, struct wtr_spec *trs) {
 	if (s[i + 1] == L'-') {
 	    _new->type = WTR_RANGE;
 	    if (s[i] > s[i + 2])
-		error(_("decreasing range specification ('%lc-%lc')"),
+		Rf_error(_("decreasing range specification ('%lc-%lc')"),
 		      s[i], s[i + 2]);
 	    _new->u.r.first = s[i];
 	    _new->u.r.last = s[i + 2];
@@ -1152,7 +1152,7 @@ struct tr_spec {
 
 static void
 tr_build_spec(const char *s, struct tr_spec *trs) {
-    int i, len = int( strlen(s));
+    int i, len = int(strlen(s));
     struct tr_spec *This, *_new;
 
     This = trs;
@@ -1162,7 +1162,7 @@ tr_build_spec(const char *s, struct tr_spec *trs) {
 	if (s[i + 1] == '-') {
 	    _new->type = TR_RANGE;
 	    if (s[i] > s[i + 2])
-		error(_("decreasing range specification ('%c-%c')"),
+		Rf_error(_("decreasing range specification ('%c-%c')"),
 		      s[i], s[i + 2]);
 	    _new->u.r.first = s[i];
 	    _new->u.r.last = s[i + 2];
@@ -1307,14 +1307,14 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
     x = x_;
     n = XLENGTH(x);
     if (!isString(old) || LENGTH(old) < 1 || STRING_ELT(old, 0) == NA_STRING)
-	error(_("invalid '%s' argument"), "old");
+	Rf_error(_("invalid '%s' argument"), "old");
     if (LENGTH(old) > 1)
 	warning(_("argument '%s' has length > 1 and only the first element will be used"), "old");
     if (!isString(_new) || LENGTH(_new) < 1 || STRING_ELT(_new, 0) == NA_STRING)
-	error(_("invalid '%s' argument"), "new");
+	Rf_error(_("invalid '%s' argument"), "new");
     if (LENGTH(_new) > 1)
 	warning(_("argument '%s' has length > 1 and only the first element will be used"), "new");
-    if (!isString(x)) error("invalid '%s' argument", "x");
+    if (!isString(x)) Rf_error("invalid '%s' argument", "x");
 
     /* utf8towcs is really to UCS-4/2 */
 #if defined(Win32) || defined(__STDC_ISO_10646__) || defined(__APPLE__)  || defined(__FreeBSD__)
@@ -1347,15 +1347,15 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	trs_new->next = nullptr;
 	/* Build the old and new wtr_spec lists. */
 	if (use_UTF8 && getCharCE(STRING_ELT(old, 0)) == CE_UTF8) {
-	    s = CHAR(STRING_ELT(old, 0));
-	    nc = int( utf8towcs(nullptr, s, 0));
-	    if (nc < 0) error(_("invalid UTF-8 string 'old'"));
+	    s = R_CHAR(STRING_ELT(old, 0));
+	    nc = int(utf8towcs(nullptr, s, 0));
+	    if (nc < 0) Rf_error(_("invalid UTF-8 string 'old'"));
 	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    utf8towcs(wc, s, nc + 1);
 	} else {
-	    s = translateChar(STRING_ELT(old, 0));
-	    nc = int( mbstowcs(nullptr, s, 0));
-	    if (nc < 0) error(_("invalid multibyte string 'old'"));
+	    s = Rf_translateChar(STRING_ELT(old, 0));
+	    nc = int(mbstowcs(nullptr, s, 0));
+	    if (nc < 0) Rf_error(_("invalid multibyte string 'old'"));
 	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    mbstowcs(wc, s, nc + 1);
 	}
@@ -1366,15 +1366,15 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	wtr_build_spec(wc, trs_cnt); /* use count only */
 
 	if (use_UTF8 && getCharCE(STRING_ELT(_new, 0)) == CE_UTF8) {
-	    s = CHAR(STRING_ELT(_new, 0));
-	    nc = int( utf8towcs(nullptr, s, 0));
-	    if (nc < 0) error(_("invalid UTF-8 string 'new'"));
+	    s = R_CHAR(STRING_ELT(_new, 0));
+	    nc = int(utf8towcs(nullptr, s, 0));
+	    if (nc < 0) Rf_error(_("invalid UTF-8 string 'new'"));
 	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    utf8towcs(wc, s, nc + 1);
 	} else {
-	    s = translateChar(STRING_ELT(_new, 0));
-	    nc = int( mbstowcs(nullptr, s, 0));
-	    if (nc < 0) error(_("invalid multibyte string 'new'"));
+	    s = Rf_translateChar(STRING_ELT(_new, 0));
+	    nc = int(mbstowcs(nullptr, s, 0));
+	    if (nc < 0) Rf_error(_("invalid multibyte string 'new'"));
 	    wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t), &cbuff));
 	    mbstowcs(wc, s, nc + 1);
 	}
@@ -1402,7 +1402,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    if (c_old == '\0')
 		break;
 	    else if (c_new == '\0')
-		error(_("'old' is longer than 'new'"));
+		Rf_error(_("'old' is longer than 'new'"));
 	    else {
 		xtable[i].c_old = c_old;
 		xtable[i].c_new = c_new;
@@ -1426,15 +1426,15 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    else {
 		ienc = getCharCE(el);
 		if (use_UTF8 && ienc == CE_UTF8) {
-		    xi = CHAR(el);
-		    nc = int( utf8towcs(nullptr, xi, 0));
+		    xi = R_CHAR(el);
+		    nc = int(utf8towcs(nullptr, xi, 0));
 		} else {
-		    xi = translateChar(el);
-		    nc = int( mbstowcs(nullptr, xi, 0));
+		    xi = Rf_translateChar(el);
+		    nc = int(mbstowcs(nullptr, xi, 0));
 		    ienc = CE_NATIVE;
 		}
 		if (nc < 0)
-		    error(_("invalid input multibyte string %d"), i+1);
+		    Rf_error(_("invalid input multibyte string %d"), i+1);
                 wc = static_cast<wchar_t *>(R_AllocStringBuffer((nc+1)*sizeof(wchar_t),
 								 &cbuff));
 		if (ienc == CE_UTF8) utf8towcs(wc, xi, nc + 1);
@@ -1445,12 +1445,12 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 		    if (tbl) wc[j] = tbl->c_new;
 		}
 		if (ienc == CE_UTF8) {
-		    nb = int( wcstoutf8(nullptr, wc, 0));
+		    nb = int(wcstoutf8(nullptr, wc, INT_MAX));
 		    cbuf = CallocCharBuf(nb);
-		    wcstoutf8(cbuf, wc, nb + 1);
+		    wcstoutf8(cbuf, wc, nb);
 		    SET_STRING_ELT(y, i, mkCharCE(cbuf, CE_UTF8));
 		} else {
-		    nb = int( wcstombs(nullptr, wc, 0));
+		    nb = int(wcstombs(nullptr, wc, 0));
 		    cbuf = CallocCharBuf(nb);
 		    wcstombs(cbuf, wc, nb + 1);
 		    SET_STRING_ELT(y, i, markKnown(cbuf, el));
@@ -1476,8 +1476,8 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	trs_new->type = TR_INIT;
 	trs_new->next = nullptr;
 	/* Build the old and new tr_spec lists. */
-	tr_build_spec(translateChar(STRING_ELT(old, 0)), trs_old);
-	tr_build_spec(translateChar(STRING_ELT(_new, 0)), trs_new);
+	tr_build_spec(Rf_translateChar(STRING_ELT(old, 0)), trs_old);
+	tr_build_spec(Rf_translateChar(STRING_ELT(_new, 0)), trs_new);
 	/* Initialize the pointers for walking through the old and new
 	   tr_spec lists and retrieving the next chars from the lists.
 	*/
@@ -1491,7 +1491,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    if (c_old == '\0')
 		break;
 	    else if (c_new == '\0')
-		error(_("'old' is longer than 'new'"));
+		Rf_error(_("'old' is longer than 'new'"));
 	    else
 		xtable[c_old] = c_new;
 	}
@@ -1507,7 +1507,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 	    if (STRING_ELT(x,i) == NA_STRING)
 		SET_STRING_ELT(y, i, NA_STRING);
 	    else {
-		const char *xi = translateChar(STRING_ELT(x, i));
+		const char *xi = Rf_translateChar(STRING_ELT(x, i));
 		cbuf = CallocCharBuf(strlen(xi));
 		strcpy(cbuf, xi);
 		for (p = reinterpret_cast<unsigned char *>(cbuf); *p != '\0'; p++)
@@ -1540,18 +1540,18 @@ SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFuncti
 
     /* as.character happens at R level now */
     if (!isString(x = x_))
-	error(_("strtrim() requires a character vector"));
+	Rf_error(_("strtrim() requires a character vector"));
     len = XLENGTH(x);
     PROTECT(s = allocVector(STRSXP, len));
     if(len > 0) {
 	PROTECT(width = coerceVector(width_, INTSXP));
 	nw = LENGTH(width);
 	if (!nw || (nw < len && len % nw))
-	    error(_("invalid '%s' argument"), "width");
+	    Rf_error(_("invalid '%s' argument"), "width");
 	for (i = 0; i < nw; i++)
 	    if (INTEGER(width)[i] == NA_INTEGER ||
 		INTEGER(width)[i] < 0)
-		error(_("invalid '%s' argument"), "width");
+		Rf_error(_("invalid '%s' argument"), "width");
 	vmax = vmaxget();
 	for (i = 0; i < len; i++) {
 	    if (STRING_ELT(x, i) == NA_STRING) {
@@ -1559,7 +1559,7 @@ SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFuncti
 		continue;
 	    }
 	    w = INTEGER(width)[i % nw];
-	    This = translateChar(STRING_ELT(x, i));
+	    This = Rf_translateChar(STRING_ELT(x, i));
 	    nc = (int) strlen(This);
 	    buf = static_cast<char *>(R_AllocStringBuffer(nc, &cbuff));
 	    wsum = 0;
@@ -1595,10 +1595,10 @@ static int strtoi(SEXP s, int base)
     errno = 0;
 
     if(s == NA_STRING) return(NA_INTEGER);
-    res = strtol(CHAR(s), &endp, base); /* ASCII */
+    res = strtol(R_CHAR(s), &endp, base); /* ASCII */
     if(errno || *endp != '\0') res = NA_INTEGER;
     if(res > INT_MAX || res < INT_MIN) res = NA_INTEGER;
-    return int( res);
+    return int(res);
 }
 
 SEXP attribute_hidden do_strtoi(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* base_)
@@ -1611,10 +1611,10 @@ SEXP attribute_hidden do_strtoi(/*const*/ Expression* call, const BuiltInFunctio
     b = base_;
 
     if(!isInteger(b) || (LENGTH(b) < 1))
-	error(_("invalid '%s' argument"), "base");
+	Rf_error(_("invalid '%s' argument"), "base");
     base = INTEGER(b)[0];
     if((base != 0) && ((base < 2) || (base > 36)))
-	error(_("invalid '%s' argument"), "base");
+	Rf_error(_("invalid '%s' argument"), "base");
 
     PROTECT(ans = allocVector(INTSXP, n = LENGTH(x)));
     for(i = 0; i < n; i++)
@@ -1677,7 +1677,7 @@ SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, ROb
 	       against integer overflow */
 	    double len = ((double) nc) * ni;
 	    if (len > INT_MAX)
-		error("R character strings are limited to 2^31-1 bytes");
+		Rf_error("R character strings are limited to 2^31-1 bytes");
 
 	    cbuf = buf = CallocCharBuf(nc * ni);
 	    for(j = 0; j < ni; j++) {

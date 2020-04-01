@@ -64,40 +64,40 @@ amatch_regaparams(regaparams_t *params, int patlen,
 	params->max_cost = INT_MAX;
     } else {
 	if(bound < 1) bound *= (patlen * max_cost);
-	params->max_cost = IntegerFromReal(ceil(bound), &warn);
-	CoercionWarning(warn);
+	params->max_cost = Rf_IntegerFromReal(ceil(bound), &warn);
+	Rf_CoercionWarning(warn);
     }
     bound = bounds[1];
     if(ISNA(bound)) {
 	params->max_del = INT_MAX;
     } else {
 	if(bound < 1) bound *= patlen;
-	params->max_del = IntegerFromReal(ceil(bound), &warn);
-	CoercionWarning(warn);
+	params->max_del = Rf_IntegerFromReal(ceil(bound), &warn);
+	Rf_CoercionWarning(warn);
     }
     bound = bounds[2];
     if(ISNA(bound)) {
 	params->max_ins = INT_MAX;
     } else {
 	if(bound < 1) bound *= patlen;
-	params->max_ins = IntegerFromReal(ceil(bound), &warn);
-	CoercionWarning(warn);
+	params->max_ins = Rf_IntegerFromReal(ceil(bound), &warn);
+	Rf_CoercionWarning(warn);
     }
     bound = bounds[3];
     if(ISNA(bound)) {
 	params->max_subst = INT_MAX;
     } else {
 	if(bound < 1) bound *= patlen;
-	params->max_subst = IntegerFromReal(ceil(bound), &warn);
-	CoercionWarning(warn);
+	params->max_subst = Rf_IntegerFromReal(ceil(bound), &warn);
+	Rf_CoercionWarning(warn);
     }
     bound = bounds[4];
     if(ISNA(bound)) {
 	params->max_err = INT_MAX;
     } else {
 	if(bound < 1) bound *= patlen;
-	params->max_err = IntegerFromReal(ceil(bound), &warn);
-	CoercionWarning(warn);
+	params->max_err = Rf_IntegerFromReal(ceil(bound), &warn);
+	Rf_CoercionWarning(warn);
     }
 }
 
@@ -114,10 +114,10 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
     regamatch_t match;
     int rc, cflags = REG_NOSUB;
 
-    int opt_icase = asLogical(ignore_case_);
-    int opt_value = asLogical(value_);
-    int useBytes = asLogical(useBytes_);
-    int opt_fixed = asLogical(fixed_);
+    int opt_icase = Rf_asLogical(ignore_case_);
+    int opt_value = Rf_asLogical(value_);
+    int useBytes = Rf_asLogical(useBytes_);
+    int opt_fixed = Rf_asLogical(fixed_);
 
     if(opt_icase == NA_INTEGER) opt_icase = 0;
     if(opt_value == NA_INTEGER) opt_value = 0;
@@ -126,12 +126,12 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     if(opt_fixed) cflags |= REG_LITERAL;
 
-    if(!isString(pattern) || Rf_length(pattern) < 1)
-	error(_("invalid '%s' argument"), "pattern");
+    if(!Rf_isString(pattern) || Rf_length(pattern) < 1)
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if(Rf_length(pattern) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
 
-    if(!isString(vec)) error(_("invalid '%s' argument"), "x");
+    if(!Rf_isString(vec)) Rf_error(_("invalid '%s' argument"), "x");
 
     if(opt_icase) cflags |= REG_ICASE;
 
@@ -161,14 +161,14 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     if(STRING_ELT(pattern, 0) == NA_STRING) {
 	if(opt_value) {
-	    PROTECT(ans = allocVector(STRSXP, n));
+	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for(i = 0; i < n; i++)
 		SET_STRING_ELT(ans, i, NA_STRING);
 	    SEXP nms = getAttrib(vec, R_NamesSymbol);
 	    if(!isNull(nms))
-		setAttrib(ans, R_NamesSymbol, nms);
+		Rf_setAttrib(ans, R_NamesSymbol, nms);
 	} else {
-	    PROTECT(ans = allocVector(INTSXP, n));
+	    PROTECT(ans = Rf_allocVector(INTSXP, n));
 	    for(i = 0; i < n; i++)
 		INTEGER(ans)[i] = NA_INTEGER;
 	}
@@ -176,36 +176,36 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	return ans;
     }
 
-    static SEXP s_nchar = install("nchar");
+    static SEXP s_nchar = Rf_install("nchar");
     if(useBytes)
 	PROTECT(call = rho::SEXP_downcast<rho::Expression*>(
-		    lang3(s_nchar, pattern,
-			  ScalarString(mkChar("bytes")))));
+		    Rf_lang3(s_nchar, pattern,
+			  Rf_ScalarString(Rf_mkChar("bytes")))));
     else
 	PROTECT(call = rho::SEXP_downcast<rho::Expression*>(
-		    lang3(s_nchar, pattern,
-			  ScalarString(mkChar("chars")))));
-    patlen = asInteger(eval(call, R_BaseEnv));
+		    Rf_lang3(s_nchar, pattern,
+			  Rf_ScalarString(Rf_mkChar("chars")))));
+    patlen = Rf_asInteger(Rf_eval(call, R_BaseEnv));
     UNPROTECT(1);
     if(!patlen)
-	error(_("'pattern' must be a non-empty character string"));
+	Rf_error(_("'pattern' must be a non-empty character string"));
 
     /* Rf_wtransChar and translateChar can R_alloc */
     vmax = vmaxget();
     if(useBytes)
-	rc = tre_regcompb(&reg, CHAR(STRING_ELT(pattern, 0)), cflags);
+	rc = tre_regcompb(&reg, R_CHAR(STRING_ELT(pattern, 0)), cflags);
     else if(useWC)
 	rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pattern, 0)), cflags);
     else {
-	const char *spat = translateChar(STRING_ELT(pattern, 0));
+	const char *spat = Rf_translateChar(STRING_ELT(pattern, 0));
 	if(mbcslocale && !mbcsValid(spat))
-	    error(_("regular expression is invalid in this locale"));
+	    Rf_error(_("regular expression is invalid in this locale"));
 	rc = tre_regcomp(&reg, spat, cflags);
     }
     if(rc) {
 	char errbuf[1001];
 	tre_regerror(rc, &reg, errbuf, 1001);
-	error(_("regcomp error:  '%s'"), errbuf);
+	Rf_error(_("regcomp error:  '%s'"), errbuf);
     }
 
     tre_regaparams_default(&params);
@@ -214,7 +214,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     /* Matching. */
     n = LENGTH(vec);
-    PROTECT(ind = allocVector(LGLSXP, n));
+    PROTECT(ind = Rf_allocVector(LGLSXP, n));
     nmatches = 0;
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -227,7 +227,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	memset(&match, 0, sizeof(match));
 	if(useBytes)
 	    rc = tre_regaexecb(&reg,
-			       CHAR(STRING_ELT(vec, i)),
+			       R_CHAR(STRING_ELT(vec, i)),
 			       &match, params, 0);
 	else if(useWC) {
 	    rc = tre_regawexec(&reg,
@@ -235,9 +235,9 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 			       &match, params, 0);
 	    vmaxset(vmax);
 	} else {
-	    const char *s = translateChar(STRING_ELT(vec, i));
+	    const char *s = Rf_translateChar(STRING_ELT(vec, i));
 	    if(mbcslocale && !mbcsValid(s))
-		error(_("input string %d is invalid in this locale"), i+1);
+		Rf_error(_("input string %d is invalid in this locale"), i+1);
 	    rc = tre_regaexec(&reg, s, &match, params, 0);
 	    vmaxset(vmax);
 	}
@@ -254,7 +254,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
     }
 
     if(opt_value) {
-	PROTECT(ans = allocVector(STRSXP, nmatches));
+	PROTECT(ans = Rf_allocVector(STRSXP, nmatches));
 	SEXP nmold = getAttrib(vec, R_NamesSymbol), nm;
 	for (j = i = 0 ; i < n ; i++) {
 	    if(LOGICAL(ind)[i])
@@ -262,23 +262,23 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	}
 	/* copy across names and subset */
 	if(!isNull(nmold)) {
-	    nm = allocVector(STRSXP, nmatches);
+	    nm = Rf_allocVector(STRSXP, nmatches);
 	    for (i = 0, j = 0; i < n ; i++)
 		if(LOGICAL(ind)[i])
 		    SET_STRING_ELT(nm, j++, STRING_ELT(nmold, i));
-	    setAttrib(ans, R_NamesSymbol, nm);
+	    Rf_setAttrib(ans, R_NamesSymbol, nm);
 	}
     }
 #ifdef LONG_VECTOR_SUPPORT
     else if (n > INT_MAX) {
-	PROTECT(ans = allocVector(REALSXP, nmatches));
+	PROTECT(ans = Rf_allocVector(REALSXP, nmatches));
 	for (j = i = 0 ; i < n ; i++)
 	    if(LOGICAL(ind)[i] == 1)
 		REAL(ans)[j++] = double((i + 1));
     }
 #endif
     else {
-	PROTECT(ans = allocVector(INTSXP, nmatches));
+	PROTECT(ans = Rf_allocVector(INTSXP, nmatches));
 	for (j = i = 0 ; i < n ; i++)
 	    if(LOGICAL(ind)[i] == 1)
 		INTEGER(ans)[j++] = int((i + 1));
@@ -434,7 +434,7 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 			    COUNTS(i, j, 0) = nins;
 			    COUNTS(i, j, 1) = ndel;
 			    COUNTS(i, j, 2) = nsub;
-			    SET_STRING_ELT(trafos, i + nx * j, mkChar(buf));
+			    SET_STRING_ELT(trafos, i + nx * j, Rf_mkChar(buf));
 			}
 			Free(paths);
 		    }
@@ -447,34 +447,34 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
     PROTECT(x = getAttrib(x, R_NamesSymbol));
     PROTECT(y = getAttrib(y, R_NamesSymbol));
     if(!isNull(x) || !isNull(y)) {
-	PROTECT(dimnames = allocVector(VECSXP, 2));
+	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
-	setAttrib(ans, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
 	UNPROTECT(1); /* dimnames */
     }
 
     if(opt_counts) {
 	Free(buf);
-	PROTECT(dimnames = allocVector(VECSXP, 3));
-	PROTECT(names = allocVector(STRSXP, 3));
-	SET_STRING_ELT(names, 0, mkChar("ins"));
-	SET_STRING_ELT(names, 1, mkChar("del"));
-	SET_STRING_ELT(names, 2, mkChar("sub"));
+	PROTECT(dimnames = Rf_allocVector(VECSXP, 3));
+	PROTECT(names = Rf_allocVector(STRSXP, 3));
+	SET_STRING_ELT(names, 0, Rf_mkChar("ins"));
+	SET_STRING_ELT(names, 1, Rf_mkChar("del"));
+	SET_STRING_ELT(names, 2, Rf_mkChar("sub"));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	setAttrib(counts, R_DimNamesSymbol, dimnames);
-	setAttrib(ans, install("counts"), counts);
+	Rf_setAttrib(counts, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, Rf_install("counts"), counts);
 	UNPROTECT(2); /* names, dimnames */
 	if(!isNull(x) || !isNull(y)) {
-	    PROTECT(dimnames = allocVector(VECSXP, 2));
+	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dimnames, 0, x);
 	    SET_VECTOR_ELT(dimnames, 1, y);
-	    setAttrib(trafos, R_DimNamesSymbol, dimnames);
+	    Rf_setAttrib(trafos, R_DimNamesSymbol, dimnames);
 	    UNPROTECT(1); /* dimnames */
 	}
-	setAttrib(ans, install("trafos"), trafos);
+	Rf_setAttrib(ans, Rf_install("trafos"), trafos);
 	UNPROTECT(2); /* trafos, counts */
     }
 
@@ -507,11 +507,11 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     x = x_;
     y = y_;
     opt_costs = costs_;
-    opt_counts = asLogical(counts_);
-    opt_fixed = asInteger(fixed_);
-    opt_partial = asInteger(partial_);
-    opt_icase = asLogical(ignore_case_);
-    useBytes = asLogical(useBytes_);
+    opt_counts = Rf_asLogical(counts_);
+    opt_fixed = Rf_asInteger(fixed_);
+    opt_partial = Rf_asInteger(partial_);
+    opt_icase = Rf_asLogical(ignore_case_);
+    useBytes = Rf_asLogical(useBytes_);
 
     if(opt_counts == NA_INTEGER) opt_counts = 0;
     if(opt_fixed == NA_INTEGER) opt_fixed = 1;
@@ -523,7 +523,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     if(opt_icase) cflags |= REG_ICASE;
 
     if(!opt_fixed && !opt_partial) {
-	warning(_("argument '%s' will be ignored"), "partial = FALSE");
+	Rf_warning(_("argument '%s' will be ignored"), "partial = FALSE");
     }
 
     if(!opt_partial)
@@ -605,14 +605,14 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	    }
 	} else {
 	    if(useBytes)
-		rc = tre_regcompb(&reg, CHAR(elt), cflags);
+		rc = tre_regcompb(&reg, R_CHAR(elt), cflags);
 	    else if(useWC) {
 		rc = tre_regwcomp(&reg, Rf_wtransChar(elt), cflags);
 		vmaxset(vmax);
 	    } else {
-		s = translateChar(elt);
+		s = Rf_translateChar(elt);
 		if(mbcslocale && !mbcsValid(s)) {
-		    error(_("input string x[%d] is invalid in this locale"),
+		    Rf_error(_("input string x[%d] is invalid in this locale"),
 			  i + 1);
 		}
 		rc = tre_regcomp(&reg, s, cflags);
@@ -621,7 +621,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	    if(rc) {
 		char errbuf[1001];
 		tre_regerror(rc, &reg, errbuf, 1001);
-		error(_("regcomp error:  '%s'"), errbuf);
+		Rf_error(_("regcomp error:  '%s'"), errbuf);
 	    }
 	    if(opt_counts) {
 		nmatch = reg.re_nsub + 1;
@@ -649,16 +649,16 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 			match.pmatch = pmatch;
 		    }
 		    if(useBytes)
-			rc = tre_regaexecb(&reg, CHAR(elt),
+			rc = tre_regaexecb(&reg, R_CHAR(elt),
 					   &match, params, 0);
 		    else if(useWC) {
 			rc = tre_regawexec(&reg, Rf_wtransChar(elt),
 					   &match, params, 0);
 			vmaxset(vmax);
 		    } else {
-			t = translateChar(elt);
+			t = Rf_translateChar(elt);
 			if(mbcslocale && !mbcsValid(t)) {
-			    error(_("input string y[%d] is invalid in this locale"),
+			    Rf_error(_("input string y[%d] is invalid in this locale"),
 				  j + 1);
 			}
 			rc = tre_regaexec(&reg, t,
@@ -696,33 +696,33 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     PROTECT(x = getAttrib(x, R_NamesSymbol));
     PROTECT(y = getAttrib(y, R_NamesSymbol));
     if(!isNull(x) || !isNull(y)) {
-	PROTECT(dimnames = allocVector(VECSXP, 2));
+	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
-	setAttrib(ans, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
 	UNPROTECT(1); /* dimnames */
     }
     if(opt_counts) {
-	PROTECT(dimnames = allocVector(VECSXP, 3));
-	PROTECT(names = allocVector(STRSXP, 3));
-	SET_STRING_ELT(names, 0, mkChar("ins"));
-	SET_STRING_ELT(names, 1, mkChar("del"));
-	SET_STRING_ELT(names, 2, mkChar("sub"));
+	PROTECT(dimnames = Rf_allocVector(VECSXP, 3));
+	PROTECT(names = Rf_allocVector(STRSXP, 3));
+	SET_STRING_ELT(names, 0, Rf_mkChar("ins"));
+	SET_STRING_ELT(names, 1, Rf_mkChar("del"));
+	SET_STRING_ELT(names, 2, Rf_mkChar("sub"));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	setAttrib(counts, R_DimNamesSymbol, dimnames);
-	setAttrib(ans, install("counts"), counts);
+	Rf_setAttrib(counts, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, Rf_install("counts"), counts);
 	UNPROTECT(2); /* names, dimnames */
-	PROTECT(dimnames = allocVector(VECSXP, 3));
-	PROTECT(names = allocVector(STRSXP, 2));
-	SET_STRING_ELT(names, 0, mkChar("first"));
-	SET_STRING_ELT(names, 1, mkChar("last"));
+	PROTECT(dimnames = Rf_allocVector(VECSXP, 3));
+	PROTECT(names = Rf_allocVector(STRSXP, 2));
+	SET_STRING_ELT(names, 0, Rf_mkChar("first"));
+	SET_STRING_ELT(names, 1, Rf_mkChar("last"));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	setAttrib(offsets, R_DimNamesSymbol, dimnames);
-	setAttrib(ans, install("offsets"), offsets);
+	Rf_setAttrib(offsets, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, Rf_install("offsets"), offsets);
 	UNPROTECT(4); /* names, dimnames, counts, offsets */
     }
 
@@ -746,30 +746,30 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     int so, patlen;
     int rc, cflags = REG_EXTENDED;
 
-    int opt_icase = asLogical(ignore_case_);
-    int opt_fixed = asLogical(fixed_);
-    int useBytes = asLogical(use_bytes_);
+    int opt_icase = Rf_asLogical(ignore_case_);
+    int opt_fixed = Rf_asLogical(fixed_);
+    int useBytes = Rf_asLogical(use_bytes_);
 
     if(opt_icase == NA_INTEGER) opt_icase = 0;
     if(opt_fixed == NA_INTEGER) opt_fixed = 0;
     if(useBytes == NA_INTEGER) useBytes = 0;
     if(opt_fixed && opt_icase) {
-	warning(_("argument '%s' will be ignored"),
+	Rf_warning(_("argument '%s' will be ignored"),
 		"ignore.case = TRUE");
 	opt_icase = 0;
     }
     if(opt_fixed) cflags |= REG_LITERAL;
     if(opt_icase) cflags |= REG_ICASE;
 
-    if(!isString(pattern) ||
+    if(!Rf_isString(pattern) ||
        (Rf_length(pattern) < 1) ||
        (STRING_ELT(pattern, 0) == NA_STRING))
-	error(_("invalid '%s' argument"), "pattern");
+	Rf_error(_("invalid '%s' argument"), "pattern");
     if(Rf_length(pattern) > 1)
-	warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
+	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
 
-    if(!isString(vec))
-	error(_("invalid '%s' argument"), "text");
+    if(!Rf_isString(vec))
+	Rf_error(_("invalid '%s' argument"), "text");
 
     R_xlen_t n = XLENGTH(vec);
 
@@ -798,34 +798,34 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 	}
     }
 
-    static SEXP s_nchar = install("nchar");
+    static SEXP s_nchar = Rf_install("nchar");
     if(useBytes)
 	PROTECT(call = rho::SEXP_downcast<rho::Expression*>(
-		    lang3(s_nchar, pattern,
-			  ScalarString(mkChar("bytes")))));
+		    Rf_lang3(s_nchar, pattern,
+			  Rf_ScalarString(Rf_mkChar("bytes")))));
     else
 	PROTECT(call = rho::SEXP_downcast<rho::Expression*>(
-		    lang3(s_nchar, pattern,
-			  ScalarString(mkChar("chars")))));
-    patlen = asInteger(eval(call, R_BaseEnv));
+		    Rf_lang3(s_nchar, pattern,
+			  Rf_ScalarString(Rf_mkChar("chars")))));
+    patlen = Rf_asInteger(Rf_eval(call, R_BaseEnv));
     UNPROTECT(1);
     if(!patlen)
-	error(_("'pattern' must be a non-empty character string"));
+	Rf_error(_("'pattern' must be a non-empty character string"));
 
     if(useBytes)
-	rc = tre_regcompb(&reg, CHAR(STRING_ELT(pattern, 0)), cflags);
+	rc = tre_regcompb(&reg, R_CHAR(STRING_ELT(pattern, 0)), cflags);
     else if(useWC)
 	rc = tre_regwcomp(&reg, Rf_wtransChar(STRING_ELT(pattern, 0)), cflags);
     else {
-	s = translateChar(STRING_ELT(pattern, 0));
+	s = Rf_translateChar(STRING_ELT(pattern, 0));
 	if(mbcslocale && !mbcsValid(s))
-	    error(_("regular expression is invalid in this locale"));
+	    Rf_error(_("regular expression is invalid in this locale"));
 	rc = tre_regcomp(&reg, s, cflags);
     }
     if(rc) {
 	char errbuf[1001];
 	tre_regerror(rc, &reg, errbuf, 1001);
-	error(_("regcomp error: '%s'"), errbuf);
+	Rf_error(_("regcomp error: '%s'"), errbuf);
     }
 
     nmatch = reg.re_nsub + 1;
@@ -836,15 +836,15 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     amatch_regaparams(&params, patlen,
 		      REAL(opt_bounds), INTEGER(opt_costs));
 
-    PROTECT(ans = allocVector(VECSXP, n));
+    PROTECT(ans = Rf_allocVector(VECSXP, n));
 
     for(R_xlen_t i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if(STRING_ELT(vec, i) == NA_STRING) {
-	    PROTECT(matchpos = ScalarInteger(NA_INTEGER));
-	    SEXP s_match_length = install("match.length");
-	    setAttrib(matchpos, s_match_length,
-		      ScalarInteger(NA_INTEGER));
+	    PROTECT(matchpos = Rf_ScalarInteger(NA_INTEGER));
+	    SEXP s_match_length = Rf_install("match.length");
+	    Rf_setAttrib(matchpos, s_match_length,
+		      Rf_ScalarInteger(NA_INTEGER));
 	    SET_VECTOR_ELT(ans, i, matchpos);
 	    UNPROTECT(1);
 	} else {
@@ -854,7 +854,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 	    match.nmatch = nmatch;
 	    match.pmatch = pmatch;
 	    if(useBytes)
-		rc = tre_regaexecb(&reg, CHAR(STRING_ELT(vec, i)),
+		rc = tre_regaexecb(&reg, R_CHAR(STRING_ELT(vec, i)),
 				   &match, params, 0);
 	    else if(useWC) {
 		rc = tre_regawexec(&reg, Rf_wtransChar(STRING_ELT(vec, i)),
@@ -862,35 +862,35 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 		vmaxset(vmax);
 	    }
 	    else {
-		t = translateChar(STRING_ELT(vec, i));
+		t = Rf_translateChar(STRING_ELT(vec, i));
 		if(mbcslocale && !mbcsValid(t))
-		    error(_("input string %d is invalid in this locale"),
+		    Rf_error(_("input string %d is invalid in this locale"),
 			  i + 1);
 		rc = tre_regaexec(&reg, t,
 				  &match, params, 0);
 		vmaxset(vmax);
 	    }
 	    if(rc == REG_OK) {
-		PROTECT(matchpos = allocVector(INTSXP, nmatch));
-		PROTECT(matchlen = allocVector(INTSXP, nmatch));
+		PROTECT(matchpos = Rf_allocVector(INTSXP, nmatch));
+		PROTECT(matchlen = Rf_allocVector(INTSXP, nmatch));
 		for(R_xlen_t j = 0; j < RHOCONSTRUCT(int, match.nmatch); j++) {
 		    so = match.pmatch[j].rm_so;
 		    INTEGER(matchpos)[j] = so + 1;
 		    INTEGER(matchlen)[j] = match.pmatch[j].rm_eo - so;
 		}
-		setAttrib(matchpos, install("match.length"), matchlen);
+		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
 		if(useBytes)
-		    setAttrib(matchpos, install("useBytes"),
-			      ScalarLogical(TRUE));
+		    Rf_setAttrib(matchpos, Rf_install("useBytes"),
+			      Rf_ScalarLogical(TRUE));
 		SET_VECTOR_ELT(ans, i, matchpos);
 		UNPROTECT(2);
 	    } else {
 		/* No match (or could there be an error?). */
 		/* Alternatively, could return nmatch -1 values.
 		*/
-		PROTECT(matchpos = ScalarInteger(-1));
-		PROTECT(matchlen = ScalarInteger(-1));
-		setAttrib(matchpos, install("match.length"), matchlen);
+		PROTECT(matchpos = Rf_ScalarInteger(-1));
+		PROTECT(matchlen = Rf_ScalarInteger(-1));
+		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
 		SET_VECTOR_ELT(ans, i, matchpos);
 		UNPROTECT(2);
 	    }

@@ -295,7 +295,7 @@ SEXP Rsockwrite(SEXP ssock, SEXP sstring)
     if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
     int sock = asInteger(ssock), start = 0, end, len;
     char *buf = const_cast<char *>(translateChar(STRING_ELT(sstring, 0))), *abuf[1];
-    end = len = int( strlen(buf));
+    end = len = int(strlen(buf));
     abuf[0] = buf;
     if(!initialized) internet_Init();
     if(initialized > 0)

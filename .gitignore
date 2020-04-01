@@ -44,7 +44,8 @@
 
 /src/**/Makedeps
 /src/**/Makefile
-
+/src/**/*.po~
+/src/**/*.mo
 /src/extra/sparsehash/.deps/
 /src/extra/sparsehash/autom4te.cache/
 /src/extra/sparsehash/confdefs.h

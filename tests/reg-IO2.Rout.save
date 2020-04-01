@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -72,8 +72,8 @@ Error in read.table("foo1") : no lines available in input
 > try(read.table("foo3", header=TRUE, col.names=letters[1:4]))
 Error in scan(file = file, what = what, sep = sep, quote = quote, dec = dec,  : 
   line 1 did not have 4 elements
-In addition: Warning message:
-In read.table("foo3", header = TRUE, col.names = letters[1:4]) :
+Additional warning message:
+In command 'read.table("foo3", header = TRUE, col.names = letters[1:4])':
   header and 'col.names' are of different lengths
 > unlink("foo3")
 > 
@@ -84,7 +84,7 @@ In read.table("foo3", header = TRUE, col.names = letters[1:4]) :
 1    2
 3    4
 Warning message:
-In lines <- .External(C_readtablehead, file, nlines, comment.char,  :
+In command 'lines <- .External(C_readtablehead, file, nlines, comment.char, blank.lines.skip, ':
   incomplete final line found by readTableHeader on 'foo4'
 > unlink("foo4")
 > 

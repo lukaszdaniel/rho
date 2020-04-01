@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-30 rc245129fb5) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72713) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -348,7 +348,7 @@ c  203  215  227  239
 > summary(bY <- besselY(2,nu = nu <- seq(3,300,len=51)))
        Min.     1st Qu.      Median        Mean     3rd Qu.        Max. 
        -Inf        -Inf -2.248e+263        -Inf -3.777e+116  -1.000e+00 
-There were 22 warnings (use warnings() to see them)
+There were 22 warnings (use 'warnings()' to see them)
 > summary(bI <- besselI(x = x <- 10:700, 1))
       Min.    1st Qu.     Median       Mean    3rd Qu.       Max. 
  2.671e+03  6.026e+77 3.161e+152 3.501e+299 2.409e+227 1.529e+302 
@@ -469,7 +469,7 @@ numeric(0)
    100 -1e-13    Inf   -Inf    NaN   3.14     NA 
    100      0     NA     NA     NA      3     NA 
 Warning message:
-In as.integer(x) : NAs introduced by coercion to integer range
+In command 'as.integer(x)': NAs introduced by coercion to integer range
 > ##-   100 -1e-13    Inf   -Inf    NaN   3.14     NA
 > ##-   100      0     NA     NA     NA      3     NA
 > all(is.na(ix) != is.finite(ix) | is.infinite(ix)) # TRUE (still)
@@ -1488,7 +1488,7 @@ Error in log("a") : non-numeric argument to mathematical function
 > mean(as.factor(x))
 [1] NA
 Warning message:
-In mean.default(as.factor(x)) :
+In command 'mean.default(as.factor(x))':
   argument is not numeric or logical: returning NA
 > ## last had confusing error message in 1.3.1.
 > 
@@ -1674,11 +1674,11 @@ Levels: C A B
 > sum(x, x)    # did not warn in 1.4.1
 [1] NA
 Warning message:
-In sum(x, x) : Integer overflow - use sum(as.numeric(.))
+In command 'sum(x, x)': Integer overflow - use sum(as.numeric(.))
 > sum(c(x, x)) # did warn
 [1] NA
 Warning message:
-In sum(c(x, x)) : integer overflow - use sum(as.numeric(.))
+In command 'sum(c(x, x))': integer overflow - use sum(as.numeric(.))
 > (z <- sum(x, x, 0.0)) # was NA in 1.4.1
 [1] 2147483648
 > typeof(z)
@@ -1760,8 +1760,8 @@ Sep 1961  20  30
 +        1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0)
 > try(glm(y ~ x, family = poisson(identity)))
 Error : no valid set of coefficients has been found: please supply starting values
-In addition: Warning message:
-In log(y/mu) : NaNs produced
+Additional warning message:
+In command 'log(y/mu)': NaNs produced
 > ## failed because start = NULL in 1.4.1
 > ## now gives useful error message
 > glm(y ~ x, family = poisson(identity), start = c(1,0))
@@ -1794,7 +1794,7 @@ Coefficients:
 Degrees of Freedom: 99 Total (i.e. Null);  98 Residual
 Null Deviance:	    317.2 
 Residual Deviance: 228.5 	AIC: 344.7
-There were 27 warnings (use warnings() to see them)
+There were 27 warnings (use 'warnings()' to see them)
 > warnings()
 Warning messages:
 1: step size truncated: out of bounds
@@ -2310,11 +2310,11 @@ par("usr")[3:4]:     1.784     4.499
 par("yaxp") :            2         4         4
 
 Warning messages:
-1: In plot.window(...) :
+1: In command 'plot.window(...)':
   relative range of values =  43 * EPS, is small (axis 2)
-2: In plot.window(...) :
+2: In command 'plot.window(...)':
   relative range of values =  36 * EPS, is small (axis 2)
-3: In plot.window(...) :
+3: In command 'plot.window(...)':
   relative range of values =  17 * EPS, is small (axis 2)
 > par(mfrow = c(1,1))
 > ## The warnings from inside GScale() will differ in their  relrange() ...
@@ -2540,7 +2540,7 @@ x3  0.81       -0.97
 14     71
 15     72
 Warning message:
-In `[.data.frame`(women, "height", drop = FALSE) :
+In command '`[.data.frame`(women, "height", drop = FALSE)':
   'drop' argument will be ignored
 > women["height", drop = TRUE]   # ditto
    height
@@ -2560,7 +2560,7 @@ In `[.data.frame`(women, "height", drop = FALSE) :
 14     71
 15     72
 Warning message:
-In `[.data.frame`(women, "height", drop = TRUE) :
+In command '`[.data.frame`(women, "height", drop = TRUE)':
   'drop' argument will be ignored
 > women[,"height", drop = FALSE] # no warning
    height
@@ -2786,7 +2786,7 @@ $residual.scale
 [1] 0.5234843
 
 Warning message:
-In predict.lm(fit, data.frame(x = x), se = TRUE) :
+In command 'predict.lm(fit, data.frame(x = x), se = TRUE)':
   prediction from a rank-deficient fit may be misleading
 > predict(fit, type="terms", se=TRUE)
 $fit
@@ -2988,7 +2988,7 @@ $residual.scale
 [1] 0.5234843
 
 Warning message:
-In predict.lm(object, newdata, se.fit, scale = residual.scale, type = ifelse(type ==  :
+In command 'predict.lm(object, newdata, se.fit, scale = residual.scale, type = ifelse(type == ':
   prediction from a rank-deficient fit may be misleading
 > predict(fit, type="terms", se=TRUE)
 $fit
@@ -3747,13 +3747,12 @@ probability of success
 + )
 > sample.aov <- aov(dep.variable ~ f1 * f2 + Error(subject/(f1+f2)), data=sample.df)
 Warning message:
-In aov(dep.variable ~ f1 * f2 + Error(subject/(f1 + f2)), data = sample.df) :
+In command 'aov(dep.variable ~ f1 * f2 + Error(subject/(f1 + f2)), data = sample.df)':
   Error() model is singular
 > sample.aov
 
 Call:
-aov(formula = dep.variable ~ f1 * f2 + Error(subject/(f1 + f2)), 
-    data = sample.df)
+aov(formula = dep.variable ~ f1 * f2 + Error(subject/(f1 + f2)), data = sample.df)
 
 Grand Mean: 65.07444
 
@@ -3802,13 +3801,12 @@ Error: Within
 Residuals 42  29204   695.3               
 > sample.aov <- aov(dep.variable ~ f1 * f2 + Error(subject/(f2+f1)), data=sample.df)
 Warning message:
-In aov(dep.variable ~ f1 * f2 + Error(subject/(f2 + f1)), data = sample.df) :
+In command 'aov(dep.variable ~ f1 * f2 + Error(subject/(f2 + f1)), data = sample.df)':
   Error() model is singular
 > sample.aov
 
 Call:
-aov(formula = dep.variable ~ f1 * f2 + Error(subject/(f2 + f1)), 
-    data = sample.df)
+aov(formula = dep.variable ~ f1 * f2 + Error(subject/(f2 + f1)), data = sample.df)
 
 Grand Mean: 65.07444
 
@@ -3901,7 +3899,7 @@ Residuals 42  29204   695.3
 > x1 * y1
 [1]  0.5574682  0.1410502  0.1609194 -0.3641637
 Warning message:
-In x1 * y1 :
+In command 'x1 * y1':
   longer object length is not a multiple of shorter object length
 > x1 * as.matrix(y1) # no warning in 1.8.1
            [,1]
@@ -3910,21 +3908,21 @@ In x1 * y1 :
 [3,]  0.1609194
 [4,] -0.3641637
 Warning message:
-In x1 * as.matrix(y1) :
+In command 'x1 * as.matrix(y1)':
   longer object length is not a multiple of shorter object length
 > x1 * matrix(y1,2,2)# ditto
           [,1]       [,2]
 [1,] 0.5574682  0.1609194
 [2,] 0.1410502 -0.3641637
 Warning message:
-In x1 * matrix(y1, 2, 2) :
+In command 'x1 * matrix(y1, 2, 2)':
   longer object length is not a multiple of shorter object length
 > z1 <- x1 > 0
 > z2 <- y1 > 0
 > z1 & z2
 [1]  TRUE  TRUE  TRUE FALSE
 Warning message:
-In z1 & z2 :
+In command 'z1 & z2':
   longer object length is not a multiple of shorter object length
 > z1 & as.matrix(z2) # no warning in 1.8.1
       [,1]
@@ -3933,12 +3931,12 @@ In z1 & z2 :
 [3,]  TRUE
 [4,] FALSE
 Warning message:
-In z1 & as.matrix(z2) :
+In command 'z1 & as.matrix(z2)':
   longer object length is not a multiple of shorter object length
 > x1 < y1            # no warning in 1.8.1
 [1] FALSE  TRUE FALSE FALSE
 Warning message:
-In x1 < y1 :
+In command 'x1 < y1':
   longer object length is not a multiple of shorter object length
 > x1 < as.matrix(y1) # ditto
       [,1]
@@ -3947,7 +3945,7 @@ In x1 < y1 :
 [3,] FALSE
 [4,] FALSE
 Warning message:
-In x1 < as.matrix(y1) :
+In command 'x1 < as.matrix(y1)':
   longer object length is not a multiple of shorter object length
 > ##
 > 
@@ -4121,7 +4119,7 @@ quote(b)
 > readBin(zz, "character", 100)  # is confused by embedded nul.
 [1] "A test string"
 Warning message:
-In readBin(zz, "character", 100) :
+In command 'readBin(zz, "character", 100)':
   incomplete string at end of file has been discarded
 > seek(zz, 0, "start")
 [1] 18
@@ -4522,7 +4520,7 @@ y ~ x
 <none>              17.605 3.6005
 x2      1  0.011746 17.593 5.5885
 Warning message:
-In add1.lm(fit, ~. + x2) : using the 18/19 rows from a combined fit
+In command 'add1.lm(fit, ~. + x2)': using the 18/19 rows from a combined fit
 > res <-  try(stats:::add1.default(fit, ~ . +x2))
 Error in stats:::add1.default(fit, ~. + x2) : 
   number of rows in use has changed: remove missing values?
@@ -4764,11 +4762,11 @@ z       1    82.814 89.130 23.8751
 > as.raw(1234)
 [1] 00
 Warning message:
-In as.raw(1234) : out-of-range values treated as 0 in coercion to raw
+In command 'as.raw(1234)': out-of-range values treated as 0 in coercion to raw
 > as.raw(list(a=1234))
 [1] 00
 Warning message:
-In as.raw(list(a = 1234)) :
+In command 'as.raw(list(a = 1234))':
   out-of-range values treated as 0 in coercion to raw
 > ## 2.1.1: spurious and missing messages, wrong result for second.
 > 
@@ -5107,13 +5105,13 @@ Browse[1]> c
 > options(error = expression(NULL))
 > f <- function(...) stop()
 > do.call(f, mtcars)
-Error in (function (...)  : 
+Error in command '(function (...) ': 
 Calls: do.call -> <Anonymous>
 > traceback()
 3: stop()
 2: (function (...) 
-   stop())(mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 
-   19.2, 17.8, 16.4, 17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 
+   stop())(mpg = c(21, 21, 22.8, 21.4, 18.7, 18.1, 14.3, 24.4, 22.8, 19.2, 17.8, 16.4, 
+   17.3, 15.2, 10.4, 10.4, 14.7, 32.4, 30.4, 33.9, 21.5, 15.5, 15.2, 13.3, 19.2, 27.3, 
     ...
 1: do.call(f, mtcars)
 > 
@@ -5193,7 +5191,7 @@ AIC: Inf
 Number of Fisher Scoring iterations: 2
 
 Warning message:
-In summary.glm(glm(y ~ x, weights = w)) :
+In command 'summary.glm(glm(y ~ x, weights = w))':
   observations with zero weight not used for calculating dispersion
 > summary(glm(y ~ x, subset = w > 0))
 
@@ -5249,7 +5247,7 @@ $estim.prec
 [1] 0.8295023
 
 Warning message:
-In uniroot(ff, c(-10, 10), maxiter = 10) : _NOT_ converged in 10 iterations
+In command 'uniroot(ff, c(-10, 10), maxiter = 10)': _NOT_ converged in 10 iterations
 > ## should warn, did not < 2.3.0
 > 
 > 
@@ -5279,7 +5277,7 @@ Error in prod(raw()) : invalid 'type' (raw) of argument
 +           ## arguments which don't make sense for plot=FALSE - give a warning:
 +           xlab = "N(0,1)", col = "blue")
 Warning message:
-In hist.default(rnorm(100), plot = FALSE, breaks = 12, xlab = "N(0,1)",  :
+In command 'hist.default(rnorm(100), plot = FALSE, breaks = 12, xlab = "N(0,1)", col = "blue")':
   arguments 'col', 'xlab' are not made use of
 > ## gave no warning in 2.3.0 and earlier
 > 
@@ -5714,31 +5712,27 @@ $y
 +          i = as.character(NA), j = c("foo", NA, "bar")
 +          )
 > dput(x, control=NULL)
-list(a = NA, b = NA, c = NA, d = NA, e = 1, f = 1, g = 1:3, h = c(NA, 
-1, 2, 3), i = NA, j = c("foo", NA, "bar"))
-> dput(x, control="keepInteger")
-list(a = NA, b = NA_integer_, c = NA, d = NA, e = 1, f = 1L, 
-    g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA, j = c("foo", NA, 
-    "bar"))
-> dput(x, control="keepNA")
-list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, 
-    e = 1, f = 1, g = 1:3, h = c(NA, 1, 2, 3), i = NA_character_, 
+list(a = NA, b = NA, c = NA, d = NA, e = 1, f = 1, g = 1:3, h = c(NA, 1, 2, 3), i = NA, 
     j = c("foo", NA, "bar"))
+> dput(x, control="keepInteger")
+list(a = NA, b = NA_integer_, c = NA, d = NA, e = 1, f = 1L, g = 1:3, h = c(NA, 1L, 
+2L, 3L), i = NA, j = c("foo", NA, "bar"))
+> dput(x, control="keepNA")
+list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1, g = 1:3, 
+    h = c(NA, 1, 2, 3), i = NA_character_, j = c("foo", NA, "bar"))
 > dput(x)
-structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, 
-    e = 1, f = 1L, g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, 
-    j = c("foo", NA, "bar")), .Names = c("a", "b", "c", "d", 
-"e", "f", "g", "h", "i", "j"))
-> dput(x, control="all")
-structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, 
-    e = 1, f = 1L, g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, 
-    j = c("foo", NA, "bar")), .Names = c("a", "b", "c", "d", 
-"e", "f", "g", "h", "i", "j"))
-> dput(x, control=c("all", "S_compatible"))
-structure(list(a = NA, b = as.integer(NA), c = as.double(NA), 
-    d = as.complex(NA), e = 1., f = as.integer(1), g = 1:3, h = as.integer(c(NA, 
-    1, 2, 3)), i = as.character(NA), j = c("foo", NA, "bar")), .Names = c("a", 
+structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, 
+    g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar")), .Names = c("a", 
 "b", "c", "d", "e", "f", "g", "h", "i", "j"))
+> dput(x, control="all")
+structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, 
+    g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar")), .Names = c("a", 
+"b", "c", "d", "e", "f", "g", "h", "i", "j"))
+> dput(x, control=c("all", "S_compatible"))
+structure(list(a = NA, b = as.integer(NA), c = as.double(NA), d = as.complex(NA), 
+    e = 1., f = as.integer(1), g = 1:3, h = as.integer(c(NA, 1, 2, 3)), i = as.character(NA), 
+    j = c("foo", NA, "bar")), .Names = c("a", "b", "c", "d", "e", "f", "g", "h", 
+"i", "j"))
 > tmp <- tempfile()
 > dput(x, tmp, control="all")
 > stopifnot(identical(dget(tmp), x))
@@ -5792,7 +5786,7 @@ z 3
   height weight
 1     58    115
 Warning message:
-In `[.data.frame`(w, , drop = TRUE) : 'drop' argument will be ignored
+In command '`[.data.frame`(w, , drop = TRUE)': 'drop' argument will be ignored
 > w[1,]
   height weight
 1     58    115
@@ -5838,19 +5832,16 @@ data frame with 0 columns and 4 rows
 > d0 <- d1 <- data.frame(1:4, row.names=1:4)
 > row.names(d0) <- NULL
 > dput(d0)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, 
--4L), class = "data.frame")
+structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, -4L), class = "data.frame")
 > dput(d1)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, 
-4L), class = "data.frame")
+structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, 4L), class = "data.frame")
 > identical(d0, d1)
 [1] TRUE
 > all.equal(d0, d1)
 [1] TRUE
 > row.names(d1) <- as.character(1:4)
 > dput(d1)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c("1", 
-"2", "3", "4"), class = "data.frame")
+structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c("1", "2", "3", "4"), class = "data.frame")
 > identical(d0, d1)
 [1] FALSE
 > all.equal(d0, d1)
@@ -6238,7 +6229,7 @@ uY          -2.1396554 0.3644116
 > x <- data.frame(a=1:3, b=2:4)
 > x[,3] <- x
 Warning message:
-In `[<-.data.frame`(`*tmp*`, , 3, value = list(a = 1:3, b = 2:4)) :
+In command '`[<-.data.frame`(`*tmp*`, , 3, value = list(a = 1:3, b = 2:4))':
   provided 2 variables to replace 1 variables
 > x
   a b a.1
@@ -6419,15 +6410,15 @@ function ()
 > print.function
 function (x, ...)  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 19 1 63 19 63 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9c3a2f1e90> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9808ce3c10> 
 > f
 function ()  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 17 1 28 17 28 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9c3a47b820> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9808cccd80> 
  - attr(*, "note")= chr "just a note"
  - attr(*, "yada")=function ()  
   ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 2 24 2 48 24 48 2 2
-  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9c3a47b820> 
+  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9808cccd80> 
 > rm(print.function)
 > ## auto-printing and printing differed up to R 2.9.x
 > 
@@ -7106,7 +7097,7 @@ g(y)(x)
 >   pl$ab
 [1] 1
 Warning message:
-In pl$ab : partial match of 'ab' to 'abc'
+In command 'pl$ab': partial match of 'ab' to 'abc'
 >   if (!is.null(saveopt[["warnPartialMatchDollar"]])) options(saveopt)
 > ## 'abc' was just ''
 > 
@@ -7300,15 +7291,15 @@ elem2 2 12   14
 5        e   NA    1
 6        f   NA    1
 Warning messages:
-1: In lines <- .External(C_readtablehead, file, nlines, comment.char,  :
+1: In command 'lines <- .External(C_readtablehead, file, nlines, comment.char, blank.lines.skip, ':
   line 2 appears to contain embedded nulls
-2: In lines <- .External(C_readtablehead, file, nlines, comment.char,  :
+2: In command 'lines <- .External(C_readtablehead, file, nlines, comment.char, blank.lines.skip, ':
   line 3 appears to contain embedded nulls
-3: In lines <- .External(C_readtablehead, file, nlines, comment.char,  :
+3: In command 'lines <- .External(C_readtablehead, file, nlines, comment.char, blank.lines.skip, ':
   line 4 appears to contain embedded nulls
-4: In lines <- .External(C_readtablehead, file, nlines, comment.char,  :
+4: In command 'lines <- .External(C_readtablehead, file, nlines, comment.char, blank.lines.skip, ':
   line 5 appears to contain embedded nulls
-5: In scan(file = file, what = what, sep = sep, quote = quote, dec = dec,  :
+5: In command 'scan(file = file, what = what, sep = sep, quote = quote, dec = dec, nmax = nrows, ':
   embedded nul(s) found in input
 > read.csv(f, skipNul = TRUE, fileEncoding = "UTF-8-BOM")
   ColA ColB ColC
@@ -7882,18 +7873,18 @@ logical       1
 > 
 > # these should fail
 > sprintf("%d", 1.1)
-Error in sprintf("%d", 1.1) : 
+Error in command 'sprintf("%d", 1.1)': 
   invalid format '%d'; use format %f, %e, %g or %a for numeric objects
 > sprintf("%d", c(1.1,1))
-Error in sprintf("%d", c(1.1, 1)) : 
+Error in command 'sprintf("%d", c(1.1, 1))': 
   invalid format '%d'; use format %f, %e, %g or %a for numeric objects
 > sprintf("%d", c(1,1.1))
-Error in sprintf("%d", c(1, 1.1)) : 
+Error in command 'sprintf("%d", c(1, 1.1))': 
   invalid format '%d'; use format %f, %e, %g or %a for numeric objects
 > sprintf("%d", NaN)
-Error in sprintf("%d", NaN) : 
+Error in command 'sprintf("%d", NaN)': 
   invalid format '%d'; use format %f, %e, %g or %a for numeric objects
 > sprintf("%d", c(1,NaN))
-Error in sprintf("%d", c(1, NaN)) : 
+Error in command 'sprintf("%d", c(1, NaN))': 
   invalid format '%d'; use format %f, %e, %g or %a for numeric objects
 > 

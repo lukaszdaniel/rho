@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -49,19 +49,19 @@ Type 'q()' to quit R.
 > x > y
 [1] FALSE FALSE  TRUE
 Warning message:
-In x > y : Incompatible methods (">.foo", ">.bar") for ">"
+In command 'x > y': Incompatible methods (">.foo", ">.bar") for ">"
 > y < x # should be the same (warning msg not, however)
 [1] FALSE FALSE  TRUE
 Warning message:
-In y < x : Incompatible methods ("Ops.bar", "Ops.foo") for "<"
+In command 'y < x': Incompatible methods ("Ops.bar", "Ops.foo") for "<"
 > x == y
 [1] FALSE  TRUE FALSE
 Warning message:
-In x == y : Incompatible methods ("Ops.foo", "Ops.bar") for "=="
+In command 'x == y': Incompatible methods ("Ops.foo", "Ops.bar") for "=="
 > x <= y
 [1]  TRUE  TRUE FALSE
 Warning message:
-In x <= y : Incompatible methods ("Ops.foo", "Ops.bar") for "<="
+In command 'x <= y': Incompatible methods ("Ops.foo", "Ops.bar") for "<="
 > 
 > x > 3 ##[1] ">.foo"
 using >.foo

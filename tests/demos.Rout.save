@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -375,7 +375,7 @@ is.vector          : |
 > e13 <- expression(1 + 3)
 
 > is.ALL(e13)
-Warning in fn(obj) :
+Warning in command 'fn(obj)':
   is.na() applied to non-(list or vector) of type 'expression'
 is.array           : . 
 is.atomic          : . 
@@ -1516,5 +1516,5 @@ sm     3    3    3    3    4    4    4    4    2     2     2
 > par(op)
 > 
 > cat("Time elapsed: ", proc.time() - .ptime, "\n")
-Time elapsed:  1.259 0.024 1.284 0 0 
+Time elapsed:  1.404 0.036 1.44 0 0 
 > 

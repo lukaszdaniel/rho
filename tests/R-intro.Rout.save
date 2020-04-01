@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -41,7 +41,7 @@ Type 'q()' to quit R.
 > y <- c(x, 0, x)
 > v <- 2*x + y + 1
 Warning message:
-In 2 * x + y :
+In command '2 * x + y':
   longer object length is not a multiple of shorter object length
 > ##-  Warning message:
 > ##-  longer object length
@@ -50,7 +50,7 @@ In 2 * x + y :
 > sqrt(-17)
 [1] NaN
 Warning message:
-In sqrt(-17) : NaNs produced
+In command 'sqrt(-17)': NaNs produced
 > ##- [1] NaN
 > ##- Warning message:
 > ##- NaNs produced in: sqrt(-17)
@@ -564,7 +564,7 @@ D = 0.0661, p-value = 0.43
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(long, "pnorm", mean = mean(long), sd = sqrt(var(long))) :
+In command 'ks.test(long, "pnorm", mean = mean(long), sd = sqrt(var(long)))':
   ties should not be present for the Kolmogorov-Smirnov test
 > 
 > ##@section One- and two-sample tests
@@ -635,7 +635,7 @@ W = 89, p-value = 0.0075
 alternative hypothesis: true location shift is not equal to 0
 
 Warning message:
-In wilcox.test.default(A, B) : cannot compute exact p-value with ties
+In command 'wilcox.test.default(A, B)': cannot compute exact p-value with ties
 > 
 > plot(ecdf(A), do.points=FALSE, verticals=TRUE, xlim=range(A, B))
 > plot(ecdf(B), do.points=FALSE, verticals=TRUE, add=TRUE)

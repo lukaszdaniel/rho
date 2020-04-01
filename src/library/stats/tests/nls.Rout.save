@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -702,11 +702,11 @@ Algorithm "port", convergence message: both X-convergence and relative convergen
 > fit <- nls(y~b0[fac] + b1*x, start = list(b0=c(1,1), b1=101),
 +            algorithm ="port", upper = c(100, 100, 100),
 +            control = list(warnOnly=TRUE))# warning ..
-Warning in nls(y ~ b0[fac] + b1 * x, start = list(b0 = c(1, 1), b1 = 101),  :
+Warning in command 'nls(y ~ b0[fac] + b1 * x, start = list(b0 = c(1, 1), b1 = 101), algorithm = "port", ':
   Convergence failure: initial par violates constraints
 > with(fit$convInfo, ## start par. violates constraints
 +      stopifnot(isConv == FALSE, stopCode == 300))
 > 
 > proc.time()
    user  system elapsed 
-  1.990   0.024   2.008 
+  1.953   0.024   1.969 

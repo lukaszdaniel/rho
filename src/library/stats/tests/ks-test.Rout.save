@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -36,7 +36,7 @@ D = 0.274, p-value = 0.4407
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(ds1, "pnorm", mean = 3.3, sd = 1.55216) :
+In command 'ks.test(ds1, "pnorm", mean = 3.3, sd = 1.55216)':
   ties should not be present for the Kolmogorov-Smirnov test
 > # how on earth can sigma = 1.55216 be known?
 > 
@@ -50,7 +50,7 @@ D = 0.274, p-value = 0.3715
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(ds1, "pnorm", mean = 3.3, sd = 1.55216, exact = TRUE) :
+In command 'ks.test(ds1, "pnorm", mean = 3.3, sd = 1.55216, exact = TRUE)':
   ties should not be present for the Kolmogorov-Smirnov test
 > 
 > ## Try out the effects of rounding
@@ -82,7 +82,7 @@ D = 0.019169, p-value = 0.856
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(round(ds2, 2), "pnorm") :
+In command 'ks.test(round(ds2, 2), "pnorm")':
   ties should not be present for the Kolmogorov-Smirnov test
 > ks.test(round(ds2, 2), "pnorm", exact = TRUE)
 
@@ -93,7 +93,7 @@ D = 0.019169, p-value = 0.8489
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(round(ds2, 2), "pnorm", exact = TRUE) :
+In command 'ks.test(round(ds2, 2), "pnorm", exact = TRUE)':
   ties should not be present for the Kolmogorov-Smirnov test
 > # now D has doubled, but p-values remain similar (if very different from ds2)
 > ks.test(round(ds2, 1), "pnorm")
@@ -105,7 +105,7 @@ D = 0.03674, p-value = 0.1344
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(round(ds2, 1), "pnorm") :
+In command 'ks.test(round(ds2, 1), "pnorm")':
   ties should not be present for the Kolmogorov-Smirnov test
 > ks.test(round(ds2, 1), "pnorm", exact = TRUE)
 
@@ -116,7 +116,7 @@ D = 0.03674, p-value = 0.1311
 alternative hypothesis: two-sided
 
 Warning message:
-In ks.test(round(ds2, 1), "pnorm", exact = TRUE) :
+In command 'ks.test(round(ds2, 1), "pnorm", exact = TRUE)':
   ties should not be present for the Kolmogorov-Smirnov test
 > 
 > 
@@ -176,7 +176,7 @@ $s.[[5]]
 +                               wilcox.test(x, exact=TRUE, conf.int=TRUE, alternative = alt)
 +                               ## )
 +                               )))
-There were 52 warnings (use warnings() to see them)
+There were 52 warnings (use 'warnings()' to see them)
 > length(ww <- warnings()) # 52 (or 43 for x0 <- 0:3)
 [1] 52
 > unique(ww) # 4 different ones
@@ -308,7 +308,7 @@ greater.(pseudo)median   2.5 2.0e+00
 +                  lapply(seq_along(x0), function(k)
 +                          wilcox.test(x = x.set$s0[[k]], y = x.set$s.[[k]],
 +                                      exact=TRUE, conf.int=TRUE, alternative = alt)))
-There were 27 warnings (use warnings() to see them)
+There were 27 warnings (use 'warnings()' to see them)
 > length(w2 <- warnings()) # 27
 [1] 27
 > unique(w2) # 3 different ones
@@ -368,4 +368,4 @@ difference in location  3.741417e-05  3.741417e-05  3.741417e-05
 > 
 > proc.time()
    user  system elapsed 
-  0.387   0.001   0.379 
+  0.358   0.016   0.367 

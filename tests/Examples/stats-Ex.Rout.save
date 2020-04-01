@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -2112,7 +2112,7 @@ treatment  2     5.13 52.8 0.00    1.000
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 > drop1(glm.D93, test = "F")
-Warning in drop1.glm(glm.D93, test = "F") :
+Warning in command 'drop1.glm(glm.D93, test = "F")':
   F test assumes 'quasipoisson' family
 Single term deletions
 
@@ -2914,7 +2914,7 @@ Residuals    8
 > jung.parekh <- c(107, 108, 106, 98, 105, 103, 110, 105, 104,
 +             100, 96, 108, 103, 104, 114, 114, 113, 108, 106, 99)
 > ansari.test(ramsay, jung.parekh)
-Warning in ansari.test.default(ramsay, jung.parekh) :
+Warning in command 'ansari.test.default(ramsay, jung.parekh)':
   cannot compute exact p-value with ties
 
 	Ansari-Bradley test
@@ -3007,8 +3007,7 @@ Residual standard error: 3.954232
 Estimated effects are balanced
 > aov(terms(yield ~ block + N * P + K, keep.order = TRUE), npk)
 Call:
-   aov(formula = terms(yield ~ block + N * P + K, keep.order = TRUE), 
-    data = npk)
+   aov(formula = terms(yield ~ block + N * P + K, keep.order = TRUE), data = npk)
 
 Terms:
                    block        N        P      N:P        K Residuals
@@ -3803,7 +3802,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7f9924fec640>
+<environment: 0x7f6fd1103fc0>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -3881,7 +3880,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > lines(density(precip, bw = "nrd"), col = 2)
 > lines(density(precip, bw = "ucv"), col = 3)
 > lines(density(precip, bw = "bcv"), col = 4)
-Warning in bw.bcv(x) : minimum occurred at one end of the range
+Warning in command 'bw.bcv(x)': minimum occurred at one end of the range
 > lines(density(precip, bw = "SJ-ste"), col = 5)
 > lines(density(precip, bw = "SJ-dpi"), col = 6)
 > legend(55, 0.035,
@@ -4237,7 +4236,7 @@ X-squared = 9.9901, df = 4, p-value = 0.04059
 >                                 # Expected count in category 5
 >                                 # is 1.86 < 5 ==> chi square approx.
 > chisq.test(x, p = p)            #               maybe doubtful, but is ok!
-Warning in chisq.test(x, p = p) :
+Warning in command 'chisq.test(x, p = p)':
   Chi-squared approximation may be incorrect
 
 	Chi-squared test for given probabilities
@@ -4532,6 +4531,19 @@ factor> factor(z, exclude = "B") # ditto
 [1] C    <NA> A   
 Levels: A < C
 
+factor> ## Now, labels maybe duplicated:
+factor> ## factor() with duplicated labels allowing to "merge levels"
+factor> x <- c("Man", "Male", "Man", "Lady", "Female")
+
+factor> ## Map from 4 different values to only two levels:
+factor> (xf <- factor(x, levels = c("Male", "Man" , "Lady",   "Female"),
+factor+                  labels = c("Male", "Male", "Female", "Female")))
+[1] Male   Male   Male   Female Female
+Levels: Male Female
+
+factor> #> [1] Male   Male   Male   Female Female
+factor> #> Levels: Male Female
+factor> 
 factor> ## Using addNA()
 factor> Month <- airquality$Month
 
@@ -6330,7 +6342,7 @@ y 2.4
 x    0    0    1    1    1  Inf
 y    1    0    1    1    0    1
 > dist(m2, method = "binary")   # warning, answer 0.5 = 2/4
-Warning in dist(m2, method = "binary") :
+Warning in command 'dist(m2, method = "binary")':
   treating non-finite values as NA
     x
 y 0.5
@@ -6352,7 +6364,7 @@ y 0.5
 > ## 2)
 > y[6] <- Inf #-> 6-th pair is excluded
 > dist(rbind(x, y), method = "binary"  )   # warning; 0.5
-Warning in dist(rbind(x, y), method = "binary") :
+Warning in command 'dist(rbind(x, y), method = "binary")':
   treating non-finite values as NA
     x
 y 0.5
@@ -7343,7 +7355,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7f9924fdba50>
+<environment: 0x7f6fd169a910>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -10777,7 +10789,7 @@ Error in convInfo <- .Call(C_nls_iter, m, ctrl, trace) :
 > x <- -(1:100)/10
 > y <- 100 + 10 * exp(x / 2) + rnorm(x)/10
 > nlmod <- nls(y ~  Const + A * exp(B * x))
-Warning in nls(y ~ Const + A * exp(B * x)) :
+Warning in command 'nls(y ~ Const + A * exp(B * x))':
   No starting values specified for some parameters.
 Initializing ‘Const’, ‘A’, ‘B’ to '1.'.
 Consider specifying 'start' or using a selfStart model
@@ -11308,11 +11320,11 @@ $objective
 > smokers  <- c( 83, 90, 129, 70 )
 > patients <- c( 86, 93, 136, 82 )
 > pairwise.prop.test(smokers, patients)
-Warning in prop.test(x[c(i, j)], n[c(i, j)], ...) :
+Warning in command 'prop.test(x[c(i, j)], n[c(i, j)], ...)':
   Chi-squared approximation may be incorrect
-Warning in prop.test(x[c(i, j)], n[c(i, j)], ...) :
+Warning in command 'prop.test(x[c(i, j)], n[c(i, j)], ...)':
   Chi-squared approximation may be incorrect
-Warning in prop.test(x[c(i, j)], n[c(i, j)], ...) :
+Warning in command 'prop.test(x[c(i, j)], n[c(i, j)], ...)':
   Chi-squared approximation may be incorrect
 
 	Pairwise comparisons using Pairwise comparison of proportions 
@@ -11403,25 +11415,25 @@ P value adjustment method: holm
 > Month <- factor(Month, labels = month.abb[5:9])
 > ## These give warnings because of ties :
 > pairwise.wilcox.test(Ozone, Month)
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
 
 	Pairwise comparisons using Wilcoxon rank sum test 
@@ -11436,25 +11448,25 @@ Sep 0.4744 1.0000 0.0060 0.0227
 
 P value adjustment method: holm 
 > pairwise.wilcox.test(Ozone, Month, p.adj = "bonf")
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
-Warning in wilcox.test.default(xi, xj, paired = paired, ...) :
+Warning in command 'wilcox.test.default(xi, xj, paired = paired, ...)':
   cannot compute exact p-value with ties
 
 	Pairwise comparisons using Wilcoxon rank sum test 
@@ -11582,9 +11594,9 @@ isoreg+                     as.vector(tapply(y, x., mean))))
 > 
 > ## 'same' plot as above, "proving" that only ranks of 'x' are important
 > plot(isoreg(2^(1:9), c(1,0,4,3,3,5,4,2,0)), plot.type = "row", log = "x")
-Warning in xy.coords(x, y, xlabel, ylabel, log) :
+Warning in command 'xy.coords(x, y, xlabel, ylabel, log)':
   1 x value <= 0 omitted from logarithmic plot
-Warning in xy.coords(x, y, xlabel, ylabel, log) :
+Warning in command 'xy.coords(x, y, xlabel, ylabel, log)':
   1 x value <= 0 omitted from logarithmic plot
 > 
 > plot(ir3, plot.type = "row", ylab = "y3")
@@ -11978,12 +11990,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7f992638f3c0>
+<environment: 0x7f6fd2211490>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7f992638f3c0>
+<environment: 0x7f6fd2211490>
 
 > 
 > 
@@ -12298,8 +12310,7 @@ Dickey-Fuller = -2.6899, Truncation lag parameter = 7, p-value = 0.2863
 +                 data = rock, nterms = 2, max.terms = 5)
 > rock.ppr
 Call:
-ppr(formula = log(perm) ~ area1 + peri1 + shape, data = rock, 
-    nterms = 2, max.terms = 5)
+ppr(formula = log(perm) ~ area1 + peri1 + shape, data = rock, nterms = 2, max.terms = 5)
 
 Goodness of fit:
  2 terms  3 terms  4 terms  5 terms 
@@ -12314,8 +12325,7 @@ Goodness of fit:
 > 
 > summary(rock.ppr)
 Call:
-ppr(formula = log(perm) ~ area1 + peri1 + shape, data = rock, 
-    nterms = 2, max.terms = 5)
+ppr(formula = log(perm) ~ area1 + peri1 + shape, data = rock, nterms = 2, max.terms = 5)
 
 Goodness of fit:
  2 terms  3 terms  4 terms  5 terms 
@@ -12757,7 +12767,7 @@ $residual.scale
 > fit <- lm(y ~ x)
 > wfit <- lm(y ~ x, weights = w)
 > predict(fit, interval = "prediction")
-Warning in predict.lm(fit, interval = "prediction") :
+Warning in command 'predict.lm(fit, interval = "prediction")':
   predictions on current data refer to _future_ responses
 
           fit        lwr         upr
@@ -12777,10 +12787,10 @@ Warning in predict.lm(fit, interval = "prediction") :
 14 -2.3566523 -4.6435457 -0.06975883
 15  1.2801229 -0.7562734  3.31651909
 > predict(wfit, interval = "prediction")
-Warning in predict.lm(wfit, interval = "prediction") :
+Warning in command 'predict.lm(wfit, interval = "prediction")':
   predictions on current data refer to _future_ responses
 
-Warning in predict.lm(wfit, interval = "prediction") :
+Warning in command 'predict.lm(wfit, interval = "prediction")':
   assuming prediction variance inversely proportional to weights used for fitting
 
           fit        lwr        upr
@@ -12800,7 +12810,7 @@ Warning in predict.lm(wfit, interval = "prediction") :
 14 -2.5462925 -3.8073357 -1.2852494
 15  1.3789581 -0.2749888  3.0329051
 > predict(wfit, new, interval = "prediction")
-Warning in predict.lm(wfit, new, interval = "prediction") :
+Warning in command 'predict.lm(wfit, new, interval = "prediction")':
   Assuming constant prediction variance even though model fit is weighted
 
            fit         lwr        upr
@@ -14617,7 +14627,7 @@ block     N     P     K
 7  4 -0.8356286 0.2059746 1.5952808 0.17655675
 > ## warns that y is really varying
 > reshape(df, timevar = "visit", idvar = "id", direction = "wide", v.names = "x")
-Warning in reshapeWide(data, idvar = idvar, timevar = timevar, varying = varying,  :
+Warning in command 'reshapeWide(data, idvar = idvar, timevar = timevar, varying = varying, v.names = v.names, ':
   some constant variables (y) are really varying
   id         y   x.Before   x.After
 1  1 0.6291140 -0.6264538 0.1836433
@@ -15888,7 +15898,7 @@ GCV: 0.7155391
 > lines(spline(x, y, n = 201), col = 2)
 > lines(spline(x, y, n = 201, method = "natural"), col = 3)
 > lines(spline(x, y, n = 201, method = "periodic"), col = 4)
-Warning in spline(x, y, n = 201, method = "periodic") :
+Warning in command 'spline(x, y, n = 201, method = "periodic")':
   spline: first and last y values differ - using y[1] for both
 > legend(6, 25, c("fmm","natural","periodic"), col = 2:4, lty = 1)
 > 
@@ -16071,7 +16081,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7f992589fad0>
+<environment: 0x7f6fd1797640>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -17869,7 +17879,7 @@ difference in location
 > boxplot(Ozone ~ Month, data = airquality)
 > wilcox.test(Ozone ~ Month, data = airquality,
 +             subset = Month %in% c(5, 8))
-Warning in wilcox.test.default(x = c(41L, 36L, 12L, 18L, 28L, 23L, 19L,  :
+Warning in command 'wilcox.test.default(x = c(41L, 36L, 12L, 18L, 28L, 23L, 19L, 8L, 7L, 16L, 11L, 14L, ':
   cannot compute exact p-value with ties
 
 	Wilcoxon rank sum test with continuity correction
@@ -18395,7 +18405,7 @@ Number of Fisher Scoring iterations: 6
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  11.066 0.216 11.284 0 0 
+Time elapsed:  11.011 0.2 11.212 0 0 
 > grDevices::dev.off()
 null device 
           1 

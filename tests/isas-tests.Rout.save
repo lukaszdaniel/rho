@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -334,7 +334,7 @@ IS: [1] TRUE
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dendrogram( f )))
 > f <- try(as.dist( x ), silent = TRUE)
 Warning message:
-In as.dist.default(x) : non-square matrix
+In command 'as.dist.default(x)': non-square matrix
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dist( f )))
 [1] TRUE
 > f <- try(as.formula( x ), silent = TRUE)
@@ -417,7 +417,8 @@ In as.dist.default(x) : non-square matrix
 > res <- try(as.vector( x ), silent = TRUE)
 > if(!inherits(res, 'try-error')) report(is.vector(res))
 [1] FALSE
-Error: x is not TRUE
+Error in command 'report(is.vector(res))': x is not TRUE
+Calls: report -> stopifnot
 > res <- try(as.stepfun( x ), silent = TRUE)
 > if(!inherits(res, 'try-error')) report(is.stepfun(res))
 > res <- try(as.ts( x ), silent = TRUE)
@@ -544,7 +545,8 @@ IS: [1] TRUE
 +    report({if(is.vector(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
 [1] FALSE
-Error: x is not TRUE
+Error in command 'report({': x is not TRUE
+Calls: report -> stopifnot
 > res <- try(as.stepfun( x ), silent = TRUE)
 > if(!inherits(res, 'try-error'))
 +    report({if(is.stepfun(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
@@ -953,7 +955,7 @@ IS: [1] TRUE
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dendrogram( f )))
 > f <- try(as.dist( x ), silent = TRUE)
 Warning message:
-In as.dist.default(x) : non-square matrix
+In command 'as.dist.default(x)': non-square matrix
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dist( f )))
 [1] TRUE
 > f <- try(as.formula( x ), silent = TRUE)
@@ -1341,7 +1343,7 @@ IS: [1] TRUE
 [1] TRUE
 > res <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error')) report(is.numeric_version(res))
 [1] TRUE
 > res <- try(as.ordered( x ), silent = TRUE)
@@ -1349,7 +1351,7 @@ In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 [1] TRUE
 > res <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error')) report(is.package_version(res))
 [1] TRUE
 > res <- try(as.pairlist( x ), silent = TRUE)
@@ -1460,7 +1462,7 @@ IS: [1] TRUE
 IS: [1] TRUE
 > res <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error'))
 +    report({if(is.numeric_version(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -1472,7 +1474,7 @@ In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 [1] TRUE
 > res <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 > if(!inherits(res, 'try-error'))
 +    report({if(is.package_version(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -1576,7 +1578,7 @@ IS: [1] TRUE
 [1] TRUE
 > f <- try(as.numeric_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 >   if(!inherits(f, 'try-error')) report(identical(f, as.numeric_version( f )))
 [1] TRUE
 > f <- try(as.octmode( x ), silent = TRUE)
@@ -1586,7 +1588,7 @@ In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
 [1] TRUE
 > f <- try(as.package_version( x ), silent = TRUE)
 Warning message:
-In FUN(X[[i]], ...) : NAs introduced by coercion to integer range
+In command 'FUN(X[[i]], ...)': NAs introduced by coercion to integer range
 >   if(!inherits(f, 'try-error')) report(identical(f, as.package_version( f )))
 [1] TRUE
 > f <- try(as.pairlist( x ), silent = TRUE)
@@ -2326,7 +2328,7 @@ IS: [1] TRUE
 > if(!inherits(res, 'try-error')) report(is.qr(res))
 > res <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In as.raw(x) : out-of-range values treated as 0 in coercion to raw
+In command 'as.raw(x)': out-of-range values treated as 0 in coercion to raw
 > if(!inherits(res, 'try-error')) report(is.raw(res))
 [1] TRUE
 > res <- try(as.symbol( x ), silent = TRUE)
@@ -2336,7 +2338,8 @@ In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 > res <- try(as.vector( x ), silent = TRUE)
 > if(!inherits(res, 'try-error')) report(is.vector(res))
 [1] FALSE
-Error: x is not TRUE
+Error in command 'report(is.vector(res))': x is not TRUE
+Calls: report -> stopifnot
 > res <- try(as.stepfun( x ), silent = TRUE)
 > if(!inherits(res, 'try-error')) report(is.stepfun(res))
 > res <- try(as.ts( x ), silent = TRUE)
@@ -2402,7 +2405,8 @@ IS: [1] TRUE
 +    } else   !isall.equal(x, res)})
 IS: [1] "Attributes: < names for target but not for current >"             
 [2] "Attributes: < Length mismatch: comparison on first 0 components >"
-Error: x are not all TRUE
+Error in command 'report({': x are not all TRUE
+Calls: report -> stopifnot
 > res <- try(as.logical( x ), silent = TRUE)
 > if(!inherits(res, 'try-error'))
 +    report({if(is.logical(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
@@ -2451,7 +2455,7 @@ Error: x are not all TRUE
 +    } else   !isall.equal(x, res)})
 > res <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In as.raw(x) : out-of-range values treated as 0 in coercion to raw
+In command 'as.raw(x)': out-of-range values treated as 0 in coercion to raw
 > if(!inherits(res, 'try-error'))
 +    report({if(is.raw(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
@@ -2469,7 +2473,8 @@ In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 +    report({if(is.vector(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
 +    } else   !isall.equal(x, res)})
 [1] FALSE
-Error: x is not TRUE
+Error in command 'report({': x is not TRUE
+Calls: report -> stopifnot
 > res <- try(as.stepfun( x ), silent = TRUE)
 > if(!inherits(res, 'try-error'))
 +    report({if(is.stepfun(x)) { cat('IS: ');all.equal(x, res, tolerance=0)
@@ -2553,7 +2558,7 @@ Error: x is not TRUE
 >   if(!inherits(f, 'try-error')) report(identical(f, as.qr( f )))
 > f <- try(as.raw( x ), silent = TRUE)
 Warning message:
-In as.raw(x) : out-of-range values treated as 0 in coercion to raw
+In command 'as.raw(x)': out-of-range values treated as 0 in coercion to raw
 >   if(!inherits(f, 'try-error')) report(identical(f, as.raw( f )))
 [1] TRUE
 > f <- try(as.single( x ), silent = TRUE)
@@ -2570,7 +2575,7 @@ In as.raw(x) : out-of-range values treated as 0 in coercion to raw
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dendrogram( f )))
 > f <- try(as.dist( x ), silent = TRUE)
 Warning message:
-In as.dist.default(x) : non-square matrix
+In command 'as.dist.default(x)': non-square matrix
 >   if(!inherits(f, 'try-error')) report(identical(f, as.dist( f )))
 [1] TRUE
 > f <- try(as.formula( x ), silent = TRUE)
@@ -2583,6 +2588,6 @@ In as.dist.default(x) : non-square matrix
 > f <- try(as.ts( x ), silent = TRUE)
 >   if(!inherits(f, 'try-error')) report(identical(f, as.ts( f )))
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  0.466 0.017 0.482 0 0 
+Time elapsed:  0.482 0.009 0.492 0 0 
 > 
 > 

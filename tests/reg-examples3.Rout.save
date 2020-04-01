@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-03-28 ra43ebe1018) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-05-20 r72711) -- "Frisbee Sailing"
+R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -38,8 +38,8 @@ Loading required package: MASS
 + }
 Loading required package: survival
 Call:
-coxph(formula = Surv(rep(1, 248L), case) ~ spontaneous + induced + 
-    strata(stratum), data = infert, method = "exact")
+coxph(formula = Surv(rep(1, 248L), case) ~ spontaneous + induced + strata(stratum), 
+    data = infert, method = "exact")
 
   n= 248, number of events= 83 
 
@@ -226,6 +226,19 @@ factor> factor(z, exclude = "B") # ditto
 [1] C    <NA> A   
 Levels: A < C
 
+factor> ## Now, labels maybe duplicated:
+factor> ## factor() with duplicated labels allowing to "merge levels"
+factor> x <- c("Man", "Male", "Man", "Lady", "Female")
+
+factor> ## Map from 4 different values to only two levels:
+factor> (xf <- factor(x, levels = c("Male", "Man" , "Lady",   "Female"),
+factor+                  labels = c("Male", "Male", "Female", "Female")))
+[1] Male   Male   Male   Female Female
+Levels: Male Female
+
+factor> #> [1] Male   Male   Male   Female Female
+factor> #> Levels: Male Female
+factor> 
 factor> ## Using addNA()
 factor> Month <- airquality$Month
 

@@ -593,7 +593,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
 	    ans = allocVector(type, blocksize);
 	    UNPROTECT(1);
 	    PROTECT(ans);
-	    copyVector(ans, bns);
+	    Rf_copyVector(ans, bns);
 	}
 	buffer = fillBuffer(type, strip, &bch, d, &strBuf);
 	if (nprev == n && strlen(buffer)==0 &&
@@ -744,7 +744,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 		old = VECTOR_ELT(ans, i);
 		if(!Rf_isNull(old)) {
 		    newv = allocVector(TYPEOF(old), blksize);
-		    copyVector(newv, old);
+		    Rf_copyVector(newv, old);
 		    SET_VECTOR_ELT(ans, i, newv);
 		}
 	    }

@@ -1359,6 +1359,8 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
     SEXP sname = name_, spackage = package_, 
 	withRegistrationInfo = with_registration_info_;
 
+    if (!Rf_isString(sname) || LENGTH(sname) != 1)
+	Rf_error(_("invalid '%s' argument"), "name");
     name = translateChar(STRING_ELT(sname, 0));
     if(Rf_length(spackage)) {
 	if(TYPEOF(spackage) == STRSXP)

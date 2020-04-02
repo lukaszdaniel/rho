@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1999-2017  The R Core Team
  *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -737,13 +737,16 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
 /* (if it is vectorizable). We could probably be fairly */
 /* clever with memory here if we wanted to. */
 
-/* used in connections.cpp */
+/* used in connections.cpp, attrib.cpp, seq.cpp, .. */
 SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 {
     R_xlen_t lenx, i;
     SEXP rval, names, xnames, t;
-    if (!Rf_isVector(x) && !Rf_isVectorizable(x))
-	Rf_error(_("cannot set length of non-vector"));
+    if (!Rf_isVector(x) && !Rf_isList(x))
+	Rf_error(_("cannot set length of non-(vector or list)"));
+    if (len < 0) Rf_error(_("invalid value")); // e.g. -999 from asVecSize()
+    if (Rf_isNull(x) && len > 0)
+    	Rf_warning(_("length of NULL cannot be changed"));
     lenx = Rf_xlength(x);
     if (lenx == len)
 	return (x);
@@ -803,6 +806,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	    SETCAR(t, CAR(x));
 	    SET_TAG(t, TAG(x));
 	}
+	break;
     case VECSXP:
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
@@ -841,12 +845,14 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 {
     SEXP x = x_;
 
-    if (!Rf_isVector(x) && !Rf_isVectorizable(x))
-	Rf_error(_("invalid argument"));
+    // more 'x' checks in x?lengthgets()
     if (Rf_length(value_) != 1)
-	Rf_error(_("invalid value"));
+	error(_("wrong length for '%s' argument"), "value");
     R_xlen_t len = asVecSize(value_);
-    if (len < 0) Rf_error(_("invalid value"));
+    if (op->variant()) { /* xlength<- */
+	return Rf_xlengthgets(x, len);
+    }
+    // else  length<- :
     if (len > R_LEN_T_MAX) {
 #ifdef LONG_VECTOR_SUPPORT
 	return Rf_xlengthgets(x, len);

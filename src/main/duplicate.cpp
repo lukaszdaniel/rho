@@ -355,7 +355,7 @@ void Rf_copyMatrix(SEXP s, SEXP t, Rboolean byrow)
 	}
     }
     else
-	copyVector(s, t);
+	Rf_copyVector(s, t);
 }
 
 #define COPY_WITH_RECYCLE(VALTYPE, TNAME) \

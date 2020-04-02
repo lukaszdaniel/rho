@@ -1444,7 +1444,7 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
     status = Rf_asInteger(status_);
     if (status == NA_INTEGER) {
 	Rf_warning(_("invalid 'status', 0 assumed"));
-	runLast = 0;
+	status = 0;
     }
     runLast = Rf_asLogical(runLast_);
     if (runLast == NA_LOGICAL) {

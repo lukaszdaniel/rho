@@ -238,7 +238,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 							    nrows(retval)+1,
 							    ncols(retval)));
 			    if(nwhat > 0) {
-				copyVector(what2, what);
+				Rf_copyVector(what2, what);
 				for(nr = 0; nr < nrows(retval); nr++){
 				    for(nc = 0; nc < ncols(retval); nc++){
 					SET_STRING_ELT(retval2, nr+nc*nrows(retval2),

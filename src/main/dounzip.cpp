@@ -25,6 +25,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -178,13 +180,13 @@ extract_one(unzFile uf, const char *const dest, const char * const filename,
 	}
 	/* Rprintf("extracting %s\n", outname); */
 	if (!overwrite && R_FileExists(outname)) {
-	    warning(_(" not overwriting file '%s"), outname);
+	    Rf_warning(_(" not overwriting file '%s"), outname);
 	}
 	fout = R_fopen(outname, "wb");
 	int serrno = errno;
 	if (!fout) {
 	    unzCloseCurrentFile(uf);
-	    error(_("cannot open file '%s': %s"), outname, strerror(serrno));
+	    Rf_error(_("cannot open file '%s': %s"), outname, strerror(serrno));
 	    return 3;		/* not reached */
 	}
 	while (1) {
@@ -195,7 +197,7 @@ extract_one(unzFile uf, const char *const dest, const char * const filename,
 	    if (err < BUF_SIZE) { err = 0; break; }
 	}
 	fclose(fout);
-	SET_STRING_ELT(names, (*nnames)++, mkChar(outname));
+	SET_STRING_ELT(names, (*nnames)++, Rf_mkChar(outname));
     }
     unzCloseCurrentFile(uf);
 #ifdef Win32
@@ -224,10 +226,10 @@ zipunzip(const char *zipname, const char *dest, int nfiles, const char **files,
 	    if (i > 0) if ((err = unzGoToNextFile(uf)) != UNZ_OK) break;
 	    if (*nnames+1 >= LENGTH(names)) {
 		SEXP onames = names;
-		names = allocVector(STRSXP, 2*LENGTH(names));
+		names = Rf_allocVector(STRSXP, 2*LENGTH(names));
 		UNPROTECT(1);
 		PROTECT(names);
-		copyVector(names, onames);
+		Rf_copyVector(names, onames);
 	    }
 	    if ((err = extract_one(uf, dest, nullptr, names, nnames, 
 				   overwrite, junk, setTime)) != UNZ_OK) break;
@@ -263,18 +265,18 @@ static SEXP ziplist(const char *zipname)
     int err, nfiles;
 
     uf = unzOpen64(zipname);
-    if (!uf) error(_("zip file '%s' cannot be opened"), zipname);
+    if (!uf) Rf_error(_("zip file '%s' cannot be opened"), zipname);
 
     gi.number_entry = 0; /* =Wall */
     err = unzGetGlobalInfo64 (uf, &gi);
     if (err != UNZ_OK)
-	error("error %d with zipfile in unzGetGlobalInfo", err);
+	Rf_error("error %d with zipfile in unzGetGlobalInfo", err);
     nfiles = int(gi.number_entry);
     /* name, length, datetime */
-    PROTECT(ans = allocVector(VECSXP, 3));
-    SET_VECTOR_ELT(ans, 0, names = allocVector(STRSXP, nfiles));
-    SET_VECTOR_ELT(ans, 1, lengths = allocVector(REALSXP, nfiles));
-    SET_VECTOR_ELT(ans, 2, dates = allocVector(STRSXP, nfiles));
+    PROTECT(ans = Rf_allocVector(VECSXP, 3));
+    SET_VECTOR_ELT(ans, 0, names = Rf_allocVector(STRSXP, nfiles));
+    SET_VECTOR_ELT(ans, 1, lengths = Rf_allocVector(REALSXP, nfiles));
+    SET_VECTOR_ELT(ans, 2, dates = Rf_allocVector(STRSXP, nfiles));
 
     for (i = 0; RHOCONSTRUCT(int, i) < nfiles; i++) {
 	char filename_inzip[PATH_MAX], date[50];
@@ -283,10 +285,10 @@ static SEXP ziplist(const char *zipname)
 	err = unzGetCurrentFileInfo64(uf, &file_info, filename_inzip,
 				      sizeof(filename_inzip), nullptr, 0, nullptr, 0);
 	if (err != UNZ_OK)
-	    error("error %d with zipfile in unzGetCurrentFileInfo\n", err);
+	    Rf_error("error %d with zipfile in unzGetCurrentFileInfo\n", err);
 	/* In theory at least bit 11 of the flag tells us that the
 	   filename is in UTF-8, so FIXME */
-	SET_STRING_ELT(names, i, mkChar(filename_inzip));
+	SET_STRING_ELT(names, i, Rf_mkChar(filename_inzip));
 	REAL(lengths)[i] = double(file_info.uncompressed_size);
 	snprintf(date, 50, "%d-%02d-%02d %02d:%02d",
 		 file_info.tmu_date.tm_year,
@@ -294,12 +296,12 @@ static SEXP ziplist(const char *zipname)
 		 file_info.tmu_date.tm_mday,
 		 file_info.tmu_date.tm_hour,
 		 file_info.tmu_date.tm_min);
-	SET_STRING_ELT(dates, i, mkChar(date));
+	SET_STRING_ELT(dates, i, Rf_mkChar(date));
 
         if (RHOCONSTRUCT(int, i) < nfiles - 1) {
 	    err = unzGoToNextFile(uf);
 	    if (err != UNZ_OK)
-		error("error %d with zipfile in unzGoToNextFile\n",err);
+		Rf_error("error %d with zipfile in unzGoToNextFile\n",err);
 	}
     }
     unzClose(uf);
@@ -319,79 +321,79 @@ SEXP Runzip(SEXP args)
     int   i, ntopics, list, overwrite, junk, setTime, rc, nnames = 0;
     const void *vmax = vmaxget();
 
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1)
-	error(_("invalid zip name argument"));
-    p = R_ExpandFileName(translateChar(STRING_ELT(CAR(args), 0)));
+    if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) != 1)
+	Rf_error(_("invalid zip name argument"));
+    p = R_ExpandFileName(Rf_translateChar(STRING_ELT(CAR(args), 0)));
     if (strlen(p) > PATH_MAX - 1)
-	error(_("zip path is too long"));
+	Rf_error(_("zip path is too long"));
     strcpy(zipname, p);
     args = CDR(args);
     fn = CAR(args);
     ntopics = Rf_length(fn);
     if (ntopics > 0) {
-	if (!isString(fn))
-	    error(_("invalid '%s' argument"), "files");
+	if (!Rf_isString(fn))
+	    Rf_error(_("invalid '%s' argument"), "files");
 	topics = static_cast<const char **>(RHO_alloc(ntopics, sizeof(char *)));
 	for (i = 0; i < ntopics; i++)
-	    topics[i] = translateChar(STRING_ELT(fn, i));
+	    topics[i] = Rf_translateChar(STRING_ELT(fn, i));
     }
     args = CDR(args);
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1)
-	error(_("invalid '%s' argument"), "exdir");
-    p = R_ExpandFileName(translateChar(STRING_ELT(CAR(args), 0)));
+    if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) != 1)
+	Rf_error(_("invalid '%s' argument"), "exdir");
+    p = R_ExpandFileName(Rf_translateChar(STRING_ELT(CAR(args), 0)));
     if (strlen(p) > PATH_MAX - 1)
-	error(_("'exdir' is too long"));
+	Rf_error(_("'exdir' is too long"));
     strcpy(dest, p);
     if (!R_FileExists(dest))
-	error(_("'exdir' does not exist"));
+	Rf_error(_("'exdir' does not exist"));
     args = CDR(args);
-    list = asLogical(CAR(args));
+    list = Rf_asLogical(CAR(args));
     if (list == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "list");
+	Rf_error(_("invalid '%s' argument"), "list");
     if (list) return(ziplist(zipname));
     args = CDR(args);
-    overwrite = asLogical(CAR(args));
+    overwrite = Rf_asLogical(CAR(args));
     if (overwrite == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "overwrite");
+	Rf_error(_("invalid '%s' argument"), "overwrite");
     args = CDR(args);
-    junk = asLogical(CAR(args));
+    junk = Rf_asLogical(CAR(args));
     if (junk == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "junkpaths");
+	Rf_error(_("invalid '%s' argument"), "junkpaths");
     args = CDR(args);
-    setTime = asLogical(CAR(args));
+    setTime = Rf_asLogical(CAR(args));
     if (setTime == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "setTime");
+	Rf_error(_("invalid '%s' argument"), "setTime");
 
     if (ntopics > 0)
-	PROTECT(names = allocVector(STRSXP, ntopics));
+	PROTECT(names = Rf_allocVector(STRSXP, ntopics));
     else
-	PROTECT(names = allocVector(STRSXP, 5000));
+	PROTECT(names = Rf_allocVector(STRSXP, 5000));
     rc = zipunzip(zipname, dest, ntopics, topics, &names, &nnames,
 		  overwrite, junk, setTime);
     if (rc != UNZ_OK)
 	switch(rc) {
 	case UNZ_END_OF_LIST_OF_FILE:
-	    warning(_("requested file not found in the zip file"));
+	    Rf_warning(_("requested file not found in the zip file"));
 	    break;
 	case UNZ_BADZIPFILE:
-	    warning(_("zip file is corrupt"));
+	    Rf_warning(_("zip file is corrupt"));
 	    break;
 	case UNZ_CRCERROR:
-	    warning(_("CRC error in zip file"));
+	    Rf_warning(_("CRC error in zip file"));
 	    break;
 	case UNZ_PARAMERROR:
 	case UNZ_INTERNALERROR:
-	    warning("internal error in 'unz' code");
+	    Rf_warning("internal error in 'unz' code");
 	    break;
 	case -200:
-	    warning(_("write error in extracting from zip file"));
+	    Rf_warning(_("write error in extracting from zip file"));
 	    break;
 	default:
-	    warning(_("error %d in extracting from zip file"), rc);
+	    Rf_warning(_("error %d in extracting from zip file"), rc);
 	}
-    PROTECT(ans = ScalarInteger(rc));
-    PROTECT(names = lengthgets(names, nnames));
-    setAttrib(ans, install("extracted"), names);
+    PROTECT(ans = Rf_ScalarInteger(rc));
+    PROTECT(names = Rf_lengthgets(names, nnames));
+    Rf_setAttrib(ans, Rf_install("extracted"), names);
     UNPROTECT(3);
     vmaxset(vmax);
     return ans;
@@ -412,28 +414,28 @@ static Rboolean unz_open(Rconnection con)
     const char *tmp;
 
     if(con->mode[0] != 'r') {
-	warning(_("unz connections can only be opened for reading"));
+	Rf_warning(_("unz connections can only be opened for reading"));
 	return FALSE;
     }
     tmp = R_ExpandFileName(con->description);
     if (strlen(tmp) > PATH_MAX - 1) {
-	warning(_("zip path is too long"));
+	Rf_warning(_("zip path is too long"));
 	return FALSE;
     }
     strcpy(path, tmp);
     p = Rf_strrchr(path, ':');
     if(!p) {
-	warning(_("invalid description of 'unz' connection"));
+	Rf_warning(_("invalid description of 'unz' connection"));
 	return FALSE;
     }
     *p = '\0';
     uf = unzOpen64(path);
     if(!uf) {
-	warning(_("cannot open zip file '%s'"), path);
+	Rf_warning(_("cannot open zip file '%s'"), path);
 	return FALSE;
     }
     if (unzLocateFile(uf, p+1, 1) != UNZ_OK) {
-	warning(_("cannot locate file '%s' in zip file '%s'"), p+1, path);
+	Rf_warning(_("cannot locate file '%s' in zip file '%s'"), p+1, path);
 	unzClose(uf);
 	return FALSE;
     }
@@ -477,18 +479,18 @@ static size_t unz_read(void *ptr, size_t size, size_t nitems,
 
 static int NORET null_vfprintf(Rconnection con, const char *format, va_list ap)
 {
-    error(_("printing not enabled for this connection"));
+    Rf_error(_("printing not enabled for this connection"));
 }
 
 static size_t NORET null_write(const void *ptr, size_t size, size_t nitems,
 			 Rconnection con)
 {
-    error(_("write not enabled for this connection"));
+    Rf_error(_("write not enabled for this connection"));
 }
 
 static double NORET null_seek(Rconnection con, double where, int origin, int rw)
 {
-    error(_("seek not enabled for this connection"));
+    Rf_error(_("seek not enabled for this connection"));
 }
 
 static int null_fflush(Rconnection con)
@@ -501,18 +503,18 @@ R_newunz(const char *description, const char *const mode)
 {
     Rconnection newconn;
     newconn = static_cast<Rconnection>(malloc(sizeof(struct Rconn)));
-    if(!newconn) error(_("allocation of 'unz' connection failed"));
+    if(!newconn) Rf_error(_("allocation of 'unz' connection failed"));
     newconn->connclass = static_cast<char *>(malloc(strlen("unz") + 1));
     if(!newconn->connclass) {
 	free(newconn);
-	error(_("allocation of 'unz' connection failed"));
+	Rf_error(_("allocation of 'unz' connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     strcpy(newconn->connclass, "unz");
     newconn->description = static_cast<char *>(malloc(strlen(description) + 1));
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
-	error(_("allocation of 'unz' connection failed"));
+	Rf_error(_("allocation of 'unz' connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, description, CE_NATIVE, mode);
@@ -530,7 +532,7 @@ R_newunz(const char *description, const char *const mode)
     newconn->connprivate = RHO_NO_CAST(void *) malloc(sizeof(struct unzconn));
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
-	error(_("allocation of 'unz' connection failed"));
+	Rf_error(_("allocation of 'unz' connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     return newconn;
@@ -2093,7 +2095,7 @@ static int unzOpenCurrentFile3 (unzFile file, int* method,
 	    iRead += (uInt)(uTotalOutAfter - uTotalOutBefore);
 	    // R addition for 3.2.0
 	    if(iRead < len && uTotalOutAfter == 4294967295U)
-		warning("possible truncation of >= 4GB file");
+		Rf_warning("possible truncation of >= 4GB file");
 
 	    if (err == Z_STREAM_END)
 		return (iRead == 0) ? UNZ_EOF : iRead;

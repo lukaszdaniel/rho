@@ -40,6 +40,8 @@
    replaces off_t by __int64_t.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -96,64 +98,64 @@ static void Init_R_Machine(SEXP rho)
     PROTECT(ans = Rf_allocVector(VECSXP, 18));
     PROTECT(nms = Rf_allocVector(STRSXP, 18));
     SET_STRING_ELT(nms, 0, Rf_mkChar("double.eps"));
-    SET_VECTOR_ELT(ans, 0, ScalarReal(R_AccuracyInfo.eps));
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarReal(R_AccuracyInfo.eps));
 
     SET_STRING_ELT(nms, 1, Rf_mkChar("double.neg.eps"));
-    SET_VECTOR_ELT(ans, 1, ScalarReal(R_AccuracyInfo.epsneg));
+    SET_VECTOR_ELT(ans, 1, Rf_ScalarReal(R_AccuracyInfo.epsneg));
 
     SET_STRING_ELT(nms, 2, Rf_mkChar("double.xmin"));
-    SET_VECTOR_ELT(ans, 2, ScalarReal(R_AccuracyInfo.xmin));
+    SET_VECTOR_ELT(ans, 2, Rf_ScalarReal(R_AccuracyInfo.xmin));
 
     SET_STRING_ELT(nms, 3, Rf_mkChar("double.xmax"));
-    SET_VECTOR_ELT(ans, 3, ScalarReal(R_AccuracyInfo.xmax));
+    SET_VECTOR_ELT(ans, 3, Rf_ScalarReal(R_AccuracyInfo.xmax));
 
     SET_STRING_ELT(nms, 4, Rf_mkChar("double.base"));
-    SET_VECTOR_ELT(ans, 4, ScalarInteger(R_AccuracyInfo.ibeta));
+    SET_VECTOR_ELT(ans, 4, Rf_ScalarInteger(R_AccuracyInfo.ibeta));
 
     SET_STRING_ELT(nms, 5, Rf_mkChar("double.digits"));
-    SET_VECTOR_ELT(ans, 5, ScalarInteger(R_AccuracyInfo.it));
+    SET_VECTOR_ELT(ans, 5, Rf_ScalarInteger(R_AccuracyInfo.it));
 
     SET_STRING_ELT(nms, 6, Rf_mkChar("double.rounding"));
-    SET_VECTOR_ELT(ans, 6, ScalarInteger(R_AccuracyInfo.irnd));
+    SET_VECTOR_ELT(ans, 6, Rf_ScalarInteger(R_AccuracyInfo.irnd));
 
     SET_STRING_ELT(nms, 7, Rf_mkChar("double.guard"));
-    SET_VECTOR_ELT(ans, 7, ScalarInteger(R_AccuracyInfo.ngrd));
+    SET_VECTOR_ELT(ans, 7, Rf_ScalarInteger(R_AccuracyInfo.ngrd));
 
     SET_STRING_ELT(nms, 8, Rf_mkChar("double.ulp.digits"));
-    SET_VECTOR_ELT(ans, 8, ScalarInteger(R_AccuracyInfo.machep));
+    SET_VECTOR_ELT(ans, 8, Rf_ScalarInteger(R_AccuracyInfo.machep));
 
     SET_STRING_ELT(nms, 9, Rf_mkChar("double.neg.ulp.digits"));
-    SET_VECTOR_ELT(ans, 9, ScalarInteger(R_AccuracyInfo.negep));
+    SET_VECTOR_ELT(ans, 9, Rf_ScalarInteger(R_AccuracyInfo.negep));
 
     SET_STRING_ELT(nms, 10, Rf_mkChar("double.exponent"));
-    SET_VECTOR_ELT(ans, 10, ScalarInteger(R_AccuracyInfo.iexp));
+    SET_VECTOR_ELT(ans, 10, Rf_ScalarInteger(R_AccuracyInfo.iexp));
 
     SET_STRING_ELT(nms, 11, Rf_mkChar("double.min.exp"));
-    SET_VECTOR_ELT(ans, 11, ScalarInteger(R_AccuracyInfo.minexp));
+    SET_VECTOR_ELT(ans, 11, Rf_ScalarInteger(R_AccuracyInfo.minexp));
 
     SET_STRING_ELT(nms, 12, Rf_mkChar("double.max.exp"));
-    SET_VECTOR_ELT(ans, 12, ScalarInteger(R_AccuracyInfo.maxexp));
+    SET_VECTOR_ELT(ans, 12, Rf_ScalarInteger(R_AccuracyInfo.maxexp));
 
     SET_STRING_ELT(nms, 13, Rf_mkChar("integer.max"));
-    SET_VECTOR_ELT(ans, 13, ScalarInteger(INT_MAX));
+    SET_VECTOR_ELT(ans, 13, Rf_ScalarInteger(INT_MAX));
 
     SET_STRING_ELT(nms, 14, Rf_mkChar("sizeof.long"));
-    SET_VECTOR_ELT(ans, 14, ScalarInteger(SIZEOF_LONG));
+    SET_VECTOR_ELT(ans, 14, Rf_ScalarInteger(SIZEOF_LONG));
 
     SET_STRING_ELT(nms, 15, Rf_mkChar("sizeof.longlong"));
-    SET_VECTOR_ELT(ans, 15, ScalarInteger(SIZEOF_LONG_LONG));
+    SET_VECTOR_ELT(ans, 15, Rf_ScalarInteger(SIZEOF_LONG_LONG));
 
     SET_STRING_ELT(nms, 16, Rf_mkChar("sizeof.longdouble"));
 #ifdef HAVE_LONG_DOUBLE
-    SET_VECTOR_ELT(ans, 16, ScalarInteger(SIZEOF_LONG_DOUBLE));
+    SET_VECTOR_ELT(ans, 16, Rf_ScalarInteger(SIZEOF_LONG_DOUBLE));
 #else
-    SET_VECTOR_ELT(ans, 16, ScalarInteger(0));
+    SET_VECTOR_ELT(ans, 16, Rf_ScalarInteger(0));
 #endif
 
     SET_STRING_ELT(nms, 17, Rf_mkChar("sizeof.pointer"));
-    SET_VECTOR_ELT(ans, 17, ScalarInteger(sizeof(SEXP)));
-    setAttrib(ans, R_NamesSymbol, nms);
-    defineVar(install(".Machine"), ans, rho);
+    SET_VECTOR_ELT(ans, 17, Rf_ScalarInteger(sizeof(SEXP)));
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    Rf_defineVar(Rf_install(".Machine"), ans, rho);
     UNPROTECT(2);
 }
 
@@ -181,35 +183,35 @@ static void Init_R_Platform(SEXP rho)
     SET_STRING_ELT(names, 5, Rf_mkChar("pkgType"));
     SET_STRING_ELT(names, 6, Rf_mkChar("path.sep"));
     SET_STRING_ELT(names, 7, Rf_mkChar("r_arch"));
-    SET_VECTOR_ELT(value, 0, mkString(R_OSType));
-    SET_VECTOR_ELT(value, 1, mkString(R_FileSep));
-    SET_VECTOR_ELT(value, 2, mkString(SHLIB_EXT));
-    SET_VECTOR_ELT(value, 3, mkString(R_GUIType));
+    SET_VECTOR_ELT(value, 0, Rf_mkString(R_OSType));
+    SET_VECTOR_ELT(value, 1, Rf_mkString(R_FileSep));
+    SET_VECTOR_ELT(value, 2, Rf_mkString(SHLIB_EXT));
+    SET_VECTOR_ELT(value, 3, Rf_mkString(R_GUIType));
 #ifdef WORDS_BIGENDIAN
-    SET_VECTOR_ELT(value, 4, mkString("big"));
+    SET_VECTOR_ELT(value, 4, Rf_mkString("big"));
 #else
-    SET_VECTOR_ELT(value, 4, mkString("little"));
+    SET_VECTOR_ELT(value, 4, Rf_mkString("little"));
 #endif
 /* pkgType should be "mac.binary" for CRAN build *only*, not for all
    AQUA builds. Also we want to be able to use "mac.binary.mavericks",
    "mac.binary.el-capitan" and similar. */
 #ifdef PLATFORM_PKGTYPE
-    SET_VECTOR_ELT(value, 5, mkString(PLATFORM_PKGTYPE));
+    SET_VECTOR_ELT(value, 5, Rf_mkString(PLATFORM_PKGTYPE));
 #else /* unix default */
-    SET_VECTOR_ELT(value, 5, mkString("source"));
+    SET_VECTOR_ELT(value, 5, Rf_mkString("source"));
 #endif
 #ifdef Win32
-    SET_VECTOR_ELT(value, 6, mkString(";"));
+    SET_VECTOR_ELT(value, 6, Rf_mkString(";"));
 #else /* not Win32 */
-    SET_VECTOR_ELT(value, 6, mkString(":"));
+    SET_VECTOR_ELT(value, 6, Rf_mkString(":"));
 #endif
 #ifdef R_ARCH
-    SET_VECTOR_ELT(value, 7, mkString(R_ARCH));
+    SET_VECTOR_ELT(value, 7, Rf_mkString(R_ARCH));
 #else
-    SET_VECTOR_ELT(value, 7, mkString(""));
+    SET_VECTOR_ELT(value, 7, Rf_mkString(""));
 #endif
-    setAttrib(value, R_NamesSymbol, names);
-    defineVar(install(".Platform"), value, rho);
+    Rf_setAttrib(value, R_NamesSymbol, names);
+    Rf_defineVar(Rf_install(".Platform"), value, rho);
     UNPROTECT(2);
 }
 
@@ -294,7 +296,7 @@ static char *R_Date(void)
 
 SEXP attribute_hidden do_date(/*const*/ Expression* call, const BuiltInFunction* op)
 {
-    return mkString(R_Date());
+    return Rf_mkString(R_Date());
 }
 
 /*  file.show
@@ -330,7 +332,7 @@ SEXP attribute_hidden do_fileshow(/*const*/ Expression* call, const BuiltInFunct
     h = static_cast<const char**>(RHO_alloc(n, sizeof(char*)));
     for (i = 0; i < n; i++) {
 	SEXP el = STRING_ELT(fn, i);
-	if (!isNull(el) && el != NA_STRING)
+	if (!Rf_isNull(el) && el != NA_STRING)
 #ifdef Win32
 	    f[i] = Rf_acopy_string(reEnc(R_CHAR(el), getCharCE(el), CE_UTF8, 1));
 #else
@@ -807,7 +809,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
     fn = dots_;
     if (!Rf_isString(fn))
 	Rf_error(_("invalid filename argument"));
-    int extras = asInteger(extra_cols_);
+    int extras = Rf_asInteger(extra_cols_);
     if(extras == NA_INTEGER)
 	Rf_error(_("invalid '%s' argument"), "extra_cols");
     int n = Rf_length(fn), ncols = 6;
@@ -1005,7 +1007,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
     }
     Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     PROTECT(xxclass = Rf_mkString("octmode"));
-    classgets(mode, xxclass);
+    Rf_classgets(mode, xxclass);
     UNPROTECT(3);
     return ans;
 }
@@ -1138,7 +1140,7 @@ list_files(const char *dnp, const char *stem, int *count, SEXP *pans,
 				if (!reg || tre_regexec(reg, de->d_name, 0, NULL, 0) == 0) { \
 				    if (*count == *countmax - 1) {	\
 					*countmax *= 2;			\
-					REPROTECT(*pans = lengthgets(*pans, *countmax), idx); \
+					REPROTECT(*pans = Rf_lengthgets(*pans, *countmax), idx); \
 				    }					\
 				    SET_STRING_ELT(*pans, (*count)++,	\
 						   filename(stem, de->d_name));	\
@@ -1185,7 +1187,7 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
     Rboolean pattern = FALSE;
     if (Rf_isString(p) && Rf_length(p) >= 1 && STRING_ELT(p, 0) != NA_STRING)
 	pattern = TRUE;
-    else if (!isNull(p) && !(Rf_isString(p) && Rf_length(p) < 1))
+    else if (!Rf_isNull(p) && !(Rf_isString(p) && Rf_length(p) < 1))
 	Rf_error(_("invalid '%s' argument"), "pattern");
     int allfiles = Rf_asLogical(all_files_);
     if (allfiles == NA_LOGICAL)
@@ -1222,7 +1224,7 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
 		   RHOCONSTRUCT(Rboolean, recursive), pattern ? &reg : nullptr, &countmax, idx,
 		   RHOCONSTRUCT(Rboolean, idirs), /* allowdots = */ RHOCONSTRUCT(Rboolean, !nodots));
     }
-    REPROTECT(ans = lengthgets(ans, count), idx);
+    REPROTECT(ans = Rf_lengthgets(ans, count), idx);
     if (pattern) tre_regfree(&reg);
     StringVector* sv = static_cast<StringVector*>(ans);
     Rf_ssort(sv, count);
@@ -1250,7 +1252,7 @@ static void list_dirs(const char *dnp, const char *nm,
 	if (recursive) {
 	    if (*count == *countmax - 1) {
 		*countmax *= 2;
-		REPROTECT(*pans = lengthgets(*pans, *countmax), idx);
+		REPROTECT(*pans = Rf_lengthgets(*pans, *countmax), idx);
 	    }
 	    SET_STRING_ELT(*pans, (*count)++, Rf_mkChar(full ? dnp : nm));
 	}
@@ -1280,7 +1282,7 @@ static void list_dirs(const char *dnp, const char *nm,
 		    } else {
 			if (*count == *countmax - 1) {
 			    *countmax *= 2;
-			    REPROTECT(*pans = lengthgets(*pans, *countmax), idx);
+			    REPROTECT(*pans = Rf_lengthgets(*pans, *countmax), idx);
 			}
 			SET_STRING_ELT(*pans, (*count)++,
 				       Rf_mkChar(full ? p : de->d_name));
@@ -1316,7 +1318,7 @@ SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunct
 	dnp = R_ExpandFileName(Rf_translateChar(STRING_ELT(d, i)));
 	list_dirs(dnp, "", RHOCONSTRUCT(Rboolean, fullnames), &count, &ans, &countmax, idx, RHOCONSTRUCT(Rboolean, recursive));
     }
-    REPROTECT(ans = lengthgets(ans, count), idx);
+    REPROTECT(ans = Rf_lengthgets(ans, count), idx);
     StringVector* sv = static_cast<StringVector*>(ans);
     Rf_ssort(sv, count);
     UNPROTECT(1);
@@ -1328,7 +1330,7 @@ SEXP attribute_hidden do_Rhome(/*const*/ Expression* call, const BuiltInFunction
     char *path;
     if (!(path = R_HomeDir()))
 	Rf_error(_("unable to determine R home location"));
-    return mkString(path);
+    return Rf_mkString(path);
 }
 
 #ifdef Win32
@@ -1379,7 +1381,7 @@ SEXP attribute_hidden do_filechoose(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("file choice cancelled"));
     if (len >= CHOOSEBUFSIZE - 1)
 	Rf_error(_("file name too long"));
-    return mkString(R_ExpandFileName(buf));
+    return Rf_mkString(R_ExpandFileName(buf));
 }
 #endif
 
@@ -1402,7 +1404,7 @@ SEXP attribute_hidden do_fileaccess(/*const*/ Expression* call, const BuiltInFun
     if (!Rf_isString(fn))
 	Rf_error(_("invalid '%s' argument"), "names");
     n = Rf_length(fn);
-    mode = asInteger(mode_);
+    mode = Rf_asInteger(mode_);
     if (mode < 0 || mode > 7) Rf_error(_("invalid '%s' argument"), "mode");
     modemask = 0;
     if (mode & 1) modemask |= X_OK;
@@ -1632,7 +1634,7 @@ SEXP attribute_hidden do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
 	    } else failures++;
 	}
     }
-    return ScalarInteger(failures ? 1 : 0);
+    return Rf_ScalarInteger(failures ? 1 : 0);
 }
 #else
 # if defined(HAVE_GLOB) && defined(HAVE_GLOB_H)
@@ -1684,7 +1686,7 @@ SEXP attribute_hidden do_unlink(/*const*/ Expression* call, const BuiltInFunctio
 #endif
 	}
     }
-    return ScalarInteger(failures ? 1 : 0);
+    return Rf_ScalarInteger(failures ? 1 : 0);
 }
 #endif
 
@@ -1693,7 +1695,7 @@ SEXP attribute_hidden do_getlocale(/*const*/ Expression* call, const BuiltInFunc
     int cat;
     char *p = nullptr;
 
-    cat = asInteger(category_);
+    cat = Rf_asInteger(category_);
     if (cat == NA_INTEGER || cat < 0)
 	Rf_error(_("invalid '%s' argument"), "category");
     switch(cat) {
@@ -1715,7 +1717,7 @@ SEXP attribute_hidden do_getlocale(/*const*/ Expression* call, const BuiltInFunc
     default: cat = NA_INTEGER;
     }
     if (cat != NA_INTEGER) p = setlocale(cat, nullptr);
-    return mkString(p ? p : "");
+    return Rf_mkString(p ? p : "");
 }
 
 /* Locale specs are always ASCII */
@@ -1725,7 +1727,7 @@ SEXP attribute_hidden do_setlocale(/*const*/ Expression* call, const BuiltInFunc
     int cat;
     const char *p;
 
-    cat = asInteger(category_);
+    cat = Rf_asInteger(category_);
     if (cat == NA_INTEGER || cat < 0)
 	Rf_error(_("invalid '%s' argument"), "category");
     if (!Rf_isString(locale) || LENGTH(locale) != 1)
@@ -1870,7 +1872,7 @@ SEXP attribute_hidden do_localeconv(/*const*/ Expression* call, const BuiltInFun
     sprintf(buff, "%d", int(lc->n_sign_posn));
     SET_STRING_ELT(ans, i, Rf_mkChar(buff));
     SET_STRING_ELT(ansnames, i++, Rf_mkChar("n_sign_posn"));
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
@@ -1890,7 +1892,7 @@ SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFun
 	SEXP tmp = STRING_ELT(fn, i);
 	if (tmp != NA_STRING) {
 #ifndef Win32
-	    tmp = markKnown(R_ExpandFileName(Rf_translateChar(tmp)), tmp);
+	    tmp = Rf_markKnown(R_ExpandFileName(Rf_translateChar(tmp)), tmp);
 #else
 /* Windows can have files and home directories that aren't representable in the native encoding (e.g. latin1), so
    we need to translate everything to UTF8.  */
@@ -1933,9 +1935,9 @@ static Rboolean R_can_use_X11(void)
 SEXP attribute_hidden do_capabilitiesX11(/*const*/ Expression* call, const BuiltInFunction* op)
 {
 #ifdef Unix
-    return ScalarLogical(R_can_use_X11());
+    return Rf_ScalarLogical(R_can_use_X11());
 #else
-    return ScalarLogical(FALSE);
+    return Rf_ScalarLogical(FALSE);
 #endif
 }
 
@@ -2100,14 +2102,14 @@ SEXP attribute_hidden do_capabilities(/*const*/ Expression* call, const BuiltInF
 #endif
 
 
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
 
 SEXP attribute_hidden do_sysgetpid(/*const*/ Expression* call, const BuiltInFunction* op)
 {
-    return ScalarInteger(getpid());
+    return Rf_ScalarInteger(getpid());
 }
 
 
@@ -2128,12 +2130,12 @@ SEXP attribute_hidden do_dircreate(/*const*/ Expression* call, const BuiltInFunc
     path = path_;
     if (!Rf_isString(path) || Rf_length(path) != 1)
 	Rf_error(_("invalid '%s' argument"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING) return ScalarLogical(FALSE);
+    if (STRING_ELT(path, 0) == NA_STRING) return Rf_ScalarLogical(FALSE);
     show = Rf_asLogical(showWarnings_);
     if (show == NA_LOGICAL) show = 0;
     recursive = Rf_asLogical(recursive_);
     if (recursive == NA_LOGICAL) recursive = 0;
-    mode = asInteger(mode_);
+    mode = Rf_asInteger(mode_);
     if (mode == NA_LOGICAL) mode = 0777;
     strcpy(dir, R_ExpandFileName(Rf_translateChar(STRING_ELT(path, 0))));
     /* remove trailing slashes */
@@ -2174,7 +2176,7 @@ end:
     if (show && res && serrno != EEXIST)
 	Rf_warning(_("cannot create dir '%s', reason '%s'"), dir,
 		strerror(serrno));
-    return ScalarLogical(res == 0);
+    return Rf_ScalarLogical(res == 0);
 }
 #else /* Win32 */
 #include <io.h> /* mkdir is defined here */
@@ -2187,7 +2189,7 @@ SEXP attribute_hidden do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
     path = CAR(args);
     if (!Rf_isString(path) || Rf_length(path) != 1)
 	Rf_error(_("invalid '%s' argument"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING) return ScalarLogical(FALSE);
+    if (STRING_ELT(path, 0) == NA_STRING) return Rf_ScalarLogical(FALSE);
     show = Rf_asLogical(CADR(args));
     if (show == NA_LOGICAL) show = 0;
     recursive = Rf_asLogical(CADDR(args));
@@ -2225,12 +2227,12 @@ SEXP attribute_hidden do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
             Rf_warning(_("cannot create dir '%ls', reason '%s'"), dir,
             	    strerror(serrno));
     }
-    return ScalarLogical(res == 0);
+    return Rf_ScalarLogical(res == 0);
 end:
     if (show && res && serrno != EEXIST)
 	Rf_warning(_("cannot create dir '%ls', reason '%s'"), dir,
 		strerror(serrno));
-    return ScalarLogical(res == 0);
+    return Rf_ScalarLogical(res == 0);
 }
 #endif
 
@@ -2534,6 +2536,7 @@ static int do_copy(const char* from, const char* name, const char* to,
 		    continue;
 		if (strlen(name) + strlen(de->d_name) + 1 >= PATH_MAX) {
 		    Rf_warning(_("over-long path length"));
+		    closedir(dir);
 		    return 1;
 		}
 		snprintf(p, PATH_MAX+1, "%s/%s", name, de->d_name);
@@ -2670,14 +2673,14 @@ SEXP attribute_hidden do_l10n_info(/*const*/ Expression* call, const BuiltInFunc
     SET_STRING_ELT(names, 0, Rf_mkChar("MBCS"));
     SET_STRING_ELT(names, 1, Rf_mkChar("UTF-8"));
     SET_STRING_ELT(names, 2, Rf_mkChar("Latin-1"));
-    SET_VECTOR_ELT(ans, 0, ScalarLogical(mbcslocale));
-    SET_VECTOR_ELT(ans, 1, ScalarLogical(utf8locale));
-    SET_VECTOR_ELT(ans, 2, ScalarLogical(latin1locale));
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarLogical(mbcslocale));
+    SET_VECTOR_ELT(ans, 1, Rf_ScalarLogical(utf8locale));
+    SET_VECTOR_ELT(ans, 2, Rf_ScalarLogical(latin1locale));
 #ifdef Win32
     SET_STRING_ELT(names, 3, Rf_mkChar("codepage"));
-    SET_VECTOR_ELT(ans, 3, ScalarInteger(localeCP));
+    SET_VECTOR_ELT(ans, 3, Rf_ScalarInteger(localeCP));
 #endif
-    setAttrib(ans, R_NamesSymbol, names);
+    Rf_setAttrib(ans, R_NamesSymbol, names);
     UNPROTECT(2);
     return ans;
 }
@@ -2695,7 +2698,7 @@ SEXP attribute_hidden do_syschmod(/*const*/ Expression* call, const BuiltInFunct
     if (!Rf_isString(paths))
 	Rf_error(_("invalid '%s' argument"), "paths");
     n = LENGTH(paths);
-    PROTECT(smode = coerceVector(mode_, INTSXP));
+    PROTECT(smode = Rf_coerceVector(mode_, INTSXP));
     modes = INTEGER(smode);
     m = LENGTH(smode);
     if(!m && n) Rf_error(_("'mode' must be of length at least one"));
@@ -2752,7 +2755,7 @@ SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunct
     int mode;
     mode_t res = 0;
 
-    mode = asInteger(mode_);
+    mode = Rf_asInteger(mode_);
 #ifdef HAVE_UMASK
     if (mode == NA_INTEGER) {
 	res = umask(0);
@@ -2766,8 +2769,8 @@ SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunct
     Rf_warning(_("insufficient OS support on this platform"));
     R_Visible = FALSE;
 #endif
-    PROTECT(ans = ScalarInteger(res));
-    setAttrib(ans, R_ClassSymbol, mkString("octmode"));
+    PROTECT(ans = Rf_ScalarInteger(res));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("octmode"));
     UNPROTECT(1);
     return ans;
 }
@@ -2820,7 +2823,7 @@ SEXP attribute_hidden do_Cstack_info(/*const*/ Expression* call, const BuiltInFu
     SET_STRING_ELT(nms, 3, Rf_mkChar("eval_depth"));
 
     UNPROTECT(2);
-    setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
     return ans;
 }
 
@@ -2859,7 +2862,7 @@ SEXP attribute_hidden
 do_setFileTime(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* time_)
 {
     const char *fn = Rf_translateChar(STRING_ELT(path_, 0));
-    double ftime = asReal(time_);
+    double ftime = Rf_asReal(time_);
     int res;
 
 #ifdef Win32
@@ -2883,7 +2886,7 @@ do_setFileTime(/*const*/ Expression* call, const BuiltInFunction* op, RObject* p
     settime.actime = settime.modtime = (int)ftime;
     res = utime(fn, &settime) == 0;
 #endif
-    return ScalarLogical(res);
+    return Rf_ScalarLogical(res);
 }
 
 #ifdef Win32
@@ -2919,7 +2922,7 @@ SEXP attribute_hidden do_mkjunction(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(hd == INVALID_HANDLE_VALUE) {
 	Rf_warning("cannot open reparse point '%ls', reason '%s'",
 		to, formatError(GetLastError()));
-	return ScalarLogical(1);
+	return Rf_ScalarLogical(1);
     }
     TMN_REPARSE_DATA_BUFFER rdb;
     const size_t nbytes = wcslen(from) * 2;
@@ -2940,7 +2943,7 @@ SEXP attribute_hidden do_mkjunction(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(!bOK)
 	Rf_warning("cannot set reparse point '%ls', reason '%s'",
 		to, formatError(GetLastError()));
-    return ScalarLogical(bOK != 0);
+    return Rf_ScalarLogical(bOK != 0);
 }
 #endif
 
@@ -3002,7 +3005,7 @@ do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = PROTECT(Rf_allocVector(STRSXP, 9));
     SEXP nms = PROTECT(Rf_allocVector(STRSXP, 9));
-    setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
     unsigned int i = 0;
     char p[256];
     snprintf(p, 256, "%s", zlibVersion());
@@ -3123,7 +3126,7 @@ extern "C" void Rsleep(double timeint);
 
 SEXP attribute_hidden do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    double time = asReal(CAR(args));
+    double time = Rf_asReal(CAR(args));
     if (ISNAN(time) || time < 0.)
 	Rf_error(_("invalid '%s' value"), "time");
     Rsleep(time);

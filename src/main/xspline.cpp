@@ -75,7 +75,7 @@ add_point(double x, double y, pGEDevDesc dd)
 	tmp_n = max_points + 200;
 	/* too many points, return false */
 	if (tmp_n > MAXNUMPTS) {
-	    error(_("add_point - reached MAXNUMPTS (%d)"),tmp_n);
+	    Rf_error(_("add_point - reached MAXNUMPTS (%d)"),tmp_n);
 	}
 	if (max_points == 0) {
 	    tmp_px = static_cast<double *>(RHO_alloc(tmp_n, sizeof(double)));
@@ -89,7 +89,7 @@ add_point(double x, double y, pGEDevDesc dd)
 							  sizeof(double)));
 	}
 	if (tmp_px == NULL || tmp_py == NULL) {
-	    error(_("insufficient memory to allocate point array"));
+	    Rf_error(_("insufficient memory to allocate point array"));
 	}
 	xpoints = tmp_px;
 	ypoints = tmp_py;
@@ -487,9 +487,9 @@ compute_open_spline(int n, double *x, double *y, double *s,
   ypoints = NULL;
 
   if (repEnds && n < 2)
-      error(_("there must be at least two control points"));
+      Rf_error(_("there must be at least two control points"));
   if (!repEnds && n < 4)
-      error(_("there must be at least four control points"));
+      Rf_error(_("there must be at least four control points"));
 
   if (repEnds) {
       /* first control point is needed twice for the first segment */
@@ -549,7 +549,7 @@ compute_closed_spline(int n, double *x, double *y, double *s,
   ypoints = NULL;
 
   if (n < 3)
-      error(_("There must be at least three control points"));
+      Rf_error(_("There must be at least three control points"));
 
   INIT_CONTROL_POINTS(n);
 

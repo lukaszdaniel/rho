@@ -17,7 +17,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 2004-2007  The R Foundation
- *  Copyright (C) 2013-2015  The R Core Team
+ *  Copyright (C) 2013-2017  The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
     pDevDesc dd;
 
     devnum = INTEGER(CAR(args))[0] - 1;
-    if(devnum < 1 || devnum > R_MaxDevices)
+    if(devnum < 1 || devnum >= R_MaxDevices)
 	Rf_error(_("invalid graphical device number"));
 
     gdd = GEgetDevice(devnum);
@@ -112,7 +112,7 @@ do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
     if(devnum == NA_INTEGER)
 	Rf_error(_("invalid graphical device number"));
     devnum--;
-    if(devnum < 1 || devnum > R_MaxDevices)
+    if(devnum < 1 || devnum >= R_MaxDevices)
 	Rf_error(_("invalid graphical device number"));
 
     gdd = GEgetDevice(devnum);

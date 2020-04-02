@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1999--2017  The R Core Team
+ *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -624,7 +624,12 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 
        +2 allows for quotes, +6 for UTF_8 escapes.
      */
-    q = static_cast<char*>(R_AllocStringBuffer(imax2(5*cnt+8, w), buffer));
+    if(5.*cnt + 8 > SIZE_MAX)
+	Rf_error(_("too large string (nchar=%d) => 5*nchar + 8 > SIZE_MAX"));
+    size_t q_len = 5*(size_t)cnt + 8;
+    if(q_len < size_t(w)) q_len = size_t(w);
+    q = static_cast<char*>(R_AllocStringBuffer(q_len, buffer));
+
     b = w - i - (quote ? 2 : 0); /* total amount of padding */
     if(justify == Rprt_adj_none) b = 0;
     if(b > 0 && justify != Rprt_adj_left) {

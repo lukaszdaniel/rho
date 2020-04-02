@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2015  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1407,7 +1407,7 @@ static int InIntegerAscii(FILE *fp, SaveLoadData *unused)
 {
     char buf[128];
     int x, res;
-    res = fscanf(fp, SMBUF_SIZED_STRING, buf);
+    res = fscanf(fp, "%127s", buf);
     if(res != 1) error(_("read error"));
     if (streql(buf, "NA"))
 	return NA_INTEGER;

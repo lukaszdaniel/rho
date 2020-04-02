@@ -1560,14 +1560,17 @@ Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
     if (status == size_t( -1)) {
 	switch(errno){
 	case EINVAL:
-	    return size_t( -2);
+	    Riconv_close(cd);
+	    return size_t(-2);
 	case EILSEQ:
-	    return size_t( -1);
+	    Riconv_close(cd);
+	    return size_t(-1);
 	case E2BIG:
 	    break;
 	default:
+	    Riconv_close(cd);
 	    errno = EILSEQ;
-	    return size_t( -1);
+	    return size_t(-1);
 	}
     }
     Riconv_close(cd);

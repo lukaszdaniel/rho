@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1998--2017  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2015  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -518,7 +518,7 @@ LoadEncoding(const char *encpath, char *encname,
 	strcat(buf, ".enc");
 	if (!(fp = R_fopen(R_ExpandFileName(buf), "r"))) return 0;
     }
-    if (GetNextItem(fp, buf, -1, &state)) return 0; /* encoding name */
+    if (GetNextItem(fp, buf, -1, &state)) { fclose(fp); return 0;} /* encoding name */
     strncpy(encname, buf+1, 99); 
     encname[99] = '\0';
     if (!isPDF) snprintf(enccode, 5000, "/%s [\n", encname);
@@ -3355,8 +3355,10 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 	pd->paperspecial = TRUE;
     }
     else {
+	char errbuf[strlen(pd->papername) + 1];
+	strcpy(errbuf, pd->papername);
 	PS_cleanup(4, dd, pd);
-	error(_("invalid page type '%s' (postscript)"), pd->papername);
+	error(_("invalid page type '%s' (postscript)"), errbuf);
     }
     pd->pagecentre = pagecentre;
     pd->paperwidth = (int)(72 * pd->pagewidth);
@@ -3575,8 +3577,10 @@ static Rboolean PS_Open(pDevDesc dd, PostScriptDesc *pd)
 	pd->psfp = R_popen(pd->command, "w");
 	pd->open_type = 1;
 	if (!pd->psfp || errno != 0) {
+	    char errbuf[strlen(pd->command) + 1];
+	    strcpy(errbuf, pd->command);
 	    PS_cleanup(4, dd, pd);
-	    error(_("cannot open 'postscript' pipe to '%s'"), pd->command);
+	    error(_("cannot open 'postscript' pipe to '%s'"), errbuf);
 	    return FALSE;
 	}
     } else if (pd->filename[0] == '|') {
@@ -3584,9 +3588,11 @@ static Rboolean PS_Open(pDevDesc dd, PostScriptDesc *pd)
 	pd->psfp = R_popen(pd->filename + 1, "w");
 	pd->open_type = 1;
 	if (!pd->psfp || errno != 0) {
+	    char errbuf[strlen(pd->filename + 1) + 1];
+	    strcpy(errbuf, pd->filename + 1);
 	    PS_cleanup(4, dd, pd);
 	    error(_("cannot open 'postscript' pipe to '%s'"),
-		    pd->filename + 1);
+		     errbuf);
 	    return FALSE;
 	}
     } else {
@@ -4998,8 +5004,10 @@ static Rboolean XFig_Open(pDevDesc dd, XFigDesc *pd)
     pd->tmpfp = R_fopen(pd->tmpname, "w");
     if (!pd->tmpfp) {
 	fclose(pd->psfp);
+	char errbuf[strlen(pd->tmpname) + 1];
+	strcpy(errbuf, pd->tmpname);
 	XFig_cleanup(dd, pd);
-	error(_("cannot open file '%s'"), pd->tmpname);
+	error(_("cannot open file '%s'"), errbuf);
 	return FALSE;
     }
     XF_FileHeader(pd->psfp, pd->papername, pd->landscape, pd->onefile);
@@ -5780,6 +5788,7 @@ static Rboolean addPDFDevicefont(type1fontfamily family,
 				    pd->encodings, TRUE);
 	    if (!encoding) {
 		warning(_("corrupt loaded encodings;  font not added"));
+		/* NOTE: in fact the font was added */
 	    } else {
 		encodinglist enclist = addDeviceEncoding(encoding,
 							 pd->encodings);
@@ -5789,6 +5798,7 @@ static Rboolean addPDFDevicefont(type1fontfamily family,
 		    result = TRUE;
 		} else
 		    warning(_("failed to record device encoding; font not added"));
+		    /* NOTE: in fact the font was added */
 	    }
 	}
     }
@@ -5984,6 +5994,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 	if (!strcmp(family, "User") ||
 	    isType1Font(family, PDFFonts, NULL)) {
 	    addPDFDevicefont(font, pd, &gotFont);
+	    /* NOTE: should check result, encoding may not have been found */
 	    pd->defaultFont = pd->fonts->family;
 	    pd->defaultCIDFont = NULL;
 	} else /* (isCIDFont(family, PDFFonts)) */ {
@@ -5993,7 +6004,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 	}
     }
     if (!gotFont) {
-	PDFcleanup(3, pd);
+	PDFcleanup(4, pd);
 	free(dd);
 	error(_("failed to initialise default PDF font"));
     }
@@ -6131,9 +6142,11 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
       pd->pageheight = height;
     }
     else {
+	char errbuf[strlen(pd->papername) + 1];
+	strcpy(errbuf, pd->papername);
 	PDFcleanup(6, pd);
 	free(dd);
-	error(_("invalid paper type '%s' (pdf)"), pd->papername);
+	error(_("invalid paper type '%s' (pdf)"), errbuf);
     }
     pd->pagecentre = pagecentre;
     pd->paperwidth = (int)(72 * pd->pagewidth);
@@ -7062,8 +7075,10 @@ static Rboolean PDF_Open(pDevDesc dd, PDFDesc *pd)
 	errno = 0;
 	pd->pipefp = R_popen(pd->cmd, "w");
 	if (!pd->pipefp || errno != 0) {
+	    char errbuf[strlen(pd->cmd) + 1];
+	    strcpy(errbuf, pd->cmd);
 	    PDFcleanup(6, pd);
-	    error(_("cannot open 'pdf' pipe to '%s'"), pd->cmd);
+	    error(_("cannot open 'pdf' pipe to '%s'"), errbuf);
 	    return FALSE;
 	}
 	pd->open_type = 1;

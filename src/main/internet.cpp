@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2001-2015   The R Core Team.
+ *  Copyright (C) 2001-2017   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -55,13 +55,6 @@ void  R_HTTPClose(void *ctx);
 void *R_FTPOpen(const char *url);
 int   R_FTPRead(void *ctx, char *dest, int len);
 void  R_FTPClose(void *ctx);
-
-void Rsockopen(int *port)
-void Rsocklisten(int *sockp, char **buf, int *len)
-void Rsockconnect(int *port, char **host)
-void Rsockclose(int *sockp)
-void Rsockread(int *sockp, char **buf, int *maxlen)
-void Rsockwrite(int *sockp, char **buf, int *start, int *end, int *len)
 
 int Rsockselect(int nsock, int *insockfd, int *ready, int *write,
 		double timeout)
@@ -240,6 +233,8 @@ SEXP Rsockread(SEXP ssock, SEXP smaxlen)
 	(*ptr->sockread)(&sock, abuf, &maxlen);
     else
 	error(_("socket routines cannot be loaded"));
+    if (maxlen < 0) // presumably -1, error from recv
+	error("Error reading data in Rsockread");
     return Rf_ScalarString(mkCharLen(buf, maxlen));
 }
 

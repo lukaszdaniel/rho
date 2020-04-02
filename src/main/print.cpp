@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 2000-2017	The R Core Team.
  *  Copyright (C) 1995-1998	Robert Gentleman and Ross Ihaka.
- *  Copyright (C) 2000-2016	The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -40,7 +40,10 @@
  *		-> PrintGenericVector	-> PrintValueRec  (recursion)
  *		-> printList		-> PrintValueRec  (recursion)
  *		-> printAttributes	-> PrintValueRec  (recursion)
+ *		-> PrintSpecial
  *		-> PrintExpression
+ *		-> PrintLanguage        -> PrintLanguageEtc
+ *		-> PrintClosure         -> PrintLanguageEtc
  *		-> printVector		>>>>> ./printvector.c
  *		-> printNamedVector	>>>>> ./printvector.c
  *		-> printMatrix		>>>>> ./printarray.c
@@ -52,7 +55,7 @@
  *
  *
  *  See ./printutils.cpp	 for general remarks on Printing
- *			 and the Encode.. utils.
+ *			 and the EncodeString() and all Encode*() utils,
  *
  *  Also ./printvector.cpp,  ./printarray.cpp
  *
@@ -199,17 +202,23 @@ static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
 {
     int i;
     SEXP t = Rf_getAttrib(s, R_SrcrefSymbol);
-    if (!Rf_isInteger(t) || !useSource)
-	t = Rf_deparse1w(s, RHO_FALSE, useSource | DEFAULTDEPARSE);
-    else {
+    Rboolean useSrc = Rboolean(useSource && Rf_isInteger(t));
+    if (useSrc) {
 	PROTECT(t = Rf_lang2(R_AsCharacterSymbol, t));
 	t = Rf_eval(t, R_BaseEnv);
 	UNPROTECT(1);
+    } else {
+	t = Rf_deparse1w(s, Rboolean(0), useSource | DEFAULTDEPARSE);
     }
     PROTECT(t);
     for (i = 0; i < LENGTH(t); i++) {
+#ifdef rev72839__not_ok_eg_for_escaped_chars
+	// did solve PR#16732
 	const char *ctmp = Rf_EncodeString(STRING_ELT(t, i),  0, 0, Rprt_adj_none);
 	Rprintf("%s\n", ctmp); /* translated */
+#else
+ 	Rprintf("%s\n", R_CHAR(STRING_ELT(t, i))); /* translated */
+#endif
     }
     UNPROTECT(1);
     if (isClosure) {
@@ -264,7 +273,7 @@ SEXP attribute_hidden do_printdefault(/*const*/ Expression* call, const BuiltInF
 	    Rf_error(_("invalid 'na.print' specification"));
 	R_print.na_string = R_print.na_string_noquote = STRING_ELT(naprint, 0);
 	R_print.na_width = R_print.na_width_noquote =
-	    int(strlen(CHAR(R_print.na_string)));
+	    int(strlen(R_CHAR(R_print.na_string)));
     }
     args = (args + 1);
 

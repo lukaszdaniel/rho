@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1998-2017  The R Core Team.
+ *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -693,7 +693,8 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    Rf_warningcall(call, "'x' is NULL so the result will be NULL");
 	SEXP a;
 	PROTECT(a = duplicate(x));
-	if(len != NA_INTEGER && len > 0) a = xlengthgets(a, len);
+	if(len != NA_INTEGER && len > 0 && x != R_NilValue)
+	    a = xlengthgets(a, len);
 	UNPROTECT(3);
 	return a;
     }

@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 2002-3     The R Foundation
- *  Copyright (C) 1999-2015  The R Core Team.
+ *  Copyright (C) 2002-2017  The R Foundation
+ *  Copyright (C) 1999-2017  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -829,7 +829,7 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
 Rboolean attribute_hidden inherits2(SEXP x, const char *what) {
     if (OBJECT(x)) {
 	SEXP klass;
-  
+
 	if(IS_S4_OBJECT(x))
 	    PROTECT(klass = R_data_class2(x));
 	else
@@ -948,12 +948,14 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	    s_contains      = Rf_install("contains");
 	    s_selectSuperCl = Rf_install(".selectSuperClasses");
 	}
-
 	PROTECT(classExts = R_do_slot(R_getClassDef(class_str), s_contains));
-	PROTECT(_call = Rf_lang3(s_selectSuperCl, classExts,
-			      /* dropVirtual = */ Rf_ScalarLogical(1)));
+	/* .selectSuperClasses(getClassDef(class)@contains, dropVirtual = TRUE,
+	 *                     namesOnly = TRUE, directOnly = FALSE, simpleOnly = TRUE) :
+	 */
+	PROTECT(_call = Rf_lang6(s_selectSuperCl, classExts, Rf_ScalarLogical(1),
+			      Rf_ScalarLogical(1), Rf_ScalarLogical(0), Rf_ScalarLogical(1)));
 	superCl = Rf_eval(_call, rho);
-	UNPROTECT(2);
+	UNPROTECT(2); /* _call, classExts */
 	PROTECT(superCl);
 	for(int i=0; i < Rf_length(superCl); i++) {
 	    const char *s_class = CHAR(STRING_ELT(superCl, i));
@@ -961,12 +963,12 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 		if (!strlen(valid[ans]))
 		    break;
 		if (streql(s_class, valid[ans])) {
-		    UNPROTECT(1);
+		    UNPROTECT(1); /* superCl */
 		    return ans;
 		}
 	    }
 	}
-	UNPROTECT(1);
+	UNPROTECT(1); /* superCl */
     }
     return -1;
 }
@@ -1541,7 +1543,10 @@ SEXP R_do_new_object(SEXP class_def)
     }
     e = R_do_slot(class_def, s_className);
     value = Rf_duplicate(R_do_slot(class_def, s_prototype));
-    if(TYPEOF(value) == S4SXP || Rf_getAttrib(e, R_PackageSymbol) != R_NilValue)
+    Rboolean xDataType = Rboolean(TYPEOF(value) == ENVSXP || TYPEOF(value) == SYMSXP ||
+	TYPEOF(value) == EXTPTRSXP);
+    if((TYPEOF(value) == S4SXP || Rf_getAttrib(e, R_PackageSymbol) != R_NilValue) &&
+       !xDataType)
     { /* Anything but an object from a base "class" (numeric, matrix,..) */
 	GCStackRoot<> valrt(value);
 	Rf_setAttrib(value, R_ClassSymbol, e);

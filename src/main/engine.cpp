@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -49,7 +51,7 @@ int R_GE_getVersion()
 void R_GE_checkVersionOrDie(int version)
 {
     if (version != R_GE_version)
-    error(_("Graphics API version mismatch"));
+    Rf_error(_("Graphics API version mismatch"));
 }
 
 /* A note on memory management ...
@@ -122,12 +124,12 @@ static void registerOne(pGEDevDesc dd, int systemNumber, GEcallback cb) {
     dd->gesd[systemNumber] =
 	static_cast<GESystemDesc*>(calloc(1, sizeof(GESystemDesc)));
     if (dd->gesd[systemNumber] == nullptr)
-	error(_("unable to allocate memory (in GEregister)"));
+	Rf_error(_("unable to allocate memory (in GEregister)"));
     result = cb(GE_InitState, dd, R_NilValue);
-    if (isNull(result)) {
+    if (Rf_isNull(result)) {
         /* tidy up */
         free(dd->gesd[systemNumber]);
-	error(_("unable to allocate memory (in GEregister)"));
+	Rf_error(_("unable to allocate memory (in GEregister)"));
     } else {
 	dd->gesd[systemNumber]->callback = cb;
     }
@@ -162,7 +164,7 @@ void GEregisterSystem(GEcallback cb, int *systemRegisterIndex) {
     int i, devNum;
     pGEDevDesc gdd;
     if (numGraphicsSystems + 1 == MAX_GRAPHICS_SYSTEMS)
-	error(_("too many graphics systems registered"));
+	Rf_error(_("too many graphics systems registered"));
     /* Set the system register index so that, if there are existing
      * devices, it will know where to put the system-specific
      * information in those devices
@@ -191,7 +193,7 @@ void GEregisterSystem(GEcallback cb, int *systemRegisterIndex) {
     registeredSystems[*systemRegisterIndex] =
 	static_cast<GESystemDesc*>(calloc(1, sizeof(GESystemDesc)));
     if (registeredSystems[*systemRegisterIndex] == nullptr)
-	error(_("unable to allocate memory (in GEregister)"));
+	Rf_error(_("unable to allocate memory (in GEregister)"));
     registeredSystems[*systemRegisterIndex]->callback = cb;
     numGraphicsSystems += 1;
 }
@@ -215,7 +217,7 @@ void GEunregisterSystem(int registerIndex)
 	   apparently it did after a segfault:
 	   https://stat.ethz.ch/pipermail/r-devel/2011-June/061153.html
 	*/
-	warning(_("no graphics system to unregister"));
+	Rf_warning(_("no graphics system to unregister"));
 	return;
     }
     /* Run through the existing devices and remove the information
@@ -447,32 +449,32 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
     int i, code;
     double rcode;
 
-    if(isString(value)) {
+    if(Rf_isString(value)) {
 	for(i = 0; lineend[i].name; i++) { /* is it the i-th name ? */
 	    if(streql(CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
 		return lineend[i].end;
 	}
-	error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
+	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
     }
-    else if(isInteger(value)) {
+    else if(Rf_isInteger(value)) {
 	code = INTEGER(value)[ind];
 	if(code == NA_INTEGER || code < 0)
-	    error(_("invalid line end"));
+	    Rf_error(_("invalid line end"));
 	if (code > 0)
 	    code = (code-1) % nlineend + 1;
 	return lineend[code].end;
     }
-    else if(isReal(value)) {
+    else if(Rf_isReal(value)) {
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
-	    error(_("invalid line end"));
+	    Rf_error(_("invalid line end"));
 	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlineend + 1;
 	return lineend[code].end;
     }
     else {
-	error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
+	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
     }
 }
 
@@ -483,10 +485,10 @@ SEXP GE_LENDget(R_GE_lineend lend)
 
     for (i = 0; lineend[i].name; i++) {
 	if(lineend[i].end == lend)
-	    return mkString(lineend[i].name);
+	    return Rf_mkString(lineend[i].name);
     }
 
-    error(_("invalid line end"));
+    Rf_error(_("invalid line end"));
     /*
      * Should never get here
      */
@@ -512,32 +514,32 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
     int i, code;
     double rcode;
 
-    if(isString(value)) {
+    if(Rf_isString(value)) {
 	for(i = 0; linejoin[i].name; i++) { /* is it the i-th name ? */
 	    if(streql(CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
 		return linejoin[i].join;
 	}
-	error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
+	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
     }
-    else if(isInteger(value)) {
+    else if(Rf_isInteger(value)) {
 	code = INTEGER(value)[ind];
 	if(code == NA_INTEGER || code < 0)
-	    error(_("invalid line join"));
+	    Rf_error(_("invalid line join"));
 	if (code > 0)
 	    code = (code-1) % nlinejoin + 1;
 	return linejoin[code].join;
     }
-    else if(isReal(value)) {
+    else if(Rf_isReal(value)) {
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
-	    error(_("invalid line join"));
+	    Rf_error(_("invalid line join"));
 	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlinejoin + 1;
 	return linejoin[code].join;
     }
     else {
-	error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
+	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
     }
 }
 
@@ -548,10 +550,10 @@ SEXP GE_LJOINget(R_GE_linejoin ljoin)
 
     for (i = 0; linejoin[i].name; i++) {
 	if(linejoin[i].join == ljoin)
-	    return mkString(linejoin[i].name);
+	    return Rf_mkString(linejoin[i].name);
     }
 
-    error(_("invalid line join"));
+    Rf_error(_("invalid line join"));
     /*
      * Should never get here
      */
@@ -770,7 +772,7 @@ void GELine(double x1, double y1, double x2, double y2,
 {
     Rboolean clip_ok;
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK) return;
     if (dd->dev->canClip) {
 	clip_ok = clipLine(&x1, &y1, &x2, &y2, 1, dd);
@@ -807,7 +809,7 @@ static void CScliplines(int n, double *x, double *y,
     xx = static_cast<double *>(RHO_alloc(n, sizeof(double)));
     yy = static_cast<double *>(RHO_alloc(n, sizeof(double)));
     if (xx == nullptr || yy == nullptr)
-	error(_("out of memory while clipping polyline"));
+	Rf_error(_("out of memory while clipping polyline"));
 
     xx[0] = x1 = x[0];
     yy[0] = y1 = y[0];
@@ -874,7 +876,7 @@ static void clipPolyline(int n, double *x, double *y,
 void GEPolyline(int n, double *x, double *y, const pGEcontext gc, pGEDevDesc dd)
 {
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK) return;
     if (dd->dev->canClip) {
 	clipPolyline(n, x, y, gc, 1, dd);  /* clips to device extent
@@ -1107,7 +1109,7 @@ void GEPolygon(int n, double *x, double *y, const pGEcontext gc, pGEDevDesc dd)
      */
     const void *vmaxsave = vmaxget();
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK)
 	/* "transparent" border */
 	gc->col = R_TRANWHITE;
@@ -1214,7 +1216,7 @@ void GECircle(double x, double y, double radius, const pGEcontext gc, pGEDevDesc
     if (radius <= 0.0) return;
 
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK)
 	/* "transparent" border */
 	gc->col = R_TRANWHITE;
@@ -1337,7 +1339,7 @@ void GERect(double x0, double y0, double x1, double y1,
     int result;
 
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK)
 	/* "transparent" border */
 	gc->col = R_TRANWHITE;
@@ -1395,13 +1397,13 @@ void GEPath(double *x, double *y,
 {
     /* safety check: this will be NULL if the device did not set it. */
     if (!dd->dev->path) {
-	warning(_("path rendering is not implemented for this device"));
+	Rf_warning(_("path rendering is not implemented for this device"));
 	return;
     }
     /* FIXME: what about clipping? (if the device can't) 
     */
     if (gc->lwd == R_PosInf || gc->lwd < 0.0)
-	error(_("'lwd' must be non-negative and finite"));
+	Rf_error(_("'lwd' must be non-negative and finite"));
     if (ISNAN(gc->lwd) || gc->lty == LTY_BLANK)
 	gc->col = R_TRANWHITE;
     if (npoly > 0) {
@@ -1415,7 +1417,7 @@ void GEPath(double *x, double *y,
         if (draw) {
             dd->dev->path(x, y, npoly, nper, winding, gc, dd->dev);
         } else {
-	    error(_("Invalid graphics path"));
+	    Rf_error(_("Invalid graphics path"));
         }
     }
 }
@@ -1434,7 +1436,7 @@ void GERaster(unsigned int *raster, int w, int h,
 {
     /* safety check: this will be NULL if the device did not set it. */
     if (!dd->dev->raster) {
-	warning(_("raster rendering is not implemented for this device"));
+	Rf_warning(_("raster rendering is not implemented for this device"));
 	return;
     }
 
@@ -1458,7 +1460,7 @@ SEXP GECap(pGEDevDesc dd)
 {
     /* safety check: this will be NULL if the device did not set it. */
     if (!dd->dev->cap) {
-	warning(_("raster capture is not available for this device"));
+	Rf_warning(_("raster capture is not available for this device"));
 	return R_NilValue;
     }
     return dd->dev->cap(dd->dev);
@@ -1671,7 +1673,7 @@ static int VFontFaceCode(int familycode, int fontface) {
 	    /*
 	     * Other font faces just too wacky so throw an error
 	     */
-	    error(_("font face %d not supported for font family '%s'"),
+	    Rf_error(_("font face %d not supported for font family '%s'"),
 		  fontface, VFontTable[familycode].name);
 	}
     }
@@ -1746,7 +1748,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 		    *sb = '\0';
 		    /* This may R_alloc, but let's assume that
 		       there are not many lines of text per string */
-		    str = reEnc(sbuf, enc, enc2, 2);
+		    str = Rf_reEnc(sbuf, enc, enc2, 2);
 		    if (n > 1) {
 			/* first determine location of THIS line */
 			if (!R_FINITE(xc))
@@ -1801,7 +1803,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 				int charNum = 0;
 				Rboolean done = FALSE;
 				/* Symbol fonts are not encoded in MBCS ever */
-				if(enc2 != CE_SYMBOL && !strIsASCII(ss)) {
+				if(enc2 != CE_SYMBOL && !Rf_strIsASCII(ss)) {
 				    if(mbcslocale && enc2 == CE_NATIVE) {
 					/* FIXME: This assumes that wchar_t is UCS-2/4,
 					   since that is what GEMetricInfo expects */
@@ -1829,7 +1831,7 @@ void GEText(double x, double y, const char * const str, cetype_t enc,
 				    } else if (enc2 == CE_UTF8) {
 					size_t used;
 					wchar_t wc;
-					while ((used = utf8toucs(&wc, ss)) > 0) {
+					while ((used = Rf_utf8toucs(&wc, ss)) > 0) {
 					    if (IS_HIGH_SURROGATE(wc))
 					    	GEMetricInfo(-int(utf8toucs32(wc, ss)), gc, &h, &d, &w, dd);
 					    else
@@ -1961,13 +1963,13 @@ SEXP GEXspline(int n, double *x, double *y, double *s, Rboolean open,
     if (npoints > 1) {
 	SEXP xpts, ypts;
 	int i;
-	PROTECT(xpts = allocVector(REALSXP, npoints));
-	PROTECT(ypts = allocVector(REALSXP, npoints));
+	PROTECT(xpts = Rf_allocVector(REALSXP, npoints));
+	PROTECT(ypts = Rf_allocVector(REALSXP, npoints));
 	for (i = 0; i < npoints; i++) {
 	    REAL(xpts)[i] = xpoints[i];
 	    REAL(ypts)[i] = ypoints[i]/asp;
 	}
-	PROTECT(result = allocVector(VECSXP, 2));
+	PROTECT(result = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(result, 0, xpts);
 	SET_VECTOR_ELT(result, 1, ypts);
 	UNPROTECT(3);
@@ -1990,7 +1992,7 @@ SEXP GEXspline(int n, double *x, double *y, double *s, Rboolean open,
 void GEMode(int mode, pGEDevDesc dd)
 {
     if (NoDevices())
-	error(_("no graphics device is active"));
+	Rf_error(_("no graphics device is active"));
     if(dd->dev->mode) dd->dev->mode(mode, dd->dev);
 }
 
@@ -2028,8 +2030,8 @@ void GESymbol(double x, double y, int pch, double size,
 	size_t res;
 	char str[16]; // probably 7 would do
 	if(gc->fontface == 5)
-	    error("use of negative pch with symbol font is invalid");
-	res = ucstoutf8(str, -pch); // throws error if unsuccessful 
+	    Rf_error("use of negative pch with symbol font is invalid");
+	res = Rf_ucstoutf8(str, -pch); // throws error if unsuccessful 
 	str[res] = '\0';
 	GEText(x, y, str, CE_UTF8, NA_REAL, NA_REAL, 0., gc, dd);
     } else if(' ' <= pch && pch <= RHOCONSTRUCT(int, maxchar)) {
@@ -2067,7 +2069,7 @@ void GESymbol(double x, double y, int pch, double size,
 	}
     }
     else if(pch > RHOCONSTRUCT(int, maxchar))
-	    warning(_("pch value '%d' is invalid in this locale"), pch);
+	    Rf_warning(_("pch value '%d' is invalid in this locale"), pch);
     else {
 	double GSTR_0 = fromDeviceWidth(size, GE_INCHES, dd);
 
@@ -2325,7 +2327,7 @@ void GESymbol(double x, double y, int pch, double size,
 	    GEPolygon(3, xx, yy, gc, dd);
 	    break;
 	default:
-	    warning(_("unimplemented pch value '%d'"), pch);
+	    Rf_warning(_("unimplemented pch value '%d'"), pch);
 	}
     }
 }
@@ -2348,11 +2350,11 @@ void GEPretty(double *lo, double *up, int *ndiv)
 #endif
 
     if(*ndiv <= 0)
-	error(_("invalid axis extents [GEPretty(.,.,n=%d)"), *ndiv);
+	Rf_error(_("invalid axis extents [GEPretty(.,.,n=%d)"), *ndiv);
     if(*lo == R_PosInf || *up == R_PosInf ||
        *lo == R_NegInf || *up == R_NegInf ||
        !R_FINITE(*up - *lo)) {
-	error(_("infinite axis extents [GEPretty(%g,%g,%d)]"), *lo, *up, *ndiv);
+	Rf_error(_("infinite axis extents [GEPretty(%g,%g,%d)]"), *lo, *up, *ndiv);
 	return;/*-Wall*/
     }
 
@@ -2360,15 +2362,14 @@ void GEPretty(double *lo, double *up, int *ndiv)
 #ifdef DEBUG_PLOT
     x1 = ns; x2 = nu;
 #endif
+    // -> ../appl/pretty.c 
     unit = R_pretty(&ns, &nu, ndiv, /* min_n = */ 1,
 		    /* shrink_sml = */ 0.25,
 		    high_u_fact,
 		    2, /* do eps_correction in any case */
 		    0 /* return (ns,nu) in  (lo,up) */);
-
-    /* The following is ugly since it kind of happens already in Rpretty0(..):
-     */
-#define rounding_eps 1e-7
+    // The following is ugly since it kind of happens already in R_pretty(..):
+#define rounding_eps 1e-10 /* <- compatible to seq*(); was 1e-7 till 2017-08-14 */
     if(nu >= ns + 1) {
 	if(               ns * unit < *lo - rounding_eps*unit)
 	    ns++;
@@ -2389,9 +2390,9 @@ void GEPretty(double *lo, double *up, int *ndiv)
 
 #ifdef DEBUG_PLOT
     if(*lo < x1)
-	warning(_(" .. GEPretty(.): new *lo = %g < %g = x1"), *lo, x1);
+	Rf_warning(_(" .. GEPretty(.): new *lo = %g < %g = x1"), *lo, x1);
     if(*up > x2)
-	warning(_(" .. GEPretty(.): new *up = %g > %g = x2"), *up, x2);
+	Rf_warning(_(" .. GEPretty(.): new *up = %g > %g = x2"), *up, x2);
 #endif
 }
 
@@ -2503,7 +2504,7 @@ double GEStrWidth(const char *str, cetype_t enc, const pGEcontext gc, pGEDevDesc
 		    *sb = '\0';
 		    /* This may R_alloc, but let's assume that
 		       there are not many lines of text per string */
-		    str = reEnc(sbuf, enc, enc2, 2);
+		    str = Rf_reEnc(sbuf, enc, enc2, 2);
 		    if(dd->dev->hasTextUTF8 == TRUE && enc2 == CE_UTF8)
 			wdash = dd->dev->strWidthUTF8(str, gc, dd->dev);
 		    else
@@ -2635,8 +2636,8 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 	if (noMetricInfo) {
 	    *ascent = GEStrHeight(sbuf, enc2, gc, dd);
 	} else {
-	    s = reEnc(sbuf, enc, enc2, 2);
-	    if (enc2 != CE_SYMBOL && !strIsASCII(s)) {
+	    s = Rf_reEnc(sbuf, enc, enc2, 2);
+	    if (enc2 != CE_SYMBOL && !Rf_strIsASCII(s)) {
 		if (mbcslocale && enc2 == CE_NATIVE) {
 		    size_t n = strlen(s), used;
 		    wchar_t wc;
@@ -2652,7 +2653,7 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 		} else if (enc2 == CE_UTF8) {
 		    size_t used;
 		    wchar_t wc;
-		    while ((used = utf8toucs(&wc, s)) > 0) {
+		    while ((used = Rf_utf8toucs(&wc, s)) > 0) {
                     	if (IS_HIGH_SURROGATE(wc))
                     	    GEMetricInfo(-utf8toucs32(wc, s), gc, &asc, &dsc, &wid, dd);
                     	else
@@ -2696,8 +2697,8 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 	if (noMetricInfo) {
 	    *descent = 0;
 	} else {
-	    s = reEnc(sbuf, enc, enc2, 2);
-	    if (enc2 != CE_SYMBOL && !strIsASCII(s)) {
+	    s = Rf_reEnc(sbuf, enc, enc2, 2);
+	    if (enc2 != CE_SYMBOL && !Rf_strIsASCII(s)) {
 		if (mbcslocale && enc2 == CE_NATIVE) {
 		    size_t n = strlen(s), used;
 		    wchar_t wc;
@@ -2713,7 +2714,7 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
 		} else if (enc2 == CE_UTF8) {
 		    size_t used;
 		    wchar_t wc;
-                    while ((used = utf8toucs(&wc, s)) > 0) {
+                    while ((used = Rf_utf8toucs(&wc, s)) > 0) {
                         if (IS_HIGH_SURROGATE(wc))
                             GEMetricInfo(-utf8toucs32(wc, s), gc, &asc, &dsc, &wid, dd);
                         else
@@ -2818,7 +2819,7 @@ void GErecordGraphicOperation(SEXP op, SEXP args, pGEDevDesc dd)
 {
     SEXP lastOperation = dd->DLlastElt;
     if (dd->displayListOn) {
-	SEXP newOperation = list2(op, args);
+	SEXP newOperation = Rf_list2(op, args);
 	if (lastOperation == R_NilValue) {
 	    setDisplayList(dd, CONS(newOperation, R_NilValue));
 	    dd->DLlastElt = dd->displayList;
@@ -2905,11 +2906,11 @@ void GEplayDisplayList(pGEDevDesc dd)
 		/* Check with each graphics system that the plotting went ok
 		 */
 		if (!GEcheckState(dd)) {
-		    warning(_("display list redraw incomplete"));
+		    Rf_warning(_("display list redraw incomplete"));
 		    plotok = 0;
 		}
 	    } else {
-	    	warning(_("invalid display list"));
+	    	Rf_warning(_("invalid display list"));
 	    	plotok = 0;
 	    }
 	    theList = CDR(theList);
@@ -2935,9 +2936,9 @@ void GEcopyDisplayList(int fromDevice)
     int i;
 
     tmp = gd->displayList;
-    if(!isNull(tmp)) tmp = duplicate(tmp);
+    if(!Rf_isNull(tmp)) tmp = Rf_duplicate(tmp);
     setDisplayList(dd, tmp);
-    dd->DLlastElt = lastElt(dd->displayList);
+    dd->DLlastElt = Rf_lastElt(dd->displayList);
     /* Get each registered graphics system to copy system state
      * information from the "from" device to the current device
      */
@@ -2971,11 +2972,11 @@ SEXP GEcreateSnapshot(pGEDevDesc dd)
      * and one spot each for the registered graphics systems
      * to put their graphics state
      */
-    PROTECT(snapshot = allocVector(VECSXP, 1 + numGraphicsSystems));
+    PROTECT(snapshot = Rf_allocVector(VECSXP, 1 + numGraphicsSystems));
     /* The first element of the snapshot is the display list.
      */
-    if(!isNull(dd->displayList)) {
-	PROTECT(tmp = duplicate(dd->displayList));
+    if(!Rf_isNull(dd->displayList)) {
+	PROTECT(tmp = Rf_duplicate(dd->displayList));
 	SET_VECTOR_ELT(snapshot, 0, tmp);
 	UNPROTECT(1);
     }
@@ -2989,7 +2990,7 @@ SEXP GEcreateSnapshot(pGEDevDesc dd)
 	    SET_VECTOR_ELT(snapshot, i + 1, state);
 	    UNPROTECT(1);
 	}
-    setAttrib(snapshot, install("engineVersion"),
+    Rf_setAttrib(snapshot, Rf_install("engineVersion"),
 	      Rf_ScalarInteger(R_GE_getVersion()));
     UNPROTECT(1);
     return snapshot;
@@ -3016,14 +3017,14 @@ void GEplaySnapshot(SEXP snapshot, pGEDevDesc dd)
      */
     SEXP snapshotEngineVersion;
     int engineVersion = R_GE_getVersion();
-    PROTECT(snapshotEngineVersion = getAttrib(snapshot, 
-                                              install("engineVersion")));
-    if (isNull(snapshotEngineVersion)) {
-        warning(_("snapshot recorded with different graphics engine version (pre 11 - this is version %d)"),
+    PROTECT(snapshotEngineVersion = Rf_getAttrib(snapshot, 
+                                              Rf_install("engineVersion")));
+    if (Rf_isNull(snapshotEngineVersion)) {
+        Rf_warning(_("snapshot recorded with different graphics engine version (pre 11 - this is version %d)"),
                 engineVersion);
     } else if (INTEGER(snapshotEngineVersion)[0] != engineVersion) {
         int snapshotVersion = INTEGER(snapshotEngineVersion)[0];
-        warning(_("snapshot recorded with different graphics engine version (%d - this is version %d)"), 
+        Rf_warning(_("snapshot recorded with different graphics engine version (%d - this is version %d)"), 
                 snapshotVersion, engineVersion);
     }
     /* "clean" the device
@@ -3040,8 +3041,8 @@ void GEplaySnapshot(SEXP snapshot, pGEDevDesc dd)
 	    (dd->gesd[i]->callback)(GE_RestoreSnapshotState, dd, snapshot);
     /* Replay the display list
      */
-    setDisplayList(dd, duplicate(VECTOR_ELT(snapshot, 0)));
-    dd->DLlastElt = lastElt(dd->displayList);
+    setDisplayList(dd, Rf_duplicate(VECTOR_ELT(snapshot, 0)));
+    dd->DLlastElt = Rf_lastElt(dd->displayList);
     GEplayDisplayList(dd);
     if (!dd->displayListOn) GEinitDisplayList(dd);
     UNPROTECT(1);
@@ -3098,26 +3099,26 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
     checkArity(op, args);
     SEXP code = CAR(args);
     SEXP list = CADR(args);
-    if (!isLanguage(code))
-	error(_("'expr' argument must be an expression"));
+    if (!Rf_isLanguage(code))
+	Rf_error(_("'expr' argument must be an expression"));
     if (TYPEOF(list) != VECSXP)
-	error(_("'list' argument must be a list"));
+	Rf_error(_("'list' argument must be a list"));
     SEXP parentenv = downcast_to_env(CADDR(args));
     if (!parentenv)
-	error(_("'env' argument must be an environment"));
+	Rf_error(_("'env' argument must be an environment"));
     /*
      * This conversion of list to env taken from do_eval
      */
-    PROTECT(x = VectorToPairList(list));
+    PROTECT(x = Rf_VectorToPairList(list));
     for (xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
 	SET_NAMED(CAR(xptr) , 2);
     /*
      * The environment passed in as the third arg is used as
      * the parent of the new evaluation environment.
      */
-    PROTECT(evalenv = NewEnvironment(nullptr, x, parentenv));
+    PROTECT(evalenv = Rf_NewEnvironment(nullptr, x, parentenv));
     dd->recordGraphics = FALSE;
-    PROTECT(retval = eval(code, evalenv));
+    PROTECT(retval = Rf_eval(code, evalenv));
     /*
      * If there is an error or user-interrupt in the above
      * evaluation, dd->recordGraphics is set to TRUE
@@ -3126,7 +3127,7 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
     dd->recordGraphics = record;
     if (GErecording(call, dd)) {
 	if (!GEcheckState(dd))
-	    error(_("invalid graphics state"));
+	    Rf_error(_("invalid graphics state"));
 	GErecordGraphicOperation(op, args, dd);
     }
     UNPROTECT(3);
@@ -3183,12 +3184,12 @@ int GEstring_to_pch(SEXP pch)
     } else if (IS_UTF8(pch) || utf8locale) {
 	wchar_t wc = 0;
 	if (ipch > 127) {
-	    if ( int(utf8toucs(&wc, CHAR(pch))) > 0) {
+	    if ( int(Rf_utf8toucs(&wc, CHAR(pch))) > 0) {
 	    	if (IS_HIGH_SURROGATE(wc))
 	    	    ipch = -utf8toucs32(wc, CHAR(pch));
 	    	else
 	    	    ipch = -wc;
-	    } else error(_("invalid multibyte char in pch=\"c\""));
+	    } else Rf_error(_("invalid multibyte char in pch=\"c\""));
 	}
     } else if(mbcslocale) {
 	/* Could we safely assume that 7-bit first byte means ASCII?
@@ -3196,7 +3197,7 @@ int GEstring_to_pch(SEXP pch)
 	 */
 	unsigned int ucs = 0;
 	if ( int(Rf_mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
-	else error(_("invalid multibyte char in pch=\"c\""));
+	else Rf_error(_("invalid multibyte char in pch=\"c\""));
 	if (ipch > 127) ipch = -ipch;
     }
 
@@ -3243,7 +3244,7 @@ static unsigned int hexdigit(int digit)
     if('0' <= digit && digit <= '9') return digit - '0';
     if('A' <= digit && digit <= 'F') return 10 + digit - 'A';
     if('a' <= digit && digit <= 'f') return 10 + digit - 'a';
-    /*else */ error(_("invalid hex digit in 'color' or 'lty'"));
+    /*else */ Rf_error(_("invalid hex digit in 'color' or 'lty'"));
     return digit; /* never occurs (-Wall) */
 }
 
@@ -3255,7 +3256,7 @@ unsigned int GE_LTYpar(SEXP value, int ind)
     int i, code, shift, digit;
     double rcode;
 
-    if(isString(value)) {
+    if(Rf_isString(value)) {
 	for(i = 0; linetype[i].name; i++) { /* is it the i-th name ? */
 	    if(streql(CHAR(STRING_ELT(value, ind)), linetype[i].name))
 		return linetype[i].pattern;
@@ -3266,35 +3267,35 @@ unsigned int GE_LTYpar(SEXP value, int ind)
 	p = CHAR(STRING_ELT(value, ind));
 	size_t len = strlen(p);
 	if(len < 2 || len > 8 || len % 2 == 1)
-	    error(_("invalid line type: must be length 2, 4, 6 or 8"));
+	    Rf_error(_("invalid line type: must be length 2, 4, 6 or 8"));
 	for(; *p; p++) {
 	    digit = hexdigit(*p);
 	    if(digit == 0)
-		error(_("invalid line type: zeroes are not allowed"));
+		Rf_error(_("invalid line type: zeroes are not allowed"));
 	    code  |= (digit<<shift);
 	    shift += 4;
 	}
 	return code;
     }
-    else if(isInteger(value)) {
+    else if(Rf_isInteger(value)) {
 	code = INTEGER(value)[ind];
 	if(code == NA_INTEGER || code < 0)
-	    error(_("invalid line type"));
+	    Rf_error(_("invalid line type"));
 	if (code > 0)
 	    code = (code-1) % nlinetype + 1;
 	return linetype[code].pattern;
     }
-    else if(isReal(value)) {
+    else if(Rf_isReal(value)) {
 	rcode = REAL(value)[ind];
 	if(!R_FINITE(rcode) || rcode < 0)
-	    error(_("invalid line type"));
+	    Rf_error(_("invalid line type"));
 	code = int(rcode);
 	if (code > 0)
 	    code = (code-1) % nlinetype + 1;
 	return linetype[code].pattern;
     }
     else {
-	error(_("invalid line type")); /*NOTREACHED, for -Wall : */ return 0;
+	Rf_error(_("invalid line type")); /*NOTREACHED, for -Wall : */ return 0;
     }
 }
 
@@ -3306,7 +3307,7 @@ SEXP GE_LTYget(unsigned int lty)
     char cbuf[17]; /* 8 hex digits plus nul */
 
     for (i = 0; linetype[i].name; i++)
-	if(linetype[i].pattern == RHOCONSTRUCT(int, lty)) return mkString(linetype[i].name);
+	if(linetype[i].pattern == RHOCONSTRUCT(int, lty)) return Rf_mkString(linetype[i].name);
 
     l = lty; ndash = 0;
     for (i = 0; i < 8 && l & 15; i++) {
@@ -3314,7 +3315,7 @@ SEXP GE_LTYget(unsigned int lty)
 	l = l >> 4;
     }
     for(i = 0 ; i < ndash ; i++) cbuf[i] = HexDigits[dash[i]];
-    return mkString(cbuf);
+    return Rf_mkString(cbuf);
 }
 
 /****************************************************************

@@ -152,8 +152,8 @@ static Rboolean csum(Rcomplex *x, R_xlen_t n, Rcomplex *value, Rboolean narm)
 	    si += x[i].i;
 	}
     }
-    value->r = double( sr);
-    value->i = double( si);
+    value->r = double(sr);
+    value->i = double(si);
 
     return updated;
 }
@@ -356,8 +356,8 @@ static Rboolean cprod(Rcomplex *x, R_xlen_t n, Rcomplex *value, Rboolean narm)
 	    si = tr * x[i].i + ti * x[i].r;
 	}
     }
-    value->r = double( sr);
-    value->i = double( si);
+    value->r = double(sr);
+    value->i = double(si);
 
     return updated;
 }
@@ -429,7 +429,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		}
 		s += INTEGER(x)[i];
 	    }
-	    return Rf_ScalarReal(double( s/n));
+	    return Rf_ScalarReal(double(s/n));
 	case REALSXP:
 	    for (i = 0; i < n; i++) s += REAL(x)[i];
 	    s /= n;
@@ -631,7 +631,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(updated) {
 			if(itmp == NA_INTEGER) goto na_answer;
 			if(ans_type == INTSXP) {
-			    s = double( icum) + double( itmp);
+			    s = double(icum) + double(itmp);
 			    if(s > INT_MAX || s < R_INT_MIN){
 				Rf_warningcall(call,_("Integer overflow - use sum(as.numeric(.))"));
 				goto na_answer;

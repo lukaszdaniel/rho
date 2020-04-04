@@ -418,6 +418,7 @@ SEXP R_WeakRefValue(SEXP w)
 	Rf_error(_("not a weak reference"));
     WeakRef* wr = static_cast<WeakRef*>(w);
     SEXP v = wr->value();
-    SET_NAMED(v, 2);
+    if (v != nullptr)
+	ENSURE_NAMEDMAX(v);
     return v;
 }

@@ -208,13 +208,13 @@ static int mbrtoint(int *w, const char *s)
     } else if (byte < 0xE0) {
 	if (!s[1]) return -2;
 	if ((s[1] & 0xC0) == 0x80) {
-	    *w = int ((((byte & 0x1F) << 6) | (s[1] & 0x3F)));
+	    *w = int((((byte & 0x1F) << 6) | (s[1] & 0x3F)));
 	    return 2;
 	} else return -1;
     } else if (byte < 0xF0) {
 	if (!s[1] || !s[2]) return -2;
 	if (((s[1] & 0xC0) == 0x80) && ((s[2] & 0xC0) == 0x80)) {
-	    *w = int (((byte & 0x0F) << 12)
+	    *w = int(((byte & 0x0F) << 12)
 			| ((s[1] & 0x3F) << 6) | (s[2] & 0x3F));
 	    byte = *w;
 	    if (byte >= 0xD800 && byte <= 0xDFFF) return -1; /* surrogate */
@@ -226,7 +226,7 @@ static int mbrtoint(int *w, const char *s)
 	if (((s[1] & 0xC0) == 0x80)
 	    && ((s[2] & 0xC0) == 0x80)
 	    && ((s[3] & 0xC0) == 0x80)) {
-	    *w = int (((byte & 0x07) << 18)
+	    *w = int(((byte & 0x07) << 18)
 			| ((s[1] & 0x3F) << 12)
 			| ((s[2] & 0x3F) << 6)
 			| (s[3] & 0x3F));
@@ -239,7 +239,7 @@ static int mbrtoint(int *w, const char *s)
 	    && ((s[2] & 0xC0) == 0x80)
 	    && ((s[3] & 0xC0) == 0x80)
 	    && ((s[4] & 0xC0) == 0x80)) {
-	    *w = int (((byte & 0x03) << 24)
+	    *w = int(((byte & 0x03) << 24)
 			| ((s[1] & 0x3F) << 18)
 			| ((s[2] & 0x3F) << 12)
 			| ((s[3] & 0x3F) << 6)
@@ -254,7 +254,7 @@ static int mbrtoint(int *w, const char *s)
 	    && ((s[3] & 0xC0) == 0x80)
 	    && ((s[4] & 0xC0) == 0x80)
 	    && ((s[5] & 0xC0) == 0x80)) {
-	    *w = int (((byte & 0x01) << 30)
+	    *w = int(((byte & 0x01) << 30)
 			| ((s[1] & 0x3F) << 24)
 			| ((s[2] & 0x3F) << 18)
 			| ((s[3] & 0x3F) << 12)

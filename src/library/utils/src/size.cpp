@@ -161,5 +161,5 @@ static R_size_t objectsize(SEXP s)
 extern "C"
 SEXP objectSize(SEXP x)
 {
-    return ScalarReal( double( objectsize(x)) );
+    return Rf_ScalarReal( double(objectsize(x)) );
 }

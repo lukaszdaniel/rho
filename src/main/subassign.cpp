@@ -471,7 +471,7 @@ static R_INLINE R_xlen_t gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL(indx)[i];
-	return R_FINITE(d) ? R_xlen_t( d) : NA_INTEGER;
+	return R_FINITE(d) ? R_xlen_t(d) : NA_INTEGER;
     } else
 	return INTEGER(indx)[i];
 }

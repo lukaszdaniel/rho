@@ -955,14 +955,14 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 	case EXPRSXP:
 	    /* make sure loop variable is not modified via other vars */
-	    SET_NAMED(XVECTOR_ELT(val, i), 2);
+		ENSURE_NAMEDMAX(XVECTOR_ELT(val, i));
 	    /* defineVar is used here and below rather than setVar in
 	       case the loop code removes the variable. */
 	    Rf_defineVar(sym, XVECTOR_ELT(val, i), rho);
 	    break;
 	case VECSXP:
 	    /* make sure loop variable is not modified via other vars */
-	    SET_NAMED(VECTOR_ELT(val, i), 2);
+		ENSURE_NAMEDMAX(VECTOR_ELT(val, i));
 	    /* defineVar is used here and below rather than setVar in
 	       case the loop code removes the variable. */
 	    Rf_defineVar(sym, VECTOR_ELT(val, i), rho);
@@ -970,7 +970,7 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 	case LISTSXP:
 	    /* make sure loop variable is not modified via other vars */
-	    SET_NAMED(CAR(val), 2);
+	    ENSURE_NAMEDMAX(CAR(val));
 	    Rf_defineVar(sym, CAR(val), rho);
 	    val = CDR(val);
 	    break;
@@ -1243,7 +1243,7 @@ SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (TYPEOF(op) == PROMSXP) {
 	op = forcePromise(op);
-	SET_NAMED(op, 2);
+	ENSURE_NAMEDMAX(op);
     }
     if (Rf_length(args) < 2) WrongArgCount("function");
     SEXP formals = CAR(args);
@@ -1330,14 +1330,14 @@ static void SET_TEMPVARLOC_FROM_CAR(Frame::Binding* loc, PairList* lhs) {
     loc->assign(v);
 }
 
-/* This macro makes sure the RHS NAMED value is 0 or 2. This is
+/* This macro makes sure the RHS NAMED value is 0 or NAMEDMAX. This is
    necessary to make sure the RHS value returned by the assignment
    expression is correct when the RHS value is part of the LHS
    object. */
 #define FIXUP_RHS_NAMED(r) do { \
 	SEXP __rhs__ = (r); \
 	if (NAMED(__rhs__)) \
-	    SET_NAMED(__rhs__, 2); \
+	    ENSURE_NAMEDMAX(__rhs__); \
     } while (0)
 
 // Functions and data auxiliary to applydefine():
@@ -1519,8 +1519,8 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
     return Rf_duplicate(saverhs);
 #else
     /* we do not duplicate the value, so to be conservative mark the
-       value as NAMED = 2 */
-    SET_NAMED(saverhs, 2);
+       value as NAMED = NAMEDMAX */
+    ENSURE_NAMEDMAX(saverhs);
     return saverhs;
 #endif
 }
@@ -1599,7 +1599,7 @@ static SEXP VectorToPairListNamed(SEXP x)
 
 SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP encl, x, xptr;
+    SEXP encl, x;
     volatile SEXP expr, env;
 
     int frame;
@@ -1634,8 +1634,8 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
     case VECSXP:
 	/* PR#14035 */
 	x = VectorToPairListNamed(CADR(args));
-	for (xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
-	    SET_NAMED(CAR(xptr) , 2);
+	for (SEXP xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
+	    ENSURE_NAMEDMAX(CAR(xptr));
 	env = Rf_NewEnvironment(R_NilValue, x, encl);
 	PROTECT(env);
 	break;
@@ -2012,7 +2012,7 @@ Rf_DispatchGroup(const char *group, const Expression* call,
 	 for S3 methods selected for S4 objects.  See ?Methods */
         RObject* value = arg1val;
 	if (NAMED(value))
-	    SET_NAMED(value, 2);
+	    ENSURE_NAMEDMAX(value);
 	value = R_getS4DataSlot(value, S4SXP); /* the .S3Class obj. or NULL*/
 	if (value) { /* use the S3Part as the inherited object */
             args.set(0, value);
@@ -2028,7 +2028,7 @@ Rf_DispatchGroup(const char *group, const Expression* call,
 	&& Rf_isBasicClass(Rf_translateChar(r->className()))) {
         RObject* value = arg2val;
 	if(NAMED(value))
-	    SET_NAMED(value, 2);
+	    ENSURE_NAMEDMAX(value);
 	value = R_getS4DataSlot(value, S4SXP);
 	if (value) {
             args.set(1, value);
@@ -2309,6 +2309,12 @@ Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
     // endcontext(&cntxt);
     checkingInProgress = FALSE;
     return constsOK;
+}
+
+SEXP attribute_hidden do_returnValue(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    checkArity(op, args);
+    return CAR(args); /* default */
 }
 
 #include <Parse.h>

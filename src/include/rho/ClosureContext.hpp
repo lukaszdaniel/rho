@@ -208,5 +208,6 @@ SEXP R_syscall(int, rho::ClosureContext*);
 int R_sysparent(int, rho::ClosureContext*);
 SEXP R_sysframe(int, rho::ClosureContext*);
 SEXP R_sysfunction(int, rho::ClosureContext*);
+rho::ClosureContext* R_GlobalContext();
 
 #endif  // CLOSURECONTEXT_HPP

@@ -128,7 +128,7 @@ RObject* Symbol::evaluate(Environment* env)
     }
     if (val->sexptype() == PROMSXP) {
 	val = Rf_eval(val, env);
-	SET_NAMED(val, 2);
+	ENSURE_NAMEDMAX(val);
     }
     else if (NAMED(val) < 1)
 	SET_NAMED(val, 1);

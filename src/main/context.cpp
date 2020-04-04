@@ -42,11 +42,6 @@
 using namespace std;
 using namespace rho;
 
-inline ClosureContext* R_GlobalContext()
-{
-    return ClosureContext::innermost();
-}
-
 /* R_sysframe - look back up the context stack until the */
 /* nth closure context and return that cloenv. */
 /* R_sysframe(0) means the R_GlobalEnv environment */
@@ -346,12 +341,17 @@ SEXP attribute_hidden do_parentframe(/*const*/ Expression* call, const BuiltInFu
 
 Rboolean R_ToplevelExec(void (*fun)(void *), void *data)
 {
-    volatile SEXP topExp;
+    volatile SEXP topExp;//, oldRVal;
+    volatile Rboolean oldvis;
     Rboolean result;
 
     PROTECT(topExp = R_CurrentExpr);
     GCStackRoot<PairList> oldHStack(R_HandlerStack);
+    GCStackRoot<PairList> oldRStack(R_RestartStack);
+    //GCStackRoot<PairList> oldRVal(R_ReturnedValue);
+    oldvis = R_Visible;
     R_HandlerStack = R_NilValue;
+    R_RestartStack = R_NilValue;
 
     try {
 	fun(data);
@@ -363,6 +363,9 @@ Rboolean R_ToplevelExec(void (*fun)(void *), void *data)
 
     R_CurrentExpr = topExp;
     R_HandlerStack = oldHStack;
+    R_RestartStack = oldRStack;
+    //R_ReturnedValue = oldRVal;
+    R_Visible = oldvis;
     UNPROTECT(2);
 
     return result;

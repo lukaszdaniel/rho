@@ -59,3 +59,8 @@ ClosureContext* ClosureContext::innermost(Evaluator::Context* start)
 	start = start->nextOut();
     return static_cast<ClosureContext*>(start);
 }
+
+ClosureContext* R_GlobalContext()
+{
+    return ClosureContext::innermost();
+}

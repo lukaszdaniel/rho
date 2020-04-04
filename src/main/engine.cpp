@@ -2626,7 +2626,7 @@ void GEStrMetric(const char *str, cetype_t enc, const pGEcontext gc,
         }
 
 	/* Put the first line in a string */
-	sb = sbuf = (char*)R_alloc(strlen(str) + 1, sizeof(char));
+	sb = sbuf = static_cast<char *>(R_alloc(strlen(str) + 1, sizeof(char)));
 	s = str;
 	while (*s != '\n' && *s != '\0') {
 	    *sb++ = *s++;
@@ -3071,7 +3071,7 @@ SEXP do_playSnapshot(SEXP call, SEXP op, SEXP args, SEXP env)
 
 SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP x, xptr, evalenv, retval;
+    SEXP x, evalenv, retval;
     pGEDevDesc dd = GEcurrentDevice();
     Rboolean record = dd->recordGraphics;
     /*
@@ -3110,8 +3110,8 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
      * This conversion of list to env taken from do_eval
      */
     PROTECT(x = Rf_VectorToPairList(list));
-    for (xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
-	SET_NAMED(CAR(xptr) , 2);
+    for (SEXP xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
+	ENSURE_NAMEDMAX(CAR(xptr));
     /*
      * The environment passed in as the third arg is used as
      * the parent of the new evaluation environment.
@@ -3485,8 +3485,8 @@ void R_GE_rasterRotatedSize(int w, int h, double angle,
     double trx2 = diag*cos(theta - angle);
     double try1 = diag*sin(theta + angle);
     double try2 = diag*sin(angle - theta);
-    *wnew = int (fmax2(fabs(trx1), fabs(trx2)) + 0.5);
-    *hnew = int (fmax2(fabs(try1), fabs(try2)) + 0.5);
+    *wnew = int(fmax2(fabs(trx1), fabs(trx2)) + 0.5);
+    *hnew = int(fmax2(fabs(try1), fabs(try2)) + 0.5);
     /* 
      * Rotated image may be shorter or thinner than original
      */
@@ -3590,8 +3590,8 @@ void R_GE_rasterRotate(unsigned int *sraster, int w, int h, double angle,
         dline = draster + i * w;
         for (j = 0; j < w; j++) {
             xdif = xcen - j;
-            xpm = int (-xdif * cosa - ydif * sina);
-            ypm = int (-ydif * cosa + xdif * sina);
+            xpm = int(-xdif * cosa - ydif * sina);
+            ypm = int(-ydif * cosa + xdif * sina);
             xp = xcen + (xpm >> 4);
             yp = ycen + (ypm >> 4);
             xf = xpm & 0x0f;

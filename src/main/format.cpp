@@ -259,7 +259,7 @@ scientific(double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens
         /* round alpha to integer, 10^(digits-1) <= alpha <= 10^digits
 	   accuracy limited by double rounding problem,
 	   alpha already rounded to 64 bits */
-        alpha = double( R_nearbyintl(r_prec));
+        alpha = double(R_nearbyintl(r_prec));
 #else
 	double r_prec = r;
         /* use exact scaling factor in double precision, if possible */

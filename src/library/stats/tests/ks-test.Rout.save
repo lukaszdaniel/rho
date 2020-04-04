@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-02 r81a60b5d88) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
+R Under development (unstable) (2017-08-17 r73103) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -181,12 +181,12 @@ There were 52 warnings (use 'warnings()' to see them)
 [1] 52
 > unique(ww) # 4 different ones
 Warning messages:
-1: In wilcox.test.default(x, exact = TRUE, conf.int = TRUE,  ... :
+1: In command 'wilcox.test.default(x, exact = TRUE, conf.int = TRUE, ' ... :
   cannot compute exact p-value with zeroes
-2: In wilcox.test.default(x, exact = TRUE, conf.int = TRUE,  ... :
+2: In command 'wilcox.test.default(x, exact = TRUE, conf.int = TRUE, ' ... :
   cannot compute exact confidence interval with zeroes
 3: cannot compute confidence interval when all observations are zero or tied
-4: In wilcox.test.default(x, exact = TRUE, conf.int = TRUE,  ... :
+4: In command 'wilcox.test.default(x, exact = TRUE, conf.int = TRUE, ' ... :
   requested conf.level not achievable
 > 
 > cc <- lapply(RR, function(A) lapply(A, function(bb) lapply(bb, class)))
@@ -313,11 +313,11 @@ There were 27 warnings (use 'warnings()' to see them)
 [1] 27
 > unique(w2) # 3 different ones
 Warning messages:
-1: In wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]],  ... :
+1: In command 'wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]], ' ... :
   Requested conf.level not achievable
-2: In wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]],  ... :
+2: In command 'wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]], ' ... :
   cannot compute exact p-value with ties
-3: In wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]],  ... :
+3: In command 'wilcox.test.default(x = x.set$s0[[k]], y = x.set$s.[[k]], ' ... :
   cannot compute exact confidence intervals with ties
 > 
 > table(uc2 <- unlist(c2 <- lapply(R2, function(A) lapply(A, class))))
@@ -368,4 +368,4 @@ difference in location  3.741417e-05  3.741417e-05  3.741417e-05
 > 
 > proc.time()
    user  system elapsed 
-  0.358   0.016   0.367 
+  0.372   0.016   0.379 

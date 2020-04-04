@@ -95,7 +95,7 @@ RObject* rho_runtime_lookupSymbolInCompiledFrame(const Symbol* symbol,
 	    && value != Symbol::unboundValue())
 	{
 	    if (pair.second) {
-		SET_NAMED(value, 2);
+		ENSURE_NAMEDMAX(value);
 	    }
 	    else if (NAMED(value) < 1) {
 		SET_NAMED(value, 1);
@@ -180,7 +180,7 @@ void rho_runtime_setVisibility(bool visible) {
 void rho_runtime_incrementNamed(RObject* object) {
     switch (NAMED(object)) {
     case 0: SET_NAMED(object, 1); break;
-    case 1: SET_NAMED(object, 2); break;
+    case 1: ENSURE_NAMEDMAX(object); break;
     }
 }
 

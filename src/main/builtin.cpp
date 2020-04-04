@@ -52,7 +52,7 @@ R_xlen_t asVecSize(SEXP x)
 	{
 	    int res = INTEGER(x)[0];
 	    if(res == NA_INTEGER) Rf_error(_("vector size cannot be NA"));
-	    return R_xlen_t( res);
+	    return R_xlen_t(res);
 	}
 	case REALSXP:
 	{
@@ -60,7 +60,7 @@ R_xlen_t asVecSize(SEXP x)
 	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
 	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
 	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
-	    return R_xlen_t( d);
+	    return R_xlen_t(d);
 	}
 	case STRSXP:
 	{
@@ -68,7 +68,7 @@ R_xlen_t asVecSize(SEXP x)
 	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
 	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
 	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
-	    return R_xlen_t( d);
+	    return R_xlen_t(d);
 	}
 	default:
 	    ;  // -Wswitch
@@ -142,7 +142,7 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "add");
     }
 
-    ctxt = ClosureContext::innermost();
+    ctxt = R_GlobalContext();
     /* Search for the context to which the on.exit action is to be
        attached. Lexical scoping is implemented by searching for the
        first closure call context with an environment matching the
@@ -260,7 +260,7 @@ SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction
     if (TYPEOF(fun_) == CLOSXP)
 	return CLOENV(fun_);
     else if (fun_ == R_NilValue)
-	return ClosureContext::innermost()->callEnvironment();
+	return R_GlobalContext()->callEnvironment();
     else return Rf_getAttrib(fun_, R_DotEnvSymbol);
 }
 
@@ -312,7 +312,7 @@ SEXP attribute_hidden do_parentenv(/*const*/ Expression* call, const BuiltInFunc
 	Rf_error( _("argument is not an environment"));
     if( arg == R_EmptyEnv )
 	Rf_error(_("the empty environment has no parent"));
-    return( ENCLOS(arg) );
+    return ENCLOS(arg);
 }
 
 static Rboolean R_IsImportsEnv(SEXP env)
@@ -327,10 +327,8 @@ static Rboolean R_IsImportsEnv(SEXP env)
 
     const char *imports_prefix = "imports:";
     const char *name_string = R_CHAR(STRING_ELT(name, 0));
-    if (streqln(name_string, imports_prefix, strlen(imports_prefix)))
-	return TRUE;
-    else
-	return FALSE;
+
+    return streqln(name_string, imports_prefix, strlen(imports_prefix));
 }
 
 SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_, RObject* value_)
@@ -350,7 +348,7 @@ SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltIn
 	Rf_error(_("'parent' is not an environment"));
 
     env->setEnclosingEnvironment(parent);
-    return(env);
+    return env;
 }
 
 SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
@@ -837,7 +835,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 /* public older version */
 SEXP Rf_lengthgets(SEXP x, R_len_t len)
 {
-    return Rf_xlengthgets(x, R_xlen_t( len));
+    return Rf_xlengthgets(x, R_xlen_t(len));
 }
 
 
@@ -847,7 +845,7 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 
     // more 'x' checks in x?lengthgets()
     if (Rf_length(value_) != 1)
-	error(_("wrong length for '%s' argument"), "value");
+	Rf_error(_("wrong length for '%s' argument"), "value");
     R_xlen_t len = asVecSize(value_);
     if (op->variant()) { /* xlength<- */
 	return Rf_xlengthgets(x, len);
@@ -861,7 +859,7 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 	return x; /* -Wall */
 #endif
     }
-    return Rf_lengthgets(x, R_len_t( len));
+    return Rf_lengthgets(x, R_len_t(len));
 }
 
 /* Expand dots in args, but do not evaluate */
@@ -946,8 +944,7 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_errorcall(call, _("EXPR must be a length 1 vector"));
     if (Rf_isFactor(x))
 	Rf_warningcall(call,
-		    _("EXPR is a \"factor\", treated as integer.\n"
-		      " Consider using '%s' instead."),
+		    _("EXPR is a \"factor\", treated as integer.\n Consider using '%s' instead."),
 		    "switch(as.character( * ), ...)");
     if (nargs > 1) {
 	/* There is a complication: if called from lapply

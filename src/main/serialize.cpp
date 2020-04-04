@@ -2317,10 +2317,10 @@ static void OutCharMem(R_outpstream_t stream, int c)
 static void OutBytesMem(R_outpstream_t stream, RHOCONST void *buf, int length)
 {
     membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
-    R_size_t needed = mb->count + R_size_t( length);
+    R_size_t needed = mb->count + R_size_t(length);
 #ifndef LONG_VECTOR_SUPPORT
     /* There is a potential overflow here on 32-bit systems */
-    if(double( mb->count) + length > double( INT_MAX))
+    if(double(mb->count) + length > double(INT_MAX))
 	Rf_error(_("serialization is too large to store in a raw vector"));
 #endif
     if (needed > mb->size) resize_buffer(mb, needed);
@@ -2339,7 +2339,7 @@ static int InCharMem(R_inpstream_t stream)
 static void InBytesMem(R_inpstream_t stream, void *buf, int length)
 {
     membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
-    if (mb->count + R_size_t( length) > mb->size)
+    if (mb->count + R_size_t(length) > mb->size)
 	Rf_error(_("read error"));
     memcpy(buf, mb->buf + mb->count, length);
     mb->count += length;
@@ -2671,7 +2671,7 @@ static SEXP R_getVarsFromFrame(SEXP vars, SEXP env, SEXP forcesxp)
 	if (force && TYPEOF(tmp) == PROMSXP) {
 	    PROTECT(tmp);
 	    tmp = Rf_eval(tmp, R_GlobalEnv);
-	    SET_NAMED(tmp, 2);
+	    ENSURE_NAMEDMAX(tmp);
 	    UNPROTECT(1);
 	}
 	else if (TYPEOF(tmp) != NILSXP && NAMED(tmp) < 1)
@@ -2749,7 +2749,7 @@ do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     if (TYPEOF(val) == PROMSXP) {
 	REPROTECT(val, vpi);
 	val = Rf_eval(val, R_GlobalEnv);
-	SET_NAMED(val, 2);
+	ENSURE_NAMEDMAX(val);
     }
     UNPROTECT(1);
     return val;

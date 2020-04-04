@@ -38,7 +38,7 @@ static SEXP cumsum(SEXP x, SEXP s)
     double *rx = REAL(x), *rs = REAL(s);
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++) {
 	sum += rx[i]; /* NA and NaN propagated */
-	rs[i] = double( sum);
+	rs[i] = double(sum);
     }
     return s;
 }
@@ -81,7 +81,7 @@ static SEXP cumprod(SEXP x, SEXP s)
     prod = 1.0;
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++) {
 	prod *= rx[i]; /* NA and NaN propagated */
-	rs[i] = double( prod);
+	rs[i] = double(prod);
     }
     return s;
 }

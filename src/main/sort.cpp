@@ -625,7 +625,7 @@ SEXP attribute_hidden do_psort(/*const*/ Expression* call, const BuiltInFunction
 	double *rl = REAL(p);
 	for (int i = 0; i < nind; i++) {
 	    if (!R_FINITE(rl[i])) error(_("NA or infinite index"));
-	    l[i] = R_xlen_t( rl[i]);
+	    l[i] = R_xlen_t(rl[i]);
 	    if (l[i] < 1 || l[i] > n)
 		error(_("index %ld outside bounds"), l[i]);
 	}
@@ -1341,7 +1341,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 	if(ISNAN(d)) error(_("vector size cannot be NA/NaN"));
 	if(!R_FINITE(d)) error(_("vector size cannot be infinite"));
 	if(d > R_XLEN_T_MAX) error(_("vector size specified is too large"));
-	n = R_xlen_t( d);
+	n = R_xlen_t(d);
 	if (n < 0) error(_("invalid '%s' value"), "length(xx)");
     } else {
 	int nn = asInteger(sn);

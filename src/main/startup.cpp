@@ -203,7 +203,7 @@ static void SetSize(R_size_t vsize)
     /* vsize > 0 to catch long->int overflow */
     if (vsize < 1000 && vsize > 0) {
 	R_ShowMessage("WARNING: vsize ridiculously low, Megabytes assumed\n");
-	vsize *= R_size_t( Mega);
+	vsize *= R_size_t(Mega);
     }
     if(vsize < Min_Vsize || vsize > Max_Vsize) {
 	snprintf(msg, 1024, 

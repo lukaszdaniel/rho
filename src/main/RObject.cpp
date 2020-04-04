@@ -59,6 +59,7 @@ namespace rho {
 	int (*NAMEDptr)(SEXP x) = NAMED;
 	Rboolean (*OBJECTptr)(SEXP e) = OBJECT;
 	void (*SET_NAMEDptr)(SEXP x, int v) = SET_NAMED;
+	void (*ENSURE_NAMEDMAXptr)(SEXP x) = ENSURE_NAMEDMAX;
 	void (*SET_S4_OBJECTptr)(SEXP x) = SET_S4_OBJECT;
 	SEXPTYPE (*TYPEOFptr)(SEXP e) = TYPEOF;
 	void (*UNSET_S4_OBJECTptr)(SEXP x) = UNSET_S4_OBJECT;
@@ -115,7 +116,7 @@ void RObject::copyAttributes(const RObject* source, Duplicate deep)
 
 RObject* RObject::evaluate(Environment* env)
 {
-    SET_NAMED(this, 2);
+    ENSURE_NAMEDMAX(this);
     return this;
 }
 

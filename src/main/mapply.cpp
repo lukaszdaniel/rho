@@ -97,7 +97,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
 	for (int j = 0; j < m; j++) {
 	    counters[j] = (++counters[j] > lengths[j]) ? 1 : counters[j];
 	    if (realIndx)
-		REAL(VECTOR_ELT(nindex, j))[0] = double( counters[j]);
+		REAL(VECTOR_ELT(nindex, j))[0] = double(counters[j]);
 	    else
 		INTEGER(VECTOR_ELT(nindex, j))[0] = int(counters[j]);
 	}

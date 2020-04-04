@@ -322,7 +322,7 @@ R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
 
     if(croutines) {
 	for(num = 0; croutines[num].name != nullptr; num++) {;}
-	info->CSymbols = static_cast<Rf_DotCSymbol*>(calloc(size_t( num),
+	info->CSymbols = static_cast<Rf_DotCSymbol*>(calloc(size_t(num),
 							    sizeof(Rf_DotCSymbol)));
 	info->numCSymbols = num;
 	for(i = 0; i < num; i++) {
@@ -333,7 +333,7 @@ R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
     if(fortranRoutines) {
 	for(num = 0; fortranRoutines[num].name != nullptr; num++) {;}
 	info->FortranSymbols =
-	    static_cast<Rf_DotFortranSymbol*>(calloc(size_t( num),
+	    static_cast<Rf_DotFortranSymbol*>(calloc(size_t(num),
 						     sizeof(Rf_DotFortranSymbol)));
 	info->numFortranSymbols = num;
 
@@ -345,7 +345,7 @@ R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
     if(callRoutines) {
 	for(num = 0; callRoutines[num].name != nullptr; num++) {;}
 	info->CallSymbols =
-	    static_cast<Rf_DotCallSymbol*>(calloc(size_t( num), sizeof(Rf_DotCallSymbol)));
+	    static_cast<Rf_DotCallSymbol*>(calloc(size_t(num), sizeof(Rf_DotCallSymbol)));
 	info->numCallSymbols = num;
 	for(i = 0; i < num; i++)
 	    R_addCallRoutine(info, callRoutines+i, info->CallSymbols + i);
@@ -354,7 +354,7 @@ R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
     if(externalRoutines) {
 	for(num = 0; externalRoutines[num].name != nullptr; num++) {;}
 	info->ExternalSymbols =
-	    static_cast<Rf_DotExternalSymbol*>(calloc(size_t( num),
+	    static_cast<Rf_DotExternalSymbol*>(calloc(size_t(num),
 						      sizeof(Rf_DotExternalSymbol)));
 	info->numExternalSymbols = num;
 
@@ -371,12 +371,12 @@ R_setPrimitiveArgTypes(const R_FortranMethodDef * const croutine,
 		       Rf_DotFortranSymbol *sym)
 {
     sym->types = static_cast<R_NativePrimitiveArgType *>
-	(malloc(sizeof(R_NativePrimitiveArgType) * size_t( croutine->numArgs)));
+	(malloc(sizeof(R_NativePrimitiveArgType) * size_t(croutine->numArgs)));
     if(!sym->types)
 	error("allocation failure in R_setPrimitiveArgTypes");
     if(sym->types)
 	memcpy(sym->types, croutine->types,
-	       sizeof(R_NativePrimitiveArgType) * size_t( croutine->numArgs));
+	       sizeof(R_NativePrimitiveArgType) * size_t(croutine->numArgs));
 
 }
 

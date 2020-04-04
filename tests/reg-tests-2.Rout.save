@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-01 r6fd6f49414) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-02 r81a60b5d88) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-08-16 r73100) -- "Frisbee Sailing"
+R Under development (unstable) (2017-08-24 r73120) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -5721,18 +5721,15 @@ list(a = NA, b = NA_integer_, c = NA, d = NA, e = 1, f = 1L, g = 1:3, h = c(NA, 
 list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1, g = 1:3, 
     h = c(NA, 1, 2, 3), i = NA_character_, j = c("foo", NA, "bar"))
 > dput(x)
-structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, 
-    g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar")), .Names = c("a", 
-"b", "c", "d", "e", "f", "g", "h", "i", "j"))
+list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, g = 1:3, 
+    h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar"))
 > dput(x, control="all")
-structure(list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, 
-    g = 1:3, h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar")), .Names = c("a", 
-"b", "c", "d", "e", "f", "g", "h", "i", "j"))
+list(a = NA, b = NA_integer_, c = NA_real_, d = NA_complex_, e = 1, f = 1L, g = 1:3, 
+    h = c(NA, 1L, 2L, 3L), i = NA_character_, j = c("foo", NA, "bar"))
 > dput(x, control=c("all", "S_compatible"))
-structure(list(a = NA, b = as.integer(NA), c = as.double(NA), d = as.complex(NA), 
-    e = 1., f = as.integer(1), g = 1:3, h = as.integer(c(NA, 1, 2, 3)), i = as.character(NA), 
-    j = c("foo", NA, "bar")), .Names = c("a", "b", "c", "d", "e", "f", "g", "h", 
-"i", "j"))
+list(a = NA, b = as.integer(NA), c = as.double(NA), d = as.complex(NA), e = 1., f = as.integer(1), 
+    g = 1:3, h = as.integer(c(NA, 1, 2, 3)), i = as.character(NA), j = c("foo", NA, 
+    "bar"))
 > tmp <- tempfile()
 > dput(x, tmp, control="all")
 > stopifnot(identical(dget(tmp), x))
@@ -5832,16 +5829,16 @@ data frame with 0 columns and 4 rows
 > d0 <- d1 <- data.frame(1:4, row.names=1:4)
 > row.names(d0) <- NULL
 > dput(d0)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, -4L), class = "data.frame")
+structure(list(X1.4 = 1:4), row.names = c(NA, -4L), class = "data.frame")
 > dput(d1)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c(NA, 4L), class = "data.frame")
+structure(list(X1.4 = 1:4), row.names = c(NA, 4L), class = "data.frame")
 > identical(d0, d1)
 [1] TRUE
 > all.equal(d0, d1)
 [1] TRUE
 > row.names(d1) <- as.character(1:4)
 > dput(d1)
-structure(list(X1.4 = 1:4), .Names = "X1.4", row.names = c("1", "2", "3", "4"), class = "data.frame")
+structure(list(X1.4 = 1:4), row.names = c("1", "2", "3", "4"), class = "data.frame")
 > identical(d0, d1)
 [1] FALSE
 > all.equal(d0, d1)
@@ -6410,15 +6407,15 @@ function ()
 > print.function
 function (x, ...)  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 19 1 63 19 63 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f0c422b4440> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f811e8caf80> 
 > f
 function ()  
  - attr(*, "srcref")=Class 'srcref'  atomic [1:8] 1 17 1 28 17 28 1 1
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f0c422adea0> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f811e83afb0> 
  - attr(*, "note")= chr "just a note"
  - attr(*, "yada")=function ()  
   ..- attr(*, "srcref")=Class 'srcref'  atomic [1:8] 2 24 2 48 24 48 2 2
-  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f0c422adea0> 
+  .. .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f811e83afb0> 
 > rm(print.function)
 > ## auto-printing and printing differed up to R 2.9.x
 > 
@@ -7768,7 +7765,7 @@ b = `?`(d)
 > ## dput() quoted the empty symbol (PR#16686)
 > a <- alist(one = 1, two = )
 > dput(a)
-structure(list(one = 1, two = ), .Names = c("one", "two"))
+list(one = 1, two = )
 > ## deparsed two to quote()
 > 
 > 

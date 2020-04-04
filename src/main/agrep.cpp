@@ -666,7 +666,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 			vmaxset(vmax);
 		    }
 		    if(rc == REG_OK) {
-			ANS(i, j) = double( match.cost);
+			ANS(i, j) = double(match.cost);
 			if(opt_counts) {
 			    COUNTS(i, j, 0) = match.num_ins;
 			    COUNTS(i, j, 1) = match.num_del;

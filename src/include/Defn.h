@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1998--2017  The R Core Team.
+ *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -711,6 +711,7 @@ Rboolean R_GetVarLocMISSING(R_varloc_t);
 #define S_COMPAT       		128
 #define HEXNUMERIC             	256
 #define DIGITS16             	512
+#define NICE_NAMES             	1024
 /* common combinations of the above */
 #define SIMPLEDEPARSE		0
 #define DEFAULTDEPARSE		65 /* KEEPINTEGER | KEEPNA, used for calls */

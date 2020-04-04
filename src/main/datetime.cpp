@@ -350,7 +350,7 @@ static double guess_offset (stm *tm)
     if(!have_broken_mktime() && tm->tm_year < 2) { /* no DST */
 	tm->tm_year = 2;
 	mktime(tm);
-	offset1 = double( mktime(tm)) - mktime00(tm);
+	offset1 = double(mktime(tm)) - mktime00(tm);
 	memcpy(tm, &oldtm, sizeof(stm));
 	tm->tm_isdst = 0;
 	return offset1;
@@ -388,12 +388,12 @@ static double guess_offset (stm *tm)
     tm->tm_mon = 0;
     tm->tm_year = year;
     tm->tm_isdst = -1;
-    offset1 = double( mktime(tm)) - mktime00(tm);
+    offset1 = double(mktime(tm)) - mktime00(tm);
     /* and in July */
     tm->tm_year = year;
     tm->tm_mon = 6;
     tm->tm_isdst = -1;
-    offset2 = double( mktime(tm)) - mktime00(tm);
+    offset2 = double(mktime(tm)) - mktime00(tm);
     if(oldisdst > 0) {
 	offset = (offset1 > offset2) ? offset2 : offset1;
     } else {
@@ -403,7 +403,7 @@ static double guess_offset (stm *tm)
     tm->tm_mon = oldmonth;
     tm->tm_isdst = -1;
     if(oldisdst < 0) {
-	offset1 = double( mktime(tm)) - mktime00(tm);
+	offset1 = double(mktime(tm)) - mktime00(tm);
 	oldisdst = (offset1 < offset) ? 1:0;
 	if(oldisdst) offset = offset1;
     }
@@ -471,7 +471,7 @@ static stm * localtime0(const double *tp, const int local, stm *ltm)
 	/* if d is negative and non-integer then t will be off by one day
 	   since we really need floor(). But floor() is slow, so we just
 	   fix t instead as needed. */
-	if (d < 0.0 && double( t) != d) t--;
+	if (d < 0.0 && double(t) != d) t--;
 #ifndef HAVE_POSIX_LEAPSECONDS
 	for(int y = 0; y < n_leapseconds; y++) if(t > leapseconds[y] + y - 1) t++;
 #endif

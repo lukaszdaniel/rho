@@ -96,6 +96,16 @@ namespace rho {
 	    return m_call_env;
 	}
 
+	/** @brief RC-style call Environment.
+	 *
+	 * @return Pointer to the Environment in which the Context's
+	 * call is to be evaluated.
+	 */
+	Environment* sysParent() const
+	{
+	    return callEnvironment();
+	}
+
 	/** @brief Function being applied.
 	 *
 	 * @return Pointer, possibly null, to the function being

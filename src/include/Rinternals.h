@@ -204,6 +204,13 @@ extern "C" {
 #define TYPE_BITS 5
 #define MAX_NUM_SEXPTYPE (1<<TYPE_BITS)
 
+/*
+#define ENSURE_NAMEDMAX(v) do {			\
+	SEXP __enm_v__ = (v);			\
+	if (NAMED(__enm_v__) < NAMEDMAX)	\
+	    SET_NAMED( __enm_v__, NAMEDMAX);	\
+    } while (0)
+*/
 /* Vector Access Macros */
 #if (R_XLEN_T_MAX > R_LEN_T_MAX)
 # define LONG_VECTOR_SUPPORT
@@ -302,6 +309,7 @@ int  (NAMED)(SEXP x);
 void (SET_OBJECT)(SEXP x, int v);
 void SET_TYPEOF(SEXP x, SEXPTYPE v);
 void (SET_NAMED)(SEXP x, int v);
+void (ENSURE_NAMEDMAX)(SEXP x);
 void SET_ATTRIB(SEXP x, SEXP v);
 void DUPLICATE_ATTRIB(SEXP to, SEXP from);
 void SHALLOW_DUPLICATE_ATTRIB(SEXP to, SEXP from);

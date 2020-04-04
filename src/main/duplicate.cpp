@@ -189,7 +189,7 @@ SEXP Rf_lazy_duplicate(SEXP s) {
     case RAWSXP:
     case STRSXP:
     case S4SXP:
-	SET_NAMED(s, 2);
+	ENSURE_NAMEDMAX(s);
 	break;
     default:
 	UNIMPLEMENTED_TYPE("lazy_duplicate", s);
@@ -287,7 +287,7 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
 
     nr = Rf_nrows(s);
     nc = Rf_ncols(s);
-    ns = (R_xlen_t( nr)) * nc;
+    ns = (R_xlen_t(nr)) * nc;
     pt = t;
     if(byrow) {
 	R_xlen_t NR = nr;

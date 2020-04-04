@@ -106,11 +106,11 @@ R_size_t R_Decode2Long(char *p, int *ierr)
     // NOTE: currently, positive *ierr are not differentiated in the callers:
     if(p[0] == 'G') {
 	if((Giga * double(v)) > R_SIZE_T_MAX) { *ierr = 4; return(v); }
-	return R_size_t( Giga) * v;
+	return R_size_t(Giga) * v;
     }
     else if(p[0] == 'M') {
 	if((Mega * double(v)) > R_SIZE_T_MAX) { *ierr = 1; return(v); }
-	return R_size_t( Mega) * v;
+	return R_size_t(Mega) * v;
     }
     else if(p[0] == 'K') {
 	if((1024 * double(v)) > R_SIZE_T_MAX) { *ierr = 2; return(v); }
@@ -820,7 +820,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 	    StringVector* sv = static_cast<StringVector*>(x);
 	    String* str = (*sv)[indx];
 	    w = (quote ? stringWidthQuote(0, str) : stringWidth(0, str));
-	    res = EncodeString(str, w, quote, Rprt_adj_left);
+	    res = Rf_EncodeString(str, w, quote, Rprt_adj_left);
 	    break;
 	}
     case CPLXSXP:
@@ -828,7 +828,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 	res = EncodeComplex(COMPLEX(x)[indx], w, d, e, wi, di, ei, dec);
 	break;
     case RAWSXP:
-	res = EncodeRaw(RAW(x)[indx], "");
+	res = Rf_EncodeRaw(RAW(x)[indx], "");
 	break;
     default:
 	res = nullptr; /* -Wall */
@@ -849,7 +849,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 //attribute_hidden
 const char *Rf_EncodeChar(SEXP x)
 {
-    return EncodeString(x, 0, 0, Rprt_adj_left);
+    return Rf_EncodeString(x, 0, 0, Rprt_adj_left);
 }
 
 
@@ -941,7 +941,7 @@ void Rcons_vprintf(const char *format, va_list arg)
     if(res >= R_BUFSIZE || res < 0) {
 	/* res is the desired output length or just a failure indication */
 	    buf[R_BUFSIZE - 1] = '\0';
-	    warning(_("printing of extremely long output is truncated"));
+	    Rf_warning(_("printing of extremely long output is truncated"));
 	    res = R_BUFSIZE;
     }
 #endif /* HAVE_VA_COPY */
@@ -979,7 +979,7 @@ void Rvprintf(const char *format, va_list arg)
       con->fflush(con);
       con_num = getActiveSink(i++);
 #ifndef HAVE_VA_COPY
-      if (con_num>0) error("Internal error: this platform does not support split output");
+      if (con_num>0) Rf_error("Internal error: this platform does not support split output");
 #endif
     } while(con_num>0);
 
@@ -1029,7 +1029,7 @@ void REvprintf(const char *format, va_list arg)
 
 int attribute_hidden IndexWidth(R_xlen_t n)
 {
-    return int (log10(n + 0.5) + 1);
+    return int(log10(n + 0.5) + 1);
 }
 
 void attribute_hidden VectorIndex(R_xlen_t i, int w)

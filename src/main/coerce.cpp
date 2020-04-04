@@ -2456,7 +2456,7 @@ SEXP Rf_substitute(SEXP lang, SEXP rho)
 			t = PREXPR(t);
 		    } while(TYPEOF(t) == PROMSXP);
 		    /* make sure code will not be modified: */
-		    SET_NAMED(t, 2);
+		    ENSURE_NAMEDMAX(t);
 		    return t;
 		}
 		else if (TYPEOF(t) == DOTSXP)
@@ -2559,9 +2559,9 @@ SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP attribute_hidden do_quote(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP val = CAR(args);
-    /* Make sure expression has NAMED == 2 before being returning
+    /* Make sure expression has NAMED == NAMEDMAX before being returning
        in order to avoid modification of source code */
-    SET_NAMED(val, 2);
+    ENSURE_NAMEDMAX(val);
     return(val);
 }
 

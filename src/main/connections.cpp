@@ -649,7 +649,7 @@ void init_con(Rconnection newconn, const char *description, int enc,
     newconn->buff = nullptr;
     newconn->buff_pos = newconn->buff_stored_len = newconn->buff_len = 0;
     /* increment id, avoid NULL */
-    current_id = reinterpret_cast<void *>(size_t( current_id)+1);
+    current_id = reinterpret_cast<void *>(size_t(current_id)+1);
     if(!current_id) current_id = reinterpret_cast<void *>(1);
     newconn->id = current_id;
     newconn->ex_ptr = nullptr;
@@ -867,7 +867,7 @@ static double file_seek(Rconnection con, double where, int origin, int rw)
 	pos = thisconn->wpos;
 	thisconn->last_was_write = TRUE;
     }
-    if(ISNA(where)) return double( pos);
+    if(ISNA(where)) return double(pos);
 
     switch(origin) {
     case 2: whence = SEEK_CUR; break;
@@ -883,7 +883,7 @@ static double file_seek(Rconnection con, double where, int origin, int rw)
     f_seek(fp, OFF_T( where), whence);
     if(thisconn->last_was_write) thisconn->wpos = f_tell(thisconn->fp);
     else thisconn->rpos = f_tell(thisconn->fp);
-    return double( pos);
+    return double(pos);
 }
 
 static void file_truncate(Rconnection con)
@@ -1101,7 +1101,7 @@ static size_t fifo_read(void *ptr, size_t size, size_t nitems,
     Rfifoconn thisconn = RHO_S_CAST(Rfifoconn, con->connprivate);
 
     /* uses 'size_t' for len */
-    if (double( size) * double( nitems) > SSIZE_MAX)
+    if (double(size) * double(nitems) > SSIZE_MAX)
 	Rf_error(_("too large a block specified"));
     return read(thisconn->fd, ptr, size * nitems)/size;
 }
@@ -1112,7 +1112,7 @@ static size_t fifo_write(const void *ptr, size_t size, size_t nitems,
     Rfifoconn thisconn = RHO_S_CAST(Rfifoconn, con->connprivate);
 
     /* uses 'size_t' for len */
-    if (double( size) * double( nitems) > SSIZE_MAX)
+    if (double(size) * double(nitems) > SSIZE_MAX)
 	Rf_error(_("too large a block specified"));
     return write(thisconn->fd, ptr, size * nitems)/size;
 }
@@ -1147,7 +1147,7 @@ static char* win_getlasterror_str(void)
 		      FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, GetLastError(),
 		      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		      (LPTSTR)&lpv_tempmsg, 0, nullptr);
-    err_msg = (char*) malloc(err_msg_len);
+    err_msg = static_cast<char *>(malloc(err_msg_len));
     if (!err_msg) return nullptr;
     ZeroMemory(err_msg, err_msg_len);
     strncpy(err_msg, (LPTSTR)lpv_tempmsg, err_msg_len - sizeof(wchar_t));
@@ -1689,7 +1689,7 @@ static double gzfile_seek(Rconnection con, double where, int origin, int rw)
     Rz_off_t pos = R_gztell(fp);
     int res, whence = SEEK_SET;
 
-    if (ISNA(where)) return double( pos);
+    if (ISNA(where)) return double(pos);
 
     switch(origin) {
     case 2: whence = SEEK_CUR; break;
@@ -1699,7 +1699,7 @@ static double gzfile_seek(Rconnection con, double where, int origin, int rw)
     res = R_gzseek(fp, z_off_t( where), whence);
     if(res == -1)
 	Rf_warning(_("seek on a gzfile connection returned an internal error"));
-    return double( pos);
+    return double(pos);
 }
 
 static int gzfile_fflush(Rconnection con)
@@ -1712,7 +1712,7 @@ static size_t gzfile_read(void *ptr, size_t size, size_t nitems,
 {
     gzFile fp = (static_cast<Rgzfileconn>((con->connprivate)))->fp;
     /* uses 'unsigned' for len */
-    if (double( size) * double( nitems) > UINT_MAX)
+    if (double(size) * double(nitems) > UINT_MAX)
 	Rf_error(_("too large a block specified"));
     return R_gzread(fp, ptr, static_cast<unsigned int>(size*nitems))/size;
 }
@@ -1722,7 +1722,7 @@ static size_t gzfile_write(const void *ptr, size_t size, size_t nitems,
 {
     gzFile fp = (static_cast<Rgzfileconn>((con->connprivate)))->fp;
     /* uses 'unsigned' for len */
-    if (double( size) * double( nitems) > UINT_MAX)
+    if (double(size) * double(nitems) > UINT_MAX)
 	Rf_error(_("too large a block specified"));
     return R_gzwrite(fp, RHO_NO_CAST(voidp)ptr, static_cast<unsigned int>(size*nitems))/size;
 }
@@ -1845,7 +1845,7 @@ static size_t bzfile_read(void *ptr, size_t size, size_t nitems,
     int bzerror;
 
     /* BZ2 uses 'int' for len */
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
 
     nleft = int(size * nitems);
@@ -1905,7 +1905,7 @@ static size_t bzfile_write(const void *ptr, size_t size, size_t nitems,
     int bzerror;
 
     /* uses 'int' for len */
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
     BZ2_bzWrite(&bzerror, bz->bfp, const_cast<voidp>(ptr), int(size*nitems));
     if(bzerror != BZ_OK) return 0;
@@ -2349,7 +2349,7 @@ static Rboolean clp_open(Rconnection con)
 	thisconn->last = 0;
     }
     con->text = TRUE;
-    set_buffer(con);
+    //set_buffer(con);
     set_iconv(con);
     con->save = -1000;
     thisconn->warned = FALSE;
@@ -2418,7 +2418,7 @@ static double clp_seek(Rconnection con, double where, int origin, int rw)
 	Rf_error(_("attempt to seek outside the range of the clipboard"));
     else thisconn->pos = newpos;
 
-    return double( oldpos);
+    return double(oldpos);
 }
 
 static void clp_truncate(Rconnection con)
@@ -2442,12 +2442,12 @@ static size_t clp_read(void *ptr, size_t size, size_t nitems,
 {
     Rclpconn thisconn = RHO_S_CAST(clpconn*, con->connprivate);
     int available = thisconn->len - thisconn->pos, request = int(size*nitems), used;
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
     used = (request < available) ? request : available;
     strncpy(RHO_S_CAST(char*, ptr), thisconn->buff, used);
     thisconn->pos += used;
-    return size_t( used)/size;
+    return size_t(used)/size;
 }
 
 static size_t clp_write(const void *ptr, size_t size, size_t nitems,
@@ -2459,7 +2459,7 @@ static size_t clp_write(const void *ptr, size_t size, size_t nitems,
 
     if(!con->canwrite)
 	Rf_error(_("clipboard connection is open for reading only"));
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
 
     for(i = 0; i < len; i++) {
@@ -2482,7 +2482,7 @@ static size_t clp_write(const void *ptr, size_t size, size_t nitems,
 	thisconn->warned = TRUE;
     }
     if(thisconn->last < thisconn->pos) thisconn->last = thisconn->pos;
-    return size_t( used)/size;
+    return size_t(used)/size;
 }
 
 static Rconnection newclp(const char *url, const char *inmode)
@@ -2745,7 +2745,7 @@ static size_t raw_write(const void *ptr, size_t size, size_t nitems,
     Rrawconn thisconn = RHO_S_CAST(Rrawconn, con->connprivate);
     size_t freespace = XLENGTH(thisconn->data) - thisconn->pos, bytes = size*nitems;
 
-    if (double( size) * double( nitems) + double( thisconn->pos) > R_LEN_T_MAX)
+    if (double(size) * double(nitems) + double(thisconn->pos) > R_LEN_T_MAX)
 	Rf_error(_("attempting to add too many elements to raw vector"));
     /* resize may fail, when this will give an error */
     if(bytes >= freespace) raw_resize(thisconn, bytes + thisconn->pos);
@@ -2768,7 +2768,7 @@ static size_t raw_read(void *ptr, size_t size, size_t nitems,
     Rrawconn thisconn = RHO_S_CAST(Rrawconn, con->connprivate);
     size_t available = thisconn->nbytes - thisconn->pos, request = size*nitems, used;
 
-    if (double( size) * double( nitems) + double( thisconn->pos) > R_LEN_T_MAX)
+    if (double(size) * double(nitems) + double(thisconn->pos) > R_LEN_T_MAX)
 	Rf_error(_("too large a block specified"));
     used = (request < available) ? request : available;
     memmove(ptr, RAW(thisconn->data) + thisconn->pos, used);
@@ -2789,19 +2789,19 @@ static double raw_seek(Rconnection con, double where, int origin, int rw)
     double newpos;
     size_t oldpos = thisconn->pos;
 
-    if(ISNA(where)) return double( oldpos);
+    if(ISNA(where)) return double(oldpos);
 
     /* Do the calculations here as double to avoid integer overflow */
     switch(origin) {
-    case 2: newpos = double( thisconn->pos) + where; break;
-    case 3: newpos = double( thisconn->nbytes) + where; break;
+    case 2: newpos = double(thisconn->pos) + where; break;
+    case 3: newpos = double(thisconn->nbytes) + where; break;
     default: newpos = where;
     }
     if(newpos < 0 || newpos > thisconn->nbytes)
 	Rf_error(_("attempt to seek outside the range of the raw connection"));
-    else thisconn->pos = size_t( newpos);
+    else thisconn->pos = size_t(newpos);
 
-    return double( oldpos);
+    return double(oldpos);
 }
 
 static Rconnection newraw(const char *description, SEXP raw, const char *mode)
@@ -2933,12 +2933,12 @@ static void text_init(Rconnection con, SEXP text, int type)
 
     for(i = 0; i < nlines; i++)
 	dnc +=
-	    double( strlen(type == 1 ? Rf_translateChar(STRING_ELT(text, i))
+	    double(strlen(type == 1 ? Rf_translateChar(STRING_ELT(text, i))
 			    : ((type == 3) ?Rf_translateCharUTF8(STRING_ELT(text, i))
 			       : R_CHAR(STRING_ELT(text, i))) ) + 1);
     if (dnc >= std::numeric_limits<size_t>::max())
 	Rf_error(_("too many characters for text connection"));
-    else nchars = size_t( dnc);
+    else nchars = size_t(dnc);
     thisconn->data = static_cast<char *>(malloc(nchars+1));
     if(!thisconn->data) {
 	free(thisconn); free(con->description); free(con->connclass); free(con);
@@ -3053,7 +3053,7 @@ static void outtext_close(Rconnection con)
 	PROTECT(tmp = Rf_xlengthgets(thisconn->data, ++thisconn->len));
 	SET_STRING_ELT(tmp, thisconn->len - 1, mkCharLocal(thisconn->lastline));
 	if(thisconn->namesymbol) Rf_defineVar(thisconn->namesymbol, tmp, env);
-	SET_NAMED(tmp, 2);
+	ENSURE_NAMEDMAX(tmp);
 	thisconn->data = tmp;
 	UNPROTECT(1);
     }
@@ -3137,7 +3137,7 @@ static int text_vfprintf(Rconnection con, const char *format, va_list ap)
 		R_PreserveObject(tmp);
 	    }
 	    thisconn->data = tmp;
-	    SET_NAMED(tmp, 2);
+	    ENSURE_NAMEDMAX(tmp);
 	    UNPROTECT(1);
 	} else {
 	    /* retain the last line */
@@ -3180,7 +3180,7 @@ static void outtext_init(Rconnection con, SEXP stext, const char *mode, int idx)
 	    PROTECT(val = Rf_allocVector(STRSXP, 0));
 	    Rf_defineVar(thisconn->namesymbol, val, VECTOR_ELT(OutTextData, idx));
 	    /* Not clear if this is needed, but be conservative */
-	    SET_NAMED(val, 2);
+	    ENSURE_NAMEDMAX(val);
 	    UNPROTECT(1);
 	} else {
 	    /* take over existing variable */
@@ -3190,7 +3190,7 @@ static void outtext_init(Rconnection con, SEXP stext, const char *mode, int idx)
 		Rf_warning(_("text connection: appending to a non-existent char vector"));
 		PROTECT(val = Rf_allocVector(STRSXP, 0));
 		Rf_defineVar(thisconn->namesymbol, val, VECTOR_ELT(OutTextData, idx));
-		SET_NAMED(val, 2);
+		ENSURE_NAMEDMAX(val);
 		UNPROTECT(1);
 	    }
 	    R_LockBinding(thisconn->namesymbol, VECTOR_ELT(OutTextData, idx));
@@ -3742,9 +3742,9 @@ int Rconn_printf(Rconnection con, const char *format, ...)
     /* PR#17243:  write.table and friends silently failed if the disk was full (or there was another error) */
     if (res < 0) {
 	if (errno)
-	    error(_("Error writing to connection:  %s"), strerror(errno));
+	    Rf_error(_("Error writing to connection:  %s"), strerror(errno));
 	else
-	    error(_("Error writing to connection"));
+	    Rf_error(_("Error writing to connection"));
     }
     return res;
 }
@@ -4790,7 +4790,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 	    dlen += double(INTEGER(nchars)[i] + slen);
 	if (dlen > R_XLEN_T_MAX)
 	    Rf_error("too much data for a raw vector on this platform");
-	len = R_xlen_t( dlen);
+	len = R_xlen_t(dlen);
 	PROTECT(ans = Rf_allocVector(RAWSXP, len));
 	buf = reinterpret_cast<char*>(RAW(ans));
     }
@@ -5628,7 +5628,7 @@ static size_t gzcon_read(void *ptr, size_t size, size_t nitems,
     if (priv->z_err == Z_STREAM_END) return 0;  /* EOF */
 
     /* wrapped connection only needs to handle INT_MAX */
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
     if (priv->nsaved >= 0) { /* non-compressed mode */
 	size_t len = size*nitems;
@@ -5692,7 +5692,7 @@ static size_t gzcon_write(const void *ptr, size_t size, size_t nitems,
     Rgzconn priv = RHO_S_CAST(Rgzconn, con->connprivate);
     Rconnection icon = priv->con;
 
-    if (double( size) * double( nitems) > INT_MAX)
+    if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
     priv->s.next_in = static_cast<Bytef*>(RHO_C_CAST(void*, ptr));
     priv->s.avail_in = uInt(size*nitems);

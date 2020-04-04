@@ -405,12 +405,12 @@ size_t mbcsToUcs2(const char *in, ucs2_t *out, int nout, int enc)
     if (out == nullptr || int(wc_len) < 0) return wc_len;
 
     if (reinterpret_cast<void*>(-1) == (cd = Riconv_open(UCS2ENC, (enc == CE_UTF8) ? "UTF-8": "")))
-	return size_t( -1);
+	return size_t(-1);
 
     i_buf = RHO_NO_CAST(char *)in;
     i_len = strlen(in); /* not including terminator */
     o_buf = reinterpret_cast<char *>(out);
-    o_len = (size_t( nout)) * sizeof(ucs2_t);
+    o_len = (size_t(nout)) * sizeof(ucs2_t);
     status = Riconv(cd, &i_buf, RHO_NO_CAST(size_t *)&i_len, &o_buf, RHO_NO_CAST(size_t *)&o_len);
     int serrno = errno;
     Riconv_close(cd);
@@ -666,8 +666,8 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 	Rf_error(_("'all.y' must be TRUE or FALSE"));
 
     /* 0. sort the indices */
-    int* ix = static_cast<int *>(RHO_alloc(size_t( nx), sizeof(int)));
-    int* iy = static_cast<int *>(RHO_alloc(size_t( ny), sizeof(int)));
+    int* ix = static_cast<int *>(RHO_alloc(size_t(nx), sizeof(int)));
+    int* iy = static_cast<int *>(RHO_alloc(size_t(ny), sizeof(int)));
     for(i = 0; i < nx; i++) ix[i] = i+1;
     for(i = 0; i < ny; i++) iy[i] = i+1;
     isort_with_index(INTEGER(xi), ix, nx);
@@ -1294,7 +1294,7 @@ Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 
     if(wc)
 	for(p = wc, t = s; ; p++, t += m) {
-	    m  = ssize_t( Rf_utf8toucs(p, t));
+	    m  = ssize_t(Rf_utf8toucs(p, t));
 	    if (m < 0) Rf_error(_("invalid input '%s' in 'utf8towcs'"), s);
 	    if (m == 0) break;
 	    res ++;
@@ -1307,11 +1307,11 @@ Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 	}
     else
 	for(t = s; ; res++, t += m) {
-	    m  = ssize_t( Rf_utf8toucs(&local, t));
+	    m  = ssize_t(Rf_utf8toucs(&local, t));
 	    if (m < 0) Rf_error(_("invalid input '%s' in 'utf8towcs'"), s);
 	    if (m == 0) break;
 	}
-    return size_t( res);
+    return size_t(res);
 }
 
 /* based on pcre.c */
@@ -1539,7 +1539,7 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar)
 	Rf_warning(_("error message truncated to 255 chars"));
 	nc = 255;
     }
-    strncpy(buf, msg, size_t( nc));
+    strncpy(buf, msg, size_t(nc));
     buf[nc] = '\0';
     Rf_error("%s", buf);
 }
@@ -1552,7 +1552,7 @@ void F77_SYMBOL(rwarnc)(char *msg, int *nchar)
 	Rf_warning(_("warning message truncated to 255 chars"));
 	nc = 255;
     }
-    strncpy(buf, msg, size_t( nc));
+    strncpy(buf, msg, size_t(nc));
     buf[nc] = '\0';
     Rf_warning("%s", buf);
 }
@@ -1637,7 +1637,7 @@ void *Rf_AdobeSymbol2utf8(char *work, const char *c0, int nwork)
 	c++;
     }
     *t = '\0';
-    return (char*) work;
+    return static_cast<char *>(work);
 }
 
 int attribute_hidden Rf_AdobeSymbol2ucs2(int n)
@@ -2461,8 +2461,8 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
     size_t j, len_flag = strlen(flag);
     const void *vmax = vmaxget();
 
-    char *f0  =	 R_alloc(size_t( do_fg) ? 1+1+len_flag+3 : 1, sizeof(char));
-    char *form = R_alloc(size_t( 1)+1+len_flag+3 + strlen(format),
+    char *f0  =	 R_alloc(size_t(do_fg) ? 1+1+len_flag+3 : 1, sizeof(char));
+    char *form = R_alloc(size_t(1)+1+len_flag+3 + strlen(format),
 			 sizeof(char));
 
     if (width == 0)

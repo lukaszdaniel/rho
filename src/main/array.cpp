@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1998-2017   The R Core Team
  *  Copyright (C) 2002-2015   The R Foundation
+ *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -140,7 +140,7 @@ SEXP attribute_hidden do_matrix(/*const*/ Expression* call, const BuiltInFunctio
     }
 
     if(lendat > 0) {
-	R_xlen_t nrc = R_xlen_t( nr) * nc;
+	R_xlen_t nrc = R_xlen_t(nr) * nc;
 	if (lendat > 1 && nrc % lendat != 0) {
 	    if (((lendat > nr) && (lendat / nr) * nr != lendat) ||
 		((lendat < nr) && (nr / lendat) * lendat != nr))
@@ -166,7 +166,7 @@ SEXP attribute_hidden do_matrix(/*const*/ Expression* call, const BuiltInFunctio
 	else
 	    Rf_copyListMatrix(ans, vals, RHOCONSTRUCT(Rboolean, byrow));
     } else if (Rf_isVector(vals)) { /* fill with NAs */
-	R_xlen_t N = R_xlen_t( nr) * nc, i;
+	R_xlen_t N = R_xlen_t(nr) * nc, i;
 	switch(TYPEOF(vals)) {
 	case STRSXP:
 	    for (i = 0; i < N; i++)
@@ -219,7 +219,7 @@ SEXP Rf_allocMatrix(SEXPTYPE mode, int nrow, int ncol)
     if (double(nrow) * double(ncol) > INT_MAX)
 	Rf_error(_("allocMatrix: too many elements specified"));
 #endif
-    n = (R_xlen_t( nrow)) * ncol;
+    n = (R_xlen_t(nrow)) * ncol;
     PROTECT(s = Rf_allocVector(mode, n));
     PROTECT(t = Rf_allocVector(INTSXP, 2));
     INTEGER(t)[0] = nrow;
@@ -351,7 +351,7 @@ SEXP attribute_hidden do_length(/*const*/ Expression* call, const BuiltInFunctio
 #ifdef LONG_VECTOR_SUPPORT
     // or use IS_LONG_VEC
     R_xlen_t len = Rf_xlength(x);
-    if (len > INT_MAX) return Rf_ScalarReal(double( len));
+    if (len > INT_MAX) return Rf_ScalarReal(double(len));
 #endif
     return Rf_ScalarInteger(Rf_length(x));
 }
@@ -1589,7 +1589,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 
     /* check the permutation */
 
-    int *pp = static_cast<int *>(RHO_alloc(size_t( n), sizeof(int)));
+    int *pp = static_cast<int *>(RHO_alloc(size_t(n), sizeof(int)));
     perm = perm_;
     if (Rf_length(perm) == 0) {
 	for (i = 0; i < n; i++) pp[i] = n-1-i;
@@ -1619,7 +1619,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 	}
     }
 
-    R_xlen_t *iip = static_cast<R_xlen_t *>(RHO_alloc(size_t( n), sizeof(R_xlen_t)));
+    R_xlen_t *iip = static_cast<R_xlen_t *>(RHO_alloc(size_t(n), sizeof(R_xlen_t)));
     for (i = 0; i < n; iip[i++] = 0);
     for (i = 0; i < n; i++)
 	if (pp[i] >= 0 && pp[i] < n) iip[pp[i]]++;
@@ -1629,7 +1629,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 
     /* create the stride object and permute */
 
-    R_xlen_t *stride = static_cast<R_xlen_t *>(RHO_alloc(size_t( n), sizeof(R_xlen_t)));
+    R_xlen_t *stride = static_cast<R_xlen_t *>(RHO_alloc(size_t(n), sizeof(R_xlen_t)));
     for (iip[0] = 1, i = 1; i<n; i++) iip[i] = iip[i-1] * isa[i-1];
     for (i = 0; i < n; i++) stride[i] = iip[pp[i]];
 
@@ -1826,7 +1826,7 @@ SEXP attribute_hidden do_colsum(/*const*/ Expression* call, const BuiltInFunctio
 	    }
 	    }
 	    if (OP == 1) sum /= cnt; /* gives NaN for cnt = 0 */
-	    REAL(ans)[j] = double( sum);
+	    REAL(ans)[j] = double(sum);
 	}
     }
     else { /* rows */
@@ -1956,7 +1956,7 @@ SEXP attribute_hidden do_array(/*const*/ Expression* call, const BuiltInFunction
 #ifndef LONG_VECTOR_SUPPORT
     if (d > INT_MAX) Rf_error(_("too many elements specified"));
 #endif
-    nans = R_xlen_t( d);
+    nans = R_xlen_t(d);
 
     PROTECT(ans = Rf_allocVector(TYPEOF(vals), nans));
     switch(TYPEOF(vals)) {
@@ -1997,11 +1997,13 @@ SEXP attribute_hidden do_array(/*const*/ Expression* call, const BuiltInFunction
 	else
 	    for (i = 0; i < nans; i++) RAW(ans)[i] = 0;
 	break;
-    /* Rest are already initialized */
     case STRSXP:
 	if (nans && lendat)
 	    xcopyStringWithRecycle(ans, vals, 0, nans, lendat);
+	else
+	    for (i = 0; i < nans; i++) SET_STRING_ELT(ans, i, NA_STRING);
 	break;
+    /* Rest are already initialized */
     case VECSXP:
     case EXPRSXP:
 #ifdef SWITCH_TO_REFCNT

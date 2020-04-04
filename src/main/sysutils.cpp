@@ -95,7 +95,7 @@ double attribute_hidden R_FileMtime(const char *path)
     struct stat sb;
     if (stat(R_ExpandFileName(path), &sb) != 0)
 	Rf_error(_("cannot determine file modification time of '%s'"), path);
-    return double( sb.st_mtime);
+    return double(sb.st_mtime);
 }
 #endif
 
@@ -646,8 +646,10 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 		SHALLOW_DUPLICATE_ATTRIB(ans, x);
 	    }
 	} else {
-	    if(TYPEOF(x) != STRSXP)
+	    if(TYPEOF(x) != STRSXP) {
+		Riconv_close(obj);
 		Rf_error(_("'x' must be a character vector"));
+	    }
 	    if(toRaw) {
 		PROTECT(ans = Rf_allocVector(VECSXP, LENGTH(x)));
 		SHALLOW_DUPLICATE_ATTRIB(ans, x);
@@ -661,8 +663,10 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 		if (TYPEOF(si) == NILSXP) {
 		    if (!toRaw) SET_STRING_ELT(ans, i, NA_STRING);
 		    continue;
-		} else if (TYPEOF(si) != RAWSXP)
+		} else if (TYPEOF(si) != RAWSXP) {
+		    Riconv_close(obj);
 		    Rf_error(_("'x' must be a character vector or a list of NULL or raw vectors"));
+		}
 	    } else {
 		si = STRING_ELT(x, i);
 		if (si == NA_STRING) {
@@ -857,10 +861,10 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
 	    if(obj == (void *)(-1))
 #ifdef Win32
 		Rf_error(_("unsupported conversion from '%s' in codepage %d"),
-		      "latin1", localeCP);
+		      "UTF-8", localeCP);
 #else
 		Rf_error(_("unsupported conversion from '%s' to '%s'"),
-		      "latin1", "");
+		      "UTF-8", "");
 #endif
 	    utf8_obj = obj;
 	}
@@ -992,9 +996,10 @@ const char *Rf_translateCharUTF8(SEXP x)
     if(obj == reinterpret_cast<void *>((-1))) 
 #ifdef Win32
 	Rf_error(_("unsupported conversion from '%s' in codepage %d"),
-	      "latin1", localeCP);
+	      IS_LATIN1(x) ? "latin1" : "", localeCP);
 #else
-       Rf_error(_("unsupported conversion from '%s' to '%s'"), "latin1", "UTF-8");
+	Rf_error(_("unsupported conversion from '%s' to '%s'"),
+	      IS_LATIN1(x) ? "latin1" : "", "UTF-8");
 #endif
     R_AllocStringBuffer(0, &cbuff);
 top_of_loop:
@@ -1078,7 +1083,7 @@ const wchar_t *Rf_wtransChar(SEXP x)
 	    obj = Riconv_open(TO_WCHAR, "UTF-8");
 	    if(obj == reinterpret_cast<void *>((-1))) 
 		Rf_error(_("unsupported conversion from '%s' to '%s'"),
-		      "latin1", TO_WCHAR);
+		      "UTF-8", TO_WCHAR);
 	    utf8_wobj = obj;
 	} else
 	    obj = utf8_wobj;
@@ -1467,12 +1472,27 @@ next_char:
 void attribute_hidden
 invalidate_cached_recodings(void)
 {
-    latin1_obj = nullptr;
-    utf8_obj = nullptr;
-    ucsmb_obj = nullptr;
+    if (latin1_obj) {
+	Riconv_close(latin1_obj);
+	latin1_obj = nullptr;
+    }
+    if (utf8_obj) {
+	Riconv_close(utf8_obj);
+	utf8_obj = nullptr;
+    }
+    if (ucsmb_obj) {
+	Riconv_close(ucsmb_obj);
+	ucsmb_obj = nullptr;
+    }
 #ifdef Win32
-    latin1_wobj = NULL;
-    utf8_wobj=NULL;
+    if (latin1_wobj) {
+	Riconv_close(latin1_wobj);
+	latin1_wobj = nullptr;
+    }
+    if (utf8_wobj) {
+	Riconv_close(utf8_wobj);
+	utf8_wobj = nullptr;
+    }
 #endif
 }
 
@@ -1521,17 +1541,17 @@ size_t Rf_ucstomb(char *s, const unsigned int wc)
 
     status = Riconv(ucsmb_obj, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 
-    if (status == size_t( -1)) {
+    if (status == size_t(-1)) {
 	switch(errno){
 	case EINVAL:
-	    return size_t( -2);
+	    return size_t(-2);
 	case EILSEQ:
-	    return size_t( -1);
+	    return size_t(-1);
 	case E2BIG:
 	    break;
 	default:
 	    errno = EILSEQ;
-	    return size_t( -1);
+	    return size_t(-1);
 	}
     }
     buf[MB_CUR_MAX] = '\0'; /* safety measure */
@@ -1557,7 +1577,7 @@ Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
     if(reinterpret_cast<void *>((-1)) == (cd = Riconv_open(UNICODE, ""))) return size_t((-1));
     status = Riconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 
-    if (status == size_t( -1)) {
+    if (status == size_t(-1)) {
 	switch(errno){
 	case EINVAL:
 	    Riconv_close(cd);
@@ -1606,7 +1626,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 
     status = Riconv(ucsutf8_obj, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
 
-    if (status == size_t( -1)) {
+    if (status == size_t(-1)) {
 	switch(errno){
 	case E2BIG:
 	    break;

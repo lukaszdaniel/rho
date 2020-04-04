@@ -881,11 +881,11 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
 #if defined STAT_TIMESPEC
 	    /* POSIX 2008 changed this to a struct timespec st_mtim etc
 	       Not all OSes (e.g. Darwin) agree on this. */
-	    REAL(mtime)[i] = double( STAT_TIMESPEC(sb, st_mtim).tv_sec)
+	    REAL(mtime)[i] = double(STAT_TIMESPEC(sb, st_mtim).tv_sec)
 		+ 1e-9 * double(STAT_TIMESPEC(sb, st_mtim).tv_nsec);
-	    REAL(ctime)[i] = double( STAT_TIMESPEC(sb, st_ctim).tv_sec)
+	    REAL(ctime)[i] = double(STAT_TIMESPEC(sb, st_ctim).tv_sec)
 		+ 1e-9 * double(STAT_TIMESPEC(sb, st_ctim).tv_nsec);
-	    REAL(atime)[i] = double( STAT_TIMESPEC(sb, st_atim).tv_sec)
+	    REAL(atime)[i] = double(STAT_TIMESPEC(sb, st_atim).tv_sec)
 		+ 1e-9 * double(STAT_TIMESPEC(sb, st_atim).tv_nsec);
 #else
 #ifdef Win32

@@ -699,6 +699,21 @@ extern "C" {
 	x->m_named = static_cast<unsigned char>(v);
     }
 
+    /** @brief Set object max copying status.
+     *
+     * @param x Pointer to rho::RObject.  The function does nothing
+     *          if \a x is a null pointer.
+     *
+     * @param v Refer to 'R Internals' document.
+     *
+     * @deprecated Ought to be private.
+     */
+    inline void ENSURE_NAMEDMAX(SEXP x)
+    {
+	if (NAMED(x) < NAMEDMAX)
+	    SET_NAMED(x, NAMEDMAX);
+    }
+
     /**
      * @deprecated Ought to be private.
      */

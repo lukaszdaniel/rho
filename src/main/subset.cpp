@@ -62,24 +62,22 @@ using namespace rho;
 
 
 static R_INLINE SEXP VECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
-    /* if RHS (container or element) has NAMED > 0 set NAMED = 2.
+    /* if RHS (container or element) has NAMED > 0 set NAMED = NAMEDMAX.
        Duplicating might be safer/more consistent (fix bug reported by
        Radford Neal; similar to PR15098) */
     SEXP val = VECTOR_ELT(y, i);
     if ((NAMED(y) || NAMED(val)))
-	if (NAMED(val) < 2)
-	    SET_NAMED(val, 2);
+	ENSURE_NAMEDMAX(val);
     return val;
 }
 
 static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
-    /* if RHS (container or element) has NAMED > 0 set NAMED = 2.
+    /* if RHS (container or element) has NAMED > 0 set NAMED = NAMEDMAX.
        Duplicating might be safer/more consistent (fix bug reported by
        Radford Neal; similar to PR15098) */
     SEXP val = XVECTOR_ELT(y, i);
     if ((NAMED(y) || NAMED(val)))
-	if (NAMED(val) < 2)
-	    SET_NAMED(val, 2);
+	ENSURE_NAMEDMAX(val);
     return val;
 }
 
@@ -104,7 +102,7 @@ static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
 	switch(mi) {
 	case REALSXP:
 	    if(!R_FINITE(REAL(indx)[i])) ii = NA_INTEGER;
-	    else ii = R_xlen_t( (REAL(indx)[i] - 1));
+	    else ii = R_xlen_t((REAL(indx)[i] - 1));
 	    break;
 	default:
 	    ii = INTEGER(indx)[i];
@@ -382,7 +380,7 @@ SEXP attribute_hidden do_subset(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (dispatched.first) {
         RObject* ans = dispatched.second;
 	if (NAMED(ans))
-	    SET_NAMED(ans, 2);
+	    ENSURE_NAMEDMAX(ans);
 	return(ans);
     }
 
@@ -398,7 +396,7 @@ static R_INLINE R_xlen_t scalarIndex(SEXP s)
 	switch (TYPEOF(s)) {
 	case REALSXP: // treat infinite indices as NA, like asInteger
 	    if (XLENGTH(s) == 1 && R_FINITE(REAL(s)[0]))
-		return R_xlen_t( REAL(s)[0]);
+		return R_xlen_t(REAL(s)[0]);
 	    else return -1;
 	case INTSXP:
 	    if (XLENGTH(s) == 1 && INTEGER(s)[0] != NA_INTEGER)
@@ -606,7 +604,7 @@ SEXP attribute_hidden do_subset2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (dispatched.first) {
         SEXP ans = dispatched.second;
 	if (NAMED(ans))
-	    SET_NAMED(ans, 2);
+	    ENSURE_NAMEDMAX(ans);
 	return(ans);
     }
 
@@ -666,12 +664,12 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 								0)))));
 	if ( TYPEOF(ans) == PROMSXP )
 	    ans = Rf_eval(ans, R_GlobalEnv);
-	else SET_NAMED(ans, 2);
+	else ENSURE_NAMEDMAX(ans);
 
 	if (ans == R_UnboundValue )
 	    return(R_NilValue);
 	if (NAMED(ans))
-	    SET_NAMED(ans, 2);
+	    ENSURE_NAMEDMAX(ans);
 	return ans;
     }
 
@@ -890,7 +888,7 @@ SEXP attribute_hidden do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
     if (dispatched.first) {
         ans = dispatched.second;
 	if (NAMED(ans))
-	    SET_NAMED(ans, 2);
+	    ENSURE_NAMEDMAX(ans);
 	return(ans);
     }
 
@@ -980,7 +978,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 		       This is overkill, but alternative ways to prevent
 		       the aliasing appear to be even worse */
 		    y = VECTOR_ELT(x,i);
-		    SET_NAMED(y,2);
+		    ENSURE_NAMEDMAX(y);
 		    SET_VECTOR_ELT(x,i,y);
 		}
 		imatch = i;
@@ -1022,7 +1020,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	UNPROTECT(2);
 	if( y != R_UnboundValue ) {
 	    if (NAMED(y))
-		SET_NAMED(y, 2);
+		ENSURE_NAMEDMAX(y);
 	    else if (NAMED(x) > NAMED(y))
 		SET_NAMED(y, NAMED(x));
 	    return(y);

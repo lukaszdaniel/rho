@@ -253,10 +253,10 @@ SEXP attribute_hidden do_sample(/*const*/ Expression* call, const BuiltInFunctio
 		for (R_xlen_t i = 0; i < k; i++) ry[i] = R_unif_index(dn) + 1;
 	    } else {
 #ifdef LONG_VECTOR_SUPPORT
-		R_xlen_t n = R_xlen_t( dn);
+		R_xlen_t n = R_xlen_t(dn);
 		double *x = static_cast<double *>(RHO_alloc(n, sizeof(double)));
 		double *ry = REAL(y);
-		for (R_xlen_t i = 0; i < n; i++) x[i] = double( i);
+		for (R_xlen_t i = 0; i < n; i++) x[i] = double(i);
 		for (R_xlen_t i = 0; i < k; i++) {
 		    R_xlen_t j = (R_xlen_t) R_unif_index(n);
 		    ry[i] = x[j] + 1;

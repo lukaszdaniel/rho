@@ -130,7 +130,7 @@ static void recordParents( int, yyltype*, int) ;
 static int _current_token ;
 
 /**
- * Records an expression (non terminal symbol 'expr') and gives it an id
+ * @brief Records an expression (non terminal symbol 'expr') and gives it an id
  *
  * @param expr expression we want to record and flag with the next id
  * @param loc the location of the expression

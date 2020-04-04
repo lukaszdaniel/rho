@@ -122,7 +122,7 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
 	    useInt = FALSE;
 	else {
 	    /* r := " the effective 'to' "  of  from:to */
-	    double dn = double( n);
+	    double dn = double(n);
 	    r = n1 + ((n1 <= n2) ? dn-1 : -(dn-1));
 	    if(r <= INT_MIN || r > INT_MAX) useInt = FALSE;
 	}
@@ -237,7 +237,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
 	    SEXP elt = lazy_duplicate(VECTOR_ELT(s, i)); \
 	    for (j = (R_xlen_t) it[i]; j > 0; j--) \
 		SET_VECTOR_ELT(a, n++, elt); \
-	    if (j > 1) SET_NAMED(elt, 2); \
+	    if (j > 1) ENSURE_NAMEDMAX(elt); \
 	} \
 	break; \
     case RAWSXP: \
@@ -843,7 +843,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if(Rf_length(len) != 1)
 	    Rf_warningcall(call, _("first element used of '%s' argument"),
 			"length.out");
-	lout = R_xlen_t( ceil(rout));
+	lout = R_xlen_t(ceil(rout));
     }
 
     if(lout == NA_INTEGER) {
@@ -886,9 +886,9 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 		goto done;
 	    }
 #ifdef LONG_VECTOR_SUPPORT
-	    if(n > 100 * double( INT_MAX))
+	    if(n > 100 * double(INT_MAX))
 #else
-	    if(n > double( INT_MAX))
+	    if(n > double(INT_MAX))
 #endif
 		Rf_errorcall(call, _("'by' argument is much too small"));
 	    if(n < - FEPS)
@@ -1051,7 +1051,7 @@ SEXP attribute_hidden do_seq_len(/*const*/ Expression* call, const BuiltInFuncti
     double dlen = Rf_asReal(length_);
     if(!R_FINITE(dlen) || dlen < 0)
 	Rf_errorcall(call, _("argument must be coercible to non-negative integer"));
-    len = R_xlen_t( dlen);
+    len = R_xlen_t(dlen);
 #else
     len = Rf_asInteger(length_);
     if(len == NA_INTEGER || len < 0)
@@ -1064,7 +1064,7 @@ SEXP attribute_hidden do_seq_len(/*const*/ Expression* call, const BuiltInFuncti
 	double *p = REAL(ans);
 	for(R_xlen_t i = 0; i < len; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    p[i] = double( (i+1));
+	    p[i] = double((i+1));
 	}
     } else
 #endif

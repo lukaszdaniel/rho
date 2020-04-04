@@ -123,6 +123,7 @@ SEXP STRING_ELT(SEXP x, R_xlen_t i);
 inline SEXP STRING_ELT(SEXP x, R_xlen_t i)
 {
     using namespace rho;
+    if(!x) return nullptr;
     if(TYPEOF(x) != STRSXP)
       Rf_error("'%s' function can only be applied to a character vector, not a '%s'",
                "STRING_ELT()", Rf_type2char(TYPEOF(x)));

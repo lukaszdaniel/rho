@@ -1141,7 +1141,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    ans = Rf_allocVector(REALSXP, nmatches);
 	    j = 0;
 	    for (i = 0 ; i < n ; i++)
-		if (invert ^ LOGICAL(ind)[i]) REAL(ans)[j++] = double( (i + 1));
+		if (invert ^ LOGICAL(ind)[i]) REAL(ans)[j++] = double((i + 1));
 	} else
 #endif
 	{
@@ -1176,7 +1176,7 @@ static R_size_t fgrepraw1(SEXP pat, SEXP text, R_size_t offset) {
 		    return offset;
 		offset++;
 	    }
-	    return R_size_t( -1);
+	    return R_size_t(-1);
 	}
     case 2:
 	{
@@ -1187,7 +1187,7 @@ static R_size_t fgrepraw1(SEXP pat, SEXP text, R_size_t offset) {
 		    return offset;
 		offset++;
 	    }
-	    return R_size_t( -1);
+	    return R_size_t(-1);
 	}
     case 3:
 	{
@@ -1199,7 +1199,7 @@ static R_size_t fgrepraw1(SEXP pat, SEXP text, R_size_t offset) {
 		    return offset;
 		offset++;
 	    }
-	    return R_size_t( -1);
+	    return R_size_t(-1);
 	}
     default:
 	{

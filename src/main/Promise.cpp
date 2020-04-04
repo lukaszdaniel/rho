@@ -151,7 +151,7 @@ bool PromiseData::isMissingSymbol() const
 void PromiseData::setValue(RObject* val)
 {
     m_value = val;
-    SET_NAMED(val, 2);
+    ENSURE_NAMEDMAX(val);
     if (val != Symbol::unboundValue())
 	m_environment = nullptr;
 }

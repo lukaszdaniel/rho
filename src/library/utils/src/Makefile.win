@@ -11,19 +11,20 @@ top_builddir = ../../../..
 subdir = src/library/$(pkg)/src
 R_HOME = $(top_builddir)
 
-SOURCES_C = init.c io.c size.c sock.c stubs.c utils.c \
+SOURCES_C = init.c sock.c stubs.c \
   windows/dataentry.c windows/dialogs.c windows/registry.c \
   windows/util.c windows/widgets.c
+SOURCES_CXX = io.cpp size.cpp utils.cpp
 
-DEPENDS = $(SOURCES_C:.c=.d)
-OBJECTS = $(SOURCES_C:.c=.o) ../../../gnuwin32/dllversion.o
+DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
+OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) ../../../gnuwin32/dllversion.o
 
 SHLIB = $(pkg).dll
 RESFLAGS = -I $(R_HOME)/include
 
 XZ_CPPFLAGS = -DLZMA_API_STATIC -I$(LOCAL_SOFT)/include
 
-PKG_CPPFLAGS = -I$(R_HOME)/src/include -DHAVE_CONFIG_H \
+PKG_CPPFLAGS = -I$(R_HOME)/src/include -DHAVE_CONFIG_H -DCOMPILING_RHO\
   -I$(R_HOME)/src/main -I$(R_HOME)/src/gnuwin32 -I$(R_HOME)/src/extra \
   -I$(R_HOME)/src/library/grDevices/src $(XZ_CPPFLAGS)
 

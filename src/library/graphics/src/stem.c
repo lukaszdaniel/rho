@@ -31,13 +31,8 @@
 #include <R_ext/Utils.h> /* for R_rsort */
 #include <R_ext/Error.h>
 #include <R_ext/Arith.h> /* for R_FINITE */
+#include "localization.h"
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("graphics", String)
-#else
-#define _(String) (String)
-#endif
 
 static void stem_print(int close, int dist, int ndigits)
 {

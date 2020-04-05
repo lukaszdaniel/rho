@@ -36,6 +36,7 @@
 #include <R_ext/QuartzDevice.h>
 
 #include "grDevices.h"
+#include "localization.h"
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -1602,6 +1603,7 @@ SEXP makeQuartzDefault() {
 /* --- no AQUA support = no Quartz --- */
 
 #include "grDevices.h"
+#include "localization.h"
 #include <R_ext/QuartzDevice.h>
 
 SEXP Quartz(SEXP args)

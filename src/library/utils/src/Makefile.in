@@ -13,8 +13,8 @@ R_HOME = $(top_builddir)
 R_SHARE_DIR = $(R_HOME)/share
 R_INCLUDE_DIR = $(R_HOME)/include
 
-SOURCES_C = init.c sock.c stubs.c utils.c
-SOURCES_CXX = io.cpp size.cpp
+SOURCES_C = init.c sock.c stubs.c
+SOURCES_CXX = io.cpp size.cpp utils.cpp
 
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o)

@@ -39,6 +39,7 @@
 #include <R_ext/Applic.h>	/* Fortran routines */
 #include "ts.h"
 #include "stats.h"
+#include "localization.h"
 
 
 #define MAX_DIM_LENGTH 4

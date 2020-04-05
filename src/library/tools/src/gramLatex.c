@@ -101,13 +101,8 @@
 #include <R_ext/RS.h>           /* for R_chk_* allocation */
 #include <ctype.h>
 #include <R_ext/Print.h>
-#undef _
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("tools", String)
-#else
-#define _(String) (String)
-#endif
+#include "localization.h"
+
 
 /* bison creates a non-static symbol yylloc in both gramLatex.o and gramRd.o,
    so remap */
@@ -217,7 +212,7 @@ static int      mkVerbEnv();
 #define YYSTYPE		SEXP
 
 
-#line 221 "y.tab.c"
+#line 216 "y.tab.c"
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
@@ -594,9 +589,9 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,   168,   168,   169,   170,   173,   174,   175,   176,   178,
-     179,   181,   182,   183,   184,   185,   186,   188,   188,   192,
-     194,   195
+       0,   163,   163,   164,   165,   168,   169,   170,   171,   173,
+     174,   176,   177,   178,   179,   180,   181,   183,   183,   187,
+     189,   190
 };
 #endif
 
@@ -1215,33 +1210,33 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
   switch (yytype)
     {
     case 5: /* MACRO  */
-#line 164 "./gramLatex.y"
+#line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1221 "y.tab.c"
+#line 1216 "y.tab.c"
         break;
 
     case 6: /* TEXT  */
-#line 164 "./gramLatex.y"
+#line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1227 "y.tab.c"
+#line 1222 "y.tab.c"
         break;
 
     case 7: /* COMMENT  */
-#line 164 "./gramLatex.y"
+#line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1233 "y.tab.c"
+#line 1228 "y.tab.c"
         break;
 
     case 8: /* BEGIN  */
-#line 164 "./gramLatex.y"
+#line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1239 "y.tab.c"
+#line 1234 "y.tab.c"
         break;
 
     case 9: /* END  */
-#line 164 "./gramLatex.y"
+#line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1245 "y.tab.c"
+#line 1240 "y.tab.c"
         break;
 
       default:
@@ -1531,128 +1526,128 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 168 "./gramLatex.y"
+#line 163 "./gramLatex.y"
     { xxsavevalue(yyvsp[-1], &(yyloc)); YYACCEPT; }
-#line 1537 "y.tab.c"
+#line 1532 "y.tab.c"
     break;
 
   case 3:
-#line 169 "./gramLatex.y"
+#line 164 "./gramLatex.y"
     { xxsavevalue(NULL, &(yyloc)); YYACCEPT; }
-#line 1543 "y.tab.c"
+#line 1538 "y.tab.c"
     break;
 
   case 4:
-#line 170 "./gramLatex.y"
+#line 165 "./gramLatex.y"
     { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
-#line 1549 "y.tab.c"
+#line 1544 "y.tab.c"
     break;
 
   case 5:
-#line 173 "./gramLatex.y"
+#line 168 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1555 "y.tab.c"
+#line 1550 "y.tab.c"
     break;
 
   case 6:
-#line 174 "./gramLatex.y"
+#line 169 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1561 "y.tab.c"
+#line 1556 "y.tab.c"
     break;
 
   case 7:
-#line 175 "./gramLatex.y"
+#line 170 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1567 "y.tab.c"
+#line 1562 "y.tab.c"
     break;
 
   case 8:
-#line 176 "./gramLatex.y"
+#line 171 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1573 "y.tab.c"
+#line 1568 "y.tab.c"
     break;
 
   case 9:
-#line 178 "./gramLatex.y"
+#line 173 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1579 "y.tab.c"
+#line 1574 "y.tab.c"
     break;
 
   case 10:
-#line 179 "./gramLatex.y"
+#line 174 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1585 "y.tab.c"
+#line 1580 "y.tab.c"
     break;
 
   case 11:
-#line 181 "./gramLatex.y"
+#line 176 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-#line 1591 "y.tab.c"
+#line 1586 "y.tab.c"
     break;
 
   case 12:
-#line 182 "./gramLatex.y"
+#line 177 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-#line 1597 "y.tab.c"
+#line 1592 "y.tab.c"
     break;
 
   case 13:
-#line 183 "./gramLatex.y"
+#line 178 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], MACRO, &(yyloc)); }
-#line 1603 "y.tab.c"
+#line 1598 "y.tab.c"
     break;
 
   case 14:
-#line 184 "./gramLatex.y"
+#line 179 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], VERB, &(yyloc)); }
-#line 1609 "y.tab.c"
+#line 1604 "y.tab.c"
     break;
 
   case 15:
-#line 185 "./gramLatex.y"
+#line 180 "./gramLatex.y"
     { yyval = yyvsp[0]; }
-#line 1615 "y.tab.c"
+#line 1610 "y.tab.c"
     break;
 
   case 16:
-#line 186 "./gramLatex.y"
+#line 181 "./gramLatex.y"
     { yyval = yyvsp[0]; }
-#line 1621 "y.tab.c"
+#line 1616 "y.tab.c"
     break;
 
   case 17:
-#line 188 "./gramLatex.y"
+#line 183 "./gramLatex.y"
     { xxSetInVerbEnv(yyvsp[-1]); }
-#line 1627 "y.tab.c"
+#line 1622 "y.tab.c"
     break;
 
   case 18:
-#line 189 "./gramLatex.y"
+#line 184 "./gramLatex.y"
     { yyval = xxenv(yyvsp[-7], yyvsp[-4], yyvsp[-1], &(yyloc));
                                                   UNPROTECT_PTR(yyvsp[-9]); UNPROTECT_PTR(yyvsp[-3]); }
-#line 1634 "y.tab.c"
+#line 1629 "y.tab.c"
     break;
 
   case 19:
-#line 192 "./gramLatex.y"
+#line 187 "./gramLatex.y"
     { yyval = xxmath(yyvsp[-1], &(yyloc)); }
-#line 1640 "y.tab.c"
+#line 1635 "y.tab.c"
     break;
 
   case 20:
-#line 194 "./gramLatex.y"
+#line 189 "./gramLatex.y"
     { yyval = xxblock(yyvsp[-1], &(yyloc)); }
-#line 1646 "y.tab.c"
+#line 1641 "y.tab.c"
     break;
 
   case 21:
-#line 195 "./gramLatex.y"
+#line 190 "./gramLatex.y"
     { yyval = xxblock(NULL, &(yyloc)); }
-#line 1652 "y.tab.c"
+#line 1647 "y.tab.c"
     break;
 
 
-#line 1656 "y.tab.c"
+#line 1651 "y.tab.c"
 
       default: break;
     }
@@ -1890,7 +1885,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 197 "./gramLatex.y"
+#line 192 "./gramLatex.y"
 
 
 static SEXP xxnewlist(SEXP item)

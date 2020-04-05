@@ -511,7 +511,6 @@ int (LENGTH)(SEXP x) { return LENGTH(x); }
 
 #ifndef R_MEMORY_PROFILING
 
-extern "C"
 SEXP NORET do_Rprofmem(SEXP args)
 {
     Rf_error(_("memory profiling is not available on this system"));
@@ -566,7 +565,6 @@ static void R_InitMemReporting(SEXP filename, int append,
     MemoryBank::setMonitor(R_ReportAllocation, threshold);
 }
 
-extern "C"
 SEXP do_Rprofmem(SEXP args)
 {
     SEXP filename;

@@ -49,6 +49,7 @@
 #include <R.h>
 #include <R_ext/Applic.h>
 #include <Rinternals.h> // for R_xlen_t
+#include "localization.h"
 
 /*
  *	Natural Splines

@@ -30,6 +30,7 @@
 #include <Rmath.h>  // Rexp10, fmin2, fmax2, imax2
 
 #include "graphics.h"
+#include "localization.h"
 
 static R_INLINE void TypeCheck(SEXP s, SEXPTYPE type)
 {

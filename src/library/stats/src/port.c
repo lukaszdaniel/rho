@@ -22,6 +22,7 @@
 #include <R_ext/Constants.h>
 #include <R_ext/BLAS.h>
 #include <R_ext/Print.h>
+#include "localization.h"
 
 				/* names of 1-based indices into iv and v */
 #define AFCTOL  31

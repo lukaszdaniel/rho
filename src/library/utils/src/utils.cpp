@@ -26,8 +26,9 @@
 #include <Rinternals.h>
 
 #include "utils.h"
+#include "localization.h"
 
-/* from src/main/eval.c */
+/* from src/main/eval.cpp */
 SEXP do_Rprof(SEXP args);
 
 SEXP Rprof(SEXP args)
@@ -35,14 +36,15 @@ SEXP Rprof(SEXP args)
     return do_Rprof(CDR(args));
 }
 
-/* from src/main/memory.c */
+/* from src/main/memory.cpp */
 SEXP do_Rprofmem(SEXP args);
+
 SEXP Rprofmem(SEXP args)
 {
     return do_Rprofmem(CDR(args));
 }
 
-/* from src/main/dounzip.c */
+/* from src/main/dounzip.cpp */
 SEXP Runzip(SEXP args);
 
 SEXP unzip(SEXP args)
@@ -81,7 +83,7 @@ SEXP nsl(SEXP hostname)
     const char *name; char ip[] = "xxx.xxx.xxx.xxx";
     struct hostent *hp;
 
-    if (!isString(hostname) || length(hostname) != 1)
+    if (!isString(hostname) || Rf_length(hostname) != 1)
 	error(_("'hostname' must be a character vector of length 1"));
     name = translateChar(STRING_ELT(hostname, 0));
 

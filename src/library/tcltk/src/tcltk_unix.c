@@ -30,12 +30,7 @@
 
 #include <stdlib.h>
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("tcltk", String)
-#else
-#define _(String) (String)
-#endif
+#include "localization.h"
 
 /* R event structure */
 typedef struct {

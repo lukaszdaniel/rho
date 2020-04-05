@@ -31,6 +31,7 @@
 #include <R.h>
 #include <Rinternals.h>
 #include "nls.h"
+#include "localization.h"
 
 #ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))

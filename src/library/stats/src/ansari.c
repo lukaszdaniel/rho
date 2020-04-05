@@ -27,6 +27,7 @@
 #include <math.h>  // for floor
 #include <Rmath.h>		/* uses choose() */
 #include "stats.h"
+#include "localization.h"
 
 static double ***
 w_init(int m, int n)

@@ -49,6 +49,7 @@
 #include "devWindows.h"
 #define DEVWINDOWS 1
 #include "grDevices.h"
+#include "localization.h"
 
 /* there are conflicts with Rmath.h */
 #define imax2		Rf_imax2

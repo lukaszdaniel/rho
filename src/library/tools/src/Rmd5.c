@@ -22,6 +22,7 @@
 #include "tools.h"
 #define ROL_UNUSED
 #include "md5.h"
+#include "localization.h"
 
 /* .Call so manages R_alloc stack */
 SEXP Rmd5(SEXP files)

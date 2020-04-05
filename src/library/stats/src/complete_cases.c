@@ -25,13 +25,7 @@
 #include <Defn.h>
 #define R_MSG_type	_("invalid 'type' (%s) of argument")
 
-#undef _
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("stats", String)
-#else
-#define _(String) (String)
-#endif
+#include "localization.h"
 
 /* Formerly in src/main/summary.c */
 

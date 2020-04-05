@@ -31,7 +31,7 @@
 //#include <R.h>
 #include <Rinternals.h>
 //#include <R_ext/QuartzDevice.h>
-#define _(String) (String)
+#include "localization.h"
 
 typedef struct {
     CGContextRef context;   /* drawing context */

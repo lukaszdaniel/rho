@@ -35,13 +35,7 @@
 #include <GraphicsBase.h>       /* setBaseDevice */
 #include <Rmath.h>		/* eg. fmax2() */
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#undef _
-#define _(String) dgettext ("grDevices", String)
-#else
-#define _(String) (String)
-#endif
+#include "localization.h"
 
 /*--->> Documentation now in  ../include/Rgraphics.h  "API" ----- */
 
@@ -119,7 +113,7 @@ GUnit GMapUnits(int Runits)
     case 1:	return USER;
     case 2:	return NFC;
     case 3:	return INCHES;
-    default:	return 0;
+    default:	return GUnit(0);
     }
 }
 
@@ -1285,12 +1279,12 @@ static void someCmRegions(double widths[], double heights[],
 
 static Rboolean allCm(pGEDevDesc dd)
 {
-    return allCmWidths(dd) && allCmHeights(dd);
+    return Rboolean(allCmWidths(dd) && allCmHeights(dd));
 }
 
 static Rboolean noCm(pGEDevDesc dd)
 {
-    return noCmWidths(dd) && noCmHeights(dd);
+    return Rboolean(noCmWidths(dd) && noCmHeights(dd));
 }
 
 static void layoutRegions(double widths[], double heights[],
@@ -1703,7 +1697,7 @@ void GReset(pGEDevDesc dd)
 /* Why is this FLT_EPSILON? */
 static Rboolean validFigureRegion(pGEDevDesc dd)
 {
-    return ((gpptr(dd)->fig[0] > 0-FLT_EPSILON) &&
+    return Rboolean((gpptr(dd)->fig[0] > 0-FLT_EPSILON) &&
 	    (gpptr(dd)->fig[1] < 1+FLT_EPSILON) &&
 	    (gpptr(dd)->fig[2] > 0-FLT_EPSILON) &&
 	    (gpptr(dd)->fig[3] < 1+FLT_EPSILON));
@@ -1713,7 +1707,7 @@ static Rboolean validFigureRegion(pGEDevDesc dd)
 
 static Rboolean validOuterMargins(pGEDevDesc dd)
 {
-    return ((gpptr(dd)->fig[0] < gpptr(dd)->fig[1]) &&
+    return Rboolean((gpptr(dd)->fig[0] < gpptr(dd)->fig[1]) &&
 	    (gpptr(dd)->fig[2] < gpptr(dd)->fig[3]));
 }
 
@@ -1721,7 +1715,7 @@ static Rboolean validOuterMargins(pGEDevDesc dd)
 
 static Rboolean validPlotRegion(pGEDevDesc dd)
 {
-    return ((gpptr(dd)->plt[0] > 0-FLT_EPSILON) &&
+    return Rboolean((gpptr(dd)->plt[0] > 0-FLT_EPSILON) &&
 	    (gpptr(dd)->plt[1] < 1+FLT_EPSILON) &&
 	    (gpptr(dd)->plt[2] > 0-FLT_EPSILON) &&
 	    (gpptr(dd)->plt[3] < 1+FLT_EPSILON));
@@ -1731,7 +1725,7 @@ static Rboolean validPlotRegion(pGEDevDesc dd)
 
 static Rboolean validFigureMargins(pGEDevDesc dd)
 {
-    return ((gpptr(dd)->plt[0] < gpptr(dd)->plt[1]) &&
+    return Rboolean((gpptr(dd)->plt[0] < gpptr(dd)->plt[1]) &&
 	    (gpptr(dd)->plt[2] < gpptr(dd)->plt[3]));
 }
 
@@ -1834,7 +1828,7 @@ pGEDevDesc GNewPlot(Rboolean recording)
 	else {				\
 	    int xpdsaved = gpptr(dd)->xpd; \
 	    gpptr(dd)->xpd = 2; \
-	    GText(0.5,0.5, NFC, msg, -1, 0.5,0.5,  0, dd);  \
+	    GText(0.5,0.5, NFC, msg, cetype_t(-1), 0.5, 0.5,  0, dd);  \
 	    gpptr(dd)->xpd = xpdsaved; \
 	}
 
@@ -1893,7 +1887,7 @@ void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
     if(fabs(*max - *min) < (t_ = fmax2(fabs(*max), fabs(*min)))* tmp2) {
 	/* Treat this case somewhat similar to the (min ~= max) case above */
 	/* Too much accuracy here just shows machine differences */
-	warning(_("relative range of values (%4.0f * EPS) is small (axis %d)")
+	Rf_warning(_("relative range of values (%4.0f * EPS) is small (axis %d)")
 		/*"to compute accurately"*/,
 		fabs(*max - *min) / (t_*DBL_EPSILON), axis);
 
@@ -1923,7 +1917,7 @@ void GScale(double min, double max, int axis, pGEDevDesc dd)
  */
 #define EPS_FAC_1  16
 
-    Rboolean is_xaxis = (axis == 1 || axis == 3);
+    Rboolean is_xaxis = Rboolean(axis == 1 || axis == 3);
     int log, n, style;
     double temp, min_o = 0., max_o = 0., tmp2 = 0.;/*-Wall*/
 
@@ -1945,7 +1939,7 @@ void GScale(double min, double max, int axis, pGEDevDesc dd)
 	max = log10(max);
     }
     if(!R_FINITE(min) || !R_FINITE(max)) {
-	warning(_("nonfinite axis limits [GScale(%g,%g,%d, .); log=%d]"),
+	Rf_warning(_("nonfinite axis limits [GScale(%g,%g,%d, .); log=%d]"),
 		min, max, axis, log);
 	if(!R_FINITE(min)) min = - .45 * DBL_MAX;
 	if(!R_FINITE(max)) max = + .45 * DBL_MAX;
@@ -2017,7 +2011,7 @@ void GScale(double min, double max, int axis, pGEDevDesc dd)
      */
 
     // Computation of [xy]axp[0:2] == (min,max,n) :
-    GAxisPars(&min, &max, &n, log, axis);
+    GAxisPars(&min, &max, &n, Rboolean(log), axis);
 
 #define G_Store_AXP(is_X)			\
     if(is_X) {					\
@@ -2044,7 +2038,7 @@ void GSetupAxis(int axis, pGEDevDesc dd)
  *   xlog or ylog = TRUE ? */
     double min, max;
     int n;
-    Rboolean is_xaxis = (axis == 1 || axis == 3);
+    Rboolean is_xaxis = Rboolean(axis == 1 || axis == 3);
 
     if(is_xaxis) {
 	n = gpptr(dd)->lab[0];
@@ -2335,7 +2329,7 @@ void GSavePars(pGEDevDesc dd)
 void GRestorePars(pGEDevDesc dd)
 {
     gpptr(dd)->adj = adjsave;
-    gpptr(dd)->ann = annsave;
+    gpptr(dd)->ann = Rboolean(annsave);
     gpptr(dd)->bty = btysave;
     gpptr(dd)->cex = cexsave;
     gpptr(dd)->lheight = lheightsave;
@@ -2452,16 +2446,16 @@ static void setClipRect(double *x1, double *y1, double *x2, double *y2,
     *y2 = 1.0;
     switch (gpptr(dd)->xpd) {
     case 0:
-	GConvert(x1, y1, NPC, coords, dd);
-	GConvert(x2, y2, NPC, coords, dd);
+	GConvert(x1, y1, NPC, GUnit(coords), dd);
+	GConvert(x2, y2, NPC, GUnit(coords), dd);
 	break;
     case 1:
-	GConvert(x1, y1, NFC, coords, dd);
-	GConvert(x2, y2, NFC, coords, dd);
+	GConvert(x1, y1, NFC, GUnit(coords), dd);
+	GConvert(x2, y2, NFC, GUnit(coords), dd);
 	break;
     case 2:
-	GConvert(x1, y1, NDC, coords, dd);
-	GConvert(x2, y2, NDC, coords, dd);
+	GConvert(x1, y1, NDC, GUnit(coords), dd);
+	GConvert(x2, y2, NDC, GUnit(coords), dd);
 	break;
     }
 }
@@ -2529,8 +2523,8 @@ void GLine(double x1, double y1, double x2, double y2, int coords, pGEDevDesc dd
      * Work in device coordinates because that is what the
      * graphics engine needs.
      */
-    GConvert(&x1, &y1, coords, DEVICE, dd);
-    GConvert(&x2, &y2, coords, DEVICE, dd);
+    GConvert(&x1, &y1, GUnit(coords), DEVICE, dd);
+    GConvert(&x2, &y2, GUnit(coords), DEVICE, dd);
     /*
      * Ensure that the base clipping region is set on the device
      */
@@ -2577,7 +2571,7 @@ Rboolean GLocator(double *x, double *y, int coords, pGEDevDesc dd)
   dd->dev->close = &locator_close;
   
   if(dd->dev->locator && dd->dev->locator(x, y, dd->dev)) {
-      GConvert(x, y, DEVICE, coords, dd);
+      GConvert(x, y, DEVICE, GUnit(coords), dd);
       ret =  TRUE;
   } else ret =  FALSE;
   /* restore original close handler */
@@ -2642,6 +2636,13 @@ typedef enum {
     Bottom = 2,
     Top = 3
 } Edge;
+
+inline Edge& operator++(Edge& edge, int)
+{
+   const int i = static_cast<int>(edge);
+   edge = static_cast<Edge>((i + 1) % 4);
+   return edge;
+}
 
 /* Clipper State Variables */
 typedef struct {
@@ -2734,7 +2735,7 @@ void clipPoint (Edge b, double x, double y,
 	if (cross (b, x, y, cs[b].sx, cs[b].sy, clip)) {
 	    intersect (b, x, y, cs[b].sx, cs[b].sy, &ix, &iy, clip);
 	    if (b < Top)
-		clipPoint (b + 1, ix, iy, xout, yout, cnt, store,
+		clipPoint (Edge(b + 1), ix, iy, xout, yout, cnt, store,
 			   clip, cs);
 	    else {
 		if (store) {
@@ -2753,7 +2754,7 @@ void clipPoint (Edge b, double x, double y,
     /* proceed to next clip edge, if any */
     if (inside (b, x, y, clip)) {
 	if (b < Top)
-	    clipPoint (b + 1, x, y, xout, yout, cnt, store, clip, cs);
+	    clipPoint (Edge(b + 1), x, y, xout, yout, cnt, store, clip, cs);
 	else {
 	    if (store) {
 		xout[*cnt] = x;
@@ -2776,7 +2777,7 @@ void closeClip (double *xout, double *yout, int *cnt, int store,
 	    intersect (b, cs[b].sx, cs[b].sy,
 		       cs[b].fx, cs[b].fy, &ix, &iy, clip);
 	    if (b < Top)
-		clipPoint (b + 1, ix, iy, xout, yout, cnt, store, clip, cs);
+		clipPoint (Edge(b + 1), ix, iy, xout, yout, cnt, store, clip, cs);
 	    else {
 		if (store) {
 		    xout[*cnt] = ix;
@@ -2854,7 +2855,7 @@ void GPolygon(int n, double *x, double *y, int coords,
     for (i=0; i<n; i++) {
 	xx[i] = x[i];
 	yy[i] = y[i];
-	GConvert(&(xx[i]), &(yy[i]), coords, DEVICE, dd);
+	GConvert(&(xx[i]), &(yy[i]), GUnit(coords), DEVICE, dd);
     }
     /*
      * Ensure that the base clipping region is set on the device
@@ -2890,7 +2891,7 @@ void GPolyline(int n, double *x, double *y, int coords, pGEDevDesc dd)
     for (i=0; i<n; i++) {
 	xx[i] = x[i];
 	yy[i] = y[i];
-	GConvert(&(xx[i]), &(yy[i]), coords, DEVICE, dd);
+	GConvert(&(xx[i]), &(yy[i]), GUnit(coords), DEVICE, dd);
     }
     /*
      * Ensure that the base clipping region is set on the device
@@ -2926,7 +2927,7 @@ void GCircle(double x, double y, int coords,
      * Work in device coordinates because that is what the
      * graphics engine needs.
      */
-    GConvert(&x, &y, coords, DEVICE, dd);
+    GConvert(&x, &y, GUnit(coords), DEVICE, dd);
     /*
      * Ensure that the base clipping region is set on the device
      */
@@ -2951,8 +2952,8 @@ void GRect(double x0, double y0, double x1, double y1, int coords,
      * Work in device coordinates because that is what the
      * graphics engine needs.
      */
-    GConvert(&x0, &y0, coords, DEVICE, dd);
-    GConvert(&x1, &y1, coords, DEVICE, dd);
+    GConvert(&x0, &y0, GUnit(coords), DEVICE, dd);
+    GConvert(&x1, &y1, GUnit(coords), DEVICE, dd);
     /*
      * Ensure that the base clipping region is set on the device
      */
@@ -3032,7 +3033,7 @@ void GText(double x, double y, int coords, const char *str, cetype_t enc,
      * Work in device coordinates because that is what the
      * graphics engine needs.
      */
-    GConvert(&x, &y, coords, DEVICE, dd);
+    GConvert(&x, &y, GUnit(coords), DEVICE, dd);
     /*
      * Ensure that the base clipping region is set on the device
      */
@@ -3063,14 +3064,14 @@ void GArrow(double xfrom, double yfrom, double xto, double yto, int coords,
 
     GLine(xfrom, yfrom, xto, yto, coords, dd);
 
-    GConvert(&xfromInch, &yfromInch, coords, INCHES, dd);
-    GConvert(&xtoInch, &ytoInch, coords, INCHES, dd);
+    GConvert(&xfromInch, &yfromInch, GUnit(coords), INCHES, dd);
+    GConvert(&xtoInch, &ytoInch, GUnit(coords), INCHES, dd);
     if((code & 3) == 0) return; /* no arrows specified */
     if(length == 0) return; /* zero-length arrow heads */
 
     if(hypot(xfromInch - xtoInch, yfromInch - ytoInch) < eps) {
 	/* effectively 0-length arrow */
-	warning(_("zero-length arrow is of indeterminate angle and so skipped"));
+	Rf_warning(_("zero-length arrow is of indeterminate angle and so skipped"));
 	return;
     }
     angle *= DEG2RAD;
@@ -3151,7 +3152,7 @@ void GBox(int which, pGEDevDesc dd)
 	case 'N': /* nothing */
 	    break;
 	default:
-	    warning(_("invalid par(\"bty\") = '%c'; no box() drawn"),
+	    Rf_warning(_("invalid par(\"bty\") = '%c'; no box() drawn"),
 		    gpptr(dd)->bty);
 	}
 	break;
@@ -3240,7 +3241,7 @@ void GSymbol(double x, double y, int coords, int pch, pGEDevDesc dd)
      * Work in device coordinates because that is what the
      * graphics engine needs.
      */
-    GConvert(&x, &y, coords, DEVICE, dd);
+    GConvert(&x, &y, GUnit(coords), DEVICE, dd);
     /*
      * Ensure that the base clipping region is set on the device
      */
@@ -3397,7 +3398,7 @@ void GMathText(double x, double y, int coords, SEXP expr,
 {
     R_GE_gcontext gc;
     gcontextFromGP(&gc, dd);
-    GConvert(&x, &y, coords, DEVICE, dd);
+    GConvert(&x, &y, GUnit(coords), DEVICE, dd);
     GClip(dd);
     GEMathText(x, y, expr, xc, yc, rot, &gc, dd);
 }

@@ -28,7 +28,7 @@
 #include <Rmath.h>		/* for lgammafn, rmultinom */
 #include <errno.h>
 #include "statsR.h"
-#undef _
+#include "localization.h"
 #include "stats.h" // for rcont2
 
 /* interval at which to check interrupts */

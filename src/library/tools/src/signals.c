@@ -22,6 +22,7 @@
 #endif
 
 #include "tools.h"
+#include "localization.h"
 #include <signal.h> // C99
 
 #ifdef _WIN32

@@ -50,6 +50,7 @@ mbcsToSbcs(const char *in, char *out, const char *encoding, int enc);
 #include <R_ext/RS.h>
 #include "Fileio.h"
 #include "grDevices.h"
+#include "localization.h"
 
 #ifdef HAVE_ERRNO_H
 #include <errno.h>

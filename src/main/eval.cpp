@@ -464,7 +464,6 @@ static void R_InitProfiling(SEXP filename, int append, double dinterval,
     Evaluator::enableProfiling(true);
 }
 
-extern "C"
 SEXP do_Rprof(SEXP args)
 {
     SEXP filename;

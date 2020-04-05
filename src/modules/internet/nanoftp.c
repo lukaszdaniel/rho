@@ -40,12 +40,7 @@
 #endif
 
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) gettext (String)
-#else
-#define _(String) (String)
-#endif
+#include <Localization.h>
 
 extern void R_ProcessEvents(void);
 

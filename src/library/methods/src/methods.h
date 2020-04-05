@@ -18,12 +18,6 @@
  */
 
 #include <Rinternals.h>
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("methods", String)
-#else
-#define _(String) (String)
-#endif
 
 #define DUPLICATE_CLASS_CASE(method) TYPEOF(method) == ENVSXP
 
@@ -36,7 +30,7 @@ SEXP R_el_named(SEXP object, SEXP what);
 SEXP R_externalptr_prototype_object();
 SEXP R_getGeneric(SEXP name, SEXP mustFind, SEXP env, SEXP package);
 SEXP R_get_slot(SEXP obj, SEXP name);
-SEXP R_getClassFromCache(SEXP class, SEXP table);
+SEXP R_getClassFromCache(SEXP klass, SEXP table);
 SEXP R_hasSlot(SEXP obj, SEXP name);
 SEXP R_identC(SEXP e1, SEXP e2);
 SEXP R_initMethodDispatch(SEXP envir);
@@ -53,5 +47,11 @@ SEXP R_standardGeneric(SEXP fname, SEXP ev, SEXP fdef);
 SEXP do_substitute_direct(SEXP f, SEXP env);
 SEXP Rf_allocS4Object();
 SEXP R_set_method_dispatch(SEXP onOff);
+#ifdef __cplusplus
+extern "C" 
+#endif
 SEXP R_get_primname(SEXP object);
+#ifdef __cplusplus
+extern "C" 
+#endif
 SEXP new_object(SEXP class_def);

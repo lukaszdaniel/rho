@@ -30,6 +30,7 @@
 #include <R_ext/Boolean.h>
 
 #include "graphics.h"
+#include "localization.h"
 
 static void TypeCheck(SEXP s, SEXPTYPE type)
 {

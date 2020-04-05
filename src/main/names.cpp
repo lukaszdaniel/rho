@@ -964,7 +964,7 @@ SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* For use in packages */
-extern "C"
+
 const char *getPRIMNAME(SEXP object)
 {
     return PRIMNAME(object);

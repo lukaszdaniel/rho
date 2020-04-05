@@ -19,21 +19,26 @@
 
 #include <config.h>
 #include <Defn.h>
+#include "localization.h"
+#include "methods.h"
 
-/* no #include "methods.h" because NLS warns of double inclusion */
-/* in names.c */
 const char *getPRIMNAME(SEXP object);
 
-
+#ifdef __cplusplus
+extern "C" 
+#endif
 SEXP R_get_primname(SEXP object)
 {
     if(TYPEOF(object) != BUILTINSXP && TYPEOF(object) != SPECIALSXP)
-	error("'R_get_primname' called on a non-primitive");
-    return mkString(getPRIMNAME(object));
+	Rf_error("'R_get_primname' called on a non-primitive");
+    return Rf_mkString(getPRIMNAME(object));
 }
 
 /* The main entry point is in Rinternals.h, but we want to register
    the call in *this* package */
+#ifdef __cplusplus
+extern "C" 
+#endif
 SEXP new_object(SEXP class_def)
 {
     return R_do_new_object(class_def);

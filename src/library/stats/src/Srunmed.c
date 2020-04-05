@@ -20,6 +20,7 @@
  */
 
 #include "modreg.h"
+#include "localization.h"
 
 #include "Trunmed.c"
 

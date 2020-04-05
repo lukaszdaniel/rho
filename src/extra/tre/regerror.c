@@ -21,33 +21,25 @@
 #include "tre-internal.h"
 #include "tre.h"
 
-#ifdef HAVE_GETTEXT
-#include <libintl.h>
-#else
-#define dgettext(p, s) s
-#define gettext(s) s
-#endif
-
-#define _(String) dgettext(PACKAGE, String)
-#define gettext_noop(String) String
+#include <Localization.h>
 
 /* Error message strings for error codes listed in `tre.h'.  This list
    needs to be in sync with the codes listed there, naturally. */
 static const char *tre_error_messages[] =
-  { gettext_noop("No error"),				 /* REG_OK */
-    gettext_noop("No match"),				 /* REG_NOMATCH */
-    gettext_noop("Invalid regexp"),			 /* REG_BADPAT */
-    gettext_noop("Unknown collating element"),		 /* REG_ECOLLATE */
-    gettext_noop("Unknown character class name"),	 /* REG_ECTYPE */
-    gettext_noop("Trailing backslash"),			 /* REG_EESCAPE */
-    gettext_noop("Invalid back reference"),		 /* REG_ESUBREG */
-    gettext_noop("Missing ']'"),			 /* REG_EBRACK */
-    gettext_noop("Missing ')'"),			 /* REG_EPAREN */
-    gettext_noop("Missing '}'"),			 /* REG_EBRACE */
-    gettext_noop("Invalid contents of {}"),		 /* REG_BADBR */
-    gettext_noop("Invalid character range"),		 /* REG_ERANGE */
-    gettext_noop("Out of memory"),			 /* REG_ESPACE */
-    gettext_noop("Invalid use of repetition operators")	 /* REG_BADRPT */
+  { N_("No error"),				 /* REG_OK */
+    N_("No match"),				 /* REG_NOMATCH */
+    N_("Invalid regexp"),			 /* REG_BADPAT */
+    N_("Unknown collating element"),		 /* REG_ECOLLATE */
+    N_("Unknown character class name"),	 /* REG_ECTYPE */
+    N_("Trailing backslash"),			 /* REG_EESCAPE */
+    N_("Invalid back reference"),		 /* REG_ESUBREG */
+    N_("Missing ']'"),			 /* REG_EBRACK */
+    N_("Missing ')'"),			 /* REG_EPAREN */
+    N_("Missing '}'"),			 /* REG_EBRACE */
+    N_("Invalid contents of {}"),		 /* REG_BADBR */
+    N_("Invalid character range"),		 /* REG_ERANGE */
+    N_("Out of memory"),			 /* REG_ESPACE */
+    N_("Invalid use of repetition operators")	 /* REG_BADRPT */
   };
 
 size_t
@@ -60,9 +52,9 @@ tre_regerror(int errcode, const regex_t *preg, char *errbuf, size_t errbuf_size)
   if (errcode >= 0
       && errcode < (int)(sizeof(tre_error_messages)
 			 / sizeof(*tre_error_messages)))
-    err = gettext(tre_error_messages[errcode]);
+    err = _(tre_error_messages[errcode]);
   else
-    err = gettext("Unknown error");
+    err = _("Unknown error");
 
   err_len = strlen(err) + 1;
   if (errbuf_size > 0 && errbuf != NULL)

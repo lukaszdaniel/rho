@@ -23,6 +23,7 @@
 
 #include <R.h>
 #include "ts.h"
+#include "localization.h"
 
 
 #ifndef max

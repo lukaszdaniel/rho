@@ -32,12 +32,8 @@
 #include "tcltk.h" /* declarations of our `public' interface */
 #include <stdlib.h>
 
-#ifdef ENABLE_NLS
-#include <libintl.h>
-#define _(String) dgettext ("tcltk", String)
-#else
-#define _(String) (String)
-#endif
+#include "localization.h"
+
 
 static void RTcl_dec_refcount(SEXP R_tclobj)
 {

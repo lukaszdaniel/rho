@@ -28,6 +28,7 @@
 #include <R_ext/GraphicsEngine.h>
 
 #include "grDevices.h"
+#include "localization.h"
 
 static char ColBuf[10];
 static char HexDigits[] = "0123456789ABCDEF";

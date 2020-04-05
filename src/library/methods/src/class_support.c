@@ -21,12 +21,12 @@
 #include <R.h>
 #include <Rinternals.h> // defines R_MakeExternalPtrFn
 
-
+#include "localization.h"
 #include "methods.h"
 
 SEXP NORET R_dummy_extern_place()
 {
-    error(_("calling the C routine used as an initializer for 'externalptr' objects"));
+    Rf_error(_("calling the C routine used as an initializer for 'externalptr' objects"));
 }
 
 SEXP R_externalptr_prototype_object()

@@ -20,9 +20,9 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#define NO_NLS
 #include <Defn.h>
 
+#include "localization.h"
 #include "methods.h"
 
 /* substitute in an _evaluated_ object, with an explicit list as
@@ -38,10 +38,10 @@ SEXP do_substitute_direct(SEXP f, SEXP env)
     else if (TYPEOF(env) == LISTSXP)
 	env = NewEnvironment(R_NilValue, duplicate(env), R_BaseEnv);
     if(TYPEOF(env) != ENVSXP)
-	error(_("invalid list for substitution"));
+	Rf_error(_("invalid list for substitution"));
     PROTECT(env);
     PROTECT(f);
-    s = substitute(f, env);
+    s = Rf_substitute(f, env);
     UNPROTECT(2);
     return(s);
 }

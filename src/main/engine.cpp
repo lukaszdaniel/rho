@@ -451,7 +451,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 
     if(Rf_isString(value)) {
 	for(i = 0; lineend[i].name; i++) { /* is it the i-th name ? */
-	    if(streql(CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
+	    if(streql(R_CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
 		return lineend[i].end;
 	}
 	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
@@ -516,7 +516,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 
     if(Rf_isString(value)) {
 	for(i = 0; linejoin[i].name; i++) { /* is it the i-th name ? */
-	    if(streql(CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
+	    if(streql(R_CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
 		return linejoin[i].join;
 	}
 	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
@@ -3176,17 +3176,17 @@ int GEstring_to_pch(SEXP pch)
     static int last_ipch = 0;
 
     if (pch == NA_STRING) return NA_INTEGER;
-    if (CHAR(pch)[0] == 0) return NA_INTEGER;  /* pch = "" */
+    if (R_CHAR(pch)[0] == 0) return NA_INTEGER;  /* pch = "" */
     if (pch == last_pch) return last_ipch;/* take advantage of CHARSXP cache */
-    ipch = static_cast<unsigned char>(CHAR(pch)[0]);
+    ipch = static_cast<unsigned char>(R_CHAR(pch)[0]);
     if (IS_LATIN1(pch)) {
 	if (ipch > 127) ipch = -ipch;  /* record as Unicode */
     } else if (IS_UTF8(pch) || utf8locale) {
 	wchar_t wc = 0;
 	if (ipch > 127) {
-	    if ( int(Rf_utf8toucs(&wc, CHAR(pch))) > 0) {
+	    if ( int(Rf_utf8toucs(&wc, R_CHAR(pch))) > 0) {
 	    	if (IS_HIGH_SURROGATE(wc))
-	    	    ipch = -utf8toucs32(wc, CHAR(pch));
+	    	    ipch = -utf8toucs32(wc, R_CHAR(pch));
 	    	else
 	    	    ipch = -wc;
 	    } else Rf_error(_("invalid multibyte char in pch=\"c\""));
@@ -3196,7 +3196,7 @@ int GEstring_to_pch(SEXP pch)
 	   On Windows this only covers CJK locales, so we could.
 	 */
 	unsigned int ucs = 0;
-	if ( int(Rf_mbtoucs(&ucs, CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
+	if ( int(Rf_mbtoucs(&ucs, R_CHAR(pch), MB_CUR_MAX)) > 0) ipch = ucs;
 	else Rf_error(_("invalid multibyte char in pch=\"c\""));
 	if (ipch > 127) ipch = -ipch;
     }
@@ -3258,13 +3258,13 @@ unsigned int GE_LTYpar(SEXP value, int ind)
 
     if(Rf_isString(value)) {
 	for(i = 0; linetype[i].name; i++) { /* is it the i-th name ? */
-	    if(streql(CHAR(STRING_ELT(value, ind)), linetype[i].name))
+	    if(streql(R_CHAR(STRING_ELT(value, ind)), linetype[i].name))
 		return linetype[i].pattern;
 	}
 	/* otherwise, a string of hex digits: */
 	code = 0;
 	shift = 0;
-	p = CHAR(STRING_ELT(value, ind));
+	p = R_CHAR(STRING_ELT(value, ind));
 	size_t len = strlen(p);
 	if(len < 2 || len > 8 || len % 2 == 1)
 	    Rf_error(_("invalid line type: must be length 2, 4, 6 or 8"));

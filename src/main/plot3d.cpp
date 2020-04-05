@@ -24,9 +24,10 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 
 #include <Defn.h>
@@ -54,7 +55,7 @@ static SEXP growList(SEXP oldlist) {
     int i, len;
     SEXP templist;
     len = LENGTH(oldlist);
-    templist = PROTECT(allocVector(VECSXP, len + CONTOUR_LIST_STEP));
+    templist = PROTECT(Rf_allocVector(VECSXP, len + CONTOUR_LIST_STEP));
     for (i=0; i<len; i++)
 	SET_VECTOR_ELT(templist, i, VECTOR_ELT(oldlist, i));
     UNPROTECT(1);
@@ -123,14 +124,14 @@ int addContourLines(double *x, int nx, double *y, int ny,
 		    s = s->next;
 		}
 		if(ns == RHOCONSTRUCT(int, max_contour_segments))
-		    warning(_("contour(): circular/long seglist -- set %s > %d?"), 
+		    Rf_warning(_("contour(): circular/long seglist -- set %s > %d?"), 
 		            "options(\"max.contour.segments\")", max_contour_segments);
 		/*
 		 * "write" the contour locations into the list of contours
 		 */
-		ctr = PROTECT(allocVector(VECSXP, 3));
-		xsxp = PROTECT(allocVector(REALSXP, ns + 1));
-		ysxp = PROTECT(allocVector(REALSXP, ns + 1));
+		ctr = PROTECT(Rf_allocVector(VECSXP, 3));
+		xsxp = PROTECT(Rf_allocVector(REALSXP, ns + 1));
+		ysxp = PROTECT(Rf_allocVector(REALSXP, ns + 1));
 		level = PROTECT(Rf_ScalarReal(zc));
 		SET_VECTOR_ELT(ctr, CONTOUR_LIST_LEVEL, level);
 		s = start;
@@ -151,11 +152,11 @@ int addContourLines(double *x, int nx, double *y, int ny,
 		 * So that users can extract components using
 		 * meaningful names
 		 */
-		PROTECT(names = allocVector(STRSXP, 3));
-		SET_STRING_ELT(names, 0, mkChar("level"));
-		SET_STRING_ELT(names, 1, mkChar("x"));
-		SET_STRING_ELT(names, 2, mkChar("y"));
-		setAttrib(ctr, R_NamesSymbol, names);
+		PROTECT(names = Rf_allocVector(STRSXP, 3));
+		SET_STRING_ELT(names, 0, Rf_mkChar("level"));
+		SET_STRING_ELT(names, 1, Rf_mkChar("x"));
+		SET_STRING_ELT(names, 2, Rf_mkChar("y"));
+		Rf_setAttrib(ctr, R_NamesSymbol, names);
 		/*
 		 * We're about to add another line to the list ...
 		 */
@@ -200,9 +201,9 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
 
     if (zmin >= zmax) {
 	if (zmin == zmax)
-	    warning(_("all z values are equal"));
+	    Rf_warning(_("all z values are equal"));
 	else
-	    warning(_("all z values are NA"));
+	    Rf_warning(_("all z values are NA"));
 	return R_NilValue;
     }
     /* change to 1e-3, reconsidered because of PR#897
@@ -223,11 +224,11 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
      * grow and it's awkward to get the PROTECTs/UNPROTECTs right
      * when you're in a loop and growing a list.
      */
-    container = PROTECT(allocVector(VECSXP, 1));
+    container = PROTECT(Rf_allocVector(VECSXP, 1));
     /*
      * Create "large" list (will trim excess at the end if necesary)
      */
-    SET_VECTOR_ELT(container, 0, allocVector(VECSXP, CONTOUR_LIST_STEP));
+    SET_VECTOR_ELT(container, 0, Rf_allocVector(VECSXP, CONTOUR_LIST_STEP));
     nlines = 0;
     /*
      * Add lines for each contour level
@@ -256,7 +257,7 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
     len = LENGTH(VECTOR_ELT(container, 0));
     if (nlines < len) {
 	mainlist = VECTOR_ELT(container, 0);
-	templist = PROTECT(allocVector(VECSXP, nlines));
+	templist = PROTECT(Rf_allocVector(VECSXP, nlines));
 	for (i=0; i<nlines; i++)
 	    SET_VECTOR_ELT(templist, i, VECTOR_ELT(mainlist, i));
 	mainlist = templist;
@@ -273,19 +274,19 @@ SEXP do_contourLines(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP c, x, y, z;
     int nx, ny, nc;
 
-    x = PROTECT(coerceVector(CAR(args), REALSXP));
+    x = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nx = LENGTH(x);
     args = CDR(args);
 
-    y = PROTECT(coerceVector(CAR(args), REALSXP));
+    y = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     ny = LENGTH(y);
     args = CDR(args);
 
-    z = PROTECT(coerceVector(CAR(args), REALSXP));
+    z = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     args = CDR(args);
 
     /* levels */
-    c = PROTECT(coerceVector(CAR(args), REALSXP));
+    c = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nc = LENGTH(c);
     args = CDR(args);
 

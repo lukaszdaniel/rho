@@ -80,6 +80,8 @@
 */
 #undef DISABLE_PROTECT_MACROS
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -5238,7 +5240,7 @@ SEXP attribute_hidden do_url(/*const*/ Expression* call, const BuiltInFunction* 
 	ienc = CE_UTF8;
 	url = Rf_translateCharUTF8(STRING_ELT(scmd, 0));
     } else {
-	ienc = getCharCE(STRING_ELT(scmd, 0));
+	ienc = Rf_getCharCE(STRING_ELT(scmd, 0));
 	if(ienc == CE_UTF8)
 	    url = R_CHAR(STRING_ELT(scmd, 0));
 	else

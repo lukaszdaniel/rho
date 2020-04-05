@@ -26,7 +26,7 @@
  * EXPORTS:
  *
  *  OneIndex()        -- used for "[[<-" in ./subassign.cpp
- *  get1index()       -- used for "[["   in ./subassign.cpp & subset.cpp
+ *  Rf_get1index()       -- used for "[["   in ./subassign.cpp & subset.cpp
  *  vectorIndex()     -- used for "[[" and "[[<-" with a vector arg
 
  *  mat2indsub()      -- for "mat[i]"     "    "            "
@@ -35,6 +35,8 @@
  *			 and "[[<-" with a scalar in ./subassign.c
  *  arraySubscript()  -- for "[i,j,..." and "[<-..." in ./subset.cpp, ./subassign.cpp
  */
+
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -50,8 +52,8 @@ using namespace std;
 using namespace rho;
 
 /* We might get a call with R_NilValue from subassignment code */
-#define ECALL(call, yy)     if(call == R_NilValue) error(yy);    else errorcall(call, yy);
-#define ECALL3(call, yy, A) if(call == R_NilValue) error(yy, A); else errorcall(call, yy, A);
+#define ECALL(call, yy)     if(call == R_NilValue) Rf_error(yy);    else Rf_errorcall(call, yy);
+#define ECALL3(call, yy, A) if(call == R_NilValue) Rf_error(yy, A); else Rf_errorcall(call, yy, A);
 
 /* This allows for the unusual case where x is of length 2,
    and x[[-m]] selects one element for m = 1, 2.
@@ -104,7 +106,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
     case STRSXP:
 	vmax = vmaxget();
 	nx = Rf_xlength(x);
-	names = PROTECT(getAttrib(x, R_NamesSymbol));
+	names = PROTECT(Rf_getAttrib(x, R_NamesSymbol));
 	if (names != R_NilValue) {
 	    /* Try for exact match */
 	    for (i = 0; i < nx; i++) {
@@ -139,7 +141,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
     case SYMSXP:
 	vmax = vmaxget();
 	nx = Rf_xlength(x);
-	names = getAttrib(x, R_NamesSymbol);
+	names = Rf_getAttrib(x, R_NamesSymbol);
 	if (names != R_NilValue) {
 	    PROTECT(names);
 	    for (i = 0; i < nx; i++)
@@ -228,7 +230,7 @@ Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 	    if (STRING_ELT(s, pos) == NA_STRING)
 		break;
 	    /* "" matches nothing: see names.Rd */
-	    if (!CHAR(STRING_ELT(s, pos))[0])
+	    if (!R_CHAR(STRING_ELT(s, pos))[0])
 		break;
 
 	    /* Try for exact match */
@@ -280,14 +282,14 @@ Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 	for (R_xlen_t i = 0; i < Rf_xlength(names); i++)
 	    if (STRING_ELT(names, i) != NA_STRING &&
 		streql(Rf_translateChar(STRING_ELT(names, i)),
-		       CHAR(PRINTNAME(s)))) {
+		       R_CHAR(PRINTNAME(s)))) {
 		indx = i;
 		vmaxset(vmax);
 		break;
 	    }
 	break;
     default:
-	ECALL3(call, _("invalid subscript type '%s'"), type2char(TYPEOF(s)));
+	ECALL3(call, _("invalid subscript type '%s'"), Rf_type2char(TYPEOF(s)));
     }
     return indx;
 }
@@ -476,7 +478,7 @@ SEXP attribute_hidden Rf_strmat2intmat(SEXP s, SEXP dnamelist, SEXP call)
 	    idx = j + (i * NR);
 	    s_elt = STRING_ELT(s, idx);
 	    if (s_elt == NA_STRING) v = NA_INTEGER;
-	    if (!CHAR(s_elt)[0]) v = 0; /* disallow "" match */
+	    if (!R_CHAR(s_elt)[0]) v = 0; /* disallow "" match */
 	    if (v == 0) Rf_errorcall(call, _("subscript out of bounds"));
 	    INTEGER(si)[idx] = v;
 	}
@@ -688,7 +690,7 @@ int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
 	if (s == R_MissingArg)
 	    return nullSubscript(nd);
     default:
-	ECALL3(call, _("invalid subscript type '%s'"), type2char(TYPEOF(s)));
+	ECALL3(call, _("invalid subscript type '%s'"), Rf_type2char(TYPEOF(s)));
     }
     return R_NilValue;
 }

@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -81,7 +83,7 @@ static void internet_Init(void)
     initialized = -1;
     if(!res) return;
     if(!ptr->download)
-	error(_("internet routines cannot be accessed in module"));
+	Rf_error(_("internet routines cannot be accessed in module"));
     initialized = 1;
     return;
 }
@@ -93,7 +95,7 @@ SEXP Rdownload(SEXP args)
     if(initialized > 0)
 	return (*ptr->download)(args);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -105,7 +107,7 @@ R_newurl(const char *description, const char * const mode, int type)
     if(initialized > 0)
 	return (*ptr->newurl)(description, mode, type);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return RHO_NO_CAST(Rconnection)nullptr;
     }
 }
@@ -118,7 +120,7 @@ R_newsock(const char *host, int port, int server, const char * const mode,
     if(initialized > 0)
 	return (*ptr->newsock)(host, port, server, mode, timeout);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return RHO_NO_CAST(Rconnection)nullptr;
     }
 }
@@ -129,7 +131,7 @@ void *R_HTTPOpen(const char *url)
     if(initialized > 0)
 	return (*ptr->HTTPOpen)(url, nullptr, 0);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return nullptr;
     }
 }
@@ -140,7 +142,7 @@ int   R_HTTPRead(void *ctx, char *dest, int len)
     if(initialized > 0)
 	return (*ptr->HTTPRead)(ctx, dest, len);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return 0;
     }
 }
@@ -151,7 +153,7 @@ void  R_HTTPClose(void *ctx)
     if(initialized > 0)
 	(*ptr->HTTPClose)(ctx);
     else
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 }
 
 void *R_FTPOpen(const char *url)
@@ -160,7 +162,7 @@ void *R_FTPOpen(const char *url)
     if(initialized > 0)
 	return (*ptr->FTPOpen)(url);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return nullptr;
     }
 }
@@ -171,7 +173,7 @@ int   R_FTPRead(void *ctx, char *dest, int len)
     if(initialized > 0)
 	return (*ptr->FTPRead)(ctx, dest, len);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return 0;
     }
 }
@@ -182,7 +184,7 @@ void  R_FTPClose(void *ctx)
     if(initialized > 0)
 	(*ptr->FTPClose)(ctx);
     else
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 }
 
 extern "C"
@@ -192,7 +194,7 @@ int extR_HTTPDCreate(const char *ip, int port)
     if(initialized > 0)
 	return (*ptr->HTTPDCreate)(ip, port);
     else
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
     return -1;
 }
 
@@ -203,83 +205,83 @@ void extR_HTTPDStop(void)
     if(initialized > 0)
 	(*ptr->HTTPDStop)();
     else
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 }
 
 extern "C"
 SEXP Rsockconnect(SEXP sport, SEXP shost)
 {
-    if (Rf_length(sport) != 1) error("invalid 'socket' argument");
-    int port = asInteger(sport);
+    if (Rf_length(sport) != 1) Rf_error("invalid 'socket' argument");
+    int port = Rf_asInteger(sport);
     char *host[1];
-    host[0] = const_cast<char *>(translateChar(STRING_ELT(shost, 0)));
+    host[0] = const_cast<char *>(Rf_translateChar(STRING_ELT(shost, 0)));
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockconnect)(&port, host);
     else
-	error(_("socket routines cannot be loaded"));
-    return ScalarInteger(port); // The socket number
+	Rf_error(_("socket routines cannot be loaded"));
+    return Rf_ScalarInteger(port); // The socket number
 }
 
 extern "C"
 SEXP Rsockread(SEXP ssock, SEXP smaxlen)
 {
-    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
-    int sock = asInteger(ssock), maxlen = asInteger(smaxlen);
+    if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
+    int sock = Rf_asInteger(ssock), maxlen = Rf_asInteger(smaxlen);
     char buf[maxlen+1], *abuf[1];
     abuf[0] = buf;
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockread)(&sock, abuf, &maxlen);
     else
-	error(_("socket routines cannot be loaded"));
+	Rf_error(_("socket routines cannot be loaded"));
     if (maxlen < 0) // presumably -1, error from recv
-	error("Error reading data in Rsockread");
-    return Rf_ScalarString(mkCharLen(buf, maxlen));
+	Rf_error("Error reading data in Rsockread");
+    return Rf_ScalarString(Rf_mkCharLen(buf, maxlen));
 }
 
 extern "C"
 SEXP Rsockclose(SEXP ssock)
 {
-    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
-    int sock = asInteger(ssock);
-    if (sock <= 0) error(_("attempt to close invalid socket"));
+    if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
+    int sock = Rf_asInteger(ssock);
+    if (sock <= 0) Rf_error(_("attempt to close invalid socket"));
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockclose)(&sock);
     else
-	error(_("socket routines cannot be loaded"));
-    return ScalarLogical(sock);
+	Rf_error(_("socket routines cannot be loaded"));
+    return Rf_ScalarLogical(sock);
 }
 
 extern "C"
 SEXP Rsockopen(SEXP sport)
 {
-    if (Rf_length(sport) != 1) error("invalid 'port' argument");
-    int port = asInteger(sport);
+    if (Rf_length(sport) != 1) Rf_error("invalid 'port' argument");
+    int port = Rf_asInteger(sport);
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockopen)(&port);
     else
-	error(_("socket routines cannot be loaded"));
-    return ScalarInteger(port); // The socket number
+	Rf_error(_("socket routines cannot be loaded"));
+    return Rf_ScalarInteger(port); // The socket number
 }
 
 extern "C"
 SEXP Rsocklisten(SEXP ssock)
 {
-    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
-    int sock = asInteger(ssock), len = 256;
+    if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
+    int sock = Rf_asInteger(ssock), len = 256;
     char buf[257], *abuf[1];
     abuf[0] = buf;
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->socklisten)(&sock, abuf, &len);
     else
-	error(_("socket routines cannot be loaded"));
-    SEXP ans = PROTECT(ScalarInteger(sock)); // The socket being listened on
-    SEXP host = PROTECT(Rf_ScalarString(mkChar(buf)));
-    setAttrib(ans, install("host"), host);
+	Rf_error(_("socket routines cannot be loaded"));
+    SEXP ans = PROTECT(Rf_ScalarInteger(sock)); // The socket being listened on
+    SEXP host = PROTECT(Rf_ScalarString(Rf_mkChar(buf)));
+    Rf_setAttrib(ans, Rf_install("host"), host);
     UNPROTECT(2);
     return ans;
 }
@@ -287,17 +289,17 @@ SEXP Rsocklisten(SEXP ssock)
 extern "C"
 SEXP Rsockwrite(SEXP ssock, SEXP sstring)
 {
-    if (Rf_length(ssock) != 1) error("invalid 'socket' argument");
-    int sock = asInteger(ssock), start = 0, end, len;
-    char *buf = const_cast<char *>(translateChar(STRING_ELT(sstring, 0))), *abuf[1];
+    if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
+    int sock = Rf_asInteger(ssock), start = 0, end, len;
+    char *buf = const_cast<char *>(Rf_translateChar(STRING_ELT(sstring, 0))), *abuf[1];
     end = len = int(strlen(buf));
     abuf[0] = buf;
     if(!initialized) internet_Init();
     if(initialized > 0)
 	(*ptr->sockwrite)(&sock, abuf, &start, &end, &len);
     else
-	error(_("socket routines cannot be loaded"));
-    return ScalarInteger(len);
+	Rf_error(_("socket routines cannot be loaded"));
+    return Rf_ScalarInteger(len);
 }
 
 
@@ -309,7 +311,7 @@ int Rsockselect(int nsock, int *insockfd, int *ready, int *write,
     if(initialized > 0)
 	return (*ptr->sockselect)(nsock, insockfd, ready, write, timeout);
     else {
-	error(_("socket routines cannot be loaded"));
+	Rf_error(_("socket routines cannot be loaded"));
 	return 0;
     }
 }
@@ -321,7 +323,7 @@ SEXP attribute_hidden do_curlVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(initialized > 0)
 	return (*ptr->curlVersion)(call, op, args, rho);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -333,7 +335,7 @@ SEXP attribute_hidden do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(initialized > 0)
 	return (*ptr->curlGetHeaders)(call, op, args, rho);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -345,7 +347,7 @@ SEXP attribute_hidden do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(initialized > 0)
 	return (*ptr->curlDownload)(call, op, args, rho);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -357,7 +359,7 @@ R_newCurlUrl(const char *description, const char * const mode, int type)
     if(initialized > 0)
 	return (*ptr->newcurlurl)(description, mode, type);
     else {
-	error(_("internet routines cannot be loaded"));
+	Rf_error(_("internet routines cannot be loaded"));
 	return (Rconnection)0;
     }
     return (Rconnection)0; /* -Wall */

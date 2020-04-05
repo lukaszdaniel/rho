@@ -58,9 +58,9 @@ static const char * idleHandler = "onIdle";
 
 static void checkHandler(const char * name, SEXP eventEnv)
 {
-    SEXP handler = findVar(install(name), eventEnv);
+    SEXP handler = Rf_findVar(Rf_install(name), eventEnv);
     if (TYPEOF(handler) == CLOSXP)
-	warning(_("'%s' events not supported in this device"), name);
+	Rf_warning(_("'%s' events not supported in this device"), name);
 }
 
 SEXP
@@ -175,7 +175,7 @@ do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (!count)
 	    Rf_error(_("no graphics event handlers set"));
 
-	Rprintf("%s\n", CHAR(asChar(prompt)));
+	Rprintf("%s\n", R_CHAR(Rf_asChar(prompt)));
 	R_FlushConsole();
 
 	/* Poll them */
@@ -284,7 +284,7 @@ void doKeybd(pDevDesc dd, R_KeyName rkey,
 
     if (TYPEOF(handler) == CLOSXP) {
 	SEXP s_which = Rf_install("which");
-	defineVar(s_which, Rf_ScalarInteger(ndevNumber(dd)+1), dd->eventEnv);
+	Rf_defineVar(s_which, Rf_ScalarInteger(ndevNumber(dd)+1), dd->eventEnv);
 	PROTECT(skey = Rf_mkString(keyname ? keyname : keynames[rkey]));
 	PROTECT(temp = Rf_lang2(handler, skey));
 	PROTECT(result = Rf_eval(temp, dd->eventEnv));
@@ -318,7 +318,7 @@ void doIdle(pDevDesc dd)
 
     if (TYPEOF(handler) == CLOSXP) {
 	SEXP s_which = Rf_install("which");
-	defineVar(s_which, Rf_ScalarInteger(ndevNumber(dd)+1), dd->eventEnv);
+	Rf_defineVar(s_which, Rf_ScalarInteger(ndevNumber(dd)+1), dd->eventEnv);
 	PROTECT(temp = Rf_lang1(handler));
 	PROTECT(result = Rf_eval(temp, dd->eventEnv));
 	Rf_defineVar(Rf_install("result"), result, dd->eventEnv);

@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -492,11 +494,11 @@ SEXP Rf_classgets(SEXP vec, SEXP klass)
 		    /* More efficient? can we protect? -- rather *assign* in method-ns?
 		       static SEXP oldCl = NULL;
 		       if(!oldCl) oldCl = R_getClassDef("oldClass");
-		       if(!oldCl) oldCl = mkString("oldClass");
+		       if(!oldCl) oldCl = Rf_mkString("oldClass");
 		       PROTECT(oldCl);
 		    */
 		    if(!R_isVirtualClass(cld, R_MethodsNamespace) &&
-		       !R_extends(cld, mkString("oldClass"), R_MethodsNamespace)) // set S4 bit :
+		       !R_extends(cld, Rf_mkString("oldClass"), R_MethodsNamespace)) // set S4 bit :
 			// !R_extends(cld, oldCl, R_MethodsNamespace)) // set S4 bit :
 
 			SET_S4_OBJECT(vec);
@@ -933,7 +935,7 @@ static SEXP dimnamesgets1(SEXP val1)
     SEXP this2;
 
     if (LENGTH(val1) == 0) return R_NilValue;
-    /* if (isObject(val1)) dispatch on as.character.foo, but we don't
+    /* if (Rf_isObject(val1)) dispatch on as.character.foo, but we don't
        have the context at this point to do so */
 
     if (Rf_inherits(val1, "factor"))  /* mimic as.character.factor */
@@ -1445,8 +1447,8 @@ SEXP attribute_hidden do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
 
     if (!Rf_isValidString(name) || STRING_ELT(name, 0) == NA_STRING)
 	Rf_error(_("'name' must be non-null character string"));
-    /* TODO?  if (isFactor(obj) && streql(Rf_asChar(name), "levels"))
-     * ---         if(any_duplicated(CADDR(args)))
+    /* TODO?  if (Rf_isFactor(obj) && streql(Rf_asChar(name), "levels"))
+     * ---         if(Rf_any_duplicated(CADDR(args)))
      *                  Rf_error(.....)
      */
     Rf_setAttrib(obj, name, value);

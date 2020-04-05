@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -57,50 +59,50 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     SEXP value, names;
     char buf[128];
 
-    PROTECT(value = allocVector(VECSXP,15));
-    PROTECT(names = allocVector(STRSXP,15));
+    PROTECT(value = Rf_allocVector(VECSXP,15));
+    PROTECT(names = Rf_allocVector(STRSXP,15));
 
-    SET_STRING_ELT(names, 0, mkChar("platform"));
-    SET_VECTOR_ELT(value, 0, mkString(R_PLATFORM));
-    SET_STRING_ELT(names, 1, mkChar("arch"));
-    SET_VECTOR_ELT(value, 1, mkString(R_CPU));
-    SET_STRING_ELT(names, 2, mkChar("os"));
-    SET_VECTOR_ELT(value, 2, mkString(R_OS));
+    SET_STRING_ELT(names, 0, Rf_mkChar("platform"));
+    SET_VECTOR_ELT(value, 0, Rf_mkString(R_PLATFORM));
+    SET_STRING_ELT(names, 1, Rf_mkChar("arch"));
+    SET_VECTOR_ELT(value, 1, Rf_mkString(R_CPU));
+    SET_STRING_ELT(names, 2, Rf_mkChar("os"));
+    SET_VECTOR_ELT(value, 2, Rf_mkString(R_OS));
 
     snprintf(buf, 128, "%s, %s", R_CPU, R_OS);
-    SET_STRING_ELT(names, 3, mkChar("system"));
-    SET_VECTOR_ELT(value, 3, mkString(buf));
+    SET_STRING_ELT(names, 3, Rf_mkChar("system"));
+    SET_VECTOR_ELT(value, 3, Rf_mkString(buf));
 
-    SET_STRING_ELT(names, 4, mkChar("status"));
-    SET_VECTOR_ELT(value, 4, mkString(R_STATUS));
-    SET_STRING_ELT(names, 5, mkChar("major"));
-    SET_VECTOR_ELT(value, 5, mkString(R_MAJOR));
-    SET_STRING_ELT(names, 6, mkChar("minor"));
-    SET_VECTOR_ELT(value, 6, mkString(R_MINOR));
-    SET_STRING_ELT(names, 7, mkChar("year"));
-    SET_VECTOR_ELT(value, 7, mkString(R_YEAR));
-    SET_STRING_ELT(names, 8, mkChar("month"));
-    SET_VECTOR_ELT(value, 8, mkString(R_MONTH));
-    SET_STRING_ELT(names, 9, mkChar("day"));
-    SET_VECTOR_ELT(value, 9, mkString(R_DAY));
-    SET_STRING_ELT(names, 10, mkChar("svn rev"));
+    SET_STRING_ELT(names, 4, Rf_mkChar("status"));
+    SET_VECTOR_ELT(value, 4, Rf_mkString(R_STATUS));
+    SET_STRING_ELT(names, 5, Rf_mkChar("major"));
+    SET_VECTOR_ELT(value, 5, Rf_mkString(R_MAJOR));
+    SET_STRING_ELT(names, 6, Rf_mkChar("minor"));
+    SET_VECTOR_ELT(value, 6, Rf_mkString(R_MINOR));
+    SET_STRING_ELT(names, 7, Rf_mkChar("year"));
+    SET_VECTOR_ELT(value, 7, Rf_mkString(R_YEAR));
+    SET_STRING_ELT(names, 8, Rf_mkChar("month"));
+    SET_VECTOR_ELT(value, 8, Rf_mkString(R_MONTH));
+    SET_STRING_ELT(names, 9, Rf_mkChar("day"));
+    SET_VECTOR_ELT(value, 9, Rf_mkString(R_DAY));
+    SET_STRING_ELT(names, 10, Rf_mkChar("svn rev"));
 
     snprintf(buf, 128, "%d", R_SVN_BASEREVISION);
-    SET_VECTOR_ELT(value, 10, mkString(buf));
-    SET_STRING_ELT(names, 11, mkChar("git rev"));
+    SET_VECTOR_ELT(value, 10, Rf_mkString(buf));
+    SET_STRING_ELT(names, 11, Rf_mkChar("git rev"));
 
     snprintf(buf, 128, "%s", R_GIT_REVISION);
-    SET_VECTOR_ELT(value, 11, mkString(buf));
-    SET_STRING_ELT(names, 12, mkChar("language"));
-    SET_VECTOR_ELT(value, 12, mkString("R"));
+    SET_VECTOR_ELT(value, 11, Rf_mkString(buf));
+    SET_STRING_ELT(names, 12, Rf_mkChar("language"));
+    SET_VECTOR_ELT(value, 12, Rf_mkString("R"));
 
-    PrintRhoVersionString(buf, 128);
-    SET_STRING_ELT(names, 13, mkChar("version.string"));
-    SET_VECTOR_ELT(value, 13, mkString(buf));
-    SET_STRING_ELT(names, 14, mkChar("nickname"));
-    SET_VECTOR_ELT(value, 14, mkString(R_NICK));
+    Rf_PrintRhoVersionString(buf, 128);
+    SET_STRING_ELT(names, 13, Rf_mkChar("version.string"));
+    SET_VECTOR_ELT(value, 13, Rf_mkString(buf));
+    SET_STRING_ELT(names, 14, Rf_mkChar("nickname"));
+    SET_VECTOR_ELT(value, 14, Rf_mkString(R_NICK));
 
-    setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, R_NamesSymbol, names);
     UNPROTECT(2);
     return value;
 }
@@ -159,11 +161,11 @@ void attribute_hidden PrintVersion_part_1(char *s, size_t len)
 {
 #define SPRINTF_2(_FMT, _OBJ) snprintf(tmp, 128, _FMT, _OBJ); strcat(s, tmp)
     char tmp[128];
-    PrintRhoVersionString(s, len);
+    Rf_PrintRhoVersionString(s, len);
     strcat(s, " -- \"R(C) -> Rho(C++)\"\n");
     strcat(s, "Rho Copyright (C) 2008-2014 Andrew R. Runnalls\n\n");
     
-    PrintVersionString(tmp, len);
+    Rf_PrintVersionString(tmp, len);
     if(strlen(R_NICK) != 0) {
 	char nick[128];
 	snprintf(nick, 128, " -- \"%s\"", R_NICK);
@@ -179,5 +181,5 @@ void attribute_hidden PrintVersion_part_1(char *s, size_t len)
 
 SEXP attribute_hidden do_internalsID(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    return mkString(R_INTERNALS_UUID);
+    return Rf_mkString(R_INTERNALS_UUID);
 }

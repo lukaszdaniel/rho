@@ -91,6 +91,8 @@
 * writing this note.  I guess it needs a bit more thought ...
 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif

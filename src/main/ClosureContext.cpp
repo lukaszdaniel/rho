@@ -38,6 +38,7 @@ using namespace rho;
 GCRoot<PairList> rho::R_HandlerStack;
 GCRoot<PairList> rho::R_RestartStack;
 
+// equivalent of CR's R_run_onexits(RCNTXT *cptr) function
 void ClosureContext::runOnExit()
 {
     GCStackRoot<> onx(m_onexit.get());

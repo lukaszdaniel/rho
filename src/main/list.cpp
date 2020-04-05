@@ -32,6 +32,8 @@
  *  elsewhere.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -62,7 +64,7 @@ static void namewalk(SEXP s, NameWalkData *d)
     case SYMSXP:
 	name = PRINTNAME(s);
 	/* skip blank symbols */
-	if(CHAR(name)[0] == '\0') goto ignore;
+	if(R_CHAR(name)[0] == '\0') goto ignore;
 	if(d->ItemCounts < d->MaxCount) {
 	    if(d->StoreValues) {
 		if(d->UniqueNames) {
@@ -104,23 +106,23 @@ SEXP attribute_hidden do_allnames(/*const*/ rho::Expression* call, const rho::Bu
 
     expr = expr_;
 
-    data.IncludeFunctions = asLogical(functions_);
+    data.IncludeFunctions = Rf_asLogical(functions_);
     if(data.IncludeFunctions == NA_LOGICAL)
 	data.IncludeFunctions = 0;
 
-    data.MaxCount = asInteger(max_names_);
+    data.MaxCount = Rf_asInteger(max_names_);
     if(data.MaxCount == -1) data.MaxCount = INT_MAX;
     if(data.MaxCount < 0 || data.MaxCount == NA_INTEGER)
 	data.MaxCount = 0;
 
-    data.UniqueNames = asLogical(unique_);
+    data.UniqueNames = Rf_asLogical(unique_);
     if(data.UniqueNames == NA_LOGICAL)
 	data.UniqueNames = 1;
 
     namewalk(expr, &data);
     savecount = data.ItemCounts;
 
-    data.ans = allocVector(STRSXP, data.ItemCounts);
+    data.ans = Rf_allocVector(STRSXP, data.ItemCounts);
 
     data.StoreValues = 1;
     data.ItemCounts = 0;
@@ -128,7 +130,7 @@ SEXP attribute_hidden do_allnames(/*const*/ rho::Expression* call, const rho::Bu
 
     if(data.ItemCounts != savecount) {
 	PROTECT(expr = data.ans);
-	data.ans = allocVector(STRSXP, data.ItemCounts);
+	data.ans = Rf_allocVector(STRSXP, data.ItemCounts);
 	for(i = 0 ; i < data.ItemCounts ; i++)
 	    SET_STRING_ELT(data.ans, i, STRING_ELT(expr, i));
 	UNPROTECT(1);

@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -43,10 +45,10 @@ SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP ans = R_NilValue;
 
 #define find_char_fun \
-    if (isValidString(CAR(args))) {				\
+    if (Rf_isValidString(CAR(args))) {				\
 	SEXP s;							\
-	PROTECT(s = installTrChar(STRING_ELT(CAR(args), 0)));	\
-	SETCAR(args, findFun(s, rho));				\
+	PROTECT(s = Rf_installTrChar(STRING_ELT(CAR(args), 0)));	\
+	SETCAR(args, Rf_findFun(s, rho));				\
 	UNPROTECT(1);						\
     }
     find_char_fun
@@ -149,7 +151,7 @@ SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunct
 
     object->setMemoryTracing(true);
     snprintf(buffer, 21, "<%p>", (void *) object);
-    return mkString(buffer);
+    return Rf_mkString(buffer);
 }
 
 
@@ -241,7 +243,7 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
 
     if (object->memoryTraced()){
 	snprintf(buffer, 21, "<%p>", (void *) object);
-	ans = mkString(buffer);
+	ans = Rf_mkString(buffer);
     } else {
 	R_Visible = RHO_FALSE;
 	ans = R_NilValue;

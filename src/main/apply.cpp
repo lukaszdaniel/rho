@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -307,7 +309,7 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
 	SEXP Xsym = Rf_install("X");
 	Rf_defineVar(Xsym, X, rho);
 	INCREMENT_NAMED(X);
-	/* PROTECT(R_fcall = lang2(FUN, Xsym)); */
+	/* PROTECT(R_fcall = Rf_lang2(FUN, Xsym)); */
 	PROTECT(R_fcall = Rf_lang3(FUN, Xsym, R_DotsSymbol));
 	ans = R_forceAndCall(R_fcall, 1, rho);
 	if (MAYBE_REFERENCED(ans))

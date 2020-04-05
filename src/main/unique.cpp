@@ -26,6 +26,8 @@
 
 /* This is currently restricted to vectors of length < 2^30 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -248,7 +250,7 @@ static int sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
     /* Once all CHARSXPs are cached, Seql will handle this */
     if (STRING_ELT(x, i) == NA_STRING || STRING_ELT(y, j) == NA_STRING)
 	return 0;
-    return Seql(STRING_ELT(x, i), STRING_ELT(y, j));
+    return Rf_Seql(STRING_ELT(x, i), STRING_ELT(y, j));
 }
 
 static size_t rawhash(SEXP x, R_xlen_t indx, HashData *d)
@@ -610,7 +612,7 @@ static SEXP duplicated3(SEXP x, SEXP incomp, Rboolean from_last, int nmax)
 	}
 
     if(Rf_length(incomp)) {
-	PROTECT(incomp = coerceVector(incomp, TYPEOF(x)));
+	PROTECT(incomp = Rf_coerceVector(incomp, TYPEOF(x)));
 	m = Rf_length(incomp);
 	for (i = 0; i < n; i++)
 	    if(v[i]) {
@@ -633,9 +635,9 @@ R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
     DUPLICATED_INIT;
     PROTECT(data.HashTable);
 
-    if(!m) Rf_error(_("any_duplicated3(., <0-length incomp>)"));
+    if(!m) Rf_error(_("Rf_any_duplicated3(., <0-length incomp>)"));
 
-    PROTECT(incomp = coerceVector(incomp, TYPEOF(x)));
+    PROTECT(incomp = Rf_coerceVector(incomp, TYPEOF(x)));
     m = Rf_length(incomp);
 
     if(from_last)
@@ -698,10 +700,10 @@ SEXP attribute_hidden do_duplicated(/*const*/ Expression* call, const BuiltInFun
     Rboolean fL = Rboolean( fromLast);
 
     /* handle zero length vectors, and NULL */
-    if ((n = xlength(x)) == 0)
+    if ((n = Rf_xlength(x)) == 0)
 	return(op->variant() <= 1
 	       ? Rf_allocVector(op->variant() != 1 ? LGLSXP : TYPEOF(x), 0)
-	       : ScalarInteger(0));
+	       : Rf_ScalarInteger(0));
 
     if (!Rf_isVector(x)) {
 	Rf_error(_("%s() applies only to vectors"),
@@ -714,24 +716,24 @@ SEXP attribute_hidden do_duplicated(/*const*/ Expression* call, const BuiltInFun
     }
 
     if(Rf_length(incomp) && /* S has FALSE to mean empty */
-       !(isLogical(incomp) && Rf_length(incomp) == 1 && LOGICAL(incomp)[0] == 0)) {
+       !(Rf_isLogical(incomp) && Rf_length(incomp) == 1 && LOGICAL(incomp)[0] == 0)) {
 	if(op->variant() == 2) {
 	    /* return R's 1-based index :*/
-	    R_xlen_t ind  = any_duplicated3(x, incomp, fL);
-	    if(ind > INT_MAX) return ScalarReal((double) ind);
-	    else return ScalarInteger((int)ind);
+	    R_xlen_t ind  = Rf_any_duplicated3(x, incomp, fL);
+	    if(ind > INT_MAX) return Rf_ScalarReal((double) ind);
+	    else return Rf_ScalarInteger((int)ind);
 	} else
 	    dup = duplicated3(x, incomp, fL, nmax);
     }
     else {
 	if(op->variant() == 2) {
-	    R_xlen_t ind  = any_duplicated(x, fL);
-	    if(ind > INT_MAX) return ScalarReal((double) ind);
-	    else return ScalarInteger((int)ind);
+	    R_xlen_t ind  = Rf_any_duplicated(x, fL);
+	    if(ind > INT_MAX) return Rf_ScalarReal((double) ind);
+	    else return Rf_ScalarInteger((int)ind);
 	} else
 	    dup = Duplicated(x, fL, nmax);
     }
-    if (op->variant() == 0) /* "duplicated()" */
+    if (op->variant() == 0) /* "Rf_duplicated()" */
 	return dup;
     /*	ELSE
 	use the results of "duplicated" to get "unique" */
@@ -878,16 +880,16 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
      * (given that we have "Vector" or NULL) */
     if(TYPEOF(x) >= STRSXP || TYPEOF(table) >= STRSXP) type = STRSXP;
     else type = TYPEOF(x) < TYPEOF(table) ? TYPEOF(table) : TYPEOF(x);
-    PROTECT(x	  = coerceVector(x,	type)); nprot++;
-    PROTECT(table = coerceVector(table, type)); nprot++;
+    PROTECT(x	  = Rf_coerceVector(x,	type)); nprot++;
+    PROTECT(table = Rf_coerceVector(table, type)); nprot++;
 
     // special case scalar x -- for speed only :
     if(XLENGTH(x) == 1 && !incomp) {
-      PROTECT(ans = ScalarInteger(nmatch)); nprot++;
+      PROTECT(ans = Rf_ScalarInteger(nmatch)); nprot++;
       switch (type) {
       case STRSXP: {
 	  SEXP x_val = STRING_ELT(x,0);
-	  for (int i=0; i < LENGTH(itable); i++) if (Seql(STRING_ELT(table,i), x_val)) {
+	  for (int i=0; i < LENGTH(itable); i++) if (Rf_Seql(STRING_ELT(table,i), x_val)) {
 		  INTEGER(ans)[0] = i + 1; break;
 	      }
 	  break; }
@@ -1303,7 +1305,7 @@ static SEXP subDots(SEXP rho)
     SEXP rval, dots, a, b, t;
     int len,i;
 
-    dots = findVar(R_DotsSymbol, rho);
+    dots = Rf_findVar(R_DotsSymbol, rho);
 
     if (dots == R_UnboundValue)
 	Rf_error(_("... used in a situation where it does not exist"));
@@ -1311,17 +1313,17 @@ static SEXP subDots(SEXP rho)
     if (dots == R_MissingArg)
 	return dots;
 
-    if (!isPairList(dots))
+    if (!Rf_isPairList(dots))
 	Rf_error(_("... is not a pairlist"));
 
     len = Rf_length(dots);
-    PROTECT(rval=allocList(len));
+    PROTECT(rval=Rf_allocList(len));
     for(a = dots, b = rval, i = 1; i <= len; a = CDR(a), b = CDR(b), i++) {
 	SET_TAG(b, TAG(a));
 	t = CAR(a);
 	while (TYPEOF(t) == PROMSXP)
 	    t = PREXPR(t);
-	if( isSymbol(t) || isLanguage(t) )
+	if( Rf_isSymbol(t) || Rf_isLanguage(t) )
 	    SETCAR(b, Symbol::obtainDotDotSymbol(i));
 	else
 	    SETCAR(b, t);
@@ -1350,7 +1352,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 	Rf_error(_("invalid '%s' argument"), "definition");
 
     sysp = CAR(CDDDR(args));
-    if (!isEnvironment(sysp))
+    if (!Rf_isEnvironment(sysp))
 	Rf_error(_("'envir' must be an environment"));
 
     /* Do we expand ... ? */
@@ -1362,7 +1364,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
     /* Get the formals and match the actual args */
 
     formals = FORMALS(b);
-    PROTECT(actuals = duplicate(CDR(funcall)));
+    PROTECT(actuals = Rf_duplicate(CDR(funcall)));
 
     /* If there is a ... symbol then expand it out in the sysp env
        We need to take some care since the ... might be in the middle
@@ -1379,7 +1381,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
     if (t2 != R_MissingArg ) {	/* so we did something above */
 	if( CAR(actuals) == R_DotsSymbol ) {
 	    UNPROTECT(1);
-	    actuals = listAppend(t2, CDR(actuals));
+	    actuals = Rf_listAppend(t2, CDR(actuals));
 	    PROTECT(actuals);
 	}
 	else {
@@ -1387,7 +1389,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 		if( CADR(t1) == R_DotsSymbol ) {
 		    tail = CDDR(t1);
 		    SETCDR(t1, t2);
-		    listAppend(actuals,tail);
+		    Rf_listAppend(actuals,tail);
 		    break;
 		}
 	    }
@@ -1430,7 +1432,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
     rlist = StripUnmatched(rlist);
 
     PROTECT(rval = new Expression);
-    SETCAR(rval, duplicate(CAR(funcall)));
+    SETCAR(rval, Rf_duplicate(CAR(funcall)));
     SETCDR(rval, rlist);
     UNPROTECT(3);
     return rval;
@@ -1456,14 +1458,14 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     ng = Rf_length(uniqueg);
     narm = Rf_asLogical(snarm);
     if(narm == NA_LOGICAL) Rf_error("'na.rm' must be TRUE or FALSE");
-    if(isMatrix(x)) p = ncols(x); else p = 1;
+    if(Rf_isMatrix(x)) p = Rf_ncols(x); else p = 1;
 
     HashTableSetup(uniqueg, &data, NA_INTEGER);
     PROTECT(data.HashTable);
     DoHashing(uniqueg, &data);
     PROTECT(matches = HashLookup(uniqueg, g, &data));
 
-    PROTECT(ans = allocMatrix(TYPEOF(x), ng, p));
+    PROTECT(ans = Rf_allocMatrix(TYPEOF(x), ng, p));
 
     switch(TYPEOF(x)){
     case REALSXP:
@@ -1506,9 +1508,9 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 
     if (TYPEOF(rn) != STRSXP) Rf_error("row names are not character");
     SEXP dn = Rf_allocVector(VECSXP, 2), dn2, dn3;
-    setAttrib(ans, R_DimNamesSymbol, dn);
+    Rf_setAttrib(ans, R_DimNamesSymbol, dn);
     SET_VECTOR_ELT(dn, 0, rn);
-    dn2 = getAttrib(x, R_DimNamesSymbol);
+    dn2 = Rf_getAttrib(x, R_DimNamesSymbol);
     if(Rf_length(dn2) >= 2 &&
        !Rf_isNull(dn3 = VECTOR_ELT(dn2, 1))) SET_VECTOR_ELT(dn, 1, dn3);
 
@@ -1539,7 +1541,7 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 
     for(int i = 0; i < p; i++) {
 	xcol = VECTOR_ELT(x,i);
-	if (!isNumeric(xcol))
+	if (!Rf_isNumeric(xcol))
 	    Rf_error(_("non-numeric data frame in rowsum"));
 	switch(TYPEOF(xcol)){
 	case REALSXP:
@@ -1575,11 +1577,11 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    Rf_error(_("this cannot happen"));
 	}
     }
-    namesgets(ans, getAttrib(x, R_NamesSymbol));
+    Rf_namesgets(ans, Rf_getAttrib(x, R_NamesSymbol));
 
     if (TYPEOF(rn) != STRSXP) Rf_error("row names are not character");
-    setAttrib(ans, R_RowNamesSymbol, rn);
-    classgets(ans, mkString("data.frame"));
+    Rf_setAttrib(ans, R_RowNamesSymbol, rn);
+    Rf_classgets(ans, Rf_mkString("data.frame"));
 
     UNPROTECT(3); /* HashTable, matches, ans */
     return ans;

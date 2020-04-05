@@ -21,6 +21,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -233,18 +235,18 @@ static SEXP xxenv(SEXP begin, SEXP body, SEXP end, YYLTYPE *lloc)
 #if DEBUGVALS
     Rprintf("xxenv(begin=%p, body=%p, end=%p)", begin, body, end);    
 #endif
-    PROTECT(ans = allocVector(VECSXP, 2));
+    PROTECT(ans = Rf_allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans, 0, begin);
     UNPROTECT_PTR(begin);
-    if (!isNull(body)) {
-	SET_VECTOR_ELT(ans, 1, PairToVectorList(CDR(body)));
+    if (!Rf_isNull(body)) {
+	SET_VECTOR_ELT(ans, 1, Rf_PairToVectorList(CDR(body)));
     	UNPROTECT_PTR(body);	
     }
     /* FIXME:  check that begin and end match */
-    setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
-    SEXP s_latex_tag = install("latex_tag");
-    setAttrib(ans, s_latex_tag, mkString("ENVIRONMENT"));
-    if (!isNull(end)) 
+    Rf_setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
+    SEXP s_latex_tag = Rf_install("latex_tag");
+    Rf_setAttrib(ans, s_latex_tag, Rf_mkString("ENVIRONMENT"));
+    if (!Rf_isNull(end)) 
     	UNPROTECT_PTR(end);
 #if DEBUGVALS
     Rprintf(" result: %p\n", ans);    
@@ -258,11 +260,11 @@ static SEXP xxmath(SEXP body, YYLTYPE *lloc)
 #if DEBUGVALS
     Rprintf("xxmath(body=%p)", body);    
 #endif
-    PROTECT(ans = PairToVectorList(CDR(body)));
+    PROTECT(ans = Rf_PairToVectorList(CDR(body)));
     UNPROTECT_PTR(body);
-    setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
-    SEXP s_latex_tag = install("latex_tag");
-    setAttrib(ans, s_latex_tag, mkString("MATH"));
+    Rf_setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
+    SEXP s_latex_tag = Rf_install("latex_tag");
+    Rf_setAttrib(ans, s_latex_tag, Rf_mkString("MATH"));
 #if DEBUGVALS
     Rprintf(" result: %p\n", ans);    
 #endif
@@ -276,14 +278,14 @@ static SEXP xxblock(SEXP body, YYLTYPE *lloc)
     Rprintf("xxblock(body=%p)", body);    
 #endif
     if (!body) 
-        PROTECT(ans = allocVector(VECSXP, 0));
+        PROTECT(ans = Rf_allocVector(VECSXP, 0));
     else {
-	PROTECT(ans = PairToVectorList(CDR(body)));
+	PROTECT(ans = Rf_PairToVectorList(CDR(body)));
     	UNPROTECT_PTR(body);	
     }
-    setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
-    SEXP s_latex_tag = install("latex_tag");
-    setAttrib(ans, s_latex_tag, mkString("BLOCK"));
+    Rf_setAttrib(ans, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
+    SEXP s_latex_tag = Rf_install("latex_tag");
+    Rf_setAttrib(ans, s_latex_tag, Rf_mkString("BLOCK"));
 
 #if DEBUGVALS
     Rprintf(" result: %p\n", ans);    
@@ -295,7 +297,7 @@ static int VerbatimLookup(const char *s)
 {
     int i;
     for (i = 0; i < Rf_length(parseState.xxVerbatimList); i++) {
-    	if (strcmp(s, CHAR(STRING_ELT(parseState.xxVerbatimList, i))) == 0)
+    	if (strcmp(s, R_CHAR(STRING_ELT(parseState.xxVerbatimList, i))) == 0)
     	    return TRUE;
     }
     return FALSE;
@@ -304,34 +306,34 @@ static int VerbatimLookup(const char *s)
 static void xxSetInVerbEnv(SEXP envname)
 {
     char buffer[256];
-    if (VerbatimLookup(CHAR(STRING_ELT(envname, 0)))) {
-    	snprintf(buffer, sizeof(buffer), "\\end{%s}", CHAR(STRING_ELT(envname, 0)));
-    	PROTECT(parseState.xxInVerbEnv = ScalarString(mkChar(buffer)));
+    if (VerbatimLookup(R_CHAR(STRING_ELT(envname, 0)))) {
+    	snprintf(buffer, sizeof(buffer), "\\end{%s}", R_CHAR(STRING_ELT(envname, 0)));
+    	PROTECT(parseState.xxInVerbEnv = Rf_ScalarString(Rf_mkChar(buffer)));
     } else parseState.xxInVerbEnv = NULL;
 }
 
 static void xxsavevalue(SEXP items, YYLTYPE *lloc)
 {
     if (items) {
-    	PROTECT(parseState.Value = PairToVectorList(CDR(items)));
+    	PROTECT(parseState.Value = Rf_PairToVectorList(CDR(items)));
     	UNPROTECT_PTR(items);
     } else {
-    	PROTECT(parseState.Value = allocVector(VECSXP, 1));
-    	SET_VECTOR_ELT(parseState.Value, 0, ScalarString(mkChar("")));
-    	SEXP s_latex_tag = install("latex_tag");
-    	setAttrib(VECTOR_ELT(parseState.Value, 0), s_latex_tag, mkString("TEXT"));
+    	PROTECT(parseState.Value = Rf_allocVector(VECSXP, 1));
+    	SET_VECTOR_ELT(parseState.Value, 0, Rf_ScalarString(Rf_mkChar("")));
+    	SEXP s_latex_tag = Rf_install("latex_tag");
+    	Rf_setAttrib(VECTOR_ELT(parseState.Value, 0), s_latex_tag, Rf_mkString("TEXT"));
     }	
-    if (!isNull(parseState.Value)) {
-    	setAttrib(parseState.Value, R_ClassSymbol, mkString("LaTeX"));
-    	setAttrib(parseState.Value, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
+    if (!Rf_isNull(parseState.Value)) {
+    	Rf_setAttrib(parseState.Value, R_ClassSymbol, Rf_mkString("LaTeX"));
+    	Rf_setAttrib(parseState.Value, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
     }
 }
 
 static SEXP xxtag(SEXP item, int type, YYLTYPE *lloc)
 {
-    SEXP s_latex_tag = install("latex_tag");
-    setAttrib(item, s_latex_tag, mkString(yytname[YYTRANSLATE(type)]));
-    setAttrib(item, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
+    SEXP s_latex_tag = Rf_install("latex_tag");
+    Rf_setAttrib(item, s_latex_tag, Rf_mkString(yytname[YYTRANSLATE(type)]));
+    Rf_setAttrib(item, R_SrcrefSymbol, makeSrcref(lloc, parseState.SrcFile));
     return item;
 }
 
@@ -414,15 +416,15 @@ static SEXP makeSrcref(YYLTYPE *lloc, SEXP srcfile)
 {
     SEXP val;
     
-    PROTECT(val = allocVector(INTSXP, 6));
+    PROTECT(val = Rf_allocVector(INTSXP, 6));
     INTEGER(val)[0] = lloc->first_line;
     INTEGER(val)[1] = lloc->first_byte;
     INTEGER(val)[2] = lloc->last_line;
     INTEGER(val)[3] = lloc->last_byte;
     INTEGER(val)[4] = lloc->first_column;
     INTEGER(val)[5] = lloc->last_column;
-    setAttrib(val, R_SrcfileSymbol, srcfile);
-    setAttrib(val, R_ClassSymbol, mkString("srcref"));
+    Rf_setAttrib(val, R_SrcfileSymbol, srcfile);
+    Rf_setAttrib(val, R_ClassSymbol, Rf_mkString("srcref"));
     UNPROTECT(1);
     return val;
 }
@@ -432,8 +434,8 @@ static SEXP mkString2(const char *s, size_t len)
     SEXP t;
     cetype_t enc = CE_UTF8;
 
-    PROTECT(t = allocVector(STRSXP, 1));
-    SET_STRING_ELT(t, 0, mkCharLenCE(s, (int) len, enc));
+    PROTECT(t = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(t, 0, Rf_mkCharLenCE(s, (int) len, enc));
     UNPROTECT(1);
     return t;
 }
@@ -541,7 +543,7 @@ static int char_getc(void)
 static
 SEXP R_ParseLatex(SEXP text, ParseStatus *status, SEXP srcfile)
 {
-    nextchar_parse = CHAR(STRING_ELT(text, 0));
+    nextchar_parse = R_CHAR(STRING_ELT(text, 0));
     ptr_getc = char_getc;
     return ParseLatex(status, srcfile);
 }
@@ -631,7 +633,7 @@ static void yyerror(const char *s)
 			     _(yylongunexpected), 
 			     i/2 < YYENGLISH ? _(yytname_translations[i+1])
 			     : yytname_translations[i+1], 
-			     CHAR(STRING_ELT(yylval, 0)));
+			     R_CHAR(STRING_ELT(yylval, 0)));
     	    	translated = TRUE;
     	    	break;
     	    }
@@ -644,7 +646,7 @@ static void yyerror(const char *s)
     	    else
     	    	snprintf(ParseErrorMsg, PARSE_ERROR_SIZE,
 			 _(yylongunexpected),
-			 s + sizeof yyunexpected - 1, CHAR(STRING_ELT(yylval, 0)));
+			 s + sizeof yyunexpected - 1, R_CHAR(STRING_ELT(yylval, 0)));
     	}
     	if (expecting) {
  	    translated = FALSE;
@@ -664,20 +666,20 @@ static void yyerror(const char *s)
 	}
     } else if (streqln(s, yyunknown, sizeof yyunknown-1)) {
     	snprintf(ParseErrorMsg, PARSE_ERROR_SIZE, 
-		 "%s '%s'", s, CHAR(STRING_ELT(yylval, 0)));
+		 "%s '%s'", s, R_CHAR(STRING_ELT(yylval, 0)));
     } else {
     	snprintf(ParseErrorMsg, PARSE_ERROR_SIZE,"%s", s);
     }
-    filename = findVar(install("filename"), parseState.SrcFile);
-    if (isString(filename) && LENGTH(filename))
-    	strncpy(ParseErrorFilename, CHAR(STRING_ELT(filename, 0)), PARSE_ERROR_SIZE - 1);
+    filename = Rf_findVar(Rf_install("filename"), parseState.SrcFile);
+    if (Rf_isString(filename) && LENGTH(filename))
+    	strncpy(ParseErrorFilename, R_CHAR(STRING_ELT(filename, 0)), PARSE_ERROR_SIZE - 1);
     else
         ParseErrorFilename[0] = '\0';
     if (yylloc.first_line != yylloc.last_line)
-	warning("%s:%d-%d: %s", 
+	Rf_warning("%s:%d-%d: %s", 
 		ParseErrorFilename, yylloc.first_line, yylloc.last_line, ParseErrorMsg);
     else
-	warning("%s:%d: %s", 
+	Rf_warning("%s:%d: %s", 
 		ParseErrorFilename, yylloc.first_line, ParseErrorMsg);
 }
 
@@ -687,7 +689,7 @@ static void yyerror(const char *s)
 	    char *old = stext;              \
             nstext *= 2;                    \
 	    stext = malloc(nstext);         \
-	    if(!stext) error(_("unable to allocate buffer for long string at line %d"), parseState.xxlineno);\
+	    if(!stext) Rf_error(_("unable to allocate buffer for long string at line %d"), parseState.xxlineno);\
 	    memmove(stext, old, nc);        \
 	    if(old != st0) free(old);	    \
 	    bp = stext+nc; }		    \
@@ -722,7 +724,7 @@ static int token(void)
         yylloc.last_line = 0;
         yylloc.last_column = 0;
         yylloc.last_byte = 0;
-    	PROTECT(yylval = mkString(""));
+    	PROTECT(yylval = Rf_mkString(""));
         c = parseState.xxinitvalue;
     	parseState.xxinitvalue = 0;
     	return(c);
@@ -815,7 +817,7 @@ static int mkMarkup(int c)
     	    xxungetc(c);
     }
     if (retval != VERB) {
-    	PROTECT(yylval = mkString(stext));
+    	PROTECT(yylval = Rf_mkString(stext));
     }
     if(stext != st0) free(stext);
     return retval;
@@ -846,14 +848,14 @@ static int mkVerbEnv()
     int matched = 0, i;
     int c;
     
-    while ((c = xxgetc()) != R_EOF && CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched]) {
+    while ((c = xxgetc()) != R_EOF && R_CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched]) {
     	TEXT_PUSH(c);
-    	if (c == CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched])
+    	if (c == R_CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched])
     	    matched++;
     	else
     	    matched = 0;
     }
-    if ( !CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched] ) {
+    if ( !R_CHAR(STRING_ELT(parseState.xxInVerbEnv, 0))[matched] ) {
     	for (i = matched-1; i >= 0; i--) 
     	    xxungetc(*(--bp));    	    
     	UNPROTECT_PTR(parseState.xxInVerbEnv);
@@ -872,7 +874,7 @@ static int yylex(void)
     if (parseState.xxDebugTokens) {
         Rprintf("%d:%d: %s", yylloc.first_line, yylloc.first_column, yytname[YYTRANSLATE(tok)]);
     	if (tok > 255 && tok != END_OF_INPUT) 
-    	    Rprintf(": %s", CHAR(STRING_ELT(yylval, 0)));
+    	    Rprintf(": %s", R_CHAR(STRING_ELT(yylval, 0)));
 	Rprintf("\n");
     }
     setlastloc();
@@ -923,9 +925,9 @@ SEXP parseLatex(SEXP call, SEXP op, SEXP args, SEXP env)
     text = CAR(args);		                        args = CDR(args);
 
     source = CAR(args);					args = CDR(args);
-    if(!isLogical(CAR(args)) || LENGTH(CAR(args)) != 1)
-    	error(_("invalid '%s' value"), "verbose");
-    parseState.xxDebugTokens = asInteger(CAR(args));	args = CDR(args);
+    if(!Rf_isLogical(CAR(args)) || LENGTH(CAR(args)) != 1)
+    	Rf_error(_("invalid '%s' value"), "verbose");
+    parseState.xxDebugTokens = Rf_asInteger(CAR(args));	args = CDR(args);
     parseState.xxVerbatimList = CAR(args); 		args = CDR(args);
 
     s = R_ParseLatex(text, &status, source);

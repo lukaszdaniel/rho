@@ -27,6 +27,8 @@
 // For debugging:
 #include <iostream>
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -43,7 +45,7 @@ using namespace std;
 using namespace rho;
 
 /* R_sysframe - look back up the context stack until the */
-/* nth closure context and return that cloenv. */
+/* nth closure context and return that workingEnvironment(). */
 /* R_sysframe(0) means the R_GlobalEnv environment */
 /* negative n counts back from the current frame */
 /* positive n counts up from the globalEnv */
@@ -80,7 +82,7 @@ SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
 
 
 /* We need to find the environment that can be returned by sys.frame */
-/* (so it needs to be on the cloenv pointer of a context) that matches */
+/* (so it needs to be on the workingEnvironment() pointer of a context) that matches */
 /* the environment where the closure arguments are to be evaluated. */
 /* It would be much simpler if sysparent just returned cptr->sysparent */
 /* but then we wouldn't be compatible with S. */

@@ -549,7 +549,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 
 #ifndef R_NO_REMAP
 //# define asVecSize		Rf_asVecSize
-# define BindDomain		Rf_BindDomain
+//# define BindDomain		Rf_BindDomain
 # define CleanEd		Rf_CleanEd
 # define CoercionWarning       	Rf_CoercionWarning
 # define ComplexFromInteger	Rf_ComplexFromInteger
@@ -610,7 +610,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 # define matchArgExact		Rf_matchArgExact
 # define Mbrtowc		Rf_mbrtowc
 # define mbtoucs		Rf_mbtoucs
-# define mbcsToUcs2		Rf_mbcsToUcs2
+//# define mbcsToUcs2		Rf_mbcsToUcs2
 # define mkCLOSXP		Rf_mkCLOSXP
 # define mkFalse		Rf_mkFalse
 # define mkPROMISE		Rf_mkPROMISE
@@ -647,7 +647,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 # define strIsASCII		Rf_strIsASCII
 # define strmat2intmat		Rf_strmat2intmat
 # define substituteList		Rf_substituteList
-# define TimeToSeed		Rf_TimeToSeed
+//# define TimeToSeed		Rf_TimeToSeed
 # define tsConform		Rf_tsConform
 # define tspgets		Rf_tspgets
 # define type2symbol		Rf_type2symbol
@@ -657,7 +657,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 # define ucstoutf8		Rf_ucstoutf8
 # define utf8toucs		Rf_utf8toucs
 # define utf8towcs		Rf_utf8towcs
-# define vectorIndex		Rf_vectorIndex
+//# define vectorIndex		Rf_vectorIndex
 # define warningcall		Rf_warningcall
 //# define WarningMessage		Rf_WarningMessage
 # define wcstoutf8		Rf_wcstoutf8

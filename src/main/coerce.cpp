@@ -127,8 +127,8 @@ int attribute_hidden
 Rf_LogicalFromString(SEXP x, int *warn)
 {
     if (x != R_NaString) {
-	if (StringTrue(CHAR(x))) return 1;
-	if (StringFalse(CHAR(x))) return 0;
+	if (StringTrue(R_CHAR(x))) return 1;
+	if (StringFalse(R_CHAR(x))) return 0;
     }
     return NA_LOGICAL;
 }
@@ -172,8 +172,8 @@ Rf_IntegerFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
-    if (x != R_NaString && !isBlankString(CHAR(x))) { /* ASCII */
-	xdouble = R_strtod(CHAR(x), &endp); /* ASCII */
+    if (x != R_NaString && !isBlankString(R_CHAR(x))) { /* ASCII */
+	xdouble = R_strtod(R_CHAR(x), &endp); /* ASCII */
 	if (isBlankString(endp)) {
 #ifdef _R_pre_Version_3_3_0
 	    if (xdouble > INT_MAX) {
@@ -232,8 +232,8 @@ Rf_RealFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
-    if (x != R_NaString && !isBlankString(CHAR(x))) { /* ASCII */
-	xdouble = R_strtod(CHAR(x), &endp); /* ASCII */
+    if (x != R_NaString && !isBlankString(R_CHAR(x))) { /* ASCII */
+	xdouble = R_strtod(R_CHAR(x), &endp); /* ASCII */
 	if (isBlankString(endp))
 	    return xdouble;
 	else
@@ -296,7 +296,7 @@ Rf_ComplexFromString(SEXP x, int *warn)
 {
     double xr, xi;
     Rcomplex z;
-    const char *xx = CHAR(x); /* ASCII */
+    const char *xx = R_CHAR(x); /* ASCII */
     char *endp;
 
     z.r = z.i = NA_REAL;
@@ -403,7 +403,7 @@ SEXP Rf_VectorToPairList(SEXP x)
 	if (NAMED(x) > NAMED(VECTOR_ELT(x, i)))
 	    SET_NAMED(VECTOR_ELT(x, i), NAMED(x));
 	SETCAR(xptr, VECTOR_ELT(x, i));
-	if (named && CHAR(STRING_ELT(xnames, i))[0] != '\0') /* ASCII */
+	if (named && R_CHAR(STRING_ELT(xnames, i))[0] != '\0') /* ASCII */
 	    SET_TAG(xptr, Rf_installTrChar(STRING_ELT(xnames, i)));
 	xptr = CDR(xptr);
     }
@@ -1413,10 +1413,10 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
 
     if (!Rf_isString(mode) || LENGTH(mode) != 1)
 	error_return(R_MSG_mode);
-    if (streql("function", (CHAR(STRING_ELT(mode, 0))))) /* ASCII */
+    if (streql("function", (R_CHAR(STRING_ELT(mode, 0))))) /* ASCII */
 	type = CLOSXP;
     else
-	type = Rf_str2type(CHAR(STRING_ELT(mode, 0))); /* ASCII */
+	type = Rf_str2type(R_CHAR(STRING_ELT(mode, 0))); /* ASCII */
 
     /* "any" case added in 2.13.0 */
     if(type == ANYSXP || TYPEOF(x) == type) {
@@ -1501,7 +1501,7 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
     PROTECT(pargs = args = Rf_allocList(n - 1));
     for (i = 0; i < n - 1; i++) {
 	SETCAR(pargs, VECTOR_ELT(arglist, i));
-	if (names != R_NilValue && *CHAR(STRING_ELT(names, i)) != '\0') /* ASCII */
+	if (names != R_NilValue && *R_CHAR(STRING_ELT(names, i)) != '\0') /* ASCII */
 	    SET_TAG(pargs, Rf_installTrChar(STRING_ELT(names, i)));
 	else
 	    SET_TAG(pargs, R_NilValue);
@@ -1881,7 +1881,7 @@ SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunct
     if (!Rf_isString(mode_) || LENGTH(mode_) != 1)
 	error_return(R_MSG_mode);
 
-    stype = CHAR(STRING_ELT(mode_, 0)); /* ASCII */
+    stype = R_CHAR(STRING_ELT(mode_, 0)); /* ASCII */
 
     /* "name" and "symbol" are synonymous */
     if (streql(stype, "name"))
@@ -2388,8 +2388,8 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
 	Rf_error(_("'what' must be a function or character string"));
 
 #ifdef __maybe_in_the_future__
-    if (!isNull(args) && !isVectorList(args))
-	error(_("'args' must be a list or expression"));
+    if (!Rf_isNull(args) && !Rf_isVectorList(args))
+	Rf_error(_("'args' must be a list or expression"));
 #else
     if (!Rf_isNull(args) && !Rf_isNewList(args))
         Rf_error(_("'%s' must be a list"), "args");
@@ -2618,7 +2618,7 @@ static SEXP do_unsetS4(SEXP obj, SEXP newClass)
 	    Rf_translateChar(STRING_ELT(newClass, 1)));
   else
     Rf_warning(_("Setting class(x) to \"%s\" sets attribute to NULL; result will no longer be an S4 object"),
-	    CHAR(Rf_asChar(newClass)));
+	    R_CHAR(Rf_asChar(newClass)));
   UNSET_S4_OBJECT(obj);
   return obj;
 }
@@ -2726,12 +2726,12 @@ SEXP attribute_hidden do_storage_mode(/*const*/ Expression* call, const BuiltInF
 
     if (!Rf_isValidString(value) || STRING_ELT(value, 0) == NA_STRING)
 	Rf_error(_("'value' must be non-null character string"));
-    type = Rf_str2type(CHAR(STRING_ELT(value, 0)));
+    type = Rf_str2type(R_CHAR(STRING_ELT(value, 0)));
     if(type == SEXPTYPE( -1)) {
 	/* For backwards compatibility we allow "real" and "single" */
-	if(streql(CHAR(STRING_ELT(value, 0)), "real")) {
+	if(streql(R_CHAR(STRING_ELT(value, 0)), "real")) {
 	    Rf_error("use of 'real' is defunct: use 'double' instead");
-	} else if(streql(CHAR(STRING_ELT(value, 0)), "single")) {
+	} else if(streql(R_CHAR(STRING_ELT(value, 0)), "single")) {
 	    Rf_error("use of 'single' is defunct: use mode<- instead");
 	} else
 	    Rf_error(_("invalid value"));

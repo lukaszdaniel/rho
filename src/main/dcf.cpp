@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -86,23 +88,23 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
     int offset = 0; /* -Wall */
 
     file = file_;
-    con = getConnection(asInteger(file));
+    con = getConnection(Rf_asInteger(file));
     wasopen = con->isopen;
     if(!wasopen && !con->open(con))
-	error(_("cannot open the connection"));	
+	Rf_error(_("cannot open the connection"));	
 
     try {
-	if(!con->canread) error(_("cannot read from this connection"));
+	if(!con->canread) Rf_error(_("cannot read from this connection"));
 
-	PROTECT(what = coerceVector(fields_, STRSXP)); /* argument fields */
+	PROTECT(what = Rf_coerceVector(fields_, STRSXP)); /* argument fields */
 	nwhat = LENGTH(what);
 	dynwhat = (nwhat == 0);
 
-	PROTECT(fold_excludes = coerceVector(keep_white_, STRSXP));
+	PROTECT(fold_excludes = Rf_coerceVector(keep_white_, STRSXP));
 	has_fold_excludes = RHOCONSTRUCT(Rboolean, (LENGTH(fold_excludes) > 0));
 
 	buf = static_cast<char *>(malloc(buflen));
-	if(!buf) error(_("could not allocate memory for 'read.dcf'"));
+	if(!buf) Rf_error(_("could not allocate memory for 'read.dcf'"));
 	nret = 20;
 	/* it is easier if we first have a record per column */
 	PROTECT(retval = allocMatrixNA(STRSXP, LENGTH(what), nret));
@@ -147,7 +149,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 		       record. */
 		    if((lastm == -1) && !field_skip) {
 			line[20] = '\0';
-			error(_("Found continuation line starting '%s ...' at begin of record."),
+			Rf_error(_("Found continuation line starting '%s ...' at begin of record."),
 			      line);
 		    }
 		    if(lastm >= 0) {
@@ -176,7 +178,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			    char *tmp = static_cast<char *>(realloc(buf, need));
 			    if(!tmp) {
 				free(buf);
-				error(_("could not allocate memory for 'read.dcf'"));
+				Rf_error(_("could not allocate memory for 'read.dcf'"));
 			    } else buf = tmp;
 			    buflen = need;
 			}
@@ -192,20 +194,20 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			}
 			strcat(buf, line + offset);
 		    }
-			SET_STRING_ELT(retval, lastm + nwhat * k, mkChar(buf));
+			SET_STRING_ELT(retval, lastm + nwhat * k, Rf_mkChar(buf));
 		    }
 		} else {
 		    if(tre_regexecb(&regline, line, 1, regmatch, 0) == 0){
 			for(m = 0; m < nwhat; m++){
-			    whatlen = int(strlen(CHAR(STRING_ELT(what, m))));
+			    whatlen = int(strlen(R_CHAR(STRING_ELT(what, m))));
 			    if(RHO_S_CAST(int, strlen(line)) > whatlen &&
 			       line[whatlen] == ':' &&
-			       strncmp(CHAR(STRING_ELT(what, m)),
+			       strncmp(R_CHAR(STRING_ELT(what, m)),
 				       line, whatlen) == 0) {
 				/* An already known field we are recording. */
 				lastm = m;
 				field_skip = FALSE;
-				field_name = CHAR(STRING_ELT(what, lastm));
+				field_name = R_CHAR(STRING_ELT(what, lastm));
 				if(has_fold_excludes) {
 				    field_fold =
 					field_is_foldable_p(field_name,
@@ -221,7 +223,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 				    offset = 0;
 				}
 				SET_STRING_ELT(retval, m + nwhat * k,
-					       mkChar(line + offset));
+					       Rf_mkChar(line + offset));
 				break;
 			    } else {
 				/* This is a field, but not one prespecified */
@@ -233,17 +235,17 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 			    /* A previously unseen field and we are
 			     * recording all fields */
 			    field_skip = FALSE;
-			    PROTECT(what2 = allocVector(STRSXP, nwhat+1));
+			    PROTECT(what2 = Rf_allocVector(STRSXP, nwhat+1));
 			    PROTECT(retval2 = allocMatrixNA(STRSXP,
-							    nrows(retval)+1,
-							    ncols(retval)));
+							    Rf_nrows(retval)+1,
+							    Rf_ncols(retval)));
 			    if(nwhat > 0) {
 				Rf_copyVector(what2, what);
-				for(nr = 0; nr < nrows(retval); nr++){
-				    for(nc = 0; nc < ncols(retval); nc++){
-					SET_STRING_ELT(retval2, nr+nc*nrows(retval2),
+				for(nr = 0; nr < Rf_nrows(retval); nr++){
+				    for(nc = 0; nc < Rf_ncols(retval); nc++){
+					SET_STRING_ELT(retval2, nr+nc*Rf_nrows(retval2),
 						       STRING_ELT(retval,
-								  nr+nc*nrows(retval)));
+								  nr+nc*Rf_nrows(retval)));
 				    }
 				}
 			    }
@@ -257,17 +259,17 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 				char *tmp = static_cast<char *>(realloc(buf, need));
 				if(!tmp) {
 				    free(buf);
-				    error(_("could not allocate memory for 'read.dcf'"));
+				    Rf_error(_("could not allocate memory for 'read.dcf'"));
 				} else buf = tmp;
 				buflen = need;
 			    }
 			    strncpy(buf, line, Rf_strchr(line, ':') - line);
 			    buf[Rf_strchr(line, ':') - line] = '\0';
-			    SET_STRING_ELT(what, nwhat, mkChar(buf));
+			    SET_STRING_ELT(what, nwhat, Rf_mkChar(buf));
 			    nwhat++;
 			    /* lastm uses C indexing, hence nwhat - 1 */
 			    lastm = nwhat - 1;
-			    field_name = CHAR(STRING_ELT(what, lastm));
+			    field_name = R_CHAR(STRING_ELT(what, lastm));
 			    if(has_fold_excludes) {
 				field_fold =
 				    field_is_foldable_p(field_name,
@@ -281,12 +283,12 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 				    line[regmatch[0].rm_so] = '\0';
 			    }
 			    SET_STRING_ELT(retval, lastm + nwhat * k,
-					   mkChar(line + offset));
+					   Rf_mkChar(line + offset));
 			}
 		    } else {
 			/* Must be a regular line with no tag ... */
 			line[20] = '\0';
-			error(_("Line starting '%s ...' is malformed!"), line);
+			Rf_error(_("Line starting '%s ...' is malformed!"), line);
 		    }
 		}
 	    }
@@ -308,15 +310,15 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 
     /* and now transpose the whole matrix */
     PROTECT(retval2 = allocMatrixNA(STRSXP, k, LENGTH(what)));
-    copyMatrix(retval2, retval, RHO_TRUE);
+    Rf_copyMatrix(retval2, retval, RHO_TRUE);
 
-    PROTECT(dimnames = allocVector(VECSXP, 2));
-    PROTECT(dims = allocVector(INTSXP, 2));
+    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
+    PROTECT(dims = Rf_allocVector(INTSXP, 2));
     INTEGER(dims)[0] = k;
     INTEGER(dims)[1] = LENGTH(what);
     SET_VECTOR_ELT(dimnames, 1, what);
-    setAttrib(retval2, R_DimSymbol, dims);
-    setAttrib(retval2, R_DimNamesSymbol, dimnames);
+    Rf_setAttrib(retval2, R_DimSymbol, dims);
+    Rf_setAttrib(retval2, R_DimNamesSymbol, dimnames);
     UNPROTECT(6);
     return(retval2);
 }
@@ -327,7 +329,7 @@ static SEXP allocMatrixNA(SEXPTYPE mode, int nrow, int ncol)
     int k;
     SEXP retval;
 
-    PROTECT(retval = allocMatrix(mode, nrow, ncol));
+    PROTECT(retval = Rf_allocMatrix(mode, nrow, ncol));
     for(k = 0; k < LENGTH(retval); k++)
 	SET_STRING_ELT(retval, k, NA_STRING);
     UNPROTECT(1);
@@ -347,7 +349,7 @@ static Rboolean field_is_foldable_p(const char *field, SEXP excludes)
 {
     int i, n = LENGTH(excludes);
     for(i = 0; i < n; i++) {
-	if(streql(field, CHAR(STRING_ELT(excludes, i))))
+	if(streql(field, R_CHAR(STRING_ELT(excludes, i))))
 	    return FALSE;
     }
     return TRUE;

@@ -684,13 +684,15 @@ void Rf_setVar(SEXP symbol, SEXP value, SEXP rho)
 
 
 
-/*----------------------------------------------------------------------
-
-  gsetVar
-
-  Assignment in the base environment. Here we assign directly into
-  the base environment.
-
+/** --------------------------------------------------------------------
+*
+*  gsetVar
+*
+*  @brief Assignment in the base environment.
+*
+*  @details Here we assign directly into
+*  the base environment.
+*
 */
 
 void Rf_gsetVar(SEXP symbol, SEXP value, SEXP rho)
@@ -780,11 +782,13 @@ SEXP attribute_hidden do_list2env(/*const*/ Expression* call, const BuiltInFunct
 }
 
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
   do_remove
 
-  There are three arguments to do_remove; a list of names to remove,
+  @brief Remove variable
+
+  @details There are three arguments to do_remove; a list of names to remove,
   an optional environment (if missing set it to R_GlobalEnv) and
   inherits, a logical indicating whether to look in the parent env if
   a symbol is not found in the supplied env.  This is ignored if
@@ -846,13 +850,17 @@ SEXP attribute_hidden do_remove(/*const*/ Expression* call, const BuiltInFunctio
 }
 
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
   Used by do_get, do_get0
 
-  This function returns the SEXP associated with the character
-  argument.  It needs the environment of the calling function as a
-  default.  Returns R_UnboundValue if no value was found.
+  @brief This function returns the SEXP associated with the character
+  argument.
+
+  @param call  environment of the calling function as a
+  default.
+
+  @return Returns R_UnboundValue if no value was found.
 */
 
 static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
@@ -973,7 +981,9 @@ static SEXP gfind(const char *name, Environment* env, SEXPTYPE mode,
 }
 
 
-/** mget(): get multiple values from an environment
+/** mget():
+ * 
+ * @brief get multiple values from an environment
  *
  * .Internal(mget(x, envir, mode, ifnotfound, inherits))
  *
@@ -1039,15 +1049,15 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
     return(ans);
 }
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
   do_missing
 
-  This function tests whether the symbol passed as its first argument
+  @brief This function tests whether the symbol passed as its first argument
   is a missing argument to the current closure.  rho is the
   environment that missing was called from.
 
-  R_isMissing is called on the not-yet-evaluated value of an argument,
+  @details R_isMissing is called on the not-yet-evaluated value of an argument,
   if this is a symbol, as it could be a missing argument that has been
   passed down.  So 'symbol' is the promise value, and 'rho' its
   evaluation argument.
@@ -1125,39 +1135,37 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return Rf_ScalarLogical(R_isMissing(PREXPR(t), PRENV(t)));
 }
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_globalenv
+  @name do_globalenv
 
-  Returns the current global environment.
+  @return Returns the current global environment.
 
 */
-
 
 SEXP attribute_hidden do_globalenv(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return R_GlobalEnv;
 }
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_baseenv
+  @name do_baseenv
 
-  Returns the current base environment.
+  @return Returns the current base environment.
 
 */
-
 
 SEXP attribute_hidden do_baseenv(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return R_BaseEnv;
 }
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_emptyenv
+  @name do_emptyenv
 
-  Returns the current empty environment.
+  @return Returns the current empty environment.
 
 */
 
@@ -1168,11 +1176,11 @@ SEXP attribute_hidden do_emptyenv(/*const*/ Expression* call, const BuiltInFunct
 }
 
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_attach
+  @name do_attach
 
-  To attach a list we make up an environment and insert components
+  @details To attach a list we make up an environment and insert components
   of the list in as the values of this env and install the tags from
   the list as the names.
 
@@ -1219,11 +1227,11 @@ SEXP attribute_hidden do_attach(/*const*/ Expression* call, const BuiltInFunctio
 }
 
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_detach
+  @name do_detach
 
-  detach the specified environment.  Detachment only takes place by
+  @brief detach the specified environment.  Detachment only takes place by
   position.
 
 */
@@ -1237,11 +1245,11 @@ SEXP attribute_hidden do_detach(/*const*/ Expression* call, const BuiltInFunctio
 
 
 
-/*----------------------------------------------------------------------
+/** ----------------------------------------------------------------------
 
-  do_search
+  @name do_search
 
-  Print out the current search path.
+  @brief Print out the current search path.
 
 */
 
@@ -1639,7 +1647,7 @@ do_as_environment(/*const*/ Expression* call, const BuiltInFunction* op, RObject
 	return(dot_xData);
     }
     case VECSXP: {
-	/* implement as.environment.list() {isObject(.) is false for a list} */
+	/* implement as.environment.list() {Rf_isObject(.) is false for a list} */
 	SEXP call, val;
 	PROTECT(call = Rf_lang4(Rf_install("list2env"), arg,
 			     /* envir = */nullptr,

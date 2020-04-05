@@ -33,6 +33,8 @@
  *  See ./format.cpp	 for the formatXXXX functions used below.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -163,7 +165,7 @@ static void printStringVector(const StringVector* sv, R_xlen_t n, int quote,
 	    DO_newline;
 	}
 	Rprintf("%*s%s", R_print.gap, "",
-		EncodeString(str, w, quote, Rprt_adj(R_print.right)));
+		Rf_EncodeString(str, w, quote, Rprt_adj(R_print.right)));
 	width += w + R_print.gap;
     }
     Rprintf("\n");
@@ -182,7 +184,7 @@ void printRawVector(Rbyte *x, R_xlen_t n, int indx)
 	if (i > 0 && width + w > R_print.width) {
 	    DO_newline;
 	}
-	Rprintf("%*s%s", R_print.gap, "", EncodeRaw(x[i], ""));
+	Rprintf("%*s%s", R_print.gap, "", Rf_EncodeRaw(x[i], ""));
 	width += w;
     }
     Rprintf("\n");
@@ -270,7 +272,7 @@ void printVector(SEXP x, int indx, int quote)
 	if (i) Rprintf("\n");						\
 	for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)	\
 	    Rprintf("%s%*s",						\
-		    EncodeString((*names)[k], w, 0, Rprt_adj_right),	\
+		    Rf_EncodeString((*names)[k], w, 0, Rprt_adj_right),	\
 		    R_print.gap, "");					\
 	Rprintf("\n");							\
 	for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)	\
@@ -335,12 +337,12 @@ static void printNamedStringVector(StringVector* sv, int n, int quote,
 				   StringVector* names)
     PRINT_N_VECTOR(INI_F_STRING,
 		   Rprintf("%s%*s",
-			   EncodeString((*sv)[k], w, quote, Rprt_adj_right),
+			   Rf_EncodeString((*sv)[k], w, quote, Rprt_adj_right),
 			   R_print.gap, ""))
 
 static void printNamedRawVector(Rbyte * x, int n, StringVector* names)
     PRINT_N_VECTOR(formatRaw(x, n, &w),
-		   Rprintf("%s%*s", EncodeRaw(x[k], ""), R_print.gap,""))
+		   Rprintf("%s%*s", Rf_EncodeRaw(x[k], ""), R_print.gap,""))
 
 attribute_hidden
 void printNamedVector(SEXP x, SEXP names, int quote, const char *title)

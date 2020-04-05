@@ -24,6 +24,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -562,7 +563,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 		    p = buf;
 		}
 #ifdef fixed_cat
-		else if (isVectorList(s)) {
+		else if (Rf_isVectorList(s)) {
 		    /* FIXME:	 call EncodeElement() for every element of  s.
 
 		    Real Problem: `s' can be large;
@@ -843,7 +844,7 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 {
     SEXP x = x_;
 
-    // more 'x' checks in x?lengthgets()
+    // more 'x' checks in x?Rf_lengthgets()
     if (Rf_length(value_) != 1)
 	Rf_error(_("wrong length for '%s' argument"), "value");
     R_xlen_t len = asVecSize(value_);

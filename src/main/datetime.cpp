@@ -44,6 +44,8 @@
     construct but seems to be available on the affected platforms.
 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -775,7 +777,7 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
     PROTECT(klass = Rf_allocVector(STRSXP, 2));
     SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
     SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
-    classgets(ans, klass);
+    Rf_classgets(ans, klass);
     Rf_setAttrib(ans, Rf_install("tzone"), tzone);
     SEXP nm = Rf_getAttrib(x, R_NamesSymbol);
     if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
@@ -896,7 +898,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
     SEXP tz = Rf_getAttrib(x, Rf_install("tzone"));
 
     const char *tz1;
-    if (!isNull(tz) && strlen(tz1 = R_CHAR(STRING_ELT(tz, 0)))) {
+    if (!Rf_isNull(tz) && strlen(tz1 = R_CHAR(STRING_ELT(tz, 0)))) {
 	/* If the format includes %Z or %z
 	   we need to try to set TZ accordingly */
 	int needTZ = 0;
@@ -1192,7 +1194,7 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
     PROTECT(klass = Rf_allocVector(STRSXP, 2));
     SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
     SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
-    classgets(ans, klass);
+    Rf_classgets(ans, klass);
     if(settz) reset_tz(oldtz);
     if(Rf_isString(tzone)) Rf_setAttrib(ans, Rf_install("tzone"), tzone);
 

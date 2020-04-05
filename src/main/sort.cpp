@@ -25,6 +25,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -105,8 +107,8 @@ Rboolean Rf_isUnsorted(SEXP x, Rboolean strictly)
 {
     R_xlen_t n, i;
 
-    if (!isVectorAtomic(x))
-	error(_("only atomic vectors can be tested to be sorted"));
+    if (!Rf_isVectorAtomic(x))
+	Rf_error(_("only atomic vectors can be tested to be sorted"));
     n = XLENGTH(x);
     if(n >= 2)
 	switch (TYPEOF(x)) {
@@ -180,28 +182,28 @@ Rboolean Rf_isUnsorted(SEXP x, Rboolean strictly)
 	    UNIMPLEMENTED_TYPE("isUnsorted", x);
 	}
     return FALSE;/* sorted */
-} // isUnsorted()
+} // Rf_isUnsorted()
 
 SEXP attribute_hidden do_isunsorted(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* strictly_)
 {
-    int strictly = asLogical(strictly_);
+    int strictly = Rf_asLogical(strictly_);
     if(strictly == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "strictly");
-    if(isVectorAtomic(x)) {
+	Rf_error(_("invalid '%s' argument"), "strictly");
+    if(Rf_isVectorAtomic(x)) {
 	UNPROTECT(1);
-	return (xlength(x) < 2) ? ScalarLogical(FALSE) :
-	    ScalarLogical(isUnsorted(x, Rboolean(strictly)));
+	return (Rf_xlength(x) < 2) ? Rf_ScalarLogical(FALSE) :
+	    Rf_ScalarLogical(Rf_isUnsorted(x, Rboolean(strictly)));
     }
-    if(isObject(x)) {
+    if(Rf_isObject(x)) {
 	SEXP call;
 	PROTECT(call = 	// R>  .gtn(x, strictly) :
-		lang3(install(".gtn"), x, strictly_));
-	SEXP ans = eval(call, R_BaseEnv);
+		Rf_lang3(Rf_install(".gtn"), x, strictly_));
+	SEXP ans = Rf_eval(call, R_BaseEnv);
 	UNPROTECT(2);
 	return ans;
     } // else
 	UNPROTECT(1);
-    return ScalarLogical(NA_LOGICAL);
+    return Rf_ScalarLogical(NA_LOGICAL);
 }
 
 
@@ -333,19 +335,19 @@ SEXP attribute_hidden do_sort(/*const*/ Expression* call, const BuiltInFunction*
     SEXP ans;
     Rboolean decreasing;
 
-    decreasing = RHOCONSTRUCT(Rboolean, asLogical(decreasing_));
+    decreasing = RHOCONSTRUCT(Rboolean, Rf_asLogical(decreasing_));
     if(decreasing == NA_LOGICAL)
-	error(_("'decreasing' must be TRUE or FALSE"));
+	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     if(x_ == R_NilValue) return R_NilValue;
-    if(!isVectorAtomic(x_))
-	error(_("only atomic vectors can be sorted"));
+    if(!Rf_isVectorAtomic(x_))
+	Rf_error(_("only atomic vectors can be sorted"));
     if(TYPEOF(x_) == RAWSXP)
-	error(_("raw vectors cannot be sorted"));
+	Rf_error(_("raw vectors cannot be sorted"));
     /* we need consistent behaviour here, including dropping attibutes,
        so as from 2.3.0 we always duplicate. */
-    PROTECT(ans = duplicate(x_));
+    PROTECT(ans = Rf_duplicate(x_));
     ans->clearAttributes();  /* this is never called with names */
-    sortVector(ans, decreasing);
+    Rf_sortVector(ans, decreasing);
     UNPROTECT(1);
     return(ans);
 }
@@ -384,7 +386,7 @@ static void R_isort2(int *x, R_xlen_t n, Rboolean decreasing)
     int v;
     R_xlen_t i, j, h, t;
 
-    if (n < 2) error("'n >= 2' is required");
+    if (n < 2) Rf_error("'n >= 2' is required");
     for (t = 0; incs[t] > n; t++);
     if(decreasing)
 #define less <
@@ -401,7 +403,7 @@ static void R_rsort2(double *x, R_xlen_t n, Rboolean decreasing)
     double v;
     R_xlen_t i, j, h, t;
 
-    if (n < 2) error("'n >= 2' is required");
+    if (n < 2) Rf_error("'n >= 2' is required");
     for (t = 0; incs[t] > n; t++);
     if(decreasing)
 #define less <
@@ -418,7 +420,7 @@ static void R_csort2(Rcomplex *x, R_xlen_t n, Rboolean decreasing)
     Rcomplex v;
     R_xlen_t i, j, h, t;
 
-    if (n < 2) error("'n >= 2' is required");
+    if (n < 2) Rf_error("'n >= 2' is required");
     for (t = 0; incs[t] > n; t++);
     for (h = incs[t]; t < NI; h = incs[++t])
 	for (i = h; i < n; i++) {
@@ -441,7 +443,7 @@ static void ssort2(StringVector* sv, R_xlen_t n, Rboolean decreasing)
     String* v;
     R_xlen_t i, j, h, t;
 
-    if (n < 2) error("'n >= 2' is required");
+    if (n < 2) Rf_error("'n >= 2' is required");
     for (t = 0; incs[t] > n; t++);
     for (h = incs[t]; t < NI; h = incs[++t])
 	for (i = h; i < n; i++) {
@@ -461,7 +463,7 @@ static void ssort2(StringVector* sv, R_xlen_t n, Rboolean decreasing)
 void Rf_sortVector(SEXP s, Rboolean decreasing)
 {
     R_xlen_t n = XLENGTH(s);
-    if (n >= 2 && (decreasing || isUnsorted(s, FALSE)))
+    if (n >= 2 && (decreasing || Rf_isUnsorted(s, FALSE)))
 	switch (TYPEOF(s)) {
 	case LGLSXP:
 	case INTSXP:
@@ -611,45 +613,45 @@ SEXP attribute_hidden do_psort(/*const*/ Expression* call, const BuiltInFunction
 {
     SEXP x = x_, p = partial_;
 
-    if (!isVectorAtomic(x))
-	error(_("only atomic vectors can be sorted"));
+    if (!Rf_isVectorAtomic(x))
+	Rf_error(_("only atomic vectors can be sorted"));
     if(TYPEOF(x) == RAWSXP)
-	error(_("raw vectors cannot be sorted"));
+	Rf_error(_("raw vectors cannot be sorted"));
     R_xlen_t n = XLENGTH(x);
 #ifdef LONG_VECTOR_SUPPORT
     if(!IS_LONG_VEC(x) || TYPEOF(p) != REALSXP)
-	p = coerceVector(p, INTSXP);
+	p = Rf_coerceVector(p, INTSXP);
     int nind = LENGTH(p);
     R_xlen_t *l = static_cast<R_xlen_t *>(RHO_alloc(nind, sizeof(R_xlen_t)));
     if (TYPEOF(p) == REALSXP) {
 	double *rl = REAL(p);
 	for (int i = 0; i < nind; i++) {
-	    if (!R_FINITE(rl[i])) error(_("NA or infinite index"));
+	    if (!R_FINITE(rl[i])) Rf_error(_("NA or infinite index"));
 	    l[i] = R_xlen_t(rl[i]);
 	    if (l[i] < 1 || l[i] > n)
-		error(_("index %ld outside bounds"), l[i]);
+		Rf_error(_("index %ld outside bounds"), l[i]);
 	}
     } else {
 	int *il = INTEGER(p);
 	for (int i = 0; i < nind; i++) {
-	    if (il[i] == NA_INTEGER) error(_("NA index"));
+	    if (il[i] == NA_INTEGER) Rf_error(_("NA index"));
 	    if (il[i] < 1 || il[i] > n)
-		error(_("index %d outside bounds"), il[i]);
+		Rf_error(_("index %d outside bounds"), il[i]);
 	    l[i] = il[i];
 	}
     }
 #else
-    p = coerceVector(p, INTSXP);
+    p = Rf_coerceVector(p, INTSXP);
     int nind = LENGTH(p);
     int *l = INTEGER(p);
     for (int i = 0; i < nind; i++) {
 	if (l[i] == NA_INTEGER)
-	    error(_("NA index"));
+	    Rf_error(_("NA index"));
 	if (l[i] < 1 || l[i] > n)
-	    error(_("index %d outside bounds"), l[i]);
+	    Rf_error(_("index %d outside bounds"), l[i]);
     }
 #endif
-    x = duplicate(x);
+    x = Rf_duplicate(x);
     x->clearAttributes();  /* remove all attributes */
                            /* and the object bit    */
     Psort0(x, 0, n - 1, l, nind);
@@ -663,13 +665,13 @@ static int equal(R_xlen_t i, R_xlen_t j, SEXP x, Rboolean nalast, SEXP rho)
 {
     int c = -1;
 
-    if (isObject(x) && !isNull(rho)) { /* so never any NAs */
+    if (Rf_isObject(x) && !Rf_isNull(rho)) { /* so never any NAs */
 	/* evaluate .gt(x, i, j) */
 	GCStackRoot<> si, sj, call;
-	si = ScalarInteger(int(i)+1);
-	sj = ScalarInteger(int(j)+1);
-	call = lang4(install(".gt"), x, si, sj);
-	c = asInteger(eval(call, rho));
+	si = Rf_ScalarInteger(int(i)+1);
+	sj = Rf_ScalarInteger(int(j)+1);
+	call = Rf_lang4(Rf_install(".gt"), x, si, sj);
+	c = Rf_asInteger(Rf_eval(call, rho));
     } else {
 	switch (TYPEOF(x)) {
 	case LGLSXP:
@@ -700,13 +702,13 @@ static int greater(R_xlen_t i, R_xlen_t j, SEXP x, Rboolean nalast,
 {
     int c = -1;
 
-    if (isObject(x) && !isNull(rho)) { /* so never any NAs */
+    if (Rf_isObject(x) && !Rf_isNull(rho)) { /* so never any NAs */
 	/* evaluate .gt(x, i, j) */
 	GCStackRoot<> si, sj, call;
-	si = ScalarInteger(int(i)+1);
-	sj = ScalarInteger(int(j)+1);
-	call = lang4(install(".gt"), x, si, sj);
-	c = asInteger(eval(call, rho));
+	si = Rf_ScalarInteger(int(i)+1);
+	sj = Rf_ScalarInteger(int(j)+1);
+	call = Rf_lang4(Rf_install(".gt"), x, si, sj);
+	c = Rf_asInteger(Rf_eval(call, rho));
     } else {
 	switch (TYPEOF(x)) {
 	case LGLSXP:
@@ -1000,7 +1002,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 	break;
     }
 
-    if(isNull(rho)) {
+    if(Rf_isNull(rho)) {
 	/* First sort NAs to one end */
 	isna = Calloc(n, int);
 	switch (TYPEOF(key)) {
@@ -1040,7 +1042,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 		}
 		if (nalast) hi -= numna; else lo += numna;
 		break;
-	    default: error(_("invalid type")); break;
+	    default: Rf_error(_("invalid type")); break;
 	    }
     }
 
@@ -1048,7 +1050,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 
     for (t = 0; sincs[t] > hi-lo+1; t++);
 
-    if (isObject(key) && !isNull(rho)) {
+    if (Rf_isObject(key) && !Rf_isNull(rho)) {
 /* only reached from do_rank */
 #define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
 	    sort2_with_index
@@ -1141,7 +1143,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 	break;
     }
 
-    if(isNull(rho)) {
+    if(Rf_isNull(rho)) {
 	/* First sort NAs to one end */
 	isna = Calloc(n, int);
 	switch (TYPEOF(key)) {
@@ -1181,7 +1183,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 		}
 		if (nalast) hi -= numna; else lo += numna;
 		break;
-	    default: error(_("invalid type")); break;
+	    default: Rf_error(_("invalid type")); break;
 	    }
     }
 
@@ -1189,7 +1191,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 
     for (t = 0; sincs[t] > hi-lo+1; t++);
 
-    if (isObject(key) && !isNull(rho)) {
+    if (Rf_isObject(key) && !Rf_isNull(rho)) {
 /* only reached from do_rank */
 #define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
 	    sort2_with_index
@@ -1258,31 +1260,31 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
     R_xlen_t n = -1;
     Rboolean nalast, decreasing;
 
-    nalast = RHOCONSTRUCT(Rboolean, asLogical(CAR(args)));
+    nalast = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args)));
     if(nalast == NA_LOGICAL)
-	error(_("invalid '%s' value"), "na.last");
+	Rf_error(_("invalid '%s' value"), "na.last");
     args = CDR(args);
-    decreasing = RHOCONSTRUCT(Rboolean, asLogical(CAR(args)));
+    decreasing = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args)));
     if(decreasing == NA_LOGICAL)
-	error(_("'decreasing' must be TRUE or FALSE"));
+	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     args = CDR(args);
     if (args == R_NilValue)
 	return R_NilValue;
 
-    if (isVector(CAR(args)))
+    if (Rf_isVector(CAR(args)))
 	n = XLENGTH(CAR(args));
     for (ap = args; ap != R_NilValue; ap = CDR(ap), narg++) {
-	if (!isVector(CAR(ap)))
-	    error(_("argument %d is not a vector"), narg + 1);
+	if (!Rf_isVector(CAR(ap)))
+	    Rf_error(_("argument %d is not a vector"), narg + 1);
 	if (XLENGTH(CAR(ap)) != n)
-	    error(_("argument lengths differ"));
+	    Rf_error(_("argument lengths differ"));
     }
     /* NB: collation functions such as Scollate might allocate */
     if (n != 0) {
 	if(narg == 1) {
 #ifdef LONG_VECTOR_SUPPORT
 	    if (n > INT_MAX)  {
-		PROTECT(ans = allocVector(REALSXP, n));
+		PROTECT(ans = Rf_allocVector(REALSXP, n));
 		R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 		for (R_xlen_t i = 0; i < n; i++) in[i] = i;
 		orderVector1l(in, n, CAR(args), nalast, decreasing,
@@ -1291,7 +1293,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    } else
 #endif
 	    {
-		PROTECT(ans = allocVector(INTSXP, n));
+		PROTECT(ans = Rf_allocVector(INTSXP, n));
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int(i);
 		orderVector1(INTEGER(ans), int(n), CAR(args), nalast,
 			     decreasing, R_NilValue);
@@ -1300,7 +1302,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 	} else {
 #ifdef LONG_VECTOR_SUPPORT
 	    if (n > INT_MAX)  {
-		PROTECT(ans = allocVector(REALSXP, n));
+		PROTECT(ans = Rf_allocVector(REALSXP, n));
 		R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 		for (R_xlen_t i = 0; i < n; i++) in[i] = i;
 		orderVectorl(in, n, CAR(args), nalast, decreasing,
@@ -1309,7 +1311,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    } else
 #endif
 	    {
-		PROTECT(ans = allocVector(INTSXP, n));
+		PROTECT(ans = Rf_allocVector(INTSXP, n));
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int(i);
 		orderVector(INTEGER(ans), int(n), args, nalast,
 			    decreasing, listgreater);
@@ -1318,7 +1320,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 	UNPROTECT(1);
 	return ans;
-    } else return allocVector(INTSXP, 0);
+    } else return Rf_allocVector(INTSXP, 0);
 }
 
 /* FUNCTION: rank(x, length, ties.method) */
@@ -1332,39 +1334,39 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 
     x = args[0];
     if(TYPEOF(x) == RAWSXP)
-	error(_("raw vectors cannot be sorted"));
+	Rf_error(_("raw vectors cannot be sorted"));
 #ifdef LONG_VECTOR_SUPPORT
     SEXP sn = args[1];
     R_xlen_t n;
     if (TYPEOF(sn) == REALSXP)  {
 	double d = REAL(x)[0];
-	if(ISNAN(d)) error(_("vector size cannot be NA/NaN"));
-	if(!R_FINITE(d)) error(_("vector size cannot be infinite"));
-	if(d > R_XLEN_T_MAX) error(_("vector size specified is too large"));
+	if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
 	n = R_xlen_t(d);
-	if (n < 0) error(_("invalid '%s' value"), "length(xx)");
+	if (n < 0) Rf_error(_("invalid '%s' value"), "length(xx)");
     } else {
-	int nn = asInteger(sn);
+	int nn = Rf_asInteger(sn);
 	if (nn == NA_INTEGER || nn < 0)
-	    error(_("invalid '%s' value"), "length(xx)");
+	    Rf_error(_("invalid '%s' value"), "length(xx)");
 	n = nn;
     }
     isLong = RHOCONSTRUCT(Rboolean, n > INT_MAX);
 #else
-    int n = asInteger(CADR(args));
+    int n = Rf_asInteger(CADR(args));
     if (n == NA_INTEGER || n < 0)
-	error(_("invalid '%s' value"), "length(xx)");
+	Rf_error(_("invalid '%s' value"), "length(xx)");
 #endif
-    const char *ties_str = CHAR(asChar(args[2]));
+    const char *ties_str = R_CHAR(Rf_asChar(args[2]));
     if(streql(ties_str, "average"))	ties_kind = AVERAGE;
     else if(streql(ties_str, "max"))	ties_kind = MAX;
     else if(streql(ties_str, "min"))	ties_kind = MIN;
-    else error(_("invalid ties.method for rank() [should never happen]"));
+    else Rf_error(_("invalid ties.method for rank() [should never happen]"));
     if (ties_kind == AVERAGE || isLong) {
-	PROTECT(rank = allocVector(REALSXP, n));
+	PROTECT(rank = Rf_allocVector(REALSXP, n));
 	rk = REAL(rank);
     } else {
-	PROTECT(rank = allocVector(INTSXP, n));
+	PROTECT(rank = Rf_allocVector(INTSXP, n));
 	ik = INTEGER(rank);
     }
     if (n > 0) {

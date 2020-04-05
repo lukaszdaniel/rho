@@ -164,8 +164,8 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for(i = 0; i < n; i++)
 		SET_STRING_ELT(ans, i, NA_STRING);
-	    SEXP nms = getAttrib(vec, R_NamesSymbol);
-	    if(!isNull(nms))
+	    SEXP nms = Rf_getAttrib(vec, R_NamesSymbol);
+	    if(!Rf_isNull(nms))
 		Rf_setAttrib(ans, R_NamesSymbol, nms);
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
@@ -255,13 +255,13 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     if(opt_value) {
 	PROTECT(ans = Rf_allocVector(STRSXP, nmatches));
-	SEXP nmold = getAttrib(vec, R_NamesSymbol), nm;
+	SEXP nmold = Rf_getAttrib(vec, R_NamesSymbol), nm;
 	for (j = i = 0 ; i < n ; i++) {
 	    if(LOGICAL(ind)[i])
 		SET_STRING_ELT(ans, j++, STRING_ELT(vec, i));
 	}
 	/* copy across names and subset */
-	if(!isNull(nmold)) {
+	if(!Rf_isNull(nmold)) {
 	    nm = Rf_allocVector(STRSXP, nmatches);
 	    for (i = 0, j = 0; i < n ; i++)
 		if(LOGICAL(ind)[i])
@@ -313,10 +313,10 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
     cost_del = costs[1];
     cost_sub = costs[2];
 
-    PROTECT(ans = allocMatrix(REALSXP, nx, ny));
+    PROTECT(ans = Rf_allocMatrix(REALSXP, nx, ny));
     if(opt_counts) {
 	PROTECT(counts = alloc3DArray(INTSXP, nx, ny, 3));
-	PROTECT(trafos = allocMatrix(STRSXP, nx, ny));
+	PROTECT(trafos = Rf_allocMatrix(STRSXP, nx, ny));
 	buf = Calloc(buflen, char);
     }
 
@@ -444,9 +444,9 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 	}
     }
 
-    PROTECT(x = getAttrib(x, R_NamesSymbol));
-    PROTECT(y = getAttrib(y, R_NamesSymbol));
-    if(!isNull(x) || !isNull(y)) {
+    PROTECT(x = Rf_getAttrib(x, R_NamesSymbol));
+    PROTECT(y = Rf_getAttrib(y, R_NamesSymbol));
+    if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
@@ -467,7 +467,7 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 	Rf_setAttrib(counts, R_DimNamesSymbol, dimnames);
 	Rf_setAttrib(ans, Rf_install("counts"), counts);
 	UNPROTECT(2); /* names, dimnames */
-	if(!isNull(x) || !isNull(y)) {
+	if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dimnames, 0, x);
 	    SET_VECTOR_ELT(dimnames, 1, y);
@@ -582,7 +582,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     params.cost_del = INTEGER(opt_costs)[1];
     params.cost_subst = INTEGER(opt_costs)[2];
 
-    PROTECT(ans = allocMatrix(REALSXP, nx, ny));
+    PROTECT(ans = Rf_allocMatrix(REALSXP, nx, ny));
     if(opt_counts) {
 	PROTECT(counts = alloc3DArray(INTSXP, nx, ny, 3));
 	PROTECT(offsets = alloc3DArray(INTSXP, nx, ny, 2));
@@ -693,9 +693,9 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	}
     }
 
-    PROTECT(x = getAttrib(x, R_NamesSymbol));
-    PROTECT(y = getAttrib(y, R_NamesSymbol));
-    if(!isNull(x) || !isNull(y)) {
+    PROTECT(x = Rf_getAttrib(x, R_NamesSymbol));
+    PROTECT(y = Rf_getAttrib(y, R_NamesSymbol));
+    if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);

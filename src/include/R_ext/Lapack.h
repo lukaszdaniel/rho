@@ -71,11 +71,11 @@ extern void F77_NAME(ilaver)(int *major, int *minor, int *patch);
 // ------------------------------------
 
 /* matrix norms: converting typstr[]  to one of {'M', 'O', 'I', 'F'}
- * or signal error(): */
+ * or signal Rf_error(): */
 // La_extern char La_norm_type(const char *typstr);
 
 /* matrix (reciprocal) condition numbers: convert typstr[]  to 'O'(ne) or 'I'(nf)
- * or signal error(): */
+ * or signal Rf_error(): */
 // La_extern char La_rcond_type(const char *typstr);
 
 

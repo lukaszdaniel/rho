@@ -167,7 +167,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    k = Rf_xlength(VECTOR_ELT(x, j));
 	    if (k > 0) {
 		if(use_Bytes)
-		    pwidth += strlen(CHAR(STRING_ELT(VECTOR_ELT(x, j), i % k)));
+		    pwidth += strlen(R_CHAR(STRING_ELT(VECTOR_ELT(x, j), i % k)));
 		else if(use_UTF8)
 		    pwidth += strlen(Rf_translateCharUTF8(STRING_ELT(VECTOR_ELT(x, j), i % k)));
 		else
@@ -195,7 +195,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 		    strcpy(buf, s);
 		    buf += strlen(s);
 		} else {
-		    s = use_Bytes ? CHAR(cs) : Rf_translateChar(cs);
+		    s = use_Bytes ? R_CHAR(cs) : Rf_translateChar(cs);
 		    strcpy(buf, s);
 		    buf += strlen(s);
 		    allKnown = allKnown && (Rf_strIsASCII(s) || (ENC_KNOWN(cs)> 0));
@@ -234,7 +234,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    if(IS_BYTES(STRING_ELT(ans, i))) use_Bytes = TRUE;
 	}
 	if(use_Bytes) {
-	    csep = CHAR(sep);
+	    csep = R_CHAR(sep);
 	    use_UTF8 = FALSE;
 	} else if(use_UTF8)
 	    csep = Rf_translateCharUTF8(sep);
@@ -250,7 +250,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 		pwidth += strlen(Rf_translateCharUTF8(STRING_ELT(ans, i)));
 		vmaxset(vmax);
 	    } else /* already translated */
-		pwidth += strlen(CHAR(STRING_ELT(ans, i)));
+		pwidth += strlen(R_CHAR(STRING_ELT(ans, i)));
 	pwidth += (nx - 1) * sepw;
 	if (pwidth > INT_MAX)
 	    Rf_error(_("result would exceed 2^31-1 bytes"));
@@ -264,7 +264,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    if(use_UTF8)
 		s = Rf_translateCharUTF8(STRING_ELT(ans, i));
 	    else /* already translated */
-		s = CHAR(STRING_ELT(ans, i));
+		s = R_CHAR(STRING_ELT(ans, i));
 	    strcpy(buf, s);
 	    while (*buf)
 		buf++;
@@ -308,7 +308,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
     if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
 	Rf_error(_("invalid separator"));
     sep = STRING_ELT(sep, 0);
-    csep = CHAR(sep);
+    csep = R_CHAR(sep);
     sepw = int(strlen(csep)); /* hopefully 1 */
 
     /* Any zero-length argument gives zero-length result */
@@ -447,9 +447,9 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	if(R_nchar(STRING_ELT(decimal_mark_, 0), Chars,
 		   /* allowNA = */ FALSE, /* keepNA = */ FALSE,
 		   "decimal.mark") != 1) // will become an error
-	    warning(_("'decimal.mark' must be a string of one character"));
+	    Rf_warning(_("'decimal.mark' must be a string of one character"));
 #endif
-	strncpy(sdec, CHAR(STRING_ELT(decimal_mark_, 0)), 10);
+	strncpy(sdec, R_CHAR(STRING_ELT(decimal_mark_, 0)), 10);
 	sdec[10] = '\0';
 	my_OutDec = sdec;
     }
@@ -517,7 +517,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    for (i = 0; i < n; i++) {
 		SEXP tmp =  STRING_ELT(xx, i);
 		if(IS_BYTES(tmp)) {
-		    const char *p = CHAR(tmp), *q;
+		    const char *p = R_CHAR(tmp), *q;
 		    char *pp = R_alloc(4*strlen(p)+1, 1), *qq = pp, buf[5];
 		    for (q = p; *q; q++) {
 			unsigned char k = static_cast<unsigned char>(*q);
@@ -531,7 +531,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 		    *qq = '\0';
 		    s = pp;
 		} else s = Rf_translateChar(tmp);
-		if(s != CHAR(tmp)) SET_STRING_ELT(xx, i, Rf_mkChar(s));
+		if(s != R_CHAR(tmp)) SET_STRING_ELT(xx, i, Rf_mkChar(s));
 	    }
 
 	    w = wd;
@@ -559,7 +559,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 		    q = buff;
 		    if(STRING_ELT(xx, i) == NA_STRING) s0 = R_print.na_string;
 		    else s0 = STRING_ELT(xx, i) ;
-		    s = CHAR(s0);
+		    s = R_CHAR(s0);
 		    il = Rstrlen(s0, 0);
 		    b = w - il;
 		    if(b > 0 && adj != Rprt_adj_left) {
@@ -589,7 +589,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
     } else if((l = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue)
 	Rf_setAttrib(y, R_NamesSymbol, l);
 
-    /* In case something else forgets to set PrintDefaults(), PR#14477 */
+    /* In case something else forgets to set Rf_PrintDefaults(), PR#14477 */
     R_print.scipen = scikeep;
 
     UNPROTECT(1); /* y */

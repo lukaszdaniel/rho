@@ -66,17 +66,17 @@ static R_len_t *savedtl = NULL, nalloc = 0, nsaved = 0;
 static void savetl_init()
 {
     if (nsaved || nalloc || saveds || savedtl)
-	error("Internal error: savetl_init checks failed (%d %d %p %p).",
+	Rf_error("Internal error: savetl_init checks failed (%d %d %p %p).",
 	      nsaved, nalloc, saveds, savedtl);
     nsaved = 0;
     nalloc = 100;
     saveds = (SEXP *) malloc(nalloc * sizeof(SEXP));
     if (saveds == NULL)
-	error("Could not allocate saveds in savetl_init");
+	Rf_error("Could not allocate saveds in savetl_init");
     savedtl = (R_len_t *) malloc(nalloc * sizeof(R_len_t));
     if (savedtl == NULL) {
 	free(saveds);
-	error("Could not allocate saveds in savetl_init");
+	Rf_error("Could not allocate saveds in savetl_init");
     }
 }
 
@@ -104,13 +104,13 @@ static void savetl(SEXP s)
 	tmp = (char *) realloc(saveds, nalloc * sizeof(SEXP));
 	if (tmp == NULL) {
 	    savetl_end();
-	    error("Could not realloc saveds in savetl");
+	    Rf_error("Could not realloc saveds in savetl");
 	}
 	saveds = (SEXP *) tmp;
 	tmp = (char *) realloc(savedtl, nalloc * sizeof(R_len_t));
 	if (tmp == NULL) {
 	    savetl_end();
-	    error("Could not realloc savedtl in savetl");
+	    Rf_error("Could not realloc savedtl in savetl");
 	}
 	savedtl = (R_len_t *) tmp;
     }
@@ -120,12 +120,12 @@ static void savetl(SEXP s)
 }
 
 // http://gcc.gnu.org/onlinedocs/cpp/Swallowing-the-Semicolon.html#Swallowing-the-Semicolon
-#define Error(...) do {savetl_end(); error(__VA_ARGS__);} while(0)
+#define Error(...) do {savetl_end(); Rf_error(__VA_ARGS__);} while(0)
 #undef warning
 // since it can be turned to error via warn = 2
 #define warning(...) Do not use warning in this file
 /* use malloc/realloc (not Calloc/Realloc) so we can trap errors
-   and call savetl_end() before the error(). */
+   and call savetl_end() before the Rf_error(). */
 
 static void growstack(int newlen)
 {
@@ -759,7 +759,7 @@ static void dradix(unsigned char *x, int *o, int n)
             push(thisgrpn);
         } else {
             if (colSize == 4) { // ready for merging in iradix ...
-                error("Not yet used, still using iradix instead");
+                Rf_error("Not yet used, still using iradix instead");
                 for (int j = 0; j < thisgrpn; j++)
                     ((int *)radix_xsub)[j] = (int)twiddle(x, o[itmp+j]-1, order);
                 // this is why this xsub here can't be the same memory
@@ -847,7 +847,7 @@ static void dradix_r(unsigned char *xsub, int *osub, int n, int radix)
 	    thiscounts[i] = (itmp += thiscounts[i]);
     p = xsub + (n - 1) * colSize;
     if (colSize == 4) {
-	error("Not yet used, still using iradix instead");
+	Rf_error("Not yet used, still using iradix instead");
 	for (int i = n - 1; i >= 0; i--) {
 	    int j = --thiscounts[*(p + RADIX_BYTE)];
 	    otmp[j] = osub[i];
@@ -936,14 +936,14 @@ static void checkEncodings(SEXP x)
     if (i < length(x)) {
         ce = CHAR_ENCODING(STRING_ELT(x, i));
         if (ce == CE_NATIVE) {
-            error(_("Character encoding must be UTF-8, Latin-1 or bytes"));
+            Rf_error(_("Character encoding must be UTF-8, Latin-1 or bytes"));
         }
     }
 
     /* Disabled for now -- doubles the time (for already sorted vectors): why?
     for (int i = 1; i < length(x); i++) {
         if (ce != CHAR_ENCODING(STRING_ELT(x, i))) {
-            error(_("Mixed character encodings are not supported"));
+            Rf_error(_("Mixed character encodings are not supported"));
         }
     }
     */
@@ -1549,10 +1549,10 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* ML: FIXME: Here are just two of the dangerous assumptions here */
     if (sizeof(int) != 4) {
-        error("radix sort assumes sizeof(int) == 4");
+        Rf_error("radix sort assumes sizeof(int) == 4");
     }
     if (sizeof(double) != 8) {
-        error("radix sort assumes sizeof(double) == 8");
+        Rf_error("radix sort assumes sizeof(double) == 8");
     }
     
     nalast = (asLogical(CAR(args)) == NA_LOGICAL) ? 0 :
@@ -1581,17 +1581,17 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 	nl = XLENGTH(CAR(args));
     for (SEXP ap = args; ap != R_NilValue; ap = CDR(ap), narg++) {
 	if (!isVector(CAR(ap)))
-	    error(_("argument %d is not a vector"), narg + 1);
+	    Rf_error(_("argument %d is not a vector"), narg + 1);
         //Rprintf("%d, %d\n", XLENGTH(CAR(ap)), nl);
 	if (XLENGTH(CAR(ap)) != nl)
-	    error(_("argument lengths differ"));
+	    Rf_error(_("argument lengths differ"));
     }
 
     if (narg != length(decreasing))
-	error(_("length(decreasing) must match the number of order arguments"));
+	Rf_error(_("length(decreasing) must match the number of order arguments"));
     for (int i = 0; i < narg; i++) {
 	if (LOGICAL(decreasing)[i] == NA_LOGICAL)
-	    error(_("'decreasing' elements must be TRUE or FALSE"));
+	    Rf_error(_("'decreasing' elements must be TRUE or FALSE"));
     }
     order = asLogical(decreasing) ? -1 : 1;
 
@@ -1600,7 +1600,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     // (ML) FIXME: need to support long vectors
     if (nl > INT_MAX) {
-	error(_("long vectors not supported"));
+	Rf_error(_("long vectors not supported"));
     }
     n = (int) nl;
 
@@ -1616,7 +1616,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     // memory needed to reorder existing order had to repace this from
     // '0' to '-1' because 'nalast = 0' replace 'o[.]' with 0 values.
 
-    SEXP ans = PROTECT(allocVector(INTSXP, n));
+    SEXP ans = PROTECT(Rf_allocVector(INTSXP, n));
     o = INTEGER(ans);
     o[0] = -1;
     xd = DATAPTR(x);
@@ -1865,7 +1865,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
         int maxgrpn = NA_INTEGER;
         ngrp = gsngrp[flip];
         SEXP s_ends = install("ends");
-        setAttrib(ans, s_ends, x = allocVector(INTSXP, ngrp));
+        Rf_setAttrib(ans, s_ends, x = Rf_allocVector(INTSXP, ngrp));
         if (ngrp > 0) {
             INTEGER(x)[0] = gs[flip][0];
             for (int i = 1; i < ngrp; i++)
@@ -1873,12 +1873,12 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
             maxgrpn = gsmax[flip];
         }
         SEXP s_maxgrpn = install("maxgrpn");
-        setAttrib(ans, s_maxgrpn, ScalarInteger(maxgrpn));
+        Rf_setAttrib(ans, s_maxgrpn, ScalarInteger(maxgrpn));
         SEXP nms;
-        PROTECT(nms = allocVector(STRSXP, 2));
+        PROTECT(nms = Rf_allocVector(STRSXP, 2));
         SET_STRING_ELT(nms, 0, mkChar("grouping"));
         SET_STRING_ELT(nms, 1, mkChar("integer"));
-        setAttrib(ans, R_ClassSymbol, nms);
+        Rf_setAttrib(ans, R_ClassSymbol, nms);
         UNPROTECT(1);
     }
 
@@ -1890,7 +1890,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
                 zeros++;
         }
         if (zeros > 0) {
-            PROTECT(ans = allocVector(INTSXP, n - zeros));
+            PROTECT(ans = Rf_allocVector(INTSXP, n - zeros));
             int *o2 = INTEGER(ans);
             for (int i = 0, i2 = 0; i < n; i++) {
                 if (o[i] > 0)

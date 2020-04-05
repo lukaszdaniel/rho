@@ -28,6 +28,8 @@
    but rather used as a debugging/inspection facility. It is not
    necessarily complete - feel free to add missing pieces. */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -56,9 +58,9 @@ SEXP attribute_hidden do_inspect(/*const*/ rho::Expression* call, const rho::Bui
     int deep = -1;
     int pvec = 5;
     if (num_args > 1) {
-	deep = asInteger(NEXT_ARG);
+	deep = Rf_asInteger(NEXT_ARG);
 	if (num_args > 2) {
-	    pvec = asInteger(NEXT_ARG);
+	    pvec = Rf_asInteger(NEXT_ARG);
 	}
     }
     va_end(args);
@@ -74,8 +76,8 @@ SEXP attribute_hidden do_address(rho::Expression* call, const rho::BuiltInFuncti
 
 SEXP attribute_hidden do_refcnt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
-    // return ScalarInteger(REFCNT(CAR(args)));
-    return ScalarInteger(NA_INTEGER); // Not currently implemented in rho
+    // return Rf_ScalarInteger(REFCNT(CAR(args)));
+    return Rf_ScalarInteger(NA_INTEGER); // Not currently implemented in rho
 }
 
 /* the following functions can be use internally and for debugging purposes -

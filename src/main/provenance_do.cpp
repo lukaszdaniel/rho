@@ -58,10 +58,10 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 	int n;
 	if ((n=Rf_length(args))!=1)
-		errorcall(call,_("%d arguments passed to 'castestfun' which requires 1"),n);
+		Rf_errorcall(call,_("%d arguments passed to 'castestfun' which requires 1"),n);
 
 	if (TYPEOF(CAR(args))!=SYMSXP)
-		errorcall(call,_("castestfun expects Symbol argument"));
+		Rf_errorcall(call,_("castestfun expects Symbol argument"));
     /*GCStackRoot<IntVector> v(IntVector::create(3));
     (*v)[0]=1;
     (*v)[1]=2;
@@ -96,7 +96,7 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 	(*rc)[0]=inv;
 	(*rc)[1]=inv2;
 
-	setAttrib(rc, R_NamesSymbol, str);
+	Rf_setAttrib(rc, R_NamesSymbol, str);
 	return rc;
 }
 
@@ -104,10 +104,10 @@ SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
     if ((n=Rf_length(args))!=1)
-	errorcall(call,_("%d arguments passed to 'hasProvenance' which requires 1"),n);
+	Rf_errorcall(call,_("%d arguments passed to 'hasProvenance' which requires 1"),n);
 
     if (TYPEOF(CAR(args))!=SYMSXP)
-	errorcall(call,_("hasProvenance expects Symbol argument"));
+	Rf_errorcall(call,_("hasProvenance expects Symbol argument"));
 
     GCStackRoot<LogicalVector> v(LogicalVector::create(1));
 #ifdef PROVENANCE_TRACKING
@@ -130,18 +130,18 @@ SEXP attribute_hidden do_provenance (SEXP call, SEXP op, SEXP args, SEXP rho)
     const int nfields=5;
     int n;
     if ((n=Rf_length(args))!=1)
-	errorcall(call,_("%d arguments passed to 'provenance' which requires 1"),n);
+	Rf_errorcall(call,_("%d arguments passed to 'provenance' which requires 1"),n);
 
     if (TYPEOF(CAR(args))!=SYMSXP)
-	errorcall(call,_("provenance expects Symbol argument"));
+	Rf_errorcall(call,_("provenance expects Symbol argument"));
     Symbol* sym=SEXP_downcast<Symbol*>(CAR(args));
     Environment* env=static_cast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     if (!bdg)
-	errorcall(call,_("invalid Symbol passed to 'provenance'"));
+	Rf_errorcall(call,_("invalid Symbol passed to 'provenance'"));
     Provenance* provenance=const_cast<Provenance*>(bdg->provenance());
     if (!provenance)
-	errorcall(call,_("object does not have any provenance"));
+	Rf_errorcall(call,_("object does not have any provenance"));
     const Provenance::Set& children=provenance->children();
 
     GCStackRoot<ListVector> list(ListVector::create(nfields));
@@ -185,7 +185,7 @@ SEXP attribute_hidden do_provenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
 
-    setAttrib(list,R_NamesSymbol,names);
+    Rf_setAttrib(list,R_NamesSymbol,names);
 
     return list;
 #endif  // PROVENANCE_TRACKING
@@ -199,10 +199,10 @@ SEXP attribute_hidden do_provCommand (/*const*/ Expression* call, const BuiltInF
 #else
     int n;
     if ((n=num_args)!=1)
-	errorcall(call,_("%d arguments passed to 'provCommand' which requires 1"),n);
+	Rf_errorcall(call,_("%d arguments passed to 'provCommand' which requires 1"),n);
 
     if (TYPEOF(args[0])!=SYMSXP)
-	errorcall(call,_("provCommand expects Symbol argument"));
+	Rf_errorcall(call,_("provCommand expects Symbol argument"));
 
     Symbol* sym=SEXP_downcast<Symbol*>(args[0]);
     Environment* env=static_cast<Environment*>(rho);

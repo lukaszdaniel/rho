@@ -60,6 +60,8 @@
 /* if ESC_BARE_QUOTE is defined, " in an unquoted string is replaced
    by \".  " in a quoted string is always replaced by \". */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -169,10 +171,10 @@ const char *EncodeEnvironment(SEXP x)
 	sprintf(ch, "<environment: R_EmptyEnv>");
     else if (R_IsPackageEnv(x))
 	snprintf(ch, 1000, "<environment: %s>",
-		 translateChar(STRING_ELT(R_PackageEnvName(x), 0)));
+		 Rf_translateChar(STRING_ELT(R_PackageEnvName(x), 0)));
     else if (R_IsNamespaceEnv(x))
 	snprintf(ch, 1000, "<environment: namespace:%s>",
-		 translateChar(STRING_ELT(R_NamespaceEnvSpec(x), 0)));
+		 Rf_translateChar(STRING_ELT(R_NamespaceEnvSpec(x), 0)));
     else snprintf(ch, 1000, "<environment: %p>", RHO_NO_CAST(void *)x);
 
     vmaxset(vmax);
@@ -290,7 +292,7 @@ SEXP attribute_hidden Rf_StringFromReal(double x, int *warn)
     int w, d, e;
     formatReal(&x, 1, &w, &d, &e, 0);
     if (ISNA(x)) return NA_STRING;
-    else return mkChar(EncodeRealDrop0(x, w, d, e, OutDec));
+    else return Rf_mkChar(EncodeRealDrop0(x, w, d, e, OutDec));
 }
 
 
@@ -407,7 +409,7 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
     /* Future-proof: currently that is all Rstrlen calls it with,
        and printarray has CE_NATIVE explicitly */
     if(ienc > 2) // CE_NATIVE, CE_UTF8, CE_BYTES are supported
-	warning("unsupported encoding (%d) in Rstrwid", ienc);
+	Rf_warning("unsupported encoding (%d) in Rstrwid", ienc);
     if(mbcslocale || ienc == CE_UTF8) {
 	int res;
 	mbstate_t mb_st;
@@ -416,7 +418,7 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 
 	if(ienc != CE_UTF8)  mbs_init(&mb_st);
 	for (i = 0; i < slen; i++) {
-	    res = (ienc == CE_UTF8) ? int(utf8toucs(&wc, p)):
+	    res = (ienc == CE_UTF8) ? int(Rf_utf8toucs(&wc, p)):
 		int(mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
 	    if(res >= 0) {
 		if (ienc == CE_UTF8 && IS_HIGH_SURROGATE(wc))
@@ -512,11 +514,11 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 attribute_hidden
 int Rstrlen(SEXP s, int quote)
 {
-    cetype_t ienc = getCharCE(s);
+    cetype_t ienc = Rf_getCharCE(s);
     if (ienc == CE_UTF8 || ienc == CE_BYTES)
 	return Rstrwid(R_CHAR(s), LENGTH(s), ienc, quote);
     const void *vmax = vmaxget();
-    const char *p = translateChar(s);
+    const char *p = Rf_translateChar(s);
     int len = Rstrwid(p, (int)strlen(p), CE_NATIVE, quote);
     vmaxset(vmax);
     return len;
@@ -537,7 +539,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 {
     int b, b0, i, j, cnt;
     const char *p; char *q, buf[11];
-    cetype_t ienc = getCharCE(s);
+    cetype_t ienc = Rf_getCharCE(s);
     Rboolean useUTF8 = RHOCONSTRUCT(Rboolean, w < 0);
     const void *vmax = vmaxget();
 
@@ -563,7 +565,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		i = Rstrlen(s, quote);
 		cnt = LENGTH(s);
 	    } else {
-		p = translateCharUTF8(s);
+		p = Rf_translateCharUTF8(s);
 		if(p == R_CHAR(s)) {
 		    i = Rstrlen(s, quote);
 		    cnt = LENGTH(s);
@@ -602,7 +604,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		cnt = LENGTH(s);
 	    } else {
 		ienc = CE_NATIVE;
-		p = translateChar(s);
+		p = Rf_translateChar(s);
 		if(p == R_CHAR(s)) {
 		    i = Rstrlen(s, quote);
 		    cnt = LENGTH(s);
@@ -651,7 +653,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	else if(WinUTF8out) { memcpy(q, UTF8in, 3); q += 3; }
 #endif
 	for (i = 0; i < cnt; i++) {
-	    res = int((ienc == CE_UTF8) ? utf8toucs(&wc, p):
+	    res = int((ienc == CE_UTF8) ? Rf_utf8toucs(&wc, p):
 		      mbrtowc(&wc, p, MB_CUR_MAX, nullptr));
 	    if(res >= 0) { /* res = 0 is a terminator */
 		if (ienc == CE_UTF8 && IS_HIGH_SURROGATE(wc))
@@ -724,7 +726,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	}
 #ifndef __STDC_ISO_10646__
 	if(Unicode_warning)
-	    warning(_("it is not known that wchar_t is Unicode on this platform"));
+	    Rf_warning(_("it is not known that wchar_t is Unicode on this platform"));
 #endif
 
     } else
@@ -918,7 +920,7 @@ void Rcons_vprintf(const char *format, va_list arg)
 	if (res < 0) {
 	    p = buf;
 	    buf[R_BUFSIZE - 1] = '\0';
-	    warning("printing of extremely long output is truncated");
+	    Rf_warning("printing of extremely long output is truncated");
 	} else usedVasprintf = TRUE;
     }
 #else
@@ -932,7 +934,7 @@ void Rcons_vprintf(const char *format, va_list arg)
 	res = vsnprintf(p, 10*R_BUFSIZE, format, arg);
 	if (res < 0) {
 	    *(p + 10*R_BUFSIZE - 1) = '\0';
-	    warning("printing of extremely long output is truncated");
+	    Rf_warning("printing of extremely long output is truncated");
 	}
     }
 #endif /* HAVE_VASPRINTF */

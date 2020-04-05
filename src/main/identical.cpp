@@ -23,6 +23,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -100,7 +101,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
        -- such attributes are used in CR for the cache.  */
     if(TYPEOF(x) == CHARSXP) {
 	/* This matches NAs */
-	return RHOCONSTRUCT(Rboolean, Seql(x, y));
+	return RHOCONSTRUCT(Rboolean, Rf_Seql(x, y));
     }
     if (IGNORE_SRCREF && TYPEOF(x) == CLOSXP) {
 	/* Remove "srcref" attribute - and below, treat body(x), body(y) */
@@ -146,13 +147,13 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    PROTECT(ax);
 	    PROTECT(ay);
 	    for(elx = ax; elx != R_NilValue; elx = CDR(elx)) {
-		const char *tx = CHAR(PRINTNAME(TAG(elx)));
+		const char *tx = R_CHAR(PRINTNAME(TAG(elx)));
 		for(ely = ay; ely != R_NilValue; ely = CDR(ely))
-		    if(streql(tx, CHAR(PRINTNAME(TAG(ely))))) {
+		    if(streql(tx, R_CHAR(PRINTNAME(TAG(ely))))) {
 			/* We need to treat row.names specially here */
 			if(streql(tx, "row.names")) {
-			    PROTECT(atrx = getAttrib(x, R_RowNamesSymbol));
-			    PROTECT(atry = getAttrib(y, R_RowNamesSymbol));
+			    PROTECT(atrx = Rf_getAttrib(x, R_RowNamesSymbol));
+			    PROTECT(atry = Rf_getAttrib(y, R_RowNamesSymbol));
 			    if(!R_compute_identical(atrx, atry, flags)) {
 				UNPROTECT(4); /* atrx, atry, ax, ay */
 				return FALSE;
@@ -230,7 +231,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case CHARSXP: /* Probably unreachable, but better safe than sorry... */
     {
 	/* This matches NAs */
-	return RHOCONSTRUCT(Rboolean, Seql(x, y));
+	return RHOCONSTRUCT(Rboolean, Rf_Seql(x, y));
     }
     case VECSXP:
     {

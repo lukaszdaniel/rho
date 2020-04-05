@@ -33,6 +33,8 @@
 /* The version for R 2.1.0 is partly based on patches by
    Ei-ji Nakama <nakama@ki.rim.or.jp> for use with Japanese fonts. */
 
+#define R_NO_REMAP
+
 #define DPRINTS(x) printf(#x "=[%s]\n", x)
 #define DPRINTX(x) printf(#x "=%x\n", x)
 #define DPRINTD(x) printf(#x "=%d\n", x)
@@ -293,7 +295,7 @@ static SEXP ssNewVector(SEXPTYPE type, int vlen)
     SEXP tvec;
     int j;
 
-    tvec = allocVector(type, vlen);
+    tvec = Rf_allocVector(type, vlen);
     for (j = 0; j < vlen; j++)
 	if (type == REALSXP)
 	    REAL(tvec)[j] = NA_REAL;
@@ -313,12 +315,12 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
     DEstruct DE = &DE1;
 
     nprotect = 0;/* count the PROTECT()s */
-    PROTECT_WITH_INDEX(DE->work = duplicate(CAR(args)), &DE->wpi); nprotect++;
+    PROTECT_WITH_INDEX(DE->work = Rf_duplicate(CAR(args)), &DE->wpi); nprotect++;
     colmodes = CADR(args);
-    tnames = getAttrib(DE->work, R_NamesSymbol);
+    tnames = Rf_getAttrib(DE->work, R_NamesSymbol);
 
     if (TYPEOF(DE->work) != VECSXP || TYPEOF(colmodes) != VECSXP)
-	errorcall(call, "invalid argument");
+	Rf_errorcall(call, "invalid argument");
 
     /* initialize the constants */
 
@@ -333,7 +335,7 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
     DE->crow = 1;
     DE->colmin = 1;
     DE->rowmin = 1;
-    PROTECT(ssNA_STRING = duplicate(NA_STRING));
+    PROTECT(ssNA_STRING = Rf_duplicate(NA_STRING));
     nprotect++;
     DE->bwidth = 5;
     DE->hht = 30;
@@ -341,43 +343,43 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* setup work, names, lens  */
     DE->xmaxused = Rf_length(DE->work); DE->ymaxused = 0;
-    PROTECT_WITH_INDEX(DE->lens = allocVector(INTSXP, DE->xmaxused), &DE->lpi);
+    PROTECT_WITH_INDEX(DE->lens = Rf_allocVector(INTSXP, DE->xmaxused), &DE->lpi);
     nprotect++;
 
-    if (isNull(tnames)) {
-	PROTECT_WITH_INDEX(DE->names = allocVector(STRSXP, DE->xmaxused),
+    if (Rf_isNull(tnames)) {
+	PROTECT_WITH_INDEX(DE->names = Rf_allocVector(STRSXP, DE->xmaxused),
 			   &DE->npi);
 	for(i = 0; i < DE->xmaxused; i++) {
 	    sprintf(clab, "var%d", i);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
     } else
-	PROTECT_WITH_INDEX(DE->names = duplicate(tnames), &DE->npi);
+	PROTECT_WITH_INDEX(DE->names = Rf_duplicate(tnames), &DE->npi);
     nprotect++;
     for (i = 0; i < DE->xmaxused; i++) {
 	int len = LENGTH(VECTOR_ELT(DE->work, i));
 	INTEGER(DE->lens)[i] = len;
 	DE->ymaxused = max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
-	if (LENGTH(colmodes) > 0 && !isNull(VECTOR_ELT(colmodes, i)))
-	    type = str2type(CHAR(STRING_ELT(VECTOR_ELT(colmodes, i), 0)));
+	if (LENGTH(colmodes) > 0 && !Rf_isNull(VECTOR_ELT(colmodes, i)))
+	    type = Rf_str2type(R_CHAR(STRING_ELT(VECTOR_ELT(colmodes, i), 0)));
 	if (type != STRSXP) type = REALSXP;
-	if (isNull(VECTOR_ELT(DE->work, i))) {
+	if (Rf_isNull(VECTOR_ELT(DE->work, i))) {
 	    if (type == NILSXP) type = REALSXP;
 	    SET_VECTOR_ELT(DE->work, i, ssNewVector(type, 100));
-	} else if (!isVector(VECTOR_ELT(DE->work, i)))
-	    errorcall(call, "invalid type for value");
+	} else if (!Rf_isVector(VECTOR_ELT(DE->work, i)))
+	    Rf_errorcall(call, "invalid type for value");
 	else {
 	    if (TYPEOF(VECTOR_ELT(DE->work, i)) != type)
 		SET_VECTOR_ELT(DE->work, i,
-			       coerceVector(VECTOR_ELT(DE->work, i), type));
+			       Rf_coerceVector(VECTOR_ELT(DE->work, i), type));
 	}
     }
 
 
     /* start up the window, more initializing in here */
     if (initwin(DE, title))
-	errorcall(call, "unable to start data editor");
+	Rf_errorcall(call, "unable to start data editor");
 
     /* use try-catch to close the window if there is an error */
     try {
@@ -410,18 +412,18 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* drop out unused columns */
     for(i = 0, cnt = 0; i < DE->xmaxused; i++)
-	if(!isNull(VECTOR_ELT(DE->work, i))) cnt++;
+	if(!Rf_isNull(VECTOR_ELT(DE->work, i))) cnt++;
     if (cnt < DE->xmaxused) {
-	PROTECT(work2 = allocVector(VECSXP, cnt)); nprotect++;
+	PROTECT(work2 = Rf_allocVector(VECSXP, cnt)); nprotect++;
 	for(i = 0, j = 0; i < DE->xmaxused; i++) {
-	    if(!isNull(VECTOR_ELT(DE->work, i))) {
+	    if(!Rf_isNull(VECTOR_ELT(DE->work, i))) {
 		SET_VECTOR_ELT(work2, j, VECTOR_ELT(DE->work, i));
 		INTEGER(DE->lens)[j] = INTEGER(DE->lens)[i];
 		SET_STRING_ELT(DE->names, j, STRING_ELT(DE->names, i));
 		j++;
 	    }
 	}
-	REPROTECT(DE->names = lengthgets(DE->names, cnt), DE->npi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, cnt), DE->npi);
     } else work2 = DE->work;
 
     for (i = 0; i < LENGTH(work2); i++) {
@@ -438,13 +440,13 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    else
 			SET_STRING_ELT(tvec2, j, NA_STRING);
 		} else
-		    error("dataentry: internal memory problem");
+		    Rf_error("dataentry: internal memory problem");
 	    }
 	    SET_VECTOR_ELT(work2, i, tvec2);
 	}
     }
 
-    setAttrib(work2, R_NamesSymbol, DE->names);
+    Rf_setAttrib(work2, R_NamesSymbol, DE->names);
     UNPROTECT(nprotect);
     return work2;
 }
@@ -460,13 +462,13 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     nprotect = 0;/* count the PROTECT()s */
     DE->work = CAR(args);
-    DE->names = getAttrib(DE->work, R_NamesSymbol);
+    DE->names = Rf_getAttrib(DE->work, R_NamesSymbol);
 
     if (TYPEOF(DE->work) != VECSXP)
-	errorcall(call, "invalid argument");
+	Rf_errorcall(call, "invalid argument");
     stitle = CADR(args);
-    if (!isString(stitle) || LENGTH(stitle) != 1)
-	errorcall(call, "invalid argument");
+    if (!Rf_isString(stitle) || LENGTH(stitle) != 1)
+	Rf_errorcall(call, "invalid argument");
 
     /* initialize the constants */
 
@@ -487,7 +489,7 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* setup work, names, lens  */
     DE->xmaxused = Rf_length(DE->work); DE->ymaxused = 0;
-    PROTECT_WITH_INDEX(DE->lens = allocVector(INTSXP, DE->xmaxused), &DE->lpi);
+    PROTECT_WITH_INDEX(DE->lens = Rf_allocVector(INTSXP, DE->xmaxused), &DE->lpi);
     nprotect++;
 
     for (i = 0; i < DE->xmaxused; i++) {
@@ -496,13 +498,13 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 	DE->ymaxused = max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
 	if (type != STRSXP && type != REALSXP)
-	    errorcall(call, "invalid argument");
+	    Rf_errorcall(call, "invalid argument");
     }
 
 
     /* start up the window, more initializing in here */
-    if (initwin(DE, CHAR(STRING_ELT(stitle, 0))))
-	errorcall(call, "unable to start data viewer");
+    if (initwin(DE, R_CHAR(STRING_ELT(stitle, 0))))
+	Rf_errorcall(call, "unable to start data viewer");
 
     /* use try-catch to close the window if there is an error */
     try {
@@ -754,7 +756,7 @@ static void cell_cursor_init(DEstruct DE)
 	    tmp = VECTOR_ELT(DE->work, whichcol - 1);
 	    if (tmp != R_NilValue &&
 		(i = whichrow - 1) < LENGTH(tmp) ) {
-		PrintDefaults();
+		Rf_PrintDefaults();
 		if (TYPEOF(tmp) == REALSXP) {
 		    strncpy(buf, EncodeElement(tmp, i, 0, '.'),
 			    BOOSTED_BUF_SIZE-1);
@@ -778,11 +780,11 @@ static const char *get_col_name(DEstruct DE, int col)
     if (col <= DE->xmaxused) {
 	/* don't use NA labels */
 	SEXP tmp = STRING_ELT(DE->names, col - 1);
-	if(tmp != NA_STRING) return(CHAR(tmp));
+	if(tmp != NA_STRING) return(R_CHAR(tmp));
     }
     nwrote = snprintf(clab, 25, "var%d", col);
     if (nwrote >= 25)
-	error("get_col_name: column number too big to stringify");
+	Rf_error("get_col_name: column number too big to stringify");
     return (const char *)clab;
 }
 
@@ -795,11 +797,11 @@ static int get_col_width(DEstruct DE, int col)
     if (DE->nboxchars > 0) return DE->box_w;
     if (col <= DE->xmaxused) {
 	tmp = VECTOR_ELT(DE->work, col - 1);
-	if (isNull(tmp)) return DE->box_w;
+	if (Rf_isNull(tmp)) return DE->box_w;
 	/* don't use NA labels */
 	lab = STRING_ELT(DE->names, col - 1);
-	if(lab != NA_STRING) strp = CHAR(lab); else strp = "var12";
-	PrintDefaults();
+	if(lab != NA_STRING) strp = R_CHAR(lab); else strp = "var12";
+	Rf_PrintDefaults();
 
 	w = textwidth(DE, strp, (int) strlen(strp));
 	for (i = 0; i < INTEGER(DE->lens)[col - 1]; i++) {
@@ -848,7 +850,7 @@ static void drawcol(DEstruct DE, int whichcol)
 
    if (DE->xmaxused >= whichcol) {
 	tmp = VECTOR_ELT(DE->work, whichcol - 1);
-	if (!isNull(tmp)) {
+	if (!Rf_isNull(tmp)) {
 	    len = min(DE->rowmax, INTEGER(DE->lens)[whichcol - 1]);
 	    for (i = (DE->rowmin - 1); i < len; i++)
 		printelt(DE, tmp, i, i - DE->rowmin + 2, col);
@@ -880,7 +882,7 @@ static void drawrow(DEstruct DE, int whichrow)
 
     for (i = DE->colmin; i <= DE->colmax; i++) {
 	if (i > DE->xmaxused) break;
-	if (!isNull(tvec = VECTOR_ELT(DE->work, i - 1)))
+	if (!Rf_isNull(tvec = VECTOR_ELT(DE->work, i - 1)))
 	    if (whichrow <= INTEGER(DE->lens)[i - 1])
 		printelt(DE, tvec, whichrow - 1, row, i - DE->colmin + 1);
     }
@@ -897,7 +899,7 @@ static void drawrow(DEstruct DE, int whichrow)
 static void printelt(DEstruct DE, SEXP invec, int vrow, int ssrow, int sscol)
 {
     const char *strp;
-    PrintDefaults();
+    Rf_PrintDefaults();
     if (TYPEOF(invec) == REALSXP) {
 	strp = EncodeElement(invec, vrow, 0, '.');
 	printstring(DE ,strp, (int) strlen(strp), ssrow, sscol, 0);
@@ -909,7 +911,7 @@ static void printelt(DEstruct DE, SEXP invec, int vrow, int ssrow, int sscol)
 	}
     }
     else
-	error("dataentry: internal memory error");
+	Rf_error("dataentry: internal memory error");
 }
 
 
@@ -925,7 +927,7 @@ static void drawelt(DEstruct DE, int whichrow, int whichcol)
     } else {
 	if (DE->xmaxused >= whichcol + DE->colmin - 1) {
 	    tmp = VECTOR_ELT(DE->work, whichcol + DE->colmin - 2);
-	    if (!isNull(tmp) && (i = DE->rowmin + whichrow - 2) <
+	    if (!Rf_isNull(tmp) && (i = DE->rowmin + whichrow - 2) <
 		INTEGER(DE->lens)[whichcol + DE->colmin - 2] )
 		printelt(DE, tmp, i, whichrow, whichcol);
 	} else
@@ -1010,23 +1012,23 @@ static Rboolean getccol(DEstruct DE)
     wrow = DE->crow + DE->rowmin - 1;
     if (wcol > DE->xmaxused) {
 	/* extend work, names and lens */
-	REPROTECT(DE->work = lengthgets(DE->work, wcol), DE->wpi);
-	REPROTECT(DE->names = lengthgets(DE->names, wcol), DE->npi);
+	REPROTECT(DE->work = Rf_lengthgets(DE->work, wcol), DE->wpi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, wcol), DE->npi);
 	for (i = DE->xmaxused; i < wcol; i++) {
 	    sprintf(clab, "var%d", i + 1);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
-	REPROTECT(DE->lens = lengthgets(DE->lens, wcol), DE->lpi);
+	REPROTECT(DE->lens = Rf_lengthgets(DE->lens, wcol), DE->lpi);
 	DE->xmaxused = wcol;
     }
-    if (isNull(VECTOR_ELT(DE->work, wcol - 1))) {
+    if (Rf_isNull(VECTOR_ELT(DE->work, wcol - 1))) {
 	newcol = RHOCONSTRUCT(Rboolean, TRUE);
 	SET_VECTOR_ELT(DE->work, wcol - 1,
 		       ssNewVector(REALSXP, max(100, wrow)));
 	INTEGER(DE->lens)[wcol - 1] = 0;
     }
-    if (!isVector(tmp = VECTOR_ELT(DE->work, wcol - 1)))
-	error("internal type error in dataentry");
+    if (!Rf_isVector(tmp = VECTOR_ELT(DE->work, wcol - 1)))
+	Rf_error("internal type error in dataentry");
     len = INTEGER(DE->lens)[wcol - 1];
     type = TYPEOF(tmp);
     if (len < wrow) {
@@ -1039,7 +1041,7 @@ static Rboolean getccol(DEstruct DE)
 	    else if (type == STRSXP)
 		SET_STRING_ELT(tmp2, i, STRING_ELT(tmp, i));
 	    else
-		error("internal type error in dataentry");
+		Rf_error("internal type error in dataentry");
 	SET_VECTOR_ELT(DE->work, wcol - 1, tmp2);
     }
     return newcol;
@@ -1056,30 +1058,30 @@ static SEXP processEscapes(SEXP x)
 
        newval <- gsub(perl=TRUE, "(?<!\\\\)((\\\\\\\\)*)\"", "\\1\\\\\"", x)
        newval <- sub('(^.*$)', '"\1"', newval)
-       newval <- eval(parse(text=newval))
+       newval <- Rf_eval(parse(text=newval))
 
        We do it this way to avoid extracting the escape handling
        code from the parser.  We need it in C code because this may be executed
        numerous times from C in dataentry.c */
 
-    PROTECT( pattern = mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
-    PROTECT( replacement = mkString("\\1\\\\\"") );
-    SEXP s_gsub = install("gsub");
-    PROTECT( expr = lang5(s_gsub, ScalarLogical(1), pattern, replacement, x) );
-    SET_TAG( CDR(expr), install("perl") );
+    PROTECT( pattern = Rf_mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
+    PROTECT( replacement = Rf_mkString("\\1\\\\\"") );
+    SEXP s_gsub = Rf_install("gsub");
+    PROTECT( expr = Rf_lang5(s_gsub, Rf_ScalarLogical(1), pattern, replacement, x) );
+    SET_TAG( CDR(expr), Rf_install("perl") );
 
-    PROTECT( newval = eval(expr, R_BaseEnv) );
-    PROTECT( pattern = mkString("(^.*$)") );
-    PROTECT( replacement = mkString("\"\\1\"") );
-    PROTECT( expr = lang4(install("sub"), pattern, replacement, newval) );
-    PROTECT( newval = eval(expr, R_BaseEnv) );
+    PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
+    PROTECT( pattern = Rf_mkString("(^.*$)") );
+    PROTECT( replacement = Rf_mkString("\"\\1\"") );
+    PROTECT( expr = Rf_lang4(Rf_install("sub"), pattern, replacement, newval) );
+    PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
     PROTECT( expr = R_ParseVector( newval, 1, &status, R_NilValue) );
 
     /* We only handle the first entry. If this were available more generally,
        we'd probably want to loop over all of expr */
 
     if (status == PARSE_OK && Rf_length(expr))
-	PROTECT( newval = eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
+	PROTECT( newval = Rf_eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
     else
 	PROTECT( newval = R_NilValue );  /* protect just so the count doesn't change */
     UNPROTECT(10);
@@ -1106,17 +1108,17 @@ static void closerect(DEstruct DE)
 		/* then we are entering a new column name */
 		if (DE->xmaxused < wcol) {
 		    /* extend work, names and lens */
-		    REPROTECT(DE->work = lengthgets(DE->work, wcol), DE->wpi);
-		    REPROTECT(DE->names = lengthgets(DE->names, wcol),
+		    REPROTECT(DE->work = Rf_lengthgets(DE->work, wcol), DE->wpi);
+		    REPROTECT(DE->names = Rf_lengthgets(DE->names, wcol),
 			      DE->npi);
 		    for (i = DE->xmaxused; i < wcol - 1; i++) {
 			sprintf(clab, "var%d", i + 1);
-			SET_STRING_ELT(DE->names, i, mkChar(clab));
+			SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 		    }
-		    REPROTECT(DE->lens = lengthgets(DE->lens, wcol), DE->lpi);
+		    REPROTECT(DE->lens = Rf_lengthgets(DE->lens, wcol), DE->lpi);
 		    DE->xmaxused = wcol;
 		}
-		SET_STRING_ELT(DE->names, wcol - 1, mkChar(buf));
+		SET_STRING_ELT(DE->names, wcol - 1, Rf_mkChar(buf));
 		printstring(DE ,buf, (int) strlen(buf), 0, wcol, 0);
 	    } else {
 		sprintf(buf, "var%d", DE->ccol);
@@ -1135,20 +1137,20 @@ static void closerect(DEstruct DE)
 		Rboolean warn = RHOCONSTRUCT(Rboolean, !isBlankString(endp));
 		if (TYPEOF(cvec) == STRSXP) {
 		    SEXP newval;
-		    PROTECT( newval = mkString(buf) );
+		    PROTECT( newval = Rf_mkString(buf) );
 		    PROTECT( newval = processEscapes(newval) );
 		    if (TYPEOF(newval) == STRSXP && Rf_length(newval) == 1)
 			SET_STRING_ELT(cvec, wrow - 1, STRING_ELT(newval, 0));
 		    else
-			warning("dataentry: parse error on string");
+			Rf_warning("dataentry: parse error on string");
 		    UNPROTECT(2);
 		} else
 		    REAL(cvec)[wrow - 1] = newd;
 		if (newcol && warn) {
 		    /* change mode to character */
-		    SEXP tmp = coerceVector(cvec, STRSXP);
+		    SEXP tmp = Rf_coerceVector(cvec, STRSXP);
 		    PROTECT(tmp);
-		    SET_STRING_ELT(tmp, wrow - 1, mkChar(buf));
+		    SET_STRING_ELT(tmp, wrow - 1, Rf_mkChar(buf));
 		    SET_VECTOR_ELT(DE->work, wcol - 1, tmp);
 		    UNPROTECT(1);
 		}
@@ -1342,7 +1344,7 @@ static void handlechar(DEstruct DE, RHOCONST char *text)
     }
 
     if (clength+strlen(text) > BOOSTED_BUF_SIZE - MB_CUR_MAX - 1) {
-	warning("dataentry: expression too long");
+	Rf_warning("dataentry: expression too long");
 	goto donehc;
     }
 
@@ -1752,7 +1754,7 @@ static char *GetCharP(DEEvent * event)
 			    &iokey, &status);
 	/* FIXME check the return code */
 	if(status == XBufferOverflow)
-	    warning("dataentry: expression too long");
+	    Rf_warning("dataentry: expression too long");
     } else
 	XLookupString((XKeyEvent *)event,
 		      text, sizeof(text) - clength,
@@ -1868,14 +1870,14 @@ static int R_X11Err(Display *dsp, XErrorEvent *event)
     if (event->error_code == BadWindow) return 0;
 
     XGetErrorText(dsp, event->error_code, buff, 1000);
-    warning(_("X11 protocol error: %s"), buff);
+    Rf_warning(_("X11 protocol error: %s"), buff);
     return 0;
 }
 
 
 static int NORET R_X11IOErr(Display *dsp)
 {
-    error("X11 fatal IO error: please save work and shut down R");
+    Rf_error("X11 fatal IO error: please save work and shut down R");
 }
 
 /* set up the window, print the grid and column/row labels */
@@ -1900,12 +1902,12 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     strcpy(copycontents, "");
 
     if (!XSupportsLocale ())
-	warning("locale not supported by Xlib: some X ops will operate in C locale");
-    if (!XSetLocaleModifiers ("")) warning("X cannot set locale modifiers");
+	Rf_warning("locale not supported by Xlib: some X ops will operate in C locale");
+    if (!XSetLocaleModifiers ("")) Rf_warning("X cannot set locale modifiers");
 
     if(!iodisplay) {
 	if ((iodisplay = XOpenDisplay(NULL)) == NULL) {
-	    warning("unable to open display");
+	    Rf_warning("unable to open display");
 	    return RHOCONSTRUCT(Rboolean, TRUE);
 	}
 	deContext = XUniqueContext();
@@ -1923,9 +1925,9 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	char opt_fontset_name[512];
 
 	/* options("X11fonts")[1] read font name */
-	SEXP opt = GetOption1(install("X11fonts"));
-	if(isString(opt)) {
-	    const char *s = CHAR(STRING_ELT(opt, 0));
+	SEXP opt = Rf_GetOption1(Rf_install("X11fonts"));
+	if(Rf_isString(opt)) {
+	    const char *s = R_CHAR(STRING_ELT(opt, 0));
 	    sprintf(opt_fontset_name, s, "medium", "r", 12);
 	} else strcpy(opt_fontset_name, fontset_name);
 
@@ -1936,13 +1938,13 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	    if (missing_charset_count) XFreeStringList(missing_charset_list);
 	}
 	if (font_set == NULL) {
-	    warning("unable to create fontset %s", opt_fontset_name);
+	    Rf_warning("unable to create fontset %s", opt_fontset_name);
 	    return RHOCONSTRUCT(Rboolean, TRUE); /* ERROR */
 	}
     } else {
 	DE->font_info = XLoadQueryFont(iodisplay, font_name);
 	if (DE->font_info == NULL) {
-	    warning("unable to load font %s", font_name);
+	    Rf_warning("unable to load font %s", font_name);
 	    return RHOCONSTRUCT(Rboolean, TRUE); /* ERROR */
 	}
     }
@@ -1950,7 +1952,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     /* find out how wide the input boxes should be and set up the
        window size defaults */
 
-    DE->nboxchars = asInteger(GetOption1(install("de.cellwidth")));
+    DE->nboxchars = Rf_asInteger(Rf_GetOption1(Rf_install("de.cellwidth")));
     if (DE->nboxchars == NA_INTEGER || DE->nboxchars < 0) DE->nboxchars = 0;
 
     twidth = textwidth(DE, digits, (int) strlen(digits));
@@ -2067,7 +2069,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	     DE->bwidth,
 	     ioblack,
 	     iowhite)) == 0) {
-	warning("unable to open window for data editor");
+	Rf_warning("unable to open window for data editor");
 	return RHOCONSTRUCT(Rboolean, TRUE);
     }
 
@@ -2101,7 +2103,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	if(!ioim) {
 	    XDestroyWindow(iodisplay, DE->iowindow);
 	    XCloseDisplay(iodisplay);
-	    warning("unable to open X Input Method");
+	    Rf_warning("unable to open X Input Method");
 	    return RHOCONSTRUCT(Rboolean, TRUE);
 	}
 
@@ -2136,7 +2138,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	    XCloseIM(ioim);
 	    XDestroyWindow(iodisplay, DE->iowindow);
 	    XCloseDisplay(iodisplay);
-	    warning("unable to open X Input Context");
+	    Rf_warning("unable to open X Input Context");
 	    return RHOCONSTRUCT(Rboolean, TRUE);
 	}
 
@@ -2337,17 +2339,17 @@ void popupmenu(DEstruct DE, int x_pos, int y_pos, int col, int row)
 
     if (popupcol > DE->xmaxused) {
 	/* extend work, names and lens */
-	REPROTECT(DE->work = lengthgets(DE->work, popupcol), DE->wpi);
-	REPROTECT(DE->names = lengthgets(DE->names, popupcol), DE->npi);
+	REPROTECT(DE->work = Rf_lengthgets(DE->work, popupcol), DE->wpi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, popupcol), DE->npi);
 	for (i = DE->xmaxused+1; i < popupcol; i++) {
 	    sprintf(clab, "var%d", i + 1);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
-	REPROTECT(DE->lens = lengthgets(DE->lens, popupcol), DE->lpi);
+	REPROTECT(DE->lens = Rf_lengthgets(DE->lens, popupcol), DE->lpi);
 	DE->xmaxused = popupcol;
     }
     tvec = VECTOR_ELT(DE->work, popupcol - 1);
-    name = CHAR(STRING_ELT(DE->names, popupcol - 1));
+    name = R_CHAR(STRING_ELT(DE->names, popupcol - 1));
     if(mbcslocale)
 #ifdef HAVE_XUTF8DRAWSTRING
 	if(utf8locale)
@@ -2384,7 +2386,7 @@ void popupmenu(DEstruct DE, int x_pos, int y_pos, int col, int row)
 			menupanes[i], DE->iogc, 3, DE->box_h - 3,
 			menu_label[i - 1], (int) strlen(menu_label[i - 1]));
 
-    if (isNull(tvec) || TYPEOF(tvec) == REALSXP)
+    if (Rf_isNull(tvec) || TYPEOF(tvec) == REALSXP)
 	if(mbcslocale)
 #ifdef HAVE_XUTF8DRAWSTRING
 	    if(utf8locale)
@@ -2447,20 +2449,20 @@ void popupmenu(DEstruct DE, int x_pos, int y_pos, int col, int row)
 		    bell();
 		    break;
 		case 1:
-		    if (isNull(tvec))
+		    if (Rf_isNull(tvec))
 			SET_VECTOR_ELT(DE->work, popupcol - 1,
 				       ssNewVector(REALSXP, 100));
 		    else
 			SET_VECTOR_ELT(DE->work, popupcol - 1,
-				       coerceVector(tvec, REALSXP));
+				       Rf_coerceVector(tvec, REALSXP));
 		    goto done;
 		case 2:
-		    if (isNull(tvec))
+		    if (Rf_isNull(tvec))
 			SET_VECTOR_ELT(DE->work, popupcol - 1,
 				       ssNewVector(STRSXP, 100));
 		    else {
 			SET_VECTOR_ELT(DE->work, popupcol - 1,
-				       coerceVector(tvec, STRSXP));
+				       Rf_coerceVector(tvec, STRSXP));
 		    }
 
 		    goto done;
@@ -2515,7 +2517,7 @@ static void copycell(DEstruct DE)
 	    tmp = VECTOR_ELT(DE->work, whichcol - 1);
 	    if (tmp != R_NilValue &&
 		(i = whichrow - 1) < LENGTH(tmp) ) {
-		PrintDefaults();
+		Rf_PrintDefaults();
 		if (TYPEOF(tmp) == REALSXP) {
 			strncpy(copycontents, EncodeElement(tmp, i, 0, '.'),
 				BOOSTED_BUF_SIZE-1);

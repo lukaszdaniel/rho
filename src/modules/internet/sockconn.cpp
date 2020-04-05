@@ -25,6 +25,8 @@
 
 /* <UTF8> chars are only handled as a whole */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -51,7 +53,7 @@ static Rboolean sock_open(Rconnection con)
     if(thisconn->server) {
 	sock1 = R_SockOpen(thisconn->port);
 	if(sock1 < 0) {
-	    warning("port %d cannot be opened", thisconn->port);
+	    Rf_warning("port %d cannot be opened", thisconn->port);
 	    return FALSE;
 	}
 	/* use try-catch to close socket on jump. */
@@ -64,7 +66,7 @@ static Rboolean sock_open(Rconnection con)
 	}
 
 	if(sock < 0) {
-	    warning("problem in listening on this socket");
+	    Rf_warning("problem in listening on this socket");
 	    R_SockClose(sock1);
 	    return FALSE;
 	}
@@ -75,7 +77,7 @@ static Rboolean sock_open(Rconnection con)
     } else {
 	sock = R_SockConnect(thisconn->port, con->description, timeout);
 	if(sock < 0) {
-	    warning("%s:%d cannot be opened", con->description, thisconn->port);
+	    Rf_warning("%s:%d cannot be opened", con->description, thisconn->port);
 	    return FALSE;
 	}
 	sprintf(buf, "->%s:%d", con->description, thisconn->port);
@@ -83,7 +85,7 @@ static Rboolean sock_open(Rconnection con)
     }
     thisconn->fd = sock;
 
-    mlen = int( strlen(con->mode));
+    mlen = int(strlen(con->mode));
     con->isopen = TRUE;
     if(mlen >= 2 && con->mode[mlen - 1] == 'b') con->text = FALSE;
     else con->text = TRUE;
@@ -171,18 +173,18 @@ Rconnection in_R_newsock(const char *host, int port, int server,
     Rconnection newconn;
 
     newconn = (Rconnection) malloc(sizeof(struct Rconn));
-    if(!newconn) error(_("allocation of socket connection failed"));
+    if(!newconn) Rf_error(_("allocation of socket connection failed"));
     newconn->connclass = (char *) malloc(strlen("sockconn") + 1);
     if(!newconn->connclass) {
 	free(newconn);
-	error(_("allocation of socket connection failed"));
+	Rf_error(_("allocation of socket connection failed"));
         /* for Solaris 12.5 */ newconn = NULL;
     }
     strcpy(newconn->connclass, "sockconn");
     newconn->description = (char *) malloc(strlen(host) + 10);
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
-	error(_("allocation of socket connection failed"));
+	Rf_error(_("allocation of socket connection failed"));
         /* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, host, CE_NATIVE, mode);
@@ -196,7 +198,7 @@ Rconnection in_R_newsock(const char *host, int port, int server,
     newconn->connprivate = (void *) malloc(sizeof(struct sockconn));
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
-	error(_("allocation of socket connection failed"));
+	Rf_error(_("allocation of socket connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
     ((Rsockconn)newconn->connprivate)-> port = port;

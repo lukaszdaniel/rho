@@ -67,12 +67,12 @@
     systems offers millisecond resolution.
     It is available on Cygwin, FreeBSD, macOS, Linux and Solaris.
 
-    currentTime() (in this file) uses
+    Rf_currentTime() (in this file) uses
     clock_gettime(): AIX, FreeBSD, Linux, Solaris, macOS >= 10.12
     gettimeofday():  macOS <= 10.11, Windows, Cygwin
     time() (as ultimate fallback, AFAIK unused).
 
-    proc.time() uses currentTime() for elapsed time,
+    proc.time() uses Rf_currentTime() for elapsed time,
     and getrusage, then times for CPU times on a Unix-alike,
     GetProcessTimes on Windows.
 
@@ -80,6 +80,8 @@
 
     do_date (platform.cpp) uses ctime.
  */
+
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -145,7 +147,7 @@ double Rf_currentTime(void)
 
 SEXP attribute_hidden do_systime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
-    return ScalarReal(currentTime());
+    return Rf_ScalarReal(Rf_currentTime());
 }
 
 #ifdef HAVE_UNISTD_H

@@ -44,6 +44,8 @@
  *  previous anarchy.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -205,14 +207,14 @@ static void transferChars(unsigned char *p, const char *q)
 int attribute_hidden R_TextBufferInit(TextBuffer *txtb, SEXP text)
 {
     int i, k, l, n;
-    if (isString(text)) {
+    if (Rf_isString(text)) {
 	// translateChar might allocate
 	void *vmax = vmaxget();
 	n = Rf_length(text);
 	l = 0;
 	for (i = 0; i < n; i++) {
 	    if (STRING_ELT(text, i) != R_NilValue) {
-		k = int(strlen(translateChar(STRING_ELT(text, i))));
+		k = int(strlen(Rf_translateChar(STRING_ELT(text, i))));
 		if (k > l)
 		    l = k;
 	    }
@@ -225,7 +227,7 @@ int attribute_hidden R_TextBufferInit(TextBuffer *txtb, SEXP text)
 	txtb->ntext = n;
 	txtb->offset = 0;
 	transferChars(txtb->buf,
-		      translateChar(STRING_ELT(txtb->text, txtb->offset)));
+		      Rf_translateChar(STRING_ELT(txtb->text, txtb->offset)));
 	txtb->offset++;
 	return 1;
     }
@@ -261,7 +263,7 @@ int attribute_hidden R_TextBufferGetc(TextBuffer *txtb)
 	} else {
 	    const void *vmax = vmaxget();
 	    transferChars(txtb->buf,
-			  translateChar(STRING_ELT(txtb->text, txtb->offset)));
+			  Rf_translateChar(STRING_ELT(txtb->text, txtb->offset)));
 	    txtb->bufp = txtb->buf;
 	    txtb->offset++;
 	    vmaxset(vmax);

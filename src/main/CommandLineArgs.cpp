@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -104,7 +106,7 @@ R_common_command_line(int *pac, char **argv, Rstart Rp)
     while(--ac) {
 	if(processing && **++av == '-') {
 	    if (streql(*av, "--version")) {
-		PrintVersion(msg, 1024);
+		Rf_PrintVersion(msg, 1024);
 		R_ShowMessage(msg);
 		exit(0);
 	    }

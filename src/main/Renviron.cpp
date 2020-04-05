@@ -29,6 +29,8 @@
  *  Formerly part of ../unix/sys-common.c.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -171,12 +173,12 @@ static void Putenv(char *a, RHOCONST char *b)
     *q = '\0';
 #ifdef HAVE_SETENV
     if(setenv(a, buf, 1))
-	warningcall(R_NilValue,
+	Rf_warningcall(R_NilValue,
 		    _("problem in setting variable '%s' in Renviron"), a);
     free(buf);
 #elif defined(HAVE_PUTENV)
     if(putenv(buf))
-	warningcall(R_NilValue,
+	Rf_warningcall(R_NilValue,
 		    _("problem in setting variable '%s' in Renviron"), a);
     /* no free here: storage remains in use */
 #else
@@ -322,11 +324,11 @@ void process_user_Renviron()
 SEXP attribute_hidden do_readEnviron(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_)
 {
     SEXP x = path_;
-    if (Rf_length(x) != 1 || !isString(x))
-	error(_("argument '%s' must be a character string"), "x");
-    const char *fn = R_ExpandFileName(translateChar(STRING_ELT(x, 0)));
+    if (Rf_length(x) != 1 || !Rf_isString(x))
+	Rf_error(_("argument '%s' must be a character string"), "x");
+    const char *fn = R_ExpandFileName(Rf_translateChar(STRING_ELT(x, 0)));
     int res = process_Renviron(fn);
     if (!res)
-	warning(_("file '%s' cannot be opened for reading"), fn);
-    return ScalarLogical(res != 0);
+	Rf_warning(_("file '%s' cannot be opened for reading"), fn);
+    return Rf_ScalarLogical(res != 0);
 }

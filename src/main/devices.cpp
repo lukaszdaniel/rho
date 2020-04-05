@@ -33,6 +33,8 @@
 
 /* This should be regarded as part of the graphics engine */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -474,7 +476,7 @@ void GEaddDevice(pGEDevDesc gdd)
 /* convenience wrappers */
 void GEaddDevice2(pGEDevDesc gdd, const char *name)
 {
-    gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
+    Rf_gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
 }

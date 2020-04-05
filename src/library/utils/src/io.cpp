@@ -96,7 +96,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
 
     if(!mode && strlen(buf) == 0) return 1;
     for (i = 0; i < Rf_length(d->NAstrings); i++)
-	if (streql(CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
+	if (streql(R_CHAR(STRING_ELT(d->NAstrings, i)), buf)) return 1;
     return 0;
 }
 
@@ -323,36 +323,36 @@ SEXP countfields(SEXP args)
     file = CAR(args);	args = CDR(args);
     sep = CAR(args);	args = CDR(args);
     quotes = CAR(args);	 args = CDR(args);
-    nskip = asInteger(CAR(args));  args = CDR(args);
-    blskip = asLogical(CAR(args)); args = CDR(args);
+    nskip = Rf_asInteger(CAR(args));  args = CDR(args);
+    blskip = Rf_asLogical(CAR(args)); args = CDR(args);
     comstr = CAR(args);
     if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
-	error(_("invalid '%s' argument"), "comment.char");
-    p = translateChar(STRING_ELT(comstr, 0));
+	Rf_error(_("invalid '%s' argument"), "comment.char");
+    p = Rf_translateChar(STRING_ELT(comstr, 0));
     data.comchar = NO_COMCHAR; /*  here for -Wall */
     if (strlen(p) > 1)
-	error(_("invalid '%s' argument"), "comment.char");
+	Rf_error(_("invalid '%s' argument"), "comment.char");
     else if (strlen(p) == 1) data.comchar = (unsigned char)*p;
 
     if (nskip < 0 || nskip == NA_INTEGER) nskip = 0;
     if (blskip == NA_LOGICAL) blskip = 1;
 
-    if (isString(sep) || isNull(sep)) {
+    if (Rf_isString(sep) || Rf_isNull(sep)) {
 	if (Rf_length(sep) == 0) data.sepchar = 0;
-	else data.sepchar = (unsigned char) translateChar(STRING_ELT(sep, 0))[0];
+	else data.sepchar = (unsigned char) Rf_translateChar(STRING_ELT(sep, 0))[0];
 	/* gets compared to chars: bug prior to 1.7.0 */
-    } else error(_("invalid '%s' argument"), "sep");
+    } else Rf_error(_("invalid '%s' argument"), "sep");
 
-    if (isString(quotes)) {
-	const char *sc = translateChar(STRING_ELT(quotes, 0));
+    if (Rf_isString(quotes)) {
+	const char *sc = Rf_translateChar(STRING_ELT(quotes, 0));
 	if (strlen(sc)) data.quoteset = strdup(sc);
 	else data.quoteset = (char *)"";
-    } else if (isNull(quotes))
+    } else if (Rf_isNull(quotes))
 	data.quoteset = (char *)"";
     else
-	error(_("invalid quote symbol set"));
+	Rf_error(_("invalid quote symbol set"));
 
-    i = asInteger(file);
+    i = Rf_asInteger(file);
     data.con = getConnection(i);
     if(i == 0) {
 	data.ttyflag = 1;
@@ -362,21 +362,21 @@ SEXP countfields(SEXP args)
 	if(!data.wasopen) {
 	    strcpy(data.con->mode, "r");
 	    if(!data.con->open(data.con))
-		error(_("cannot open the connection"));
+		Rf_error(_("cannot open the connection"));
 	    if(!data.con->canread) {
 		data.con->close(data.con);
-		error(_("cannot read from this connection"));
+		Rf_error(_("cannot read from this connection"));
 	    }
 	} else {
 	    if(!data.con->canread)
-		error(_("cannot read from this connection"));
+		Rf_error(_("cannot read from this connection"));
 	}
 	for (i = 0; i < nskip; i++) /* MBCS-safe */
 	    while ((c = scanchar(FALSE, &data)) != '\n' && c != R_EOF);
     }
 
     blocksize = SCAN_BLOCKSIZE;
-    PROTECT(ans = allocVector(INTSXP, blocksize));
+    PROTECT(ans = Rf_allocVector(INTSXP, blocksize));
     nlines = 0;
     nfields = 0;
     inquote = 0;
@@ -404,7 +404,7 @@ SEXP countfields(SEXP args)
 	    if (nlines == blocksize) {
 		bns = ans;
 		blocksize = 2 * blocksize;
-		ans = allocVector(INTSXP, blocksize);
+		ans = Rf_allocVector(INTSXP, blocksize);
 		UNPROTECT(1);
 		PROTECT(ans);
 		copyVector(ans, bns);
@@ -416,7 +416,7 @@ SEXP countfields(SEXP args)
 		nfields++;
 	    if (inquote && c == R_EOF) {
 		if(!data.wasopen) data.con->close(data.con);
-		error(_("quoted string on line %d terminated by EOF"), inquote);
+		Rf_error(_("quoted string on line %d terminated by EOF"), inquote);
 	    }
 	    if (inquote && c == quote)
 		inquote = 0;
@@ -434,14 +434,14 @@ SEXP countfields(SEXP args)
 		while ((c = scanchar(Rboolean(inquote), &data)) != quote) {
 		    if (c == R_EOF) {
 			if(!data.wasopen) data.con->close(data.con);
-		        error(_("quoted string on line %d terminated by EOF"), inquote);
+		        Rf_error(_("quoted string on line %d terminated by EOF"), inquote);
 		    } else if (c == '\n') {
 		        INTEGER(ans)[nlines] = NA_INTEGER;
 		        nlines++;
 		        if (nlines == blocksize) {
 			    bns = ans;
 			    blocksize = 2 * blocksize;
-			    ans = allocVector(INTSXP, blocksize);
+			    ans = Rf_allocVector(INTSXP, blocksize);
 			    UNPROTECT(1);
 			    PROTECT(ans);
 			    copyVector(ans, bns);
@@ -480,7 +480,7 @@ SEXP countfields(SEXP args)
 	return ans;
     }
 
-    bns = allocVector(INTSXP, nlines+1);
+    bns = Rf_allocVector(INTSXP, nlines+1);
     for (i = 0; i <= nlines; i++)
 	INTEGER(bns)[i] = INTEGER(ans)[i];
     UNPROTECT(1);
@@ -567,27 +567,27 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
 
-    if (!isString(CAR(args)))
-	error(_("the first argument must be of mode character"));
+    if (!Rf_isString(CAR(args)))
+	Rf_error(_("the first argument must be of mode character"));
 
     data.NAstrings = CADR(args);
     if (TYPEOF(data.NAstrings) != STRSXP)
-	error(_("invalid '%s' argument"), "na.strings");
+	Rf_error(_("invalid '%s' argument"), "na.strings");
 
-    asIs = asLogical(CADDR(args));
+    asIs = Rf_asLogical(CADDR(args));
     if (asIs == NA_LOGICAL) asIs = 0;
 
     dec = CADDDR(args);
-    if (isString(dec) || isNull(dec)) {
+    if (Rf_isString(dec) || Rf_isNull(dec)) {
 	if (Rf_length(dec) == 0)
 	    data.decchar = '.';
 	else
-	    data.decchar = translateChar(STRING_ELT(dec, 0))[0];
+	    data.decchar = Rf_translateChar(STRING_ELT(dec, 0))[0];
     }
 
     numerals = CAD4R(args); // string, one of c("allow.loss", "warn.loss", "no.loss")
-    if (isString(numerals)) {
-	tmp = CHAR(STRING_ELT(numerals, 0));
+    if (Rf_isString(numerals)) {
+	tmp = R_CHAR(STRING_ELT(numerals, 0));
 	if(strcmp(tmp, "allow.loss") == 0) {
 	    i_exact = FALSE;
 	    exact = FALSE;
@@ -598,7 +598,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 	    i_exact = TRUE;
 	    exact = TRUE;
 	} else // should never happen
-	    error(_("invalid 'numerals' string: \"%s\""), tmp);
+	    Rf_error(_("invalid 'numerals' string: \"%s\""), tmp);
 
     } else { // (currently never happens): use default
 	i_exact = FALSE;
@@ -610,15 +610,15 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
     /* save the dim/dimnames attributes */
 
-    PROTECT(dims = getAttrib(cvec, R_DimSymbol));
+    PROTECT(dims = Rf_getAttrib(cvec, R_DimSymbol));
     if (isArray(cvec))
-	PROTECT(names = getAttrib(cvec, R_DimNamesSymbol));
+	PROTECT(names = Rf_getAttrib(cvec, R_DimNamesSymbol));
     else
-	PROTECT(names = getAttrib(cvec, R_NamesSymbol));
+	PROTECT(names = Rf_getAttrib(cvec, R_NamesSymbol));
 
     /* Find the first non-NA entry (empty => NA) */
     for (i = 0; i < len; i++) {
-	tmp = CHAR(STRING_ELT(cvec, i));
+	tmp = R_CHAR(STRING_ELT(cvec, i));
 	if (!(STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
 	      || isNAstring(tmp, 1, &data) || isBlankString(tmp)))
 	    break;
@@ -628,9 +628,9 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     if (typeInfo.islogical) {
-	rval = allocVector(LGLSXP, len);
+	rval = Rf_allocVector(LGLSXP, len);
 	for (i = 0; i < len; i++) {
-	    tmp = CHAR(STRING_ELT(cvec, i));
+	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
 		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
 		LOGICAL(rval)[i] = NA_LOGICAL;
@@ -650,9 +650,9 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     if (!done && typeInfo.isinteger) {
-	rval = allocVector(INTSXP, len);
+	rval = Rf_allocVector(INTSXP, len);
 	for (i = 0; i < len; i++) {
-	    tmp = CHAR(STRING_ELT(cvec, i));
+	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
 		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
 		INTEGER(rval)[i] = NA_INTEGER;
@@ -669,9 +669,9 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     if (!done && typeInfo.isreal) {
-	rval = allocVector(REALSXP, len);
+	rval = Rf_allocVector(REALSXP, len);
 	for (i = 0; i < len; i++) {
-	    tmp = CHAR(STRING_ELT(cvec, i));
+	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
 		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
 		REAL(rval)[i] = NA_REAL;
@@ -688,9 +688,9 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     if (!done && typeInfo.iscomplex) {
-	rval = allocVector(CPLXSXP, len);
+	rval = Rf_allocVector(CPLXSXP, len);
 	for (i = 0; i < len; i++) {
-	    tmp = CHAR(STRING_ELT(cvec, i));
+	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
 		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
 		COMPLEX(rval)[i].r = COMPLEX(rval)[i].i = NA_REAL;
@@ -709,26 +709,26 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
     if (!done) {
 	if (asIs) {
-	    rval = duplicate(cvec);
+	    rval = Rf_duplicate(cvec);
 	    for (i = 0; i < len; i++)
-		if(isNAstring(CHAR(STRING_ELT(rval, i)), 1, &data))
+		if(isNAstring(R_CHAR(STRING_ELT(rval, i)), 1, &data))
 		    SET_STRING_ELT(rval, i, NA_STRING);
 	}
 	else {
-	    PROTECT(dup = duplicated(cvec, FALSE));
+	    PROTECT(dup = Rf_duplicated(cvec, FALSE));
 	    j = 0;
 	    for (i = 0; i < len; i++) {
 		/* <NA> is never to be a level here */
 		if (STRING_ELT(cvec, i) == NA_STRING) continue;
-		if (LOGICAL(dup)[i] == 0 && !isNAstring(CHAR(STRING_ELT(cvec, i)), 1, &data))
+		if (LOGICAL(dup)[i] == 0 && !isNAstring(R_CHAR(STRING_ELT(cvec, i)), 1, &data))
 		    j++;
 	    }
 
-	    PROTECT(levs = allocVector(STRSXP,j));
+	    PROTECT(levs = Rf_allocVector(STRSXP,j));
 	    j = 0;
 	    for (i = 0; i < len; i++) {
 		if (STRING_ELT(cvec, i) == NA_STRING) continue;
-		if (LOGICAL(dup)[i] == 0 && !isNAstring(CHAR(STRING_ELT(cvec, i)), 1, &data))
+		if (LOGICAL(dup)[i] == 0 && !isNAstring(R_CHAR(STRING_ELT(cvec, i)), 1, &data))
 		    SET_STRING_ELT(levs, j++, STRING_ELT(cvec, i));
 	    }
 
@@ -736,21 +736,21 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
 	    /* put the levels in lexicographic order */
 
-	    sortVector(levs, FALSE);
+	    Rf_sortVector(levs, FALSE);
 
 	    PROTECT(a = matchE(levs, cvec, NA_INTEGER, env));
 	    for (i = 0; i < len; i++)
 		INTEGER(rval)[i] = INTEGER(a)[i];
 
-	    setAttrib(rval, R_LevelsSymbol, levs);
-	    PROTECT(a = mkString("factor"));
-	    setAttrib(rval, R_ClassSymbol, a);
+	    Rf_setAttrib(rval, R_LevelsSymbol, levs);
+	    PROTECT(a = Rf_mkString("factor"));
+	    Rf_setAttrib(rval, R_ClassSymbol, a);
 	    UNPROTECT(4);
 	}
     }
 
-    setAttrib(rval, R_DimSymbol, dims);
-    setAttrib(rval, isArray(cvec) ? R_DimNamesSymbol : R_NamesSymbol, names);
+    Rf_setAttrib(rval, R_DimSymbol, dims);
+    Rf_setAttrib(rval, isArray(cvec) ? R_DimNamesSymbol : R_NamesSymbol, names);
     UNPROTECT(2);
     return rval;
 }
@@ -768,8 +768,8 @@ SEXP menu(SEXP choices)
     data.NAstrings = R_NilValue;
 
 
-    if (!isString(choices))
-	error(_("invalid '%s' argument"), "choices");
+    if (!Rf_isString(choices))
+	Rf_error(_("invalid '%s' argument"), "choices");
 
     snprintf(ConsolePrompt, CONSOLE_PROMPT_SIZE, _("Selection: "));
 
@@ -787,13 +787,13 @@ SEXP menu(SEXP choices)
 	first = Strtod(buffer, NULL, TRUE, &data, /*exact*/FALSE);
     } else {
 	for (j = 0; j < LENGTH(choices); j++) {
-	    if (streql(translateChar(STRING_ELT(choices, j)), buffer)) {
+	    if (streql(Rf_translateChar(STRING_ELT(choices, j)), buffer)) {
 		first = j + 1;
 		break;
 	    }
 	}
     }
-    return ScalarInteger((int)first);
+    return Rf_ScalarInteger((int)first);
 }
 
 /* readTableHead(file, nlines, comment.char, blank.lines.skip, quote, sep) */
@@ -815,47 +815,47 @@ SEXP readtablehead(SEXP args)
     args = CDR(args);
 
     file = CAR(args);		   args = CDR(args);
-    nlines = asInteger(CAR(args)); args = CDR(args);
+    nlines = Rf_asInteger(CAR(args)); args = CDR(args);
     comstr = CAR(args);		   args = CDR(args);
-    blskip = asLogical(CAR(args)); args = CDR(args);
+    blskip = Rf_asLogical(CAR(args)); args = CDR(args);
     quotes = CAR(args);		   args = CDR(args);
     sep = CAR(args);		   args = CDR(args);
-    skipNul = asLogical(CAR(args));
+    skipNul = Rf_asLogical(CAR(args));
 
     if (nlines <= 0 || nlines == NA_INTEGER)
-	error(_("invalid '%s' argument"), "nlines");
+	Rf_error(_("invalid '%s' argument"), "nlines");
     if (blskip == NA_LOGICAL) blskip = 1;
-    if (isString(quotes)) {
-	const char *sc = translateChar(STRING_ELT(quotes, 0));
+    if (Rf_isString(quotes)) {
+	const char *sc = Rf_translateChar(STRING_ELT(quotes, 0));
 	if (strlen(sc)) data.quoteset = strdup(sc);
 	else data.quoteset = (char *)"";
-    } else if (isNull(quotes))
+    } else if (Rf_isNull(quotes))
 	data.quoteset = (char *)"";
     else
-	error(_("invalid quote symbol set"));
+	Rf_error(_("invalid quote symbol set"));
 
     if (TYPEOF(comstr) != STRSXP || Rf_length(comstr) != 1)
-	error(_("invalid '%s' argument"), "comment.char");
-    p = translateChar(STRING_ELT(comstr, 0));
+	Rf_error(_("invalid '%s' argument"), "comment.char");
+    p = Rf_translateChar(STRING_ELT(comstr, 0));
     data.comchar = NO_COMCHAR; /*  here for -Wall */
     if (strlen(p) > 1)
-	error(_("invalid '%s' argument"), "comment.char");
+	Rf_error(_("invalid '%s' argument"), "comment.char");
     else if (strlen(p) == 1) data.comchar = (int)*p;
-    if (isString(sep) || isNull(sep)) {
+    if (Rf_isString(sep) || Rf_isNull(sep)) {
 	if (Rf_length(sep) == 0) data.sepchar = 0;
-	else data.sepchar = (unsigned char) translateChar(STRING_ELT(sep, 0))[0];
+	else data.sepchar = (unsigned char) Rf_translateChar(STRING_ELT(sep, 0))[0];
 	/* gets compared to chars: bug prior to 1.7.0 */
-    } else error(_("invalid '%s' argument"), "sep");
-    if (skipNul == NA_LOGICAL) error(_("invalid '%s' argument"), "skipNul");
+    } else Rf_error(_("invalid '%s' argument"), "sep");
+    if (skipNul == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "skipNul");
     data.skipNul = (Rboolean)skipNul;
 
-    i = asInteger(file);
+    i = Rf_asInteger(file);
     data.con = getConnection(i);
     data.ttyflag = (i == 0);
     data.wasopen = data.con->isopen;
     if(!data.wasopen) {
 	strcpy(data.con->mode, "r");
-	if(!data.con->open(data.con)) error(_("cannot open the connection"));
+	if(!data.con->open(data.con)) Rf_error(_("cannot open the connection"));
     } else { /* for a non-blocking connection, more input may
 		have become available, so re-position */
 	if(data.con->canseek && !data.con->blocking)
@@ -864,9 +864,9 @@ SEXP readtablehead(SEXP args)
 
     buf = (char *) malloc(buf_size);
     if(!buf)
-	error(_("cannot allocate buffer in 'readTableHead'"));
+	Rf_error(_("cannot allocate buffer in 'readTableHead'"));
 
-    PROTECT(ans = allocVector(STRSXP, nlines));
+    PROTECT(ans = Rf_allocVector(STRSXP, nlines));
     for(nread = 0; nread < nlines; ) {
 	nbuf = 0; empty = TRUE; skip = FALSE; firstnonwhite = TRUE;
 	if (data.ttyflag)
@@ -878,7 +878,7 @@ SEXP readtablehead(SEXP args)
 		char *tmp = (char *) realloc(buf, buf_size);
 		if(!tmp) {
 		    free(buf);
-		    error(_("cannot allocate buffer in 'readTableHead'"));
+		    Rf_error(_("cannot allocate buffer in 'readTableHead'"));
 		} else buf = tmp;
 	    }
 	    /* Need to handle escaped embedded quotes, and how they are
@@ -889,7 +889,7 @@ SEXP readtablehead(SEXP args)
 		    buf[nbuf++] = (char) c;
 		    c = scanchar(TRUE, &data);
 		    if(c == R_EOF)
-			error(_("\\ followed by EOF"));
+			Rf_error(_("\\ followed by EOF"));
 		    buf[nbuf++] = (char) c;
 		    continue;
 		} else if(quote && c == quote) {
@@ -921,10 +921,10 @@ SEXP readtablehead(SEXP args)
 	buf[nbuf] = '\0';
 	if(data.ttyflag && empty) goto no_more_lines;
 	if(!empty || (c != R_EOF && !blskip)) { /* see previous comment */
-	    SET_STRING_ELT(ans, nread, mkChar(buf));
+	    SET_STRING_ELT(ans, nread, Rf_mkChar(buf));
 	    nread++;
 	    if (strlen(buf) < nbuf) // PR#15625
-		warning("line %d appears to contain embedded nulls", nread);
+		Rf_warning("line %d appears to contain embedded nulls", nread);
 	}
 	if(c == R_EOF) goto no_more_lines;
     }
@@ -938,14 +938,14 @@ no_more_lines:
     if(!data.wasopen) data.con->close(data.con);
     if(nbuf > 0) { /* incomplete last line */
 	if(data.con->text && data.con->blocking) {
-	    warning(_("incomplete final line found by readTableHeader on '%s'"),
+	    Rf_warning(_("incomplete final line found by readTableHeader on '%s'"),
 		    data.con->description);
 	} else
-	    error(_("incomplete final line found by readTableHeader on '%s'"),
+	    Rf_error(_("incomplete final line found by readTableHeader on '%s'"),
 		  data.con->description);
     }
     free(buf);
-    PROTECT(ans2 = allocVector(STRSXP, nread));
+    PROTECT(ans2 = Rf_allocVector(STRSXP, nread));
     for(i = 0; i < nread; i++)
 	SET_STRING_ELT(ans2, i, STRING_ELT(ans, i));
     UNPROTECT(2);
@@ -998,10 +998,10 @@ static const char
     const char *p, *p0;
 
     if (indx < 0 || indx >= Rf_length(x))
-	error(_("index out of range"));
+	Rf_error(_("index out of range"));
     if(TYPEOF(x) == STRSXP) {
 	const void *vmax = vmaxget();
-	p0 = translateChar(STRING_ELT(x, indx));
+	p0 = Rf_translateChar(STRING_ELT(x, indx));
 	if(!quote) return p0;
 	for(nbuf = 2, p = p0; *p; p++) /* find buffer length needed */
 	    nbuf += (*p == '"') ? 2 : 1;
@@ -1058,41 +1058,41 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 
     x = CAR(args);		   args = CDR(args);
     /* this is going to be a connection open or openable for writing */
-    if(!inherits(CAR(args), "connection"))
-	error(_("'file' is not a connection"));
-    con = getConnection(asInteger(CAR(args))); args = CDR(args);
+    if(!Rf_inherits(CAR(args), "connection"))
+	Rf_error(_("'file' is not a connection"));
+    con = getConnection(Rf_asInteger(CAR(args))); args = CDR(args);
     if(!con->canwrite)
-	error(_("cannot write to this connection"));
+	Rf_error(_("cannot write to this connection"));
     wasopen = con->isopen;
     if(!wasopen) {
 	strcpy(con->mode, "wt");
-	if(!con->open(con)) error(_("cannot open the connection"));
+	if(!con->open(con)) Rf_error(_("cannot open the connection"));
     }
-    int nr = asInteger(CAR(args)); args = CDR(args);
-    int nc = asInteger(CAR(args)); args = CDR(args);
+    int nr = Rf_asInteger(CAR(args)); args = CDR(args);
+    int nc = Rf_asInteger(CAR(args)); args = CDR(args);
     rnames = CAR(args);		   args = CDR(args);
     sep = CAR(args);		   args = CDR(args);
     eol = CAR(args);		   args = CDR(args);
     na = CAR(args);		   args = CDR(args);
     dec = CAR(args);		   args = CDR(args);
     quote = CAR(args);		   args = CDR(args);
-    int qmethod = asLogical(CAR(args));
+    int qmethod = Rf_asLogical(CAR(args));
 
-    if(nr == NA_INTEGER) error(_("invalid '%s' argument"), "nr");
-    if(nc == NA_INTEGER) error(_("invalid '%s' argument"), "nc");
-    if(!isNull(rnames) && !isString(rnames))
-	error(_("invalid '%s' argument"), "rnames");
-    if(!isString(sep)) error(_("invalid '%s' argument"), "sep");
-    if(!isString(eol)) error(_("invalid '%s' argument"), "eol");
-    if(!isString(na)) error(_("invalid '%s' argument"), "na");
-    if(!isString(dec)) error(_("invalid '%s' argument"), "dec");
-    if(qmethod == NA_LOGICAL) error(_("invalid '%s' argument"), "qmethod");
-    csep = translateChar(STRING_ELT(sep, 0));
-    ceol = translateChar(STRING_ELT(eol, 0));
-    cna = translateChar(STRING_ELT(na, 0));
-    sdec = translateChar(STRING_ELT(dec, 0));
+    if(nr == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "nr");
+    if(nc == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "nc");
+    if(!Rf_isNull(rnames) && !Rf_isString(rnames))
+	Rf_error(_("invalid '%s' argument"), "rnames");
+    if(!Rf_isString(sep)) Rf_error(_("invalid '%s' argument"), "sep");
+    if(!Rf_isString(eol)) Rf_error(_("invalid '%s' argument"), "eol");
+    if(!Rf_isString(na)) Rf_error(_("invalid '%s' argument"), "na");
+    if(!Rf_isString(dec)) Rf_error(_("invalid '%s' argument"), "dec");
+    if(qmethod == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "qmethod");
+    csep = Rf_translateChar(STRING_ELT(sep, 0));
+    ceol = Rf_translateChar(STRING_ELT(eol, 0));
+    cna = Rf_translateChar(STRING_ELT(na, 0));
+    sdec = Rf_translateChar(STRING_ELT(dec, 0));
     if(strlen(sdec) != 1)
-	error(_("'dec' must be a single character"));
+	Rf_error(_("'dec' must be a single character"));
     quote_col = (Rboolean *) R_alloc(nc, sizeof(Rboolean));
     for(int j = 0; j < nc; j++) quote_col[j] = FALSE;
     for(int i = 0; i < Rf_length(quote); i++) { /* NB, quote might be NULL */
@@ -1101,28 +1101,28 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 	if(thiss >  0) quote_col[thiss - 1] = TRUE;
     }
     R_AllocStringBuffer(0, &strBuf);
-    PrintDefaults();
+    Rf_PrintDefaults();
     wi.savedigits = R_print.digits; R_print.digits = DBL_DIG;/* MAX precision */
     wi.con = con;
     wi.wasopen = wasopen;
     wi.buf = &strBuf;
     try {
-	if(isVectorList(x)) { /* A data frame */
+	if(Rf_isVectorList(x)) { /* A data frame */
 
 	    /* handle factors internally, check integrity */
 	    levels = (SEXP *) R_alloc(nc, sizeof(SEXP));
 	    for(int j = 0; j < nc; j++) {
 		xj = VECTOR_ELT(x, j);
 		if(LENGTH(xj) != nr)
-		    error(_("corrupt data frame -- length of column %d does not not match nrows"), j+1);
-		if(inherits(xj, "factor")) {
-		    levels[j] = getAttrib(xj, R_LevelsSymbol);
+		    Rf_error(_("corrupt data frame -- length of column %d does not not match nrows"), j+1);
+		if(Rf_inherits(xj, "factor")) {
+		    levels[j] = Rf_getAttrib(xj, R_LevelsSymbol);
 		} else levels[j] = R_NilValue;
 	    }
 
 	    for(int i = 0; i < nr; i++) {
 		if(i % 1000 == 999) R_CheckUserInterrupt();
-		if(!isNull(rnames))
+		if(!Rf_isNull(rnames))
 		    Rconn_printf(con, "%s%s",
 				 EncodeElement2(rnames, i, quote_rn, Rboolean(qmethod),
 						&strBuf, sdec), csep);
@@ -1131,7 +1131,7 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(j > 0) Rconn_printf(con, "%s", csep);
 		    if(isna(xj, i)) tmp = cna;
 		    else {
-			if(!isNull(levels[j])) {
+			if(!Rf_isNull(levels[j])) {
 			    /* We do not assume factors have integer levels,
 			       although they should. */
 			    if(TYPEOF(xj) == INTSXP)
@@ -1144,7 +1144,7 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 						     quote_col[j], Rboolean(qmethod),
 						     &strBuf, sdec);
 			    else
-				error(_("column %s claims to be a factor but does not have numeric codes"),
+				Rf_error(_("column %s claims to be a factor but does not have numeric codes"),
 				      j+1);
 			} else {
 			    tmp = EncodeElement2(xj, i, quote_col[j], Rboolean(qmethod),
@@ -1158,15 +1158,15 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 
 	} else { /* A matrix */
 
-	    if(!isVectorAtomic(x))
+	    if(!Rf_isVectorAtomic(x))
 		UNIMPLEMENTED_TYPE("write.table, matrix method", x);
 	    /* quick integrity check */
 	    if(XLENGTH(x) != (R_len_t)nr * nc)
-		error(_("corrupt matrix -- dims not not match length"));
+		Rf_error(_("corrupt matrix -- dims not not match length"));
 	    
 	    for(int i = 0; i < nr; i++) {
 		if(i % 1000 == 999) R_CheckUserInterrupt();
-		if(!isNull(rnames))
+		if(!Rf_isNull(rnames))
 		    Rconn_printf(con, "%s%s",
 				 EncodeElement2(rnames, i, quote_rn,
 						Rboolean(qmethod),

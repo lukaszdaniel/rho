@@ -86,6 +86,8 @@
  *  are being registered.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -173,11 +175,11 @@ InitDynload()
     int which = addDLL(strdup("base"), "base", nullptr);
     DllInfo *dll = &LoadedDLL[which];
     R_init_base(dll);
-    InitFunctionHashing();
+    Rf_InitFunctionHashing();
 }
 
 /* Allocate LoadedDLL. Errors are reported via R_Suicide, because this is
-   called too early during startup to use error(.) */
+   called too early during startup to use Rf_error(.) */
 static void initLoadedDLL()
 {
     if (CountDLL != 0 || LoadedDLL != NULL)
@@ -310,7 +312,7 @@ R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
     int i, num;
 
     if(info == nullptr)
-	error(_("R_RegisterRoutines called with invalid DllInfo object."));
+	Rf_error(_("R_RegisterRoutines called with invalid DllInfo object."));
 
     /* Default is to look in registered and then dynamic (unless
        the is no handle such as in "base" or "embedded")
@@ -373,7 +375,7 @@ R_setPrimitiveArgTypes(const R_FortranMethodDef * const croutine,
     sym->types = static_cast<R_NativePrimitiveArgType *>
 	(malloc(sizeof(R_NativePrimitiveArgType) * size_t(croutine->numArgs)));
     if(!sym->types)
-	error("allocation failure in R_setPrimitiveArgTypes");
+	Rf_error("allocation failure in R_setPrimitiveArgTypes");
     if(sym->types)
 	memcpy(sym->types, croutine->types,
 	       sizeof(R_NativePrimitiveArgType) * size_t(croutine->numArgs));
@@ -638,7 +640,7 @@ static DllInfo *R_RegisterDLL(HINSTANCE handle, const char *path)
     p = Rf_strrchr(dpath, FILESEP[0]);
     if(!p) p = dpath; else p++;
     if(strlen(p) < PATH_MAX) strcpy(DLLname, p);
-    else error(_("DLLname '%s' is too long"), p);
+    else Rf_error(_("DLLname '%s' is too long"), p);
 
     /* remove SHLIB_EXT if present */
     p = DLLname + strlen(DLLname) - strlen(SHLIB_EXT);
@@ -925,14 +927,14 @@ SEXP attribute_hidden do_dynload(/*const*/ Expression* call, const BuiltInFuncti
     char buf[2 * PATH_MAX];
     DllInfo *info;
 
-    if (!isString(x_) || LENGTH(x_) != 1)
-	error(_("character argument expected"));
-    GetFullDLLPath(call, buf, translateChar(STRING_ELT(x_, 0)));
+    if (!Rf_isString(x_) || LENGTH(x_) != 1)
+	Rf_error(_("character argument expected"));
+    GetFullDLLPath(call, buf, Rf_translateChar(STRING_ELT(x_, 0)));
     /* AddDLL does this DeleteDLL(buf); */
     info = AddDLL(buf, LOGICAL(local_)[0], LOGICAL(now_)[0],
-		  translateChar(STRING_ELT(dots_, 0)));
+		  Rf_translateChar(STRING_ELT(dots_, 0)));
     if(!info)
-	error(_("unable to load shared object '%s':\n  %s"), buf, DLLerror);
+	Rf_error(_("unable to load shared object '%s':\n  %s"), buf, DLLerror);
     return(Rf_MakeDLLInfo(info));
 }
 
@@ -940,11 +942,11 @@ SEXP attribute_hidden do_dynunload(/*const*/ Expression* call, const BuiltInFunc
 {
     char buf[2 * PATH_MAX];
 
-    if (!isString(x_) || LENGTH(x_) != 1)
-	error(_("character argument expected"));
-    GetFullDLLPath(call, buf, translateChar(STRING_ELT(x_, 0)));
+    if (!Rf_isString(x_) || LENGTH(x_) != 1)
+	Rf_error(_("character argument expected"));
+    GetFullDLLPath(call, buf, Rf_translateChar(STRING_ELT(x_, 0)));
     if(!DeleteDLL(buf))
-	error(_("shared object '%s\' was not loaded"), buf);
+	Rf_error(_("shared object '%s\' was not loaded"), buf);
     return R_NilValue;
 }
 
@@ -963,7 +965,7 @@ int R_moduleCdynload(const char *module, int local, int now)
 #endif
     res = AddDLL(dllpath, local, now, "");
     if(!res)
-	warning(_("unable to load shared object '%s':\n  %s"),
+	Rf_warning(_("unable to load shared object '%s':\n  %s"),
 		dllpath, DLLerror);
     return res != nullptr ? 1 : 0;
 }
@@ -985,7 +987,7 @@ int R_cairoCdynload(int local, int now)
 #endif
     res = AddDLL(dllpath, local, now, "");
     if(!res)
-	warning(_("unable to load shared object '%s':\n  %s"),
+	Rf_warning(_("unable to load shared object '%s':\n  %s"),
 		dllpath, DLLerror);
     return res != nullptr ? 1 : 0;
 }
@@ -1003,8 +1005,8 @@ Rf_MakeNativeSymbolRef(DL_FUNC f)
 
     PROTECT(ref = R_MakeExternalPtrFn(f, Rf_install("native symbol"),
 				      nullptr));
-    PROTECT(klass = mkString("NativeSymbol"));
-    setAttrib(ref, R_ClassSymbol, klass);
+    PROTECT(klass = Rf_mkString("NativeSymbol"));
+    Rf_setAttrib(ref, R_ClassSymbol, klass);
     UNPROTECT(2);
     return(ref);
 }
@@ -1025,7 +1027,7 @@ Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
     R_RegisteredNativeSymbol *copy;
     copy = static_cast<R_RegisteredNativeSymbol *>(malloc(1 * sizeof(R_RegisteredNativeSymbol)));
     if(!copy) {
-	error(n_("cannot allocate memory for registered native symbol (%d byte)",
+	Rf_error(n_("cannot allocate memory for registered native symbol (%d byte)",
 		       "cannot allocate memory for registered native symbol (%d bytes)",
 		      (int) sizeof(R_RegisteredNativeSymbol)),
 	      int(sizeof(R_RegisteredNativeSymbol)));
@@ -1037,8 +1039,8 @@ Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
 				    nullptr));
     R_RegisterCFinalizer(ref, freeRegisteredNativeSymbolCopy);
 
-    PROTECT(klass = mkString("RegisteredNativeSymbol"));
-    setAttrib(ref, R_ClassSymbol, klass);
+    PROTECT(klass = Rf_mkString("RegisteredNativeSymbol"));
+    Rf_setAttrib(ref, R_ClassSymbol, klass);
 
     UNPROTECT(2);
     return(ref);
@@ -1052,7 +1054,7 @@ Rf_makeDllObject(HINSTANCE inst)
 
     PROTECT(ans = R_MakeExternalPtr(inst, Rf_install("DLLHandle"),
 				    nullptr));
-    setAttrib(ans, R_ClassSymbol, mkString("DLLHandle"));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLHandle"));
     UNPROTECT(1);
 
     return(ans);
@@ -1065,7 +1067,7 @@ Rf_makeDllInfoReference(HINSTANCE inst)
 
     PROTECT(ans = R_MakeExternalPtr(inst, Rf_install("DLLInfo"),
 				    Rf_install("DLLInfo")));
-    setAttrib(ans, R_ClassSymbol, mkString("DLLInfoReference"));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoReference"));
     UNPROTECT(1);
 
     return(ans);
@@ -1088,25 +1090,25 @@ Rf_MakeDLLInfo(DllInfo *info)
 
     n = sizeof(names)/sizeof(names[0]);
 
-    PROTECT(ref = allocVector(VECSXP, n));
-    SET_VECTOR_ELT(ref, 0, Rf_ScalarString(info->name ? mkChar(info->name)
+    PROTECT(ref = Rf_allocVector(VECSXP, n));
+    SET_VECTOR_ELT(ref, 0, Rf_ScalarString(info->name ? Rf_mkChar(info->name)
 					   : R_BlankString));
 
-    SET_VECTOR_ELT(ref, 1, Rf_ScalarString(info->path ? mkChar(info->path)
+    SET_VECTOR_ELT(ref, 1, Rf_ScalarString(info->path ? Rf_mkChar(info->path)
 					   : R_BlankString));
 
-    SET_VECTOR_ELT(ref, 2, ScalarLogical(info->useDynamicLookup));
+    SET_VECTOR_ELT(ref, 2, Rf_ScalarLogical(info->useDynamicLookup));
 
     SET_VECTOR_ELT(ref, 3, Rf_makeDllObject(info->handle));
 
     SET_VECTOR_ELT(ref, 4, Rf_makeDllInfoReference(HINSTANCE( info)));
 
-    PROTECT(elNames = allocVector(STRSXP, n));
+    PROTECT(elNames = Rf_allocVector(STRSXP, n));
     for(i = 0; i < n; i++)
-	SET_STRING_ELT(elNames, i, mkChar(names[i]));
-    setAttrib(ref, R_NamesSymbol, elNames);
+	SET_STRING_ELT(elNames, i, Rf_mkChar(names[i]));
+    Rf_setAttrib(ref, R_NamesSymbol, elNames);
 
-    setAttrib(ref, R_ClassSymbol, mkString("DLLInfo"));
+    Rf_setAttrib(ref, R_ClassSymbol, Rf_mkString("DLLInfo"));
 
     UNPROTECT(2);
 
@@ -1138,17 +1140,17 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
 
     package = "";
 
-    name = translateChar(STRING_ELT(sname, 0));
+    name = Rf_translateChar(STRING_ELT(sname, 0));
 
     if(Rf_length(spackage)) {
 	if(TYPEOF(spackage) == STRSXP)
-	    package = translateChar(STRING_ELT(spackage, 0));
+	    package = Rf_translateChar(STRING_ELT(spackage, 0));
 	else if(TYPEOF(spackage) == EXTPTRSXP &&
 		R_ExternalPtrTag(spackage) == Rf_install("DLLInfo")) {
 	    f = R_dlsym(static_cast<DllInfo *>(R_ExternalPtrAddr(spackage)), name, &symbol);
 	    package = nullptr;
 	} else
-	    error(_("must pass package name or DllInfo reference"));
+	    Rf_error(_("must pass package name or DllInfo reference"));
     }
 
     if(package)
@@ -1169,11 +1171,11 @@ R_getDllTable()
     SEXP ans;
 
  again:
-    PROTECT(ans = allocVector(VECSXP, CountDLL));
+    PROTECT(ans = Rf_allocVector(VECSXP, CountDLL));
     for(i = 0; i < CountDLL; i++) {
 	SET_VECTOR_ELT(ans, i, Rf_MakeDLLInfo(&(LoadedDLL[i])));
     }
-    setAttrib(ans, R_ClassSymbol, mkString("DLLInfoList"));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoList"));
     UNPROTECT(1);
 
     /* There is a problem here: The allocations can cause gc, and gc
@@ -1195,30 +1197,30 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
     int n = (symbol->type != R_ANY_SYM) ? 4 : 3;
     int numProtects = 0;
 
-    PROTECT(sym = allocVector(VECSXP, n));    numProtects++;
-    PROTECT(names = allocVector(STRSXP, n));    numProtects++;
+    PROTECT(sym = Rf_allocVector(VECSXP, n));    numProtects++;
+    PROTECT(names = Rf_allocVector(STRSXP, n));    numProtects++;
 
     if(!sname || sname == R_NilValue) {
-	PROTECT(sname = mkString(symbol->symbol.call->name));
+	PROTECT(sname = Rf_mkString(symbol->symbol.call->name));
 	numProtects++;
     }
 
     SET_VECTOR_ELT(sym, 0, sname);
-    SET_STRING_ELT(names, 0, mkChar("name"));
+    SET_STRING_ELT(names, 0, Rf_mkChar("name"));
 
     SET_VECTOR_ELT(sym, 1,
 		   withRegistrationInfo && symbol && symbol->symbol.c && symbol->dll
 		   ? Rf_MakeRegisteredNativeSymbol(symbol)
 		   : Rf_MakeNativeSymbolRef(f));
-    SET_STRING_ELT(names, 1, mkChar("address"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("address"));
     if(symbol->dll)
 	SET_VECTOR_ELT(sym, 2, Rf_MakeDLLInfo(symbol->dll));
-    SET_STRING_ELT(names, 2, mkChar("dll"));
+    SET_STRING_ELT(names, 2, Rf_mkChar("dll"));
 
 
-    PROTECT(klass = allocVector(STRSXP, (symbol->type != R_ANY_SYM ? 2 : 1)));
+    PROTECT(klass = Rf_allocVector(STRSXP, (symbol->type != R_ANY_SYM ? 2 : 1)));
     numProtects++;
-    SET_STRING_ELT(klass, LENGTH(klass) - 1, mkChar("NativeSymbolInfo"));
+    SET_STRING_ELT(klass, LENGTH(klass) - 1, Rf_mkChar("NativeSymbolInfo"));
 
     if(n > 3) {
 	/* Add the registration information:
@@ -1245,17 +1247,17 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
 	    break;
 	default:
 	    /* Something unintended has happened if we get here. */
-	    error(_("unimplemented type %d in createRSymbolObject"),
+	    Rf_error(_("unimplemented type %d in createRSymbolObject"),
 		  symbol->type);
 	    break;
 	}
-	SET_VECTOR_ELT(sym, 3, tmp = ScalarInteger(nargs));
-	SET_STRING_ELT(klass, 0, mkChar(className));
-	SET_STRING_ELT(names, 3, mkChar("numParameters"));
+	SET_VECTOR_ELT(sym, 3, tmp = Rf_ScalarInteger(nargs));
+	SET_STRING_ELT(klass, 0, Rf_mkChar(className));
+	SET_STRING_ELT(names, 3, Rf_mkChar("numParameters"));
     }
 
-    setAttrib(sym, R_ClassSymbol, klass);
-    setAttrib(sym, R_NamesSymbol, names);
+    Rf_setAttrib(sym, R_ClassSymbol, klass);
+    Rf_setAttrib(sym, R_NamesSymbol, names);
 
     UNPROTECT(numProtects);
     return(sym);
@@ -1285,7 +1287,7 @@ R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 	num = 0;
     }
 
-    PROTECT(ans = allocVector(VECSXP, num));
+    PROTECT(ans = Rf_allocVector(VECSXP, num));
 
     for(i = 0; i < num ; i++) {
 	switch(type) {
@@ -1311,7 +1313,7 @@ R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 	SET_VECTOR_ELT(ans, i, createRSymbolObject(nullptr,  address, &sym, TRUE));/* XXX */
     }
 
-    setAttrib(ans, R_ClassSymbol, mkString("NativeRoutineList"));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("NativeRoutineList"));
     UNPROTECT(1);
     return(ans);
 }
@@ -1327,23 +1329,23 @@ R_getRegisteredRoutines(SEXP dll)
 
     if(TYPEOF(dll) != EXTPTRSXP &&
        R_ExternalPtrTag(dll) != Rf_install("DLLInfo"))
-	error(_("R_getRegisteredRoutines() expects a DllInfo reference"));
+	Rf_error(_("R_getRegisteredRoutines() expects a DllInfo reference"));
 
     info = static_cast<DllInfo *>(R_ExternalPtrAddr(dll));
-    if(!info) error(_("NULL value passed for DllInfo"));
+    if(!info) Rf_error(_("NULL value passed for DllInfo"));
 
 
-    PROTECT(ans = allocVector(VECSXP, 4));
+    PROTECT(ans = Rf_allocVector(VECSXP, 4));
 
     SET_VECTOR_ELT(ans, 0, R_getRoutineSymbols(R_C_SYM, info));
     SET_VECTOR_ELT(ans, 1, R_getRoutineSymbols(R_CALL_SYM, info));
     SET_VECTOR_ELT(ans, 2, R_getRoutineSymbols(R_FORTRAN_SYM, info));
     SET_VECTOR_ELT(ans, 3, R_getRoutineSymbols(R_EXTERNAL_SYM, info));
 
-    PROTECT(snames = allocVector(STRSXP, 4));
+    PROTECT(snames = Rf_allocVector(STRSXP, 4));
     for(i = 0; i < 4; i++)
-	SET_STRING_ELT(snames, i, mkChar(names[i]));
-    setAttrib(ans, R_NamesSymbol, snames);
+	SET_STRING_ELT(snames, i, Rf_mkChar(names[i]));
+    Rf_setAttrib(ans, R_NamesSymbol, snames);
     UNPROTECT(2);
     return(ans);
 }
@@ -1361,16 +1363,16 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 
     if (!Rf_isString(sname) || LENGTH(sname) != 1)
 	Rf_error(_("invalid '%s' argument"), "name");
-    name = translateChar(STRING_ELT(sname, 0));
+    name = Rf_translateChar(STRING_ELT(sname, 0));
     if(Rf_length(spackage)) {
 	if(TYPEOF(spackage) == STRSXP)
-	    package = translateChar(STRING_ELT(spackage, 0));
+	    package = Rf_translateChar(STRING_ELT(spackage, 0));
 	else if(TYPEOF(spackage) == EXTPTRSXP &&
-		R_ExternalPtrTag(spackage) == install("DLLInfo")) {
+		R_ExternalPtrTag(spackage) == Rf_install("DLLInfo")) {
 	    f = R_dlsym(static_cast<DllInfo *>(R_ExternalPtrAddr(spackage)), name, &symbol);
 	    package = nullptr;
 	} else
-	    error(_("must pass package name or DllInfo reference"));
+	    Rf_error(_("must pass package name or DllInfo reference"));
     }
     if(package)
 	f = R_FindSymbol(name, package, &symbol);
@@ -1387,10 +1389,10 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
     SEXP ans, nm;
 
  again:
-    PROTECT(ans = allocVector(VECSXP, CountDLL));
+    PROTECT(ans = Rf_allocVector(VECSXP, CountDLL));
     for(int i = 0; i < CountDLL; i++)
 	SET_VECTOR_ELT(ans, i, Rf_MakeDLLInfo(&(LoadedDLL[i])));
-    setAttrib(ans, R_ClassSymbol, mkString("DLLInfoList"));
+    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoList"));
     UNPROTECT(1);
 
     /* There is a problem here: The allocations can cause gc, and gc
@@ -1401,8 +1403,8 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
     if (CountDLL != LENGTH(ans)) goto again;
 
     PROTECT(ans);
-    PROTECT(nm = allocVector(STRSXP, CountDLL));
-    setAttrib(ans, R_NamesSymbol, nm);
+    PROTECT(nm = Rf_allocVector(STRSXP, CountDLL));
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
     for(int i = 0; i < CountDLL; i++)
 	SET_STRING_ELT(nm, i,
 		       STRING_ELT(VECTOR_ELT(VECTOR_ELT(ans, i), 0), 0));
@@ -1418,24 +1420,24 @@ do_getRegisteredRoutines(/*const*/ Expression* call, const BuiltInFunction* op, 
     SEXP dll = info_, ans, snames;
 
     if(TYPEOF(dll) != EXTPTRSXP &&
-       R_ExternalPtrTag(dll) != install("DLLInfo"))
-	error(_("R_getRegisteredRoutines() expects a DllInfo reference"));
+       R_ExternalPtrTag(dll) != Rf_install("DLLInfo"))
+	Rf_error(_("R_getRegisteredRoutines() expects a DllInfo reference"));
 
     DllInfo *info = static_cast<DllInfo *>(R_ExternalPtrAddr(dll));
-    if(!info) error(_("NULL value passed for DllInfo"));
+    if(!info) Rf_error(_("NULL value passed for DllInfo"));
 
 
-    PROTECT(ans = allocVector(VECSXP, 4));
+    PROTECT(ans = Rf_allocVector(VECSXP, 4));
 
     SET_VECTOR_ELT(ans, 0, R_getRoutineSymbols(R_C_SYM, info));
     SET_VECTOR_ELT(ans, 1, R_getRoutineSymbols(R_CALL_SYM, info));
     SET_VECTOR_ELT(ans, 2, R_getRoutineSymbols(R_FORTRAN_SYM, info));
     SET_VECTOR_ELT(ans, 3, R_getRoutineSymbols(R_EXTERNAL_SYM, info));
 
-    PROTECT(snames = allocVector(STRSXP, 4));
+    PROTECT(snames = Rf_allocVector(STRSXP, 4));
     for(int i = 0; i < 4; i++)
-	SET_STRING_ELT(snames, i, mkChar(names[i]));
-    setAttrib(ans, R_NamesSymbol, snames);
+	SET_STRING_ELT(snames, i, Rf_mkChar(names[i]));
+    Rf_setAttrib(ans, R_NamesSymbol, snames);
     UNPROTECT(2);
     return(ans);
 }
@@ -1454,16 +1456,16 @@ static SEXP get_package_CEntry_table(const char *package)
 {
     SEXP penv, pname;
 
-    GCStackRoot<> zero(ScalarInteger(0));
+    GCStackRoot<> zero(Rf_ScalarInteger(0));
     if (CEntryTable == nullptr) {
 	CEntryTable = R_NewHashedEnv(R_NilValue, zero);
 	R_PreserveObject(CEntryTable);
     }
-    pname = install(package);
-    penv = findVarInFrame(CEntryTable, pname);
+    pname = Rf_install(package);
+    penv = Rf_findVarInFrame(CEntryTable, pname);
     if (penv == R_UnboundValue) {
 	penv = R_NewHashedEnv(R_NilValue, zero);
-	defineVar(pname, penv, CEntryTable);
+	Rf_defineVar(pname, penv, CEntryTable);
     }
     return penv;
 }
@@ -1475,7 +1477,7 @@ void R_RegisterCCallable(const char *package, const char *name, DL_FUNC fptr)
     PROTECT(penv);
     SEXP eptr = R_MakeExternalPtrFn(fptr, R_NilValue, R_NilValue);
     PROTECT(eptr);
-    defineVar(install(name), eptr, penv);
+    Rf_defineVar(Rf_install(name), eptr, penv);
     UNPROTECT(2);
 }
 
@@ -1483,11 +1485,11 @@ DL_FUNC R_GetCCallable(const char *package, const char *name)
 {
     SEXP penv = get_package_CEntry_table(package);
     PROTECT(penv);
-    SEXP eptr = findVarInFrame(penv, install(name));
+    SEXP eptr = Rf_findVarInFrame(penv, Rf_install(name));
     UNPROTECT(1);
     if (eptr == R_UnboundValue)
-	error(_("function '%s' not provided by package '%s'"), name, package);
+	Rf_error(_("function '%s' not provided by package '%s'"), name, package);
     else if (TYPEOF(eptr) != EXTPTRSXP)
-	error(_("table entry must be an external pointer"));
+	Rf_error(_("table entry must be an external pointer"));
     return R_ExternalPtrAddrFn(eptr);
 }

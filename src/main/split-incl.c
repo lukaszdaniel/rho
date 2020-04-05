@@ -5,29 +5,29 @@
       REALSXP ,  REAL    ,  R_xlen_t
 */
 {
-    PROTECT(counts = allocVector(_L_INTSXP_, nlevs));
+    PROTECT(counts = Rf_allocVector(_L_INTSXP_, nlevs));
     for (int i = 0; i < nlevs; i++) _L_INTEG_(counts)[i] = 0;
     R_xlen_t i, i1;
     MOD_ITERATE1(nobs, nfac, i, i1, {
 	int j = INTEGER(f)[i1];
 	if (j != NA_INTEGER) {
 	    /* protect against malformed factors */
-	    if (j > nlevs || j < 1) error(_("factor has bad level"));
+	    if (j > nlevs || j < 1) Rf_error(_("factor has bad level"));
 	    _L_INTEG_(counts)[j - 1]++;
 	}
     });
     /* Allocate a generic vector to hold the results. */
     /* The i-th element will hold the split-out data */
     /* for the ith group. */
-    PROTECT(vec = allocVector(VECSXP, nlevs));
+    PROTECT(vec = Rf_allocVector(VECSXP, nlevs));
     for (R_xlen_t i = 0;  i < nlevs; i++) {
 	SET_VECTOR_ELT(vec, i, 
-		       allocVector(TYPEOF(x), (_L_int_)_L_INTEG_(counts)[i]));
-	setAttrib(VECTOR_ELT(vec, i), R_LevelsSymbol,
-		  getAttrib(x, R_LevelsSymbol));
+		       Rf_allocVector(TYPEOF(x), (_L_int_)_L_INTEG_(counts)[i]));
+	Rf_setAttrib(VECTOR_ELT(vec, i), R_LevelsSymbol,
+		  Rf_getAttrib(x, R_LevelsSymbol));
 	if(have_names)
-	    setAttrib(VECTOR_ELT(vec, i), R_NamesSymbol,
-		      allocVector(STRSXP, (_L_int_)_L_INTEG_(counts)[i]));
+	    Rf_setAttrib(VECTOR_ELT(vec, i), R_NamesSymbol,
+		      Rf_allocVector(STRSXP, (_L_int_)_L_INTEG_(counts)[i]));
     }
     for (int i = 0; i < nlevs; i++) _L_INTEG_(counts)[i] = 0;
     MOD_ITERATE1(nobs, nfac, i, i1, {
@@ -58,7 +58,7 @@
 		UNIMPLEMENTED_TYPE("split", x);
 	    }
 	    if(have_names) {
-		nmj = getAttrib(VECTOR_ELT(vec, j - 1), R_NamesSymbol);
+		nmj = Rf_getAttrib(VECTOR_ELT(vec, j - 1), R_NamesSymbol);
 		SET_STRING_ELT(nmj, k, STRING_ELT(nm, i));
 	    }
 	    _L_INTEG_(counts)[j - 1] += 1;

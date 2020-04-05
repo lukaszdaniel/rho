@@ -39,6 +39,8 @@
  * Input scanning routines including scan and readline.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -99,7 +101,7 @@ static SEXP insertString(char *str, LocalData *l)
     cetype_t enc = CE_NATIVE;
     if (l->con->UTF8out || l->isUTF8) enc = CE_UTF8;
     else if (l->isLatin1) enc = CE_LATIN1;
-    return mkCharCE(str, enc);
+    return Rf_mkCharCE(str, enc);
 }
 
 static R_INLINE Rboolean Rspace(unsigned int c)
@@ -367,7 +369,7 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 		    buffer->data[m++] = char( scanchar2(d));
 	    }
 	    if (c == R_EOF)
-		warning(_("EOF within quoted string"));
+		Rf_warning(_("EOF within quoted string"));
 	    c = scanchar(FALSE, d);
 	    mm = m;
 	}
@@ -417,7 +419,7 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 			    buffer->data[m++] = char( scanchar2(d));
 		    }
 		    if (c == R_EOF)
-			warning(_("EOF within quoted string"));
+			Rf_warning(_("EOF within quoted string"));
 		    c = scanchar(TRUE, d); /* only peek at lead byte
 					      unless ASCII */
 		    if (c == quote) {
@@ -564,7 +566,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
     else blocksize = SCAN_BLOCKSIZE;
 
     R_AllocStringBuffer(0, &strBuf);
-    PROTECT(ans = allocVector(type, blocksize));
+    PROTECT(ans = Rf_allocVector(type, blocksize));
 
     nprev = 0; n = 0; linesread = 0; bch = 1;
 
@@ -590,7 +592,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
 	    bns = ans;
 	    if(blocksize > INT_MAX/2) Rf_error(_("too many items"));
 	    blocksize = 2 * blocksize;
-	    ans = allocVector(type, blocksize);
+	    ans = Rf_allocVector(type, blocksize);
 	    UNPROTECT(1);
 	    PROTECT(ans);
 	    Rf_copyVector(ans, bns);
@@ -622,7 +624,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
     if (n == 0) {
 	UNPROTECT(1);
 	R_FreeStringBuffer(&strBuf);
-	return allocVector(type,0);
+	return Rf_allocVector(type,0);
     }
     if (n == maxitems) {
 	UNPROTECT(1);
@@ -630,7 +632,7 @@ static SEXP scanVector(SEXPTYPE type, int maxitems, int maxlines,
 	return ans;
     }
 
-    bns = allocVector(type, n);
+    bns = Rf_allocVector(type, n);
     switch (type) {
     case LGLSXP:
     case INTSXP:
@@ -682,18 +684,18 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
     else blksize = SCAN_BLOCKSIZE;
 
     R_AllocStringBuffer(0, &buf);
-    PROTECT(ans = allocVector(VECSXP, nc));
+    PROTECT(ans = Rf_allocVector(VECSXP, nc));
     for (i = 0; i < nc; i++) {
 	w = VECTOR_ELT(what, i);
 	if (!Rf_isNull(w)) {
-	    if (!isVector(w)) {
+	    if (!Rf_isVector(w)) {
 		Rf_error(_("invalid '%s' argument"), "what");
 	    }
 	    if(TYPEOF(w) == STRSXP) nstring++;
-	    SET_VECTOR_ELT(ans, i, allocVector(TYPEOF(w), blksize));
+	    SET_VECTOR_ELT(ans, i, Rf_allocVector(TYPEOF(w), blksize));
 	}
     }
-    setAttrib(ans, R_NamesSymbol, getAttrib(what, R_NamesSymbol));
+    Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(what, R_NamesSymbol));
 
     n = 0; linesread = 0; colsread = 0; ii = 0;
     badline = 0;
@@ -743,7 +745,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 	    for (i = 0; i < nc; i++) {
 		old = VECTOR_ELT(ans, i);
 		if(!Rf_isNull(old)) {
-		    newv = allocVector(TYPEOF(old), blksize);
+		    newv = Rf_allocVector(TYPEOF(old), blksize);
 		    Rf_copyVector(newv, old);
 		    SET_VECTOR_ELT(ans, i, newv);
 		}
@@ -778,7 +780,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
  done:
     if (colsread != 0) {
 	if (!fill)
-	    warning(_("number of items read is not a multiple of the number of columns"));
+	    Rf_warning(_("number of items read is not a multiple of the number of columns"));
 	buffer[0] = '\0';	/* this is an NA */
 	for (ii = colsread; ii < nc; ii++) {
 	    extractItem(buffer, VECTOR_ELT(ans, ii), n, d);
@@ -790,7 +792,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 
     for (i = 0; i < nc; i++) {
 	old = VECTOR_ELT(ans, i);
-	newv = allocVector(TYPEOF(old), n);
+	newv = Rf_allocVector(TYPEOF(old), n);
 	switch (TYPEOF(old)) {
 	case LGLSXP:
 	case INTSXP:
@@ -988,7 +990,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 	data.con->close(data.con);
     if (data.quoteset[0]) free(RHOCONSTRUCT(const_cast<char*>, data.quoteset));
     if (!skipNul && data.embedWarn)
-	warning(_("embedded nul(s) found in input"));
+	Rf_warning(_("embedded nul(s) found in input"));
     ProvenanceTracker::flagXenogenesis();
     return ans;
 }

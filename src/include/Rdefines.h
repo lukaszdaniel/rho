@@ -94,7 +94,7 @@ extern "C" {
 #endif
 /* NB: is this right?  It means atomic or VECSXP or EXPRSXP */
 #define IS_VECTOR(x)		Rf_isVector(x)
-/* And this cannot be right: isVectorList(x)? */
+/* And this cannot be right: Rf_isVectorList(x)? */
 #define IS_LIST(x)		IS_VECTOR(x)
 #define IS_RAW(x)		(TYPEOF(x) == RAWSXP)
 
@@ -203,7 +203,7 @@ extern "C" {
 
 #define CREATE_FUNCTION_CALL(name, argList) createFunctionCall(name, argList)
 
-#define EVAL(x)			eval(x,R_GlobalEnv)
+#define EVAL(x)			Rf_eval(x,R_GlobalEnv)
 
 #ifdef __cplusplus
 }

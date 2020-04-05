@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #include <Rinterface.h>
 #include <exception>
 #include <execinfo.h>

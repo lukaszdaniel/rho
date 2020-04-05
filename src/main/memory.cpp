@@ -32,6 +32,8 @@
 // For debugging:
 #include <iostream>
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -142,7 +144,7 @@ SEXP attribute_hidden do_gctorture(/*const*/ Expression* call, const BuiltInFunc
 	else if (on) gap = 1;
 	else gap = 0;
     }
-    else gap = asInteger(on_);
+    else gap = Rf_asInteger(on_);
 
     R_gc_torture(gap, 0, FALSE);
 
@@ -319,7 +321,7 @@ SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
 	s = RawVector::create(length);
 	break;
     case CHARSXP:
-	Rf_error("use of allocVector(CHARSXP ...) is defunct\n");
+	Rf_error("use of Rf_allocVector(CHARSXP ...) is defunct\n");
 	break;
     case LGLSXP:
 	s = LogicalVector::create(length);
@@ -465,7 +467,7 @@ void *R_chk_realloc(void *ptr, std::size_t size)
 void R_chk_free(void *ptr)
 {
     /* S-PLUS warns here, but there seems no reason to do so */
-    /* if(!ptr) warning("attempt to free NULL pointer by Free"); */
+    /* if(!ptr) Rf_warning("attempt to free NULL pointer by Free"); */
     if(ptr) free(ptr); /* ANSI C says free has no effect on NULL, but
 			  better to be safe here */
 }
@@ -529,7 +531,7 @@ static void R_OutputStackTrace(FILE *file)
 	    FunctionContext* fctxt = static_cast<FunctionContext*>(cptr);
 	    SEXP fun = fctxt->call()->car();
 	    fprintf(file, "\"%s\" ",
-		    TYPEOF(fun) == SYMSXP ? CHAR(PRINTNAME(fun)) :
+		    TYPEOF(fun) == SYMSXP ? R_CHAR(PRINTNAME(fun)) :
 		    "<Anonymous>");
 	}
     }
@@ -576,7 +578,7 @@ SEXP do_Rprofmem(SEXP args)
     append_mode = Rf_asLogical(CADR(args));
     filename = STRING_ELT(CAR(args), 0);
     threshold = RHOCONSTRUCT(R_size_t, REAL(CADDR(args))[0]);
-    if (strlen(CHAR(filename)))
+    if (strlen(R_CHAR(filename)))
 	R_InitMemReporting(filename, append_mode, threshold);
     else
 	R_EndMemReporting();

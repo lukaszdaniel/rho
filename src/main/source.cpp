@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -58,13 +60,13 @@ SEXP attribute_hidden getParseContext(void)
     }
 
     nn = 16; /* initially allocate space for 16 lines */
-    PROTECT(ans = allocVector(STRSXP, nn));
+    PROTECT(ans = Rf_allocVector(STRSXP, nn));
     c = context[last];
     nread = 0;
     while(c) {
 	nread++;
 	if(nread >= nn) {
-	    ans2 = allocVector(STRSXP, 2*nn);
+	    ans2 = Rf_allocVector(STRSXP, 2*nn);
 	    for(i = 0; i < nn; i++)
 		SET_STRING_ELT(ans2, i, STRING_ELT(ans, i));
 	    nn *= 2;
@@ -76,7 +78,7 @@ SEXP attribute_hidden getParseContext(void)
 	    if(c == '\n') break;
 	}
 	context[i-1] = '\0';
-	SET_STRING_ELT(ans, nread-1, mkChar(context + last));
+	SET_STRING_ELT(ans, nread-1, Rf_mkChar(context + last));
 	last = i;
     }
     /* get rid of empty line after last newline */
@@ -84,7 +86,7 @@ SEXP attribute_hidden getParseContext(void)
 	nread--;
 	R_ParseContextLine--;
     }
-    PROTECT(ans2 = allocVector(STRSXP, nread));
+    PROTECT(ans2 = Rf_allocVector(STRSXP, nread));
     for(i = 0; i < nread; i++)
 	SET_STRING_ELT(ans2, i, STRING_ELT(ans, i));
     UNPROTECT(2);
@@ -95,16 +97,16 @@ static void getParseFilename(char* buffer, size_t buflen)
 {
     buffer[0] = '\0';
     if (R_ParseErrorFile) {
-	if (isEnvironment(R_ParseErrorFile)) {
+	if (Rf_isEnvironment(R_ParseErrorFile)) {
 	    SEXP filename;
-	    PROTECT(filename = findVar(install("filename"), R_ParseErrorFile));
-	    if (isString(filename) && Rf_length(filename)) {
-		strncpy(buffer, CHAR(STRING_ELT(filename, 0)), buflen - 1);
+	    PROTECT(filename = Rf_findVar(Rf_install("filename"), R_ParseErrorFile));
+	    if (Rf_isString(filename) && Rf_length(filename)) {
+		strncpy(buffer, R_CHAR(STRING_ELT(filename, 0)), buflen - 1);
 		buffer[buflen - 1] = '\0';
 	    }
 	    UNPROTECT(1);
-	} else if (isString(R_ParseErrorFile) && Rf_length(R_ParseErrorFile)) {
-	    strncpy(buffer, CHAR(STRING_ELT(R_ParseErrorFile, 0)), buflen - 1);
+	} else if (Rf_isString(R_ParseErrorFile) && Rf_length(R_ParseErrorFile)) {
+	    strncpy(buffer, R_CHAR(STRING_ELT(R_ParseErrorFile, 0)), buflen - 1);
 	    buffer[buflen - 1] = '\0';
 	}
     }
@@ -117,9 +119,9 @@ static SEXP tabExpand(SEXP strings)
     const char *input;
     SEXP result;
     PROTECT(strings);
-    PROTECT(result = allocVector(STRSXP, Rf_length(strings)));
+    PROTECT(result = Rf_allocVector(STRSXP, Rf_length(strings)));
     for (i = 0; i < Rf_length(strings); i++) {
-	input = CHAR(STRING_ELT(strings, i));
+	input = R_CHAR(STRING_ELT(strings, i));
 	for (b = buffer; *input && (b-buffer < 192); input++) {
 	    if (*input == '\t') do {
 		*b++ = ' ';
@@ -127,7 +129,7 @@ static SEXP tabExpand(SEXP strings)
 	    else *b++ = *input;
 	}
 	*b = '\0';
-	SET_STRING_ELT(result, i, mkCharCE(buffer, Rf_getCharCE(STRING_ELT(strings, i))));
+	SET_STRING_ELT(result, i, Rf_mkCharCE(buffer, Rf_getCharCE(STRING_ELT(strings, i))));
     }
     UNPROTECT(2);
     return result;
@@ -146,38 +148,38 @@ void NORET parseError(SEXP call, int linenum)
 
 	switch (len) {
 	case 0:
-	    error("%s%d:%d: %s",
+	    Rf_error("%s%d:%d: %s",
 		  filename, linenum, R_ParseErrorCol, R_ParseErrorMsg);
 	    break;
 	case 1: // replaces use of %n
 	    width = snprintf(buffer, 10, "%d: ", R_ParseContextLine);
-	    error("%s%d:%d: %s\n%d: %s\n%*s",
+	    Rf_error("%s%d:%d: %s\n%d: %s\n%*s",
 		  filename, linenum, R_ParseErrorCol, R_ParseErrorMsg,
-		  R_ParseContextLine, CHAR(STRING_ELT(context, 0)),
+		  R_ParseContextLine, R_CHAR(STRING_ELT(context, 0)),
 		  width+R_ParseErrorCol+1, "^");
 	    break;
 	default:
 	    width = snprintf(buffer, 10, "%d:", R_ParseContextLine);
-	    error("%s%d:%d: %s\n%d: %s\n%d: %s\n%*s",
+	    Rf_error("%s%d:%d: %s\n%d: %s\n%d: %s\n%*s",
 		  filename, linenum, R_ParseErrorCol, R_ParseErrorMsg,
-		  R_ParseContextLine-1, CHAR(STRING_ELT(context, len-2)),
-		  R_ParseContextLine, CHAR(STRING_ELT(context, len-1)),
+		  R_ParseContextLine-1, R_CHAR(STRING_ELT(context, len-2)),
+		  R_ParseContextLine, R_CHAR(STRING_ELT(context, len-1)),
 		  width+R_ParseErrorCol+1, "^");
 	    break;
 	}
     } else {
 	switch (len) {
 	case 0:
-	    error("%s", R_ParseErrorMsg);
+	    Rf_error("%s", R_ParseErrorMsg);
 	    break;
 	case 1:
-	    error("%s in \"%s\"",
-		  R_ParseErrorMsg, CHAR(STRING_ELT(context, 0)));
+	    Rf_error("%s in \"%s\"",
+		  R_ParseErrorMsg, R_CHAR(STRING_ELT(context, 0)));
 	    break;
 	default:
-	    error("%s in:\n\"%s\n%s\"",
-		  R_ParseErrorMsg, CHAR(STRING_ELT(context, len-2)),
-		  CHAR(STRING_ELT(context, len-1)));
+	    Rf_error("%s in:\n\"%s\n%s\"",
+		  R_ParseErrorMsg, R_CHAR(STRING_ELT(context, len-2)),
+		  R_CHAR(STRING_ELT(context, len-1)));
 	    break;
 	}
     }
@@ -201,27 +203,27 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
     const char *encoding;
     ParseStatus status;
 
-    if(!inherits(file_, "connection"))
-	error(_("'file' must be a character string or connection"));
+    if(!Rf_inherits(file_, "connection"))
+	Rf_error(_("'file' must be a character string or connection"));
     R_ParseError = 0;
     R_ParseErrorMsg[0] = '\0';
 
-    ifile = asInteger(file_);
+    ifile = Rf_asInteger(file_);
 
     con = getConnection(ifile);
     wasopen = con->isopen;
-    num = asInteger(n_);
+    num = Rf_asInteger(n_);
     if (num == 0)
-	return(allocVector(EXPRSXP, 0));
+	return(Rf_allocVector(EXPRSXP, 0));
 
-    PROTECT(text = coerceVector(text_, STRSXP));
+    PROTECT(text = Rf_coerceVector(text_, STRSXP));
     if(Rf_length(text_) && !Rf_length(text))
-	error(_("coercion of 'text' to character was unsuccessful"));
+	Rf_error(_("coercion of 'text' to character was unsuccessful"));
     prompt = prompt_;
     source = srcfile_;
-    if(!isString(encoding_) || Rf_length(encoding_) != 1)
-	error(_("invalid '%s' value"), "encoding");
-    encoding = CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
+    if(!Rf_isString(encoding_) || Rf_length(encoding_) != 1)
+	Rf_error(_("invalid '%s' value"), "encoding");
+    encoding = R_CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
     known_to_be_latin1 = known_to_be_utf8 = FALSE;
     /* allow 'encoding' to override declaration on 'text'. */
     if(streql(encoding, "latin1")) {
@@ -231,12 +233,12 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
 	known_to_be_utf8 = TRUE;
 	allKnown = FALSE;
     } else if(!streql(encoding, "unknown") && !streql(encoding, "native.enc"))
-	warning(_("argument '%s = \"%s\"' will be ignored"), "encoding", encoding);
+	Rf_warning(_("argument '%s = \"%s\"' will be ignored"), "encoding", encoding);
 
     if (prompt == R_NilValue)
 	PROTECT(prompt);
     else
-	PROTECT(prompt = coerceVector(prompt, STRSXP));
+	PROTECT(prompt = Rf_coerceVector(prompt, STRSXP));
 
     if (Rf_length(text) > 0) {
 	/* If 'text' has known encoding then we can be sure it will be
@@ -266,8 +268,8 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
 	if (num == NA_INTEGER) num = -1;
 	try {
 	    if(!wasopen && !con->open(con))
-		error(_("cannot open the connection"));
-	    if(!con->canread) error(_("cannot read from this connection"));
+		Rf_error(_("cannot open the connection"));
+	    if(!con->canread) Rf_error(_("cannot read from this connection"));
 	    s = R_ParseConn(con, num, &status, source);
 	    if(!wasopen) con->close(con);
 	} catch (...) {

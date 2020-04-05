@@ -53,6 +53,7 @@ strsplit grep [g]sub [g]regexpr
    positions for all MBCSs.)
 */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -107,8 +108,8 @@ static void setup_jit(pcre_extra *re_pe)
 	    char *endp;
 	    double xdouble = R_strtod(p, &endp);
 	    if (xdouble >= 0 && xdouble <= 1000) 
-		stmax = (int)(xdouble*1024*1024);
-	    else warning ("R_PCRE_JIT_STACK_MAXSIZE invalid and ignored");
+		stmax = int(xdouble*1024*1024);
+	    else Rf_warning("R_PCRE_JIT_STACK_MAXSIZE invalid and ignored");
 	}
 	jit_stack = pcre_jit_stack_alloc(32*1024, stmax);
     }
@@ -145,19 +146,19 @@ static SEXP mkCharWLen(const wchar_t *wc, int nc)
     R_CheckStack2(sizeof(wchar_t)*(nc+1));
     wt = static_cast<wchar_t *>(alloca((nc+1)*sizeof(wchar_t)));
     wcsncpy(wt, wc, nc); wt[nc] = 0;
-    nb = wcstoutf8(nullptr, wt, INT_MAX);
+    nb = Rf_wcstoutf8(nullptr, wt, INT_MAX);
     R_CheckStack2(sizeof(char)*nb);
     xi = static_cast<char *>(alloca(nb*sizeof(char)));
-    wcstoutf8(xi, wt, nb);
+    Rf_wcstoutf8(xi, wt, nb);
     return Rf_mkCharLenCE(xi, int(nb-1), CE_UTF8);
 }
 
 static SEXP mkCharW(const wchar_t *wc)
 {
-    size_t nb = wcstoutf8(nullptr, wc, INT_MAX);
+    size_t nb = Rf_wcstoutf8(nullptr, wc, INT_MAX);
     char *xi = static_cast<char *>(Calloc(nb, char));
     SEXP ans;
-    wcstoutf8(xi, wc, nb);
+    Rf_wcstoutf8(xi, wc, nb);
     ans = Rf_mkCharCE(xi, CE_UTF8);
     Free(xi);
     return ans;
@@ -295,7 +296,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
     tlen = XLENGTH(tok);
 
     /* treat split = NULL as split = "" */
-    if (!tlen) { tlen = 1; tok = mkString(""); }
+    if (!tlen) { tlen = 1; tok = Rf_mkString(""); }
 
     if (!useBytes) {
 	for (i = 0; i < tlen; i++)
@@ -753,7 +754,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    }
 		    // AFAICS the only possible error report is REG_ESPACE
 		    if (rc == REG_ESPACE)
-			warning("Out-of-memory error in regexp matching for element %d",
+			Rf_warning("Out-of-memory error in regexp matching for element %d",
 				(int) i + 1);
 		}
 		SET_VECTOR_ELT(ans, i,
@@ -765,7 +766,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    int rc = tre_regexec(&reg, bufp, 1, regmatch, 0);
 		    // AFAICS the only possible error report is REG_ESPACE
 		    if (rc == REG_ESPACE)
-			warning("Out-of-memory error in regexp matching for element %d",
+			Rf_warning("Out-of-memory error in regexp matching for element %d",
 				(int) i + 1);
 		    if (regmatch[0].rm_eo > 0) {
 			/* Match was non-empty. */
@@ -945,8 +946,8 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    SEXP nmold = Rf_getAttrib(text, R_NamesSymbol);
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
-	    if (!isNull(nmold))
-		setAttrib(ans, R_NamesSymbol, duplicate(nmold));
+	    if (!Rf_isNull(nmold))
+		Rf_setAttrib(ans, R_NamesSymbol, Rf_duplicate(nmold));
 	    UNPROTECT(2); /* ans, nmold */
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
@@ -1127,7 +1128,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    if (invert ^ LOGICAL(ind)[i])
 		SET_STRING_ELT(ans, j++, STRING_ELT(text, i));
 	/* copy across names and subset */
-	if (!isNull(nmold)) {
+	if (!Rf_isNull(nmold)) {
 	    nm = Rf_allocVector(STRSXP, nmatches);
 	    for (i = 0, j = 0; i < n ; i++)
 		if (invert ^ LOGICAL(ind)[i])
@@ -1443,7 +1444,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	if (!nmatches) eflags |= REG_NOTBOL;
 	if (res_ptr >= RHO_S_CAST(R_size_t, res_alloc)) {
 	    if (res_alloc < (2^24)) res_alloc <<= 1;
-	    SETCDR(res_tail, list1(Rf_allocVector(INTSXP, res_alloc)));
+	    SETCDR(res_tail, Rf_list1(Rf_allocVector(INTSXP, res_alloc)));
 	    res_tail = CDR(res_tail);
 	    res_val = INTEGER(CAR(res_tail));
 	    res_ptr = 0;
@@ -2742,7 +2743,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 		    INTEGER(ans)[i] = (st > -1)?(st+1):-1;
 		    if (!useBytes && use_UTF8) {
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
-			    int(utf8towcs(nullptr, spat, 0)):-1;
+			    int(Rf_utf8towcs(nullptr, spat, 0)):-1;
 		    } else if (!useBytes && mbcslocale) {
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
 			    int(mbstowcs(nullptr, spat, 0)):-1;
@@ -3039,11 +3040,11 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
     int *lans = LOGICAL(ans);
     SEXP nm = Rf_allocVector(STRSXP, 4);
     Rf_setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("UTF-8"));
+    SET_STRING_ELT(nm, 0, Rf_mkChar("UTF-8"));
     pcre_config(PCRE_CONFIG_UTF8, &res); lans[0] = res;
-    SET_STRING_ELT(nm, 1, mkChar("Unicode properties"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("Unicode properties"));
     pcre_config(PCRE_CONFIG_UNICODE_PROPERTIES, &res); lans[1] = res;
-    SET_STRING_ELT(nm, 2, mkChar("JIT"));
+    SET_STRING_ELT(nm, 2, Rf_mkChar("JIT"));
 #ifdef PCRE_CONFIG_JIT
     // added (and JIT support) in 8.20.
     pcre_config(PCRE_CONFIG_JIT, &res);
@@ -3052,7 +3053,7 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
 #endif
     lans[2] = res;
     pcre_config(PCRE_CONFIG_STACKRECURSE, &res); lans[3] = res;
-    SET_STRING_ELT(nm, 3, mkChar("stack"));
+    SET_STRING_ELT(nm, 3, Rf_mkChar("stack"));
     UNPROTECT(1);
     return ans;
 }

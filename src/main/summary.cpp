@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -76,7 +78,7 @@ static Rboolean isum(int *x, R_xlen_t n, int *value, Rboolean narm, SEXP call)
 		if (s > 9000000000000000L || s < -9000000000000000L) {
 		    if(!updated) updated = TRUE;
 		    *value = NA_INTEGER;
-		    warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
+		    Rf_warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
 		    return updated;
 		}
 	    }
@@ -88,7 +90,7 @@ static Rboolean isum(int *x, R_xlen_t n, int *value, Rboolean narm, SEXP call)
 	}
     }
     if(s > INT_MAX || s < R_INT_MIN){
-	warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
+	Rf_warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
 	*value = NA_INTEGER;
     }
     else *value = (int) s;
@@ -113,7 +115,7 @@ static Rboolean isum(int *x, R_xlen_t n, int *value, Rboolean narm, SEXP call)
 	}
     }
     if(s > INT_MAX || s < R_INT_MIN){
-	warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
+	Rf_warningcall(call, _("integer overflow - use sum(as.numeric(.))"));
 	*value = NA_INTEGER;
     }
     else *value = int(s);
@@ -369,7 +371,7 @@ SEXP fixup_NaRm(SEXP args)
     SEXP t;
 
     /* Need to make sure na.rm is last and exists */
-    GCStackRoot<> na_value(ScalarLogical(FALSE));
+    GCStackRoot<> na_value(Rf_ScalarLogical(FALSE));
     for(SEXP a = args, prev = R_NilValue; a != R_NilValue; a = CDR(a)) {
 	if(TAG(a) == R_NaRmSymbol) {
 	    if(CDR(a) == R_NilValue) return args;
@@ -453,7 +455,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	    }
 	    return Rf_ScalarComplex({(double)s, (double)si});
 	default:
-	    error(R_MSG_type, type2char(TYPEOF(x)));
+	    Rf_error(R_MSG_type, Rf_type2char(TYPEOF(x)));
 	}
     }
 
@@ -473,8 +475,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     REprintf("C do_summary(op%s, *): did NOT dispatch\n", PRIMNAME(op));
 #endif
 
-    SEXP ans = matchArgExact(R_NaRmSymbol, &args);
-    narm = RHOCONSTRUCT(Rboolean, asLogical(ans));
+    SEXP ans = Rf_matchArgExact(R_NaRmSymbol, &args);
+    narm = RHOCONSTRUCT(Rboolean, Rf_asLogical(ans));
     updated = 0;
     empty = 1;/*- =1: only zero-length arguments, or NA with na.rm=T */
 
@@ -488,7 +490,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	a = args;
 	int_a = 1;
 	while (a != R_NilValue) {
-	    if(!isInteger(CAR(a)) &&  !isLogical(CAR(a)) && !isNull(CAR(a))) {
+	    if(!Rf_isInteger(CAR(a)) &&  !Rf_isLogical(CAR(a)) && !Rf_isNull(CAR(a))) {
 		int_a = 0;
 		break;
 	    }
@@ -519,7 +521,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	break;
 
     default:
-	errorcall(call,
+	Rf_errorcall(call,
 		  _("internal error ('op = %d' in do_summary).\t Call a Guru"),
 		  iop);
 	return R_NilValue;/*-Wall */
@@ -532,7 +534,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	int_a = 0;/* int_a = 1	<-->	a is INTEGER */
 	real_a = 0;
 
-	if(xlength(a) > 0) {
+	if(Rf_xlength(a) > 0) {
 	    updated = 0;/*- GLOBAL -*/
 
 	    switch(iop) {
@@ -557,11 +559,11 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    break;
 		case STRSXP:
 		    if(!empty && ans_type == INTSXP) {
-			scum = StringFromInteger(icum, &warn);
+			scum = Rf_StringFromInteger(icum, &warn);
 			UNPROTECT(1); /* scum */
 			PROTECT(scum);
 		    } else if(!empty && ans_type == REALSXP) {
-			scum = StringFromReal(zcum.r, &warn);
+			scum = Rf_StringFromReal(zcum.r, &warn);
 			UNPROTECT(1); /* scum */
 			PROTECT(scum);
 		    }
@@ -778,7 +780,7 @@ na_answer: /* only sum(INTSXP, ...) case currently used */
     return ans;
 
 invalid_type:
-    errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
     return R_NilValue;
 }/* do_summary */
 
@@ -876,7 +878,7 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 	}
     }
     break;
-    default: error(_("invalid type")); break;
+    default: Rf_error(_("invalid type")); break;
     } // switch()
 
 
@@ -973,7 +975,7 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	if(type > anstype) anstype = type;
 	n = Rf_xlength(x);
 	if ((len > 0) ^ (n > 0)) {
-	    // till 2.15.0:  error(_("cannot mix 0-length vectors with others"));
+	    // till 2.15.0:  Rf_error(_("cannot mix 0-length vectors with others"));
 	    len = 0;
 	    break;
 	}

@@ -25,6 +25,8 @@
 
 /* <UTF8> the only interpretation of char is ASCII */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -119,17 +121,17 @@ static Rboolean url_open(Rconnection con)
     switch(type) {
 #ifdef Win32
     case HTTPSsh:
-	    warning(_("for https:// URLs use method = \"wininet\""));
+	    Rf_warning(_("for https:// URLs use method = \"wininet\""));
 	    return FALSE;
 #endif
     case HTTPsh:
     {
 	SEXP sheaders, agentFun;
 	const char *headers;
-	SEXP s_makeUserAgent = install("makeUserAgent");
-	agentFun = PROTECT(lang1(s_makeUserAgent)); // defaults to ,TRUE
-	SEXP utilsNS = PROTECT(R_FindNamespace(mkString("utils")));
-	sheaders = eval(agentFun, utilsNS);
+	SEXP s_makeUserAgent = Rf_install("makeUserAgent");
+	agentFun = PROTECT(Rf_lang1(s_makeUserAgent)); // defaults to ,TRUE
+	SEXP utilsNS = PROTECT(R_FindNamespace(Rf_mkString("utils")));
+	sheaders = Rf_eval(agentFun, utilsNS);
 	UNPROTECT(1); /* utilsNS */
 	PROTECT(sheaders);
 	if(TYPEOF(sheaders) == NILSXP)
@@ -139,9 +141,9 @@ static Rboolean url_open(Rconnection con)
 	ctxt = in_R_HTTPOpen(url, headers, 0);
 	UNPROTECT(2);
 	if(ctxt == NULL) {
-	  /* if we call error() we get a connection leak*/
+	  /* if we call Rf_error() we get a connection leak*/
 	  /* so do_url has to raise the error*/
-	  /* error("cannot open URL '%s'", url); */
+	  /* Rf_error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
 	((Rurlconn)(con->connprivate))->ctxt = ctxt;
@@ -150,16 +152,16 @@ static Rboolean url_open(Rconnection con)
     case FTPsh:
 	ctxt = in_R_FTPOpen(url);
 	if(ctxt == NULL) {
-	  /* if we call error() we get a connection leak*/
+	  /* if we call Rf_error() we get a connection leak*/
 	  /* so do_url has to raise the error*/
-	  /* error("cannot open URL '%s'", url); */
+	  /* Rf_error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
 	((Rurlconn)(con->connprivate))->ctxt = ctxt;
 	break;
 
     default:
-	warning(_("scheme not supported in URL '%s'"), url);
+	Rf_warning(_("scheme not supported in URL '%s'"), url);
 	return FALSE;
     }
 
@@ -250,9 +252,9 @@ static Rboolean url_open2(Rconnection con)
     {
 	SEXP sheaders, agentFun;
 	const char *headers;
-	SEXP s_makeUserAgent = install("makeUserAgent");
-	agentFun = PROTECT(lang2(s_makeUserAgent, ScalarLogical(0)));
-	sheaders = PROTECT(eval(agentFun, R_FindNamespace(mkString("utils"))));
+	SEXP s_makeUserAgent = Rf_install("makeUserAgent");
+	agentFun = PROTECT(Rf_lang2(s_makeUserAgent, Rf_ScalarLogical(0)));
+	sheaders = PROTECT(Rf_eval(agentFun, R_FindNamespace(Rf_mkString("utils"))));
 	if(TYPEOF(sheaders) == NILSXP)
 	    headers = NULL;
 	else
@@ -260,9 +262,9 @@ static Rboolean url_open2(Rconnection con)
 	ctxt = in_R_HTTPOpen2(url, headers, 0);
 	UNPROTECT(2);
 	if(ctxt == NULL) {
-	  /* if we call error() we get a connection leak*/
+	  /* if we call Rf_error() we get a connection leak*/
 	  /* so do_url has to raise the error*/
-	  /* error("cannot open URL '%s'", url); */
+	  /* Rf_error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
 	((Rurlconn)(con->connprivate))->ctxt = ctxt;
@@ -271,16 +273,16 @@ static Rboolean url_open2(Rconnection con)
     case FTPsh:
 	ctxt = in_R_FTPOpen2(url);
 	if(ctxt == NULL) {
-	  /* if we call error() we get a connection leak*/
+	  /* if we call Rf_error() we get a connection leak*/
 	  /* so do_url has to raise the error*/
-	  /* error("cannot open URL '%s'", url); */
+	  /* Rf_error("cannot open URL '%s'", url); */
 	    return FALSE;
 	}
 	((Rurlconn)(con->connprivate))->ctxt = ctxt;
 	break;
 
     default:
-	warning(_("scheme not supported in URL '%s'"), url);
+	Rf_warning(_("scheme not supported in URL '%s'"), url);
 	return FALSE;
     }
 
@@ -354,17 +356,17 @@ in_R_newurl(const char *description, const char * const mode, int type)
     Rconnection newconn;
 
     newconn = (Rconnection) malloc(sizeof(struct Rconn));
-    if(!newconn) error(_("allocation of url connection failed"));
+    if(!newconn) Rf_error(_("allocation of url connection failed"));
     newconn->connclass = (char *) malloc(strlen("url-wininet") + 1);
     if(!newconn->connclass) {
 	free(newconn);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
         /* for Solaris 12.5 */ newconn = NULL;
     }
     newconn->description = (char *) malloc(strlen(description) + 1);
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
         /* for Solaris 12.5 */ newconn = NULL;
     }
     init_con(newconn, description, CE_NATIVE, mode);
@@ -389,7 +391,7 @@ in_R_newurl(const char *description, const char * const mode, int type)
     newconn->connprivate = (void *) malloc(sizeof(struct urlconn));
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
 	/* for Solaris 12.5 */ newconn = NULL;
     }
 
@@ -461,32 +463,32 @@ static SEXP in_do_download(SEXP args)
 #endif
 
     scmd = CAR(args); args = CDR(args);
-    if(!isString(scmd) || Rf_length(scmd) < 1)
-	error(_("invalid '%s' argument"), "url");
+    if(!Rf_isString(scmd) || Rf_length(scmd) < 1)
+	Rf_error(_("invalid '%s' argument"), "url");
     if(Rf_length(scmd) > 1)
-	warning(_("only first element of 'url' argument used"));
+	Rf_warning(_("only first element of 'url' argument used"));
     url = R_CHAR(STRING_ELT(scmd, 0));
     sfile = CAR(args); args = CDR(args);
-    if(!isString(sfile) || Rf_length(sfile) < 1)
-	error(_("invalid '%s' argument"), "destfile");
+    if(!Rf_isString(sfile) || Rf_length(sfile) < 1)
+	Rf_error(_("invalid '%s' argument"), "destfile");
     if(Rf_length(sfile) > 1)
-	warning(_("only first element of 'destfile' argument used"));
-    file = translateChar(STRING_ELT(sfile, 0));
-    quiet = IDquiet = RHOCONSTRUCT(Rboolean, asLogical(CAR(args))); args = CDR(args);
+	Rf_warning(_("only first element of 'destfile' argument used"));
+    file = Rf_translateChar(STRING_ELT(sfile, 0));
+    quiet = IDquiet = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args))); args = CDR(args);
     if(quiet == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "quiet");
+	Rf_error(_("invalid '%s' argument"), "quiet");
     smode =  CAR(args); args = CDR(args);
-    if(!isString(smode) || Rf_length(smode) != 1)
-	error(_("invalid '%s' argument"), "mode");
+    if(!Rf_isString(smode) || Rf_length(smode) != 1)
+	Rf_error(_("invalid '%s' argument"), "mode");
     mode = R_CHAR(STRING_ELT(smode, 0));
-    cacheOK = asLogical(CAR(args));
+    cacheOK = Rf_asLogical(CAR(args));
     if(cacheOK == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "cacheOK");
+	Rf_error(_("invalid '%s' argument"), "cacheOK");
     bool file_URL = (strncmp(url, "file://", 7) == 0);
 #ifdef Win32
-    int meth = asLogical(CADR(args));
+    int meth = Rf_asLogical(CADR(args));
     if(meth == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "method");
+	Rf_error(_("invalid '%s' argument"), "method");
 //    if(meth == 0) meth = UseInternet2;
     if (!file_URL && R_Interactive && !quiet && !pbar.wprog) {
 	pbar.wprog = newwindow(_("Download progress"), rect(0, 0, 540, 100),
@@ -511,19 +513,19 @@ static SEXP in_do_download(SEXP args)
 	/* Use binary transfers? */
 	in = R_fopen(R_ExpandFileName(url+nh), (mode[2] == 'b') ? "rb" : "r");
 	if(!in) {
-	    error(_("cannot open URL '%s', reason '%s'"),
+	    Rf_error(_("cannot open URL '%s', reason '%s'"),
 		  url, strerror(errno));
 	}
 
 	out = R_fopen(R_ExpandFileName(file), mode);
 	if(!out) {
 	    fclose(in);
-	    error(_("cannot open destfile '%s', reason '%s'"),
+	    Rf_error(_("cannot open destfile '%s', reason '%s'"),
 		  file, strerror(errno));
 	}
 	while((n = fread(buf, 1, CPBUFSIZE, in)) > 0) {
 	    size_t res = fwrite(buf, 1, n, out);
-	    if(res != n) error(_("write failed"));
+	    if(res != n) Rf_error(_("write failed"));
 	}
 	fclose(out); fclose(in);
 
@@ -545,7 +547,7 @@ static SEXP in_do_download(SEXP args)
 
 	out = R_fopen(R_ExpandFileName(file), mode);
 	if(!out) {
-	    error(_("cannot open destfile '%s', reason '%s'"),
+	    Rf_error(_("cannot open destfile '%s', reason '%s'"),
 		  file, strerror(errno));
 	}
 
@@ -555,14 +557,14 @@ static SEXP in_do_download(SEXP args)
 #ifdef Win32
 	R_FlushConsole();
 	if(meth)
-	    agentFun = PROTECT(lang2(install("makeUserAgent"), ScalarLogical(0)));
+	    agentFun = PROTECT(Rf_lang2(Rf_install("makeUserAgent"), Rf_ScalarLogical(0)));
 	else
-	    agentFun = PROTECT(lang1(install("makeUserAgent")));
+	    agentFun = PROTECT(Rf_lang1(Rf_install("makeUserAgent")));
 #else
-	agentFun = PROTECT(lang1(install("makeUserAgent")));
+	agentFun = PROTECT(Rf_lang1(Rf_install("makeUserAgent")));
 #endif
-	SEXP utilsNS = PROTECT(R_FindNamespace(mkString("utils")));
-	sheaders = eval(agentFun, utilsNS);
+	SEXP utilsNS = PROTECT(R_FindNamespace(Rf_mkString("utils")));
+	sheaders = Rf_eval(agentFun, utilsNS);
 	UNPROTECT(1); /* utilsNS */
 	PROTECT(sheaders);
 	const char *headers = (TYPEOF(sheaders) == NILSXP) ?
@@ -599,7 +601,7 @@ static SEXP in_do_download(SEXP args)
 #endif
 	    while ((len = Ri_HTTPRead(ctxt, buf, sizeof(buf))) > 0) {
 		size_t res = fwrite(buf, 1, len, out);
-		if(RHOCONSTRUCT(int, res) != len) error(_("write failed"));
+		if(RHOCONSTRUCT(int, res) != len) Rf_error(_("write failed"));
 		nbytes += len;
 		if(!quiet) {
 #ifdef Win32
@@ -649,13 +651,13 @@ static SEXP in_do_download(SEXP args)
 	    }
 #endif
 	    if (total > 0 && total != nbytes)
-		warning(_("downloaded length %0.f != reported length %0.f"),
+		Rf_warning(_("downloaded length %0.f != reported length %0.f"),
 			(double)nbytes, (double)total);
 	}
 	fclose(out);
 	if (status == 1 && strchr(mode, 'w')) unlink(R_ExpandFileName(file));
 	R_Busy(0);
-	if (status == 1) error(_("cannot open URL '%s'"), url);
+	if (status == 1) Rf_error(_("cannot open URL '%s'"), url);
 
     } else if (strncmp(url, "ftp://", 6) == 0) {
 
@@ -671,7 +673,7 @@ static SEXP in_do_download(SEXP args)
 
 	out = R_fopen(R_ExpandFileName(file), mode);
 	if(!out) {
-	    error(_("cannot open destfile '%s', reason '%s'"),
+	    Rf_error(_("cannot open destfile '%s', reason '%s'"),
 		  file, strerror(errno));
 	}
 
@@ -711,7 +713,7 @@ static SEXP in_do_download(SEXP args)
 #endif
 	    while ((len = Ri_FTPRead(ctxt, buf, sizeof(buf))) > 0) {
 		size_t res = fwrite(buf, 1, len, out);
-		if(RHOCONSTRUCT(int, res) != len) error(_("write failed"));
+		if(RHOCONSTRUCT(int, res) != len) Rf_error(_("write failed"));
 		nbytes += len;
 		if(!quiet) {
 #ifdef Win32
@@ -761,17 +763,17 @@ static SEXP in_do_download(SEXP args)
 	    }
 #endif
 	    if (total > 0 && total != nbytes)
-		warning(_("downloaded length %0.f != reported length %0.f"),
+		Rf_warning(_("downloaded length %0.f != reported length %0.f"),
 			(double)nbytes, (double)total);
 	}
 	R_Busy(0);
 	fclose(out);
 	if (status == 1 && strchr(mode, 'w')) unlink(R_ExpandFileName(file));
-	if (status == 1) error(_("cannot open URL '%s'"), url);
+	if (status == 1) Rf_error(_("cannot open URL '%s'"), url);
     } else
-	error(_("scheme not supported in URL '%s'"), url);
+	Rf_error(_("scheme not supported in URL '%s'"), url);
 
-    return ScalarInteger(status);
+    return Rf_ScalarInteger(status);
 }
 
 
@@ -779,7 +781,7 @@ void *in_R_HTTPOpen(const char *url, const char *headers, const int cacheOK)
 {
     inetconn *con;
     void *ctxt;
-    int timeout = asInteger(GetOption1(install("timeout")));
+    int timeout = Rf_asInteger(Rf_GetOption1(Rf_install("timeout")));
     DLsize_t len = -1;
     char *type = NULL;
 
@@ -791,7 +793,7 @@ void *in_R_HTTPOpen(const char *url, const char *headers, const int cacheOK)
 	int rc = RxmlNanoHTTPReturnCode(ctxt);
 	if(rc != 200) {
 	    // FIXME: should this be ctxt->location, after redirection?
-	    warning(_("cannot open URL '%s': %s status was '%d %s'"), 
+	    Rf_warning(_("cannot open URL '%s': %s status was '%d %s'"), 
 		    url, "HTTP", rc, RxmlNanoHTTPStatusMsg(ctxt));
 	    RxmlNanoHTTPClose(ctxt);
 	    return NULL;
@@ -842,7 +844,7 @@ static void *in_R_FTPOpen(const char *url)
 {
     inetconn *con;
     void *ctxt;
-    int timeout = asInteger(GetOption1(install("timeout")));
+    int timeout = Rf_asInteger(Rf_GetOption1(Rf_install("timeout")));
     DLsize_t len = 0;
 
     if(timeout == NA_INTEGER || timeout <= 0) timeout = 60;
@@ -908,7 +910,7 @@ static void *in_R_HTTPOpen2(const char *url, const char *headers,
 	InternetOpen(headers, INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
     if(!wictxt->hand) {
 	free(wictxt);
-	/* error("cannot open Internet connection"); */
+	/* Rf_error("cannot open Internet connection"); */
 	return NULL;
     }
 
@@ -927,7 +929,7 @@ static void *in_R_HTTPOpen2(const char *url, const char *headers,
 		p = buf + strlen(buf) - 1;
 		if(*p == '\n' || *p == '\r') *p = '\0'; else break;
 	    }
-	    warning(_("InternetOpenUrl failed: '%s'"), buf);
+	    Rf_warning(_("InternetOpenUrl failed: '%s'"), buf);
 	    return NULL;
 	} else {
 	    FormatMessage(
@@ -941,7 +943,7 @@ static void *in_R_HTTPOpen2(const char *url, const char *headers,
 		p = buf + strlen(buf) - 1;
 		if(*p == '\n' || *p == '\r') *p = '\0'; else break;
 	    }
-	    warning(_("InternetOpenUrl failed: '%s'"), buf);
+	    Rf_warning(_("InternetOpenUrl failed: '%s'"), buf);
 	    return NULL;
 	}
     }
@@ -956,7 +958,7 @@ static void *in_R_HTTPOpen2(const char *url, const char *headers,
 	InternetCloseHandle(wictxt->session);
 	InternetCloseHandle(wictxt->hand);
 	free(wictxt);
-	warning(_("cannot open URL '%s': %s status was '%d %s'"), 
+	Rf_warning(_("cannot open URL '%s': %s status was '%d %s'"), 
 		url, "HTTP", status, buf);
 	return NULL;
     }
@@ -1033,7 +1035,7 @@ static void *in_R_FTPOpen2(const char *url)
 	free(wictxt);
 	if (err1 == ERROR_INTERNET_EXTENDED_ERROR) {
 	    InternetGetLastResponseInfo(&err2, buf, &blen);
-	    warning(_("InternetOpenUrl failed: '%s'"), buf);
+	    Rf_warning(_("InternetOpenUrl failed: '%s'"), buf);
 	    return NULL;
 	} else {
 	    FormatMessage(
@@ -1042,7 +1044,7 @@ static void *in_R_FTPOpen2(const char *url)
 		err1,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 		buf, 101, NULL);
-	    warning(_("InternetOpenUrl failed: '%s'"), buf);
+	    Rf_warning(_("InternetOpenUrl failed: '%s'"), buf);
 	    return NULL;
 	}
     }
@@ -1059,7 +1061,7 @@ void RxmlMessage(int level, const char *format, ...)
     char buf[MBUFSIZE], *p;
     va_list ap;
 
-    clevel = asInteger(GetOption1(install("internet.info")));
+    clevel = Rf_asInteger(Rf_GetOption1(Rf_install("internet.info")));
     if(clevel == NA_INTEGER) clevel = 2;
 
     if(level < clevel) return;
@@ -1070,7 +1072,7 @@ void RxmlMessage(int level, const char *format, ...)
     va_end(ap);
     p = buf + strlen(buf) - 1;
     if(strlen(buf) > 0 && *p == '\n') *p = '\0';
-    warning(buf);
+    Rf_warning(buf);
 }
 
 #include "sock.h"

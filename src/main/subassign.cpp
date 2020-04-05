@@ -86,6 +86,8 @@
  *  2000/08/01  Also promises, expressions, environments when using [[ PD
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -1006,7 +1008,7 @@ SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
 
     if (xorigtype == LANGSXP) {
 	if(Rf_length(x)) {
-	    GCStackRoot<PairList> xlr(static_cast<PairList*>(VectorToPairList(x)));
+	    GCStackRoot<PairList> xlr(static_cast<PairList*>(Rf_VectorToPairList(x)));
 	    GCStackRoot<Expression> xr(ConsCell::convert<Expression>(xlr));
 	    x = xr;
 	} else
@@ -1153,11 +1155,11 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	thesub = CAR(subs);
 	len = Rf_length(thesub); /* depth of recursion, small */
 	if (len > 1) {
-	    xup = Rf_vectorIndex(x, thesub, 0, len-2, /*partial ok*/TRUE, call,
+	    xup = vectorIndex(x, thesub, 0, len-2, /*partial ok*/TRUE, call,
 			      TRUE);
 	    /* OneIndex sets newname, but it will be overwritten before being used. */
 	    off = Rf_OneIndex(xup, thesub, Rf_xlength(xup), 0, &newname, len-2, R_NilValue);
-	    x = Rf_vectorIndex(xup, thesub, len-2, len-1, TRUE, call, TRUE);
+	    x = vectorIndex(xup, thesub, len-2, len-1, TRUE, call, TRUE);
 	    recursed = TRUE;
 	}
     }
@@ -1317,7 +1319,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	case 1925:  /* vector     <- S4 */
 	case 1903: case 1907: case 1908: case 1999: /* functions */
 
-	    if( NAMED(y) ) y = duplicate(y);
+	    if( NAMED(y) ) y = Rf_duplicate(y);
 	    SET_VECTOR_ELT(x, offset, y);
 	    break;
 
@@ -1398,7 +1400,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	}
 	UNPROTECT(1);
     }
-    else Rf_error(R_MSG_ob_nonsub, type2char(TYPEOF(x)));
+    else Rf_error(R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
 
     if(recursed) {
 	if (Rf_isVectorList(xup)) {
@@ -1573,7 +1575,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 	    imatch = -1;
 	    if (!Rf_isNull(names)) {
 		for (i = 0; i < nx; i++)
-		    if (NonNullStringMatch(STRING_ELT(names, i), nlist)) {
+		    if (Rf_NonNullStringMatch(STRING_ELT(names, i), nlist)) {
 			imatch = i;
 			break;
 		    }
@@ -1589,11 +1591,11 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 		/* Enlarge the list, add the new element */
 		/* and finally, adjust the attributes. */
 		SEXP ans, ansnames;
-		PROTECT(ans = allocVector(VECSXP, nx + 1));
-		PROTECT(ansnames = allocVector(STRSXP, nx + 1));
+		PROTECT(ans = Rf_allocVector(VECSXP, nx + 1));
+		PROTECT(ansnames = Rf_allocVector(STRSXP, nx + 1));
 		for (i = 0; i < nx; i++)
 		    SET_VECTOR_ELT(ans, i, VECTOR_ELT(x, i));
-		if (isNull(names)) {
+		if (Rf_isNull(names)) {
 		    for (i = 0; i < nx; i++)
 			SET_STRING_ELT(ansnames, i, R_BlankString);
 		}
@@ -1603,8 +1605,8 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 		}
 		SET_VECTOR_ELT(ans, nx, val);
 		SET_STRING_ELT(ansnames, nx,  nlist);
-		setAttrib(ans, R_NamesSymbol, ansnames);
-		copyMostAttrib(x, ans);
+		Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+		Rf_copyMostAttrib(x, ans);
 		UNPROTECT(2);
 		x = ans;
 	    }

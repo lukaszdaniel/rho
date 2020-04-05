@@ -819,7 +819,7 @@ static void OutStringVec(R_outpstream_t stream, SEXP s, HashTable* ref_table)
     R_assert(TYPEOF(s) == STRSXP);
 
 #ifdef WARN_ABOUT_NAMES_IN_PERSISTENT_STRINGS
-    SEXP names = getAttrib(s, R_NamesSymbol);
+    SEXP names = Rf_getAttrib(s, R_NamesSymbol);
     if (names != R_NilValue)
 	Rf_warning(_("names in persistent strings are currently ignored"));
 #endif
@@ -983,7 +983,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	if (R_IsPackageEnv(s)) {
 	    SEXP name = R_PackageEnvName(s);
 	    Rf_warning(_("'%s' may not be available when loading"),
-		    CHAR(STRING_ELT(name, 0)));
+		    R_CHAR(STRING_ELT(name, 0)));
 	    OutInteger(stream, PACKAGESXP);
 	    OutStringVec(stream, name, ref_table);
 	}
@@ -1090,7 +1090,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 		OutInteger(stream, -1);
 	    else {
 		OutInteger(stream, LENGTH(s));
-		OutString(stream, CHAR(s), LENGTH(s));
+		OutString(stream, R_CHAR(s), LENGTH(s));
 	    }
 	    break;
 	case LGLSXP:
@@ -1505,7 +1505,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : R_NilValue);
 	if (hastag && R_ReadItemDepth == R_InitReadItemDepth + 1 &&
 	    Rf_isSymbol(TAG(s))) {
-	    snprintf(lastname, 8192, "%s", CHAR(PRINTNAME(TAG(s))));
+	    snprintf(lastname, 8192, "%s", R_CHAR(PRINTNAME(TAG(s))));
 	}
 	if (hastag && R_ReadItemDepth <= 0) {
 	    Rprintf("%*s", 2*(R_ReadItemDepth - R_InitReadItemDepth), "");
@@ -2494,13 +2494,13 @@ static SEXP appendRawToFile(SEXP file, SEXP bytes)
 	Rf_error(_("not a proper raw vector"));
 #ifdef HAVE_WORKING_FTELL
     /* Windows' ftell returns position 0 with "ab" */
-    if ((fp = R_fopen(CHAR(STRING_ELT(file, 0)), "ab")) == nullptr) {
-	Rf_error( _("cannot open file '%s': %s"), CHAR(STRING_ELT(file, 0)),
+    if ((fp = R_fopen(R_CHAR(STRING_ELT(file, 0)), "ab")) == nullptr) {
+	Rf_error( _("cannot open file '%s': %s"), R_CHAR(STRING_ELT(file, 0)),
 	       strerror(errno));
     }
 #else
-    if ((fp = R_fopen(CHAR(STRING_ELT(file, 0)), "r+b")) == NULL) {
-	Rf_error( _("cannot open file '%s': %s"), CHAR(STRING_ELT(file, 0)),
+    if ((fp = R_fopen(R_CHAR(STRING_ELT(file, 0)), "r+b")) == NULL) {
+	Rf_error( _("cannot open file '%s': %s"), R_CHAR(STRING_ELT(file, 0)),
 	       strerror(errno));
     }
     fseek(fp, 0, SEEK_END);
@@ -2531,7 +2531,7 @@ SEXP attribute_hidden
 do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_)
 {
     int i;
-    const char *cfile = CHAR(STRING_ELT(file_, 0));
+    const char *cfile = R_CHAR(STRING_ELT(file_, 0));
 
     /* fprintf(stderr, "flushing file %s", cfile); */
     for (i = 0; i < used; i++)
@@ -2557,7 +2557,7 @@ static SEXP readRawFromFile(SEXP file, SEXP key)
     int offset, len, in, i, icache = -1;
     long filelen;
     SEXP val;
-    const char *cfile = CHAR(STRING_ELT(file, 0));
+    const char *cfile = R_CHAR(STRING_ELT(file, 0));
 
     if (! IS_PROPER_STRING(file))
 	Rf_error(_("not a proper file name"));
@@ -2744,7 +2744,7 @@ do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     else if (compressed)
 	REPROTECT(val = R_decompress1(val, &err), vpi);
     if (err) Rf_error("lazy-load database '%s' is corrupt",
-		      CHAR(STRING_ELT(file, 0)));
+		      R_CHAR(STRING_ELT(file, 0)));
     val = R_unserialize(val, hook);
     if (TYPEOF(val) == PROMSXP) {
 	REPROTECT(val, vpi);

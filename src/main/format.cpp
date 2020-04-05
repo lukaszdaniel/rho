@@ -42,6 +42,8 @@
  * These  formatFOO() functions determine the proper width, digits, etc.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif

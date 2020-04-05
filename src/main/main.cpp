@@ -33,6 +33,8 @@
 // For debugging:
 #include <iostream>
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -634,9 +636,9 @@ static void win32_segv(int signum)
     num_caught++;
     if(num_caught < 10) signal(signum, win32_segv);
     if(signum == SIGILL)
-	error("caught access violation - continue with care");
+	Rf_error("caught access violation - continue with care");
     else
-	error("caught access violation - continue with care");
+	Rf_error("caught access violation - continue with care");
 }
 #endif
 
@@ -818,8 +820,8 @@ static void init_signal_handlers(void)
 #endif
 
     signal(SIGINT,  handleInterrupt);
-    signal(SIGUSR1, onsigusr1);
-    signal(SIGUSR2, onsigusr2);
+    signal(SIGUSR1, Rf_onsigusr1);
+    signal(SIGUSR2, Rf_onsigusr2);
     signal(SIGPIPE, handlePipe);
 }
 
@@ -827,8 +829,8 @@ static void init_signal_handlers(void)
 static void init_signal_handlers(void)
 {
     signal(SIGINT,  handleInterrupt);
-    signal(SIGUSR1, onsigusr1);
-    signal(SIGUSR2, onsigusr2);
+    signal(SIGUSR1, Rf_onsigusr1);
+    signal(SIGUSR2, Rf_onsigusr2);
 #ifndef Win32
     signal(SIGPIPE, handlePipe);
 #else
@@ -991,7 +993,7 @@ void setup_Rmainloop(void)
 #endif
 
     /* make sure srand is called before R_tmpnam, PR#14381 */
-    srand(Rf_TimeToSeed());
+    srand(TimeToSeed());
 
     Rf_InitArithmetic();
     InitParser();
@@ -1423,7 +1425,7 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
 
     /* if there are any browser contexts active don't quit */
     if(Browser::numberActive() > 0) {
-	warning(_("cannot quit from browser"));
+	Rf_warning(_("cannot quit from browser"));
 	return R_NilValue;
     }
     if( !Rf_isString(save_) )
@@ -1520,7 +1522,7 @@ Rf_removeTaskCallbackByName(const char *name)
     Rboolean status = TRUE;
 
     if(!Rf_ToplevelTaskHandlers) {
-	return(FALSE); /* error("there are no task callbacks registered"); */
+	return(FALSE); /* Rf_error("there are no task callbacks registered"); */
     }
 
     while(el) {
@@ -1730,7 +1732,7 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
 	again = RHOCONSTRUCT(Rboolean, Rf_asLogical(val));
 	UNPROTECT(1);
     } else {
-	/* warning("error occurred in top-level task callback\n"); */
+	/* Rf_warning("error occurred in top-level task callback\n"); */
 	again = FALSE;
     }
     return(again);

@@ -25,6 +25,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -93,8 +95,8 @@ static SEXP pkgtrim(SEXP args, DllReference *dll);
 
 static R_INLINE Rboolean isNativeSymbolInfo(SEXP op)
 {
-    /* was: inherits(op, "NativeSymbolInfo")
-     * inherits() is slow because of string comparisons, so use
+    /* was: Rf_inherits(op, "NativeSymbolInfo")
+     * Rf_inherits() is slow because of string comparisons, so use
      * structural check instead. */
     return Rboolean((TYPEOF(op) == VECSXP &&
 		     LENGTH(op) >= 2 &&
@@ -258,7 +260,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     if (dll.type == FILENAME && strcmp(dll.DLLname, "base")) {
 	if(strlen(ns) && strcmp(dll.DLLname, ns) &&
 	   !(streql(dll.DLLname, "BioC_graph") && streql(ns, "graph")))
-	    warningcall(call,
+	    Rf_warningcall(call,
 			"using PACKAGE = \"%s\" from namespace '%s'",
 			dll.DLLname, ns);
     }
@@ -377,10 +379,10 @@ static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll)
     *len = 0;
     for(s = args, prev=args; s != R_NilValue;) {
 	if(TAG(s) == NaokSymbol) {
-	    *naok = asLogical(CAR(s));
-	    if(naokused++ == 1) warning(_("'%s' used more than once"), "NAOK");
+	    *naok = Rf_asLogical(CAR(s));
+	    if(naokused++ == 1) Rf_warning(_("'%s' used more than once"), "NAOK");
 	} else if(TAG(s) == DupSymbol) {
-	    if(dupused++ == 1) warning(_("'%s' used more than once"), "DUP");
+	    if(dupused++ == 1) Rf_warning(_("'%s' used more than once"), "DUP");
 	} else if(TAG(s) == PkgSymbol) {
 	    dll->obj = CAR(s);  // really?
 	    if(TYPEOF(CAR(s)) == STRSXP) {
@@ -390,7 +392,7 @@ static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll)
 		dll->type = FILENAME;
 		strcpy(dll->DLLname, p);
 		if(pkgused++ > 1)
-		    warning(_("'%s' used more than once"), "PACKAGE");
+		    Rf_warning(_("'%s' used more than once"), "PACKAGE");
 		/* More generally, this should allow us to process
 		   any additional arguments and not insist that PACKAGE
 		   be the last argument.
@@ -408,7 +410,7 @@ static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll)
 		    dll->dll = static_cast<HINSTANCE>(R_ExternalPtrAddr(VECTOR_ELT(s, 4)));
 		} else
 		    Rf_error("incorrect type (%s) of PACKAGE argument\n",
-			  type2char(TYPEOF(CAR(s))));
+			  Rf_type2char(TYPEOF(CAR(s))));
 	    }
 	} else {
 	    nargs++;
@@ -455,14 +457,14 @@ static SEXP pkgtrim(SEXP args, DllReference *dll)
 	   and remove it */
 	if(ss == R_NilValue && TAG(s) == PkgSymbol) {
 	    if(pkgused++ == 1)
-		warning(_("'%s' used more than once"), "PACKAGE");
+		Rf_warning(_("'%s' used more than once"), "PACKAGE");
 	    setDLLname(s, dll->DLLname);
 	    dll->type = FILENAME;
 	    return R_NilValue;
 	}
 	if(TAG(ss) == PkgSymbol) {
 	    if(pkgused++ == 1)
-		warning(_("'%s' used more than once"), "PACKAGE");
+		Rf_warning(_("'%s' used more than once"), "PACKAGE");
 	    setDLLname(ss, dll->DLLname);
 	    dll->type = FILENAME;
 	    SETCDR(s, CDR(ss));
@@ -482,11 +484,11 @@ static SEXP enctrim(SEXP args)
 	   this is the last one (which will only happen for one arg),
 	   and remove it */
 	if(ss == R_NilValue && TAG(s) == EncSymbol) {
-	    warning("ENCODING is defunct and will be ignored");
+	    Rf_warning("ENCODING is defunct and will be ignored");
 	    return R_NilValue;
 	}
 	if(TAG(ss) == EncSymbol) {
-	    warning("ENCODING is defunct and will be ignored");
+	    Rf_warning("ENCODING is defunct and will be ignored");
 	    SETCDR(s, CDR(ss));
 	}
 	s = CDR(s);
@@ -505,16 +507,16 @@ SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
     if (nargs < 1) Rf_error(_("no arguments supplied"));
     if (nargs > 3) Rf_error(_("too many arguments"));
 
-    if(!isValidString(CAR(args)))
+    if(!Rf_isValidString(CAR(args)))
 	Rf_error(_("invalid '%s' argument"), "symbol");
     sym = Rf_translateChar(STRING_ELT(CAR(args), 0));
     if(nargs >= 2) {
-	if(!isValidString(CADR(args)))
+	if(!Rf_isValidString(CADR(args)))
 	    Rf_error(_("invalid '%s' argument"), "PACKAGE");
 	pkg = Rf_translateChar(STRING_ELT(CADR(args), 0));
     }
     if(nargs >= 3) {
-	if(!isValidString(CADDR(args)))
+	if(!Rf_isValidString(CADDR(args)))
 	    Rf_error(_("invalid '%s' argument"), "type");
 	type = R_CHAR(STRING_ELT(CADDR(args), 0)); /* ASCII */
 	if(streql(type, "C")) symbol.type = R_C_SYM;
@@ -523,7 +525,7 @@ SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 	else if(streql(type, "External")) symbol.type = R_EXTERNAL_SYM;
     }
     if(!(R_FindSymbol(sym, pkg, &symbol))) val = 0;
-    return ScalarLogical(val);
+    return Rf_ScalarLogical(val);
 }
 
 /*   Call dynamically loaded "internal" functions.
@@ -639,7 +641,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 	SEXP *cargscp = (SEXP *) R_alloc(nargs, sizeof(SEXP));
 	int i;
 	for(i = 0; i < nargs; i++)
-	    cargscp[i] = PROTECT(duplicate(cargs[i]));
+	    cargscp[i] = PROTECT(Rf_duplicate(cargs[i]));
 	retval = PROTECT(R_doDotCall(ofun, nargs, cargs, call));
 	Rboolean constsOK = TRUE;
 	for(i = 0; constsOK && i < nargs; i++)
@@ -757,8 +759,8 @@ Rf_getCallingDLL(void)
     }
     if(!found) return R_NilValue;
 
-    PROTECT(e = lang2(Rf_install("getCallingDLLe"), rho));
-    ans = eval(e,  R_GlobalEnv);
+    PROTECT(e = Rf_lang2(Rf_install("getCallingDLLe"), rho));
+    ans = Rf_eval(e,  R_GlobalEnv);
     UNPROTECT(1);
     return(ans);
 }
@@ -786,14 +788,14 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
 	//dll->obj = Rf_getCallingDLL();
 	if (env != R_NilValue) {
 	    SEXP e;
-	    PROTECT(e = lang2(Rf_install("getCallingDLLe"), env));
-	    dll->obj = eval(e, R_GlobalEnv);
+	    PROTECT(e = Rf_lang2(Rf_install("getCallingDLLe"), env));
+	    dll->obj = Rf_eval(e, R_GlobalEnv);
 	    UNPROTECT(1);
 	} else dll->obj = Rf_getCallingDLL();
 	PROTECT(dll->obj); numProtects++;
     }
 
-    if(inherits(dll->obj, "DLLInfo")) {
+    if(Rf_inherits(dll->obj, "DLLInfo")) {
 	SEXP tmp;
 	tmp = VECTOR_ELT(dll->obj, 4);
 	info = static_cast<DllInfo *>(R_ExternalPtrAddr(tmp));
@@ -882,7 +884,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	    else
 		SET_STRING_ELT(names, na, PRINTNAME(TAG(pa)));
 	}
-	setAttrib(ans, R_NamesSymbol, names);
+	Rf_setAttrib(ans, R_NamesSymbol, names);
 	UNPROTECT(1);
     }
 
@@ -915,7 +917,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	       until copied in the switch.
 	       But R_alloc allocates, so missed protection < R 2.15.0.
 	    */
-	    PROTECT(s = coerceVector(s, targetType));
+	    PROTECT(s = Rf_coerceVector(s, targetType));
 	    nprotect++;
 	}
 
@@ -927,7 +929,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	   We do not need to copy if the inputs have no references */
 
 #ifdef LONG_VECTOR_SUPPORT
-	if (isVector(s) && IS_LONG_VEC(s))
+	if (Rf_isVector(s) && IS_LONG_VEC(s))
 	    Rf_error(_("long vectors (argument %d) are not supported in %s"),
 		  na + 1, Fort ? ".Fortran" : ".C");
 #endif
@@ -986,7 +988,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    for (R_xlen_t i = 0 ; i < n ; i++)
 			if(!R_FINITE(rptr[i]))
 			    Rf_error(_("NA/NaN/Inf in foreign function call (arg %d)"), na + 1);
-		if (asLogical(Rf_getAttrib(s, CSingSymbol)) == 1) {
+		if (Rf_asLogical(Rf_getAttrib(s, CSingSymbol)) == 1) {
 		    float *sptr = static_cast<float*>(RHO_alloc(n, sizeof(float)));
 		    for (R_xlen_t i = 0 ; i < n ; i++) sptr[i] = float( REAL(s)[i]);
 		    cargs[na] = RHO_NO_CAST(void*) sptr;
@@ -1040,7 +1042,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	    if (Fort) {
 		const char *ss = Rf_translateChar(STRING_ELT(s, 0));
 		if (n > 1)
-		    warning(_("only first string in char vector used in .Fortran"));
+		    Rf_warning(_("only first string in char vector used in .Fortran"));
 		char *fptr = static_cast<char*>(RHO_alloc(max(255, strlen(ss)) + 1, sizeof(char)));
 		strcpy(fptr, ss);
 		cargs[na] =  RHO_NO_CAST(void*) fptr;
@@ -1085,7 +1087,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	case VECSXP:
 	    {
 		if (Fort) Rf_error(_("invalid mode (%s) to pass to Fortran (arg %d)"),
-				type2char(t), na + 1);
+				Rf_type2char(t), na + 1);
 		/* Used read-only, so this is safe */
 		n = XLENGTH(s);
 		SEXP *lptr = static_cast<SEXP *>(RHO_alloc(n, sizeof(SEXP)));
@@ -1098,22 +1100,22 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	case SPECIALSXP:
 	case ENVSXP:
 	    if (Fort) Rf_error(_("invalid mode (%s) to pass to Fortran (arg %d)"),
-			    type2char(t), na + 1);
+			    Rf_type2char(t), na + 1);
 	    cargs[na] =  RHO_NO_CAST(void*) s;
 	    break;
 	case NILSXP:
 	    Rf_error(_("invalid mode (%s) to pass to C or Fortran (arg %d)"),
-		  type2char(t), na + 1);
+		  Rf_type2char(t), na + 1);
 	    cargs[na] =  RHO_NO_CAST(void*) s;
 	    break;
 	default:
 	    /* Includes pairlists from R 2.15.0 */
 	    if (Fort) Rf_error(_("invalid mode (%s) to pass to Fortran (arg %d)"),
-			    type2char(t), na + 1);
-	    warning("passing an object of type '%s' to .C (arg %d) is deprecated",
-		    type2char(t), na + 1);
+			    Rf_type2char(t), na + 1);
+	    Rf_warning("passing an object of type '%s' to .C (arg %d) is deprecated",
+		    Rf_type2char(t), na + 1);
 	    if (t == LISTSXP)
-		warning(_("pairlists are passed as SEXP as from R 2.15.0"));
+		Rf_warning(_("pairlists are passed as SEXP as from R 2.15.0"));
 	    cargs[na] =  (void*) s;
 	    break;
 	}
@@ -1179,13 +1181,13 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(*ptr++ != FILL)
 			Rf_error("array over-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 		ptr = (unsigned char *) p;
 		for (int i = 0; i < NG; i++)
 		    if(*--ptr != FILL)
 			Rf_error("array under-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 	    }
 	    break;
 	case INTSXP:
@@ -1198,13 +1200,13 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(*ptr++ != FILL)
 			Rf_error("array over-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 		ptr = (unsigned char *) p;
 		for (int i = 0; i < NG; i++)
 		    if(*--ptr != FILL)
 			Rf_error("array under-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 	    }
 	    break;
 	case LGLSXP:
@@ -1221,13 +1223,13 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(*ptr++ != FILL)
 			Rf_error("array over-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 		ptr = (unsigned char *) p;
 		for (int i = 0; i < NG; i++)
 		    if(*--ptr != FILL)
 			Rf_error("array under-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 	    } else {
 		int *iptr = INTEGER(arg), tmp;
 		for (R_xlen_t i = 0 ; i < n ; i++) {
@@ -1239,7 +1241,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	case REALSXP:
 	    if (copy) {
 		s = Rf_allocVector(REALSXP, n);
-		if (single_precision || asLogical(Rf_getAttrib(arg, CSingSymbol)) == 1) {
+		if (single_precision || Rf_asLogical(Rf_getAttrib(arg, CSingSymbol)) == 1) {
 		    float *sptr = (float*) p;
 		    for(R_xlen_t i = 0 ; i < n ; i++)
 			REAL(s)[i] = (double) sptr[i];
@@ -1251,16 +1253,16 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 			if(*ptr++ != FILL)
 			    Rf_error("array over-run in %s(\"%s\") in %s argument %d\n",
 				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
+				  symName, Rf_type2char(type), na+1);
 		    ptr = (unsigned char *) p;
 		    for (int i = 0; i < NG; i++)
 			if(*--ptr != FILL)
 			    Rf_error("array under-run in %s(\"%s\") in %s argument %d\n",
 				  Fort ? ".Fortran" : ".C",
-				  symName, type2char(type), na+1);
+				  symName, Rf_type2char(type), na+1);
 		}
 	    } else {
-		if (single_precision || asLogical(Rf_getAttrib(arg, CSingSymbol)) == 1) {
+		if (single_precision || Rf_asLogical(Rf_getAttrib(arg, CSingSymbol)) == 1) {
 		    s = Rf_allocVector(REALSXP, n);
 		    float *sptr = (float*) p;
 		    for(int i = 0 ; i < n ; i++)
@@ -1278,13 +1280,13 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    if(*ptr++ != FILL)
 			Rf_error("array over-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 		ptr = (unsigned char *) p;
 		for (int i = 0; i < NG; i++)
 		    if(*--ptr != FILL)
 			Rf_error("array under-run in %s(\"%s\") in %s argument %d\n",
 			      Fort ? ".Fortran" : ".C",
-			      symName, type2char(type), na+1);
+			      symName, Rf_type2char(type), na+1);
 	    }
 	    break;
 	case STRSXP:
@@ -1493,7 +1495,7 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
 	    SET_TAG(pcall, Rf_install(names[i]));
 	ENSURE_NAMEDMAX(CAR(pcall));
     }
-    PROTECT(s = eval(call, R_GlobalEnv));
+    PROTECT(s = Rf_eval(call, R_GlobalEnv));
     switch(TYPEOF(s)) {
     case LGLSXP:
     case INTSXP:

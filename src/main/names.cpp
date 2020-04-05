@@ -25,6 +25,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -969,7 +971,7 @@ const char *getPRIMNAME(SEXP object)
 }
 
 // TODO: move to Symbol.h
-/* This function is equivalent to install(CHAR(charSXP)), but faster.
+/* This function is equivalent to Rf_install(R_CHAR(charSXP)), but faster.
    Like the equivalent code pattern, it discards the encoding information,
    hence in almost all cases installTrChar should be used, instead. */
 extern "C"

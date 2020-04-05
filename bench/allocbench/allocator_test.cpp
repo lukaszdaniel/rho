@@ -96,7 +96,7 @@ SEXP alloc_scalar(int* num) {
     alloc_various_intvec();
     void* allocations[*num];
     for (int i = 0; i < *num; ++i) {
-        allocations[i] = ScalarInteger(i);
+        allocations[i] = Rf_ScalarInteger(i);
     }
     return nullptr;
 }
@@ -122,7 +122,7 @@ SEXP alloc_recursive_scalar(int* num, int* each) {
     if (*num > 0) {
         void* allocations[*each];
         for (int i = 0; i < *each; ++i) {
-            allocations[i] = ScalarInteger(i);
+            allocations[i] = Rf_ScalarInteger(i);
         }
         *num -= *each;
         alloc_recursive_scalar(num, each);
@@ -135,7 +135,7 @@ SEXP alloc_lookup_scalar(int* num, int* lookups) {
     alloc_various_intvec();
     void* allocations[*num];
     for (int i = 0; i < *num; ++i) {
-        allocations[i] = ScalarInteger(i);
+        allocations[i] = Rf_ScalarInteger(i);
     }
     for (int k = 0; k < *lookups; ++k) {
         // Exact pointer lookup.

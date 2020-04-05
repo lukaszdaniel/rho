@@ -546,7 +546,7 @@ w_strptime_internal (wchar_t *rp, const wchar_t *fmt, stm *tm,
 	    }
 	    break;
 	case L'Z':
-	    error(_("use of %s for input is not supported"), "%Z");
+	    Rf_error(_("use of %s for input is not supported"), "%Z");
 	    return NULL;
 	    break;
 	case L'E':
@@ -1017,7 +1017,7 @@ strptime_internal (const char *rp, const char *fmt, stm *tm,
 	    }
 	    break;
 	case 'Z':
-	    error(_("use of %s for input is not supported"), "%Z");
+	    Rf_error(_("use of %s for input is not supported"), "%Z");
 	    return NULL;
 	    break;
 	case 'E':
@@ -1291,14 +1291,14 @@ R_strptime (const char *buf, const char *format, stm *tm,
     if(mbcslocale) {
 	wchar_t wbuf[1001], wfmt[1001]; size_t n;
 	n = mbstowcs(NULL, buf, 1000);
-	if(n > 1000) error(_("input string is too long"));
+	if(n > 1000) Rf_error(_("input string is too long"));
 	n = mbstowcs(wbuf, buf, 1000);
-	if(RHOCONSTRUCT(int, n) == -1) error(_("invalid multibyte input string"));
+	if(RHOCONSTRUCT(int, n) == -1) Rf_error(_("invalid multibyte input string"));
 
 	n = mbstowcs(NULL, format, 1000);
-	if(n > 1000) error(_("format string is too long"));
+	if(n > 1000) Rf_error(_("format string is too long"));
 	n = mbstowcs(wfmt, format, 1000);
-	if(RHOCONSTRUCT(int, n) == -1) error(_("invalid multibyte format string"));
+	if(RHOCONSTRUCT(int, n) == -1) Rf_error(_("invalid multibyte format string"));
 	return (void *) w_strptime_internal (wbuf, wfmt, tm, psecs, poffset);
     } else
 #endif

@@ -1109,7 +1109,7 @@ g <- function() {
 res <- g()
 stopifnot(identical(fret, 28)
 #	 , identical(gret, 2) # TODO Rho: gret equals 28, not 2
-#	 , identical(res, 2) # TODO Rho: res equals 21, not 2
+	 , identical(res, 2)
 )
 ##
 ## returnValue corner case 3: return 'default' on restart

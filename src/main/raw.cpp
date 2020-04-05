@@ -23,6 +23,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -41,13 +43,13 @@ SEXP attribute_hidden do_charToRaw(/*const*/ rho::Expression* call, const rho::B
     SEXP ans, x = x_;
     int nc;
 
-    if (!isString(x) || LENGTH(x) == 0)
-	error(_("argument must be a character vector of length 1"));
+    if (!Rf_isString(x) || LENGTH(x) == 0)
+	Rf_error(_("argument must be a character vector of length 1"));
     if (LENGTH(x) > 1)
-	warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
+	Rf_warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
     nc = LENGTH(STRING_ELT(x, 0));
-    ans = allocVector(RAWSXP, nc);
-    if (nc) memcpy(RAW(ans), CHAR(STRING_ELT(x, 0)), nc);
+    ans = Rf_allocVector(RAWSXP, nc);
+    if (nc) memcpy(RAW(ans), R_CHAR(STRING_ELT(x, 0)), nc);
     return ans;
 }
 
@@ -57,15 +59,15 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
     SEXP ans, x = x_;
 
     if (!isRaw(x))
-	error(_("argument 'x' must be a raw vector"));
-    int multiple = asLogical(multiple_);
+	Rf_error(_("argument 'x' must be a raw vector"));
+    int multiple = Rf_asLogical(multiple_);
     if (multiple == NA_LOGICAL)
-	error(_("argument 'multiple' must be TRUE or FALSE"));
+	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
     if (multiple) {
 	R_xlen_t i, nc = XLENGTH(x);
 	char buf[2];
 	buf[1] = '\0';
-	PROTECT(ans = allocVector(STRSXP, nc));
+	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
 	    buf[0] = char( RAW(x)[i]);
 	    SET_STRING_ELT(ans, i, Rf_mkChar(buf));
@@ -113,7 +115,7 @@ SEXP attribute_hidden do_rawToBits(/*const*/ rho::Expression* call, const rho::B
     unsigned int tmp;
 
     if (!isRaw(x))
-	error(_("argument 'x' must be a raw vector"));
+	Rf_error(_("argument 'x' must be a raw vector"));
     PROTECT(ans = Rf_allocVector(RAWSXP, 8*XLENGTH(x)));
     for (i = 0; i < XLENGTH(x); i++) {
 	tmp = static_cast<unsigned int>(RAW(x)[i]);
@@ -288,7 +290,7 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
 	ians[j++] = tmp;
 	s += used;
     }
-    if (used < 0) error(_("invalid UTF-8 string"));
+    if (used < 0) Rf_error(_("invalid UTF-8 string"));
     ans = Rf_allocVector(INTSXP, j);
     if (j) memcpy(INTEGER(ans), ians, sizeof(int) * j);
     return ans;

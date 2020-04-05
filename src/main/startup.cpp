@@ -28,6 +28,8 @@
   See ../unix/system.txt for a description of some of these functions
 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -69,7 +71,7 @@ attribute_hidden
 char *R_LibraryFileName(const char *file, char *buf, size_t bsize)
 {
     if (snprintf(buf, bsize, "%s/library/base/R/%s", R_Home, file) < 0)
-	error(_("R_LibraryFileName: buffer too small"));
+	Rf_error(_("R_LibraryFileName: buffer too small"));
     return buf;
 }
 

@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -113,12 +115,12 @@ namespace {
 	    if (Rf_isNull(x))
 		vl = static_cast<LogicalVector*>(
 		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
-	    else // isNumeric(x)
+	    else // Rf_isNumeric(x)
 		vl = static_cast<LogicalVector*>(Rf_coerceVector(x, LGLSXP));
 	    if (Rf_isNull(y))
 		vr = static_cast<LogicalVector*>(
 		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
-	    else // isNumeric(x)
+	    else // Rf_isNumeric(x)
 		vr = static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP));
 	    return binaryLogic(op->variant(), vl, vr);
 	} else { // nx == 0 || ny == 0
@@ -298,7 +300,7 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 	t = CAR(s);
 	/* Avoid memory waste from coercing empty inputs, and also
 	   avoid warnings with empty lists coming from sapply */
-	if(xlength(t) == 0) continue;
+	if(Rf_xlength(t) == 0) continue;
 	/* Rf_coerceVector protects its argument so this actually works
 	   just fine */
 	if (TYPEOF(t) != LGLSXP) {

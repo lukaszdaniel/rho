@@ -302,7 +302,7 @@ Environment* Environment::attachToSearchPath(int pos, StringVector* name)
 
 Environment* Environment::detachFromSearchPath(int pos) {
     if (pos == 1)
-	error(_("invalid '%s' argument"), "pos");
+	Rf_error(_("invalid '%s' argument"), "pos");
 
     // Iterate through the search path to the environment just before where we
     // want to detach.
@@ -312,9 +312,9 @@ Environment* Environment::detachFromSearchPath(int pos) {
 
     Environment *env_to_detach = where->enclosingEnvironment();
     if (env_to_detach == base())
-	error(_("detaching \"package:base\" is not allowed"));
+	Rf_error(_("detaching \"package:base\" is not allowed"));
     if (env_to_detach == empty())
-	error(_("invalid '%s' argument"), "pos");
+	Rf_error(_("invalid '%s' argument"), "pos");
 
     // Detach the environment after where.
     where->m_enclosing = env_to_detach->m_enclosing;

@@ -23,6 +23,9 @@
  *  https://www.R-project.org/Licenses/
  *
  */
+
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -43,7 +46,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     R_xlen_t *lengths, *counters, longest = 0;
 
     m = Rf_length(varyingArgs);
-    SEXP vnames = PROTECT(getAttrib(varyingArgs, R_NamesSymbol));
+    SEXP vnames = PROTECT(Rf_getAttrib(varyingArgs, R_NamesSymbol));
     Rboolean named = RHOCONSTRUCT(Rboolean, vnames != nullptr);
 
     lengths = static_cast<R_xlen_t *>(RHO_alloc(m, sizeof(R_xlen_t)));
@@ -54,13 +57,13 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
 	if (lengths[i] > longest) longest = lengths[i];
     }
     if (zero && longest)
-	error(_("zero-length inputs cannot be mixed with those of non-zero length"));
+	Rf_error(_("zero-length inputs cannot be mixed with those of non-zero length"));
 
     counters = static_cast<R_xlen_t *>(RHO_alloc(m, sizeof(R_xlen_t)));
     if (m) memset(counters, 0, m * sizeof(R_xlen_t));
 
-    SEXP mindex = PROTECT(allocVector(VECSXP, m));
-    SEXP nindex = PROTECT(allocVector(VECSXP, m));
+    SEXP mindex = PROTECT(Rf_allocVector(VECSXP, m));
+    SEXP nindex = PROTECT(Rf_allocVector(VECSXP, m));
 
     /* build a call like
        f(dots[[1]][[4]], dots[[2]][[4]], dots[[3]][[4]], d=7)
@@ -69,29 +72,29 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     PairList* fargs = R_NilValue; // -Wall
     if (constantArgs == R_NilValue)
 	;
-    else if (isVectorList(constantArgs))
-	fargs = static_cast<PairList*>(VectorToPairList(constantArgs));
+    else if (Rf_isVectorList(constantArgs))
+	fargs = static_cast<PairList*>(Rf_VectorToPairList(constantArgs));
     else
-	error(_("argument 'MoreArgs' of 'mapply' is not a list"));
+	Rf_error(_("argument 'MoreArgs' of 'mapply' is not a list"));
     PROTECT_INDEX fi;
     PROTECT_WITH_INDEX(fargs, &fi);
 
     Rboolean realIndx = RHOCONSTRUCT(Rboolean, longest > INT_MAX);
     static Symbol* Dots = Symbol::obtain("dots");
     for (int j = m - 1; j >= 0; j--) {
-	SET_VECTOR_ELT(mindex, j, ScalarInteger(j + 1));
-	SET_VECTOR_ELT(nindex, j, allocVector(realIndx ? REALSXP : INTSXP, 1));
-	SEXP tmp1 = PROTECT(lang3(R_Bracket2Symbol, Dots, VECTOR_ELT(mindex, j)));
-	SEXP tmp2 = PROTECT(lang3(R_Bracket2Symbol, tmp1, VECTOR_ELT(nindex, j)));
+	SET_VECTOR_ELT(mindex, j, Rf_ScalarInteger(j + 1));
+	SET_VECTOR_ELT(nindex, j, Rf_allocVector(realIndx ? REALSXP : INTSXP, 1));
+	SEXP tmp1 = PROTECT(Rf_lang3(R_Bracket2Symbol, Dots, VECTOR_ELT(mindex, j)));
+	SEXP tmp2 = PROTECT(Rf_lang3(R_Bracket2Symbol, tmp1, VECTOR_ELT(nindex, j)));
 	REPROTECT(fargs = PairList::cons(tmp2, fargs), fi);
 	UNPROTECT(2);
-	if (named && CHAR(STRING_ELT(vnames, j))[0] != '\0')
-	    SET_TAG(fargs, installTrChar(STRING_ELT(vnames, j)));
+	if (named && R_CHAR(STRING_ELT(vnames, j))[0] != '\0')
+	    SET_TAG(fargs, Rf_installTrChar(STRING_ELT(vnames, j)));
     }
 
     Expression* fcall = new Expression(f, fargs);
 
-    SEXP ans = PROTECT(allocVector(VECSXP, longest));
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, longest));
 
     for (int i = 0; i < longest; i++) {
 	for (int j = 0; j < m; j++) {
@@ -109,7 +112,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
 
     for (int j = 0; j < m; j++)
 	if (counters[j] != lengths[j])
-	    warning(_("longer argument not a multiple of length of shorter"));
+	    Rf_warning(_("longer argument not a multiple of length of shorter"));
 
     UNPROTECT(5);
     return ans;

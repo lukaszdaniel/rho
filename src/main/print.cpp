@@ -55,7 +55,7 @@
  *
  *
  *  See ./printutils.cpp	 for general remarks on Printing
- *			 and the EncodeString() and all Encode*() utils,
+ *			 and the Rf_EncodeString() and all Encode*() utils,
  *
  *  Also ./printvector.cpp,  ./printarray.cpp
  *
@@ -107,8 +107,8 @@ void Rf_PrintDefaults(void)
 {
     R_print.na_string = NA_STRING;
     R_print.na_string_noquote = getNaStringNoQuote();
-    R_print.na_width = int(strlen(CHAR(R_print.na_string)));
-    R_print.na_width_noquote = int(strlen(CHAR(R_print.na_string_noquote)));
+    R_print.na_width = int(strlen(R_CHAR(R_print.na_string)));
+    R_print.na_width_noquote = int(strlen(R_CHAR(R_print.na_string_noquote)));
     R_print.quote = 1;
     R_print.right = Rprt_adj_left;
     R_print.digits = Rf_GetOptionDigits();
@@ -160,7 +160,7 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
 	    Rf_error(_("invalid 'na.print' specification"));
 	R_print.na_string = R_print.na_string_noquote = STRING_ELT(naprint, 0);
 	R_print.na_width = R_print.na_width_noquote =
-	    int(strlen(CHAR(R_print.na_string)));
+	    int(strlen(R_CHAR(R_print.na_string)));
     }
 
     if (Rf_length(rowlab) == 0) rowlab = R_NilValue;
@@ -465,7 +465,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		if (i > 0) Rprintf("\n");
 		if (names != R_NilValue &&
 		    STRING_ELT(names, i) != R_NilValue &&
-		    *CHAR(STRING_ELT(names, i)) != '\0') {
+		    *R_CHAR(STRING_ELT(names, i)) != '\0') {
 		    const void *vmax = vmaxget();
 		    /* Bug for L <- list(`a\\b` = 1, `a\\c` = 2)  :
 		       const char *ss = Rf_translateChar(STRING_ELT(names, i));
@@ -622,7 +622,7 @@ static void printList(SEXP s, SEXP env)
 	while (TYPEOF(s) == LISTSXP) {
 	    if (i > 1) Rprintf("\n");
 	    if (TAG(s) != R_NilValue && Rf_isSymbol(TAG(s))) {
-		if (taglen + strlen(CHAR(PRINTNAME(TAG(s)))) > TAGBUFLEN) {
+		if (taglen + strlen(R_CHAR(PRINTNAME(TAG(s)))) > TAGBUFLEN) {
 		    if (taglen <= TAGBUFLEN)
 			sprintf(ptag, "$...");
 		} else {
@@ -630,8 +630,8 @@ static void printList(SEXP s, SEXP env)
 		       is a valid (if non-syntactic) name */
 		    if (PRINTNAME(TAG(s)) == NA_STRING)
 			sprintf(ptag, "$<NA>");
-		    else if( Rf_isValidName(CHAR(PRINTNAME(TAG(s)))) )
-			sprintf(ptag, "$%s", CHAR(PRINTNAME(TAG(s))));
+		    else if( Rf_isValidName(R_CHAR(PRINTNAME(TAG(s)))) )
+			sprintf(ptag, "$%s", R_CHAR(PRINTNAME(TAG(s))));
 		    else
 			sprintf(ptag, "$`%s`", Rf_EncodeChar(PRINTNAME(TAG(s))));
 		}
@@ -671,7 +671,7 @@ static void PrintExpression(SEXP s)
     u = Rf_deparse1w(s, RHO_FALSE, R_print.useSource | DEFAULTDEPARSE);
     n = LENGTH(u);
     for (i = 0; i < n; i++)
-	Rprintf("%s\n", CHAR(STRING_ELT(u, i))); /*translated */
+	Rprintf("%s\n", R_CHAR(STRING_ELT(u, i))); /*translated */
 }
 
 static void PrintSpecial(SEXP s)
@@ -697,7 +697,7 @@ static void PrintSpecial(SEXP s)
 	SEXP t;
 	PROTECT(s2);
 	t = Rf_deparse1(s2, RHO_FALSE, DEFAULTDEPARSE);
-	Rprintf("%s ", CHAR(STRING_ELT(t, 0))); /* translated */
+	Rprintf("%s ", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	Rprintf(".Primitive(\"%s\")\n", PRIMNAME(s));
 	UNPROTECT(1);
     } else /* missing definition, e.g. 'if' */
@@ -729,10 +729,10 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	    SEXP pkg = Rf_getAttrib(s, R_PackageSymbol);
 	    if(Rf_isNull(pkg)) {
 		Rprintf("<S4 object of class \"%s\">\n",
-			CHAR(STRING_ELT(cl, 0)));
+			R_CHAR(STRING_ELT(cl, 0)));
 	    } else {
 		Rprintf("<S4 object of class \"%s\" from package '%s'>\n",
-			CHAR(STRING_ELT(cl, 0)), CHAR(STRING_ELT(pkg, 0)));
+			R_CHAR(STRING_ELT(cl, 0)), R_CHAR(STRING_ELT(pkg, 0)));
 	    }
 	}
 	return;
@@ -744,7 +744,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
     case SYMSXP: /* Use deparse here to handle backtick quotification
 		  * of "weird names" */
 	t = Rf_deparse1(s, RHO_FALSE, SIMPLEDEPARSE);
-	Rprintf("%s\n", CHAR(STRING_ELT(t, 0))); /* translated */
+	Rprintf("%s\n", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	break;
     case SPECIALSXP:
     case BUILTINSXP:

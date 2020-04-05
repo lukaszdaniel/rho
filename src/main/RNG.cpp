@@ -24,6 +24,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -182,7 +183,7 @@ double unif_rand(void)
 	return double(((p1 > p2) ? (p1 - p2) : (p1 - p2 + m1))) * normc;
     }
     default:
-	error(_("unif_rand: unimplemented RNG kind %d"), RNG_kind);
+	Rf_error(_("unif_rand: unimplemented RNG kind %d"), RNG_kind);
 	return -1.;
     }
 }
@@ -267,7 +268,7 @@ static void FixupSeeds(RNGtype RNG_kind, int initial)
     }
     break;
     default:
-	error(_("FixupSeeds: unimplemented RNG kind %d"), RNG_kind);
+	Rf_error(_("FixupSeeds: unimplemented RNG kind %d"), RNG_kind);
     }
 }
 
@@ -307,7 +308,7 @@ static void RNG_Init(RNGtype kind, Int32 seed)
 	break;
     case USER_UNIF:
 	User_unif_fun = R_FindSymbol("user_unif_rand", "", nullptr);
-	if (!User_unif_fun) error(_("'user_unif_rand' not in load table"));
+	if (!User_unif_fun) Rf_error(_("'user_unif_rand' not in load table"));
 	User_unif_init = reinterpret_cast<UnifInitFun>(R_FindSymbol("user_unif_init", "", nullptr));
 	if (User_unif_init) (void) User_unif_init(seed);
 	User_unif_nseed = R_FindSymbol("user_unif_nseed", "", nullptr);
@@ -315,12 +316,12 @@ static void RNG_Init(RNGtype kind, Int32 seed)
 	if (User_unif_seedloc) {
 	    int ns = 0;
 	    if (!User_unif_nseed) {
-		warning(_("cannot read seeds unless 'user_unif_nseed' is supplied"));
+		Rf_warning(_("cannot read seeds unless 'user_unif_nseed' is supplied"));
 		break;
 	    }
 	    ns = *(static_cast<int *>(User_unif_nseed()));
 	    if (ns < 0 || ns > 625) {
-		warning(_("seed length must be in 0...625; ignored"));
+		Rf_warning(_("seed length must be in 0...625; ignored"));
 		break;
 	    }
 	    RNG_Table[kind].n_seed = ns;
@@ -328,15 +329,15 @@ static void RNG_Init(RNGtype kind, Int32 seed)
 	}
 	break;
     default:
-	error(_("RNG_Init: unimplemented RNG kind %d"), kind);
+	Rf_error(_("RNG_Init: unimplemented RNG kind %d"), kind);
     }
 }
 
 static SEXP GetSeedsFromVar(void)
 {
-    SEXP seeds = findVarInFrame(R_GlobalEnv, R_SeedsSymbol);
+    SEXP seeds = Rf_findVarInFrame(R_GlobalEnv, R_SeedsSymbol);
     if (TYPEOF(seeds) == PROMSXP)
-	seeds = eval(R_SeedsSymbol, R_GlobalEnv);
+	seeds = Rf_eval(R_SeedsSymbol, R_GlobalEnv);
     return seeds;
 }
 
@@ -352,27 +353,27 @@ static Rboolean GetRNGkind(SEXP seeds)
     int tmp, *is;
     RNGtype newRNG; N01type newN01;
 
-    if (isNull(seeds))
+    if (Rf_isNull(seeds))
 	seeds = GetSeedsFromVar();
     if (seeds == R_UnboundValue) return TRUE;
-    if (!isInteger(seeds)) {
+    if (!Rf_isInteger(seeds)) {
 	if (seeds == R_MissingArg) /* How can this happen? */
-	    error(_("'.Random.seed' is a missing argument with no default"));
-	warning(_("'.Random.seed' is not an integer vector but of type '%s', so ignored"),
-		type2char(TYPEOF(seeds)));
+	    Rf_error(_("'.Random.seed' is a missing argument with no default"));
+	Rf_warning(_("'.Random.seed' is not an integer vector but of type '%s', so ignored"),
+		Rf_type2char(TYPEOF(seeds)));
 	goto invalid;
     }
     is = INTEGER(seeds);
     tmp = is[0];
     /* avoid overflow here: max current value is 705 */
     if (tmp == NA_INTEGER || tmp < 0 || tmp > 1000) {
-	warning(_("'.Random.seed[1]' is not a valid integer, so ignored"));
+	Rf_warning(_("'.Random.seed[1]' is not a valid integer, so ignored"));
 	goto invalid;
     }
     newRNG = (RNGtype) (tmp % 100);
     newN01 = (N01type) (tmp / 100);
     if (newN01 > KINDERMAN_RAMAGE) {
-	warning(_("'.Random.seed[1]' is not a valid Normal type, so ignored"));
+	Rf_warning(_("'.Random.seed[1]' is not a valid Normal type, so ignored"));
 	goto invalid;
     }
     switch(newRNG) {
@@ -386,12 +387,12 @@ static Rboolean GetRNGkind(SEXP seeds)
 	break;
     case USER_UNIF:
 	if(!User_unif_fun) {
-	    warning(_("'.Random.seed[1] = 5' but no user-supplied generator, so ignored"));
+	    Rf_warning(_("'.Random.seed[1] = 5' but no user-supplied generator, so ignored"));
 	    goto invalid;
 	}
 	break;
     default:
-	warning(_("'.Random.seed[1]' is not a valid RNG kind so ignored"));
+	Rf_warning(_("'.Random.seed[1]' is not a valid RNG kind so ignored"));
 	goto invalid;
     }
     RNG_kind = newRNG; N01_kind = newN01;
@@ -419,7 +420,7 @@ void GetRNGstate()
 	len_seed = RNG_Table[RNG_kind].n_seed;
 	/* Not sure whether this test is needed: wrong for USER_UNIF */
 	if(XLENGTH(seeds) > 1 && XLENGTH(seeds) < len_seed + 1)
-	    error(_("'.Random.seed' has wrong length"));
+	    Rf_error(_("'.Random.seed' has wrong length"));
 	if(XLENGTH(seeds) == 1 && RNG_kind != USER_UNIF)
 	    Randomize(RNG_kind);
 	else {
@@ -438,20 +439,20 @@ void PutRNGstate()
     SEXP seeds;
 
     if (RNG_kind > LECUYER_CMRG || N01_kind > KINDERMAN_RAMAGE) {
-	warning("Internal .Random.seed is corrupt: not saving");
+	Rf_warning("Internal .Random.seed is corrupt: not saving");
 	return;
     }
 
     len_seed = RNG_Table[RNG_kind].n_seed;
 
-    PROTECT(seeds = allocVector(INTSXP, len_seed + 1));
+    PROTECT(seeds = Rf_allocVector(INTSXP, len_seed + 1));
 
     INTEGER(seeds)[0] = RNG_kind + 100 * N01_kind;
     for(j = 0; j < len_seed; j++)
 	INTEGER(seeds)[j+1] = RHOCONSTRUCT(int, RNG_Table[RNG_kind].i_seed[j]);
 					    
     /* assign only in the workspace */
-    defineVar(R_SeedsSymbol, seeds, R_GlobalEnv);
+    Rf_defineVar(R_SeedsSymbol, seeds, R_GlobalEnv);
     UNPROTECT(1);
 }
 
@@ -472,13 +473,13 @@ static void RNGkind(RNGtype newkind)
     case LECUYER_CMRG:
 	break;
     default:
-	error(_("RNGkind: unimplemented RNG kind %d"), newkind);
+	Rf_error(_("RNGkind: unimplemented RNG kind %d"), newkind);
     }
     GetRNGstate();
     // precaution against corruption as per package randtoolbox
     double u = unif_rand();
     if (u < 0.0 || u > 1.0) {
-	warning("someone corrupted the random-number generator: re-initializing");
+	Rf_warning("someone corrupted the random-number generator: re-initializing");
 	RNG_Init(newkind, TimeToSeed());
     } else
 	RNG_Init(newkind, (Int32) (u * UINT_MAX));
@@ -492,10 +493,10 @@ static void Norm_kind(N01type kind)
        mapped to an unsigned integer type. */
     if (kind == (N01type)-1) kind = N01_DEFAULT;
     if (kind > KINDERMAN_RAMAGE)
-	error(_("invalid Normal type in 'RNGkind'"));
+	Rf_error(_("invalid Normal type in 'RNGkind'"));
     if (kind == USER_NORM) {
 	User_norm_fun = R_FindSymbol("user_norm_rand", "", nullptr);
-	if (!User_norm_fun) error(_("'user_norm_rand' not in load table"));
+	if (!User_norm_fun) Rf_error(_("'user_norm_rand' not in load table"));
     }
     GetRNGstate(); /* might not be initialized */
     if (kind == BOX_MULLER)
@@ -512,17 +513,17 @@ SEXP attribute_hidden do_RNGkind (/*const*/ rho::Expression* call, const rho::Bu
     SEXP ans, rng, norm;
 
     GetRNGstate(); /* might not be initialized */
-    PROTECT(ans = allocVector(INTSXP, 2));
+    PROTECT(ans = Rf_allocVector(INTSXP, 2));
     INTEGER(ans)[0] = RNG_kind;
     INTEGER(ans)[1] = N01_kind;
     rng = kind_;
     norm = normal_kind_;
     GetRNGkind(R_NilValue); /* pull from .Random.seed if present */
-    if(!isNull(rng)) { /* set a new RNG kind */
-	RNGkind(RNGtype( asInteger(rng)));
+    if(!Rf_isNull(rng)) { /* set a new RNG kind */
+	RNGkind(RNGtype( Rf_asInteger(rng)));
     }
-    if(!isNull(norm)) { /* set a new normal kind */
-	Norm_kind(N01type( asInteger(norm)));
+    if(!Rf_isNull(norm)) { /* set a new normal kind */
+	Norm_kind(N01type(Rf_asInteger(norm)));
     }
     UNPROTECT(1);
     return ans;
@@ -534,18 +535,18 @@ SEXP attribute_hidden do_setseed (/*const*/ rho::Expression* call, const rho::Bu
     SEXP skind, nkind;
     int seed;
 
-    if(!isNull(seed_)) {
-	seed = asInteger(seed_);
+    if(!Rf_isNull(seed_)) {
+	seed = Rf_asInteger(seed_);
 	if (seed == NA_INTEGER)
-	    error(_("supplied seed is not a valid integer"));
-    } else seed = RHOCONSTRUCT(int, TimeToSeed());
+	    Rf_error(_("supplied seed is not a valid integer"));
+    } else seed = int(TimeToSeed());
     skind = kind_;
     nkind = normal_kind_;
     GetRNGkind(R_NilValue); /* pull RNG_kind, N01_kind from
 			       .Random.seed if present */
-    if (!isNull(skind)) RNGkind(RNGtype( asInteger(skind)));
-    if (!isNull(nkind)) Norm_kind(N01type( asInteger(nkind)));
-    RNG_Init(RNG_kind, Int32( seed)); /* zaps BM history */
+    if (!Rf_isNull(skind)) RNGkind(RNGtype(Rf_asInteger(skind)));
+    if (!Rf_isNull(nkind)) Norm_kind(N01type(Rf_asInteger(nkind)));
+    RNG_Init(RNG_kind, Int32(seed)); /* zaps BM history */
     PutRNGstate();
     return R_NilValue;
 }
@@ -775,12 +776,12 @@ static Int32 KT_next(void)
 static void RNG_Init_R_KT(Int32 seed)
 {
     SEXP fun, sseed, call, ans;
-    PROTECT(fun = findVar1(install(".TAOCP1997init"), R_BaseEnv, CLOSXP, FALSE));
+    PROTECT(fun = Rf_findVar1(Rf_install(".TAOCP1997init"), R_BaseEnv, CLOSXP, FALSE));
     if(fun == R_UnboundValue)
-	error("function '.TAOCP1997init' is missing");
-    PROTECT(sseed = ScalarInteger(int(seed % 1073741821)));
-    PROTECT(call = lang2(fun, sseed));
-    ans = eval(call, R_GlobalEnv);
+	Rf_error("function '.TAOCP1997init' is missing");
+    PROTECT(sseed = Rf_ScalarInteger(int(seed % 1073741821)));
+    PROTECT(call = Rf_lang2(fun, sseed));
+    ans = Rf_eval(call, R_GlobalEnv);
     memcpy(dummy, INTEGER(ans), 100*sizeof(int));
     UNPROTECT(3);
     KT_pos = 100;

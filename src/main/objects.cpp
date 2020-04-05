@@ -125,7 +125,7 @@ void R_warn_S3_for_S4(SEXP method) {
   SEXP call;
   if(!s_check_S3_for_S4)
     s_check_S3_for_S4 = Rf_install(".checkS3forS4");
-  PROTECT(call = lang2(s_check_S3_for_S4, method));
+  PROTECT(call = Rf_lang2(s_check_S3_for_S4, method));
   Rf_eval(call, R_MethodsNamespace);
   UNPROTECT(1);
 }
@@ -819,10 +819,10 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
     return object;
 }
 
-/** Version of inherits() that supports S4 inheritance and implicit
-    classes.  The inlined inherits() does not have access to private
+/** Version of Rf_inherits() that supports S4 inheritance and implicit
+    classes.  The inlined Rf_inherits() does not have access to private
     entry points R_data_class() and R_data_class2(). The semantics of
-    inherits2() are identical to that of the R-level inherits(),
+    inherits2() are identical to that of the R-level Rf_inherits(),
     except there is no translation.
 */
 
@@ -846,9 +846,9 @@ Rboolean attribute_hidden inherits2(SEXP x, const char *what) {
     return FALSE;
 }
 
-/* NOTE: Fast  inherits(x, what)    in ../include/Rinlinedfuns.h
+/* NOTE: Fast  Rf_inherits(x, what)    in ../include/Rinlinedfuns.h
  * ----        ----------------- */
-/** C API for  R  inherits(x, what, which)
+/** C API for  R  Rf_inherits(x, what, which)
  *
  * @param x any R object
  * @param what character vector
@@ -932,7 +932,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 {
     int ans;
     SEXP cl = Rf_getAttrib(x, R_ClassSymbol);
-    const char *class_str = CHAR(Rf_asChar(cl));
+    const char *class_str = R_CHAR(Rf_asChar(cl));
     for (ans = 0; ; ans++) {
 	if (!strlen(valid[ans])) // empty string
 	    break;
@@ -958,7 +958,7 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 	UNPROTECT(2); /* _call, classExts */
 	PROTECT(superCl);
 	for(int i=0; i < Rf_length(superCl); i++) {
-	    const char *s_class = CHAR(STRING_ELT(superCl, i));
+	    const char *s_class = R_CHAR(STRING_ELT(superCl, i));
 	    for (ans = 0; ; ans++) {
 		if (!strlen(valid[ans]))
 		    break;
@@ -1048,7 +1048,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 	    // so not already on
 	    // This may not work correctly: the default arg is incorrect.
 	    Rf_warning("R_isMethodsDispatchOn(TRUE) called -- may not work correctly");
-	    // FIXME: use call = PROTECT(lang1(install("initMethodDispatch")));
+	    // FIXME: use call = PROTECT(Rf_lang1(Rf_install("initMethodDispatch")));
 	    SEXP call = PROTECT(Rf_allocList(2));
 	    SETCAR(call, Rf_install("initMethodDispatch"));
 	    Rf_eval(call, R_MethodsNamespace); // only works with methods loaded
@@ -1616,7 +1616,7 @@ SEXP Rf_asS4(SEXP s, Rboolean flag, int complete)
 	    /* else no plausible S3 object*/
 	    else if(complete == 1) /* ordinary case (2, for conditional) */
 	      Rf_error(_("object of class \"%s\" does not correspond to a valid S3 object"),
-		      CHAR(STRING_ELT(R_data_class(s, FALSE), 0)));
+		      R_CHAR(STRING_ELT(R_data_class(s, FALSE), 0)));
 	    else return s; /*  unchanged */
 	}
 	UNSET_S4_OBJECT(s);

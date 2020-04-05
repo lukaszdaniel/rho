@@ -316,7 +316,7 @@ INLINE_FUN Rboolean Rf_conformable(SEXP x, SEXP y)
 }
 
 /* NOTE: R's inherits() is based on inherits3() in ../main/objects.cpp
- * Here, use char / CHAR() instead of the slower more general translateChar()
+ * Here, use char / R_CHAR() instead of the slower more general Rf_translateChar()
  */
 INLINE_FUN Rboolean Rf_inherits(SEXP s, const char *name)
 {

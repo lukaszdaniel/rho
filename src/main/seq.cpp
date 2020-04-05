@@ -28,6 +28,8 @@
    both arguments are factors and seq_colon() otherwise.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -61,13 +63,13 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
     if (Rf_length(s) != Rf_length(t))
 	Rf_errorcall(call, _("unequal factor lengths"));
     n = Rf_length(s);
-    ls = getAttrib(s, R_LevelsSymbol);
-    lt = getAttrib(t, R_LevelsSymbol);
+    ls = Rf_getAttrib(s, R_LevelsSymbol);
+    lt = Rf_getAttrib(t, R_LevelsSymbol);
     nls = LENGTH(ls);
     nlt = LENGTH(lt);
     PROTECT(a = Rf_allocVector(INTSXP, n));
-    PROTECT(rs = coerceVector(s, INTSXP));
-    PROTECT(rt = coerceVector(t, INTSXP));
+    PROTECT(rs = Rf_coerceVector(s, INTSXP));
+    PROTECT(rt = Rf_coerceVector(t, INTSXP));
     for (i = 0; i < n; i++) {
 	int vs = INTEGER(rs)[i];
 	int vt = INTEGER(rt)[i];
@@ -77,27 +79,27 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 	    INTEGER(a)[i] = vt + (vs - 1) * nlt;
     }
     UNPROTECT(2);
-    if (!isNull(ls) && !isNull(lt)) {
+    if (!Rf_isNull(ls) && !Rf_isNull(lt)) {
 	PROTECT(la = Rf_allocVector(STRSXP, nls * nlt));
 	k = 0;
 	/* FIXME: possibly UTF-8 version */
 	for (i = 0; i < nls; i++) {
-	    const char *vi = translateChar(STRING_ELT(ls, i));
+	    const char *vi = Rf_translateChar(STRING_ELT(ls, i));
 	    size_t vs = strlen(vi);
 	    for (j = 0; j < nlt; j++) {
-		const char *vj = translateChar(STRING_ELT(lt, j));
+		const char *vj = Rf_translateChar(STRING_ELT(lt, j));
 		size_t vt = strlen(vj), len = vs + vt + 2;
 		cbuf = static_cast<char*>(R_AllocStringBuffer(len, &cbuff));
 		snprintf(cbuf, len, "%s:%s", vi, vj);
-		SET_STRING_ELT(la, k, mkChar(cbuf));
+		SET_STRING_ELT(la, k, Rf_mkChar(cbuf));
 		k++;
 	    }
 	}
-	setAttrib(a, R_LevelsSymbol, la);
+	Rf_setAttrib(a, R_LevelsSymbol, la);
 	UNPROTECT(1);
     }
-    PROTECT(la = mkString("factor"));
-    setAttrib(a, R_ClassSymbol, la);
+    PROTECT(la = Rf_mkString("factor"));
+    Rf_setAttrib(a, R_ClassSymbol, la);
     UNPROTECT(2);
     R_FreeStringBufferL(&cbuff);
     vmaxset(vmax);
@@ -161,7 +163,7 @@ SEXP attribute_hidden do_colon(/*const*/ Expression* call, const BuiltInFunction
     SEXP s1, s2;
     double n1, n2;
 
-    if (inherits(from_, "factor") && inherits(to_, "factor"))
+    if (Rf_inherits(from_, "factor") && Rf_inherits(to_, "factor"))
 	return(cross_colon(call, from_, to_));
 
     s1 = from_;
@@ -234,7 +236,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
     case EXPRSXP: \
 	for (i = 0; i < nc; i++) { \
 /*	    if ((i+1) % ni == 0) R_CheckUserInterrupt();*/ \
-	    SEXP elt = lazy_duplicate(VECTOR_ELT(s, i)); \
+	    SEXP elt = Rf_lazy_duplicate(VECTOR_ELT(s, i)); \
 	    for (j = (R_xlen_t) it[i]; j > 0; j--) \
 		SET_VECTOR_ELT(a, n++, elt); \
 	    if (j > 1) ENSURE_NAMEDMAX(elt); \
@@ -267,18 +269,18 @@ static SEXP rep2(SEXP s, SEXP ncopy)
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if (ISNAN(REAL(t)[i]) || REAL(t)[i] <= -1 ||
 	    REAL(t)[i] >= R_XLEN_T_MAX+1.0)
-	    error(_("invalid '%s' value"), "times");
+	    Rf_error(_("invalid '%s' value"), "times");
 	sna += (R_xlen_t) REAL(t)[i];
     }
     else
     for (i = 0; i < nc; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if (INTEGER(t)[i] == NA_INTEGER || INTEGER(t)[i] < 0)
-	    error(_("invalid '%s' value"), "times");
+	    Rf_error(_("invalid '%s' value"), "times");
 	sna += INTEGER(t)[i];
     }
     if (sna > R_XLEN_T_MAX)
-	error(_("invalid '%s' value"), "times");
+	Rf_error(_("invalid '%s' value"), "times");
     R_xlen_t na = (R_xlen_t) sna;
 /*    R_xlen_t ni = NINTERRUPT, ratio;
     if(nc > 0) {
@@ -345,7 +347,7 @@ static SEXP rep3(SEXP s, R_xlen_t ns, R_xlen_t na)
     case EXPRSXP:
 	MOD_ITERATE1(na, ns, i, j, {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    SET_VECTOR_ELT(a, i, lazy_duplicate(VECTOR_ELT(s, j)));
+	    SET_VECTOR_ELT(a, i, Rf_lazy_duplicate(VECTOR_ELT(s, j)));
 	});
 	break;
     default:
@@ -392,21 +394,21 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(s)) { /* e.g. contains = "list" */
-	setAttrib(a, R_ClassSymbol, getAttrib(s, R_ClassSymbol));
+	Rf_setAttrib(a, R_ClassSymbol, Rf_getAttrib(s, R_ClassSymbol));
 	SET_S4_OBJECT(a);
     }
 #endif
 
-    if (inherits(s, "factor")) {
+    if (Rf_inherits(s, "factor")) {
 	SEXP tmp;
-	if(inherits(s, "ordered")) {
+	if(Rf_inherits(s, "ordered")) {
 	    PROTECT(tmp = Rf_allocVector(STRSXP, 2));
-	    SET_STRING_ELT(tmp, 0, mkChar("ordered"));
-	    SET_STRING_ELT(tmp, 1, mkChar("factor"));
-	} else PROTECT(tmp = mkString("factor"));
-	setAttrib(a, R_ClassSymbol, tmp);
+	    SET_STRING_ELT(tmp, 0, Rf_mkChar("ordered"));
+	    SET_STRING_ELT(tmp, 1, Rf_mkChar("factor"));
+	} else PROTECT(tmp = Rf_mkString("factor"));
+	Rf_setAttrib(a, R_ClassSymbol, tmp);
 	UNPROTECT(1);
-	setAttrib(a, R_LevelsSymbol, getAttrib(s, R_LevelsSymbol));
+	Rf_setAttrib(a, R_LevelsSymbol, Rf_getAttrib(s, R_LevelsSymbol));
     }
     UNPROTECT(1);
     return a;
@@ -448,7 +450,7 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(s)) { /* e.g. contains = "list" */
-	Rf_setAttrib(a, R_ClassSymbol, getAttrib(s, R_ClassSymbol));
+	Rf_setAttrib(a, R_ClassSymbol, Rf_getAttrib(s, R_ClassSymbol));
 	SET_S4_OBJECT(a);
     }
 #endif
@@ -692,15 +694,15 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if(len > 0 && x == R_NilValue)
 	    Rf_warningcall(call, "'x' is NULL so the result will be NULL");
 	SEXP a;
-	PROTECT(a = duplicate(x));
+	PROTECT(a = Rf_duplicate(x));
 	if(len != NA_INTEGER && len > 0 && x != R_NilValue)
-	    a = xlengthgets(a, len);
+	    a = Rf_xlengthgets(a, len);
 	UNPROTECT(3);
 	return a;
     }
-    if (!isVector(x))
+    if (!Rf_isVector(x))
 	Rf_errorcall(call, "attempt to replicate an object of type '%s'",
-		  type2char(TYPEOF(x)));
+		  Rf_type2char(TYPEOF(x)));
 
     /* So now we know x is a vector of positive length.  We need to
        replicate it, and its names if it has them. */
@@ -712,14 +714,14 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     } else {
 	double sum = 0;
 	if(times == R_MissingArg)
-	    PROTECT(times = ScalarInteger(1));
+	    PROTECT(times = Rf_ScalarInteger(1));
 #ifdef LONG_VECTOR_SUPPORT
 	else if(TYPEOF(times) != INTSXP)
 #else
 	else if(TYPEOF(times) == REALSXP)
 #endif
-	    PROTECT(times = coerceVector(times, REALSXP));
-	else PROTECT(times = coerceVector(times, INTSXP));
+	    PROTECT(times = Rf_coerceVector(times, REALSXP));
+	else PROTECT(times = Rf_coerceVector(times, INTSXP));
 	nprotect++;
 	nt = XLENGTH(times);
 	if(nt == 1) {
@@ -762,7 +764,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if(len > 0 && each == 0)
 	Rf_errorcall(call, _("invalid '%s' argument"), "each");
-    SEXP xn = PROTECT(getAttrib(x, R_NamesSymbol));  nprotect++;
+    SEXP xn = PROTECT(Rf_getAttrib(x, R_NamesSymbol));  nprotect++;
     PROTECT(ans = rep4(x, times, len, each, nt));    nprotect++;
 
     if (Rf_xlength(xn) > 0)
@@ -770,7 +772,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(x)) { /* e.g. contains = "list" */
-	setAttrib(ans, R_ClassSymbol, getAttrib(x, R_ClassSymbol));
+	Rf_setAttrib(ans, R_ClassSymbol, Rf_getAttrib(x, R_ClassSymbol));
 	SET_S4_OBJECT(ans);
     }
 #endif

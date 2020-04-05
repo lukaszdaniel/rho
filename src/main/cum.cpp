@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -52,7 +54,7 @@ static SEXP icumsum(SEXP x, SEXP s)
 	if (ix[i] == NA_INTEGER) break;
 	sum += ix[i];
 	if(sum > INT_MAX || sum < 1 + INT_MIN) { /* INT_MIN is NA_INTEGER */
-	    warning(_("integer overflow in 'cumsum'; use 'cumsum(as.numeric(.))'"));
+	    Rf_warning(_("integer overflow in 'cumsum'; use 'cumsum(as.numeric(.))'"));
 	    break;
 	}
 	is[i] = int(sum);
@@ -160,11 +162,11 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 {
     SEXP s, t, ans;
     R_xlen_t i, n;
-    if (isComplex(x_)) {
+    if (Rf_isComplex(x_)) {
 	t = x_;
 	n = XLENGTH(t);
-	PROTECT(s = allocVector(CPLXSXP, n));
-	setAttrib(s, R_NamesSymbol, getAttrib(t, R_NamesSymbol));
+	PROTECT(s = Rf_allocVector(CPLXSXP, n));
+	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
 	UNPROTECT(1);
 	if(n == 0) return s;
 	/* no need to initialize s, ccum* set all elements */
@@ -176,20 +178,20 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	    return ccumprod(t, s);
 	    break;
 	case 3: /* cummax */
-	    errorcall(call, _("'cummax' not defined for complex numbers"));
+	    Rf_errorcall(call, _("'cummax' not defined for complex numbers"));
 	    break;
 	case 4: /* cummin */
-	    errorcall(call, _("'cummin' not defined for complex numbers"));
+	    Rf_errorcall(call, _("'cummin' not defined for complex numbers"));
 	    break;
 	default:
-	    errorcall(call, "unknown cumxxx function");
+	    Rf_errorcall(call, "unknown cumxxx function");
 	}
-    } else if( ( isInteger(x_) || isLogical(x_) ) &&
+    } else if( ( Rf_isInteger(x_) || Rf_isLogical(x_) ) &&
 	       op->variant() != 2) {
-	PROTECT(t = coerceVector(x_, INTSXP));
+	PROTECT(t = Rf_coerceVector(x_, INTSXP));
 	n = XLENGTH(t);
-	PROTECT(s = allocVector(INTSXP, n));
-	setAttrib(s, R_NamesSymbol, getAttrib(t, R_NamesSymbol));
+	PROTECT(s = Rf_allocVector(INTSXP, n));
+	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
 	if(n == 0) {
 	    UNPROTECT(2); /* t, s */
 	    return s;
@@ -206,16 +208,16 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	    ans = icummin(t,s);
 	    break;
 	default:
-	    errorcall(call, _("unknown cumxxx function"));
+	    Rf_errorcall(call, _("unknown cumxxx function"));
 	    ans = R_NilValue;
 	}
 	UNPROTECT(2); /* t, s */
 	return ans;
     } else {
-	PROTECT(t = coerceVector(x_, REALSXP));
+	PROTECT(t = Rf_coerceVector(x_, REALSXP));
 	n = XLENGTH(t);
-	PROTECT(s = allocVector(REALSXP, n));
-	setAttrib(s, R_NamesSymbol, getAttrib(t, R_NamesSymbol));
+	PROTECT(s = Rf_allocVector(REALSXP, n));
+	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
 	UNPROTECT(2);
 	if(n == 0) return s;
 	/* no need to initialize s, cum* set all elements */
@@ -233,7 +235,7 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	    return cummin(t,s);
 	    break;
 	default:
-	    errorcall(call, _("unknown cumxxx function"));
+	    Rf_errorcall(call, _("unknown cumxxx function"));
 	}
     }
     return R_NilValue; /* for -Wall */

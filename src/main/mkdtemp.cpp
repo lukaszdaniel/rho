@@ -39,6 +39,8 @@
    Windows (and formerly on Solaris).
 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -144,7 +146,7 @@ gen_tempname (char *tmpl)
   XXXXXX = &tmpl[len - 6];
 
   /* Get some more or less random data.  We need 36 bits. */
-  random_time_bits = Rf_TimeToSeed();
+  random_time_bits = TimeToSeed();
   value += (random_time_bits << 8) ^ getpid ();
 
   for (count = 0; count < TMP_MAX; value += 7777, ++count)

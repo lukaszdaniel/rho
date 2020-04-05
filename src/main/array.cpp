@@ -2144,7 +2144,7 @@ SEXP attribute_hidden do_backsolve(/*const*/ Expression* call, const BuiltInFunc
        many rows and cols in the rhs and at least that many rows on
        the rhs.
     */
-    if (k == NA_INTEGER || k <= 0 || k > nrr || k > ncols(r) || k > nrb)
+    if (k == NA_INTEGER || k <= 0 || k > nrr || k > Rf_ncols(r) || k > nrb)
 	Rf_error(_("invalid '%s' argument"), "k");
     int upper = Rf_asLogical(upper_tri_);
     if (upper == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "upper.tri");

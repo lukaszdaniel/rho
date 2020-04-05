@@ -24,6 +24,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -264,7 +265,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    if (c1 == NA_STRING || c2 == NA_STRING)
 		LOGICAL(ans)[i] = NA_LOGICAL;
 	    else
-		LOGICAL(ans)[i] = Seql(c1, c2) ? 1 : 0;
+		LOGICAL(ans)[i] = Rf_Seql(c1, c2) ? 1 : 0;
 	}
 	break;
     case NEOP:
@@ -275,7 +276,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    if (c1 == NA_STRING || c2 == NA_STRING)
 		LOGICAL(ans)[i] = NA_LOGICAL;
 	    else
-		LOGICAL(ans)[i] = Seql(c1, c2) ? 0 : 1;
+		LOGICAL(ans)[i] = Rf_Seql(c1, c2) ? 0 : 1;
 	}
 	break;
     case LTOP:

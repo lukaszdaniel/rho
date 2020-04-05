@@ -34,6 +34,8 @@
  *  See ./format.cpp	 for the  format_FOO_  functions used below.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -353,7 +355,7 @@ static void printRawMatrix(SEXP sx, int offset, int r_pr, int r, int c,
     _COMPUTE_W_( formatRaw(&x[j * r], (R_xlen_t) r, &w[j]) )
 
     _PRINT_MATRIX_( , STD_ColumnLabels,
-		   Rprintf("%*s%s", w[j]-2, "", EncodeRaw(x[i + j * r], "")) );
+		   Rprintf("%*s%s", w[j]-2, "", Rf_EncodeRaw(x[i + j * r], "")) );
 }
 
 /* rm and cn are found by GetMatrixDimnames so in native encoding */
@@ -369,9 +371,9 @@ void printMatrix(SEXP x, int offset, SEXP dim, int quote, int right,
     int c = INTEGER(dim)[1], r_pr;
     /* PR#850 */
     if ((rl != R_NilValue) && (r > Rf_length(rl)))
-	error(_("too few row labels"));
+	Rf_error(_("too few row labels"));
     if ((cl != R_NilValue) && (c > Rf_length(cl)))
-	error(_("too few column labels"));
+	Rf_error(_("too few column labels"));
     if (r == 0 && c == 0) { // FIXME?  names(dimnames(.)) :
 	Rprintf("<0 x 0 matrix>\n");
 	return;
@@ -434,7 +436,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	printVector(x, 1, quote);
     else if (ndim == 2) {
 	SEXP rl, cl;
-	GetMatrixDimnames(x, &rl, &cl, &rn, &cn);
+	Rf_GetMatrixDimnames(x, &rl, &cl, &rn, &cn);
 	printMatrix(x, 0, dim, quote, 0, rl, cl, rn, cn);
     }
     else { /* ndim >= 3 */
@@ -503,7 +505,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	    } else { // nb == 0 -- e.g. <2 x 3 x 0 array of logical>
 		for (i = 0; i < ndim; i++)
 		    Rprintf("%s%d", (i == 0) ? "<" : " x ", dims[i]);
-		Rprintf(" array of %s>\n", CHAR(type2str_nowarn(TYPEOF(x))));
+		Rprintf(" array of %s>\n", R_CHAR(Rf_type2str_nowarn(TYPEOF(x))));
 	    }
 	    switch (TYPEOF(x)) {
 	    case LGLSXP:
@@ -529,7 +531,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	    case RAWSXP:
 		printRawMatrix    (x, i * b, use_nr, nr, nc, dn0, dn1, rn, cn, do_ij);
 		break;
-		default: error(_("invalid type")); break;
+		default: Rf_error(_("invalid type")); break;
 	    }
 	    Rprintf("\n");
 	}

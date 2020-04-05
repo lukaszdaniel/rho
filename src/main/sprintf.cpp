@@ -25,6 +25,8 @@
  * Originally written by Jonathan Rougier
 */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -78,8 +80,8 @@ static Rboolean checkfmt(const char *fmt, const char *pattern)
 }
 
 #define TRANSLATE_CHAR(_STR_, _i_)  \
-   ((use_UTF8) ? translateCharUTF8(STRING_ELT(_STR_, _i_))  \
-    : translateChar(STRING_ELT(_STR_, _i_)))
+   ((use_UTF8) ? Rf_translateCharUTF8(STRING_ELT(_STR_, _i_))  \
+    : Rf_translateChar(STRING_ELT(_STR_, _i_)))
 
 
 SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
@@ -101,30 +103,30 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
     {									\
 	int nc = snprintf(bit, MAXLINE+1, fmtp, _X_);			\
 	if (nc > MAXLINE)						\
-	    error(_("required resulting string length %d is greater than maximal %d"), \
+	    Rf_error(_("required resulting string length %d is greater than maximal %d"), \
 		  nc, MAXLINE);						\
     }
 
     nargs = num_args;
     /* grab the format string */
     format = num_args ? args[0] : nullptr;
-    if (!isString(format))
-	error(_("'fmt' is not a character vector"));
+    if (!Rf_isString(format))
+	Rf_error(_("'fmt' is not a character vector"));
     nfmt = Rf_length(format);
-    if (nfmt == 0) return allocVector(STRSXP, 0);
+    if (nfmt == 0) return Rf_allocVector(STRSXP, 0);
     args = (args + 1); nargs--;
     if(nargs >= MAXNARGS)
-	error(_("only %d arguments are allowed"), MAXNARGS);
+	Rf_error(_("only %d arguments are allowed"), MAXNARGS);
 
     /* record the args for possible coercion and later re-ordering */
     for(i = 0; i < nargs; i++, args = (args + 1)) {
 	SEXPTYPE t_ai;
 	a[i] = args[0];
 	if((t_ai = TYPEOF(a[i])) == LANGSXP || t_ai == SYMSXP) /* << maybe add more .. */
-	    error(_("invalid type of argument[%d]: '%s'"),
-		  i+1, CHAR(type2str(t_ai)));
+	    Rf_error(_("invalid type of argument[%d]: '%s'"),
+		  i+1, R_CHAR(Rf_type2str(t_ai)));
 	lens[i] = Rf_length(a[i]);
-	if(lens[i] == 0) return allocVector(STRSXP, 0);
+	if(lens[i] == 0) return Rf_allocVector(STRSXP, 0);
     }
 
 #define CHECK_maxlen							\
@@ -132,10 +134,10 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
     for(i = 0; i < nargs; i++)						\
 	if(maxlen < lens[i]) maxlen = lens[i];				\
     if(maxlen % nfmt)							\
-	error(_("arguments cannot be recycled to the same length"));	\
+	Rf_error(_("arguments cannot be recycled to the same length"));	\
     for(i = 0; i < nargs; i++)						\
 	if(maxlen % lens[i])						\
-	    error(_("arguments cannot be recycled to the same length"))
+	    Rf_error(_("arguments cannot be recycled to the same length"))
 
     CHECK_maxlen;
 
@@ -144,11 +146,11 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
     /* We do the format analysis a row at a time */
     for(ns = 0; ns < maxlen; ns++) {
 	outputString[0] = '\0';
-	use_UTF8 = RHOCONSTRUCT(Rboolean, getCharCE(STRING_ELT(format, ns % nfmt)) == CE_UTF8);
+	use_UTF8 = RHOCONSTRUCT(Rboolean, Rf_getCharCE(STRING_ELT(format, ns % nfmt)) == CE_UTF8);
 	if (!use_UTF8) {
 	    for(i = 0; i < nargs; i++) {
-		if (!isString(a[i])) continue;
-		if (getCharCE(STRING_ELT(a[i], ns % lens[i])) == CE_UTF8) {
+		if (!Rf_isString(a[i])) continue;
+		if (Rf_getCharCE(STRING_ELT(a[i], ns % lens[i])) == CE_UTF8) {
 		    use_UTF8 = TRUE; break;
 		}
 	    }
@@ -157,7 +159,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 	formatString = TRANSLATE_CHAR(format, ns % nfmt);
 	n = strlen(formatString);
 	if (n > MAXLINE)
-	    error(_("'fmt' length exceeds maximal format length %d"), MAXLINE);
+	    Rf_error(_("'fmt' length exceeds maximal format length %d"), MAXLINE);
 	/* process the format string */
 	for (cur = 0, cnt = 0; cur < n; cur += chunk) {
 	    const char *curFormat = formatString + cur, *ss;
@@ -176,7 +178,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 		    /* This is MBCS-OK, as we are in a format spec */
 		    chunk = strcspn(curFormat + 1, "diosfeEgGxXaA") + 2;
 		    if (cur + chunk > n)
-			error(_("unrecognised format specification '%s'"), curFormat);
+			Rf_error(_("unrecognised format specification '%s'"), curFormat);
 
 		    strncpy(fmt, curFormat, chunk);
 		    fmt[chunk] = '\0';
@@ -187,13 +189,13 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			v = fmt[1] - '0';
 			if(fmt[2] == '$') {
 			    if(v > nargs)
-				error(_("reference to non-existent argument %d"), v);
+				Rf_error(_("reference to non-existent argument %d"), v);
 			    nthis = v-1;
 			    memmove(fmt+1, fmt+3, strlen(fmt)-2);
 			} else if(fmt[2] >= '0' && fmt[2] <= '9' && fmt[3] == '$') {
 			    v = 10*v + fmt[2] - '0';
 			    if(v > nargs)
-				error(_("reference to non-existent argument %d"), v);
+				Rf_error(_("reference to non-existent argument %d"), v);
 			    nthis = v-1;
 			    memmove(fmt+1, fmt+4, strlen(fmt)-3);
 			}
@@ -206,36 +208,36 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    v = starc[1] - '0';
 			    if(starc[2] == '$') {
 				if(v > nargs)
-				    error(_("reference to non-existent argument %d"), v);
+				    Rf_error(_("reference to non-existent argument %d"), v);
 				nstar = v-1;
 				memmove(starc+1, starc+3, strlen(starc)-2);
 			    } else if(starc[2] >= '0' && starc[2] <= '9'
 				      && starc[3] == '$') {
 				v = 10*v + starc[2] - '0';
 				if(v > nargs)
-				    error(_("reference to non-existent argument %d"), v);
+				    Rf_error(_("reference to non-existent argument %d"), v);
 				nstar = v-1;
 				memmove(starc+1, starc+4, strlen(starc)-3);
 			    }
 			}
 
 			if(nstar < 0) {
-			    if (cnt >= nargs) error(_("too few arguments"));
+			    if (cnt >= nargs) Rf_error(_("too few arguments"));
 			    nstar = cnt++;
 			}
 
 			if (Rf_strchr(starc+1, '*'))
-			    error(_("at most one asterisk '*' is supported in each conversion specification"));
+			    Rf_error(_("at most one asterisk '*' is supported in each conversion specification"));
 
 			_this = a[nstar];
 			if(ns == 0 && TYPEOF(_this) == REALSXP) {
-			    _this = coerceVector(_this, INTSXP);
+			    _this = Rf_coerceVector(_this, INTSXP);
 			    PROTECT(a[nstar] = _this);
 			    nprotect++;
 			}
 			if(TYPEOF(_this) != INTSXP || LENGTH(_this)<1 ||
 			   INTEGER(_this)[ns % LENGTH(_this)] == NA_INTEGER)
-			    error(_("argument for '*' conversion specification must be a number"));
+			    Rf_error(_("argument for '*' conversion specification must be a number"));
 			star_arg = INTEGER(_this)[ns % LENGTH(_this)];
 			has_star = TRUE;
 		    }
@@ -252,7 +254,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 		    } else {
 			Rboolean did_this = FALSE;
 			if(nthis < 0) {
-			    if (cnt >= nargs) error(_("too few arguments"));
+			    if (cnt >= nargs) Rf_error(_("too few arguments"));
 			    nthis = cnt++;
 			}
 			_this = a[nthis];
@@ -264,7 +266,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    *q = '\0';
 			    nf = strlen(fmt2);
 			    if (nf > MAXLINE)
-				error(_("'fmt' length exceeds maximal format length %d"),
+				Rf_error(_("'fmt' length exceeds maximal format length %d"),
 				      MAXLINE);
 			    fmtp = fmt2;
 			} else fmtp = fmt;
@@ -301,7 +303,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 					}
 				    } 
 				    if(exactlyInteger)
-					_this = coerceVector(_this, INTSXP);
+					_this = Rf_coerceVector(_this, INTSXP);
 				    PROTECT(a[nthis] = _this);
 				    nprotect++;
 				}
@@ -316,9 +318,9 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 				if(TYPEOF(_this) != REALSXP &&
 				   /* no automatic as.double(<string>) : */
 				   TYPEOF(_this) != STRSXP) {
-				    PROTECT(tmp = lang2(install("as.double"), _this));
+				    PROTECT(tmp = Rf_lang2(Rf_install("as.double"), _this));
 #define COERCE_THIS_TO_A						\
-				    _this = eval(tmp, env);		\
+				    _this = Rf_eval(tmp, env);		\
 				    UNPROTECT(1);			\
 				    PROTECT(a[nthis] = _this);		\
 				    nprotect++;				\
@@ -359,7 +361,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    {
 				int x = LOGICAL(_this)[ns % thislen];
 				if (checkfmt(fmtp, "di"))
-				    error(_("invalid format '%s'; %s"), fmtp,
+				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %d or %i for logical objects"));
 				if (x == NA_LOGICAL) {
 				    fmtp[strlen(fmtp)-1] = 's';
@@ -373,7 +375,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    {
 				int x = INTEGER(_this)[ns % thislen];
 				if (checkfmt(fmtp, "dioxX"))
-				    error(_("invalid format '%s'; %s"), fmtp,
+				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %d, %i, %o, %x or %X for integer objects"));
 				if (x == NA_INTEGER) {
 				    fmtp[strlen(fmtp)-1] = 's';
@@ -387,7 +389,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    {
 				double x = REAL(_this)[ns % thislen];
 				if (checkfmt(fmtp, "aAfeEgG"))
-				    error(_("invalid format '%s'; %s"), fmtp,
+				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %f, %e, %g or %a for numeric objects"));
 				if (R_FINITE(x)) {
 				    _my_sprintf(x)
@@ -422,13 +424,13 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			case STRSXP:
 			    /* NA_STRING will be printed as 'NA' */
 			    if (checkfmt(fmtp, "s"))
-				error(_("invalid format '%s'; %s"), fmtp,
+				Rf_error(_("invalid format '%s'; %s"), fmtp,
 				      _("use format %s for character objects"));
 
 			    ss = TRANSLATE_CHAR(_this, ns % thislen);
 			    if(fmtp[1] != 's') {
 				if(strlen(ss) > MAXLINE)
-				    warning(_("likely truncation of character string to %d characters"),
+				    Rf_warning(_("likely truncation of character string to %d characters"),
 					    MAXLINE-1);
 				_my_sprintf(ss)
 				bit[MAXLINE] = '\0';
@@ -437,7 +439,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 			    break;
 
 			default:
-			    error(_("unsupported type"));
+			    Rf_error(_("unsupported type"));
 			    break;
 			}
 
@@ -463,10 +465,10 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 	}  /* end for ( each chunk ) */
 
 	if(ns == 0) { /* may have adjusted maxlen now ... */
-	    PROTECT(ans = allocVector(STRSXP, maxlen));
+	    PROTECT(ans = Rf_allocVector(STRSXP, maxlen));
 	    nprotect++;
 	}
-	SET_STRING_ELT(ans, ns, mkCharCE(outputString,
+	SET_STRING_ELT(ans, ns, Rf_mkCharCE(outputString,
 					 use_UTF8 ? CE_UTF8 : CE_NATIVE));
     } /* end for(ns ...) */
 

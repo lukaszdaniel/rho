@@ -196,7 +196,7 @@ static void lineprof(char* buf, SEXP srcref)
 	if (!srcfile || TYPEOF(srcfile) != ENVSXP) return;
 	srcfile = Rf_findVar(Rf_install("filename"), srcfile);
 	if (TYPEOF(srcfile) != STRSXP || !Rf_length(srcfile)) return;
-	filename = CHAR(STRING_ELT(srcfile, 0));
+	filename = R_CHAR(STRING_ELT(srcfile, 0));
 
 	if ((fnum = getFilenum(filename)))
 	    snprintf(buf+len, PROFBUFSIZ - len, "%d#%d ", fnum, line);
@@ -264,7 +264,7 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 		char itembuf[PROFITEMMAX];
 
 		if (TYPEOF(fun) == SYMSXP) {
-		    snprintf(itembuf, PROFITEMMAX-1, "%s", CHAR(PRINTNAME(fun)));
+		    snprintf(itembuf, PROFITEMMAX-1, "%s", R_CHAR(PRINTNAME(fun)));
 
 		} else if ((CAR(fun) == R_DoubleColonSymbol ||
 			    CAR(fun) == R_TripleColonSymbol ||
@@ -276,9 +276,9 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 		       functions, as in "base"::"list", but that's a very rare
 		       case so we won't bother handling it. */
 		    snprintf(itembuf, PROFITEMMAX-1, "%s%s%s",
-			     CHAR(PRINTNAME(CADR(fun))),
-			     CHAR(PRINTNAME(CAR(fun))),
-			     CHAR(PRINTNAME(CADDR(fun))));
+			     R_CHAR(PRINTNAME(CADR(fun))),
+			     R_CHAR(PRINTNAME(CAR(fun))),
+			     R_CHAR(PRINTNAME(CADDR(fun))));
 
 		} else if (CAR(fun) == R_Bracket2Symbol &&
 			   TYPEOF(CADR(fun)) == SYMSXP &&
@@ -295,10 +295,10 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 		    char arg2buf[PROFITEMMAX];
 
 		    if (TYPEOF(arg2) == SYMSXP) {
-			snprintf(arg2buf, PROFITEMMAX-1, "%s", CHAR(PRINTNAME(arg2)));
+			snprintf(arg2buf, PROFITEMMAX-1, "%s", R_CHAR(PRINTNAME(arg2)));
 
 		    } else if (TYPEOF(arg2) == STRSXP) {
-			snprintf(arg2buf, PROFITEMMAX-1, "\"%s\"", CHAR(STRING_ELT(arg2, 0)));
+			snprintf(arg2buf, PROFITEMMAX-1, "\"%s\"", R_CHAR(STRING_ELT(arg2, 0)));
 
 		    } else if (TYPEOF(arg2) == INTSXP) {
 			snprintf(arg2buf, PROFITEMMAX-1, "%d", INTEGER(arg2)[0]);
@@ -312,7 +312,7 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 		    }
 
 		    snprintf(itembuf, PROFITEMMAX-1, "%s[[%s]]",
-			     CHAR(PRINTNAME(arg1)),
+			     R_CHAR(PRINTNAME(arg1)),
 			     arg2buf);
 
 		} else {
@@ -522,7 +522,7 @@ void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 	if (TYPEOF(srcfile) == ENVSXP) {
 	    SEXP filename = Rf_findVar(Rf_install("filename"), srcfile);
 	    if (Rf_isString(filename) && Rf_length(filename)) {
-		Rprintf(_("%s at %s#%d: "), prefix, CHAR(STRING_ELT(filename, 0)), 
+		Rprintf(_("%s at %s#%d: "), prefix, R_CHAR(STRING_ELT(filename, 0)), 
 			                    Rf_asInteger(srcref));
 		return;
 	    }
@@ -728,7 +728,7 @@ static SEXP EnsureLocal(SEXP symbol, SEXP rho)
 
     vl = Rf_eval(symbol, ENCLOS(rho));
     if (vl == R_UnboundValue)
-	Rf_error(_("object '%s' not found"), CHAR(PRINTNAME(symbol)));
+	Rf_error(_("object '%s' not found"), R_CHAR(PRINTNAME(symbol)));
 
     vl = Rf_duplicate(vl);
     Rf_defineVar(symbol, vl, rho);
@@ -1573,13 +1573,13 @@ static SEXP VectorToPairListNamed(SEXP x)
     named = (xnames != R_NilValue);
     if(named)
 	for (i = 0; i < Rf_length(x); i++)
-	    if (CHAR(STRING_ELT(xnames, i))[0] != '\0') len++;
+	    if (R_CHAR(STRING_ELT(xnames, i))[0] != '\0') len++;
 
     if(len) {
 	PROTECT(xnew = Rf_allocList(len));
 	xptr = xnew;
 	for (i = 0; i < Rf_length(x); i++) {
-	    if (CHAR(STRING_ELT(xnames, i))[0] != '\0') {
+	    if (R_CHAR(STRING_ELT(xnames, i))[0] != '\0') {
 		SETCAR(xptr, VECTOR_ELT(x, i));
 		SET_TAG(xptr, Rf_installTrChar(STRING_ELT(xnames, i)));
 		xptr = CDR(xptr);
@@ -2232,7 +2232,7 @@ static Rboolean checkConstantsInRecord(SEXP crec, Rboolean abortOnError)
 	if (!R_compute_identical(corig, ccopy, 39)) {
 
 #ifndef CHECK_ALL_CONSTANTS
-	    REprintf(_("ERROR: modification of compiler constant of type %s, length %d\n"), CHAR(Rf_type2str(TYPEOF(ccopy))), Rf_length(ccopy));
+	    REprintf(_("ERROR: modification of compiler constant of type %s, length %d\n"), R_CHAR(Rf_type2str(TYPEOF(ccopy))), Rf_length(ccopy));
 	    reportModifiedConstant(crec, corig, ccopy, -1);
 #else
 	    int nc = LENGTH(corig);
@@ -2244,7 +2244,7 @@ static Rboolean checkConstantsInRecord(SEXP crec, Rboolean abortOnError)
 		volatile SEXP copy = VECTOR_ELT(ccopy, ci);
 		if (!R_compute_identical(orig, copy, 39)) {
 		    REprintf(_("ERROR: modification of compiler constant of type %s, length %d\n"),
-			CHAR(type2str(TYPEOF(copy))), length(copy));
+			R_CHAR(Rf_type2str(TYPEOF(copy))), length(copy));
 		    reportModifiedConstant(crec, orig, copy, ci);
 		}
 	    }

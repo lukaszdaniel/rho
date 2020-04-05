@@ -84,22 +84,22 @@ static R_size_t objectsize(SEXP s)
 	break;
     case LGLSXP:
     case INTSXP:
-	vcnt = INT2VEC(xlength(s));
+	vcnt = INT2VEC(Rf_xlength(s));
 	isVec = TRUE;
 	break;
     case REALSXP:
-	vcnt = FLOAT2VEC(xlength(s));
+	vcnt = FLOAT2VEC(Rf_xlength(s));
 	isVec = TRUE;
 	break;
     case CPLXSXP:
-	vcnt = COMPLEX2VEC(xlength(s));
+	vcnt = COMPLEX2VEC(Rf_xlength(s));
 	isVec = TRUE;
 	break;
     case STRSXP:
 	{
-	    vcnt = PTR2VEC(xlength(s));
+	    vcnt = PTR2VEC(Rf_xlength(s));
 	    GCStackRoot<> dup(Rf_csduplicated(s));
-	    for (R_xlen_t i = 0; i < xlength(s); i++) {
+	    for (R_xlen_t i = 0; i < Rf_xlength(s); i++) {
 		tmp = STRING_ELT(s, i);
 		if(tmp != NA_STRING && !LOGICAL(dup)[i])
 		    cnt += objectsize(tmp);
@@ -112,14 +112,14 @@ static R_size_t objectsize(SEXP s)
 	break;
     case VECSXP:
 	/* Generic Vector Objects */
-	vcnt = PTR2VEC(xlength(s));
-	for (R_xlen_t i = 0; i < xlength(s); i++)
+	vcnt = PTR2VEC(Rf_xlength(s));
+	for (R_xlen_t i = 0; i < Rf_xlength(s); i++)
 	    cnt += objectsize(VECTOR_ELT(s, i));
 	isVec = TRUE;
 	break;
     case EXPRSXP:
-	vcnt = PTR2VEC(xlength(s));
-	for (R_xlen_t i = 0; i < xlength(s); i++)
+	vcnt = PTR2VEC(Rf_xlength(s));
+	for (R_xlen_t i = 0; i < Rf_xlength(s); i++)
 	    cnt += objectsize(XVECTOR_ELT(s, i));
 	isVec = TRUE;
 	break;
@@ -132,7 +132,7 @@ static R_size_t objectsize(SEXP s)
 	cnt += objectsize(EXTPTR_TAG(s));
 	break;
     case RAWSXP:
-	vcnt = BYTE2VEC(xlength(s));
+	vcnt = BYTE2VEC(Rf_xlength(s));
 	isVec = TRUE;
 	break;
     case S4SXP:
@@ -161,5 +161,5 @@ static R_size_t objectsize(SEXP s)
 extern "C"
 SEXP objectSize(SEXP x)
 {
-    return Rf_ScalarReal( double(objectsize(x)) );
+    return Rf_ScalarReal(double(objectsize(x)) );
 }

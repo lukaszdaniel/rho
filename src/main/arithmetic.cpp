@@ -31,6 +31,8 @@
  * through to Bessel functions.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -192,7 +194,7 @@ static double myfmod(double x1, double x2)
     if (x2 == 0.0) return R_NaN;
     double q = x1 / x2, tmp = x1 - floor(q) * x2;
     if(R_FINITE(q) && (fabs(q) > 1/R_AccuracyInfo.eps))
-	warning(_("probable complete loss of accuracy in modulus"));
+	Rf_warning(_("probable complete loss of accuracy in modulus"));
     q = floor(tmp/x2);
     return tmp - q * x2;
 }
@@ -1199,7 +1201,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #define SETUP_Math3						\
     if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb) || !Rf_isNumeric(sc))	\
-	error(R_MSG_NONNUM_MATH);			        \
+	Rf_error(R_MSG_NONNUM_MATH);			        \
 								\
     na = XLENGTH(sa);						\
     nb = XLENGTH(sb);						\

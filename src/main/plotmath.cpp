@@ -28,9 +28,12 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
+
 #include <Defn.h>
 #include <Localization.h>
 
@@ -312,7 +315,7 @@ static double TeX(TEXPAR which, pGEcontext gc, pGEDevDesc dd)
     case xi13:	  /* big_op_spacing5 */
 	return 0.15 * XHeight(gc, dd);
     default:/* never happens (enum type) */
-	error(_("invalid `which' in C function TeX")); return 0;/*-Wall*/
+	Rf_error(_("invalid `which' in C function TeX")); return 0;/*-Wall*/
     }
 }
 
@@ -339,7 +342,7 @@ static void SetStyle(STYLE newstyle, mathContext *mc, pGEcontext gc)
 	gc->cex = 0.5 * mc->BaseCex;
 	break;
     default:
-	error(_("invalid math style encountered"));
+	Rf_error(_("invalid math style encountered"));
     }
     mc->CurrentStyle = newstyle;
 }
@@ -564,13 +567,13 @@ typedef struct {
 
 static int NameMatch(SEXP expr, const char *aString)
 {
-    if (!isSymbol(expr)) return 0;
-    return streql(CHAR(PRINTNAME(expr)), aString);
+    if (!Rf_isSymbol(expr)) return 0;
+    return streql(R_CHAR(PRINTNAME(expr)), aString);
 }
 
 static int StringMatch(SEXP expr, const char *aString)
 {
-    return streql(translateChar(STRING_ELT(expr, 0)), aString);
+    return streql(Rf_translateChar(STRING_ELT(expr, 0)), aString);
 }
 /* Code to determine the ascii code corresponding */
 /* to an element of a mathematical expression. */
@@ -986,7 +989,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 	    while (*s) {
 		wc = 0;
 		res = mbrtowc(&wc, s, MB_LEN_MAX, &mb_st);
-		if(res == RHOCONSTRUCT(size_t, -1)) error("invalid multibyte string '%s'", s);
+		if(res == RHOCONSTRUCT(size_t, -1)) Rf_error("invalid multibyte string '%s'", s);
 		if (iswdigit(wc) && font != PlainFont) {
 		    font = PlainFont;
 		    SetFont(PlainFont, gc);
@@ -1005,7 +1008,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 		    memset(chr, 0, sizeof(chr));
 		    /* should not be possible, as we just converted to wc */
 		    if(wcrtomb(chr, wc, &mb_st) == RHOCONSTRUCT(size_t, -1))
-			error("invalid multibyte string");
+			Rf_error("invalid multibyte string");
 		    PMoveAcross(lastItalicCorr, mc);
 		    GEText(ConvertedX(mc ,dd), ConvertedY(mc, dd), chr,
 			   CE_NATIVE,
@@ -1069,7 +1072,7 @@ static BBOX RenderChar(int ascii, int draw, mathContext *mc,
 	if(mbcslocale) {
 	    size_t res = wcrtomb(asciiStr, ascii, nullptr);
 	    if(res == RHOCONSTRUCT(size_t, -1))
-		error("invalid character in current multibyte locale");
+		Rf_error("invalid character in current multibyte locale");
 	} else
 	    asciiStr[0] = char( ascii);
 	GEText(ConvertedX(mc ,dd), ConvertedY(mc, dd), asciiStr, CE_NATIVE,
@@ -1141,7 +1144,7 @@ static BBOX RenderSymbol(SEXP expr, int draw, mathContext *mc,
     if ((code = TranslatedSymbol(expr)))
 	return RenderSymbolChar(code, draw, mc, gc, dd);
     else
-	return RenderSymbolStr(CHAR(PRINTNAME(expr)), draw, mc, gc, dd);
+	return RenderSymbolStr(R_CHAR(PRINTNAME(expr)), draw, mc, gc, dd);
 }
 
 static BBOX RenderSymbolString(SEXP expr, int draw, mathContext *mc,
@@ -1151,7 +1154,7 @@ static BBOX RenderSymbolString(SEXP expr, int draw, mathContext *mc,
     if ((code = TranslatedSymbol(expr)))
 	return RenderSymbolChar(code, draw, mc, gc, dd);
     else
-	return RenderStr(CHAR(PRINTNAME(expr)), draw, mc, gc, dd);
+	return RenderStr(R_CHAR(PRINTNAME(expr)), draw, mc, gc, dd);
 }
 
 
@@ -1162,8 +1165,8 @@ static BBOX RenderNumber(SEXP expr, int draw, mathContext *mc,
 {
     BBOX bbox;
     FontType prevfont = SetFont(PlainFont, gc);
-    GCStackRoot<> str(asChar(expr));
-    bbox = RenderStr(CHAR(str), draw, mc, gc, dd);
+    GCStackRoot<> str(Rf_asChar(expr));
+    bbox = RenderStr(R_CHAR(str), draw, mc, gc, dd);
     SetFont(prevfont, gc);
     return bbox;
 }
@@ -1173,7 +1176,7 @@ static BBOX RenderNumber(SEXP expr, int draw, mathContext *mc,
 static BBOX RenderString(SEXP expr, int draw, mathContext *mc,
 			 pGEcontext gc, pGEDevDesc dd)
 {
-    return RenderStr(translateChar(STRING_ELT(expr, 0)), draw, mc, gc, dd);
+    return RenderStr(Rf_translateChar(STRING_ELT(expr, 0)), draw, mc, gc, dd);
 }
 
 /* Code for Ellipsis (ldots, cdots, ...) */
@@ -1266,7 +1269,7 @@ static BBOX RenderSpace(SEXP expr, int draw, mathContext *mc,
 	return opBBox;
     }
     else
-	error(_("invalid mathematical annotation"));
+	Rf_error(_("invalid mathematical annotation"));
 
     return NullBBox();		/* -Wall */
 }
@@ -1676,7 +1679,7 @@ static int AccentAtom(SEXP expr)
 
 static void NORET InvalidAccent(SEXP expr)
 {
-    errorcall(expr, _("invalid accent"));
+    Rf_errorcall(expr, _("invalid accent"));
 }
 
 static BBOX RenderAccent(SEXP expr, int draw, mathContext *mc,
@@ -1970,7 +1973,7 @@ static int DelimCode(SEXP expr, SEXP head)
 	    code = '.';
     }
     if (code == 0)
-	errorcall(expr, _("invalid group delimiter"));
+	Rf_errorcall(expr, _("invalid group delimiter"));
     return code;
 }
 
@@ -1997,7 +2000,7 @@ static BBOX RenderGroup(SEXP expr, int draw, mathContext *mc,
     BBOX bbox;
     int code;
     if (Rf_length(expr) != 4)
-	errorcall(expr, _("invalid group specification"));
+	Rf_errorcall(expr, _("invalid group specification"));
     bbox = NullBBox();
     code = DelimCode(expr, CADR(expr));
     gc->cex = DelimSymbolMag * gc->cex;
@@ -2059,7 +2062,7 @@ static BBOX RenderDelim(int which, double dist, int draw, mathContext *mc,
 	top = 252; ext = 239; bot = 254; mid = 253;
 	break;
     default:
-	error(_("group is incomplete"));
+	Rf_error(_("group is incomplete"));
 	return NullBBox();/*never reached*/
     }
     topBBox = GlyphBBox(top, gc, dd);
@@ -2134,7 +2137,7 @@ static BBOX RenderBGroup(SEXP expr, int draw, mathContext *mc,
     double extra = 0.2 * xHeight(gc, dd);
     int delim1, delim2;
     if (Rf_length(expr) != 4)
-	errorcall(expr, _("invalid group specification"));
+	Rf_errorcall(expr, _("invalid group specification"));
     bbox = NullBBox();
     delim1 = DelimCode(expr, CADR(expr));
     delim2 = DelimCode(expr, CADDDR(expr));
@@ -2319,7 +2322,7 @@ static BBOX RenderOpSymbol(SEXP op, int draw, mathContext *mc,
     }
     else {
 	FontType prevfont = SetFont(PlainFont, gc);
-	bbox = RenderStr(CHAR(PRINTNAME(op)), draw, mc, gc, dd);
+	bbox = RenderStr(R_CHAR(PRINTNAME(op)), draw, mc, gc, dd);
 	SetFont(prevfont, gc);
 	return bbox;
     }
@@ -2661,7 +2664,7 @@ static BBOX RenderRel(SEXP expr, int draw, mathContext *mc,
 	return
 	    CombineBBoxes(bbox, RenderElement(CADDR(expr), draw, mc, gc, dd));
     }
-    else error(_("invalid mathematical annotation"));
+    else Rf_error(_("invalid mathematical annotation"));
 
     return NullBBox();		/* -Wall */
 }
@@ -3187,7 +3190,7 @@ void GEMathText(double x, double y, SEXP expr,
     double ascent, descent, width;
     GEMetricInfo('M', gc, &ascent, &descent, &width, dd);
     if ((ascent == 0.0) && (descent == 0.0) && (width == 0.0))
-	error(_("Metric information not available for this family/device"));
+	Rf_error(_("Metric information not available for this family/device"));
 
     /*
      * Build a "drawing context" for the current expression

@@ -25,6 +25,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -64,7 +66,7 @@ using namespace rho;
 #define DUPLICATE_ATOMIC_VECTOR(type, fun, to, from, deep) do {	\
   R_xlen_t __n__ = XLENGTH(from); \
   PROTECT(from); \
-  PROTECT(to = allocVector(TYPEOF(from), __n__)); \
+  PROTECT(to = Rf_allocVector(TYPEOF(from), __n__)); \
   if (__n__ == 1) fun(to)[0] = fun(from)[0]; \
   else { \
       R_xlen_t __this; \
@@ -83,7 +85,7 @@ using namespace rho;
 #define DUPLICATE_ATOMIC_VECTOR(type, fun, to, from, deep) do {	\
   R_xlen_t __n__ = XLENGTH(from); \
   PROTECT(from); \
-  PROTECT(to = allocVector(TYPEOF(from), __n__)); \
+  PROTECT(to = Rf_allocVector(TYPEOF(from), __n__)); \
   if (__n__ == 1) fun(to)[0] = fun(from)[0]; \
   else memcpy(fun(to), fun(from), __n__ * sizeof(type)); \
   DUPLICATE_ATTRIB(to, from, deep); \
@@ -124,11 +126,11 @@ using namespace rho;
 /* We want a count of calls to duplicate from outside
    which requires a wrapper function.
 
-   The original duplicate() function is now duplicate1().
+   The original Rf_duplicate() function is now duplicate1().
 
    I don't see how to make the wrapper go away when R_PROFILING
    is not defined, because we still need to be able to
-   optionally rename duplicate() as Rf_duplicate().
+   optionally rename Rf_duplicate() as Rf_duplicate().
 */
 
 #ifdef R_PROFILING
@@ -226,7 +228,7 @@ Rboolean R_cycle_detected(SEXP s, SEXP child) {
         if (R_cycle_detected(s, ATTRIB(child)))
             return TRUE;
     }
-    if (isPairList(child)) {
+    if (Rf_isPairList(child)) {
         SEXP el = child;
         while(el != R_NilValue) {
 	    if (s == el || R_cycle_detected(s, CAR(el)))
@@ -235,7 +237,7 @@ Rboolean R_cycle_detected(SEXP s, SEXP child) {
 		return TRUE;
 	    el = CDR(el);
 	}
-    } else if (isVectorList(child)) {
+    } else if (Rf_isVectorList(child)) {
         for(int i = 0 ; i < Rf_length(child); i++)
 	    if (R_cycle_detected(s, VECTOR_ELT(child, i)))
                 return TRUE;
@@ -249,7 +251,7 @@ void Rf_copyVector(SEXP s, SEXP t)
 {
     SEXPTYPE sT = TYPEOF(s), tT = TYPEOF(t);
     if (sT != tT)
-	error("vector types do not match in copyVector");
+	Rf_error("vector types do not match in copyVector");
     R_xlen_t ns = XLENGTH(s), nt = XLENGTH(t);
     switch (sT) {
     case STRSXP:
@@ -316,7 +318,7 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
 
 void Rf_copyMatrix(SEXP s, SEXP t, Rboolean byrow)
 {
-    int nr = nrows(s), nc = ncols(s);
+    int nr = Rf_nrows(s), nc = Rf_ncols(s);
     R_xlen_t nt = XLENGTH(t);
 
     if (byrow) {

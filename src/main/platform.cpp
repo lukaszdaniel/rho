@@ -334,7 +334,7 @@ SEXP attribute_hidden do_fileshow(/*const*/ Expression* call, const BuiltInFunct
 	SEXP el = STRING_ELT(fn, i);
 	if (!Rf_isNull(el) && el != NA_STRING)
 #ifdef Win32
-	    f[i] = Rf_acopy_string(reEnc(R_CHAR(el), getCharCE(el), CE_UTF8, 1));
+	    f[i] = Rf_acopy_string(reEnc(R_CHAR(el), Rf_getCharCE(el), CE_UTF8, 1));
 #else
 	    f[i] = Rf_acopy_string(Rf_translateChar(el));
 #endif
@@ -915,7 +915,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
 			success = 1;
 		    }
 		} else
-		    warning(_("cannot open file '%ls': %s"),
+		    Rf_warning(_("cannot open file '%ls': %s"),
 		            wfn, formatError(GetLastError()));
 		if (!success) {
 		    REAL(mtime)[i] = NA_REAL;
@@ -1896,7 +1896,7 @@ SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFun
 #else
 /* Windows can have files and home directories that aren't representable in the native encoding (e.g. latin1), so
    we need to translate everything to UTF8.  */
-	    tmp = mkCharCE(R_ExpandFileNameUTF8(translateCharUTF8(tmp)), CE_UTF8);
+	    tmp = Rf_mkCharCE(R_ExpandFileNameUTF8(Rf_translateCharUTF8(tmp)), CE_UTF8);
 #endif
 	}
 	SET_STRING_ELT(ans, i, tmp);

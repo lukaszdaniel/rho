@@ -30,6 +30,8 @@
  *  functionality in the AT&T Bell Laboratories GRZ library.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -71,7 +73,7 @@ void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
     if(fabs(*max - *min) < (t_ = fmax2(fabs(*max), fabs(*min)))* tmp2) {
 	/* Treat this case somewhat similar to the (min ~= max) case above */
 	/* Too much accuracy here just shows machine differences */
-	warning(_("relative range of values =%4.0f * EPS, is small (axis %d)")
+	Rf_warning(_("relative range of values =%4.0f * EPS, is small (axis %d)")
 		/*"to compute accurately"*/,
 		fabs(*max - *min) / (t_*DBL_EPSILON), axis);
 

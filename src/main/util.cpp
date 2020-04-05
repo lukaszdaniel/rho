@@ -24,6 +24,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -452,7 +454,7 @@ Rboolean isBlankString(const char *s)
 Rboolean Rf_StringBlank(SEXP x)
 {
     if (x == R_NilValue) return TRUE;
-    else return RHOCONSTRUCT(Rboolean, CHAR(x)[0] == '\0');
+    else return Rboolean(R_CHAR(x)[0] == '\0');
 }
 
 /* Function to test whether a string is a true value */
@@ -510,7 +512,7 @@ void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
     SEXP tag = TAG(const_cast<RObject*>(arg));
     if (tag == R_NilValue) return;
 
-    const char *supplied = CHAR(PRINTNAME(tag));
+    const char *supplied = R_CHAR(PRINTNAME(tag));
     if (strncmp(supplied, formal, strlen(supplied)) != 0)
 	Rf_errorcall(const_cast<RObject*>(call),
 		  _("supplied argument name '%s' does not match '%s'"),
@@ -754,7 +756,7 @@ SEXP static intern_getwd(void)
 	if(res > 0) {
 	    wcstoutf8(buf, wbuf, sizeof(buf));
 	    R_UTF8fixslash(buf);
-	    return Rf_ScalarString(mkCharCE(buf, CE_UTF8));
+	    return Rf_ScalarString(Rf_mkCharCE(buf, CE_UTF8));
 	}
     }
 #else
@@ -831,7 +833,7 @@ SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    if ((p = wcsrchr(buf, L'/'))) p++; else p = buf;
 	    wcstoutf8(sp, p, sizeof(sp));
-	    SET_STRING_ELT(ans, i, mkCharCE(sp, CE_UTF8));
+	    SET_STRING_ELT(ans, i, Rf_mkCharCE(sp, CE_UTF8));
 	}
     }
     UNPROTECT(1);
@@ -912,7 +914,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 		}
 		wcstoutf8(sp, buf, sizeof(sp));
 	    }
-	    SET_STRING_ELT(ans, i, mkCharCE(sp, CE_UTF8));
+	    SET_STRING_ELT(ans, i, Rf_mkCharCE(sp, CE_UTF8));
 	}
     }
     UNPROTECT(1);
@@ -1146,7 +1148,7 @@ SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFu
     n = XLENGTH(x);
     for(i = 0; i < n; i++) {
 	cetype_t ienc = CE_NATIVE;
-	thiss = CHAR(STRING_ELT(enc, i % m)); /* ASCII */
+	thiss = R_CHAR(STRING_ELT(enc, i % m)); /* ASCII */
 	if(streql(thiss, "latin1")) ienc = CE_LATIN1;
 	else if(streql(thiss, "UTF-8")) ienc = CE_UTF8;
 	else if(streql(thiss, "bytes")) ienc = CE_BYTES;
@@ -1423,7 +1425,7 @@ SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, 
     SEXP ans = Rf_allocVector(LGLSXP, n); // no allocation below
     int *lans = LOGICAL(ans);
     for (R_xlen_t i = 0; i < n; i++)
-	lans[i] = utf8Valid(CHAR(STRING_ELT(x, i)));
+	lans[i] = utf8Valid(R_CHAR(STRING_ELT(x, i)));
     return ans;
 }
 
@@ -1437,8 +1439,8 @@ SEXP attribute_hidden do_validEnc(Expression* call, const BuiltInFunction* op, R
     for (R_xlen_t i = 0; i < n; i++) {
 	SEXP p = STRING_ELT(x, i);
 	if (IS_BYTES(p) || IS_LATIN1(p)) lans[i] = 1;
-	else if (IS_UTF8(p) || utf8locale) lans[i] = utf8Valid(CHAR(p));
-	else if(mbcslocale) lans[i] = mbcsValid(CHAR(p));
+	else if (IS_UTF8(p) || utf8locale) lans[i] = utf8Valid(R_CHAR(p));
+	else if(mbcslocale) lans[i] = mbcsValid(R_CHAR(p));
 	else lans[i] = 1;
     }
     return ans;
@@ -2144,7 +2146,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    return mkString("ICU not in use");
+    return Rf_mkString("ICU not in use");
 }
 
 void attribute_hidden resetICUcollator(void) {}
@@ -2156,15 +2158,15 @@ static int Rstrcoll(const char *s1, const char *s2)
     vector<wchar_t> v1(strlen(s1)+1), v2(strlen(s2)+1);
     wchar_t* w1 = &v1[0];
     wchar_t* w2 = &v2[0];
-    utf8towcs(w1, s1, strlen(s1));
-    utf8towcs(w2, s2, strlen(s2));
+    Rf_utf8towcs(w1, s1, strlen(s1));
+    Rf_utf8towcs(w2, s2, strlen(s2));
     return wcscoll(w1, w2);
 }
 
 int Scollate(SEXP a, SEXP b)
 {
-    if(getCharCE(a) == CE_UTF8 || getCharCE(b) == CE_UTF8)
-	return Rstrcoll(translateCharUTF8(a), translateCharUTF8(b));
+    if(Rf_getCharCE(a) == CE_UTF8 || Rf_getCharCE(b) == CE_UTF8)
+	return Rstrcoll(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
     else
 	return strcoll(Rf_translateChar(a), Rf_translateChar(b));
 }

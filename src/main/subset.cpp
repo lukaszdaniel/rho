@@ -40,6 +40,8 @@
  *  separately, but then we would have more to keep in step.
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -547,8 +549,8 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (dims) {
 	size_t ndim = dims->size();
 	// Check for single matrix subscript:
-	if (nsubs == 1 && isMatrix(sub1)
-	    && isArray(ax) && Rf_ncols(sub1) == int(ndim))
+	if (nsubs == 1 && Rf_isMatrix(sub1)
+	    && Rf_isArray(ax) && Rf_ncols(sub1) == int(ndim))
 	    ans = VectorSubset(ax, sub1, call);
 	else if (ndim == nsubs)  // regular array subscripting, inc. 1-dim
 	    ans = ArraySubset(ax, subs, call, drop);
@@ -692,13 +694,13 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 		   x should have been duplicated if it might be
 		   shared */
 		if (MAYBE_SHARED(x))
-		    error("getter call used outside of a complex assignment.");
+		    Rf_error("getter call used outside of a complex assignment.");
 		x = vectorIndex(x, thesub, 0, len-1, pok, call, TRUE);
 	    }
 	    else
 		x = vectorIndex(x, thesub, 0, len-1, pok, call, FALSE);
 #else
-	    x = Rf_vectorIndex(x, thesub, 0, len-1, pok, call, FALSE);
+	    x = vectorIndex(x, thesub, 0, len-1, pok, call, FALSE);
 #endif
 	    named_x = NAMED(x);
 	}
@@ -727,7 +729,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	ndn = Rf_length(dimnames);
 	for (int i = 0; i < nsubs; i++) {
 	    INTEGER(indx)[i] = int(
-		get1index(CAR(subs),
+		Rf_get1index(CAR(subs),
 			  (i < ndn) ? VECTOR_ELT(dimnames, i) : R_NilValue,
 			  INTEGER(indx)[i], pok, -1, call));
 	    subs = CDR(subs);

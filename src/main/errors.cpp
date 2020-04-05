@@ -33,6 +33,8 @@
 // For debugging:
 #include <iostream>
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -187,7 +189,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr1(int dummy)
     if (R_interrupts_suspended) {
 	/**** ought to save signal and handle after suspend */
 	REprintf(_("interrupts suspended; signal ignored"));
-	signal(SIGUSR1, onsigusr1);
+	signal(SIGUSR1, Rf_onsigusr1);
 	return;
     }
 
@@ -217,7 +219,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr2(int dummy)
     if (R_interrupts_suspended) {
 	/**** ought to save signal and handle after suspend */
 	REprintf(_("interrupts suspended; signal ignored"));
-	signal(SIGUSR2, onsigusr2);
+	signal(SIGUSR2, Rf_onsigusr2);
 	return;
     }
 
@@ -236,7 +238,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr2(int dummy)
 static void setupwarnings(void)
 {
     R_Warnings = ListVector::create(R_nwarnings);
-    setAttrib(R_Warnings, R_NamesSymbol, Rf_allocVector(STRSXP, R_nwarnings));
+    Rf_setAttrib(R_Warnings, R_NamesSymbol, Rf_allocVector(STRSXP, R_nwarnings));
 }
 
 /* Rvsnprintf: like vsnprintf, but guaranteed to null-terminate. */
@@ -720,7 +722,7 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
     if (R_ShowErrorMessages) REprintf("%s", errbuf);
 
     if( R_ShowErrorMessages && R_CollectWarnings ) {
-	PrintWarnings(n_("Additional warning message:", "Additional warning messages:", R_CollectWarnings));
+	Rf_PrintWarnings(n_("Additional warning message:", "Additional warning messages:", R_CollectWarnings));
     }
 
 	DisableStackCheckingScope scope;
@@ -777,12 +779,12 @@ void NORET errorcall_cpy(SEXP call, const char *format, ...)
     Rvsnprintf(buf, BUFSIZE, format, ap);
     va_end(ap);
 
-    errorcall(call, "%s", buf);
+    Rf_errorcall(call, "%s", buf);
 }
 
 SEXP attribute_hidden do_geterrmessage(/*const*/ Expression* call, const BuiltInFunction* op)
 {
-    return Rf_ScalarString(mkChar(errbuf));
+    return Rf_ScalarString(Rf_mkChar(errbuf));
 }
 
 void Rf_error(const char *format, ...)
@@ -895,7 +897,7 @@ static void jump_to_top_ex(Rboolean traceback,
 		PROTECT(s = R_GetTraceback(0));
 		SET_SYMVALUE(Rf_install(".Traceback"), s);
 		/* should have been defineVar
-		   setVar(install(".Traceback"), s, R_GlobalEnv); */
+		   setVar(Rf_install(".Traceback"), s, R_GlobalEnv); */
 		UNPROTECT(1);
 		inError = oldInError;
 	}
@@ -1052,7 +1054,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 	    cptr = ClosureContext::innermost(cptr->nextOut()))
 	{
 	    /* stop() etc have internal call to .makeMessage */
-	    cfn = R_CHAR(STRING_ELT(deparse1s(cptr->call()->car()), 0));
+	    cfn = R_CHAR(STRING_ELT(Rf_deparse1s(cptr->call()->car()), 0));
 		if(streql(cfn, "stop") || streql(cfn, "warning")
 		   || streql(cfn, "message")) continue;
 		rho = cptr->workingEnvironment();
@@ -1123,7 +1125,7 @@ static SEXP findCall(void)
 
 SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-/* error(.) : really doesn't return anything; but all do_foo() must be SEXP */
+/* Rf_error(.) : really doesn't return anything; but all do_foo() must be SEXP */
     SEXP c_call;
     checkArity(op, args);
 
@@ -1169,7 +1171,7 @@ SEXP attribute_hidden do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (CAR(args) != R_NilValue) {
 	SETCAR(args, Rf_coerceVector(CAR(args), STRSXP));
 	if(!Rf_isValidString(CAR(args)))
-	    Rf_warningcall(c_call, _(" [invalid string in warning(.)]"));
+	    Rf_warningcall(c_call, _(" [invalid string in Rf_warning(.)]"));
 	else
 	    Rf_warningcall(c_call, "%s", Rf_translateChar(STRING_ELT(CAR(args), 0)));
     }
@@ -1579,7 +1581,7 @@ static void vsignalWarning(SEXP call, const char *format, va_list ap)
     {
 	Expression* qcall = new Expression(R_QuoteSymbol, { call });
 	Rvsnprintf(buf, BUFSIZE - 1, format, ap);
-	Expression* hcall = new Expression(hooksym, { mkString(buf), qcall });
+	Expression* hcall = new Expression(hooksym, { Rf_mkString(buf), qcall });
 	hcall->evaluate(Environment::global());
     }
     else vwarningcall_dflt(call, format, ap);
@@ -1838,12 +1840,11 @@ static void NORET invokeRestart(SEXP r, SEXP arglist)
 		else {
 		    Environment* envir = SEXP_downcast<Environment*>(exit);
 		    if (!envir->canReturn())
-			Rf_error(_("no function to return from,"
-				   " jumping to top level"));
+			Rf_error(_("no function to return from, jumping to top level"));
 		    throw ReturnException(envir, arglist);
 		}
 	    }
-	error(_("restart not on stack"));
+	Rf_error(_("restart not on stack"));
     }
 }
 
@@ -1909,7 +1910,7 @@ R_GetSrcFilename(SEXP srcref)
 {
     SEXP srcfile = Rf_getAttrib(srcref, R_SrcfileSymbol);
     if (TYPEOF(srcfile) != ENVSXP)
-	return Rf_ScalarString(mkChar(""));
+	return Rf_ScalarString(Rf_mkChar(""));
     srcfile = Rf_findVar(Rf_install("filename"), srcfile);
     if (TYPEOF(srcfile) != STRSXP)
 	return Rf_ScalarString(Rf_mkChar(""));
@@ -1967,7 +1968,7 @@ static SEXP trycatch_callback = NULL;
 static const char* trycatch_callback_source =
     "function(code, conds, fin) {\n"
     "    handler <- function(cond)\n"
-    "        if (inherits(cond, conds))\n"
+    "        if (Rf_inherits(cond, conds))\n"
     "            .Internal(C_tryCatchHelper(code, 1L, cond))\n"
     "        else\n"
     "            signalCondition(cond)\n"
@@ -1985,7 +1986,7 @@ SEXP R_tryCatch(SEXP (*body)(void *), void *bdata,
 		SEXP (*handler)(SEXP, void *), void *hdata,
 		void (*finally)(void *), void *fdata)
 {
-    if (body == NULL) error("must supply a body function");
+    if (body == NULL) Rf_error("must supply a body function");
 
     if (trycatch_callback == NULL) {
 	trycatch_callback = R_ParseEvalString(trycatch_callback_source,
@@ -2018,7 +2019,7 @@ SEXP do_tryCatchHelper(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP cond = CADDR(args);
     
     if (TYPEOF(eptr) != EXTPTRSXP)
-	error("not an external pointer");
+	Rf_error("not an external pointer");
 
     tryCatchData_t *ptcd = (tryCatchData_t*) R_ExternalPtrAddr(CAR(args));
 

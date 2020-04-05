@@ -147,8 +147,8 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (!Rf_isString(ti))
 	    Rf_error(_("'title' must be a string"));
 	if (LENGTH(STRING_ELT(ti, 0)) > 0) {
-	    title = R_alloc(strlen(CHAR(STRING_ELT(ti, 0)))+1, sizeof(char));
-	    strcpy(title, CHAR(STRING_ELT(ti, 0)));
+	    title = R_alloc(strlen(R_CHAR(STRING_ELT(ti, 0)))+1, sizeof(char));
+	    strcpy(title, R_CHAR(STRING_ELT(ti, 0)));
 	} else {
 	    title = R_alloc(strlen(filename)+1, sizeof(char));
 	    strcpy(title, filename);
@@ -202,7 +202,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_errorcall(call,
 		  _("%s occurred on line %d\n use a command like\n x <- edit()\n to recover"), R_ParseErrorMsg, R_ParseError);
     R_ResetConsole();
-    {   /* can't just eval(x) here */
+    {   /* can't just Rf_eval(x) here */
 	int j, n;
 	SEXP tmp = R_NilValue;
 

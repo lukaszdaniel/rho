@@ -13,8 +13,8 @@ env:
     
 matrix:
   include:
-    # gcc 7.4 with code coverage.
-    - compiler: gcc
+    # g++ with code coverage.
+    - compiler: g++
       addons:
         apt:
           sources:
@@ -29,11 +29,11 @@ matrix:
             - liblzma-dev
             - libpcre3-dev
             - libedit-dev
-            - gcc-7=7.4.*
-            - g++-7=7.4.*
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CFLAGS="-g -O1 --coverage" CXXFLAGS="${CFLAGS}" LDFLAGS="${CFLAGS}" COVERAGE=1
+            - gcc
+            - g++
+      env: C_COMPILER=gcc CXX_COMPILER=g++ CFLAGS="-g -O1 --coverage" CXXFLAGS="${CFLAGS}" LDFLAGS="${CFLAGS}" COVERAGE=1
 
-    # With address sanitizer enabled.  Use the most recent supported verison
+    # With address sanitizer enabled. Use the most recent supported verison
     # of clang, to get the best error detection.
     # TODO: enable initialization order checking.
     - compiler: clang

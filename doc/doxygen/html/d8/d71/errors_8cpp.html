@@ -66,7 +66,8 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">errors.cpp File Reference</div>  </div>
 </div><!--header-->
@@ -80,7 +81,6 @@ $(function() {
 <code>#include &lt;Rconnections.h&gt;</code><br />
 <code>#include &lt;Rinterface.h&gt;</code><br />
 <code>#include &lt;R_ext/GraphicsEngine.h&gt;</code><br />
-<code>#include &lt;Rmath.h&gt;</code><br />
 <code>#include &lt;R_ext/Print.h&gt;</code><br />
 <code>#include &lt;cstdarg&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../da/d26/ClosureContext_8hpp_source.html">rho/ClosureContext.hpp</a>&quot;</code><br />
@@ -108,15 +108,12 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:ac6afabdc09a49a433ee19d8a9486056d"><td class="memItemLeft" align="right" valign="top"><a id="ac6afabdc09a49a433ee19d8a9486056d"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>min</b>(a,  b)&#160;&#160;&#160;(a&lt;b?a:b)</td></tr>
-<tr class="separator:ac6afabdc09a49a433ee19d8a9486056d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a367e747a6abc54938d838483bb3c97ee"><td class="memItemLeft" align="right" valign="top"><a id="a367e747a6abc54938d838483bb3c97ee"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>R_NO_REMAP</b></td></tr>
+<tr class="separator:a367e747a6abc54938d838483bb3c97ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad8ea8b734a768be8abff63cf89b029b7"><td class="memItemLeft" align="right" valign="top"><a id="ad8ea8b734a768be8abff63cf89b029b7"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>LONGWARN</b>&#160;&#160;&#160;75</td></tr>
 <tr class="separator:ad8ea8b734a768be8abff63cf89b029b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeca034f67218340ecb2261a22c2f3dcd"><td class="memItemLeft" align="right" valign="top"><a id="aeca034f67218340ecb2261a22c2f3dcd"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>BUFSIZE</b>&#160;&#160;&#160;8192</td></tr>
-<tr class="separator:aeca034f67218340ecb2261a22c2f3dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c5e3db06e3b3ee37636d8348dc2c505"><td class="memItemLeft" align="right" valign="top"><a id="a7c5e3db06e3b3ee37636d8348dc2c505"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>RESULT_SIZE</b>&#160;&#160;&#160;3</td></tr>
 <tr class="separator:a7c5e3db06e3b3ee37636d8348dc2c505"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -147,18 +144,18 @@ RETSIGTYPE attribute_hidden&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:a5ed4662a05ffe55fc9e40fd1723f39e9"><td class="memItemLeft" align="right" valign="top"><a id="a5ed4662a05ffe55fc9e40fd1723f39e9"></a>
 RETSIGTYPE attribute_hidden&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_onsigusr2</b> (int dummy)</td></tr>
 <tr class="separator:a5ed4662a05ffe55fc9e40fd1723f39e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0633ac32e36bb5836e47d9f672fd940f"><td class="memItemLeft" align="right" valign="top"><a id="a0633ac32e36bb5836e47d9f672fd940f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>warning</b> (const char *format,...)</td></tr>
-<tr class="separator:a0633ac32e36bb5836e47d9f672fd940f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf8fd025581b768425649c4b58efa1d7"><td class="memItemLeft" align="right" valign="top"><a id="abf8fd025581b768425649c4b58efa1d7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_warning</b> (const char *format,...)</td></tr>
+<tr class="separator:abf8fd025581b768425649c4b58efa1d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aa96224d160af8fc439175996bbd2cb"><td class="memItemLeft" align="right" valign="top"><a id="a4aa96224d160af8fc439175996bbd2cb"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_warningcall</b> (SEXP call, const char *format,...)</td></tr>
 <tr class="separator:a4aa96224d160af8fc439175996bbd2cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85f19a6e6a157c1ca78ad19586075d12"><td class="memItemLeft" align="right" valign="top"><a id="a85f19a6e6a157c1ca78ad19586075d12"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_warningcall_immediate</b> (SEXP call, const char *format,...)</td></tr>
 <tr class="separator:a85f19a6e6a157c1ca78ad19586075d12"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10ddb9bf02a02f01696de031d6327ad9"><td class="memItemLeft" align="right" valign="top"><a id="a10ddb9bf02a02f01696de031d6327ad9"></a>
-attribute_hidden void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_PrintWarnings</b> (void)</td></tr>
-<tr class="separator:a10ddb9bf02a02f01696de031d6327ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f55b55acc45c86ee5b2fbb9595b3a8a"><td class="memItemLeft" align="right" valign="top"><a id="a6f55b55acc45c86ee5b2fbb9595b3a8a"></a>
+attribute_hidden void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_PrintWarnings</b> (const char *<a class="el" href="../../dd/d5e/unionhdr.html">hdr</a>=nullptr)</td></tr>
+<tr class="separator:a6f55b55acc45c86ee5b2fbb9595b3a8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a06757a732b28fc791dd96c957fb0d2"><td class="memItemLeft" align="right" valign="top"><a id="a4a06757a732b28fc791dd96c957fb0d2"></a>
 const char *&#160;</td><td class="memItemRight" valign="bottom"><b>R_curErrorBuf</b> ()</td></tr>
 <tr class="separator:a4a06757a732b28fc791dd96c957fb0d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -171,12 +168,12 @@ attribute_hidden void NORET&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:a0d8705a007e79925d31b85413d81796d"><td class="memItemLeft" align="right" valign="top"><a id="a0d8705a007e79925d31b85413d81796d"></a>
 SEXP attribute_hidden&#160;</td><td class="memItemRight" valign="bottom"><b>do_geterrmessage</b> (<a class="el" href="../../d8/d2e/classrho_1_1Expression.html">Expression</a> *call, const <a class="el" href="../../d6/d33/classrho_1_1BuiltInFunction.html">BuiltInFunction</a> *op)</td></tr>
 <tr class="separator:a0d8705a007e79925d31b85413d81796d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae04dbb69042f37c4c595fc9beb4ca754"><td class="memItemLeft" align="right" valign="top"><a id="ae04dbb69042f37c4c595fc9beb4ca754"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>error</b> (const char *format,...)</td></tr>
-<tr class="separator:ae04dbb69042f37c4c595fc9beb4ca754"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae71adb53fac78c076602ce02b7d9c33f"><td class="memItemLeft" align="right" valign="top"><a id="ae71adb53fac78c076602ce02b7d9c33f"></a>
-void NORET&#160;</td><td class="memItemRight" valign="bottom"><b>jump_to_toplevel</b> ()</td></tr>
-<tr class="separator:ae71adb53fac78c076602ce02b7d9c33f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a674b93652032be1962cf4da59e84a043"><td class="memItemLeft" align="right" valign="top"><a id="a674b93652032be1962cf4da59e84a043"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_error</b> (const char *format,...)</td></tr>
+<tr class="separator:a674b93652032be1962cf4da59e84a043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8c28d1f5b9db3985f93699cf1ab8aa9"><td class="memItemLeft" align="right" valign="top"><a id="ac8c28d1f5b9db3985f93699cf1ab8aa9"></a>
+void NORET&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_jump_to_toplevel</b> ()</td></tr>
+<tr class="separator:ac8c28d1f5b9db3985f93699cf1ab8aa9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a11e87fdc0eaac5aad3f440da043a3d92"><td class="memItemLeft" align="right" valign="top"><a id="a11e87fdc0eaac5aad3f440da043a3d92"></a>
 SEXP attribute_hidden&#160;</td><td class="memItemRight" valign="bottom"><b>do_gettext</b> (<a class="el" href="../../d8/d2e/classrho_1_1Expression.html">Expression</a> *call, const <a class="el" href="../../d6/d33/classrho_1_1BuiltInFunction.html">BuiltInFunction</a> *op, <a class="el" href="../../d6/de3/classrho_1_1RObject.html">RObject</a> *dots_, <a class="el" href="../../d6/de3/classrho_1_1RObject.html">RObject</a> *domain_)</td></tr>
 <tr class="separator:a11e87fdc0eaac5aad3f440da043a3d92"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -198,9 +195,9 @@ attribute_hidden void NORET&#160;</td><td class="memItemRight" valign="bottom"><
 <tr class="memitem:ad4fd79561481c4350ccfbabd78a60ec5"><td class="memItemLeft" align="right" valign="top"><a id="ad4fd79561481c4350ccfbabd78a60ec5"></a>
 void NORET&#160;</td><td class="memItemRight" valign="bottom"><b>UNIMPLEMENTED</b> (const char *s)</td></tr>
 <tr class="separator:ad4fd79561481c4350ccfbabd78a60ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e67b437d80334b2a4474cd5e6d5f7de"><td class="memItemLeft" align="right" valign="top"><a id="a2e67b437d80334b2a4474cd5e6d5f7de"></a>
-attribute_hidden void NORET&#160;</td><td class="memItemRight" valign="bottom"><b>ErrorMessage</b> (SEXP call, int which_error,...)</td></tr>
-<tr class="separator:a2e67b437d80334b2a4474cd5e6d5f7de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab1457a1162c4df4bef260bcdcf877722"><td class="memItemLeft" align="right" valign="top"><a id="ab1457a1162c4df4bef260bcdcf877722"></a>
+attribute_hidden void NORET&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_ErrorMessage</b> (SEXP call, int which_error,...)</td></tr>
+<tr class="separator:ab1457a1162c4df4bef260bcdcf877722"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af12eab154e31795fb22e92396d390246"><td class="memItemLeft" align="right" valign="top"><a id="af12eab154e31795fb22e92396d390246"></a>
 attribute_hidden void&#160;</td><td class="memItemRight" valign="bottom"><b>WarningMessage</b> (SEXP call, int which_warn,...)</td></tr>
 <tr class="separator:af12eab154e31795fb22e92396d390246"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,6 +255,12 @@ SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_tryCatch</b> (SEXP(
 <tr class="memitem:a9d00a5df51620a0ac61f5bece11f78ae"><td class="memItemLeft" align="right" valign="top"><a id="a9d00a5df51620a0ac61f5bece11f78ae"></a>
 SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>do_tryCatchHelper</b> (SEXP call, SEXP op, SEXP args, SEXP env)</td></tr>
 <tr class="separator:a9d00a5df51620a0ac61f5bece11f78ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a0e8563963533d1a38fdd65aabdda0c91"><td class="memItemLeft" align="right" valign="top"><a id="a0e8563963533d1a38fdd65aabdda0c91"></a>
+constexpr size_t&#160;</td><td class="memItemRight" valign="bottom"><b>BUFSIZE</b> = 8192</td></tr>
+<tr class="separator:a0e8563963533d1a38fdd65aabdda0c91"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Error and warning handling. </p>
@@ -266,7 +269,7 @@ SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>do_tryCatchHelper</b>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Mar 30 2020 17:03:33 for rho by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Apr 6 2020 20:38:15 for rho by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

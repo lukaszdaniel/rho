@@ -414,7 +414,7 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>GetRowNames</b>&#160;&#160;&#160;Rf_GetRowNames</td></tr>
 <tr class="separator:a92694750c76c4b495eb53a55552dd6de"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacaef65c0b31ca6d0ff462ac1d24acc6"><td class="memItemLeft" align="right" valign="top"><a id="aacaef65c0b31ca6d0ff462ac1d24acc6"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>gsetVar</b>&#160;&#160;&#160;Rf_gsetVar</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><b>gsetVar</b>&#160;&#160;&#160;<a class="el" href="../../d9/d85/envir_8cpp.html#a6f45f72a1528d41de67d7de647c4d44f">Rf_gsetVar</a></td></tr>
 <tr class="separator:aacaef65c0b31ca6d0ff462ac1d24acc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bde8826b695db856c6f60ad3f0e39b5"><td class="memItemLeft" align="right" valign="top"><a id="a0bde8826b695db856c6f60ad3f0e39b5"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>inherits</b>&#160;&#160;&#160;Rf_inherits</td></tr>
@@ -895,6 +895,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>SET_TYPEOF</b> (SEXP 
 <tr class="memitem:a292394a2707efd29392109c386310f70"><td class="memItemLeft" align="right" valign="top">void()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a292394a2707efd29392109c386310f70">SET_NAMED</a> (SEXP x, int v)</td></tr>
 <tr class="memdesc:a292394a2707efd29392109c386310f70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set object copying status.  <a href="#a292394a2707efd29392109c386310f70">More...</a><br /></td></tr>
 <tr class="separator:a292394a2707efd29392109c386310f70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a131f8b2c2213047985bbb17590b8a10a"><td class="memItemLeft" align="right" valign="top">void()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a131f8b2c2213047985bbb17590b8a10a">ENSURE_NAMEDMAX</a> (SEXP x)</td></tr>
+<tr class="memdesc:a131f8b2c2213047985bbb17590b8a10a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set object max copying status.  <a href="#a131f8b2c2213047985bbb17590b8a10a">More...</a><br /></td></tr>
+<tr class="separator:a131f8b2c2213047985bbb17590b8a10a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c73d55a1288c49eeda433378ea2826b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a5c73d55a1288c49eeda433378ea2826b">SET_ATTRIB</a> (SEXP x, SEXP v)</td></tr>
 <tr class="memdesc:a5c73d55a1288c49eeda433378ea2826b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace an object's attributes.  <a href="#a5c73d55a1288c49eeda433378ea2826b">More...</a><br /></td></tr>
 <tr class="separator:a5c73d55a1288c49eeda433378ea2826b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1173,6 +1176,7 @@ double&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_asReal</b> (SEXP
 char *&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_acopy_string</b> (const char *)</td></tr>
 <tr class="separator:a8e8928adb1a57e74150b97f7b2272af9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6919580055776a90575afc2ec98cc7ac"><td class="memItemLeft" align="right" valign="top">SEXP&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a6919580055776a90575afc2ec98cc7ac">Rf_alloc3DArray</a> (SEXPTYPE, int, int, int)</td></tr>
+<tr class="memdesc:a6919580055776a90575afc2ec98cc7ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate a 3-dimensional array.  <a href="#a6919580055776a90575afc2ec98cc7ac">More...</a><br /></td></tr>
 <tr class="separator:a6919580055776a90575afc2ec98cc7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ebc405be7e94c054a37a5d4dec61922"><td class="memItemLeft" align="right" valign="top"><a id="a8ebc405be7e94c054a37a5d4dec61922"></a>
 SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_allocArray</b> (SEXPTYPE, SEXP)</td></tr>
@@ -1315,8 +1319,8 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_GetOptionWidth</b> 
 <tr class="memitem:a46adef0c70242d5430754ee43b2fa81f"><td class="memItemLeft" align="right" valign="top"><a id="a46adef0c70242d5430754ee43b2fa81f"></a>
 SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_GetRowNames</b> (SEXP)</td></tr>
 <tr class="separator:a46adef0c70242d5430754ee43b2fa81f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a249a2dc0d7f017e13db39ed3cee453e3"><td class="memItemLeft" align="right" valign="top"><a id="a249a2dc0d7f017e13db39ed3cee453e3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Rf_gsetVar</b> (SEXP, SEXP, SEXP)</td></tr>
+<tr class="memitem:a249a2dc0d7f017e13db39ed3cee453e3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a249a2dc0d7f017e13db39ed3cee453e3">Rf_gsetVar</a> (SEXP, SEXP, SEXP)</td></tr>
+<tr class="memdesc:a249a2dc0d7f017e13db39ed3cee453e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assignment in the base environment.  <a href="#a249a2dc0d7f017e13db39ed3cee453e3">More...</a><br /></td></tr>
 <tr class="separator:a249a2dc0d7f017e13db39ed3cee453e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a2b418259e391af8e0c361265501cf6"><td class="memItemLeft" align="right" valign="top">SEXP&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a7a2b418259e391af8e0c361265501cf6">Rf_install</a> (const char *)</td></tr>
 <tr class="memdesc:a7a2b418259e391af8e0c361265501cf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a pointer to a regular Symbol object.  <a href="#a7a2b418259e391af8e0c361265501cf6">More...</a><br /></td></tr>
@@ -1687,8 +1691,10 @@ Rboolean&#160;</td><td class="memItemRight" valign="bottom"><b>R_extends</b> (SE
 SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_do_new_object</b> (SEXP class_def)</td></tr>
 <tr class="separator:a215cb558fbabd1e6e2c43fed8b17feec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a8eceaefda25842ebef03de2b011667"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a0a8eceaefda25842ebef03de2b011667">R_check_class_and_super</a> (SEXP x, const char **valid, SEXP rho)</td></tr>
+<tr class="memdesc:a0a8eceaefda25842ebef03de2b011667"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match.  <a href="#a0a8eceaefda25842ebef03de2b011667">More...</a><br /></td></tr>
 <tr class="separator:a0a8eceaefda25842ebef03de2b011667"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a67b5c6797ef609e2f65b60fe87fd9ea7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a67b5c6797ef609e2f65b60fe87fd9ea7">R_check_class_etc</a> (SEXP x, const char **valid)</td></tr>
+<tr class="memdesc:a67b5c6797ef609e2f65b60fe87fd9ea7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match. Strives to find the correct environment() for is(), using .classEnv() (from {methods}).  <a href="#a67b5c6797ef609e2f65b60fe87fd9ea7">More...</a><br /></td></tr>
 <tr class="separator:a67b5c6797ef609e2f65b60fe87fd9ea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85fd6652cc2f30a97a631651a171ce4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dd7/Rinternals_8h.html#a85fd6652cc2f30a97a631651a171ce4f">R_PreserveObject</a> (SEXP)</td></tr>
 <tr class="memdesc:a85fd6652cc2f30a97a631651a171ce4f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Protect object against garbage collection.  <a href="#a85fd6652cc2f30a97a631651a171ce4f">More...</a><br /></td></tr>
@@ -2041,9 +2047,9 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                \</div><div class="line">    SEXP __x__ = (x);               \</div><div class="line">    if (<a class="code" href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a>(__x__) != NAMEDMAX)           \</div><div class="line">        SET_NAMED(__x__, <a class="code" href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a>(__x__) + 1);     \</div><div class="line">    } <span class="keywordflow">while</span> (0)</div><div class="ttc" id="Rinternals_8h_html_a5dc88c8588911faedc029667b6317565"><div class="ttname"><a href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a></div><div class="ttdeci">int() NAMED(SEXP x)</div><div class="ttdoc">Get object copying status. </div><div class="ttdef"><b>Definition:</b> <a href="../../de/dfd/RObject_8hpp_source.html#l00645">RObject.hpp:645</a></div></div>
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                \</div><div class="line">    SEXP __x__ = (x);               \</div><div class="line">    if (<a class="code" href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a>(__x__) != NAMEDMAX)           \</div><div class="line">        SET_NAMED(__x__, <a class="code" href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a>(__x__) + 1);     \</div><div class="line">    } <span class="keywordflow">while</span> (0)</div><div class="ttc" id="Rinternals_8h_html_a5dc88c8588911faedc029667b6317565"><div class="ttname"><a href="../../d3/dd7/Rinternals_8h.html#a5dc88c8588911faedc029667b6317565">NAMED</a></div><div class="ttdeci">int() NAMED(SEXP x)</div><div class="ttdoc">Get object copying status. </div><div class="ttdef"><b>Definition:</b> <a href="../../de/dfd/RObject_8hpp_source.html#l00657">RObject.hpp:657</a></div></div>
 </div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d3/dd7/Rinternals_8h_source.html#l00239">239</a> of file <a class="el" href="../../d3/dd7/Rinternals_8h_source.html">Rinternals.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/dd7/Rinternals_8h_source.html#l00246">246</a> of file <a class="el" href="../../d3/dd7/Rinternals_8h_source.html">Rinternals.h</a>.</p>
 
 </div>
 </div>
@@ -2146,7 +2152,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the attributes object of <em>x</em> , or 0 if <em>x</em> is a null pointer. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00220">220</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00221">221</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
 
 </div>
 </div>
@@ -2406,7 +2412,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00225">225</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00226">226</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
 
 </div>
 </div>
@@ -2444,6 +2450,44 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the enclosing environment of <em>x</em> . </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../d6/d61/Environment_8hpp_source.html#l00703">703</a> of file <a class="el" href="../../d6/d61/Environment_8hpp_source.html">Environment.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a131f8b2c2213047985bbb17590b8a10a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a131f8b2c2213047985bbb17590b8a10a">&#9670;&nbsp;</a></span>ENSURE_NAMEDMAX()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void() ENSURE_NAMEDMAX </td>
+          <td>(</td>
+          <td class="paramtype">SEXP&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set object max copying status. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">x</td><td>Pointer to <a class="el" href="../../d6/de3/classrho_1_1RObject.html" title="Replacement for CR&#39;s SEXPREC. ">rho::RObject</a>. The function does nothing if <em>x</em> is a null pointer.</td></tr>
+    <tr><td class="paramname">v</td><td>Refer to 'R Internals' document.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000014">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00723">723</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -2699,7 +2743,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Refer to 'R Internals' document. Returns 0 if <em>x</em> is a null pointer. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00645">645</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00657">657</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -2736,7 +2780,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true iff <em>x</em> has a class attribute. Returns false if <em>x</em> is 0. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00654">654</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00666">666</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -2802,7 +2846,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to a <a class="el" href="../../d4/dff/classrho_1_1String.html" title="RObject representing a character string. ">rho::String</a> representing <em>x's</em> name. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d8/d0b/Symbol_8cpp_source.html#l00243">243</a> of file <a class="el" href="../../d8/d0b/Symbol_8cpp_source.html">Symbol.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d8/d0b/Symbol_8cpp_source.html#l00242">242</a> of file <a class="el" href="../../d8/d0b/Symbol_8cpp_source.html">Symbol.cpp</a>.</p>
 
 </div>
 </div>
@@ -2911,7 +2955,8 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match.</p>
+
+<p>Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">x</td><td>an R object, about which we want is(x, .) information. </td></tr>
@@ -2951,7 +2996,8 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match. Strives to find the correct environment() for is(), using .classEnv() (from {methods}).</p>
+
+<p>Return the 0-based index of an is() match in a vector of class-name strings terminated by an empty string. Returns -1 for no match. Strives to find the correct environment() for is(), using .classEnv() (from {methods}). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">x</td><td>an R object, about which we want is(x, .) information. </td></tr>
@@ -2961,7 +3007,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>index of match or -1 for no match </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dbd/objects_8cpp_source.html#l00986">986</a> of file <a class="el" href="../../d5/dbd/objects_8cpp_source.html">objects.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dbd/objects_8cpp_source.html#l00988">988</a> of file <a class="el" href="../../d5/dbd/objects_8cpp_source.html">objects.cpp</a>.</p>
 
 </div>
 </div>
@@ -3139,7 +3185,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </div><div class="memdoc">
 <p><a class="el" href="../../d3/dd7/Rinternals_8h.html#a7234d9d2c28a648fc34596d638926576">R_has_slot()</a> : a C-level test if a obj&lt;name&gt; is available; as R_do_slot() gives an error when there's no such slot. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l01575">1575</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l01569">1569</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
 
 </div>
 </div>
@@ -3605,7 +3651,8 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Allocate a 3-dimensional array</p>
+
+<p>Allocate a 3-dimensional array. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">mode</td><td>The R mode (e.g. INTSXP) </td></tr>
@@ -3823,7 +3870,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section note"><dt>Note</dt><dd>The above documentation is probably incomplete: refer to the source code for further details. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00266">266</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00268">268</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
 
 </div>
 </div>
@@ -3952,7 +3999,48 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the requested attribute, or a null pointer if there is no such attribute.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The above documentation is incomplete: refer to the source code for further details. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00157">157</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00159">159</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
+
+</div>
+</div>
+<a id="a249a2dc0d7f017e13db39ed3cee453e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a249a2dc0d7f017e13db39ed3cee453e3">&#9670;&nbsp;</a></span>Rf_gsetVar()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Rf_gsetVar </td>
+          <td>(</td>
+          <td class="paramtype">SEXP&#160;</td>
+          <td class="paramname"><em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SEXP&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">SEXP&#160;</td>
+          <td class="paramname"><em>rho</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Assignment in the base environment. </p>
+<hr/>
+<p>gsetVar</p>
+<p>Here we assign directly into the base environment. </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l00698">698</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
 
 </div>
 </div>
@@ -4169,7 +4257,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>TRUE iff the <a class="el" href="../../d6/de3/classrho_1_1RObject.html" title="Replacement for CR&#39;s SEXPREC. ">rho::RObject</a> pointed to by <em>s</em> is either a null pointer (i.e. <code>== R_NilValue</code> in rho), or is a <a class="el" href="../../d6/de3/classrho_1_1RObject.html" title="Replacement for CR&#39;s SEXPREC. ">rho::RObject</a> with ::SEXPTYPE <a class="el" href="../../d3/dd7/Rinternals_8h.html#abc6126af1d45847bc59afa0aa3216b04a267ba7e72b0399442555fc3f73d0cabf">NILSXP</a> (should not happen in rho). </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00766">766</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00793">793</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -4227,7 +4315,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>TRUE iff the <a class="el" href="../../d6/de3/classrho_1_1RObject.html" title="Replacement for CR&#39;s SEXPREC. ">rho::RObject</a> pointed to by <em>s</em> has a class attribute. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00778">778</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00805">805</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -4639,7 +4727,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 <dl class="section return"><dt>Returns</dt><dd>Refer to source code. (Sometimes <em>vec</em>, sometimes <em>val</em>, sometime a null pointer ...)</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The above documentation is probably incomplete: refer to the source code for further details. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00219">219</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/dd6/attrib_8cpp_source.html#l00221">221</a> of file <a class="el" href="../../dd/dd6/attrib_8cpp_source.html">attrib.cpp</a>.</p>
 
 </div>
 </div>
@@ -4669,7 +4757,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 <dl class="section return"><dt>Returns</dt><dd>The text of <em>x</em> rendered in UTF8 encoding.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The result is held in memory allocated using <a class="el" href="../../d7/d0c/RAllocStack_8cpp.html#af3c8d9c71a7f3b2cd8e82a8265852ac2" title="Allocate a block of memory. ">R_alloc()</a>. The calling code must arrange for this memory to be released in due course. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd1/sysutils_8cpp_source.html#l00975">975</a> of file <a class="el" href="../../d9/dd1/sysutils_8cpp_source.html">sysutils.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd1/sysutils_8cpp_source.html#l00981">981</a> of file <a class="el" href="../../d9/dd1/sysutils_8cpp_source.html">sysutils.cpp</a>.</p>
 
 </div>
 </div>
@@ -4699,7 +4787,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The ::SEXPTYPE's name within R. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d2d/util_8cpp_source.html#l00335">335</a> of file <a class="el" href="../../df/d2d/util_8cpp_source.html">util.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d2d/util_8cpp_source.html#l00337">337</a> of file <a class="el" href="../../df/d2d/util_8cpp_source.html">util.cpp</a>.</p>
 
 </div>
 </div>
@@ -4853,7 +4941,7 @@ LibExtern SEXP&#160;</td><td class="memItemRight" valign="bottom"><b>R_BlankScal
 <dd>
 For compatibility with CR, garbage collection is inhibited within this function. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00234">234</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dee/RObject_8cpp_source.html#l00235">235</a> of file <a class="el" href="../../d5/dee/RObject_8cpp_source.html">RObject.cpp</a>.</p>
 
 </div>
 </div>
@@ -4948,7 +5036,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
 </dl>
 <dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000013">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00696">696</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00708">708</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -5110,9 +5198,9 @@ For compatibility with CR, garbage collection is inhibited within this function.
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000014">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000015">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00705">705</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00732">732</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -5290,7 +5378,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
   </table>
   </dd>
 </dl>
-<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000018">Deprecated:</a></b></dt><dd>May be withdrawn in the future. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000019">Deprecated:</a></b></dt><dd>May be withdrawn in the future. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../d1/d4d/VectorBase_8hpp_source.html#l00383">383</a> of file <a class="el" href="../../d1/d4d/VectorBase_8hpp_source.html">VectorBase.hpp</a>.</p>
 
@@ -5616,7 +5704,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
   </table>
   </dd>
 </dl>
-<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000017">Deprecated:</a></b></dt><dd>May be withdrawn in future. Currently used in library/stats/src/isoreg.c , and possibly in packages. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000018">Deprecated:</a></b></dt><dd>May be withdrawn in future. Currently used in library/stats/src/isoreg.c , and possibly in packages. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../de/dfd/VectorBase_8cpp_source.html#l00173">173</a> of file <a class="el" href="../../de/dfd/VectorBase_8cpp_source.html">VectorBase.cpp</a>.</p>
 
@@ -5729,7 +5817,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>::SEXPTYPE of <em>x</em>, or <a class="el" href="../../d3/dd7/Rinternals_8h.html#abc6126af1d45847bc59afa0aa3216b04a267ba7e72b0399442555fc3f73d0cabf">NILSXP</a> if x is a null pointer. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00713">713</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00740">740</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -5756,9 +5844,9 @@ For compatibility with CR, garbage collection is inhibited within this function.
   </tr>
 </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000015">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000016">Deprecated:</a></b></dt><dd>Ought to be private. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00718">718</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/dfd/RObject_8hpp_source.html#l00745">745</a> of file <a class="el" href="../../de/dfd/RObject_8hpp_source.html">RObject.hpp</a>.</p>
 
 </div>
 </div>
@@ -5875,7 +5963,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>The 'true length' of <em>x</em>. According to the R Internals document for R 2.4.1, this is only used for certain hash tables, and signifies the number of used slots in the table.</dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000016">Deprecated:</a></b></dt><dd>May be withdrawn in the future. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="../../da/d58/deprecated.html#_deprecated000017">Deprecated:</a></b></dt><dd>May be withdrawn in the future. </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../d1/d4d/VectorBase_8hpp_source.html#l00354">354</a> of file <a class="el" href="../../d1/d4d/VectorBase_8hpp_source.html">VectorBase.hpp</a>.</p>
 
@@ -5932,7 +6020,7 @@ For compatibility with CR, garbage collection is inhibited within this function.
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Mar 30 2020 17:03:33 for rho by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Apr 6 2020 20:38:15 for rho by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

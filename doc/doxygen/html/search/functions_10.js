@@ -77,5 +77,6 @@ var searchData=
   ['superblocksize',['superblockSize',['../d9/df8/classrho_1_1CellPool.html#ac5c7863d61ecfd05ecc5c2a03f6455ee',1,'rho::CellPool']]],
   ['symbol',['symbol',['../dc/dc1/classrho_1_1Frame_1_1Binding.html#ab91749fa5373060a4b88565dfe79c61d',1,'rho::Frame::Binding::symbol()'],['../d5/db3/classrho_1_1Provenance.html#a6986ca3191166bd50e45e9cd1097b239',1,'rho::Provenance::symbol()'],['../d8/d51/classrho_1_1S3Launcher.html#ab22824ed5c1b698b0a9ff171e14512c0',1,'rho::S3Launcher::symbol()']]],
   ['symbols',['symbols',['../d2/d89/classrho_1_1Frame.html#a255fc36bd3c038a5a5bc15f739a5f4be',1,'rho::Frame']]],
-  ['symvalue',['SYMVALUE',['../d3/dd7/Rinternals_8h.html#a9e86bd6a56d70f49b3a05f4e9cfafd6c',1,'Environment.hpp']]]
+  ['symvalue',['SYMVALUE',['../d3/dd7/Rinternals_8h.html#a9e86bd6a56d70f49b3a05f4e9cfafd6c',1,'Environment.hpp']]],
+  ['sysparent',['sysParent',['../d8/da2/classrho_1_1FunctionContext.html#a9a1e9177039831930d8567d6fff48b35',1,'rho::FunctionContext']]]
 ];

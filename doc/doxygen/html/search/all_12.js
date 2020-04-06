@@ -88,6 +88,7 @@ var searchData=
   ['rf_5felt',['Rf_elt',['../d3/dd7/Rinternals_8h.html#a7f3ce5737360bac96694d11c7ffed3d4',1,'Rinlinedfuns.h']]],
   ['rf_5feval',['Rf_eval',['../d3/dd7/Rinternals_8h.html#a58c5dbd35c63c98f96e48a8228b2f9da',1,'Evaluator.hpp']]],
   ['rf_5fgetattrib',['Rf_getAttrib',['../d3/dd7/Rinternals_8h.html#ab184a7b4c0383ff0421ee96fcff63cbf',1,'attrib.cpp']]],
+  ['rf_5fgsetvar',['Rf_gsetVar',['../d3/dd7/Rinternals_8h.html#a249a2dc0d7f017e13db39ed3cee453e3',1,'Rf_gsetVar(SEXP, SEXP, SEXP):&#160;envir.cpp'],['../d9/d85/envir_8cpp.html#a6f45f72a1528d41de67d7de647c4d44f',1,'Rf_gsetVar(SEXP symbol, SEXP value, SEXP rho):&#160;envir.cpp']]],
   ['rf_5finstall',['Rf_install',['../d3/dd7/Rinternals_8h.html#a7a2b418259e391af8e0c361265501cf6',1,'Symbol.hpp']]],
   ['rf_5fiscomplex',['Rf_isComplex',['../d3/dd7/Rinternals_8h.html#a63fe1919c5f52686004e6ee56a57bd71',1,'ComplexVector.hpp']]],
   ['rf_5fisenvironment',['Rf_isEnvironment',['../d3/dd7/Rinternals_8h.html#a661f16f0d8593208eb8db6fb4d1faf49',1,'Environment.hpp']]],

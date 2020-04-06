@@ -14,7 +14,6 @@ var searchData=
   ['internal',['INTERNAL',['../d3/dd7/Rinternals_8h.html#a116976dc916aceb72a1b4a9d796a26a5',1,'DotInternal.hpp']]],
   ['is_5factive_5fbinding',['IS_ACTIVE_BINDING',['../df/dda/PairList_8cpp.html#aeb7acbc0a53f5b355b2368db76ee893d',1,'PairList.cpp']]],
   ['is_5fascii',['IS_ASCII',['../d9/de7/Defn_8h.html#a0c4bb954bffc9e2d7c22c451707ca4bf',1,'String.hpp']]],
-  ['is_5fbytes',['IS_BYTES',['../d9/de7/Defn_8h.html#af2c4f6d33234ee31596822ab11a0542d',1,'String.hpp']]],
   ['is_5fs4_5fobject',['IS_S4_OBJECT',['../d3/dd7/Rinternals_8h.html#a7b6b03e5596bf13380d163e656b48da2',1,'RObject.hpp']]],
   ['isa',['isA',['../df/d6a/classrho_1_1FunctionBase.html#a9563798591678d2672725113b6f827ef',1,'rho::FunctionBase']]],
   ['isactive',['isActive',['../dc/dc1/classrho_1_1Frame_1_1Binding.html#ab7bf5513759f12fd2d93dd56d7272930',1,'rho::Frame::Binding']]],

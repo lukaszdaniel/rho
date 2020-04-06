@@ -129,12 +129,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2bbaa5db78eb0b1bbab58c7738aedea7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a2bbaa5db78eb0b1bbab58c7738aedea7">maybeDetachFrame</a> ()</td></tr>
 <tr class="memdesc:a2bbaa5db78eb0b1bbab58c7738aedea7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disconnect the <a class="el" href="../../d3/dfe/classrho_1_1Environment.html" title="Mapping from Symbols to R objects. ">Environment</a> from its <a class="el" href="../../d2/d89/classrho_1_1Frame.html" title="Mapping from Symbols to R objects. ">Frame</a>, if safe.  <a href="#a2bbaa5db78eb0b1bbab58c7738aedea7">More...</a><br /></td></tr>
 <tr class="separator:a2bbaa5db78eb0b1bbab58c7738aedea7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab287e5004fbe22c485699d4f9a5216b"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#aab287e5004fbe22c485699d4f9a5216b">namespaceSpec</a> () const</td></tr>
-<tr class="memdesc:aab287e5004fbe22c485699d4f9a5216b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get namespace spec (if applicable).  <a href="#aab287e5004fbe22c485699d4f9a5216b">More...</a><br /></td></tr>
-<tr class="separator:aab287e5004fbe22c485699d4f9a5216b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2c33fc0c5220bffad5f002222b9c476"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#af2c33fc0c5220bffad5f002222b9c476">packageName</a> () const</td></tr>
-<tr class="memdesc:af2c33fc0c5220bffad5f002222b9c476"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get package name (if any).  <a href="#af2c33fc0c5220bffad5f002222b9c476">More...</a><br /></td></tr>
-<tr class="separator:af2c33fc0c5220bffad5f002222b9c476"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2bc8dadbd9972cdd80ff8576f805d39"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#ad2bc8dadbd9972cdd80ff8576f805d39">setEnclosingEnvironment</a> (<a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *new_enclos)</td></tr>
 <tr class="memdesc:ad2bc8dadbd9972cdd80ff8576f805d39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Replace the enclosing environment.  <a href="#ad2bc8dadbd9972cdd80ff8576f805d39">More...</a><br /></td></tr>
 <tr class="separator:ad2bc8dadbd9972cdd80ff8576f805d39"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -236,12 +230,6 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a76a418ae40b32d25cb98afb698a76751"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a76a418ae40b32d25cb98afb698a76751">empty</a> ()</td></tr>
 <tr class="memdesc:a76a418ae40b32d25cb98afb698a76751"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty environment.  <a href="#a76a418ae40b32d25cb98afb698a76751">More...</a><br /></td></tr>
 <tr class="separator:a76a418ae40b32d25cb98afb698a76751"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a981a5dbf395b58c829881900f63eaf34"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a981a5dbf395b58c829881900f63eaf34">findNamespace</a> (const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *spec)</td></tr>
-<tr class="memdesc:a981a5dbf395b58c829881900f63eaf34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Locate a namespace environment from its specification.  <a href="#a981a5dbf395b58c829881900f63eaf34">More...</a><br /></td></tr>
-<tr class="separator:a981a5dbf395b58c829881900f63eaf34"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87166e78d1e5047cb05fa94d714655dc"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a87166e78d1e5047cb05fa94d714655dc">findPackage</a> (const std::string &amp;name)</td></tr>
-<tr class="memdesc:a87166e78d1e5047cb05fa94d714655dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Locate a package environment from its name.  <a href="#a87166e78d1e5047cb05fa94d714655dc">More...</a><br /></td></tr>
-<tr class="separator:a87166e78d1e5047cb05fa94d714655dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2286bdec67bb89c5a5d852635b13017c"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a2286bdec67bb89c5a5d852635b13017c">global</a> ()</td></tr>
 <tr class="memdesc:a2286bdec67bb89c5a5d852635b13017c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Global environment.  <a href="#a2286bdec67bb89c5a5d852635b13017c">More...</a><br /></td></tr>
 <tr class="separator:a2286bdec67bb89c5a5d852635b13017c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -312,6 +300,24 @@ Friends</h2></td></tr>
 <tr class="memitem:aee3a66b0ddf3b769f015c89b610db0c7"><td class="memItemLeft" align="right" valign="top"><a id="aee3a66b0ddf3b769f015c89b610db0c7"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>Frame</b></td></tr>
 <tr class="separator:aee3a66b0ddf3b769f015c89b610db0c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="member-group"></a>
+do_search</h2></td></tr>
+<tr><td class="ititle" colspan="2"><p><a class="anchor" id="amgrpdb7c5c76cff1f407b6fec32f4a88aa1b"></a>Print out the current search path.</p>
+<hr/>
+ </td></tr>
+<tr class="memitem:aab287e5004fbe22c485699d4f9a5216b"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#aab287e5004fbe22c485699d4f9a5216b">namespaceSpec</a> () const</td></tr>
+<tr class="memdesc:aab287e5004fbe22c485699d4f9a5216b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get namespace spec (if applicable).  <a href="#aab287e5004fbe22c485699d4f9a5216b">More...</a><br /></td></tr>
+<tr class="separator:aab287e5004fbe22c485699d4f9a5216b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2c33fc0c5220bffad5f002222b9c476"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#af2c33fc0c5220bffad5f002222b9c476">packageName</a> () const</td></tr>
+<tr class="memdesc:af2c33fc0c5220bffad5f002222b9c476"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get package name (if any).  <a href="#af2c33fc0c5220bffad5f002222b9c476">More...</a><br /></td></tr>
+<tr class="separator:af2c33fc0c5220bffad5f002222b9c476"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a981a5dbf395b58c829881900f63eaf34"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a981a5dbf395b58c829881900f63eaf34">findNamespace</a> (const <a class="el" href="../../d6/d0f/classrho_1_1FixedVector.html">StringVector</a> *spec)</td></tr>
+<tr class="memdesc:a981a5dbf395b58c829881900f63eaf34"><td class="mdescLeft">&#160;</td><td class="mdescRight">Locate a namespace environment from its specification.  <a href="#a981a5dbf395b58c829881900f63eaf34">More...</a><br /></td></tr>
+<tr class="separator:a981a5dbf395b58c829881900f63eaf34"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87166e78d1e5047cb05fa94d714655dc"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d3/dfe/classrho_1_1Environment.html">Environment</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a87166e78d1e5047cb05fa94d714655dc">findPackage</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a87166e78d1e5047cb05fa94d714655dc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Locate a package environment from its name.  <a href="#a87166e78d1e5047cb05fa94d714655dc">More...</a><br /></td></tr>
+<tr class="separator:a87166e78d1e5047cb05fa94d714655dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -758,7 +764,7 @@ typedef unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>InternalD
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the namespace environment corresponding to <em>spec</em> . This namespace is loaded if necessary, and deserialization fails if loading is unsuccessful.</dd></dl>
 <dl class="todo"><dt><b><a class="el" href="../../dd/da0/todo.html#_todo000005">Todo:</a></b></dt><dd>Having deserialization fail entirely in the event that the namespace cannot be loaded seems insufficiently robust, but follows CR practice. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01940">1940</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01948">1948</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
 
 </div>
 </div>
@@ -795,7 +801,7 @@ typedef unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>InternalD
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A pointer to the package environment corresponding to <em>name</em> . This package is loaded if necessary. If loading fails, the function returns a pointer to the global <a class="el" href="../../d3/dfe/classrho_1_1Environment.html" title="Mapping from Symbols to R objects. ">Environment</a> (<code><a class="el" href="../../d3/dfe/classrho_1_1Environment.html#a2286bdec67bb89c5a5d852635b13017c" title="Global environment. ">Environment::global()</a></code>): this follows CR practice. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01869">1869</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01877">1877</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
 
 </div>
 </div>
@@ -1006,7 +1012,7 @@ typedef unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>InternalD
 <p>Get namespace spec (if applicable). </p>
 <dl class="section return"><dt>Returns</dt><dd>If this <a class="el" href="../../d3/dfe/classrho_1_1Environment.html" title="Mapping from Symbols to R objects. ">Environment</a> is a namespace environment, this function returns the namespace specification. Otherwise returns a null pointer. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01923">1923</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01931">1931</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
 
 </div>
 </div>
@@ -1058,7 +1064,7 @@ typedef unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>InternalD
 <p>Get package name (if any). </p>
 <dl class="section return"><dt>Returns</dt><dd>If this <a class="el" href="../../d3/dfe/classrho_1_1Environment.html" title="Mapping from Symbols to R objects. ">Environment</a> is the <a class="el" href="../../d3/dfe/classrho_1_1Environment.html" title="Mapping from Symbols to R objects. ">Environment</a> of a package, this function returns the name of the package (of the form "package:foo") as the first element of a StringVector. Otherwise returns a null pointer. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01856">1856</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d85/envir_8cpp_source.html#l01864">1864</a> of file <a class="el" href="../../d9/d85/envir_8cpp_source.html">envir.cpp</a>.</p>
 
 </div>
 </div>
@@ -1341,7 +1347,7 @@ typedef unsigned&#160;</td><td class="memItemRight" valign="bottom"><b>InternalD
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Mar 30 2020 17:03:33 for rho by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Apr 6 2020 20:38:15 for rho by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

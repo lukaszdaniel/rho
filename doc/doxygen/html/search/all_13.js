@@ -14,7 +14,7 @@ var searchData=
   ['search',['search',['../de/da6/classrho_1_1AllocationTable.html#aff50a37be378ae1e7478af17dc021052',1,'rho::AllocationTable']]],
   ['seg',['SEG',['../d1/d04/structSEG.html',1,'']]],
   ['serialnumber',['serialNumber',['../d5/db3/classrho_1_1Provenance.html#a993100e0aab882d2febedbfce8077db9',1,'rho::Provenance']]],
-  ['set',['set',['../de/d93/classrho_1_1ArgList.html#a35a444a9e0f02689ee5b62066a714956',1,'rho::ArgList::set()'],['../d5/db3/classrho_1_1Provenance.html#aa072565d490ac2e3a0e37f144807d267',1,'rho::Provenance::Set()']]],
+  ['set',['Set',['../d5/db3/classrho_1_1Provenance.html#aa072565d490ac2e3a0e37f144807d267',1,'rho::Provenance::Set()'],['../de/d93/classrho_1_1ArgList.html#a35a444a9e0f02689ee5b62066a714956',1,'rho::ArgList::set()']]],
   ['set_5fattrib',['SET_ATTRIB',['../d3/dd7/Rinternals_8h.html#a5c73d55a1288c49eeda433378ea2826b',1,'SET_ATTRIB(SEXP x, SEXP v):&#160;RObject.cpp'],['../d5/dee/RObject_8cpp.html#a5c73d55a1288c49eeda433378ea2826b',1,'SET_ATTRIB(SEXP x, SEXP v):&#160;RObject.cpp']]],
   ['set_5fcloenv',['SET_CLOENV',['../d3/dd7/Rinternals_8h.html#a473b9b087f4c661c9a5799b7a7292672',1,'Closure.hpp']]],
   ['set_5fnamed',['SET_NAMED',['../d3/dd7/Rinternals_8h.html#a292394a2707efd29392109c386310f70',1,'RObject.hpp']]],
@@ -82,7 +82,7 @@ var searchData=
   ['stackchecker_2ehpp',['StackChecker.hpp',['../d2/d9c/StackChecker_8hpp.html',1,'']]],
   ['startsize',['startSize',['../d6/d2a/classrho_1_1RAllocStack_1_1Scope.html#a2b8e43ef4648336a513c7402e237127d',1,'rho::RAllocStack::Scope']]],
   ['statictypename',['staticTypeName',['../d6/d33/classrho_1_1BuiltInFunction.html#acf1474cfb24dd119b99ff82e626aebf7',1,'rho::BuiltInFunction::staticTypeName()'],['../d3/df2/classrho_1_1Closure.html#a003de0c462ade01e7ae09117e0d9dbf4',1,'rho::Closure::staticTypeName()'],['../dc/d8c/classrho_1_1ConsCell.html#a8531cc4c9f497f7541b6ae0256b304c6',1,'rho::ConsCell::staticTypeName()'],['../dd/d4d/classrho_1_1PairList.html#a3d9e8e02c3e957e48f3590a72915c814',1,'rho::PairList::staticTypeName()'],['../dd/d84/classrho_1_1DottedArgs.html#a808423ad85d63b733426ca42e201195f',1,'rho::DottedArgs::staticTypeName()'],['../d3/dfe/classrho_1_1Environment.html#abc06ffb6de42c637cadbb90370c53cb3',1,'rho::Environment::staticTypeName()'],['../d8/d2e/classrho_1_1Expression.html#a2fa716c184bd5d53da97bdfbb017fbff',1,'rho::Expression::staticTypeName()'],['../df/df1/classrho_1_1ExternalPointer.html#aa45111b7e943e3443a0651c13c5fd8ba',1,'rho::ExternalPointer::staticTypeName()'],['../d6/d0f/classrho_1_1FixedVector.html#a9fbac3fabd5be3532f1caff659e82f78',1,'rho::FixedVector::staticTypeName()'],['../df/d6a/classrho_1_1FunctionBase.html#a41edf78bed5e208ad5b50a6451708247',1,'rho::FunctionBase::staticTypeName()'],['../de/dd8/classrho_1_1Promise.html#a43fb44b4ceba0b66fb3db4170e5a78f2',1,'rho::Promise::staticTypeName()'],['../d0/de3/classrho_1_1S4Object.html#a3b609fbe2da4256618291c829bf90852',1,'rho::S4Object::staticTypeName()'],['../d4/dff/classrho_1_1String.html#a1070411b55c852df30732382fc39e826',1,'rho::String::staticTypeName()'],['../d0/d33/classrho_1_1Symbol.html#aa0bd08820af318dce3a74fa78bd996ca',1,'rho::Symbol::staticTypeName()'],['../de/ded/classrho_1_1VectorBase.html#a0758ed11976bcf6ee5d20452b833e478',1,'rho::VectorBase::staticTypeName()']]],
-  ['status',['Status',['../de/d93/classrho_1_1ArgList.html#a6f051a5ec3291e785f07ec908f2dfb50',1,'rho::ArgList::Status()'],['../de/d93/classrho_1_1ArgList.html#ae5d254f8e9fc0fbd52c6ba01221851ed',1,'rho::ArgList::status() const']]],
+  ['status',['status',['../de/d93/classrho_1_1ArgList.html#ae5d254f8e9fc0fbd52c6ba01221851ed',1,'rho::ArgList::status() const'],['../de/d93/classrho_1_1ArgList.html#a6f051a5ec3291e785f07ec908f2dfb50',1,'rho::ArgList::Status()']]],
   ['stdstring',['stdstring',['../d4/dff/classrho_1_1String.html#a40bb6d573daf10741bcd4bf2c2370b6b',1,'rho::String']]],
   ['string',['String',['../d4/dff/classrho_1_1String.html',1,'rho']]],
   ['string_2ecpp',['String.cpp',['../d7/db3/String_8cpp.html',1,'']]],
@@ -102,5 +102,6 @@ var searchData=
   ['symbols',['symbols',['../d2/d89/classrho_1_1Frame.html#a255fc36bd3c038a5a5bc15f739a5f4be',1,'rho::Frame']]],
   ['symsxp',['SYMSXP',['../d3/dd7/Rinternals_8h.html#abc6126af1d45847bc59afa0aa3216b04a3ee59eaecff3a89a752c5eaca8f4a9ef',1,'Rinternals.h']]],
   ['symtab',['SymTab',['../d8/d5e/structSymTab.html',1,'']]],
-  ['symvalue',['SYMVALUE',['../d3/dd7/Rinternals_8h.html#a9e86bd6a56d70f49b3a05f4e9cfafd6c',1,'Environment.hpp']]]
+  ['symvalue',['SYMVALUE',['../d3/dd7/Rinternals_8h.html#a9e86bd6a56d70f49b3a05f4e9cfafd6c',1,'Environment.hpp']]],
+  ['sysparent',['sysParent',['../d8/da2/classrho_1_1FunctionContext.html#a9a1e9177039831930d8567d6fff48b35',1,'rho::FunctionContext']]]
 ];

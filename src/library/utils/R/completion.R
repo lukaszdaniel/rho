@@ -525,7 +525,7 @@ specialCompletions <- function(text, spl)
 
 
 
-## completions on special keywords (subset of those in gram.c).  Some
+## completions on special keywords (subset of those in gram.cpp).  Some
 ## issues with parentheses: e.g. mode(get("repeat")) is "function", so
 ## it is normally completed with a left-paren appended, but that is
 ## not normal usage.  Putting it here means that both 'repeat' and

@@ -64,7 +64,7 @@ delim_match(SEXP x, SEXP delims)
     SEXP ans, matchlen;
     mbstate_t mb_st; int used;
 
-    if(!isString(x) || !isString(delims) || (length(delims) != 2))
+    if(!isString(x) || !isString(delims) || (Rf_length(delims) != 2))
 	error(_("invalid argument type"));
 
     delim_start = translateChar(STRING_ELT(delims, 0));
@@ -72,7 +72,7 @@ delim_match(SEXP x, SEXP delims)
     lstart = (int) strlen(delim_start); lend = (int) strlen(delim_end);
     equal_start_and_end_delims = strcmp(delim_start, delim_end) == 0;
 
-    n = length(x);
+    n = Rf_length(x);
     PROTECT(ans = allocVector(INTSXP, n));
     PROTECT(matchlen = allocVector(INTSXP, n));
 
@@ -224,8 +224,8 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
     const char *input;
     SEXP result;
     if (!buffer) error(_("out of memory"));
-    PROTECT(result = allocVector(STRSXP, length(strings)));
-    for (i = 0; i < length(strings); i++) {
+    PROTECT(result = allocVector(STRSXP, Rf_length(strings)));
+    for (i = 0; i < Rf_length(strings); i++) {
     	input = CHAR(STRING_ELT(strings, i));
     	start = INTEGER(starts)[i];
     	for (b = buffer; *input; ) {   
@@ -264,9 +264,9 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
    DBCS encodings. */
 SEXP splitString(SEXP string, SEXP delims)
 {
-    if(!isString(string) || length(string) != 1)
+    if(!isString(string) || Rf_length(string) != 1)
 	error("first arg must be a single character string");
-    if(!isString(delims) || length(delims) != 1)
+    if(!isString(delims) || Rf_length(delims) != 1)
 	error("first arg must be a single character string");
 
     if(STRING_ELT(string, 0) == NA_STRING)

@@ -1859,7 +1859,7 @@ pGEDevDesc GNewPlot(Rboolean recording)
 #undef G_ERR_MSG
 
 #if 0
-/* in src/main/graphics.c */
+/* in src/main/graphics.cpp */
 // (usr, log, n_inp) |--> (axp, n_out) :
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
 {
@@ -3174,7 +3174,7 @@ void GBox(int which, pGEDevDesc dd)
 }
 
 #if 0
-/* in src/main/graphics.c */
+/* in src/main/graphics.cpp */
 #define LPR_SMALL  2
 #define LPR_MEDIUM 3
 

@@ -63,7 +63,7 @@ SEXP cov(SEXP x, SEXP y, SEXP na_method, SEXP kendall)
    by a smartly optimizing compiler
 */
 
-/** Compute   Cov(xx[], yy[])  or  Cor(.,.)  with n = length(xx)
+/** Compute   Cov(xx[], yy[])  or  Cor(.,.)  with n = Rf_length(xx)
  */
 #define COV_PAIRWISE_BODY						\
 	LDOUBLE sum, xmean = 0., ymean = 0., xsd, ysd, xm, ym;	\
@@ -648,7 +648,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	ncx = ncols(x);
     }
     else {
-	n = length(x);
+	n = Rf_length(x);
 	ncx = 1;
     }
     /* Arg.2: y */
@@ -669,7 +669,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	    ansmat = TRUE;
 	}
 	else {
-	    if (length(y) != n)
+	    if (Rf_length(y) != n)
 		error(_("incompatible dimensions"));
 	    ncy = 1;
 	}
@@ -786,12 +786,12 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	else {
 	    x = getAttrib(x, R_DimNamesSymbol);
 	    y = getAttrib(y, R_DimNamesSymbol);
-	    if ((length(x) >= 2 && !isNull(VECTOR_ELT(x, 1))) ||
-		(length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))) {
+	    if ((Rf_length(x) >= 2 && !isNull(VECTOR_ELT(x, 1))) ||
+		(Rf_length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))) {
 		PROTECT(ind = allocVector(VECSXP, 2));
-		if (length(x) >= 2 && !isNull(VECTOR_ELT(x, 1)))
+		if (Rf_length(x) >= 2 && !isNull(VECTOR_ELT(x, 1)))
 		    SET_VECTOR_ELT(ind, 0, duplicate(VECTOR_ELT(x, 1)));
-		if (length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))
+		if (Rf_length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))
 		    SET_VECTOR_ELT(ind, 1, duplicate(VECTOR_ELT(y, 1)));
 		setAttrib(ans, R_DimNamesSymbol, ind);
 		UNPROTECT(1);

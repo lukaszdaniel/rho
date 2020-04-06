@@ -427,7 +427,7 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
     if ((s != R_UnboundValue) && (s != R_NilValue)) {
 	SEXP names = getAttrib(s, R_NamesSymbol);
 	int i, done;
-	for (i = 0, done = 0; (done<  4) && (i < length(s)) ; i++) {
+	for (i = 0, done = 0; (done<  4) && (i < Rf_length(s)) ; i++) {
 	    if(!strcmp("family", CHAR(STRING_ELT(names, i)))) {
 		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
@@ -494,7 +494,7 @@ static void SaveAsPDF(pDevDesc dd, const char *fn)
     /* and then try to get it from .PDF.Options */
     if ((s != R_UnboundValue) && (s != R_NilValue)) {
 	SEXP names = getAttrib(s, R_NamesSymbol);
-	for (int i = 0; i < length(s) ; i++) {
+	for (int i = 0; i < Rf_length(s) ; i++) {
 	    if(!strcmp("family", CHAR(STRING_ELT(names, i))))
 		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)),255);
 	    if(!strcmp("bg", CHAR(STRING_ELT(names, i))))
@@ -618,7 +618,7 @@ static void RFontInit()
 static char *SaveFontSpec(SEXP sxp, int offset)
 {
     char *s;
-    if(!isString(sxp) || length(sxp) <= offset)
+    if(!isString(sxp) || Rf_length(sxp) <= offset)
 	error(_("invalid font specification"));
     s = R_alloc(strlen(CHAR(STRING_ELT(sxp, offset)))+1, sizeof(char));
     strcpy(s, CHAR(STRING_ELT(sxp, offset)));
@@ -3812,7 +3812,7 @@ static void GA_eventHelper(pDevDesc dd, int code)
     	gchangepopup(xd->gawin, NULL);
     	if (isEnvironment(dd->eventEnv)) {
     	    SEXP prompt = findVar(install("prompt"), dd->eventEnv);
-    	    if (isString(prompt) && length(prompt) == 1) {
+    	    if (isString(prompt) && Rf_length(prompt) == 1) {
     		setstatus(CHAR(asChar(prompt)));
     		settext(xd->gawin, CHAR(asChar(prompt)));
     	    } else {

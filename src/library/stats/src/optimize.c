@@ -210,7 +210,7 @@ static double fcn1(double x, struct callinfo *info)
     UNPROTECT(1);
     switch(TYPEOF(s)) {
     case INTSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
 	    warning(_("NA replaced by maximum positive value"));
 	    return DBL_MAX;
@@ -218,7 +218,7 @@ static double fcn1(double x, struct callinfo *info)
 	else return INTEGER(s)[0];
 	break;
     case REALSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
 	    warning(_("NA/Inf replaced by maximum positive value"));
 	    return DBL_MAX;
@@ -296,7 +296,7 @@ static double fcn2(double x, struct callinfo *info)
     UNPROTECT(1);
     switch(TYPEOF(s)) {
     case INTSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
 	    warning(_("NA replaced by maximum positive value"));
 	    return	DBL_MAX;
@@ -304,7 +304,7 @@ static double fcn2(double x, struct callinfo *info)
 	else return INTEGER(s)[0];
 	break;
     case REALSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
 	    if(REAL(s)[0] == R_NegInf) { // keep sign for root finding !
 		warning(_("-Inf replaced by maximally negative value"));
@@ -518,7 +518,7 @@ static void fcn(int n, const double x[], double *f, function_info
     s = PROTECT(eval(state->R_fcall, state->R_env));
     switch(TYPEOF(s)) {
     case INTSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
 	    warning(_("NA replaced by maximum positive value"));
 	    *f = DBL_MAX;
@@ -526,7 +526,7 @@ static void fcn(int n, const double x[], double *f, function_info
 	else *f = INTEGER(s)[0];
 	break;
     case REALSXP:
-	if (length(s) != 1) goto badvalue;
+	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
 	    warning(_("NA/Inf replaced by maximum positive value"));
 	    *f = DBL_MAX;

@@ -1217,7 +1217,7 @@ static char PDFFonts[] = ".PDF.Fonts";
  */
 
 /* NB this is exported, and was at some point used by KillAllDevices
-   in src/main/graphics.c.  That would be a problem now it is in a
+   in src/main/graphics.cpp.  That would be a problem now it is in a
    separate DLL.
 */
 #if 0
@@ -2579,7 +2579,7 @@ static void PSFileHeader(FILE *fp,
     if(!isString(prolog))
 	error(_("object '.ps.prolog' is not a character vector"));
     fprintf(fp, "%% begin .ps.prolog\n");
-    for (i = 0; i < length(prolog); i++)
+    for (i = 0; i < Rf_length(prolog); i++)
 	fprintf(fp, "%s\n", CHAR(STRING_ELT(prolog, i)));
     fprintf(fp, "%% end   .ps.prolog\n");
     if (streql(pd->colormodel, "srgb+gray") || streql(pd->colormodel, "srgb")) {
@@ -2593,7 +2593,7 @@ static void PSFileHeader(FILE *fp,
 	    UNPROTECT(1);
 	}
 	UNPROTECT(1);
-	for (i = 0; i < length(prolog); i++)
+	for (i = 0; i < Rf_length(prolog); i++)
 	    fprintf(fp, "%s\n", CHAR(STRING_ELT(prolog, i)));
     }
     if (streql(pd->colormodel, "srgb+gray"))
@@ -8246,9 +8246,9 @@ SEXP PostScript(SEXP args)
 
     /* 'family' can be either one string or a 5-vector of afmpaths. */
     fam = CAR(args); args = CDR(args);
-    if(length(fam) == 1)
+    if(Rf_length(fam) == 1)
 	family = CHAR(asChar(fam));
-    else if(length(fam) == 5) {
+    else if(Rf_length(fam) == 5) {
 	if(!isString(fam)) error(_("invalid 'family' parameter in %s"), call);
 	family = "User";
 	for(i = 0; i < 5; i++) afms[i] = CHAR(STRING_ELT(fam, i));
@@ -8411,9 +8411,9 @@ SEXP PDF(SEXP args)
     args = CDR(args);
     paper = CHAR(asChar(CAR(args))); args = CDR(args);
     fam = CAR(args); args = CDR(args);
-    if(length(fam) == 1)
+    if(Rf_length(fam) == 1)
 	family = CHAR(asChar(fam));
-    else if(length(fam) == 5) {
+    else if(Rf_length(fam) == 5) {
 	if(!isString(fam)) error(_("invalid 'family' parameter in %s"), call);
 	family = "User";
 	for(i = 0; i < 5; i++) afms[i] = CHAR(STRING_ELT(fam, i));

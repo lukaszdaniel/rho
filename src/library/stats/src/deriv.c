@@ -141,7 +141,7 @@ static int isOne(SEXP s)
 static int isUminus(SEXP s)
 {
     if (TYPEOF(s) == LANGSXP && CAR(s) == MinusSymbol) {
-	switch(length(s)) {
+	switch(Rf_length(s)) {
 	case 2:
 	    return 1;
 	case 3:
@@ -315,9 +315,9 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
     else ans = Constant(NA_REAL);
     /* FIXME */
 #ifdef NOTYET
-    if (length(ans) == 2 && isAtomic(CADR(ans)) && CAR(ans) != MinusSymbol)
+    if (Rf_length(ans) == 2 && isAtomic(CADR(ans)) && CAR(ans) != MinusSymbol)
 	c = eval(c, rho);
-    if (length(c) == 3 && isAtomic(CADR(ans)) && isAtomic(CADDR(ans)))
+    if (Rf_length(c) == 3 && isAtomic(CADR(ans)) && isAtomic(CADDR(ans)))
 	c = eval(c, rho);
 #endif
     return ans;
@@ -352,7 +352,7 @@ static SEXP D(SEXP expr, SEXP var)
 	    ans = D(CADR(expr), var);
 	}
 	else if (CAR(expr) == PlusSymbol) {
-	    if (length(expr) == 2)
+	    if (Rf_length(expr) == 2)
 		ans = D(CADR(expr), var);
 	    else {
 		ans = simplify(PlusSymbol,
@@ -362,7 +362,7 @@ static SEXP D(SEXP expr, SEXP var)
 	    }
 	}
 	else if (CAR(expr) == MinusSymbol) {
-	    if (length(expr) == 2) {
+	    if (Rf_length(expr) == 2) {
 		ans = simplify(MinusSymbol,
 			       PP(D(CADR(expr), var)),
 			       R_MissingArg);
@@ -432,7 +432,7 @@ static SEXP D(SEXP expr, SEXP var)
 	    UNPROTECT(1);
 	}
 	else if (CAR(expr) == LogSymbol) {
-	    if (length(expr) != 2)
+	    if (Rf_length(expr) != 2)
 		error("only single-argument calls to log() are supported;\n"
 		      "  maybe use log(x,a) = log(x)/log(a)");
 	    ans = simplify(DivideSymbol,
@@ -553,7 +553,7 @@ static SEXP D(SEXP expr, SEXP var)
 	    UNPROTECT(3);
 	}
 	else if (CAR(expr) == PsiSymbol) {
-	    if (length(expr) == 2){
+	    if (Rf_length(expr) == 2){
 		ans = simplify(TimesSymbol,
 			       PP(D(CADR(expr), var)),
 			       PP_S(PsiSymbol, CADR(expr), PP(ScalarInteger(1))));
@@ -687,35 +687,35 @@ static SEXP D(SEXP expr, SEXP var)
 static int isPlusForm(SEXP expr)
 {
     return TYPEOF(expr) == LANGSXP
-	&& length(expr) == 3
+	&& Rf_length(expr) == 3
 	&& CAR(expr) == PlusSymbol;
 }
 
 static int isMinusForm(SEXP expr)
 {
     return TYPEOF(expr) == LANGSXP
-	&& length(expr) == 3
+	&& Rf_length(expr) == 3
 	&& CAR(expr) == MinusSymbol;
 }
 
 static int isTimesForm(SEXP expr)
 {
     return TYPEOF(expr) == LANGSXP
-	&& length(expr) == 3
+	&& Rf_length(expr) == 3
 	&& CAR(expr) == TimesSymbol;
 }
 
 static int isDivideForm(SEXP expr)
 {
     return TYPEOF(expr) == LANGSXP
-	&& length(expr) == 3
+	&& Rf_length(expr) == 3
 	&& CAR(expr) == DivideSymbol;
 }
 
 static int isPowerForm(SEXP expr)
 {
     return (TYPEOF(expr) == LANGSXP
-	    && length(expr) == 3
+	    && Rf_length(expr) == 3
 	    && CAR(expr) == PowerSymbol);
 }
 
@@ -778,9 +778,9 @@ SEXP doD(SEXP args)
     if (!(isLanguage(expr) || isSymbol(expr) || isNumeric(expr) || isComplex(expr)))
         error(_("expression must not be type '%s'"), type2char(TYPEOF(expr)));
     var = CADR(args);
-    if (!isString(var) || length(var) < 1)
+    if (!isString(var) || Rf_length(var) < 1)
 	error(_("variable must be a character string"));
-    if (length(var) > 1)
+    if (Rf_length(var) > 1)
 	warning(_("only the first element is used as variable name"));
     var = installTrChar(STRING_ELT(var, 0));
     InitDerivSymbols();
@@ -934,7 +934,7 @@ static SEXP CreateGrad(SEXP names)
 {
     SEXP p, q, data, dim, dimnames;
     int i, n;
-    n = length(names);
+    n = Rf_length(names);
     PROTECT(dimnames = lang3(R_NilValue, R_NilValue, R_NilValue));
     SETCAR(dimnames, install("list"));
     p = install("c");
@@ -948,7 +948,7 @@ static SEXP CreateGrad(SEXP names)
     PROTECT(dim = lang3(R_NilValue, R_NilValue, R_NilValue));
     SETCAR(dim, install("c"));
     SETCADR(dim, lang2(install("length"), install(".value")));
-    SETCADDR(dim, ScalarInteger(length(names))); /* was real? */
+    SETCADDR(dim, ScalarInteger(Rf_length(names))); /* was real? */
     PROTECT(data = ScalarReal(0.));
     PROTECT(p = lang4(install("array"), data, dim, dimnames));
     p = lang3(install("<-"), install(".grad"), p);
@@ -960,7 +960,7 @@ static SEXP CreateHess(SEXP names)
 {
     SEXP p, q, data, dim, dimnames;
     int i, n;
-    n = length(names);
+    n = Rf_length(names);
     PROTECT(dimnames = lang4(R_NilValue, R_NilValue, R_NilValue, R_NilValue));
     SETCAR(dimnames, install("list"));
     p = install("c");
@@ -975,8 +975,8 @@ static SEXP CreateHess(SEXP names)
     PROTECT(dim = lang4(R_NilValue, R_NilValue, R_NilValue,R_NilValue));
     SETCAR(dim, install("c"));
     SETCADR(dim, lang2(install("length"), install(".value")));
-    SETCADDR(dim, ScalarInteger(length(names)));
-    SETCADDDR(dim, ScalarInteger(length(names)));
+    SETCADDR(dim, ScalarInteger(Rf_length(names)));
+    SETCADDDR(dim, ScalarInteger(Rf_length(names)));
     PROTECT(data = ScalarReal(0.));
     PROTECT(p = lang4(install("array"), data, dim, dimnames));
     p = lang3(install("<-"), install(".hessian"), p);
@@ -1071,7 +1071,7 @@ SEXP deriv(SEXP args)
     args = CDR(args);
     /* namevec: */
     names = CAR(args);
-    if (!isString(names) || (nderiv = length(names)) < 1)
+    if (!isString(names) || (nderiv = Rf_length(names)) < 1)
 	error(_("invalid variable names"));
     args = CDR(args);
     /* function.arg: */
@@ -1079,8 +1079,8 @@ SEXP deriv(SEXP args)
     args = CDR(args);
     /* tag: */
     tag = CAR(args);
-    if (!isString(tag) || length(tag) < 1
-	|| length(STRING_ELT(tag, 0)) < 1 || length(STRING_ELT(tag, 0)) > 60)
+    if (!isString(tag) || Rf_length(tag) < 1
+	|| Rf_length(STRING_ELT(tag, 0)) < 1 || Rf_length(STRING_ELT(tag, 0)) > 60)
 	error(_("invalid tag"));
     args = CDR(args);
     /* hessian: */
@@ -1113,7 +1113,7 @@ SEXP deriv(SEXP args)
 	}
 	UNPROTECT(4);
     }
-    nexpr = length(exprlist) - 1;
+    nexpr = Rf_length(exprlist) - 1;
     if (f_index) {
 	Accumulate2(MakeVariable(f_index, tag), exprlist);
     }
@@ -1230,9 +1230,9 @@ SEXP deriv(SEXP args)
 	funarg = mkCLOSXP(FORMALS(funarg), exprlist, CLOENV(funarg));
     }
     else if (isString(funarg)) {
-        SEXP formals = allocList(length(funarg));
+        SEXP formals = allocList(Rf_length(funarg));
         ans = formals;
-	for(i = 0; i < length(funarg); i++) {
+	for(i = 0; i < Rf_length(funarg); i++) {
 	    SET_TAG(ans, installTrChar(STRING_ELT(funarg, i)));
 	    SETCAR(ans, R_MissingArg);
 	    ans = CDR(ans);

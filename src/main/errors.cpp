@@ -47,7 +47,7 @@
 #include <Rconnections.h>
 #include <Rinterface.h>
 #include <R_ext/GraphicsEngine.h> /* for GEonExit */
-#include <Rmath.h> /* for imax2 */
+//#include <Rmath.h> /* for imax2 */
 #include <R_ext/Print.h>
 #include <cstdarg>
 
@@ -62,9 +62,6 @@
 using namespace std;
 using namespace rho;
 
-#ifndef min
-#define min(a, b) (a<b?a:b)
-#endif
 
 #include <R_ext/Visibility.h>
 
@@ -263,7 +260,8 @@ static int Rvsnprintf(char *buf, std::size_t size, const char  *format, va_list 
 }
 #endif
 
-#define BUFSIZE 8192
+constexpr size_t BUFSIZE = 8192;
+
 static R_INLINE void RprintTrunc(char *buf)
 {
     if(R_WarnLength < BUFSIZE - 20 && strlen(buf) == R_WarnLength) {

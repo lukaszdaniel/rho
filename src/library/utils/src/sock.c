@@ -20,7 +20,7 @@
 #include <R.h>
 #include <Rinternals.h>
 
-/* from src/main/internet.c */
+/* from src/main/internet.cpp */
 SEXP Rdownload(SEXP args);
 SEXP Rsockconnect(SEXP sport, SEXP shost);
 SEXP Rsockread(SEXP sport, SEXP smaxlen);

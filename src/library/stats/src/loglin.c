@@ -342,9 +342,9 @@ L50:
 SEXP LogLin(SEXP dtab, SEXP conf, SEXP table, SEXP start, 
 	    SEXP snmar, SEXP eps, SEXP iter) 
 {
-    int nvar = length(dtab), 
+    int nvar = Rf_length(dtab), 
 	ncon = ncols(conf), 
-	ntab = length(table),
+	ntab = Rf_length(table),
 	nmar = asInteger(snmar), 
 	maxit = asInteger(iter), 
 	nlast, ifault;

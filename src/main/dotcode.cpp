@@ -45,11 +45,9 @@
 #include "rho/ClosureContext.hpp"
 #include "rho/RAllocStack.hpp"
 
-#ifndef max
-#define max(a, b) ((a > b)?(a):(b))
-#endif
 
 using namespace rho;
+using namespace std;
 
 /* Was 'name' prior to 2.13.0, then .NAME, but checked as
    'name' up to 2.15.1. */
@@ -1043,7 +1041,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		const char *ss = Rf_translateChar(STRING_ELT(s, 0));
 		if (n > 1)
 		    Rf_warning(_("only first string in char vector used in .Fortran"));
-		char *fptr = static_cast<char*>(RHO_alloc(max(255, strlen(ss)) + 1, sizeof(char)));
+		char *fptr = static_cast<char*>(RHO_alloc(max(size_t(255), strlen(ss)) + 1, sizeof(char)));
 		strcpy(fptr, ss);
 		cargs[na] =  RHO_NO_CAST(void*) fptr;
 	    } else if (copy) {

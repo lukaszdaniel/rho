@@ -27,8 +27,7 @@ R_HOME=$(top_builddir)
 
 include $(top_builddir)/Makeconf
 
-SOURCES_C = complex.c inlined.c radixsort.c \
-	g_alab_her.c g_cntrlify.c g_fontdb.c g_her_glyph.c
+SOURCES_C = inlined.c
 
 SOURCES_CXX = \
 	AllocationTable.cpp AllocatorSuperblock.cpp allocstats.cpp \
@@ -51,7 +50,7 @@ SOURCES_CXX = \
 	PairList.cpp Promise.cpp ProtectStack.cpp Provenance.cpp \
 	ProvenanceTracker.cpp \
 	RAllocStack.cpp RNG.cpp RObject.cpp RawVector.cpp Rdynload.cpp \
-	RealVector.cpp Renviron.cpp ReturnBailout.cpp \
+	RealVector.cpp radixsort.cpp Renviron.cpp ReturnBailout.cpp \
 	S3Launcher.cpp S4Object.cpp SEXP_downcast.cpp \
 	StackChecker.cpp \
 	String.cpp StringVector.cpp Subscripting.cpp Symbol.cpp \
@@ -60,7 +59,7 @@ SOURCES_CXX = \
 	WeakRef.cpp \
 	apply.cpp agrep.cpp arithmetic.cpp array.cpp attrib.cpp \
 	bind.cpp builtin.cpp \
-	character.cpp coerce.cpp colors.cpp connections.cpp context.cpp \
+	character.cpp coerce.cpp colors.cpp complex.cpp connections.cpp context.cpp \
 	cum.cpp \
 	dcf.cpp datetime.cpp debug.cpp deparse.cpp devices.cpp \
 	dotcode.cpp dounzip.cpp dstruct.cpp duplicate.cpp \
@@ -82,9 +81,10 @@ SOURCES_CXX = \
 	subscript.cpp subset.cpp summary.cpp sysutils.cpp \
 	times.cpp \
 	unique.cpp util.cpp \
-	version.cpp
+	version.cpp \
+	g_alab_her.cpp g_cntrlify.cpp g_fontdb.cpp g_her_glyph.cpp
 
-SOURCES_F =  xxxpr.f
+SOURCES_F = xxxpr.f
 
 ## If the substitutes are needed, the corresponding objects are put by
 ## configure in @LIBOBJS@ @ALLOCA@
@@ -298,7 +298,7 @@ distclean: clean
 maintainer-clean: distclean
 	@$(ECHO) "This command is intended for maintainers to use; it"
 	@$(ECHO) "deletes files that may need special rules to rebuild"
-	@-rm -f $(srcdir)/gram.c $(srcdir)/gramLatex.c $(srcdir)/gramRd.c
+	@-rm -f $(srcdir)/gram.cpp $(srcdir)/gramLatex.c $(srcdir)/gramRd.cpp
 
 tags: TAGS
 TAGS: $(SOURCES) $(EXTRA_SOURCES_CXX) $(HEADERS)

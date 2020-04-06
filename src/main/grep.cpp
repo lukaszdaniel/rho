@@ -59,6 +59,7 @@ strsplit grep [g]sub [g]regexpr
 # include <config.h>
 #endif
 
+using namespace std;
 
 /* interval at which to check interrupts */
 #define NINTERRUPT 1000000
@@ -117,15 +118,6 @@ static void setup_jit(pcre_extra *re_pe)
 	pcre_assign_jit_stack(re_pe, NULL, jit_stack);
 }
 
-
-
-#ifndef MAX
-# define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
-#ifndef isRaw
-#define isRaw(x) (TYPEOF(x) == RAWSXP)
-#endif
 
 /* we allow pat == NULL if the regex cannot be safely expressed
    as a string (e.g., when using grepRaw) */
@@ -463,7 +455,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		    if ((slen == 1 && *bufp != *split) ||
 			(slen > 1 && strncmp(bufp, split, slen))) continue;
 		    ntok++;
-		    bufp += MAX(slen - 1, 0);
+		    bufp += max(slen - 1, 0);
 		    laststart = bufp+1;
 		}
 		bufp = laststart;
@@ -486,7 +478,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 			} else {
 			    pt[0] = *bufp; pt[1] ='\0';
 			}
-			bufp += MAX(slen-1, 0);
+			bufp += max(slen-1, 0);
 			laststart = bufp+1;
 			if (use_UTF8)
 			    SET_STRING_ELT(t, j, Rf_mkCharCE(pt, CE_UTF8));
@@ -589,7 +581,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 					  int(strlen(bufp)),
 					  0, 0, ovector, 30)) >= 0) {
 			/* Empty matches get the next char, so move by one. */
-			bufp += MAX(ovector[1], 1);
+			bufp += max(ovector[1], 1);
 			ntok++;
 			if (*bufp == '\0')
 			    break;
@@ -666,7 +658,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		if (*wbufp) {
 		    while(tre_regwexec(&reg, wbufp, 1, regmatch, 0) == 0) {
 			/* Empty matches get the next char, so move by one. */
-			wbufp += MAX(regmatch[0].rm_eo, 1);
+			wbufp += max(regmatch[0].rm_eo, 1);
 			ntok++;
 			if (!*wbufp) break;
 		    }
@@ -748,7 +740,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 		if (*bufp) {
 		    while((rc = tre_regexec(&reg, bufp, 1, regmatch, 0)) == 0) {
 			/* Empty matches get the next char, so move by one. */
-			bufp += MAX(regmatch[0].rm_eo, 1);
+			bufp += max(regmatch[0].rm_eo, 1);
 			ntok++;
 			if (*bufp == '\0') break;
 		    }

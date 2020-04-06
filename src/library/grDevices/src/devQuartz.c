@@ -619,7 +619,7 @@ const char *RQuartz_LookUpFontName(int fontface, const char *fontfamily)
     PROTECT(names = getAttrib(db, R_NamesSymbol));
     if (*fontfamily) {
         int i;
-        for(i = 0; i < length(names); i++)
+        for(i = 0; i < Rf_length(names); i++)
             if(streql(fontfamily, CHAR(STRING_ELT(names, i)))) {
                 mappedFont = CHAR(STRING_ELT(VECTOR_ELT(db, i), fontface - 1));
                 break;

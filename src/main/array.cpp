@@ -39,7 +39,7 @@
 
 #include "duplicate.h"
 
-#include <complex.h>
+#include <complex>
 #include "Rcomplex.h"	/* toC99 */
 
 #include "rho/GCStackRoot.hpp"

@@ -423,7 +423,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
     if (l_max < na) l_max = na;
 
     PROTECT(nam = coerceVector(nam, STRSXP));
-    if (length(nam) != 0 && length(nam) != l_max)
+    if (Rf_length(nam) != 0 && Rf_length(nam) != l_max)
 	error(_("invalid 'names' vector"));
     SEXP c = PROTECT(allocVector(STRSXP, l_max));
 
@@ -463,7 +463,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 			  ScaleAlpha(REAL(a)[i%na] / mV));
 	}
     }
-    if (length(nam) != 0) setAttrib(c, R_NamesSymbol, nam);
+    if (Rf_length(nam) != 0) setAttrib(c, R_NamesSymbol, nam);
     UNPROTECT(6);
     return c;
 }
@@ -488,7 +488,7 @@ SEXP gray(SEXP lev, SEXP a)
 	    SET_STRING_ELT(ans, i, mkChar(RGB2rgb(ilevel, ilevel, ilevel)));
 	}
     } else {
-	int na = length(a);
+	int na = Rf_length(a);
 	for (i = 0; i < (nlev > na ? nlev : na); i++) {
 	    level = REAL(lev)[i % nlev];
 	    if (ISNAN(level) || level < 0 || level > 1)
@@ -1500,7 +1500,7 @@ SEXP palette(SEXP val)
     PROTECT(ans = allocVector(STRSXP, PaletteSize));
     for (i = 0; i < PaletteSize; i++)
 	SET_STRING_ELT(ans, i, mkChar(incol2name(Palette[i])));
-    if ((n = length(val)) == 1) {
+    if ((n = Rf_length(val)) == 1) {
 	if (StrMatch("default", CHAR(STRING_ELT(val, 0)))) {
 	    int i;
 	    for (i = 0; (i < MAX_PALETTE_SIZE) && DefaultPalette[i]; i++)
@@ -1527,7 +1527,7 @@ SEXP palette(SEXP val)
 SEXP palette2(SEXP val)
 {
     SEXP ans = PROTECT(allocVector(INTSXP, PaletteSize));
-    int n = length(val), *ians = INTEGER(ans); 
+    int n = Rf_length(val), *ians = INTEGER(ans); 
     for (int i = 0; i < PaletteSize; i++) ians[i] = (int)Palette[i];
     if (n) {
 	if (TYPEOF(val) != INTSXP) error("requires INTSXP argment");
@@ -1563,7 +1563,7 @@ static void savePalette(Rboolean save)
 	    Palette[i] = Palette0[i];
 }
 
-/* same as src/main/colors.c */
+/* same as src/main/colors.cpp */
 typedef unsigned int (*F1)(SEXP x, int i, unsigned int bg);
 typedef const char * (*F2)(unsigned int col);
 typedef unsigned int (*F3)(const char *s);

@@ -30,7 +30,7 @@ SEXP getListElement(SEXP list, char *str)
   SEXP names = getAttrib(list, R_NamesSymbol);
   int i;
 
-  for (i = 0; i < length(list); i++)
+  for (i = 0; i < Rf_length(list); i++)
     if(strcmp(CHAR(STRING_ELT(names, i)), str) == 0) {
       elmt = VECTOR_ELT(list, i);
       break;
@@ -43,7 +43,7 @@ void setListElement(SEXP list, char *str, SEXP value)
   SEXP names = getAttrib(list, R_NamesSymbol);
   int i;
 
-  for (i = 0; i < length(list); i++)
+  for (i = 0; i < Rf_length(list); i++)
     if(strcmp(CHAR(STRING_ELT(names, i)), str) == 0) {
       SET_VECTOR_ELT(list, i, value);
       break;

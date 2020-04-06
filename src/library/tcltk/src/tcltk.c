@@ -75,7 +75,7 @@ static int R_eval(ClientData clientData,
        below (a straight eval(expr, R_GlobalEnv) won't work) */
     {
 	R_Busy(1);
-	int n = length(expr);
+	int n = Rf_length(expr);
 	for(i = 0 ; i < n ; i++)
 	    ans = eval(VECTOR_ELT(expr, i), R_GlobalEnv);
 	PROTECT(ans);
@@ -222,7 +222,7 @@ SEXP dotTclObjv(SEXP args)
     Tcl_Obj **objv;
     const void *vmax = vmaxget();
 
-    for (objc = 0, i = 0; i < length(avec); i++){
+    for (objc = 0, i = 0; i < Rf_length(avec); i++){
 	if (!isNull(VECTOR_ELT(avec, i)))
 	    objc++;
 	if (!isNull(nm) && strlen(translateChar(STRING_ELT(nm, i))))
@@ -231,7 +231,7 @@ SEXP dotTclObjv(SEXP args)
 
     objv = (Tcl_Obj **) R_alloc(objc, sizeof(Tcl_Obj *));
 
-    for (objc = i = 0; i < length(avec); i++){
+    for (objc = i = 0; i < Rf_length(avec); i++){
 	const char *s;
 	char *tmp;
 	if (!isNull(nm) && strlen(s = translateChar(STRING_ELT(nm, i)))){
@@ -364,7 +364,7 @@ SEXP RTcl_ObjFromCharVector(SEXP args)
 
     tclobj = Tcl_NewObj();
 
-    count = length(val);
+    count = Rf_length(val);
     encoding = Tcl_GetEncoding(RTcl_interp, "utf-8");
     if (count == 1 && LOGICAL(drop)[0]) {
 	Tcl_DStringInit(&s_ds);
@@ -442,7 +442,7 @@ SEXP RTcl_ObjFromDoubleVector(SEXP args)
 
     tclobj = Tcl_NewObj();
 
-    count = length(val);
+    count = Rf_length(val);
     if (count == 1 && LOGICAL(drop)[0])
 	tclobj = NewIntOrDoubleObj(REAL(val)[0]);
     else
@@ -495,7 +495,7 @@ SEXP RTcl_ObjFromIntVector(SEXP args)
 
     tclobj = Tcl_NewObj();
 
-    count = length(val);
+    count = Rf_length(val);
     if (count == 1 && LOGICAL(drop)[0])
 	tclobj = Tcl_NewIntObj(INTEGER(val)[0]);
     else
@@ -546,7 +546,7 @@ SEXP RTcl_ObjFromRawVector(SEXP args)
 
     val = CADR(args);
 
-    count = length(val);
+    count = Rf_length(val);
     tclobj = Tcl_NewByteArrayObj(RAW(val), count);
 
     return makeRTclObject(tclobj);
@@ -749,10 +749,10 @@ SEXP RTcl_ServiceMode(SEXP args)
 {
     int value;
     
-    if (!isLogical(CADR(args)) || length(CADR(args)) > 1)
+    if (!isLogical(CADR(args)) || Rf_length(CADR(args)) > 1)
     	error(_("invalid argument"));
     
-    if (length(CADR(args))) 
+    if (Rf_length(CADR(args))) 
 	value = Tcl_SetServiceMode(LOGICAL(CADR(args))[0] ? 
 				   TCL_SERVICE_ALL : TCL_SERVICE_NONE);
     else

@@ -35,8 +35,6 @@
 
 #include "rho/RAllocStack.hpp"
 
-#define isRaw(x) (TYPEOF(x) == RAWSXP)
-
 /* charToRaw works at byte level, ignores encoding */
 SEXP attribute_hidden do_charToRaw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {

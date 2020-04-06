@@ -142,7 +142,7 @@
     \item Group \code{"Complex"}:
     \itemize{
       \item \code{Arg}, \code{Conj}, \code{Im}, \code{Mod}, \code{Re}
-      % do_cmathfuns() [complex.c:267]: if(DispatchGroup("Complex",...))
+      % do_cmathfuns() [complex.cpp:267]: if(DispatchGroup("Complex",...))
     }
     Members of this group dispatch on \code{z}.
   }

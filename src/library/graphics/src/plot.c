@@ -98,7 +98,7 @@ static SEXP FixupPch(SEXP pch, int dflt)
     int i, n;
     SEXP ans = R_NilValue;/* -Wall*/
 
-    n = length(pch);
+    n = Rf_length(pch);
     if (n == 0) return ans = ScalarInteger(dflt);
 
     PROTECT(ans = allocVector(INTSXP, n));
@@ -135,7 +135,7 @@ SEXP FixupLty(SEXP lty, int dflt)
 {
     int i, n;
     SEXP ans;
-    n = length(lty);
+    n = Rf_length(lty);
     if (n == 0) {
 	ans = ScalarInteger(dflt);
     }
@@ -153,12 +153,12 @@ SEXP FixupLwd(SEXP lwd, double dflt)
     double w;
     SEXP ans = NULL;
 
-    n = length(lwd);
+    n = Rf_length(lwd);
     if (n == 0)
 	ans = ScalarReal(dflt);
     else {
 	PROTECT(lwd = coerceVector(lwd, REALSXP));
-	n = length(lwd);
+	n = Rf_length(lwd);
 	ans = allocVector(REALSXP, n);
 	for (i = 0; i < n; i++) {
 	    w = REAL(lwd)[i];
@@ -175,7 +175,7 @@ static SEXP FixupFont(SEXP font, int dflt)
 {
     int i, k, n;
     SEXP ans = R_NilValue;/* -Wall*/
-    n = length(font);
+    n = Rf_length(font);
     if (n == 0) {
 	ans = ScalarInteger(dflt);
     }
@@ -225,7 +225,7 @@ SEXP FixupCol(SEXP col, unsigned int dflt)
     SEXP ans;
     unsigned int bg = dpptr(GEcurrentDevice())->bg; /* col = 0 */
 
-    n = length(col);
+    n = Rf_length(col);
     if (n == 0) {
 	PROTECT(ans = ScalarInteger(dflt));
     } else {
@@ -247,7 +247,7 @@ static SEXP FixupCex(SEXP cex, double dflt)
 {
     SEXP ans;
     int i, n;
-    n = length(cex);
+    n = Rf_length(cex);
     if (n == 0) {
 	ans = allocVector(REALSXP, 1);
 	if (R_FINITE(dflt) && dflt > 0)
@@ -287,7 +287,7 @@ SEXP FixupVFont(SEXP vfont) {
 	int minindex, maxindex=0;/* -Wall*/
 	int i;
 	PROTECT(vf = coerceVector(vfont, INTSXP));
-	if (length(vf) != 2)
+	if (Rf_length(vf) != 2)
 	    error(_("invalid '%s' value"), "vfont");
 	typeface = INTEGER(vf)[0];
 	if (typeface < 1 || typeface > 8)
@@ -355,7 +355,7 @@ GetTextArg(SEXP spec, SEXP *ptxt, rcolor *pcol, double *pcex, int *pfont)
 	REPROTECT(txt = coerceVector(spec, EXPRSXP), pi);
 	break;
     case VECSXP:
-	if (length(spec) == 0) {
+	if (Rf_length(spec) == 0) {
 	    *ptxt = R_NilValue;
 	}
 	else {
@@ -367,7 +367,7 @@ GetTextArg(SEXP spec, SEXP *ptxt, rcolor *pcol, double *pcex, int *pfont)
 	       else if (!isExpression(txt))
 		    REPROTECT(txt = coerceVector(txt, STRSXP), pi);
 	    } else {
-	       n = length(nms);
+	       n = Rf_length(nms);
 	       for (i = 0; i < n; i++) {
 		if (!strcmp(CHAR(STRING_ELT(nms, i)), "cex")) {
 		    cex = asReal(VECTOR_ELT(spec, i));
@@ -474,7 +474,7 @@ SEXP C_plot_window(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (length(args) < 3)
+    if (Rf_length(args) < 3)
 	error(_("at least 3 arguments required"));
 
     xlim = CAR(args);
@@ -614,7 +614,7 @@ SEXP labelformat(SEXP labels)
     SEXP ans = R_NilValue;/* -Wall*/
     int i, n, w, d, e, wi, di, ei;
     const char *strp;
-    n = length(labels);
+    n = Rf_length(labels);
     R_print.digits = 7;/* maximally 7 digits -- ``burnt in'';
 			  S-PLUS <= 5.x has about 6
 			  (but really uses single precision..) */
@@ -762,7 +762,7 @@ SEXP C_axis(SEXP args)
     /* the correct arity, but it doesn't hurt to be defensive. */
 
     args = CDR(args);
-    if (length(args) < 15)
+    if (Rf_length(args) < 15)
 	error(_("too few arguments"));
     GCheckState(dd);
 
@@ -791,7 +791,7 @@ SEXP C_axis(SEXP args)
 
     dolabels = TRUE;
     lab = CAR(args);
-    if (isLogical(lab) && length(lab) > 0) {
+    if (isLogical(lab) && Rf_length(lab) > 0) {
 	i = asLogical(lab);
 	if (i == 0 || i == NA_LOGICAL)
 	    dolabels = FALSE;
@@ -863,14 +863,14 @@ SEXP C_axis(SEXP args)
     args = CDR(args);
 
     /* Optional argument: "hadj" */
-    if (length(CAR(args)) != 1)
+    if (Rf_length(CAR(args)) != 1)
 	error(_("'hadj' must be of length one"));
     hadj = asReal(CAR(args));
     args = CDR(args);
 
     /* Optional argument: "padj" */
     PROTECT(padj = coerceVector(CAR(args), REALSXP));
-    npadj = length(padj);
+    npadj = Rf_length(padj);
     if (npadj <= 0) error(_("zero-length '%s' specified"), "padj");
 
     /* Now we process all the remaining inline par values:
@@ -930,22 +930,22 @@ SEXP C_axis(SEXP args)
 	if (isReal(at)) PROTECT(at = duplicate(at));
 	else PROTECT(at = coerceVector(at, REALSXP));
     }
-    n = length(at);
+    n = Rf_length(at);
 
     /* Check/setup the tick labels.  This can mean using user-specified */
     /* labels, or encoding the "at" positions as strings. */
 
     if (dolabels) {
-	if (length(lab) == 0)
+	if (Rf_length(lab) == 0)
 	    lab = labelformat(at);
 	else {
 	    if (create_at)
 		error(_("'labels' is supplied and not 'at'"));
 	    if (!isExpression(lab)) lab = labelformat(lab);
 	}
-	if (length(at) != length(lab))
+	if (Rf_length(at) != Rf_length(lab))
 	    error(_("'at' and 'labels' lengths differ, %d != %d"),
-		      length(at), length(lab));
+		      Rf_length(at), Rf_length(lab));
     }
     PROTECT(lab);
 
@@ -1295,7 +1295,7 @@ SEXP C_plotXY(SEXP args)
     /* Basic Checks */
     GCheckState(dd);
     args = CDR(args);
-    if (length(args) < 7)
+    if (Rf_length(args) < 7)
 	error(_("too few arguments"));
 
     /* Required Arguments */
@@ -1303,11 +1303,11 @@ SEXP C_plotXY(SEXP args)
     sx = R_NilValue;		/* -Wall */			\
     sy = R_NilValue;		/* -Wall */			\
     sxy = CAR(args);						\
-    if (isNewList(sxy) && length(sxy) >= 2) {			\
+    if (isNewList(sxy) && Rf_length(sxy) >= 2) {			\
 	TypeCheck(sx = VECTOR_ELT(sxy, 0), REALSXP); \
 	TypeCheck(sy = VECTOR_ELT(sxy, 1), REALSXP); \
     }								\
-    else if (isList(sxy) && length(sxy) >= 2) {			\
+    else if (isList(sxy) && Rf_length(sxy) >= 2) {			\
 	TypeCheck(sx = CAR(sxy), REALSXP);	\
 	TypeCheck(sy = CADR(sxy), REALSXP);	\
     }								\
@@ -1334,7 +1334,7 @@ SEXP C_plotXY(SEXP args)
     args = CDR(args);
 
     PROTECT(pch = FixupPch(CAR(args), gpptr(dd)->pch));
-    npch = length(pch);
+    npch = Rf_length(pch);
     args = CDR(args);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty));
@@ -1619,25 +1619,25 @@ SEXP C_segments(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
     if(n == 0) return R_NilValue;
 
-    sx0 = CAR(args); nx0 = length(sx0); args = CDR(args);
-    sy0 = CAR(args); ny0 = length(sy0); args = CDR(args);
-    sx1 = CAR(args); nx1 = length(sx1); args = CDR(args);
-    sy1 = CAR(args); ny1 = length(sy1); args = CDR(args);
+    sx0 = CAR(args); nx0 = Rf_length(sx0); args = CDR(args);
+    sy0 = CAR(args); ny0 = Rf_length(sy0); args = CDR(args);
+    sx1 = CAR(args); nx1 = Rf_length(sx1); args = CDR(args);
+    sy1 = CAR(args); ny1 = Rf_length(sy1); args = CDR(args);
 
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));
     ncol = LENGTH(col); args = CDR(args);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty));
-    nlty = length(lty); args = CDR(args);
+    nlty = Rf_length(lty); args = CDR(args);
 
     PROTECT(lwd = FixupLwd(CAR(args), gpptr(dd)->lwd));
-    nlwd = length(lwd); args = CDR(args);
+    nlwd = Rf_length(lwd); args = CDR(args);
 
     GSavePars(dd);
     ProcessInlinePars(args, dd);
@@ -1684,16 +1684,16 @@ SEXP C_rect(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
     if(n == 0) return R_NilValue;
 
-    sxl = CAR(args); nxl = length(sxl); args = CDR(args);/* x_left */
-    syb = CAR(args); nyb = length(syb); args = CDR(args);/* y_bottom */
-    sxr = CAR(args); nxr = length(sxr); args = CDR(args);/* x_right */
-    syt = CAR(args); nyt = length(syt); args = CDR(args);/* y_top */
+    sxl = CAR(args); nxl = Rf_length(sxl); args = CDR(args);/* x_left */
+    syb = CAR(args); nyb = Rf_length(syb); args = CDR(args);/* y_bottom */
+    sxr = CAR(args); nxr = Rf_length(sxr); args = CDR(args);/* x_right */
+    syt = CAR(args); nyt = Rf_length(syt); args = CDR(args);/* y_top */
 
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));
     ncol = LENGTH(col);
@@ -1704,11 +1704,11 @@ SEXP C_rect(SEXP args)
     args = CDR(args);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty));
-    nlty = length(lty);
+    nlty = Rf_length(lty);
     args = CDR(args);
 
     PROTECT(lwd = FixupLwd(CAR(args), gpptr(dd)->lwd));
-    nlwd = length(lwd);
+    nlwd = Rf_length(lwd);
     args = CDR(args);
 
     GSavePars(dd);
@@ -1759,7 +1759,7 @@ SEXP C_path(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 2) error(_("too few arguments"));
+    if (Rf_length(args) < 2) error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
     sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
     sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
@@ -1825,7 +1825,7 @@ SEXP C_raster(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (length(args) < 7) error(_("too few arguments"));
+    if (Rf_length(args) < 7) error(_("too few arguments"));
     GCheckState(dd);
 
     raster = CAR(args); args = CDR(args);
@@ -1847,10 +1847,10 @@ SEXP C_raster(SEXP args)
     xypoints(args, &n);
     if(n == 0) return R_NilValue;
 
-    sxl = CAR(args); nxl = length(sxl); args = CDR(args);/* x_left */
-    syb = CAR(args); nyb = length(syb); args = CDR(args);/* y_bottom */
-    sxr = CAR(args); nxr = length(sxr); args = CDR(args);/* x_right */
-    syt = CAR(args); nyt = length(syt); args = CDR(args);/* y_top */
+    sxl = CAR(args); nxl = Rf_length(sxl); args = CDR(args);/* x_left */
+    syb = CAR(args); nyb = Rf_length(syb); args = CDR(args);/* y_bottom */
+    sxr = CAR(args); nxr = Rf_length(sxr); args = CDR(args);/* x_right */
+    syt = CAR(args); nyt = Rf_length(syt); args = CDR(args);/* y_top */
 
     angle = CAR(args); args = CDR(args);
     interpolate = CAR(args); args = CDR(args);
@@ -1899,16 +1899,16 @@ SEXP C_arrows(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
     if(n == 0) return R_NilValue;
 
-    sx0 = CAR(args); nx0 = length(sx0); args = CDR(args);
-    sy0 = CAR(args); ny0 = length(sy0); args = CDR(args);
-    sx1 = CAR(args); nx1 = length(sx1); args = CDR(args);
-    sy1 = CAR(args); ny1 = length(sy1); args = CDR(args);
+    sx0 = CAR(args); nx0 = Rf_length(sx0); args = CDR(args);
+    sy0 = CAR(args); ny0 = Rf_length(sy0); args = CDR(args);
+    sx1 = CAR(args); nx1 = Rf_length(sx1); args = CDR(args);
+    sy1 = CAR(args); ny1 = Rf_length(sy1); args = CDR(args);
 
     hlength = asReal(CAR(args));
     if (!R_FINITE(hlength) || hlength < 0)
@@ -1930,11 +1930,11 @@ SEXP C_arrows(SEXP args)
     args = CDR(args);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty));
-    nlty = length(lty);
+    nlty = Rf_length(lty);
     args = CDR(args);
 
     PROTECT(lwd = FixupLwd(CAR(args), gpptr(dd)->lwd));
-    nlwd = length(lwd);
+    nlwd = Rf_length(lwd);
     args = CDR(args);
 
     GSavePars(dd);
@@ -1994,7 +1994,7 @@ SEXP C_polygon(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 2) error(_("too few arguments"));
+    if (Rf_length(args) < 2) error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
     sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
     sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
@@ -2007,7 +2007,7 @@ SEXP C_polygon(SEXP args)
     nborder = LENGTH(border);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty)); args = CDR(args);
-    nlty = length(lty);
+    nlty = Rf_length(lty);
 
     GSavePars(dd);
     ProcessInlinePars(args, dd);
@@ -2070,7 +2070,7 @@ SEXP C_text(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 3) error(_("too few arguments"));
+    if (Rf_length(args) < 3) error(_("too few arguments"));
 
     PLOT_XY_DEALING("text");
 
@@ -2081,12 +2081,12 @@ SEXP C_text(SEXP args)
     else if (!isExpression(txt))
 	txt = coerceVector(txt, STRSXP);
     PROTECT(txt);
-    if (length(txt) <= 0)
+    if (Rf_length(txt) <= 0)
 	error(_("zero-length '%s' specified"), "labels");
     args = CDR(args);
 
     PROTECT(adj = CAR(args));
-    if (isNull(adj) || (isNumeric(adj) && length(adj) == 0)) {
+    if (isNull(adj) || (isNumeric(adj) && Rf_length(adj) == 0)) {
 	adjx = gpptr(dd)->adj;
 	adjy = NA_REAL;
     }
@@ -2114,7 +2114,7 @@ SEXP C_text(SEXP args)
     args = CDR(args);
 
     PROTECT(pos = coerceVector(CAR(args), INTSXP));
-    npos = length(pos);
+    npos = Rf_length(pos);
     for (i = 0; i < npos; i++)
 	if (INTEGER(pos)[i] < 1 || INTEGER(pos)[i] > 4)
 	    error(_("invalid '%s' value"), "pos");
@@ -2347,7 +2347,7 @@ SEXP C_mtext(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 9)
+    if (Rf_length(args) < 9)
 	error(_("too few arguments"));
 
     /* Arg1 : text= */
@@ -2357,21 +2357,21 @@ SEXP C_mtext(SEXP args)
     else if (!isExpression(text))
 	text = coerceVector(text, STRSXP);
     PROTECT(text);
-    n = ntext = length(text);
+    n = ntext = Rf_length(text);
     if (ntext <= 0)
 	error(_("zero-length '%s' specified"), "text");
     args = CDR(args);
 
     /* Arg2 : side= */
     PROTECT(side = coerceVector(CAR(args), INTSXP));
-    nside = length(side);
+    nside = Rf_length(side);
     if (nside <= 0) error(_("zero-length '%s' specified"), "side");
     if (n < nside) n = nside;
     args = CDR(args);
 
     /* Arg3 : line= */
     PROTECT(line = coerceVector(CAR(args), REALSXP));
-    nline = length(line);
+    nline = Rf_length(line);
     if (nline <= 0) error(_("zero-length '%s' specified"), "line");
     if (n < nline) n = nline;
     args = CDR(args);
@@ -2379,35 +2379,35 @@ SEXP C_mtext(SEXP args)
     /* Arg4 : outer= */
     /* outer == NA => outer <- 0 */
     PROTECT(outer = coerceVector(CAR(args), INTSXP));
-    nouter = length(outer);
+    nouter = Rf_length(outer);
     if (nouter <= 0) error(_("zero-length '%s' specified"), "outer");
     if (n < nouter) n = nouter;
     args = CDR(args);
 
     /* Arg5 : at= */
     PROTECT(at = coerceVector(CAR(args), REALSXP));
-    nat = length(at);
+    nat = Rf_length(at);
     if (nat <= 0) error(_("zero-length '%s' specified"), "at");
     if (n < nat) n = nat;
     args = CDR(args);
 
     /* Arg6 : adj= */
     PROTECT(adj = coerceVector(CAR(args), REALSXP));
-    nadj = length(adj);
+    nadj = Rf_length(adj);
     if (nadj <= 0) error(_("zero-length '%s' specified"), "adj");
     if (n < nadj) n = nadj;
     args = CDR(args);
 
     /* Arg7 : padj= */
     PROTECT(padj = coerceVector(CAR(args), REALSXP));
-    npadj = length(padj);
+    npadj = Rf_length(padj);
     if (npadj <= 0) error(_("zero-length '%s' specified"), "padj");
     if (n < npadj) n = npadj;
     args = CDR(args);
 
     /* Arg8 : cex */
     PROTECT(cex = FixupCex(CAR(args), 1.0));
-    ncex = length(cex);
+    ncex = Rf_length(cex);
     if (ncex <= 0) error(_("zero-length '%s' specified"), "cex");
     if (n < ncex) n = ncex;
     args = CDR(args);
@@ -2415,14 +2415,14 @@ SEXP C_mtext(SEXP args)
     /* Arg9 : col */
     rawcol = CAR(args);
     PROTECT(col = FixupCol(rawcol, R_TRANWHITE));
-    ncol = length(col);
+    ncol = Rf_length(col);
     if (ncol <= 0) error(_("zero-length '%s' specified"), "col");
     if (n < ncol) n = ncol;
     args = CDR(args);
 
     /* Arg10 : font */
     PROTECT(font = FixupFont(CAR(args), NA_INTEGER));
-    nfont = length(font);
+    nfont = Rf_length(font);
     if (nfont <= 0) error(_("zero-length '%s' specified"), "font");
     if (n < nfont) n = nfont;
     args = CDR(args);
@@ -2522,7 +2522,7 @@ SEXP C_title(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 6) error(_("too few arguments"));
+    if (Rf_length(args) < 6) error(_("too few arguments"));
 
     Main = sub = xlab = ylab = R_NilValue;
 
@@ -2600,7 +2600,7 @@ SEXP C_title(SEXP args)
 		      adj, 0.5, 0.0, dd);
 	}
 	else {
-	  n = length(Main);
+	  n = Rf_length(Main);
 	  offset = 0.5 * (n - 1) + vpos;
 	  for (i = 0; i < n; i++) {
 		string = STRING_ELT(Main, i);
@@ -2637,7 +2637,7 @@ SEXP C_title(SEXP args)
 	    GMMathText(XVECTOR_ELT(sub, 0), 1, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
-	    n = length(sub);
+	    n = Rf_length(sub);
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(sub, i);
 		if(string != NA_STRING)
@@ -2673,7 +2673,7 @@ SEXP C_title(SEXP args)
 	    GMMathText(XVECTOR_ELT(xlab, 0), 1, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
-	    n = length(xlab);
+	    n = Rf_length(xlab);
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(xlab, i);
 		if(string != NA_STRING)
@@ -2709,7 +2709,7 @@ SEXP C_title(SEXP args)
 	    GMMathText(XVECTOR_ELT(ylab, 0), 2, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
-	    n = length(ylab);
+	    n = Rf_length(ylab);
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(ylab, i);
 		if(string != NA_STRING)
@@ -2738,7 +2738,7 @@ SEXP C_abline(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 5) error(_("too few arguments"));
+    if (Rf_length(args) < 5) error(_("too few arguments"));
 
     if ((a = CAR(args)) != R_NilValue)
 	SETCAR(args, a = coerceVector(a, REALSXP));
@@ -2765,10 +2765,10 @@ SEXP C_abline(SEXP args)
     ncol = LENGTH(col);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty)); args = CDR(args);
-    nlty = length(lty);
+    nlty = Rf_length(lty);
 
     PROTECT(lwd = FixupLwd(CAR(args), gpptr(dd)->lwd)); args = CDR(args);
-    nlwd = length(lwd);
+    nlwd = Rf_length(lwd);
 
     GSavePars(dd);
 
@@ -3280,7 +3280,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
     double cex, cexsave;						\
     pGEDevDesc dd = GEcurrentDevice();					\
     args = CDR(args);							\
-    if (length(args) < 5) error(_("too few arguments"));		\
+    if (Rf_length(args) < 5) error(_("too few arguments"));		\
 									\
     str = CAR(args);							\
     if (isSymbol(str) || isLanguage(str))				\
@@ -3406,7 +3406,7 @@ SEXP C_dend(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 6)
+    if (Rf_length(args) < 6)
 	error(_("too few arguments"));
 
     /* n */
@@ -3416,20 +3416,20 @@ SEXP C_dend(SEXP args)
     args = CDR(args);
 
     /* merge */
-    if (TYPEOF(CAR(args)) != INTSXP || length(CAR(args)) != 2*n)
+    if (TYPEOF(CAR(args)) != INTSXP || Rf_length(CAR(args)) != 2*n)
 	goto badargs;
     dnd_lptr = &(INTEGER(CAR(args))[0]);
     dnd_rptr = &(INTEGER(CAR(args))[n]);
     args = CDR(args);
 
     /* height */
-    if (TYPEOF(CAR(args)) != REALSXP || length(CAR(args)) != n)
+    if (TYPEOF(CAR(args)) != REALSXP || Rf_length(CAR(args)) != n)
 	goto badargs;
     dnd_hght = REAL(CAR(args));
     args = CDR(args);
 
     /* ord = order(x$order) */
-    if (length(CAR(args)) != n+1)
+    if (Rf_length(CAR(args)) != n+1)
 	goto badargs;
     PROTECT(xpos = coerceVector(CAR(args), REALSXP));
     dnd_xpos = REAL(xpos);
@@ -3443,7 +3443,7 @@ SEXP C_dend(SEXP args)
     args = CDR(args);
 
     /* labels */
-    if (TYPEOF(CAR(args)) != STRSXP || length(CAR(args)) != n+1)
+    if (TYPEOF(CAR(args)) != STRSXP || Rf_length(CAR(args)) != n+1)
 	goto badargs;
     dnd_llabels = CAR(args);
     args = CDR(args);
@@ -3482,18 +3482,18 @@ SEXP C_dendwindow(SEXP args)
     dd = GEcurrentDevice();
     GCheckState(dd);
     args = CDR(args);
-    if (length(args) < 5)
+    if (Rf_length(args) < 5)
 	error(_("too few arguments"));
     n = asInteger(CAR(args));
     if (n == NA_INTEGER || n < 2)
 	goto badargs;
     args = CDR(args);
-    if (TYPEOF(CAR(args)) != INTSXP || length(CAR(args)) != 2 * n)
+    if (TYPEOF(CAR(args)) != INTSXP || Rf_length(CAR(args)) != 2 * n)
 	goto badargs;
     merge = CAR(args);
 
     args = CDR(args);
-    if (TYPEOF(CAR(args)) != REALSXP || length(CAR(args)) != n)
+    if (TYPEOF(CAR(args)) != REALSXP || Rf_length(CAR(args)) != n)
 	goto badargs;
     height = CAR(args);
 
@@ -3503,7 +3503,7 @@ SEXP C_dendwindow(SEXP args)
 	goto badargs;
 
     args = CDR(args);
-    if (TYPEOF(CAR(args)) != STRSXP || length(CAR(args)) != n + 1)
+    if (TYPEOF(CAR(args)) != STRSXP || Rf_length(CAR(args)) != n + 1)
 	goto badargs;
     llabels = CAR(args);
 
@@ -3613,7 +3613,7 @@ static Rboolean SymbolRange(double *x, int n, double *xmax, double *xmin)
 static void CheckSymbolPar(SEXP p, int *nr, int *nc)
 {
     SEXP dim = getAttrib(p, R_DimSymbol);
-    switch(length(dim)) {
+    switch(Rf_length(dim)) {
     case 0:
 	*nr = LENGTH(p);
 	*nc = 1;
@@ -3648,12 +3648,12 @@ SEXP C_symbols(SEXP args)
     GCheckState(dd);
     args = CDR(args);
 
-    if (length(args) < 7)
+    if (Rf_length(args) < 7)
 	error(_("too few arguments"));
 
     PROTECT(x = coerceVector(CAR(args), REALSXP)); args = CDR(args);
     PROTECT(y = coerceVector(CAR(args), REALSXP)); args = CDR(args);
-    if (!isNumeric(x) || !isNumeric(y) || length(x) <= 0 || LENGTH(x) <= 0)
+    if (!isNumeric(x) || !isNumeric(y) || Rf_length(x) <= 0 || LENGTH(x) <= 0)
 	error(_("invalid symbol coordinates"));
 
     type = asInteger(CAR(args)); args = CDR(args);
@@ -3929,7 +3929,7 @@ SEXP C_xspline(SEXP args)
     GCheckState(dd);
     args = CDR(args);
 
-    if (length(args) < 6) error(_("too few arguments"));
+    if (Rf_length(args) < 6) error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
     sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
     sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);

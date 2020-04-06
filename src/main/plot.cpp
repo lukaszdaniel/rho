@@ -38,8 +38,9 @@
 #include "rho/GCStackRoot.hpp"
 
 using namespace rho;
+using namespace std;
 
-#include <Rmath.h> // for Rexp10, imax2
+#include <Rmath.h> // for Rexp10
 
 /* used in graphics and grid */
 SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
@@ -59,7 +60,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
     int i, n, ne;
     if (!logflag || axp[2] < 0) { /* --- linear axis --- Only use axp[] arg. */
 	n = int(fabs(axp[2]) + 0.25);/* >= 0 */
-	dn = imax2(1, n);
+	dn = max(1, n);
 	rng = axp[1] - axp[0];
 	small = fabs(rng)/(100.*dn);
 	at = Rf_allocVector(REALSXP, n + 1);

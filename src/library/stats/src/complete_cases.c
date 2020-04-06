@@ -27,7 +27,7 @@
 
 #include "localization.h"
 
-/* Formerly in src/main/summary.c */
+/* Formerly in src/main/summary.cpp */
 
 /* complete.cases(.) */
 SEXP compcases(SEXP args)
@@ -63,7 +63,7 @@ SEXP compcases(SEXP args)
 	else if (isNewList(CAR(s))) {
 	    int it, nt;
 	    t = CAR(s);
-	    nt = length(t);
+	    nt = Rf_length(t);
 	    /* 0-column data frames are a special case */
 	    if(nt) {
 		for (it = 0 ; it < nt ; it++) {
@@ -153,7 +153,7 @@ SEXP compcases(SEXP args)
 	if (isNewList(CAR(s))) {
 	    int it, nt;
 	    t = CAR(s);
-	    nt = length(t);
+	    nt = Rf_length(t);
 	    for (it = 0 ; it < nt ; it++) {
 		u = VECTOR_ELT(t, it);
 		for (i = 0; i < LENGTH(u); i++) {

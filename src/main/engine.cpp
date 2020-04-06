@@ -42,6 +42,7 @@
 #include "rho/Expression.hpp"
 
 using namespace rho;
+using namespace std;
 
 int R_GE_getVersion()
 {
@@ -3490,8 +3491,8 @@ void R_GE_rasterRotatedSize(int w, int h, double angle,
     /* 
      * Rotated image may be shorter or thinner than original
      */
-    *wnew = imax2(w, *wnew);
-    *hnew = imax2(h, *hnew);
+    *wnew = max(w, *wnew);
+    *hnew = max(h, *hnew);
 }
 
 /*

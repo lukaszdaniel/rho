@@ -25,6 +25,7 @@
 
 #include <Defn.h>
 #include <Rmath.h>
+#include <R_ext/Itermacros.h> //for mod_iterate[234]
 #include "statsR.h"
 #include "localization.h"
 
@@ -37,11 +38,6 @@
 
 
 /* Mathematical Functions of Two Numeric Arguments (plus 1 int) */
-
-#define mod_iterate(n1,n2,i1,i2) for (i=i1=i2=0; i<n; \
-	i1 = (++i1 == n1) ? 0 : i1,\
-	i2 = (++i2 == n2) ? 0 : i2,\
-	++i)
 
 #define SETUP_Math2					\
     na = XLENGTH(sa);					\
@@ -86,7 +82,7 @@ static SEXP math2_1(SEXP sa, SEXP sb, SEXP sI, double (*f)(double, double, int))
     SETUP_Math2;
     m_opt = asInteger(sI);
 
-    mod_iterate(na, nb, ia, ib) {
+    mod_iterate2(na, nb, ia, ib) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
 	ai = a[ia];
 	bi = b[ib];
@@ -115,7 +111,7 @@ static SEXP math2_2(SEXP sa, SEXP sb, SEXP sI1, SEXP sI2,
     i_1 = asInteger(sI1);
     i_2 = asInteger(sI2);
 
-    mod_iterate(na, nb, ia, ib) {
+    mod_iterate2(na, nb, ia, ib) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
 	ai = a[ia];
 	bi = b[ib];
@@ -164,12 +160,6 @@ DEFMATH2_2(qsignrank)
 #define if_NA_Math3_set(y,a,b,c)			        \
 	if      (ISNA (a) || ISNA (b)|| ISNA (c)) y = NA_REAL;	\
 	else if (ISNAN(a) || ISNAN(b)|| ISNAN(c)) y = R_NaN;
-
-#define mod_iterate3(n1,n2,n3,i1,i2,i3) for (i=i1=i2=i3=0; i<n; \
-	i1 = (++i1==n1) ? 0 : i1,				\
-	i2 = (++i2==n2) ? 0 : i2,				\
-	i3 = (++i3==n3) ? 0 : i3,				\
-	++i)
 
 #define SETUP_Math3						\
     if (!isNumeric(sa) || !isNumeric(sb) || !isNumeric(sc))	\
@@ -320,13 +310,6 @@ DEFMATH3_2(qwilcox)
 #define if_NA_Math4_set(y,a,b,c,d)				\
 	if      (ISNA (a)|| ISNA (b)|| ISNA (c)|| ISNA (d)) y = NA_REAL;\
 	else if (ISNAN(a)|| ISNAN(b)|| ISNAN(c)|| ISNAN(d)) y = R_NaN;
-
-#define mod_iterate4(n1,n2,n3,n4,i1,i2,i3,i4) for (i=i1=i2=i3=i4=0; i<n; \
-	i1 = (++i1==n1) ? 0 : i1,					\
-	i2 = (++i2==n2) ? 0 : i2,					\
-	i3 = (++i3==n3) ? 0 : i3,					\
-	i4 = (++i4==n4) ? 0 : i4,					\
-	++i)
 
 #define SETUP_Math4							\
     if(!isNumeric(sa)|| !isNumeric(sb)|| !isNumeric(sc)|| !isNumeric(sd))\

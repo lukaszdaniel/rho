@@ -238,8 +238,8 @@ SEXP fileedit(SEXP call, SEXP op, SEXP args, SEXP rho)
     ti = CAR(args); args = CDR(args);
     ed = CAR(args);
 
-    n = length(fn);
-    if (!isString(ed) || length(ed) != 1)
+    n = Rf_length(fn);
+    if (!isString(ed) || Rf_length(ed) != 1)
 	error(_("invalid '%s' specification"), "editor");
     if (n > 0) {
 	if (!isString(fn))

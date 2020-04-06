@@ -348,7 +348,7 @@ new BuiltInFunction("psigamma",	do_math2,	26,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 
 
 /* Mathematical Functions of a Complex Argument:
- * These are group generic and so need to eval args --> ./complex.c */
+ * These are group generic and so need to eval args --> ./complex.cpp */
 
 new BuiltInFunction("Re",		do_cmathfuns,	1,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "z"),
 new BuiltInFunction("Im",		do_cmathfuns,	2,	1,	1,	{PP_FUNCALL, PREC_FN,	0}, "z"),

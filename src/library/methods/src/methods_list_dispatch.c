@@ -168,7 +168,7 @@ static SEXP R_element_named(SEXP obj, const char * what)
 {
     int offset = -1, i, n;
     SEXP names = getAttrib(obj, R_NamesSymbol);
-    n = length(names);
+    n = Rf_length(names);
     if(n > 0) {
 	for(i = 0; i < n; i++) {
 	    if(streql(what, CHAR(STRING_ELT(names, i)))) {
@@ -672,7 +672,7 @@ SEXP R_M_setPrimitiveMethods(SEXP fname, SEXP op, SEXP code_vec,
 SEXP R_nextMethodCall(SEXP matched_call, SEXP ev)
 {
     SEXP e, val, args, this_sym, op;
-    int i, nargs = length(matched_call)-1, error_flag;
+    int i, nargs = Rf_length(matched_call)-1, error_flag;
     Rboolean prim_case;
     /* for primitive .nextMethod's, suppress further dispatch to avoid
      * going into an infinite loop of method calls
@@ -753,7 +753,7 @@ static SEXP R_loadMethod(SEXP def, SEXP fname, SEXP ev)
     }
     defineVar(R_dot_Method, def, ev);
 
-    if(found < length(attrib)) {
+    if(found < Rf_length(attrib)) {
         /* this shouldn't be needed but check the generic being
            "loadMethod", which would produce a recursive loop */
         if(strcmp(CHAR(asChar(fname)), "loadMethod") == 0) {
@@ -812,9 +812,9 @@ check_single_string(SEXP obj, Rboolean nonEmpty, const char *what)
 {
     const char *string = "<unset>"; /* -Wall */
     if(isString(obj)) {
-	if(length(obj) != 1)
+	if(Rf_length(obj) != 1)
 	    error(_("'%s' must be a single string (got a character vector of length %d)"),
-		  what, length(obj));
+		  what, Rf_length(obj));
 	string = CHAR(STRING_ELT(obj, 0));
 	if(nonEmpty && (! string || !string[0]))
 	    error(_("'%s' must be a non-empty string; got an empty string"),
@@ -888,7 +888,7 @@ SEXP R_getClassFromCache(SEXP klass, SEXP table)
 	else if(TYPEOF(package) == STRSXP) {
 	    SEXP defPkg = PACKAGE_SLOT(value);
 	    /* check equality of package */
-	    if(TYPEOF(defPkg) == STRSXP && length(defPkg) ==1 &&
+	    if(TYPEOF(defPkg) == STRSXP && Rf_length(defPkg) ==1 &&
 	       STRING_ELT(defPkg,0) != STRING_ELT(package, 0))
 		return R_NilValue;
 	    else

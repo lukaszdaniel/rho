@@ -71,7 +71,7 @@ SEXP fft(SEXP z, SEXP inverse)
 
     if (LENGTH(z) > 1) {
 	if (isNull(d = getAttrib(z, R_DimSymbol))) {  /* temporal transform */
-	    n = length(z);
+	    n = Rf_length(z);
 	    fft_factor(n, &maxf, &maxp);
 	    if (maxf == 0)
 		error(_("fft factorization error"));
@@ -136,7 +136,7 @@ SEXP mvfft(SEXP z, SEXP inverse)
     size_t maxsize = ((size_t) -1) / 4;
 
     d = getAttrib(z, R_DimSymbol);
-    if (d == R_NilValue || length(d) > 2)
+    if (d == R_NilValue || Rf_length(d) > 2)
 	error(_("vector-valued (multivariate) series required"));
     n = INTEGER(d)[0];
     p = INTEGER(d)[1];

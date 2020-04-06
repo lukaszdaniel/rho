@@ -995,7 +995,7 @@ static int isOne(SEXP x)
 /* the same list structure and their atoms are identical. */
 /* This is just EQUAL from lisp. */
 
-/* See src/main/memory.c: probably could be simplified to pointer comparison */
+/* See src/main/memory.cpp: probably could be simplified to pointer comparison */
 static int Seql2(SEXP a, SEXP b)
 {
     if (a == b) return 1;

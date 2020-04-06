@@ -16,7 +16,7 @@
  *  along with this program; if not, a copy is available at
  *  https://www.R-project.org/Licenses/
  *
- * Formerly part of src/main/sprintf.c
+ * Formerly part of src/main/sprintf.cpp
 */
 
 #ifdef HAVE_CONFIG_H

@@ -90,9 +90,6 @@ using namespace rho;
 #ifdef Win32
 #include <trioremap.h>
 #endif
-#ifndef min
-#define min(a, b) (((a)<(b))?(a):(b))
-#endif
 
 #define BUFSIZE 8192  /* used by Rprintf etc */
 

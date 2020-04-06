@@ -48,7 +48,7 @@ getListElement(SEXP list, SEXP names, const char *str)
     const char *tempChar;
     int i;
 
-    for (i = 0; i < length(list); i++) {
+    for (i = 0; i < Rf_length(list); i++) {
 	tempChar = CHAR(STRING_ELT(names, i)); /* ASCII only */
 	if( strcmp(tempChar,str) == 0) {
 	    elmt = VECTOR_ELT(list, i);

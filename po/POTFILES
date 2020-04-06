@@ -51,7 +51,7 @@ src/main/BuiltInFunction.cpp
 src/main/character.cpp
 src/main/coerce.cpp
 src/main/CommandLineArgs.cpp
-src/main/complex.c
+src/main/complex.cpp
 src/main/connections.cpp
 src/main/ConsCell.cpp
 src/main/context.cpp
@@ -102,7 +102,7 @@ src/main/printutils.cpp
 src/main/Promise.cpp
 src/main/provenance_do.cpp
 src/main/qsort.cpp
-src/main/radixsort.c
+src/main/radixsort.cpp
 src/main/RAllocStack.cpp
 src/main/random.cpp
 src/main/raw.cpp
@@ -120,7 +120,7 @@ src/main/SEXP_downcast.cpp
 src/main/sort.cpp
 src/main/source.cpp
 src/main/split.cpp
-src/main/split-incl.c
+src/main/split-incl.cpp
 src/main/sprintf.cpp
 src/main/StackChecker.cpp
 src/main/startup.cpp

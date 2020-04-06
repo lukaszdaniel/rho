@@ -69,10 +69,8 @@
 #include <Rmath.h>
 #include <Localization.h>
 #include "arithmetic.h"		/* complex_*  */
-#include <complex.h>
 #include "Rcomplex.h"		/* I, C99_COMPLEX2, SET_C99_COMPLEX, toC99 */
 #include <R_ext/Itermacros.h>
-
 
 /* interval at which to check interrupts, a guess */
 #define NINTERRUPT 10000000
@@ -101,13 +99,13 @@ SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
     return R_NilValue; /* -Wall */
 }
 
-static R_INLINE double complex R_cpow_n(double complex X, int k)
+static R_INLINE std::complex<double> R_cpow_n(std::complex<double> X, int k)
 {
-    if(k == 0) return (double complex) 1.;
+    if(k == 0) return (std::complex<double>) 1.;
     else if(k == 1) return X;
     else if(k < 0) return 1. / R_cpow_n(X, -k);
     else {/* k > 0 */
-	double complex z = (double complex) 1.;;
+	std::complex<double> z = (std::complex<double>) 1.;;
 	while (k > 0) {
 	    if (k & 1) z = z * X;
 	    if (k == 1) break;
@@ -133,10 +131,10 @@ static R_INLINE double complex R_cpow_n(double complex X, int k)
   (C1x's CMPLX will eventually be possible.)
 */
 
-static double complex mycpow (double complex X, double complex Y)
+static std::complex<double> mycpow (std::complex<double> X, std::complex<double> Y)
 {
-    double complex Z;
-    double yr = creal(Y), yi = cimag(Y);
+    std::complex<double> Z;
+    double yr = Y.real(), yi = Y.imag();
     int k;
     if (X == 0.0) {
 	if (yi == 0.0) Z = R_pow(0.0, yr); else Z = R_NaN + R_NaN*I;
@@ -144,7 +142,7 @@ static double complex mycpow (double complex X, double complex Y)
 	Z = R_cpow_n(X, k);
     else
 #ifdef HAVE_CPOW
-	Z = cpow(X, Y);
+	Z = std::pow(X, Y);
 #else
     {
 	/* Used for FreeBSD and MingGW, hence mainly with gcc */
@@ -268,7 +266,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 #if HAVE_CABS
-		REAL(y)[i] = cabs(C99_COMPLEX2(x, i));
+		REAL(y)[i] = std::abs(C99_COMPLEX2(x, i));
 #else
 		REAL(y)[i] = hypot(COMPLEX(x)[i].r, COMPLEX(x)[i].i);
 #endif
@@ -277,7 +275,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
 #if HAVE_CARG
-		REAL(y)[i] = carg(C99_COMPLEX2(x, i));
+		REAL(y)[i] = std::arg(C99_COMPLEX2(x, i));
 #else
 		REAL(y)[i] = atan2(COMPLEX(x)[i].i, COMPLEX(x)[i].r);
 #endif
@@ -376,7 +374,7 @@ void attribute_hidden z_prec_r(Rcomplex *r, Rcomplex *x, double digits)
 #ifndef HAVE_CLOG
 #define clog R_clog
 /* FIXME: maybe add full IEC60559 support */
-static double complex clog(double complex x)
+static std::complex<double> clog(std::complex<double> x)
 {
     double xr = creal(x), xi = cimag(x);
     return log(hypot(xr, xi)) + atan2(xi, xr)*I;
@@ -386,7 +384,7 @@ static double complex clog(double complex x)
 #ifndef HAVE_CSQRT
 #define csqrt R_csqrt
 /* FreeBSD does have this one */
-static double complex csqrt(double complex x)
+static std::complex<double> csqrt(std::complex<double> x)
 {
     return mycpow(x, 0.5+0.0*I);
 }
@@ -395,7 +393,7 @@ static double complex csqrt(double complex x)
 #ifndef HAVE_CEXP
 #define cexp R_cexp
 /* FIXME: check/add full IEC60559 support */
-static double complex cexp(double complex x)
+static std::complex<double> cexp(std::complex<double> x)
 {
     double expx = exp(creal(x)), y = cimag(x);
     return expx * cos(y) + (expx * sin(y)) * I;
@@ -404,7 +402,7 @@ static double complex cexp(double complex x)
 
 #ifndef HAVE_CCOS
 #define ccos R_ccos
-static double complex ccos(double complex x)
+static std::complex<double> ccos(std::complex<double> x)
 {
     double xr = creal(x), xi = cimag(x);
     return cos(xr)*cosh(xi) - sin(xr)*sinh(xi)*I; /* A&S 4.3.56 */
@@ -413,7 +411,7 @@ static double complex ccos(double complex x)
 
 #ifndef HAVE_CSIN
 #define csin R_csin
-static double complex csin(double complex x)
+static std::complex<double> csin(std::complex<double> x)
 {
     double xr = creal(x), xi = cimag(x);
     return sin(xr)*cosh(xi) + cos(xr)*sinh(xi)*I; /* A&S 4.3.55 */
@@ -422,7 +420,7 @@ static double complex csin(double complex x)
 
 #ifndef HAVE_CTAN
 #define ctan R_ctan
-static double complex ctan(double complex z)
+static std::complex<double> ctan(std::complex<double> z)
 {
     /* A&S 4.3.57 */
     double x2, y2, den, ri;
@@ -438,7 +436,7 @@ static double complex ctan(double complex z)
 
 #ifndef HAVE_CASIN
 #define casin R_casin
-static double complex casin(double complex z)
+static std::complex<double> casin(std::complex<double> z)
 {
     /* A&S 4.4.37 */
     double alpha, t1, t2, x = creal(z), y = cimag(z), ri;
@@ -457,7 +455,7 @@ static double complex casin(double complex z)
 
 #ifndef HAVE_CACOS
 #define cacos R_cacos
-static double complex cacos(double complex z)
+static std::complex<double> cacos(std::complex<double> z)
 {
     return M_PI_2 - casin(z);
 }
@@ -465,7 +463,7 @@ static double complex cacos(double complex z)
 
 #ifndef HAVE_CATAN
 #define catan R_catan
-static double complex catan(double complex z)
+static std::complex<double> catan(std::complex<double> z)
 {
     double x = creal(z), y = cimag(z), rr, ri;
     rr = 0.5 * atan2(2 * x, (1 - x * x - y * y));
@@ -477,7 +475,7 @@ static double complex catan(double complex z)
 
 #ifndef HAVE_CCOSH
 #define ccosh R_ccosh
-static double complex ccosh(double complex z)
+static std::complex<double> ccosh(std::complex<double> z)
 {
     return ccos(z * I); /* A&S 4.5.8 */
 }
@@ -485,20 +483,22 @@ static double complex ccosh(double complex z)
 
 #ifndef HAVE_CSINH
 #define csinh R_csinh
-static double complex csinh(double complex z)
+static std::complex<double> csinh(std::complex<double> z)
 {
     return -I * csin(z * I); /* A&S 4.5.7 */
 }
 #endif
 
-static double complex z_tan(double complex z)
+static std::complex<double> z_tan(std::complex<double> z)
 {
-    double y = cimag(z);
-    double complex r = ctan(z);
+    double y = std::imag(z);
+    std::complex<double> r = std::tan(z);
     if(R_FINITE(y) && fabs(y) > 25.0) {
 	/* at this point the real part is nearly zero, and the
 	   imaginary part is one: but some OSes get the imag as NaN */
-#if __GNUC__
+#ifdef __cplusplus
+	r = std::real(r) + (y < 0 ? -1.0 : 1.0) * I;
+#elif __GNUC__
 	__imag__ r = y < 0 ? -1.0 : 1.0;
 #else
 	r = creal(r) + (y < 0 ? -1.0 : 1.0) * I;
@@ -509,7 +509,7 @@ static double complex z_tan(double complex z)
 
 #ifndef HAVE_CTANH
 #define ctanh R_ctanh
-static double complex ctanh(double complex z)
+static std::complex<double> ctanh(std::complex<double> z)
 {
     return -I * z_tan(z * I); /* A&S 4.5.9 */
 }
@@ -518,53 +518,53 @@ static double complex ctanh(double complex z)
 
 /* Don't rely on the OS at the branch cuts */
 
-static double complex z_asin(double complex z)
+static std::complex<double> z_asin(std::complex<double> z)
 {
-    if(cimag(z) == 0 && fabs(creal(z)) > 1) {
-	double alpha, t1, t2, x = creal(z), ri;
+    if(std::imag(z) == 0 && fabs(std::real(z)) > 1) {
+	double alpha, t1, t2, x = std::real(z), ri;
 	t1 = 0.5 * fabs(x + 1);
 	t2 = 0.5 * fabs(x - 1);
 	alpha = t1 + t2;
 	ri = log(alpha + sqrt(alpha*alpha - 1));
 	if(x > 1) ri *= -1;
-	return asin(t1  - t2) + ri*I;
+	return std::asin(t1  - t2) + ri*I;
     }
-    return casin(z);
+    return std::asin(z);
 }
 
-static double complex z_acos(double complex z)
+static std::complex<double> z_acos(std::complex<double> z)
 {
-    if(cimag(z) == 0 && fabs(creal(z)) > 1) return M_PI_2 - z_asin(z);
-    return cacos(z);
+    if(std::imag(z) == 0 && fabs(std::real(z)) > 1) return M_PI_2 - z_asin(z);
+    return std::acos(z);
 }
 
-static double complex z_atan(double complex z)
+static std::complex<double> z_atan(std::complex<double> z)
 {
-    if(creal(z) == 0 && fabs(cimag(z)) > 1) {
-	double y = cimag(z), rr, ri;
+    if(std::real(z) == 0 && fabs(std::imag(z)) > 1) {
+	double y = std::imag(z), rr, ri;
 	rr = (y > 0) ? M_PI_2 : -M_PI_2;
 	ri = 0.25 * log(((y + 1) * (y + 1))/((y - 1) * (y - 1)));
 	return rr + ri*I;
     }
-    return catan(z);
+    return std::atan(z);
 }
 
-static double complex z_acosh(double complex z)
+static std::complex<double> z_acosh(std::complex<double> z)
 {
     return z_acos(z) * I;
 }
 
-static double complex z_asinh(double complex z)
+static std::complex<double> z_asinh(std::complex<double> z)
 {
     return -I * z_asin(z * I);
 }
 
-static double complex z_atanh(double complex z)
+static std::complex<double> z_atanh(std::complex<double> z)
 {
     return -I * z_atan(z * I);
 }
 
-static Rboolean cmath1(double complex (*f)(double complex),
+static Rboolean cmath1(std::complex<double> (*f)(std::complex<double>),
 		       Rcomplex *x, Rcomplex *y, R_xlen_t n)
 {
     R_xlen_t i;
@@ -581,6 +581,15 @@ static Rboolean cmath1(double complex (*f)(double complex),
     return naflag;
 }
 
+static std::complex<double> z_log(std::complex<double> z) { return std::log(z); }
+static std::complex<double> z_sqrt(std::complex<double> z) { return std::sqrt(z); }
+static std::complex<double> z_exp(std::complex<double> z) { return std::exp(z); }
+static std::complex<double> z_cos(std::complex<double> z) { return std::cos(z); }
+static std::complex<double> z_sin(std::complex<double> z) { return std::sin(z); }
+static std::complex<double> z_cosh(std::complex<double> z) { return std::cosh(z); }
+static std::complex<double> z_sinh(std::complex<double> z) { return std::sinh(z); }
+static std::complex<double> z_tanh(std::complex<double> z) { return std::tanh(z); }
+
 SEXP attribute_hidden complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP x, y;
@@ -592,18 +601,18 @@ SEXP attribute_hidden complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
     PROTECT(y = Rf_allocVector(CPLXSXP, n));
 
     switch (PRIMVAL(op)) {
-    case 10003: naflag = cmath1(clog, COMPLEX(x), COMPLEX(y), n); break;
-    case 3: naflag = cmath1(csqrt, COMPLEX(x), COMPLEX(y), n); break;
-    case 10: naflag = cmath1(cexp, COMPLEX(x), COMPLEX(y), n); break;
-    case 20: naflag = cmath1(ccos, COMPLEX(x), COMPLEX(y), n); break;
-    case 21: naflag = cmath1(csin, COMPLEX(x), COMPLEX(y), n); break;
+    case 10003: naflag = cmath1(z_log, COMPLEX(x), COMPLEX(y), n); break;
+    case 3: naflag = cmath1(z_sqrt, COMPLEX(x), COMPLEX(y), n); break;
+    case 10: naflag = cmath1(z_exp, COMPLEX(x), COMPLEX(y), n); break;
+    case 20: naflag = cmath1(z_cos, COMPLEX(x), COMPLEX(y), n); break;
+    case 21: naflag = cmath1(z_sin, COMPLEX(x), COMPLEX(y), n); break;
     case 22: naflag = cmath1(z_tan, COMPLEX(x), COMPLEX(y), n); break;
     case 23: naflag = cmath1(z_acos, COMPLEX(x), COMPLEX(y), n); break;
     case 24: naflag = cmath1(z_asin, COMPLEX(x), COMPLEX(y), n); break;
     case 25: naflag = cmath1(z_atan, COMPLEX(x), COMPLEX(y), n); break;
-    case 30: naflag = cmath1(ccosh, COMPLEX(x), COMPLEX(y), n); break;
-    case 31: naflag = cmath1(csinh, COMPLEX(x), COMPLEX(y), n); break;
-    case 32: naflag = cmath1(ctanh, COMPLEX(x), COMPLEX(y), n); break;
+    case 30: naflag = cmath1(z_cosh, COMPLEX(x), COMPLEX(y), n); break;
+    case 31: naflag = cmath1(z_sinh, COMPLEX(x), COMPLEX(y), n); break;
+    case 32: naflag = cmath1(z_tanh, COMPLEX(x), COMPLEX(y), n); break;
     case 33: naflag = cmath1(z_acosh, COMPLEX(x), COMPLEX(y), n); break;
     case 34: naflag = cmath1(z_asinh, COMPLEX(x), COMPLEX(y), n); break;
     case 35: naflag = cmath1(z_atanh, COMPLEX(x), COMPLEX(y), n); break;
@@ -632,26 +641,26 @@ static void z_prec(Rcomplex *r, Rcomplex *x, Rcomplex *p)
 
 static void z_logbase(Rcomplex *r, Rcomplex *z, Rcomplex *base)
 {
-    double complex dz = toC99(z), dbase = toC99(base);
-    SET_C99_COMPLEX(r, 0, clog(dz)/clog(dbase));
+    std::complex<double> dz = toC99(z), dbase = toC99(base);
+    SET_C99_COMPLEX(r, 0, std::log(dz)/std::log(dbase));
 }
 
 static void z_atan2(Rcomplex *r, Rcomplex *csn, Rcomplex *ccs)
 {
-    double complex dr, dcsn = toC99(csn), dccs = toC99(ccs);
-    if (dccs == 0) {
-	if(dcsn == 0) {
+    std::complex<double> dr, dcsn = toC99(csn), dccs = toC99(ccs);
+    if (dccs == std::complex<double>(0,0)) {
+	if(dcsn == std::complex<double>(0,0)) {
 	    r->r = NA_REAL; r->i = NA_REAL; /* Why not R_NaN? */
 	    return;
 	} else {
-	    double y = creal(dcsn);
+	    double y = std::real(dcsn);
 	    if (ISNAN(y)) dr = y;
 	    else dr = ((y >= 0) ? M_PI_2 : -M_PI_2);
 	}
     } else {
-	dr = catan(dcsn / dccs);
-	if(creal(dccs) < 0) dr += M_PI;
-	if(creal(dr) > M_PI) dr -= 2 * M_PI;
+	dr = std::atan(dcsn / dccs);
+	if(std::real(dccs) < 0) dr += M_PI;
+	if(std::real(dr) > M_PI) dr -= 2 * M_PI;
     }
     SET_C99_COMPLEX(r, 0, dr);
 }
@@ -1269,7 +1278,7 @@ static void calct(Rboolean *bool_)
     polyev(n, sr, si, hr, hi,
 	   qhr, qhi, &hvr, &hvi);
 
-    *bool_ = hypot(hvr, hvi) <= are * 10. * hypot(hr[n-1], hi[n-1]);
+    *bool_ = Rboolean(hypot(hvr, hvi) <= are * 10. * hypot(hr[n-1], hi[n-1]));
     if (!*bool_) {
 	cdivid(-pvr, -pvi, hvr, hvi, &tr, &ti);
     }

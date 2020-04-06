@@ -52,7 +52,7 @@ static void Rintfn(double *x, int n, void *ex)
     PROTECT(tmp = lang2(IS->f , args));
     PROTECT(resultsxp = eval(tmp, IS->env));
 
-    if(length(resultsxp) != n)
+    if(Rf_length(resultsxp) != n)
 	error("evaluation of function gave a result of wrong length");
     if(TYPEOF(resultsxp) == INTSXP) {
 	resultsxp = coerceVector(resultsxp, REALSXP);
@@ -77,9 +77,9 @@ SEXP call_dqags(SEXP args)
     args = CDR(args);
     is.f = CAR(args); args = CDR(args);
     is.env = CAR(args); args = CDR(args);
-    if(length(CAR(args)) > 1) error(_("'%s' must be of length one"), "lower");
+    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "lower");
     lower = asReal(CAR(args)); args = CDR(args);
-    if(length(CAR(args)) > 1) error(_("'%s' must be of length one"), "upper");
+    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "upper");
     upper = asReal(CAR(args)); args = CDR(args);
     epsabs = asReal(CAR(args)); args = CDR(args);
     epsrel = asReal(CAR(args)); args = CDR(args);
@@ -121,7 +121,7 @@ SEXP call_dqagi(SEXP args)
     args = CDR(args);
     is.f = CAR(args); args = CDR(args);
     is.env = CAR(args); args = CDR(args);
-    if(length(CAR(args)) > 1) error(_("'%s' must be of length one"), "bound");
+    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "bound");
     bound = asReal(CAR(args)); args = CDR(args);
     inf = asInteger(CAR(args)); args = CDR(args);
     epsabs = asReal(CAR(args)); args = CDR(args);

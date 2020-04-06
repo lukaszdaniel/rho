@@ -71,7 +71,7 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
 # define _L_INTSXP_ REALSXP
 # define _L_INTEG_  REAL
 # define _L_int_    R_xlen_t
-# include "split-incl.c"
+# include "split-incl.cpp"
 
 # undef _L_INTSXP_
 # undef _L_INTEG_
@@ -82,7 +82,7 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
 # define _L_INTSXP_ INTSXP
 # define _L_INTEG_  INTEGER
 # define _L_int_    int
-# include "split-incl.c"
+# include "split-incl.cpp"
 
 # undef _L_INTSXP_
 # undef _L_INTEG_

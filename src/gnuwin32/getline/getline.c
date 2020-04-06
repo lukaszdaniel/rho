@@ -28,7 +28,7 @@ int 		(*gl_tab_hook)() = gl_tab;
 extern Rboolean mbcslocale;
 #define mbs_init(x) memset(x, 0, sizeof(mbstate_t))
 
-/* NB:  this define must match the one in src/main/scan.c */
+/* NB:  this define must match the one in src/main/scan.cpp */
 #define CONSOLE_PROMPT_SIZE	256
 
 #include <string.h>

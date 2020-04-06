@@ -119,10 +119,8 @@ extern attribute_hidden SEXP    R_dot_GenericDefEnv;  /* ".GenericDefEnv" */
 extern "C" {
 #endif
 
-int IS_BYTES(SEXP x);
 void SET_BYTES(SEXP x);
 int IS_ASCII(SEXP x);
-int ENC_KNOWN(SEXP x);
 //Rboolean IS_CACHED(SEXP x) { return TRUE; }; //always true in rho
 //void SET_CACHED(SEXP x);
 
@@ -334,9 +332,8 @@ inline size_t PTR2VEC(int n)
 #endif // __cplusplus
 
 /* Miscellaneous Definitions */
-//#define streql(s, t)	(!strcmp((s), (t)))
-inline Rboolean streql(const char *s, const char *t) { return (Rboolean)(strcmp(s, t) == 0); }
-inline Rboolean streqln(const char *s, const char *t, size_t n) { return (Rboolean)(strncmp(s, t, n) == 0); }
+inline Rboolean streql(const char *s, const char *t) { return (Rboolean) (strcmp(s, t) == 0); }
+inline Rboolean streqln(const char *s, const char *t, size_t n) { return (Rboolean) (strncmp(s, t, n) == 0); }
 
 /* Arithmetic and Relation Operators */
 typedef enum {

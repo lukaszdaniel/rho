@@ -164,7 +164,7 @@ static void NORET par_error(const char *what)
 
 static void lengthCheck(const char *what, SEXP v, int n)
 {
-    if (length(v) != n)
+    if (Rf_length(v) != n)
 	error(_("graphical parameter \"%s\" has the wrong length"), what);
 }
 
@@ -430,7 +430,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     else if (streql(what, "mfg")) {
 	int row, col, nrow, ncol, np;
 	PROTECT(value = coerceVector(value, INTSXP));
-	np = length(value);
+	np = Rf_length(value);
 	if(np != 2 && np != 4)
 	    error(_("parameter \"mfg\" has the wrong length"));
 	posIntCheck(INTEGER(value)[0], what);
@@ -1083,7 +1083,7 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
     dd = GEcurrentDevice();
     new_spec = 0;
     args = CAR(args);
-    nargs = length(args);
+    nargs = Rf_length(args);
     if (isNewList(args)) {
 	SEXP oldnames, newnames, tag, val;
 	int i;
@@ -1103,7 +1103,7 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SET_STRING_ELT(newnames, i, tag);
 		Specify(CHAR(tag), val, dd);
 	    }
-	    else if (isString(val) && length(val) > 0) {
+	    else if (isString(val) && Rf_length(val) > 0) {
 		tag = STRING_ELT(val, 0);
 		if (tag != R_NilValue && CHAR(tag)[0]) {
 		    SET_VECTOR_ELT(value, i, Query(CHAR(tag), dd));
@@ -1194,7 +1194,7 @@ SEXP C_layout(SEXP args)
 	    REAL(CAR(args))[i];
     args = CDR(args);
     /* cm.widths: */
-    ncmcol = length(CAR(args));
+    ncmcol = Rf_length(CAR(args));
     for (j = 0; j < ncol; j++)
 	dpptr(dd)->cmWidths[j] = gpptr(dd)->cmWidths[j] = 0;
     for (j = 0; j < ncmcol; j++) {
@@ -1204,7 +1204,7 @@ SEXP C_layout(SEXP args)
     }
     args = CDR(args);
     /* cm.heights: */
-    ncmrow = length(CAR(args));
+    ncmrow = Rf_length(CAR(args));
     for (i = 0; i < nrow; i++)
 	dpptr(dd)->cmHeights[i] = gpptr(dd)->cmHeights[i] = 0;
     for (i = 0; i < ncmrow; i++) {

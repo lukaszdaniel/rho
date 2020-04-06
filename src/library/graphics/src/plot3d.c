@@ -188,13 +188,13 @@ SEXP C_filledcontour(SEXP args)
     args = CDR(args);
 
     sc = PROTECT(coerceVector(CAR(args), REALSXP)); /* levels */
-    nc = length(sc);
+    nc = Rf_length(sc);
     args = CDR(args);
 
     if (nc < 1) error(_("no contour values"));
 
     PROTECT(scol = FixupCol(CAR(args), R_TRANWHITE));
-    ncol = length(scol);
+    ncol = Rf_length(scol);
 
     /* Shorthand Pointers */
 
@@ -944,7 +944,7 @@ static void PerspAxis(double *x, double *y, double *z,
     case 2: /* "detailed": normal ticks as per 2D plots */
 	PROTECT(at = CreateAtVector(axp, range, 7, FALSE));
 	PROTECT(lab = labelformat(at));
-	for (i=0; i<length(at); i++) {
+	for (i=0; i<Rf_length(at); i++) {
 	    switch (axisType) {
 	    case 0:
 		u1[0] = REAL(at)[i];
@@ -1079,32 +1079,32 @@ SEXP C_persp(SEXP args)
     pGEDevDesc dd;
 
     args = CDR(args);
-    if (length(args) < 24)  /* 24 plus any inline par()s */
+    if (Rf_length(args) < 24)  /* 24 plus any inline par()s */
 	error(_("too few parameters"));
 
     PROTECT(x = coerceVector(CAR(args), REALSXP));
-    if (length(x) < 2) error(_("invalid '%s' argument"), "x");
+    if (Rf_length(x) < 2) error(_("invalid '%s' argument"), "x");
     args = CDR(args);
 
     PROTECT(y = coerceVector(CAR(args), REALSXP));
-    if (length(y) < 2) error(_("invalid '%s' argument"), "y");
+    if (Rf_length(y) < 2) error(_("invalid '%s' argument"), "y");
     args = CDR(args);
 
     PROTECT(z = coerceVector(CAR(args), REALSXP));
-    if (!isMatrix(z) || nrows(z) != length(x) || ncols(z) != length(y))
+    if (!isMatrix(z) || nrows(z) != Rf_length(x) || ncols(z) != Rf_length(y))
 	error(_("invalid '%s' argument"), "z");
     args = CDR(args);
 
     PROTECT(xlim = coerceVector(CAR(args), REALSXP));
-    if (length(xlim) != 2) error(_("invalid '%s' argument"), "xlim");
+    if (Rf_length(xlim) != 2) error(_("invalid '%s' argument"), "xlim");
     args = CDR(args);
 
     PROTECT(ylim = coerceVector(CAR(args), REALSXP));
-    if (length(ylim) != 2) error(_("invalid '%s' argument"), "ylim");
+    if (Rf_length(ylim) != 2) error(_("invalid '%s' argument"), "ylim");
     args = CDR(args);
 
     PROTECT(zlim = coerceVector(CAR(args), REALSXP));
-    if (length(zlim) != 2) error(_("invalid '%s' argument"), "zlim");
+    if (Rf_length(zlim) != 2) error(_("invalid '%s' argument"), "zlim");
     args = CDR(args);
 
     /* Checks on x/y/z Limits */
@@ -1134,11 +1134,11 @@ SEXP C_persp(SEXP args)
     xlab = CAR(args); args = CDR(args);
     ylab = CAR(args); args = CDR(args);
     zlab = CAR(args); args = CDR(args);
-    if (!isString(xlab) || length(xlab) < 1)
+    if (!isString(xlab) || Rf_length(xlab) < 1)
 	error(_("'xlab' must be a character vector of length 1"));
-    if (!isString(ylab) || length(ylab) < 1)
+    if (!isString(ylab) || Rf_length(ylab) < 1)
 	error(_("'ylab' must be a character vector of length 1"));
-    if (!isString(zlab) || length(zlab) < 1)
+    if (!isString(zlab) || Rf_length(zlab) < 1)
 	error(_("'zlab' must be a character vector of length 1"));
 
     if (R_FINITE(Shade) && Shade <= 0) Shade = 1;
@@ -1180,13 +1180,13 @@ SEXP C_persp(SEXP args)
     if (ncol < 1) error(_("invalid '%s' specification"), "col");
     if(!R_OPAQUE(INTEGER(col)[0])) DoLighting = FALSE;
     PROTECT(border = FixupCol(border, gpptr(dd)->fg));
-    if (length(border) < 1)
+    if (Rf_length(border) < 1)
 	error(_("invalid '%s' specification"), "border");
 
     GSetState(1, dd);
     GSavePars(dd);
     ProcessInlinePars(args, dd);
-    if (length(border) > 1)
+    if (Rf_length(border) > 1)
 	gpptr(dd)->fg = INTEGER(border)[0];
     gpptr(dd)->xlog = gpptr(dd)->ylog = FALSE;
 
@@ -1567,7 +1567,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 		cetype_t enc = CE_NATIVE;
 		buffer[0] = ' ';
 		if (!isNull(labels)) {
-		    int numl = length(labels);
+		    int numl = Rf_length(labels);
 		    strcpy(&buffer[1], CHAR(STRING_ELT(labels, cnum % numl)));
 		    enc = getCharCE(STRING_ELT(labels, cnum % numl));
 		}
@@ -1870,7 +1870,7 @@ SEXP C_contour(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (length(args) < 12) error(_("too few arguments"));
+    if (Rf_length(args) < 12) error(_("too few arguments"));
     PrintDefaults(); /* prepare for labelformat */
 
     x = PROTECT(coerceVector(CAR(args), REALSXP));
@@ -1915,15 +1915,15 @@ SEXP C_contour(SEXP args)
 
     rawcol = CAR(args);
     PROTECT(col = FixupCol(rawcol, R_TRANWHITE));
-    ncol = length(col);
+    ncol = Rf_length(col);
     args = CDR(args);
 
     PROTECT(lty = FixupLty(CAR(args), gpptr(dd)->lty));
-    nlty = length(lty);
+    nlty = Rf_length(lty);
     args = CDR(args);
 
     PROTECT(lwd = FixupLwd(CAR(args), gpptr(dd)->lwd));
-    nlwd = length(lwd);
+    nlwd = Rf_length(lwd);
     args = CDR(args);
 
     if (nx < 2 || ny < 2)

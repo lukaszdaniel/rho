@@ -38,7 +38,6 @@
 #include <Internal.h>
 #include <R_ext/PrtUtil.h> // for IndexWidth
 #include <R_ext/Itermacros.h>
-#define imax2(x, y) ((x < y) ? y : x)
 
 #include "duplicate.h"
 #include "RBufferUtils.h"
@@ -1574,7 +1573,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 	    rows += INTEGER(dims)[0];
 	}
 	else if (Rf_length(u) >= lenmin){
-	    cols = imax2(cols, Rf_length(u));
+	    cols = max(cols, Rf_length(u));
 	    rows += 1;
 	}
         ++na;
@@ -1608,7 +1607,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 				((deparse_level == 1) &&
 				 Rf_isSymbol(Rf_substitute(arg.car(), R_NilValue)))))
 		have_rnames = TRUE;
-	    nnames = imax2(nnames, Rf_length(dn));
+	    nnames = max(nnames, Rf_length(dn));
 	    UNPROTECT(1); /* dn */
 	}
         ++na;

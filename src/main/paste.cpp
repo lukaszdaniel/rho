@@ -40,7 +40,6 @@
 #include <Localization.h>
 #include <Internal.h>
 
-#define imax2(x, y) ((x < y) ? y : x)
 
 #include <Print.h>
 #include "RBufferUtils.h"
@@ -462,7 +461,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	case LGLSXP:
 	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    if (trim) w = 0; else formatLogical(LOGICAL(x), n, &w);
-	    w = imax2(w, wd);
+	    w = max(w, wd);
 	    for (i = 0; i < n; i++) {
 		strp = EncodeLogical(LOGICAL(x)[i], w);
 		SET_STRING_ELT(y, i, Rf_mkChar(strp));
@@ -473,7 +472,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    if (trim) w = 0;
 	    else formatInteger(INTEGER(x), n, &w);
-	    w = imax2(w, wd);
+	    w = max(w, wd);
 	    for (i = 0; i < n; i++) {
 		strp = EncodeInteger(INTEGER(x)[i], w);
 		SET_STRING_ELT(y, i, Rf_mkChar(strp));
@@ -483,7 +482,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	case REALSXP:
 	    formatReal(REAL(x), n, &w, &d, &e, nsmall);
 	    if (trim) w = 0;
-	    w = imax2(w, wd);
+	    w = max(w, wd);
 	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		strp = EncodeReal0(REAL(x)[i], w, d, e, my_OutDec);
@@ -494,7 +493,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	case CPLXSXP:
 	    formatComplex(COMPLEX(x), n, &w, &d, &e, &wi, &di, &ei, nsmall);
 	    if (trim) wi = w = 0;
-	    w = imax2(w, wd); wi = imax2(wi, wd);
+	    w = max(w, wd); wi = max(wi, wd);
 	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		strp = EncodeComplex(COMPLEX(x)[i], w, d, e, wi, di, ei, my_OutDec);
@@ -538,16 +537,16 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    if (adj != Rprt_adj_none) {
 		for (i = 0; i < n; i++)
 		    if (STRING_ELT(xx, i) != NA_STRING)
-			w = imax2(w, Rstrlen(STRING_ELT(xx, i), 0));
-		    else if (na) w = imax2(w, R_print.na_width);
+			w = max(w, Rstrlen(STRING_ELT(xx, i), 0));
+		    else if (na) w = max(w, R_print.na_width);
 	    } else w = 0;
 	    /* now calculate the buffer size needed, in bytes */
 	    for (i = 0; i < n; i++)
 		if (STRING_ELT(xx, i) != NA_STRING) {
 		    il = Rstrlen(STRING_ELT(xx, i), 0);
-		    cnt = imax2(cnt, LENGTH(STRING_ELT(xx, i)) + imax2(0, w-il));
+		    cnt = max(cnt, LENGTH(STRING_ELT(xx, i)) + max(0, w-il));
 		} else if (na)
-		    cnt = imax2(cnt, R_print.na_width + imax2(0, w-R_print.na_width));
+		    cnt = max(cnt, R_print.na_width + max(0, w-R_print.na_width));
 	    R_CheckStack2(cnt+1);
 	    vector<char> buffv(cnt+1);
 	    char* buff = &buffv[0];

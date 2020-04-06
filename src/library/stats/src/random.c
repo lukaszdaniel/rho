@@ -331,7 +331,7 @@ SEXP do_rmultinom(SEXP sn, SEXP ssize, SEXP prob)
     if (size == NA_INTEGER || size < 0)
 	error(_("invalid second argument 'size'"));
     prob = coerceVector(prob, REALSXP);
-    k = length(prob);/* k = #{components or classes} = X-vector length */
+    k = Rf_length(prob);/* k = #{components or classes} = X-vector length */
     if (MAYBE_REFERENCED(prob)) prob = duplicate(prob);/*as `do_sample' -- need this line? */
     PROTECT(prob);
     /* check and make sum = 1: */
@@ -363,14 +363,14 @@ SEXP r2dtable(SEXP n, SEXP r, SEXP c)
     SEXP ans, tmp;
     const void *vmax = vmaxget();
 
-    nr = length(r);
-    nc = length(c);
+    nr = Rf_length(r);
+    nc = Rf_length(c);
 
     /* Note that the R code in r2dtable() also checks for missing and
        negative values.
        Should maybe do the same here ...
     */
-    if(!isInteger(n) || (length(n) == 0) ||
+    if(!isInteger(n) || (Rf_length(n) == 0) ||
        !isInteger(r) || (nr <= 1) ||
        !isInteger(c) || (nc <= 1))
 	error(_("invalid arguments"));

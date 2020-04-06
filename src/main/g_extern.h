@@ -64,9 +64,9 @@
 /* PAUL MURRELL
    This type def taken from sys-defines.h
 */
-typedef int bool;
-#define false 0
-#define true 1
+//typedef int bool;
+//#define false 0
+//#define true 1
 
 /*************************************************************************/
 /* DEFINITIONS RELATED TO OUR FONT DATABASE (g_fontdb.c and g_fontd2.c)  */

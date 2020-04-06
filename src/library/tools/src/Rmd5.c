@@ -28,7 +28,7 @@
 SEXP Rmd5(SEXP files)
 {
     SEXP ans;
-    int i, j, nfiles = length(files), res;
+    int i, j, nfiles = Rf_length(files), res;
     const char *path;
     char out[33];
     FILE *fp;

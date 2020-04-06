@@ -631,6 +631,18 @@ extern "C" {
 	return Rboolean(x && x->isS4Object());
     }
 
+    /** @brief Is this an object of RAWSXP type?
+     *
+     * @param x Pointer to rho::RObject.
+     *
+     * @return true iff \a x is of RAWSXP type.  Returns false if \a x
+     * is 0.
+     */
+	inline Rboolean isRaw(SEXP x)
+	{
+		return Rboolean(x && (TYPEOF(x) == SEXPTYPE::RAWSXP));
+	};
+
     /** @brief (For use only in serialization.)
      */
     inline int LEVELS(SEXP x) {return int(x->packGPBits());}

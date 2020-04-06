@@ -27,7 +27,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
-/* Prototypes of functions within complex.c needed elsewhere. */
+/* Prototypes of functions within complex.cpp needed elsewhere. */
 
 #ifndef R_RCOMPLEX_H
 #define R_RCOMPLEX_H
@@ -38,7 +38,10 @@
    And use on Win32/64 suppresses warnings.
    The warning is also seen on macOS 10.5, but not later.
 */
-#if defined(__GNUC__) && (defined(__sun__) || defined(__hpux__) || defined(Win32))
+#ifdef __cplusplus
+#include <complex>
+#define I std::complex<double>(0,1)
+#elif defined(__GNUC__) && (defined(__sun__) || defined(__hpux__) || defined(Win32))
 # undef  I
 # define I (__extension__ 1.0iF)
 #endif
@@ -48,7 +51,6 @@
    As could mycpow, z_tan and some of the substitutes.
  */
 #ifdef __cplusplus
-#include <complex>
 static R_INLINE std::complex<double> toC99(Rcomplex *x) {
     std::complex<double> val(x->r, x->i);
     return val;

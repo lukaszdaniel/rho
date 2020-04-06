@@ -351,7 +351,7 @@ static void remove_worker(httpd_conn_t *c)
 }
 
 #ifndef Win32
-extern int R_ignore_SIGPIPE; /* defined in src/main/main.c on unix */
+extern int R_ignore_SIGPIPE; /* defined in src/main/main.cpp on unix */
 #else
 static int R_ignore_SIGPIPE; /* for simplicity of the code below */
 #endif

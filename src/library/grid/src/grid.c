@@ -388,7 +388,7 @@ static SEXP childList(SEXP children)
 /*
 find.in.children <- function(name, children) {
   cpvps <- ls(env=children)
-  ncpvp <- length(cpvps)
+  ncpvp <- Rf_length(cpvps)
   count <- 0
   found <- FALSE
   while (count < ncpvp && !found) {
@@ -437,7 +437,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
 /*
 find.viewport <- function(name, pvp) {
   found <- FALSE
-  if (length(ls(env=pvp$children)) == 0)
+  if (Rf_length(ls(env=pvp$children)) == 0)
     return(list(found=FALSE, pvp=NULL))
   else 
     if (exists(name, env=pvp$children, inherits=FALSE)) 

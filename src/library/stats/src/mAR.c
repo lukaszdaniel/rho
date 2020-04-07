@@ -33,6 +33,11 @@
  *  https://www.R-project.org/Licenses/.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <Defn.h> //for streql()
 #include <math.h>
 #include <string.h>
 #include <R.h>
@@ -983,7 +988,7 @@ static void whittle2 (Array acf, Array Aold, Array Bold, int lag,
     const void *vmax;
     Array beta, tmp, id;
 
-    d = strcmp(direction, "forward") == 0;
+    d = streql(direction, "forward");
 
     vmax = vmaxget();
 

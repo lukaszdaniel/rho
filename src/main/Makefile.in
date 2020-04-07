@@ -298,7 +298,7 @@ distclean: clean
 maintainer-clean: distclean
 	@$(ECHO) "This command is intended for maintainers to use; it"
 	@$(ECHO) "deletes files that may need special rules to rebuild"
-	@-rm -f $(srcdir)/gram.cpp $(srcdir)/gramLatex.c $(srcdir)/gramRd.cpp
+	@-rm -f $(srcdir)/gram.cpp $(srcdir)/gramLatex.cpp $(srcdir)/gramRd.cpp
 
 tags: TAGS
 TAGS: $(SOURCES) $(EXTRA_SOURCES_CXX) $(HEADERS)

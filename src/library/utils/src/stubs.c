@@ -21,7 +21,7 @@
 #include <config.h>
 #endif
 
-#include <Defn.h> /* for checkArity */
+#include <Defn.h> /* for checkArity, streql() */
 #include <Internal.h>
 
 #include "localization.h"
@@ -146,7 +146,7 @@ static void R_de_Init(void)
     if(de_init < 0) error(_("X11 dataentry cannot be loaded"));
 
     de_init = -1;
-    if(strcmp(R_GUIType, "none") == 0) {
+    if(streql(R_GUIType, "none")) {
 	warning(_("X11 is not available"));
 	return;
     }

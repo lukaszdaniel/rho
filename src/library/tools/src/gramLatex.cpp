@@ -63,7 +63,16 @@
 #define YYPULL 1
 
 
+/* Substitute the variable and function names.  */
+#define yyparse         gramLatex_parse
+#define yylex           gramLatex_lex
+#define yyerror         gramLatex_error
+#define yydebug         gramLatex_debug
+#define yynerrs         gramLatex_nerrs
 
+#define yylval          gramLatex_lval
+#define yychar          gramLatex_char
+#define yylloc          gramLatex_lloc
 
 /* First part of user prologue.  */
 #line 2 "./gramLatex.y"
@@ -107,7 +116,7 @@
 /* bison creates a non-static symbol yylloc in both gramLatex.o and gramRd.o,
    so remap */
 
-#define yylloc yyllocL
+//#define yylloc yyllocL
 
 #define DEBUGVALS 0		/* 1 causes detailed internal state output to R console */	
 #define DEBUGMODE 0		/* 1 causes Bison output of parse state, to stdout or stderr */
@@ -212,7 +221,7 @@ static int      mkVerbEnv();
 #define YYSTYPE		SEXP
 
 
-#line 216 "y.tab.c"
+#line 225 "y.tab.c"
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
@@ -240,7 +249,7 @@ static int      mkVerbEnv();
 # define YYDEBUG 0
 #endif
 #if YYDEBUG
-extern int yydebug;
+extern int gramLatex_debug;
 #endif
 
 /* Token type.  */
@@ -290,9 +299,9 @@ struct YYLTYPE
 #endif
 
 
-extern YYSTYPE yylval;
-extern YYLTYPE yylloc;
-int yyparse (void);
+extern YYSTYPE gramLatex_lval;
+extern YYLTYPE gramLatex_lloc;
+int gramLatex_parse (void);
 
 
 
@@ -1212,31 +1221,31 @@ yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep, YYLTYPE *yylocatio
     case 5: /* MACRO  */
 #line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1216 "y.tab.c"
+#line 1225 "y.tab.c"
         break;
 
     case 6: /* TEXT  */
 #line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1222 "y.tab.c"
+#line 1231 "y.tab.c"
         break;
 
     case 7: /* COMMENT  */
 #line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1228 "y.tab.c"
+#line 1237 "y.tab.c"
         break;
 
     case 8: /* BEGIN  */
 #line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1234 "y.tab.c"
+#line 1243 "y.tab.c"
         break;
 
     case 9: /* END  */
 #line 159 "./gramLatex.y"
       { UNPROTECT_PTR((*yyvaluep)); }
-#line 1240 "y.tab.c"
+#line 1249 "y.tab.c"
         break;
 
       default:
@@ -1528,126 +1537,126 @@ yyreduce:
   case 2:
 #line 163 "./gramLatex.y"
     { xxsavevalue(yyvsp[-1], &(yyloc)); YYACCEPT; }
-#line 1532 "y.tab.c"
+#line 1541 "y.tab.c"
     break;
 
   case 3:
 #line 164 "./gramLatex.y"
     { xxsavevalue(NULL, &(yyloc)); YYACCEPT; }
-#line 1538 "y.tab.c"
+#line 1547 "y.tab.c"
     break;
 
   case 4:
 #line 165 "./gramLatex.y"
     { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
-#line 1544 "y.tab.c"
+#line 1553 "y.tab.c"
     break;
 
   case 5:
 #line 168 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1550 "y.tab.c"
+#line 1559 "y.tab.c"
     break;
 
   case 6:
 #line 169 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1556 "y.tab.c"
+#line 1565 "y.tab.c"
     break;
 
   case 7:
 #line 170 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1562 "y.tab.c"
+#line 1571 "y.tab.c"
     break;
 
   case 8:
 #line 171 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1568 "y.tab.c"
+#line 1577 "y.tab.c"
     break;
 
   case 9:
 #line 173 "./gramLatex.y"
     { yyval = xxnewlist(yyvsp[0]); }
-#line 1574 "y.tab.c"
+#line 1583 "y.tab.c"
     break;
 
   case 10:
 #line 174 "./gramLatex.y"
     { yyval = xxlist(yyvsp[-1], yyvsp[0]); }
-#line 1580 "y.tab.c"
+#line 1589 "y.tab.c"
     break;
 
   case 11:
 #line 176 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], TEXT, &(yyloc)); }
-#line 1586 "y.tab.c"
+#line 1595 "y.tab.c"
     break;
 
   case 12:
 #line 177 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], COMMENT, &(yyloc)); }
-#line 1592 "y.tab.c"
+#line 1601 "y.tab.c"
     break;
 
   case 13:
 #line 178 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], MACRO, &(yyloc)); }
-#line 1598 "y.tab.c"
+#line 1607 "y.tab.c"
     break;
 
   case 14:
 #line 179 "./gramLatex.y"
     { yyval = xxtag(yyvsp[0], VERB, &(yyloc)); }
-#line 1604 "y.tab.c"
+#line 1613 "y.tab.c"
     break;
 
   case 15:
 #line 180 "./gramLatex.y"
     { yyval = yyvsp[0]; }
-#line 1610 "y.tab.c"
+#line 1619 "y.tab.c"
     break;
 
   case 16:
 #line 181 "./gramLatex.y"
     { yyval = yyvsp[0]; }
-#line 1616 "y.tab.c"
+#line 1625 "y.tab.c"
     break;
 
   case 17:
 #line 183 "./gramLatex.y"
     { xxSetInVerbEnv(yyvsp[-1]); }
-#line 1622 "y.tab.c"
+#line 1631 "y.tab.c"
     break;
 
   case 18:
 #line 184 "./gramLatex.y"
     { yyval = xxenv(yyvsp[-7], yyvsp[-4], yyvsp[-1], &(yyloc));
                                                   UNPROTECT_PTR(yyvsp[-9]); UNPROTECT_PTR(yyvsp[-3]); }
-#line 1629 "y.tab.c"
+#line 1638 "y.tab.c"
     break;
 
   case 19:
 #line 187 "./gramLatex.y"
     { yyval = xxmath(yyvsp[-1], &(yyloc)); }
-#line 1635 "y.tab.c"
+#line 1644 "y.tab.c"
     break;
 
   case 20:
 #line 189 "./gramLatex.y"
     { yyval = xxblock(yyvsp[-1], &(yyloc)); }
-#line 1641 "y.tab.c"
+#line 1650 "y.tab.c"
     break;
 
   case 21:
 #line 190 "./gramLatex.y"
     { yyval = xxblock(NULL, &(yyloc)); }
-#line 1647 "y.tab.c"
+#line 1656 "y.tab.c"
     break;
 
 
-#line 1651 "y.tab.c"
+#line 1660 "y.tab.c"
 
       default: break;
     }
@@ -1989,7 +1998,7 @@ static int VerbatimLookup(const char *s)
 {
     int i;
     for (i = 0; i < Rf_length(parseState.xxVerbatimList); i++) {
-    	if (strcmp(s, R_CHAR(STRING_ELT(parseState.xxVerbatimList, i))) == 0)
+    	if (streql(s, R_CHAR(STRING_ELT(parseState.xxVerbatimList, i))))
     	    return TRUE;
     }
     return FALSE;
@@ -2257,7 +2266,7 @@ SEXP R_ParseLatex(SEXP text, ParseStatus *status, SEXP srcfile)
 /* Section and R code headers */
 
 struct {
-    char *name;
+    const char *name;
     int token;
 }
 static keywords[] = {
@@ -2277,7 +2286,7 @@ static int KeywordLookup(const char *s)
 {
     int i;
     for (i = 0; keywords[i].name; i++) {
-	if (strcmp(keywords[i].name, s) == 0) 
+	if (streql(keywords[i].name, s)) 
 	    return keywords[i].token;
     }
     return MACRO;
@@ -2311,7 +2320,7 @@ static void yyerror(const char *s)
     if (streqln(s, yyunexpected, sizeof yyunexpected -1)) {
 	int i, translated = FALSE;
     	/* Edit the error message */    
-    	expecting = strstr(s + sizeof yyunexpected -1, yyexpecting);
+    	expecting = const_cast<char *>(strstr(s + sizeof yyunexpected -1, yyexpecting));
     	if (expecting) *expecting = '\0';
     	for (i = 0; yytname_translations[i]; i += 2) {
     	    if (streql(s + sizeof yyunexpected - 1, yytname_translations[i])) {
@@ -2380,7 +2389,7 @@ static void yyerror(const char *s)
 	if (nc >= nstext - 1) {             \
 	    char *old = stext;              \
             nstext *= 2;                    \
-	    stext = malloc(nstext);         \
+	    stext = static_cast<char *>(malloc(nstext));         \
 	    if(!stext) Rf_error(_("unable to allocate buffer for long string at line %d"), parseState.xxlineno);\
 	    memmove(stext, old, nc);        \
 	    if(old != st0) free(old);	    \
@@ -2575,7 +2584,7 @@ static int yylex(void)
 
 static void PushState() {
     if (busy) {
-    	ParseState *prev = malloc(sizeof(ParseState));
+    	ParseState *prev = static_cast<ParseState *>(malloc(sizeof(ParseState)));
     	PutState(prev);
     	parseState.prevState = prev;
     } else 
@@ -2597,7 +2606,7 @@ static void PopState() {
  .External2("parseLatex", file, srcfile, verbose, basename, warningCalls)
  If there is text then that is read and the other arguments are ignored.
 */
-
+extern "C"
 SEXP parseLatex(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     args = CDR(args);

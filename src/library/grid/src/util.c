@@ -18,6 +18,11 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <Defn.h> //for streql()
 #include "grid.h"
 #include <string.h>
 
@@ -31,7 +36,7 @@ SEXP getListElement(SEXP list, char *str)
   int i;
 
   for (i = 0; i < Rf_length(list); i++)
-    if(strcmp(CHAR(STRING_ELT(names, i)), str) == 0) {
+    if(streql(CHAR(STRING_ELT(names, i)), str)) {
       elmt = VECTOR_ELT(list, i);
       break;
     }
@@ -44,7 +49,7 @@ void setListElement(SEXP list, char *str, SEXP value)
   int i;
 
   for (i = 0; i < Rf_length(list); i++)
-    if(strcmp(CHAR(STRING_ELT(names, i)), str) == 0) {
+    if(streql(CHAR(STRING_ELT(names, i)), str)) {
       SET_VECTOR_ELT(list, i, value);
       break;
     }

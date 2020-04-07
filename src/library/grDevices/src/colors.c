@@ -1373,7 +1373,7 @@ static rcolor rgb2col(const char *rgb)
 static rcolor name2col(const char *nm)
 {
     int i;
-    if(strcmp(nm, "NA") == 0 || strcmp(nm, "transparent") == 0)
+    if(streql(nm, "NA") || streql(nm, "transparent"))
 	/*
 	 * Paul 01/07/04 (2004-07-01?)
 	 *

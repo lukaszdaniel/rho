@@ -428,21 +428,21 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
 	SEXP names = getAttrib(s, R_NamesSymbol);
 	int i, done;
 	for (i = 0, done = 0; (done<  4) && (i < Rf_length(s)) ; i++) {
-	    if(!strcmp("family", CHAR(STRING_ELT(names, i)))) {
+	    if(streql("family", CHAR(STRING_ELT(names, i)))) {
 		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
-	    if(!strcmp("paper", CHAR(STRING_ELT(names, i)))) {
+	    if(streql("paper", CHAR(STRING_ELT(names, i)))) {
 		strncpy(paper, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 		if(strcmp("paper", "default") == 0)
 		    strncpy(paper, "special", 255);
 	    }
-	    if(!strcmp("bg", CHAR(STRING_ELT(names, i)))) {
+	    if(streql("bg", CHAR(STRING_ELT(names, i)))) {
 		strncpy(bg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
-	    if(!strcmp("fg", CHAR(STRING_ELT(names, i)))) {
+	    if(streql("fg", CHAR(STRING_ELT(names, i)))) {
 		strncpy(fg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
@@ -495,13 +495,13 @@ static void SaveAsPDF(pDevDesc dd, const char *fn)
     if ((s != R_UnboundValue) && (s != R_NilValue)) {
 	SEXP names = getAttrib(s, R_NamesSymbol);
 	for (int i = 0; i < Rf_length(s) ; i++) {
-	    if(!strcmp("family", CHAR(STRING_ELT(names, i))))
+	    if(streql("family", CHAR(STRING_ELT(names, i))))
 		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)),255);
-	    if(!strcmp("bg", CHAR(STRING_ELT(names, i))))
+	    if(streql("bg", CHAR(STRING_ELT(names, i))))
 		strncpy(bg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
-	    if(!strcmp("fg", CHAR(STRING_ELT(names, i))))
+	    if(streql("fg", CHAR(STRING_ELT(names, i))))
 		strncpy(fg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
-	    if(!strcmp("compress", CHAR(STRING_ELT(names, i))))
+	    if(streql("compress", CHAR(STRING_ELT(names, i))))
 		useCompression = LOGICAL(VECTOR_ELT(s, i))[0] != 0;
 	}
     }
@@ -584,13 +584,13 @@ static void RFontInit()
 	    if (!fontname[fontnum])
 		strcpy(oops, "Insufficient memory. ");
 	    else {
-		if (!strcmpi(opt[1], "plain"))
+		if (streqli(opt[1], "plain"))
 		    fontstyle[fontnum] = Plain;
-		else if (!strcmpi(opt[1], "bold"))
+		else if (streqli(opt[1], "bold"))
 		    fontstyle[fontnum] = Bold;
-		else if (!strcmpi(opt[1], "italic"))
+		else if (streqli(opt[1], "italic"))
 		    fontstyle[fontnum] = Italic;
-		else if (!strcmpi(opt[1], "bold&italic"))
+		else if (streqli(opt[1], "bold&italic"))
 		    fontstyle[fontnum] = BoldItalic;
 		else
 		    snprintf(oops, 256, "Unknown style at line %d. ", optline());
@@ -652,7 +652,7 @@ static char* translateFontFamily(const char* family) {
 	int found = 0;
 	for (i = 0; i < nfonts && !found; i++) {
 	    const char* fontFamily = CHAR(STRING_ELT(fontnames, i));
-	    if (strcmp(family, fontFamily) == 0) {
+	    if (streql(family, fontFamily)) {
 		found = 1;
 		result = SaveFontSpec(VECTOR_ELT(fontdb, i), 0);
 	    }
@@ -3439,27 +3439,27 @@ SEXP savePlot(SEXP args)
     tp = CHAR(STRING_ELT(type, 0));
     restoreConsole = asLogical(CADDDR(args));
 
-    if(!strcmp(tp, "png")) {
+    if(streql(tp, "png")) {
 	SaveAsPng(dd, fn);
-    } else if (!strcmp(tp,"bmp")) {
+    } else if (streql(tp,"bmp")) {
 	SaveAsBmp(dd,fn);
-    } else if (!strcmp(tp,"tiff")) {
+    } else if (streql(tp,"tiff")) {
 	SaveAsTiff(dd,fn);
-    } else if(!strcmp(tp, "jpeg") || !strcmp(tp,"jpg")) {
+    } else if(streql(tp, "jpeg") || streql(tp,"jpg")) {
       /*Default quality suggested in libjpeg*/
 	SaveAsJpeg(dd, 75, fn);
-    } else if(!strcmp(tp, "tiff") || !strcmp(tp,"tif")) {
+    } else if(streql(tp, "tiff") || streql(tp,"tif")) {
 	SaveAsTiff(dd, fn);
-    } else if (!strcmp(tp, "wmf") || !strcmp(tp, "emf")) {
+    } else if (streql(tp, "wmf") || streql(tp, "emf")) {
 	if(strlen(fn) > 512) {
 	    askok(G_("file path selected is too long: only 512 bytes are allowed"));
 	    return R_NilValue;
 	}
 	snprintf(display, 550, "win.metafile:%s", fn);
 	SaveAsWin(dd, display, restoreConsole);
-    } else if (!strcmp(tp, "ps") || !strcmp(tp, "eps")) {
+    } else if (streql(tp, "ps") || streql(tp, "eps")) {
 	SaveAsPostscript(dd, fn);
-    } else if (!strcmp(tp, "pdf")) {
+    } else if (streql(tp, "pdf")) {
 	SaveAsPDF(dd, fn);
     } else
 	error(_("unknown type in savePlot"));

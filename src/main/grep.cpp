@@ -59,7 +59,6 @@ strsplit grep [g]sub [g]regexpr
 # include <config.h>
 #endif
 
-using namespace std;
 
 /* interval at which to check interrupts */
 #define NINTERRUPT 1000000
@@ -86,6 +85,8 @@ using namespace std;
 #else
 # include <pcre.h>
 #endif
+
+using namespace std;
 
 /* 
    Default maximum stack size: note this is reserved but not allocated
@@ -2132,7 +2133,7 @@ static SEXP
 gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC,
 		R_xlen_t i)
 {
-    int matchIndex = -1, j, st, foundAll = 0, foundAny = 0, rc;
+    int matchIndex = -1, j, st, foundAll = 0, foundAny = 0, rc = 0;
     size_t len, offset = 0;
     regmatch_t regmatch[10];
     SEXP ans, matchlen;         /* Return vect and its attribute */

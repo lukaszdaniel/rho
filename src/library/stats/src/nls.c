@@ -24,6 +24,11 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <Defn.h> //for streql()
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -50,7 +55,7 @@ getListElement(SEXP list, SEXP names, const char *str)
 
     for (i = 0; i < Rf_length(list); i++) {
 	tempChar = CHAR(STRING_ELT(names, i)); /* ASCII only */
-	if( strcmp(tempChar,str) == 0) {
+	if( streql(tempChar,str)) {
 	    elmt = VECTOR_ELT(list, i);
 	    break;
 	}

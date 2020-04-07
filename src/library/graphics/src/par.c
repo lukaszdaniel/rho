@@ -151,7 +151,7 @@ static int ParCode(const char *what)
 {
     int i;
     for (i = 0; ParTable[i].name; i++)
-	if (!strcmp(what, ParTable[i].name)) return ParTable[i].code;
+	if (streql(what, ParTable[i].name)) return ParTable[i].code;
     return -1;
 }
 

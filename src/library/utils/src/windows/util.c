@@ -417,11 +417,11 @@ SEXP setStatusBar(SEXP text)
 static void * getConsoleHandle(const char *which)
 {
     if (CharacterMode != RGui) return(NULL);
-    else if (strcmp(which, "Console") == 0 && RConsole)
+    else if (streql(which, "Console") && RConsole)
 	return getHandle(RConsole);
-    else if (strcmp(which, "Frame") == 0 && RFrame)
+    else if (streql(which, "Frame") && RFrame)
 	return getHandle(RFrame);
-    else if (strcmp(which, "Process") == 0)
+    else if (streql(which, "Process"))
 	return GetCurrentProcess();
     else return NULL;
 }
@@ -498,7 +498,7 @@ SEXP getWindowsHandles(SEXP which, SEXP minimized)
     w = CHAR(STRING_ELT(which, 0));
     EnumMinimized = asLogical(minimized);
 
-    if (strcmp(w, "R") == 0) EnumProcessId = GetCurrentProcessId();
+    if (streql(w, "R")) EnumProcessId = GetCurrentProcessId();
     else EnumProcessId = 0;
 
     if (ismdi() && EnumProcessId) 

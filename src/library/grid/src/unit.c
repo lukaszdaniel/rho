@@ -18,6 +18,11 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <Defn.h> //for streql()
 #include "grid.h"
 #include "localization.h"
 #include <math.h>
@@ -104,7 +109,7 @@ SEXP arg2(SEXP ua) {
 }
 
 int fNameMatch(SEXP ua, char *aString) {
-    return !strcmp(fName(ua), aString);
+    return streql(fName(ua), aString);
 }
 
 int addOp(SEXP ua) {
@@ -1884,7 +1889,7 @@ int convertUnit(SEXP unit, int index)
 	if (UnitTable[i].name == NULL) 
 	    result = -1;
 	else {
-	    found = !strcmp(CHAR(STRING_ELT(unit, index)), UnitTable[i].name);
+	    found = streql(CHAR(STRING_ELT(unit, index)), UnitTable[i].name);
 	    if (found) {
 		result = UnitTable[i].code;
                 /* resolve pseudonyms */

@@ -131,6 +131,23 @@ static R_INLINE std::complex<double> R_cpow_n(std::complex<double> X, int k)
   (C1x's CMPLX will eventually be possible.)
 */
 
+//In Rho, these are always true (irregardless of R_C99_COMPLEX output)
+#define HAVE_CPOW 1
+#define HAVE_CABS 1
+#define HAVE_CARG 1
+#define HAVE_CLOG 1
+#define HAVE_CSQRT 1
+#define HAVE_CEXP 1
+#define HAVE_CCOS 1
+#define HAVE_CSIN 1
+#define HAVE_CTAN 1
+#define HAVE_CASIN 1
+#define HAVE_CACOS 1
+#define HAVE_CATAN 1
+#define HAVE_CCOSH 1
+#define HAVE_CSINH 1
+#define HAVE_CTANH 1
+
 static std::complex<double> mycpow (std::complex<double> X, std::complex<double> Y)
 {
     std::complex<double> Z;
@@ -265,7 +282,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	case 6:	/* abs */
 	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
-#if HAVE_CABS
+#ifdef HAVE_CABS
 		REAL(y)[i] = std::abs(C99_COMPLEX2(x, i));
 #else
 		REAL(y)[i] = hypot(COMPLEX(x)[i].r, COMPLEX(x)[i].i);
@@ -274,7 +291,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	case 4:	/* Arg */
 	    y = Rf_allocVector(REALSXP, n);
 	    for(i = 0 ; i < n ; i++)
-#if HAVE_CARG
+#ifdef HAVE_CARG
 		REAL(y)[i] = std::arg(C99_COMPLEX2(x, i));
 #else
 		REAL(y)[i] = atan2(COMPLEX(x)[i].i, COMPLEX(x)[i].r);

@@ -52,7 +52,7 @@ Rboolean isNAcol(SEXP col, int index, int ncol)
 	if (isLogical(col))
 	    result = LOGICAL(col)[index % ncol] == NA_LOGICAL;
 	else if (isString(col))
-	    result = strcmp(CHAR(STRING_ELT(col, index % ncol)), "NA") == 0;
+	    result = streql(CHAR(STRING_ELT(col, index % ncol)), "NA");
 	else if (isInteger(col))
 	    result = INTEGER(col)[index % ncol] == NA_INTEGER;
 	else if (isReal(col))
@@ -81,7 +81,7 @@ static SEXP getInlinePar(SEXP s, char *name)
 		    found = 1;
 	    } else
 		if (TAG(s) != R_NilValue)
-		    if (!strcmp(CHAR(PRINTNAME(TAG(s))), name)) {
+		    if (streql(CHAR(PRINTNAME(TAG(s))), name)) {
 			result = CAR(s);
 			found = 1;
 		    }
@@ -369,20 +369,20 @@ GetTextArg(SEXP spec, SEXP *ptxt, rcolor *pcol, double *pcex, int *pfont)
 	    } else {
 	       n = Rf_length(nms);
 	       for (i = 0; i < n; i++) {
-		if (!strcmp(CHAR(STRING_ELT(nms, i)), "cex")) {
+		if (streql(CHAR(STRING_ELT(nms, i)), "cex")) {
 		    cex = asReal(VECTOR_ELT(spec, i));
 		}
-		else if (!strcmp(CHAR(STRING_ELT(nms, i)), "col")) {
+		else if (streql(CHAR(STRING_ELT(nms, i)), "col")) {
 		    SEXP colsxp = VECTOR_ELT(spec, i);
 		    if (!isNAcol(colsxp, 0, LENGTH(colsxp))) {
 			col = asInteger(FixupCol(colsxp, R_TRANWHITE));
 			colspecd = 1;
 		    }
 		}
-		else if (!strcmp(CHAR(STRING_ELT(nms, i)), "font")) {
+		else if (streql(CHAR(STRING_ELT(nms, i)), "font")) {
 		    font = asInteger(FixupFont(VECTOR_ELT(spec, i), NA_INTEGER));
 		}
-		else if (!strcmp(CHAR(STRING_ELT(nms, i)), "")) {
+		else if (streql(CHAR(STRING_ELT(nms, i)), "")) {
 		    txt = VECTOR_ELT(spec, i);
 		    if (TYPEOF(txt) == LANGSXP || TYPEOF(txt) == SYMSXP)
 			REPROTECT(txt = coerceVector(txt, EXPRSXP), pi);

@@ -21,7 +21,12 @@
    match length is in now in chars.
 */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <string.h>
+#include <Defn.h> //for streql()
 #include <R.h>
 #include "tools.h"
 #include "localization.h"
@@ -70,7 +75,7 @@ delim_match(SEXP x, SEXP delims)
     delim_start = translateChar(STRING_ELT(delims, 0));
     delim_end = translateChar(STRING_ELT(delims, 1));
     lstart = (int) strlen(delim_start); lend = (int) strlen(delim_end);
-    equal_start_and_end_delims = strcmp(delim_start, delim_end) == 0;
+    equal_start_and_end_delims = streql(delim_start, delim_end);
 
     n = Rf_length(x);
     PROTECT(ans = allocVector(INTSXP, n));

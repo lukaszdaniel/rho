@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-01 r17af45468a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-07 r9828faa63b) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-07-08 r72903) -- "Frisbee Sailing"
+R Under development (unstable) (2017-09-01 r73180) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -709,4 +709,4 @@ Warning in command 'nls(y ~ b0[fac] + b1 * x, start = list(b0 = c(1, 1), b1 = 10
 > 
 > proc.time()
    user  system elapsed 
-  1.953   0.024   1.969 
+  1.945   0.039   1.977 

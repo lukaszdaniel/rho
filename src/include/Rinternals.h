@@ -1119,7 +1119,7 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 SEXP	 Rf_lcons(SEXP cr, SEXP tl);
 Rboolean Rf_isVector(SEXP);
 
-#if defined(CALLED_FROM_DEFN_H) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) ))
+#if (defined(CALLED_FROM_DEFN_H) || defined(COMPILING_RHO)) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) ))
 #include "Rinlinedfuns.h"
 #else
 /* need remapped names here for use with R_NO_REMAP */

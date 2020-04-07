@@ -27,6 +27,6 @@
 #include <config.h>
 #endif
 
-#define COMPILING_R 1 /* for Rinlinedfuns.h included via Defn.h */
+#define COMPILING_R 1 /* for Rinlinedfuns.h included via Defn.h->Rinternals->Rinlinedfuns.h */
 #include <Defn.h>
 #undef COMPILING_R

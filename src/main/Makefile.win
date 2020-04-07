@@ -8,7 +8,7 @@ all: makeMakedeps libmain.a
 ## there are headers and include files in this directory
 CPPFLAGS = -I. -I../include -DHAVE_CONFIG_H -DR_DLL_BUILD $(arch_DEFS)
 
-SOURCES_C = inlined.c
+SOURCES_C = 
 
 SOURCES_CXX = \
 	AllocationTable.cpp AllocatorSuperblock.cpp allocstats.cpp \
@@ -47,7 +47,7 @@ SOURCES_CXX = \
 	edit.cpp engine.cpp envir.cpp errors.cpp eval.cpp \
 	format.cpp \
 	gevents.cpp gram-ex.cpp gram.cpp graphics.cpp grep.cpp \
-	identical.cpp internet.cpp iosupport.cpp \
+	identical.cpp inlined.cpp internet.cpp iosupport.cpp \
 	lapack.cpp list.cpp localecharset.cpp logic.cpp \
 	main.cpp mapply.cpp match.cpp memory.cpp mkdtemp.cpp\
 	names.cpp \

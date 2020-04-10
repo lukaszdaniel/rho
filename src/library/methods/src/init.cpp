@@ -56,6 +56,7 @@ static const R_CallMethodDef CallEntries[] = {
     {NULL, NULL, 0}
 };
 
+extern "C"
 void attribute_visible
 R_init_methods(DllInfo *dll)
 {

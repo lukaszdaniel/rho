@@ -24,6 +24,8 @@
 
 
 #include <R_ext/RS.h>
+
+extern "C" {
 void
 F77_NAME(hclust)(int *n, int *len, int *iopt, int *ia, int *ib,
 		 double *crit, double *membr, int *nn,
@@ -37,7 +39,7 @@ F77_NAME(kmns)(double *a, int *m, int *n, double *c, int *k,
 	       int *ic1, int *ic2, int *nc, double * an1, double *an2,
 	       int *ncp, double *d, int *itran,
 	       int *live, int *iter, double *wss, int *ifault);
-
+}
 
 void rcont2(int *nrow, int *ncol, int *nrowt, int *ncolt, int *ntotal,
 	    double *fact, int *jwork, int *matrix);

@@ -41,12 +41,7 @@
 
 #include <R_ext/Boolean.h>
 #include <R_ext/libextern.h>
-#ifdef  __cplusplus
-extern "C" {
-#else
-/* needed for isnan and isfinite, neither of which are used under C++ */
-# include <math.h>
-#endif
+#include <math.h>
 
 /* implementation of these : ../../main/arithmetic.cpp */
 LibExtern double R_NaN;		/* IEEE NaN */
@@ -61,9 +56,16 @@ LibExtern int	 R_NaInt;	/* NA_INTEGER:= INT_MIN currently */
 #define NA_REAL		R_NaReal
 /* NA_STRING is a SEXP, so defined in Rinternals.h */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int R_IsNA(double);		/* True for R's NA only */
 int R_IsNaN(double);		/* True for special NaN, *not* for NA */
 int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
+#ifdef __cplusplus
+}
+#endif
+
 #define ISNA(x)	       R_IsNA(x)
 
 /* ISNAN(): True for *both* NA and NaN.
@@ -85,10 +87,6 @@ int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
 # define R_FINITE(x)    isfinite(x)
 #else
 # define R_FINITE(x)    R_finite(x)
-#endif
-
-#ifdef  __cplusplus
-}
 #endif
 
 #endif /* R_ARITH_H_ */

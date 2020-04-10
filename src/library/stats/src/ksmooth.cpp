@@ -59,11 +59,13 @@ static void BDRksmooth(double *x, double *y, R_xlen_t n,
 
 
 // called only from  spline()  in ./ppr.f
+extern "C"
 void NORET F77_SUB(bdrsplerr)(void)
 {
     error(_("only 2500 rows are allowed for sm.method=\"spline\""));
 }
 
+extern "C"
 void F77_SUB(splineprt)(double* df, double* gcvpen, int* ismethod,
 			      double* lambda, double *edf)
 {
@@ -73,6 +75,7 @@ void F77_SUB(splineprt)(double* df, double* gcvpen, int* ismethod,
 }
 
 // called only from smooth(..., trace=TRUE)  in ./ppr.f :
+extern "C"
 void F77_SUB(smoothprt)(double* span, int* iper, double* var, double* cvar)
 {
     Rprintf("smooth(span=%4g, iper=%+2d) -> (var, cvar) = (%g, %g)\n",

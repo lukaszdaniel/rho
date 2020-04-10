@@ -400,7 +400,7 @@ f2xact(int nrow, int ncol, int *table, int ldtabl,
 	key2[i] = -9999;
     }
 
-    nr_gt_nc =  nrow > ncol;
+    nr_gt_nc =  Rboolean(nrow > ncol);
     /* nco := max(nrow, ncol) : */
     if(nr_gt_nc)
 	nco = nrow;
@@ -512,7 +512,7 @@ f2xact(int nrow, int ncol, int *table, int ldtabl,
     *prt = exp(obs - dro);
     *pre = 0.;
     itop = 0;
-    maybe_chisq = (*expect > 0.);
+    maybe_chisq = Rboolean(*expect > 0.);
 
     /* Initialize pointers for workspace */
     /* f3xact */

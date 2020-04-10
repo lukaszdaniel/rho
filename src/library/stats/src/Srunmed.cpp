@@ -22,7 +22,7 @@
 #include "modreg.h"
 #include "localization.h"
 
-#include "Trunmed.c"
+#include "Trunmed.cpp"
 
 static void Srunmed(double* y, double* smo, R_xlen_t n, int bw,
 		    int end_rule, int debug)

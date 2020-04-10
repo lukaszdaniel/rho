@@ -111,7 +111,7 @@ void F77_SUB(sbart)
     double tol1, tol2;
 
     int i, maxit;
-    Rboolean Fparabol = FALSE, tracing = (*ispar < 0), spar_is_lambda = FALSE;
+    Rboolean Fparabol = FALSE, tracing = Rboolean(*ispar < 0), spar_is_lambda = FALSE;
 
     /* unnecessary initializations to keep  -Wall happy */
     d = 0.; fu = 0.; u = 0.;
@@ -141,7 +141,7 @@ void F77_SUB(sbart)
 			knot, nk,
 			xwy,
 			hs0, hs1, hs2, hs3);
-	spar_is_lambda = (*isetup == 2);
+	spar_is_lambda = Rboolean(*isetup == 2);
 	if(!spar_is_lambda) {
 	    /* Compute ratio :=  tr(X' W X) / tr(SIGMA) */
 	    double t1 = 0., t2 = 0.;

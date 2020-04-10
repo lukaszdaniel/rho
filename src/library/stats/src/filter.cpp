@@ -146,7 +146,7 @@ SEXP acf(SEXP x, SEXP lmax, SEXP sCor)
 	cor = asLogical(sCor);
     x = PROTECT(coerceVector(x, REALSXP));
     SEXP ans = PROTECT(allocVector(REALSXP, (lagmax + 1)*ns*ns));
-    acf0(REAL(x), nx, ns, lagmax, cor, REAL(ans));
+    acf0(REAL(x), nx, ns, lagmax, Rboolean(cor), REAL(ans));
     SEXP d = PROTECT(allocVector(INTSXP, 3));
     INTEGER(d)[0] = lagmax + 1;
     INTEGER(d)[1] = INTEGER(d)[2] = ns;

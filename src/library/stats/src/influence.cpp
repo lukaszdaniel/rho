@@ -22,6 +22,7 @@
 #include "statsR.h"	
 
 #include <R_ext/RS.h>
+extern "C"
 void F77_NAME(lminfl)(double *x, int *ldx, int *n, int *k, int *docoef,
 		      double *qraux, double *resid, double *hat,
 		      double *coef, double *sigma, double *tol);

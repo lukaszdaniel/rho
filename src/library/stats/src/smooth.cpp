@@ -79,7 +79,7 @@ static Rboolean sm_3(double *x, double *y, R_xlen_t n, int end_rule)
     for(i = 1; i < n-1; i++) {
 	j = imed3(x[i-1], x[i], x[i+1]);
 	y[i] = x[i + j];
-	chg = chg || j;
+	chg = Rboolean(chg || j);
     }
 /* [y, chg]  :=  sm_DO_ENDRULE(x, y, end_rule, chg) : */
 #define sm_DO_ENDRULE(y)						\
@@ -94,9 +94,9 @@ static Rboolean sm_3(double *x, double *y, R_xlen_t n, int end_rule)
 									\
     case sm_TUKEY_ENDRULE: /* 2 */					\
 	   y[0] = med3(3*y[1] - 2*y[2], x[0], y[1]);			\
-	   chg = chg || (y[0] != x[0]);					\
+	   chg = Rboolean(chg || (y[0] != x[0]));					\
 	   y[n-1] = med3(y[n-2], x[n-1], 3*y[n-2] - 2*y[n-3]);		\
-	   chg = chg || (y[n-1] != x[n-1]);				\
+	   chg = Rboolean(chg || (y[n-1] != x[n-1]));				\
 	   break;							\
 									\
     default:								\
@@ -172,12 +172,12 @@ static Rboolean sm_split3(double *x, double *y, R_xlen_t n, Rboolean do_ends)
 	    /* at left : */
 	    if(-1 < (j = imed3(x[i ], x[i-1], 3*x[i-1] - 2*x[i-2]))) {
 		y[i]   = /* med3(.) = */ (j == 0)? x[i-1] : 3*x[i-1] - 2*x[i-2];
-		chg = y[i] != x[i];
+		chg = Rboolean(y[i] != x[i]);
 	    }
 	    /* at right : */
 	    if(-1 < (j = imed3(x[i+1], x[i+2], 3*x[i+2] - 2*x[i+3]))) {
 		y[i+1] = /* med3(.) = */ (j == 0)? x[i+2] : 3*x[i+2] - 2*x[i+3];
-		chg = y[i+1] != x[i+1];
+		chg = Rboolean(y[i+1] != x[i+1]);
 	    }
 	}
     if(do_ends && sptest(x, n-3)) {
@@ -234,8 +234,8 @@ static int sm_3RSR(double *x, double *y, double *z, double *w, R_xlen_t n,
     do {
 	iter++;
 	chg = sm_split3(y, z, n, split_ends);
-	ch2 = sm_3R(z, y, w, n, end_rule);
-	chg = chg || ch2;
+	ch2 = Rboolean(sm_3R(z, y, w, n, end_rule));
+	chg = Rboolean(chg || ch2);
 
 	if(!chg) break;
 	if(iter > 2*n) break;/* INF.LOOP stopper */

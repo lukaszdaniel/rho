@@ -98,31 +98,31 @@ SEXP unitData(SEXP unit, int index) {
 /* Accessor functions for unit arithmetic object
  */
 const char* fName(SEXP ua) {
-    return CHAR(STRING_ELT(getListElement(ua, (char *) "fname"), 0));
+    return CHAR(STRING_ELT(getListElement(ua, "fname"), 0));
 }
 
 SEXP arg1(SEXP ua) {
-    return getListElement(ua, (char *) "arg1");
+    return getListElement(ua, "arg1");
 }
 
 SEXP arg2(SEXP ua) {
-    return getListElement(ua, (char *) "arg2");
+    return getListElement(ua, "arg2");
 }
 
-int fNameMatch(SEXP ua, char *aString) {
+int fNameMatch(SEXP ua, const char *aString) {
     return streql(fName(ua), aString);
 }
 
 int addOp(SEXP ua) {
-    return fNameMatch(ua, (char *) "+");
+    return fNameMatch(ua, "+");
 }
 
 int minusOp(SEXP ua) {
-    return fNameMatch(ua, (char *) "-");
+    return fNameMatch(ua, "-");
 }
 
 int timesOp(SEXP ua) {
-    return fNameMatch(ua, (char *) "*");
+    return fNameMatch(ua, "*");
 }
 
 int fOp(SEXP ua) {
@@ -130,15 +130,15 @@ int fOp(SEXP ua) {
 }
 
 int minFunc(SEXP ua) {
-    return fNameMatch(ua, (char *) "min");
+    return fNameMatch(ua, "min");
 }
     
 int maxFunc(SEXP ua) {
-    return fNameMatch(ua, (char *) "max");
+    return fNameMatch(ua, "max");
 }
 
 int sumFunc(SEXP ua) {
-    return fNameMatch(ua, (char *) "sum");
+    return fNameMatch(ua, "sum");
 }
 
 /* Functions in lattice.c should use this to determine the length
@@ -317,15 +317,15 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 						 R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang2(findGrobFn, 
-					     getListElement(grob, (char *) "name")));
+					     getListElement(grob, "name")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		} else {
 		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
 						R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang3(findGrobFn, 
-					     getListElement(grob, (char *) "name"),
+					     getListElement(grob, "name"),
 					     getListElement(savedgrob, 
-							    (char *) "children")));
+							    "children")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
@@ -363,15 +363,15 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 						 R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang2(findGrobFn, 
-					     getListElement(grob, (char *) "name")));
+					     getListElement(grob, "name")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		} else {
 		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
 						R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang3(findGrobFn, 
-					     getListElement(grob, (char *) "name"),
+					     getListElement(grob, "name"),
 					     getListElement(savedgrob, 
-							    (char *) "children")));
+							    "children")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
@@ -520,14 +520,14 @@ double evaluateGrobUnit(double value, SEXP grob,
 	    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 					 R_gridEvalEnv));
 	    PROTECT(R_fcall0 = lang2(findGrobFn, 
-				     getListElement(grob, (char *) "name")));
+				     getListElement(grob, "name")));
 	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
 	} else {
 	    PROTECT(findGrobFn = findFun(install("findGrobinChildren"), 
 					 R_gridEvalEnv));
 	    PROTECT(R_fcall0 = lang3(findGrobFn, 
-				     getListElement(grob, (char *) "name"),
-				     getListElement(savedgrob, (char *) "children")));
+				     getListElement(grob, "name"),
+				     getListElement(savedgrob, "children")));
 	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
 	}
 	/*

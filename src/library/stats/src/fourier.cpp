@@ -181,13 +181,12 @@ SEXP mvfft(SEXP z, SEXP inverse)
     return z;
 }
 
-static Rboolean ok_n(int n, int *f, int nf)
+static bool ok_n(int n, int *f, int nf)
 {
-    int i;
-    for (i = 0; i < nf; i++) {
+    for (int i = 0; i < nf; i++) {
 	while(n % f[i] == 0) {
 	    if ((n = n / f[i]) == 1)
-		return TRUE;
+		return true;
 	}
     }
     return n == 1;

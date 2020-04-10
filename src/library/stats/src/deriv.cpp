@@ -668,7 +668,7 @@ static SEXP D(SEXP expr, SEXP var)
 */
 
 	else {
-	    SEXP u = deparse1(CAR(expr), 0, SIMPLEDEPARSE);
+	    SEXP u = deparse1(CAR(expr), Rboolean(0), SIMPLEDEPARSE);
 	    error(_("Function '%s' is not in the derivatives table"),
 		  translateChar(STRING_ELT(u, 0)));
 	}
@@ -792,7 +792,7 @@ SEXP doD(SEXP args)
 
 /* ------ FindSubexprs ------ and ------ Accumulate ------ */
 
-static void NORET InvalidExpression(char *where)
+static void NORET InvalidExpression(const char *where)
 {
     error(_("invalid expression in '%s'"), where);
 }

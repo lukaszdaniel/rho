@@ -30,7 +30,7 @@ rcont2(int *nrow, int *ncol,
 {
     int j, l, m, ia, ib, ic, jc, id, ie, ii, nll, nlm, nr_1, nc_1;
     double x, y, dummy, sumprb;
-    Rboolean lsm, lsp;
+    bool lsm, lsp;
 
     nr_1 = *nrow - 1;
     nc_1 = *ncol - 1;

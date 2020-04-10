@@ -99,7 +99,7 @@ static void matrix_prod(Array mat1, Array mat2, int trans1, int trans2,
 
 */
 
-static void assert(int condition)
+static void assert_(int condition)
 {
     if(!condition)
 	error(("assert failed in src/library/ts/src/carray.c"));
@@ -140,7 +140,7 @@ static Array make_array(double vec[], int dim[], int ndim)
     int len[MAX_DIM_LENGTH + 1];
     Array a;
 
-    assert(ndim <= MAX_DIM_LENGTH);
+    assert_(ndim <= MAX_DIM_LENGTH);
 
     a = init_array();
 
@@ -237,7 +237,7 @@ static Array subarray(Array a, int index)
     b = init_array();
 
     /* is index in range? */
-    assert( index >= 0 && index < DIM(a)[0] );
+    assert_( index >= 0 && index < DIM(a)[0] );
 
     offset = index;
     switch(DIM_LENGTH(a)) {
@@ -302,9 +302,9 @@ static void transpose_matrix(Array mat, Array ans)
 
     tmp = init_array();
 
-    assert(DIM_LENGTH(mat) == 2 && DIM_LENGTH(ans) == 2);
-    assert(NCOL(mat) == NROW(ans));
-    assert(NROW(mat) == NCOL(ans));
+    assert_(DIM_LENGTH(mat) == 2 && DIM_LENGTH(ans) == 2);
+    assert_(NCOL(mat) == NROW(ans));
+    assert_(NROW(mat) == NCOL(ans));
 
     vmax = vmaxget();
 
@@ -390,7 +390,7 @@ static void matrix_prod(Array mat1, Array mat2, int trans1, int trans2, Array an
     Array tmp;
 
     /* Test whether everything is a matrix */
-    assert(DIM_LENGTH(mat1) == 2 &&
+    assert_(DIM_LENGTH(mat1) == 2 &&
 	   DIM_LENGTH(mat2) == 2 && DIM_LENGTH(ans) == 2);
 
     /* Test whether matrices conform. K is the dimension that is
@@ -466,9 +466,9 @@ static void qr_solve(Array x, Array y, Array coef)
     double tol = 1.0E-7, *qraux, *work;
     Array xt, yt, coeft;
 
-    assert(NROW(x) == NROW(y));
-    assert(NCOL(coef) == NCOL(y));
-    assert(NCOL(x) == NROW(coef));
+    assert_(NROW(x) == NROW(y));
+    assert_(NCOL(coef) == NCOL(y));
+    assert_(NCOL(x) == NROW(coef));
 
     vmax = vmaxget();
 
@@ -511,8 +511,8 @@ static double ldet(Array x)
     double ll, tol = 1.0E-7, *qraux, *work;
     Array xtmp;
 
-    assert(DIM_LENGTH(x) == 2); /* is x a matrix? */
-    assert(NROW(x) == NCOL(x)); /* is x square? */
+    assert_(DIM_LENGTH(x) == 2); /* is x a matrix? */
+    assert_(NROW(x) == NCOL(x)); /* is x square? */
 
     vmax = vmaxget();
 
@@ -880,7 +880,7 @@ void multi_yw(double *acf, int *pn, int *pomax, int *pnser, double *coef,
 static void whittle(Array acf, int nlag, Array *A, Array *B, Array p_forward,
 		    Array v_forward, Array p_back, Array v_back);
 static void whittle2 (Array acf, Array Aold, Array Bold, int lag,
-		      char *direction, Array A, Array K, Array E);
+		      const char *direction, Array A, Array K, Array E);
 
 
 void multi_yw(double *acf, int *pn, int *pomax, int *pnser, double *coef,
@@ -981,7 +981,7 @@ static void whittle(Array acf, int nlag, Array *A, Array *B, Array p_forward,
 }
 
 static void whittle2 (Array acf, Array Aold, Array Bold, int lag,
-		      char *direction, Array A, Array K, Array E)
+		      const char *direction, Array A, Array K, Array E)
 {
 
     int d, i, nser=DIM(acf)[1];

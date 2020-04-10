@@ -145,11 +145,12 @@ void kmeans_MacQueen(double *x, int *pn, int *pp, double *cen, int *pk,
 }
 
 // tracing for  kmeans() in  ./kmns.f
-
+extern "C"
 void F77_SUB(kmns1)(int *k, int *it, int *indx) {
     Rprintf("KMNS(*, k=%d): iter=%3d, indx=%d\n", *k, *it, *indx);
 }
 
+extern "C"
 void F77_SUB(kmnsqpr)(int *istep, int *icoun, int *NCP, int *k, int *trace)
 {
     Rprintf(" QTRAN(): istep=%d, icoun=%d", *istep, *icoun);

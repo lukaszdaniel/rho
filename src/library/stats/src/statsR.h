@@ -17,12 +17,9 @@
  *  https://www.R-project.org/Licenses/
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* auxiliary */
-SEXP getListElement(SEXP list, char *str);
+SEXP getListElement(SEXP list, const char *str);
 
 /* Declarations for .Call entry points */
 
@@ -209,7 +206,3 @@ SEXP d2x2xk(SEXP sK, SEXP sm, SEXP sn, SEXP st, SEXP srn);
 
 SEXP stats_signrank_free(void);
 SEXP stats_wilcox_free(void);
-
-#ifdef __cplusplus
-}
-#endif

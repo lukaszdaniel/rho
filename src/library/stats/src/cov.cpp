@@ -678,7 +678,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
     method = asInteger(na_method);
 
     /* Arg.4:  kendall */
-    kendall = asLogical(skendall);
+    kendall = Rboolean(Rf_asLogical(skendall));
 
     /* "default: complete" (easier for -Wall) */
     na_fail = FALSE; everything = FALSE; empty_err = TRUE;

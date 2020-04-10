@@ -838,7 +838,7 @@ Rboolean doesIdle(pDevDesc dd);
 /* Macros for suspending interrupts */
 #define BEGIN_SUSPEND_INTERRUPTS do { \
     Rboolean __oldsusp__ = R_interrupts_suspended; \
-    R_interrupts_suspended = TRUE;
+    R_interrupts_suspended = (Rboolean) TRUE;
 #define END_SUSPEND_INTERRUPTS R_interrupts_suspended = __oldsusp__; \
     if (R_interrupts_pending && ! R_interrupts_suspended) \
         Rf_onintr(); \

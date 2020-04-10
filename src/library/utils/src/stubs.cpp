@@ -22,10 +22,11 @@
 #endif
 
 #include <Defn.h> /* for checkArity, streql() */
-#include <Internal.h>
+//#include <Internal.h>
 
 #include "localization.h"
 
+SEXP do_edit(SEXP, SEXP, SEXP, SEXP); /* from edit.cpp */
 
 
 #ifdef Win32
@@ -225,7 +226,7 @@ SEXP processevents(void)
     return R_NilValue;
 }
 
-// formerly in src/main/platform.c
+// formerly in src/main/platform.cpp
 SEXP fileedit(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP fn, ti, ed;

@@ -1,4 +1,4 @@
-/* md5.c - Functions to compute MD5 message digest of files or memory blocks
+/* md5.cpp - Functions to compute MD5 message digest of files or memory blocks
    according to the definition of MD5 in RFC 1321 from April 1992.
    Copyright (C) 1995, 1996, 2001 Free Software Foundation, Inc.
    NOTE: The canonical source of this file is maintained with the GNU C
@@ -243,7 +243,7 @@ static void
 md5_process_block (const void *buffer, size_t len, struct md5_ctx *ctx)
 {
   md5_uint32 correct_words[16];
-  const md5_uint32 *words = buffer;
+  const md5_uint32 *words = static_cast<const md5_uint32 *>(buffer);
   size_t nwords = len / sizeof (md5_uint32);
   const md5_uint32 *endp = words + nwords;
   md5_uint32 A = ctx->A;

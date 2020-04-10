@@ -268,7 +268,7 @@ SEXP L_CreateSEXPPtr(SEXP s)
 
 SEXP L_GetSEXPPtr(SEXP sp)
 {
-    SEXP data = R_ExternalPtrAddr(sp);
+    SEXP data = static_cast<SEXP>(R_ExternalPtrAddr(sp));
     /* Check for NULL ptr
      * This can occur if, for example, a grid grob is saved
      * and then loaded.  The saved grob has its ptr null'ed
@@ -280,7 +280,7 @@ SEXP L_GetSEXPPtr(SEXP sp)
 
 SEXP L_SetSEXPPtr(SEXP sp, SEXP s)
 {
-    SEXP data = R_ExternalPtrAddr(sp);
+    SEXP data = static_cast<SEXP>(R_ExternalPtrAddr(sp));
     /* Check for NULL ptr
      * This can occur if, for example, a grid grob is saved
      * and then loaded.  The saved grob has its ptr null'ed

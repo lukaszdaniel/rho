@@ -36,8 +36,8 @@
 
 
 #define TRANSLATE_CHAR(_STR_, _i_)  \
-   ((use_UTF8) ? translateCharUTF8(STRING_ELT(_STR_, _i_))  \
-    : translateChar(STRING_ELT(_STR_, _i_)))
+   ((use_UTF8) ? Rf_translateCharUTF8(STRING_ELT(_STR_, _i_))  \
+    : Rf_translateChar(STRING_ELT(_STR_, _i_)))
 
 SEXP getfmts(SEXP format)
 {
@@ -63,7 +63,7 @@ SEXP getfmts(SEXP format)
     if (nfmt != 1) 
         error(_("'fmt' must be length 1"));
 
-    use_UTF8 = getCharCE(STRING_ELT(format, 0)) == CE_UTF8;
+    use_UTF8 = Rboolean(Rf_getCharCE(STRING_ELT(format, 0)) == CE_UTF8);
     formatString = TRANSLATE_CHAR(format, 0);
     n = strlen(formatString);
     if (n > MAXLINE)

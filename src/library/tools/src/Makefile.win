@@ -11,8 +11,8 @@ top_builddir = ../../../..
 subdir = src/library/$(pkg)/src
 R_HOME = $(top_builddir)
 
-SOURCES_C = text.c init.c Rmd5.c md5.c signals.c install.c getfmts.c http.c
-SOURCES_CXX = gramRd.cpp gramLatex.cpp
+SOURCES_C = 
+SOURCES_CXX = gramRd.cpp gramLatex.cpp text.cpp init.cpp Rmd5.cpp md5.cpp signals.cpp install.cpp getfmts.cpp http.cpp
 
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) ../../../gnuwin32/dllversion.o

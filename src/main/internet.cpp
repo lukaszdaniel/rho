@@ -88,7 +88,6 @@ static void internet_Init(void)
     return;
 }
 
-extern "C"
 SEXP Rdownload(SEXP args)
 {
     if(!initialized) internet_Init();
@@ -187,7 +186,6 @@ void  R_FTPClose(void *ctx)
 	Rf_error(_("internet routines cannot be loaded"));
 }
 
-extern "C"
 int extR_HTTPDCreate(const char *ip, int port)
 {
     if(!initialized) internet_Init();
@@ -198,7 +196,6 @@ int extR_HTTPDCreate(const char *ip, int port)
     return -1;
 }
 
-extern "C"
 void extR_HTTPDStop(void)
 {
     if(!initialized) internet_Init();
@@ -208,7 +205,6 @@ void extR_HTTPDStop(void)
 	Rf_error(_("internet routines cannot be loaded"));
 }
 
-extern "C"
 SEXP Rsockconnect(SEXP sport, SEXP shost)
 {
     if (Rf_length(sport) != 1) Rf_error("invalid 'socket' argument");
@@ -223,7 +219,6 @@ SEXP Rsockconnect(SEXP sport, SEXP shost)
     return Rf_ScalarInteger(port); // The socket number
 }
 
-extern "C"
 SEXP Rsockread(SEXP ssock, SEXP smaxlen)
 {
     if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
@@ -240,7 +235,6 @@ SEXP Rsockread(SEXP ssock, SEXP smaxlen)
     return Rf_ScalarString(Rf_mkCharLen(buf, maxlen));
 }
 
-extern "C"
 SEXP Rsockclose(SEXP ssock)
 {
     if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
@@ -254,7 +248,6 @@ SEXP Rsockclose(SEXP ssock)
     return Rf_ScalarLogical(sock);
 }
 
-extern "C"
 SEXP Rsockopen(SEXP sport)
 {
     if (Rf_length(sport) != 1) Rf_error("invalid 'port' argument");
@@ -267,7 +260,6 @@ SEXP Rsockopen(SEXP sport)
     return Rf_ScalarInteger(port); // The socket number
 }
 
-extern "C"
 SEXP Rsocklisten(SEXP ssock)
 {
     if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");
@@ -286,7 +278,6 @@ SEXP Rsocklisten(SEXP ssock)
     return ans;
 }
 
-extern "C"
 SEXP Rsockwrite(SEXP ssock, SEXP sstring)
 {
     if (Rf_length(ssock) != 1) Rf_error("invalid 'socket' argument");

@@ -300,7 +300,6 @@ static int scanchar(Rboolean inQuote, LocalData *d)
 
 #include "RBufferUtils.h"
 
-extern "C"
 SEXP countfields(SEXP args)
 {
     SEXP ans, file, sep,  bns, quotes, comstr;
@@ -541,7 +540,6 @@ static void ruleout_types(const char *s, Typecvt_Info *typeInfo, LocalData *data
    the result is a character string if as.is == TRUE
    or a factor if as.is == FALSE. */
 
-extern "C"
 SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP cvec, a, dup, levs, dims, names, dec, numerals;
@@ -751,7 +749,6 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
 
 /* Works with digits, but OK in UTF-8 */
-extern "C"
 SEXP menu(SEXP choices)
 {
     int c, j;
@@ -794,7 +791,6 @@ SEXP menu(SEXP choices)
 /* simplified version of readLines, with skip of blank lines and
    comment-only lines */
 #define BUF_SIZE 1000
-extern "C"
 SEXP readtablehead(SEXP args)
 {
     SEXP file, comstr, ans = R_NilValue, ans2, quotes, sep;
@@ -1037,7 +1033,6 @@ static void wt_cleanup(wt_info* ld)
     R_print.digits = ld->savedigits;
 }
 
-extern "C"
 SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP x, sep, rnames, eol, na, dec, quote, xj;

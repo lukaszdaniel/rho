@@ -920,7 +920,7 @@ static SEXP Query(const char *what, pGEDevDesc dd)
     }
     else if (streql(what, "page")) {
         /* This calculation mimics the decision-making in GNewPlot()
-         * in graphics.c SO it MUST be kept in synch with the logic there
+         * in graphics.cpp SO it MUST be kept in synch with the logic there
          */
         value = allocVector(LGLSXP, 1);
         LOGICAL(value)[0] = 0;

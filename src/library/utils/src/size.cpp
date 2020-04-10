@@ -46,7 +46,7 @@ using namespace rho;
       and all the nodes specifically due to it, but not for the
       space for its name nor for .Internals it references.
 */
-SEXP Rf_csduplicated(SEXP x);  /* from unique.c */
+SEXP Rf_csduplicated(SEXP x);  /* from unique.cpp */
 
 static R_size_t objectsize(SEXP s)
 {
@@ -158,7 +158,6 @@ static R_size_t objectsize(SEXP s)
     return(cnt);
 }
 
-extern "C"
 SEXP objectSize(SEXP x)
 {
     return Rf_ScalarReal(double(objectsize(x)) );

@@ -101,6 +101,7 @@ static void chmod_one(const char *name, const int grpwrt)
    'gwsxp' means set group-write permissions on directories.
    NB: this overrides umask. */
 /* This is a .Call so manages R_alloc stack */
+extern "C"
 SEXP dirchmod(SEXP dr, SEXP gwsxp)
 {
     if(!isString(dr) || LENGTH(dr) != 1)

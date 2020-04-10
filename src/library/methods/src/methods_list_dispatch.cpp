@@ -666,7 +666,7 @@ SEXP R_M_setPrimitiveMethods(SEXP fname, SEXP op, SEXP code_vec,
 			     SEXP fundef, SEXP mlist)
 {
     return R_set_prim_method(fname, op, code_vec, fundef, mlist);
-    // -> ../../../main/objects.c
+    // -> ../../../main/objects.cpp
 }
 
 SEXP R_nextMethodCall(SEXP matched_call, SEXP ev)

@@ -1778,7 +1778,6 @@ static void PopState() {
  If there is text then that is read and the other arguments are ignored.
 */
 
-extern "C"
 SEXP parseRd(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     args = CDR(args);
@@ -1844,7 +1843,6 @@ SEXP parseRd(SEXP call, SEXP op, SEXP args, SEXP env)
  .External2(C_deparseRd, element, state)
 */
 
-extern "C"
 SEXP deparseRd(SEXP e, SEXP state)
 {
     SEXP result;

@@ -28,6 +28,7 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include <algorithm>
 
 int isUnitArithmetic(SEXP ua) {
     return inherits(ua, "unit.arithmetic");
@@ -97,15 +98,15 @@ SEXP unitData(SEXP unit, int index) {
 /* Accessor functions for unit arithmetic object
  */
 const char* fName(SEXP ua) {
-    return CHAR(STRING_ELT(getListElement(ua, "fname"), 0));
+    return CHAR(STRING_ELT(getListElement(ua, (char *) "fname"), 0));
 }
 
 SEXP arg1(SEXP ua) {
-    return getListElement(ua, "arg1");
+    return getListElement(ua, (char *) "arg1");
 }
 
 SEXP arg2(SEXP ua) {
-    return getListElement(ua, "arg2");
+    return getListElement(ua, (char *) "arg2");
 }
 
 int fNameMatch(SEXP ua, char *aString) {
@@ -113,15 +114,15 @@ int fNameMatch(SEXP ua, char *aString) {
 }
 
 int addOp(SEXP ua) {
-    return fNameMatch(ua, "+");
+    return fNameMatch(ua, (char *) "+");
 }
 
 int minusOp(SEXP ua) {
-    return fNameMatch(ua, "-");
+    return fNameMatch(ua, (char *) "-");
 }
 
 int timesOp(SEXP ua) {
-    return fNameMatch(ua, "*");
+    return fNameMatch(ua, (char *) "*");
 }
 
 int fOp(SEXP ua) {
@@ -129,15 +130,15 @@ int fOp(SEXP ua) {
 }
 
 int minFunc(SEXP ua) {
-    return fNameMatch(ua, "min");
+    return fNameMatch(ua, (char *) "min");
 }
     
 int maxFunc(SEXP ua) {
-    return fNameMatch(ua, "max");
+    return fNameMatch(ua, (char *) "max");
 }
 
 int sumFunc(SEXP ua) {
-    return fNameMatch(ua, "sum");
+    return fNameMatch(ua, (char *) "sum");
 }
 
 /* Functions in lattice.c should use this to determine the length
@@ -156,11 +157,11 @@ int unitLength(SEXP u)
 		 */
 		int n1 = LENGTH(arg1(u));
 		int n2 = unitLength(arg2(u));
-		result = (n1 > n2) ? n1 : n2;
+		result = std::max(n1, n2);
 	    } else {  /* must be "+" or "-" */
 		int n1 = unitLength(arg1(u));
 		int n2 = unitLength(arg2(u));
-		result = (n1 > n2) ? n1 : n2;
+		result = std::max(n1, n2);
 	    }
 	} else /* must be "min" or "max" or "sum" */
 	  result = 1;  /* unitLength(arg1(u)); */
@@ -316,15 +317,15 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 						 R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang2(findGrobFn, 
-					     getListElement(grob, "name")));
+					     getListElement(grob, (char *) "name")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		} else {
 		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
 						R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang3(findGrobFn, 
-					     getListElement(grob, "name"),
+					     getListElement(grob, (char *) "name"),
 					     getListElement(savedgrob, 
-							    "children")));
+							    (char *) "children")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
@@ -362,15 +363,15 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 						 R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang2(findGrobFn, 
-					     getListElement(grob, "name")));
+					     getListElement(grob, (char *) "name")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		} else {
 		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
 						R_gridEvalEnv));
 		    PROTECT(R_fcall0 = lang3(findGrobFn, 
-					     getListElement(grob, "name"),
+					     getListElement(grob, (char *) "name"),
 					     getListElement(savedgrob, 
-							    "children")));
+							    (char *) "children")));
 		    grob = eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
@@ -519,14 +520,14 @@ double evaluateGrobUnit(double value, SEXP grob,
 	    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
 					 R_gridEvalEnv));
 	    PROTECT(R_fcall0 = lang2(findGrobFn, 
-				     getListElement(grob, "name")));
+				     getListElement(grob, (char *) "name")));
 	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
 	} else {
 	    PROTECT(findGrobFn = findFun(install("findGrobinChildren"), 
 					 R_gridEvalEnv));
 	    PROTECT(R_fcall0 = lang3(findGrobFn, 
-				     getListElement(grob, "name"),
-				     getListElement(savedgrob, "children")));
+				     getListElement(grob, (char *) "name"),
+				     getListElement(savedgrob, (char *) "children")));
 	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
 	}
 	/*
@@ -683,7 +684,7 @@ double evaluateGrobUnit(double value, SEXP grob,
     /*
      * If there is an error or user-interrupt in the above
      * evaluation, dd->recordGraphics is set to TRUE
-     * on all graphics devices (see GEonExit(); called in errors.c)
+     * on all graphics devices (see GEonExit(); called in errors.cpp)
      */
     dd->recordGraphics = record;
     return result;
@@ -840,7 +841,7 @@ double transform(double value, int unit, SEXP data,
 	else
 	    /* FIXME: what encoding is this? */
 	    result = result*
-		fromDeviceHeight(GEStrHeight(CHAR(STRING_ELT(data, 0)), -1,
+		fromDeviceHeight(GEStrHeight(CHAR(STRING_ELT(data, 0)), cetype_t(-1),
 					     gc, dd),
 				 GE_INCHES, dd);
 	break;
@@ -1821,7 +1822,7 @@ double transformWHfromNPC(double x, int to, double min, double max)
 /* Attempt to make validating units faster
  */
 typedef struct {
-    char *name;
+    const char *name;
     int code;
 } UnitTab;
 

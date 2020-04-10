@@ -520,7 +520,6 @@ SEXP do_untracemem(rho::Expression* call, const rho::BuiltInFunction* op, rho::R
 extern "C" {
 #endif  // __cplusplus
 
-
 #if Win32
 SEXP do_mkjunction(SEXP, SEXP, SEXP, SEXP);
 SEXP do_shellexec(SEXP, SEXP, SEXP, SEXP);
@@ -533,7 +532,13 @@ SEXP do_X11(SEXP, SEXP, SEXP, SEXP);
 // Functions that are defined in or called from C.
 SEXP do_complex(SEXP, SEXP, SEXP, SEXP);
 SEXP do_contourLines(SEXP, SEXP, SEXP, SEXP);
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 SEXP do_edit(SEXP, SEXP, SEXP, SEXP);
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 SEXP do_filechoose(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEvent(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);

@@ -39,7 +39,7 @@ SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log)
     if(LENGTH(usr) != 2) error(_("'%s' must be numeric of length %d"), "usr", 2);
 
     SEXP res = CreateAtVector(REAL(axp), REAL(usr), nint_v, logflag);
-    // -> ../../../main/plot.c
+    // -> ../../../main/plot.cpp
     UNPROTECT(2);
     return res;
 }
@@ -58,7 +58,7 @@ SEXP R_GAxisPars(SEXP usr, SEXP is_log, SEXP nintLog)
     max = REAL(usr)[1];
 
     GAxisPars(&min, &max, &n, logflag, 0);// axis = 0 :<==> do not warn.. [TODO!]
-    // -> ../../../main/graphics.c
+    // -> ../../../main/graphics.cpp
 
     PROTECT(ans = mkNamed(VECSXP, nms));
     SET_VECTOR_ELT(ans, 0, (axp = allocVector(REALSXP, 2)));// protected

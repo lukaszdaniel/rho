@@ -72,7 +72,7 @@
  *
  ************************************************************************
  *
- * NOTE:  uniroot() --> do_zeroin2()  --- in  ../main/optimize.c
+ * NOTE:  uniroot() --> do_zeroin2()  --- in  ../main/optimize.cpp
  *					      ~~~~~~~~~~~~~~~~~~
  */
 

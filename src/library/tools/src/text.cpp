@@ -37,8 +37,7 @@ LibExtern Rboolean mbcslocale;
 size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps);
 
 /* .Call, so manages R_alloc stack */
-SEXP
-delim_match(SEXP x, SEXP delims)
+SEXP delim_match(SEXP x, SEXP delims)
 {
     /*
       Match delimited substrings in a character vector x.
@@ -85,7 +84,9 @@ delim_match(SEXP x, SEXP delims)
 	memset(&mb_st, 0, sizeof(mbstate_t));
 	start = end = -1;
 	s = translateChar(STRING_ELT(x, i));
-	pos = is_escaped = delim_depth = 0;
+	pos = 0;
+	is_escaped = FALSE;
+	delim_depth = 0;
 	while((c = *s) != '\0') {
 	    if(c == '\n') {
 		is_escaped = FALSE;
@@ -160,7 +161,7 @@ check_nonASCII(SEXP text, SEXP ignore_quotes)
     Rboolean ign, inquote = FALSE;
 
     if(TYPEOF(text) != STRSXP) error("invalid input");
-    ign = asLogical(ignore_quotes);
+    ign = Rboolean(Rf_asLogical(ignore_quotes));
     if(ign == NA_LOGICAL) error("'ignore_quotes' must be TRUE or FALSE");
 
     for (i = 0; i < LENGTH(text); i++) {
@@ -225,7 +226,7 @@ SEXP check_nonASCII2(SEXP text)
 SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 strings only */
 {
     int i,start, bufsize = 1024;
-    char *buffer = malloc(bufsize*sizeof(char)), *b;
+    char *buffer = static_cast<char *>(malloc(bufsize*sizeof(char))), *b;
     const char *input;
     SEXP result;
     if (!buffer) error(_("out of memory"));
@@ -247,7 +248,7 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
     	    	int pos = (int)(b - buffer);
 		char *tmp;
     	        bufsize *= 2;
-    	    	tmp = realloc(buffer, bufsize*sizeof(char));
+    	    	tmp = static_cast<char *>(realloc(buffer, bufsize*sizeof(char)));
     	    	if (!tmp) {
 		    free(buffer); /* free original allocation */
 		    error(_("out of memory"));
@@ -287,7 +288,7 @@ SEXP splitString(SEXP string, SEXP delims)
     // Used for short strings, so OK to over-allocate wildly
     SEXP out = PROTECT(allocVector(STRSXP, nc));
     const char *p;
-    char tmp[nc], *this = tmp;
+    char tmp[nc], *this_ = tmp;
     int nthis = 0;
     for(p = in; *p ; p++) {
 	if(strchr(del, *p)) {
@@ -297,9 +298,9 @@ SEXP splitString(SEXP string, SEXP delims)
 	    // put out delimiter
 	    SET_STRING_ELT(out, used++, mkCharLen(p, 1));
 	    // restart
-	    this = tmp; nthis = 0;
+	    this_ = tmp; nthis = 0;
 	} else {
-	    *this++ = *p;
+	    *this_++ = *p;
 	    nthis++;
 	}
     }

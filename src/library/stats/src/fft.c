@@ -52,7 +52,7 @@
  *
  * PROBLEM (see fftmx  below):	nfac[] is overwritten by fftmx() in fft_work()
  * -------  Consequence:  fft_factor() must be called way too often,
- * at least from  do_mvfft() [ ../main/fourier.c ]
+ * at least from  do_mvfft() [ ../main/fourier.cpp ]
  *
  *	The following arrays need to be allocated following the call to
  *	fft_factor and preceding the call to fft_work.

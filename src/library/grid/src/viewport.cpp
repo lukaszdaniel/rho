@@ -40,7 +40,7 @@ SEXP viewportHeight(SEXP vp) {
 }
 
 Rboolean viewportClip(SEXP vp) {
-    return LOGICAL(VECTOR_ELT(vp, VP_CLIP))[0];
+    return Rboolean(LOGICAL(VECTOR_ELT(vp, VP_CLIP))[0]);
 }
 
 double viewportXScaleMin(SEXP vp) {
@@ -249,7 +249,7 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
 	 * If necessary, recalculate the parent transform (etc ...)
 	 */
 	if (!incremental)
-	    calcViewportTransform(parent, viewportParent(parent), 0, dd);
+	    calcViewportTransform(parent, viewportParent(parent), Rboolean(0), dd);
 	/* Get information required to transform viewport location
 	 */
 	parentWidthCM = REAL(viewportWidthCM(parent))[0];

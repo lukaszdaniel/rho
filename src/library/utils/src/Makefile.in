@@ -13,8 +13,8 @@ R_HOME = $(top_builddir)
 R_SHARE_DIR = $(R_HOME)/share
 R_INCLUDE_DIR = $(R_HOME)/include
 
-SOURCES_C = init.c sock.c stubs.c
-SOURCES_CXX = io.cpp size.cpp utils.cpp
+SOURCES_C = 
+SOURCES_CXX = init.cpp sock.cpp stubs.cpp io.cpp size.cpp utils.cpp
 
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o)
@@ -25,7 +25,7 @@ SHLIB = $(pkg)@SHLIB_EXT@
 
 # need Defn.h etc, and config.h
 PKG_CPPFLAGS =-I../../../include -I$(top_srcdir)/src/include -DHAVE_CONFIG_H \
-  -I$(top_srcdir)/src/main -DCOMPILING_RHO
+  -I$(top_srcdir)/src/main $(SPARSEHASH_CPPFLAGS) -DCOMPILING_RHO
 
 
 all: Makedeps

@@ -2628,7 +2628,7 @@ void GMode(int mode, pGEDevDesc dd)
  * If device can't clip we should use something like Sutherland-Hodgman here
  *
  * NOTE:  most of this code (up to GPolygon) is only now used by
- * GClipPolygon -- GPolygon runs the new GEPolygon in engine.c
+ * GClipPolygon -- GPolygon runs the new GEPolygon in engine.cpp
  */
 typedef enum {
     Left = 0,
@@ -3382,7 +3382,7 @@ double GExpressionHeight(SEXP expr, GUnit units, pGEDevDesc dd)
 	return GConvertYUnits(height, DEVICE, units, dd);
 }
 
-/* Comment is NOT true: used in plot.c for strwidth and strheight.
+/* Comment is NOT true: used in plot.cpp for strwidth and strheight.
  *
  * This is just here to satisfy the Rgraphics.h API.
  * This allows new graphics API (GraphicsDevice.h, GraphicsEngine.h)
@@ -3390,7 +3390,7 @@ double GExpressionHeight(SEXP expr, GUnit units, pGEDevDesc dd)
  * Could be removed if Rgraphics.h ever gets REPLACED by new API
  * NOTE that base graphics code no longer calls this -- the base
  * graphics system directly calls the graphics engine for mathematical
- * annotation (GEMathText in ../../../main/plotmath.c )
+ * annotation (GEMathText in ../../../main/plotmath.cpp )
  */
 void GMathText(double x, double y, int coords, SEXP expr,
 	       double xc, double yc, double rot,

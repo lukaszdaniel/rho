@@ -184,9 +184,9 @@ SEXP doSetViewport(SEXP vp,
      * NEVER incremental for top-level viewport
      */
     calcViewportTransform(vp, viewportParent(vp), 
-			  !topLevelVP &&
+			  Rboolean(!topLevelVP &&
 			  !deviceChanged(devWidthCM, devHeightCM, 
-					 viewportParent(vp)), dd);
+					 viewportParent(vp))), dd);
     /* 
      * We must "turn off" clipping
      * We set the clip region to be the entire device
@@ -334,7 +334,7 @@ SEXP L_setviewport(SEXP invp, SEXP hasParent)
     PROTECT(fcall = lang2(install("pushedvp"),
 			  vp));
     PROTECT(pushedvp = eval(fcall, R_gridEvalEnv)); 
-    pushedvp = doSetViewport(pushedvp, !LOGICAL(hasParent)[0], TRUE, dd);
+    pushedvp = doSetViewport(pushedvp, Rboolean(!LOGICAL(hasParent)[0]), TRUE, dd);
     /* Set the value of the current viewport for the current device
      * Need to do this in here so that redrawing via R BASE display
      * list works 
@@ -362,7 +362,7 @@ static Rboolean noChildren(SEXP children)
 			  children));
     PROTECT(result = eval(fcall, R_gridEvalEnv)); 
     UNPROTECT(2);
-    return LOGICAL(result)[0];
+    return Rboolean(LOGICAL(result)[0]);
 }
 
 static Rboolean childExists(SEXP name, SEXP children) 
@@ -372,7 +372,7 @@ static Rboolean childExists(SEXP name, SEXP children)
 			  name, children));
     PROTECT(result = eval(fcall, R_gridEvalEnv)); 
     UNPROTECT(2);
-    return LOGICAL(result)[0];
+    return Rboolean(LOGICAL(result)[0]);
 }
 
 static SEXP childList(SEXP children) 
@@ -416,7 +416,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
 			      PROTECT(findVar(installChar(STRING_ELT(childnames, count)),
 				      children)),
 			      depth);
-	found = INTEGER(VECTOR_ELT(result, 0))[0] > 0;
+	found = Rboolean(INTEGER(VECTOR_ELT(result, 0))[0] > 0);
 	UNPROTECT(1);
 	count = count + 1;
     }
@@ -537,7 +537,7 @@ static Rboolean pathMatch(SEXP path, SEXP pathsofar, SEXP strict)
 			  path, pathsofar, strict));
     PROTECT(result = eval(fcall, R_gridEvalEnv)); 
     UNPROTECT(2);
-    return LOGICAL(result)[0];    
+    return Rboolean(LOGICAL(result)[0]);
 }
 
 static SEXP growPath(SEXP pathsofar, SEXP name) 
@@ -574,7 +574,7 @@ static SEXP findvppathInChildren(SEXP path, SEXP name,
 	PROTECT(newpathsofar = growPath(pathsofar,
 					VECTOR_ELT(vp, VP_NAME)));
 	result = findvppath(path, name, strict, newpathsofar, vp, depth);
-	found = INTEGER(VECTOR_ELT(result, 0))[0] > 0;
+	found = Rboolean(INTEGER(VECTOR_ELT(result, 0))[0] > 0);
 	count = count + 1;
 	UNPROTECT(2);
     }
@@ -709,7 +709,7 @@ SEXP L_unsetviewport(SEXP n)
     /* 
      * This has to be done via a call to R-level ...
      *   remove(gvp$name, envir=newvp$children, inherits=FALSE)
-     * ... because RemoveVariable in envir.c is not exported (why not?)
+     * ... because RemoveVariable in envir.cpp is not exported (why not?)
      *
      * I tried to model this on the example in the section 
      * "System and foreign language interfaces ... Evaluating R expressions"
@@ -737,7 +737,7 @@ SEXP L_unsetviewport(SEXP n)
      */
     getDeviceSize(dd, &devWidthCM, &devHeightCM);
     if (deviceChanged(devWidthCM, devHeightCM, newvp))
-	calcViewportTransform(newvp, viewportParent(newvp), 1, dd);
+	calcViewportTransform(newvp, viewportParent(newvp), Rboolean(1), dd);
     /* 
      * Enforce the current viewport settings
      */
@@ -800,7 +800,7 @@ SEXP L_upviewport(SEXP n)
      */
     getDeviceSize(dd, &devWidthCM, &devHeightCM);
     if (deviceChanged(devWidthCM, devHeightCM, newvp))
-	calcViewportTransform(newvp, viewportParent(newvp), 1, dd);
+	calcViewportTransform(newvp, viewportParent(newvp), Rboolean(1), dd);
     /* 
      * Enforce the current viewport settings
      */
@@ -996,8 +996,8 @@ SEXP L_newpage()
     /*
      * Has the device been drawn on BY GRID yet?
      */
-    Rboolean deviceGridDirty = LOGICAL(gridStateElement(dd, 
-							GSS_GRIDDEVICE))[0];
+    Rboolean deviceGridDirty = Rboolean(LOGICAL(gridStateElement(dd, 
+							GSS_GRIDDEVICE))[0]);
     /*
      * Initialise grid on device
      * If no drawing on device yet, does a new page
@@ -1049,7 +1049,7 @@ void getViewportTransform(SEXP currentvp,
     if (deviceChanged(devWidthCM, devHeightCM, currentvp)) {
 	/* IF the device has changed, recalculate the viewport transform
 	 */
-	calcViewportTransform(currentvp, viewportParent(currentvp), 1, dd); 
+	calcViewportTransform(currentvp, viewportParent(currentvp), Rboolean(1), dd); 
     }
     for (i=0; i<3; i++)
 	for (j=0; j<3; j++)
@@ -1135,7 +1135,7 @@ SEXP L_convert(SEXP x, SEXP whatfrom,
          * In these cases do NOT transform thru INCHES 
          * (to avoid divide-by-zero, but still do something useful)
          */
-        relConvert = (!isUnitArithmetic(x) && !isUnitList(x) &&
+        relConvert = Rboolean(!isUnitArithmetic(x) && !isUnitList(x) &&
                       (unitUnit(x, i) == L_NATIVE || unitUnit(x, i) == L_NPC) &&
                       (TOunit == L_NATIVE || TOunit == L_NPC) &&
                       ((FROMaxis == TOaxis) ||
@@ -1895,7 +1895,7 @@ SEXP L_lines(SEXP x, SEXP y, SEXP index, SEXP arrow)
 			 * because we have just broken the line for an NA.
 			 */
 		        arrows(xx+start, yy+start, i-start,
-			       arrow, j, start == 0, FALSE,
+			       arrow, j, Rboolean(start == 0), FALSE,
 			       vpc, vpWidthCM, vpHeightCM, &gc, dd);
 		    }
 		}
@@ -1910,7 +1910,7 @@ SEXP L_lines(SEXP x, SEXP y, SEXP index, SEXP arrow)
 		     * Can draw an arrow at the end point.
 		     */
  		    arrows(xx+start, yy+start, nx-start, 
-			   arrow, j, start == 0, TRUE,
+			   arrow, j, Rboolean(start == 0), TRUE,
 			   vpc, vpWidthCM, vpHeightCM, &gc, dd);
 		}
 	    } 
@@ -2009,7 +2009,7 @@ SEXP gridXspline(SEXP x, SEXP y, SEXP s, SEXP o, SEXP a, SEXP rep, SEXP index,
 	    }
 	}
 	PROTECT(points = GEXspline(nx, xx, yy, ss,
-				   LOGICAL(o)[0], LOGICAL(rep)[0],
+				   Rboolean(LOGICAL(o)[0]), Rboolean(LOGICAL(rep)[0]),
 				   draw, &gc, dd));
         {
             /*
@@ -2875,7 +2875,7 @@ SEXP L_path(SEXP x, SEXP y, SEXP index, SEXP rule)
         }
     }
     gcontextFromgpar(currentgp, 0, &gc, dd);
-    GEPath(xx, yy, npoly, nper, INTEGER(rule)[0], &gc, dd);
+    GEPath(xx, yy, npoly, nper, Rboolean(INTEGER(rule)[0]), &gc, dd);
     vmaxset(vmax);
     GEMode(0, dd);
     return R_NilValue;
@@ -2962,7 +2962,7 @@ SEXP L_raster(SEXP raster, SEXP x, SEXP y, SEXP w, SEXP h,
                 R_FINITE(ww) && R_FINITE(hh))
                 GERaster(image, INTEGER(dim)[1], INTEGER(dim)[0],
                          xx, yy, ww, hh, rotationAngle, 
-                         LOGICAL(interpolate)[i % LENGTH(interpolate)], 
+                         Rboolean(LOGICAL(interpolate)[i % LENGTH(interpolate)]),
                          &gc, dd);
         } else {
             /* We have to do a little bit of work to figure out where the 
@@ -2994,7 +2994,7 @@ SEXP L_raster(SEXP raster, SEXP x, SEXP y, SEXP w, SEXP h,
                  */
                 GERaster(image, INTEGER(dim)[1], INTEGER(dim)[0],
                          xbl, ybl, ww, hh, rotationAngle, 
-                         LOGICAL(interpolate)[i % LENGTH(interpolate)], 
+                         Rboolean(LOGICAL(interpolate)[i % LENGTH(interpolate)]),
                          &gc, dd);
             }
             UNPROTECT(2);
@@ -3469,7 +3469,7 @@ SEXP L_pretty(SEXP scale) {
     double axp[3];
     /* FIXME:  Default preferred number of ticks hard coded ! */
     int n = 5;
-    Rboolean swap = min > max;
+    Rboolean swap = Rboolean(min > max);
     /* 
      * Feature: 
      * like R, something like  xscale = c(100,0)  just works 

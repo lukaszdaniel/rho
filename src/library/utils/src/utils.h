@@ -19,29 +19,17 @@
 
 
 SEXP objectSize(SEXP s);
-#ifdef __cplusplus
-extern "C" {
-#endif
 SEXP unzip(SEXP args);
 SEXP Rprof(SEXP args);
 SEXP Rprofmem(SEXP args);
-#ifdef __cplusplus
-}
-#endif
 SEXP countfields(SEXP args);
 SEXP flushconsole(void);
 SEXP menu(SEXP args);
 SEXP readtablehead(SEXP args);
 SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env);
-#ifdef __cplusplus
-extern "C" {
-#endif
 SEXP crc64(SEXP in);
 SEXP nsl(SEXP hostname);
-#ifdef __cplusplus
-}
-#endif
 SEXP download(SEXP args);
 
 SEXP sockconnect(SEXP sport, SEXP shost);

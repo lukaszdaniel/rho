@@ -64,7 +64,7 @@ static const R_ExternalMethodDef ExtEntries[] = {
     {NULL, NULL, 0}
 };
 
-
+extern "C"
 void attribute_visible
 R_init_tools(DllInfo *dll)
 {

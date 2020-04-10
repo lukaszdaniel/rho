@@ -282,7 +282,7 @@
 
     /* NOTE: tck and tcl must be treated in parallel; if one is NA,
      *	the other must be non-NA.  If tcl is NA, then setting tck to NA
-     *	will reset tck to its initial default value.  See also graphics.c. */
+     *	will reset tck to its initial default value.  See also graphics.cpp. */
     else if (streql(what, "tck")) {
 	lengthCheck(what, value, 1);	x = asReal(value);
 	R_DEV__(tck) = x;

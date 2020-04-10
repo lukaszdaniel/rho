@@ -900,7 +900,6 @@ static void PopState() {
  .External2("parseLatex", file, srcfile, verbose, basename, warningCalls)
  If there is text then that is read and the other arguments are ignored.
 */
-extern "C"
 SEXP parseLatex(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     args = CDR(args);

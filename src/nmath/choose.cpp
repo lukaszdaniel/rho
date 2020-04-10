@@ -43,6 +43,7 @@
 /* These are recursive, so we should do a stack check */
 
 #ifndef MATHLIB_STANDALONE
+extern "C"
 void R_CheckStack(void);
 #endif
 

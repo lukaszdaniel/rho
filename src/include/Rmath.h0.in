@@ -657,7 +657,7 @@ double  logspace_sub(double logx, double logy);
 /* If isnan is a macro, as C99 specifies, the C++
    math header will undefine it. This happens on macOS */
 # ifdef __cplusplus
-  int R_isnancpp(double); /* in mlutils.c */
+  int R_isnancpp(double); /* in mlutils.cpp */
 #  define ISNAN(x)     R_isnancpp(x)
 # else
 #  define ISNAN(x)     (isnan(x)!=0)

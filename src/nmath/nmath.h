@@ -45,21 +45,22 @@
 
 /* Used internally only */
 double  Rf_d1mach(int);
-double	Rf_gamma_cody(double);
+double  Rf_gamma_cody(double);
 
 #include <R_ext/RS.h>
 
 /* possibly needed for debugging */
 #include <R_ext/Print.h>
+#include <R_ext/Arith.h>
 
 /* moved from dpq.h */
 #ifdef HAVE_NEARYINT
-# define R_forceint(x)   nearbyint()
+# define R_forceint(x)   std::nearbyint(x)
 #else
-# define R_forceint(x)   round(x)
+# define R_forceint(x)   std::round(x)
 #endif
 //R >= 3.1.0: # define R_nonint(x) 	  (fabs((x) - R_forceint(x)) > 1e-7)
-# define R_nonint(x) 	  (fabs((x) - R_forceint(x)) > 1e-7*fmax2(1., fabs(x)))
+# define R_nonint(x) 	  (std::fabs((x) - R_forceint(x)) > 1e-7*fmax2(1., std::fabs(x)))
 
 #ifndef MATHLIB_STANDALONE
 
@@ -71,12 +72,11 @@ double	Rf_gamma_cody(double);
 # define MATHLIB_WARNING4(fmt,x,x2,x3,x4) Rf_warning(fmt,x,x2,x3,x4)
 # define MATHLIB_WARNING5(fmt,x,x2,x3,x4,x5) Rf_warning(fmt,x,x2,x3,x4,x5)
 
-#include <R_ext/Arith.h>
 #define ML_POSINF	R_PosInf
 #define ML_NEGINF	R_NegInf
 #define ML_NAN		R_NaN
 
-
+extern "C"
 void R_CheckUserInterrupt(void);
 /* Ei-ji Nakama reported that AIX 5.2 has calloc as a macro and objected
    to redefining it.  Tests added for 2.2.1 */
@@ -103,12 +103,12 @@ void R_CheckUserInterrupt(void);
 #define MATHLIB_WARNING4(fmt,x,x2,x3,x4) printf(fmt,x,x2,x3,x4)
 #define MATHLIB_WARNING5(fmt,x,x2,x3,x4,x5) printf(fmt,x,x2,x3,x4,x5)
 
-#define ISNAN(x) (isnan(x)!=0)
+//#define ISNAN(x) (isnan(x)!=0)
 // Arith.h defines it
 #ifndef R_FINITE
 #ifdef HAVE_WORKING_ISFINITE
 /* isfinite is defined in <math.h> according to C99 */
-# define R_FINITE(x)    isfinite(x)
+# define R_FINITE(x)    std::isfinite(x)
 #else
 # define R_FINITE(x)    R_finite(x)
 #endif
@@ -145,7 +145,7 @@ int R_finite(double);
  */
 #define ML_ERROR(x, s) { \
    if(x > ME_DOMAIN) { \
-       char *msg = ""; \
+       char const * msg = ""; \
        switch(x) { \
        case ME_DOMAIN: \
 	   msg = _("argument out of domain in '%s'\n");	\
@@ -214,7 +214,7 @@ double	attribute_hidden pnbeta2(double, double, double, double, double, int, int
 
 int	Rf_i1mach(int);
 
-/* From toms708.c */
+/* From toms708.cpp */
 void attribute_hidden bratio(double a, double b, double x, double y,
 	    		     double *w, double *w1, int *ierr, int log_p);
 

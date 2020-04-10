@@ -216,9 +216,9 @@ static void J_bessel(double *x, double *alpha, int *nb,
    TWOPI2 = (2*PI - TWOPI1) to working precision, i.e.,
 	    TWOPI1 + TWOPI2 = 2 * PI to extra precision.
  --------------------------------------------------------------------- */
-    const static double pi2 = .636619772367581343075535;
+    const static double pi2 = M_2_PI; //.636619772367581343075535;
     const static double twopi1 = 6.28125;
-    const static double twopi2 =  .001935307179586476925286767;
+    const static double twopi2 = M_2PI - twopi1; //.001935307179586476925286767;
 
 /*---------------------------------------------------------------------
  *  Factorial(N)

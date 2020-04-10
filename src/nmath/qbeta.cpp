@@ -28,7 +28,6 @@
  */
 
 
-#include <R_ext/Arith.h>
 #include "nmath.h"
 #include "dpq.h"
 
@@ -114,15 +113,19 @@ qbeta_raw(double alpha, double p, double q, int lower_tail, int log_p,
 	  double *qb) // = qb[0:1] = { qbeta(), 1 - qbeta() }
 {
     Rboolean
-	swap_choose = (swap_01 == MLOGICAL_NA),
+	swap_choose = Rboolean(swap_01 == MLOGICAL_NA),
 	swap_tail,
-	log_, give_log_q = (log_q_cut == ML_POSINF),
+	log_, give_log_q = Rboolean(log_q_cut == ML_POSINF),
 	use_log_x = give_log_q, // or u < log_q_cut  below
 	warned = FALSE, add_N_step = TRUE;
     int i_pb, i_inn;
     double a, la, logbeta, g, h, pp, p_, qq, r, s, t, w, y = -1.;
     volatile double u, xinbta;
-
+    double u_n;
+    Rboolean
+    bad_u = Rboolean(0),
+    bad_init = Rboolean(0);
+    double wprev = 0., prev = 1., adj = 1.;
     // Assuming p >= 0, q >= 0  here ...
 
     // Deal with boundary cases here:
@@ -184,7 +187,7 @@ qbeta_raw(double alpha, double p, double q, int lower_tail, int log_p,
     // Conceptually,  0 < p_ < 1  (but can be 0 or 1 because of cancellation!)
     logbeta = lbeta(p, q);
 
-    swap_tail = (swap_choose) ? (p_ > 0.5) : swap_01;
+    swap_tail = (swap_choose) ? Rboolean(p_ > 0.5) : Rboolean(swap_01);
     // change tail; default (swap_01 = NA): afterwards 0 < a <= 1/2
     if(swap_tail) { /* change tail, swap  p <-> q :*/
 	a = R_DT_CIv(alpha); // = 1 - p_ < 1/2
@@ -317,7 +320,7 @@ qbeta_raw(double alpha, double p, double q, int lower_tail, int log_p,
 	(!swap_tail && u >= -exp(4*log_q_cut) && pp / qq < 1000.) // ==> "swap now"
 	   )) {
 	// "revert swap" -- and use_log_x
-	swap_tail = !swap_tail;
+	swap_tail = Rboolean(!swap_tail);
 	R_ifDEBUG_printf(" u = %g (e^u = xinbta = %.16g) ==> ", u, xinbta);
 	if(swap_tail) { // "swap now" (much less easily)
 	    a = R_DT_CIv(alpha); // needed ?
@@ -343,17 +346,17 @@ qbeta_raw(double alpha, double p, double q, int lower_tail, int log_p,
     } else R_ifDEBUG_printf("\n");
 
     if(!use_log_x)
-	use_log_x = (u < log_q_cut);// <==> xinbta = e^u < exp(log_q_cut)
-    Rboolean
-	bad_u = !R_FINITE(u),
-	bad_init = bad_u || xinbta > p_hi;
+	use_log_x = Rboolean(u < log_q_cut);// <==> xinbta = e^u < exp(log_q_cut)
+
+	bad_u = Rboolean(!R_FINITE(u)),
+	bad_init = Rboolean(bad_u || xinbta > p_hi);
 
     R_ifDEBUG_printf(" -> u = %g, e^u = xinbta = %.16g, (Newton acu=%g%s%s%s)\n",
 		     u, xinbta, acu, (bad_u ? ", ** bad u **" : ""),
 		     ((bad_init && !bad_u) ? ", ** bad_init **" : ""),
 		     (use_log_x ? ", on u = LOG(x) SCALE" : ""));
 
-    double u_n = 1.; // -Wall
+    u_n = 1.; // -Wall
     tx = xinbta; // keeping "original initial x" (for now)
 
     if(bad_u || u < log_q_cut) {
@@ -372,7 +375,7 @@ qbeta_raw(double alpha, double p, double q, int lower_tail, int log_p,
 		tx   = 0.;
 		u_n  = ML_NEGINF;
 	    }
-	    use_log_x = log_p; add_N_step = FALSE; goto L_return;
+	    use_log_x = Rboolean(log_p); add_N_step = FALSE; goto L_return;
 	}
 	else {
 	    R_ifDEBUG_printf(" pbeta(%g, *) = %g <= %g (= %s) --> continuing\n",
@@ -410,7 +413,7 @@ L_Newton:
      */
     r = 1 - pp;
     t = 1 - qq;
-    double wprev = 0., prev = 1., adj = 1.; // -Wall
+    wprev = 0., prev = 1., adj = 1.; // -Wall
 
     if(use_log_x) { // find  log(xinbta) -- work in  u := log(x) scale
 	// if(bad_init && tx > 0) xinbta = tx;// may have been better
@@ -532,7 +535,7 @@ L_Newton:
     ML_ERROR(ME_PRECISION, "qbeta");
 
 L_converged:
-    log_ = log_p || use_log_x; // only for printing
+    log_ = Rboolean(log_p || use_log_x); // only for printing
     R_ifDEBUG_printf(" %s: Final delta(y) = %g%s\n",
 		     warned ? "_NO_ convergence" : "converged",
 		     y - (log_ ? la : a), (log_ ? " (log_)" : ""));

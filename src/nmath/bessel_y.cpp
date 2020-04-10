@@ -64,8 +64,8 @@ double bessel_y(double x, double alpha)
 			alpha);
 	return ML_NAN;
     }
-    nb = 1+ (int)na;/* nb-1 <= alpha < nb */
-    alpha -= (double)(nb-1);
+    nb = 1 + (int)na; /* nb-1 <= alpha < nb */
+    alpha -= (double)(nb-1); // ==> alpha in [0, 1)
 #ifdef MATHLIB_STANDALONE
     by = (double *) calloc(nb, sizeof(double));
     if (!by) MATHLIB_ERROR("%s", _("bessel_y allocation error"));
@@ -231,8 +231,8 @@ v for non-negative argument X, and non-negative order N+ALPHA.
     FIVPI = 5*PI
     PIM5 = 5*PI - 15
  ----------------------------------------------------------------------*/
-    const static double fivpi = 15.707963267948966192;
-    const static double pim5	=   .70796326794896619231;
+    const static double fivpi = 5*M_PI; //15.707963267948966192;
+    const static double pim5  = fivpi - 15; //.70796326794896619231;
 
     /*----------------------------------------------------------------------
       Coefficients for Chebyshev polynomial expansion of

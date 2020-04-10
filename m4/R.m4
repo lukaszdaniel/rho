@@ -410,8 +410,8 @@ AC_DEFUN([R_PROG_CC_LO_MAKEFRAG],
 AC_REQUIRE([R_PROG_CC_C_O_LO])
 if test "${r_cv_prog_cc_c_o_lo}" = yes; then
   cat << \EOF > ${r_cc_lo_rules_frag}
-.c.lo:
-	$(CC) $(ALL_CPPFLAGS) $(ALL_CFLAGS_LO) -c $< -o $[@]
+.cpp.lo:
+	$(CXX) $(ALL_CPPFLAGS) $(ALL_CFLAGS_LO) -c $< -o $[@]
 EOF
 else
   cat << \EOF > ${r_cc_lo_rules_frag}

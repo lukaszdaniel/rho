@@ -21,11 +21,12 @@
 # include <config.h>
 # undef fprintf
 #endif
+
 #include "nmath.h"
 
 #ifdef MATHLIB_STANDALONE
 /*
- *  based on code in ../main/arithmetic.c
+ *  based on code in ../main/arithmetic.cpp
  *  used only in standalone Rmath lib.
  */
 
@@ -34,15 +35,14 @@ int R_finite(double x)
 #ifdef HAVE_WORKING_ISFINITE
     return isfinite(x);
 # else
-    return (!isnan(x) & (x != ML_POSINF) & (x != ML_NEGINF));
+    return (!std::isnan(x) & (x != ML_POSINF) & (x != ML_NEGINF));
 #endif
 }
 
 /* C++ math header undefines any isnan macro. This file
    doesn't get C++ headers and so is safe. */
-int R_isnancpp(double x)
-{
-    return (isnan(x) != 0);
+int R_isnancpp(double x) {
+    return std::isnan(x);
 }
 
 static double myfmod(double x1, double x2)
@@ -111,7 +111,7 @@ double R_PosInf = ML_POSINF, R_NegInf = ML_NEGINF;
 #include <stdarg.h>
 void attribute_hidden REprintf(const char *format, ...)
 {
-    va_list(ap);
+    va_list ap;
     va_start(ap, format);
     fprintf(stderr, format, ap);
     va_end(ap);

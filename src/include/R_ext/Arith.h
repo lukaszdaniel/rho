@@ -73,7 +73,7 @@ int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
    hence the workaround.  This code also appears in Rmath.h
 */
 #ifdef __cplusplus
-  int R_isnancpp(double); /* in arithmeti.cpp */
+  int R_isnancpp(double); /* in arithmetic.cpp */
 #  define ISNAN(x)     R_isnancpp(x)
 #else
 #  define ISNAN(x)     (isnan(x)!=0)

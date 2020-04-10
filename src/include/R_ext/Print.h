@@ -37,10 +37,8 @@
    defined in namespace std.  It is part of the C++11 standard. */
 /* rho comment 2011-07-28: ISO14882:2003 specifies that vprintf() be
    included in cstdio. */
-# ifdef R_USE_C99_IN_CXX
 #  include <cstdarg>
 #  define R_VA_LIST std::va_list
-# endif
 extern "C" {
 #else
 # include <stdarg.h>
@@ -49,8 +47,8 @@ extern "C" {
 
 void Rprintf(const char *, ...);
 void REprintf(const char *, ...);
-void Rvprintf(const char *, va_list);
-void REvprintf(const char *, va_list);
+void Rvprintf(const char *, R_VA_LIST);
+void REvprintf(const char *, R_VA_LIST);
 
 #ifdef  __cplusplus
 }

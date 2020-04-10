@@ -101,8 +101,8 @@ double qt(double p, double ndf, int lower_tail, int log_p)
 
     P = R_D_qIv(p); /* if exp(p) underflows, we fix below */
 
-    Rboolean neg = (!lower_tail || P < 0.5) && (lower_tail || P > 0.5),
-	is_neg_lower = (lower_tail == neg); /* both TRUE or FALSE == !xor */
+    Rboolean neg = Rboolean((!lower_tail || P < 0.5) && (lower_tail || P > 0.5)),
+	is_neg_lower = Rboolean(lower_tail == neg); /* both TRUE or FALSE == !xor */
     if(neg)
 	P = 2 * (log_p ? (lower_tail ? P : -expm1(p)) : R_D_Lval(p));
     else
@@ -144,10 +144,10 @@ double qt(double p, double ndf, int lower_tail, int log_p)
 	    c = ((20700 * a / b - 98) * a - 16) * a + 96.36,
 	    d = ((94.5 / (b + c) - 3) / b + 1) * sqrt(a * M_PI_2) * ndf;
 
-	Rboolean P_ok1 = P > DBL_MIN || !log_p,  P_ok = P_ok1;
+	Rboolean P_ok1 = Rboolean(P > DBL_MIN || !log_p),  P_ok = P_ok1;
 	if(P_ok1) {
 	    y = pow(d * P, 2.0 / ndf);
-	    P_ok = (y >= DBL_EPSILON);
+	    P_ok = Rboolean(y >= DBL_EPSILON);
 	}
 	if(!P_ok) {// log.p && P very.small  ||  (d*P)^(2/df) =: y < eps_c
 	    log_P2 = is_neg_lower ? R_D_log(p) : R_D_LExp(p); /* == log(P / 2) */

@@ -55,7 +55,7 @@ double pnchisq(double x, double df, double ncp, int lower_tail, int log_p)
 
     if (df < 0. || ncp < 0.) ML_ERR_return_NAN;
 
-    ans = pnchisq_raw(x, df, ncp, 1e-12, 8*DBL_EPSILON, 1000000, lower_tail, log_p);
+    ans = pnchisq_raw(x, df, ncp, 1e-12, 8*DBL_EPSILON, 1000000, Rboolean(lower_tail), Rboolean(log_p));
     if(ncp >= 80) {
 	if(lower_tail) {
 	    ans = fmin2(ans, R_D__1);  /* e.g., pchisq(555, 1.01, ncp = 80) */
@@ -73,7 +73,7 @@ double pnchisq(double x, double df, double ncp, int lower_tail, int log_p)
 	REprintf("   pnchisq_raw(*, log_p): ans=%g => 2nd call, other tail\n", ans);
 #endif
 	// FIXME: (sum,sum2) will be the same (=> return them as well and reuse here ?)
-	ans = pnchisq_raw(x, df, ncp, 1e-12, 8*DBL_EPSILON, 1000000, !lower_tail, FALSE);
+	ans = pnchisq_raw(x, df, ncp, 1e-12, 8*DBL_EPSILON, 1000000, Rboolean(!lower_tail), FALSE);
 	return log1p(-ans);
     }
 }
@@ -161,7 +161,7 @@ pnchisq_raw(double x, double f, double theta /* = ncp */,
     // Series expansion ------- FIXME: log_p=TRUE, lower_tail=FALSE only applied at end
 
     lam = .5 * theta;
-    lamSml = (-lam < _dbl_min_exp);
+    lamSml = Rboolean(-lam < _dbl_min_exp);
     if(lamSml) {
 	/* MATHLIB_ERROR(
 	   "non centrality parameter (= %g) too large for current algorithm",
@@ -201,7 +201,7 @@ pnchisq_raw(double x, double f, double theta /* = ncp */,
     REprintf(" lt= %g", lt);
 #endif
 
-    tSml = (lt < _dbl_min_exp);
+    tSml = Rboolean(lt < _dbl_min_exp);
     if(tSml) {
 #ifdef DEBUG_pnch
 	REprintf(" is very small\n");
@@ -239,8 +239,8 @@ pnchisq_raw(double x, double f, double theta /* = ncp */,
 #endif
 	    is_r = is_it = FALSE;
 	    /* convergence only if BOTH absolute and relative error < 'bnd' */
-	    if (((is_b = (bound <= errmax)) &&
-                 (is_r = (term <= reltol * ans))) || (is_it = (n > itrmax)))
+	    if (((is_b = Rboolean(bound <= errmax)) &&
+                 (is_r = Rboolean(term <= reltol * ans))) || (is_it = Rboolean(n > itrmax)))
             {
 #ifdef DEBUG_pnch
                 REprintf("BREAK n=%d %s; bound= %g %s, rel.err= %g %s\n",

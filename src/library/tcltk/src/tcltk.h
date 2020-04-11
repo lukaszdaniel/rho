@@ -30,13 +30,13 @@
 #include <R_ext/Parse.h>
 
 #ifndef Win32
-/* From tcltk_unix.c */
+/* From tcltk_unix.cpp */
 void Tcl_unix_setup(void);
 #endif
 
-/* Globals exported from  ./tcltk.c : */
+/* Globals exported from  ./tcltk.cpp : */
 
-Tcl_Interp *RTcl_interp;      /* Interpreter for this application. */
+extern Tcl_Interp *RTcl_interp;      /* Interpreter for this application. */
 void tcltk_init(int *);
 
 SEXP dotTcl(SEXP args);

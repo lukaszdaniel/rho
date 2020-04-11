@@ -273,7 +273,7 @@ SEXP mc_fork(SEXP sEstranged)
     }
     res_i[0] = (int) pid;
     if (pid == 0) { /* child */
-	R_isForkedChild = 1;
+	R_isForkedChild = TRUE;
 	/* don't track any children of the child by default */
 	signal(SIGCHLD, SIG_DFL);
 	if (estranged)
@@ -736,7 +736,7 @@ SEXP NORET mc_exit(SEXP sRes)
 SEXP mc_interactive(SEXP sWhat) {
     int what = asInteger(sWhat);
     if (what != NA_INTEGER)
-	R_Interactive = what;
+	R_Interactive = Rboolean(what);
     return ScalarLogical(R_Interactive);
 }
 

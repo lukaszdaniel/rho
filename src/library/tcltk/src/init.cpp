@@ -61,7 +61,7 @@ static const R_ExternalMethodDef ExternEntries[] = {
     {NULL, NULL, 0}
 };
 
-
+extern "C"
 void attribute_visible R_init_tcltk(DllInfo *dll)
 {
     R_registerRoutines(dll, CEntries, NULL, NULL, ExternEntries);

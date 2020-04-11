@@ -34,6 +34,7 @@
 
 #include "localization.h"
 
+Tcl_Interp *RTcl_interp;
 
 static void RTcl_dec_refcount(SEXP R_tclobj)
 {
@@ -142,7 +143,7 @@ static int R_call_lang(ClientData clientData,
 		       int argc,
 		       const char *argv[])
 {
-    void *expr, *env; 
+    SEXP expr, env; 
     SEXP ans;
 
     sscanf(argv[1], "%p", &expr);
@@ -235,7 +236,7 @@ SEXP dotTclObjv(SEXP args)
 	const char *s;
 	char *tmp;
 	if (!isNull(nm) && strlen(s = translateChar(STRING_ELT(nm, i)))){
-	    tmp = calloc(strlen(s)+2, sizeof(char));
+	    tmp = static_cast<char *>(calloc(strlen(s)+2, sizeof(char)));
 	    *tmp = '-';
 	    strcpy(tmp+1, s);
 	    objv[objc++] = Tcl_NewStringObj(tmp, -1);

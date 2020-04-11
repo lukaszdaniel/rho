@@ -24,6 +24,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
+#include <R_ext/Visibility.h>
 #include <string.h> // for memcpy
 #include "localization.h"
 
@@ -108,7 +109,7 @@ basis_funcs(splPTR sp, double x, double *b)
 static double
 evaluate(splPTR sp, double x, int nder)
 {
-    register double *lpt, *rpt, *apt, *ti = sp->knots + sp->curs;
+    volatile double *lpt, *rpt, *apt, *ti = sp->knots + sp->curs;
     int inner, outer = sp->ordm1;
 
     if (sp->boundary && nder == sp->ordm1) { /* value is arbitrary */
@@ -235,11 +236,8 @@ static const R_CallMethodDef R_CallDef[] = {
     {NULL, NULL, 0}
 };
 
-
-void
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-__attribute__ ((visibility ("default")))
-#endif
+extern "C"
+void attribute_visible
 R_init_splines(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, R_CallDef, NULL, NULL);

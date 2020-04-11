@@ -52,6 +52,7 @@ static const R_CallMethodDef callMethods[] = {
     {NULL, NULL, 0}
 };
 
+extern "C"
 void attribute_visible
 R_init_parallel(DllInfo *dll)
 {

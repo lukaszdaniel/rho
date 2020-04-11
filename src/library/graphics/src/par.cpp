@@ -50,7 +50,7 @@
 #include "localization.h"
 
 typedef struct {
-    char *name;
+    const char *name;
     int code; /* 0 normal, 1 not inline, 2 read-only
 		 -1 unknown, -2 obselete, -3 graphical args
 	       */
@@ -264,7 +264,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	return;
     }
 #define FOR_PAR
-#include "par-common.c"
+#include "par-common.cpp"
 #undef FOR_PAR
 /*	  ------------ */
     else if (streql(what, "bg")) {
@@ -277,7 +277,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 /*--- and these are "Specify() only" {i.e. par(nam = val)} : */
     else if (streql(what, "ask")) {
 	lengthCheck(what, value, 1);	ix = asLogical(value);
-	dd->ask = (ix == 1);/* NA |-> FALSE */
+	dd->ask = Rboolean(ix == 1);/* NA |-> FALSE */
     }
     else if (streql(what, "fig")) {
 	value = coerceVector(value, REALSXP);
@@ -286,7 +286,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	    REAL(value)[1] <= 1.0 &&
 	    0.0 <= REAL(value)[2] && REAL(value)[2] < REAL(value)[3] &&
 	    REAL(value)[3] <= 1.0) {
-	    R_DEV_2(defaultFigure) = 0;
+	    R_DEV_2(defaultFigure) = Rboolean(0);
 	    R_DEV_2(fUnits) = NIC;
 	    R_DEV_2(numrows) = 1;
 	    R_DEV_2(numcols) = 1;
@@ -310,7 +310,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     else if (streql(what, "fin")) {
 	value = coerceVector(value, REALSXP);
 	lengthCheck(what, value, 2);
-	R_DEV_2(defaultFigure) = 0;
+	R_DEV_2(defaultFigure) = Rboolean(0);
 	R_DEV_2(fUnits) = INCHES;
 	R_DEV_2(numrows) = 1;
 	R_DEV_2(numcols) = 1;
@@ -477,7 +477,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	if(!gpptr(dd)->state) {
 	    /* no need to warn with new=FALSE and no plot */
 	    if(ix != 0) warning(_("calling par(new=TRUE) with no plot"));
-	} else R_DEV__(newplot) = (ix != 0);
+	} else R_DEV__(newplot) = Rboolean(ix != 0);
     }
     /* -- */
 
@@ -617,13 +617,13 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	lengthCheck(what, value, 1);	ix = asLogical(value);
 	if (ix == NA_LOGICAL)
 	    par_error(what);
-	R_DEV__(xlog) = (ix != 0);
+	R_DEV__(xlog) = Rboolean(ix != 0);
     }
     else if (streql(what, "ylog")) {
 	lengthCheck(what, value, 1);	ix = asLogical(value);
 	if (ix == NA_LOGICAL)
 	    par_error(what);
-	R_DEV__(ylog) = (ix != 0);
+	R_DEV__(ylog) = Rboolean(ix != 0);
     }
     else if (streql(what, "ylbias")) {
 	lengthCheck(what, value, 1);
@@ -675,7 +675,7 @@ static void Specify2(const char *what, SEXP value, pGEDevDesc dd)
 	return;
     }
 
-#include "par-common.c"
+#include "par-common.cpp"
 } /* Specify2 */
 
 

@@ -152,9 +152,9 @@ struct Rf_RegisteredNativeSymbol {
    */
 typedef struct {
     HINSTANCE (*loadLibrary)(const char *path, int asLocal, int now,
-			     char const *search); 
+			     const char *search); 
     /* Load the dynamic library. */
-    DL_FUNC (*dlsym)(DllInfo *info, char const *name); 
+    DL_FUNC (*dlsym)(DllInfo *info, const char *name); 
     /* Low-level symbol lookup in library */
     void (*closeLibrary)(HINSTANCE handle); 
     /* Unload the dynamic library from process. */
@@ -194,7 +194,7 @@ extern int nCPFun;
 
 DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all);
 
-DL_FUNC R_dlsym(DllInfo *info, char const *name, 
+DL_FUNC R_dlsym(DllInfo *info, const char *name, 
 		R_RegisteredNativeSymbol *symbol);
 
 /* Moved to API in R 3.4.0

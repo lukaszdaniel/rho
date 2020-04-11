@@ -50,13 +50,13 @@ Rboolean isNAcol(SEXP col, int index, int ncol)
 	result = TRUE;
     else {
 	if (isLogical(col))
-	    result = LOGICAL(col)[index % ncol] == NA_LOGICAL;
+	    result = Rboolean(LOGICAL(col)[index % ncol] == NA_LOGICAL);
 	else if (isString(col))
 	    result = streql(CHAR(STRING_ELT(col, index % ncol)), "NA");
 	else if (isInteger(col))
-	    result = INTEGER(col)[index % ncol] == NA_INTEGER;
+	    result = Rboolean(INTEGER(col)[index % ncol] == NA_INTEGER);
 	else if (isReal(col))
-	    result = !R_FINITE(REAL(col)[index % ncol]);
+	    result = Rboolean(!R_FINITE(REAL(col)[index % ncol]));
 	else
 	    error(_("invalid color specification"));
     }
@@ -69,7 +69,7 @@ Rboolean isNAcol(SEXP col, int index, int ncol)
 /*
  * Extract specified par from list of inline pars
  */
-static SEXP getInlinePar(SEXP s, char *name)
+static SEXP getInlinePar(SEXP s, const char *name)
 {
     SEXP result = R_NilValue;
     int found = 0;
@@ -809,7 +809,7 @@ SEXP C_axis(SEXP args)
     /* This indicates whether or not ticks and the axis line */
     /* should be plotted: TRUE => show, FALSE => don't show. */
 
-    doticks = asLogical(CAR(args));
+    doticks = Rboolean(Rf_asLogical(CAR(args)));
     doticks = (doticks == NA_LOGICAL) ? TRUE : (Rboolean) doticks;
     args = CDR(args);
 
@@ -1001,7 +1001,7 @@ SEXP C_axis(SEXP args)
 	    if (R_FINITE(pos))
 		axis_base = GConvertY(pos, USER, NFC, dd);
 	    else
-		axis_base = GConvertY(0.0, outer, NFC, dd)
+		axis_base = GConvertY(0.0, GUnit(outer), NFC, dd)
 		    - GConvertYUnits(line, LINES, NFC, dd);
 	    if (R_FINITE(gpptr(dd)->tck)) {
 		double len, xu, yu;
@@ -1023,7 +1023,7 @@ SEXP C_axis(SEXP args)
 	    if (R_FINITE(pos))
 		axis_base = GConvertY(pos, USER, NFC, dd);
 	    else
-		axis_base =  GConvertY(1.0, outer, NFC, dd)
+		axis_base =  GConvertY(1.0, GUnit(outer), NFC, dd)
 		    + GConvertYUnits(line, LINES, NFC, dd);
 	    if (R_FINITE(gpptr(dd)->tck)) {
 		double len, xu, yu;
@@ -1111,7 +1111,7 @@ SEXP C_axis(SEXP args)
 			label = STRING_ELT(lab, ind[i]);
 			if(label != NA_STRING) {
 			    const char *ss = CHAR(label);
-			    labw = GStrWidth(ss, 0, NFC, dd);
+			    labw = GStrWidth(ss, cetype_t(0), NFC, dd);
 			    tnew = temp - 0.5 * labw;
 			    /* Check room for perpendicular labels. */
 			    if (gpptr(dd)->las == 2 ||
@@ -1142,7 +1142,7 @@ SEXP C_axis(SEXP args)
 	    if (R_FINITE(pos))
 		axis_base = GConvertX(pos, USER, NFC, dd);
 	    else
-		axis_base =  GConvertX(0.0, outer, NFC, dd)
+		axis_base =  GConvertX(0.0, GUnit(outer), NFC, dd)
 		    - GConvertXUnits(line, LINES, NFC, dd);
 	    if (R_FINITE(gpptr(dd)->tck)) {
 		double len, xu, yu;
@@ -1163,7 +1163,7 @@ SEXP C_axis(SEXP args)
 	    if (R_FINITE(pos))
 		axis_base = GConvertX(pos, USER, NFC, dd);
 	    else
-		axis_base =  GConvertX(1.0, outer, NFC, dd)
+		axis_base =  GConvertX(1.0, GUnit(outer), NFC, dd)
 		    + GConvertXUnits(line, LINES, NFC, dd);
 	    if (R_FINITE(gpptr(dd)->tck)) {
 		double len, xu, yu;
@@ -1802,7 +1802,7 @@ SEXP C_path(SEXP args)
     else
 	gpptr(dd)->lty = INTEGER(lty)[0];
 
-    GPath(xx, yy, npoly, INTEGER(nper), INTEGER(rule)[0] == 1,
+    GPath(xx, yy, npoly, INTEGER(nper), Rboolean(INTEGER(rule)[0] == 1),
           INTEGER(col)[0], INTEGER(border)[0], dd);
 
     GMode(0, dd);
@@ -1875,7 +1875,7 @@ SEXP C_raster(SEXP args)
            GRaster(image, INTEGER(dim)[1], INTEGER(dim)[0],
                    x0, y0, x1 - x0, y1 - y0,
                    REAL(angle)[i % LENGTH(angle)],
-                   LOGICAL(interpolate)[i % LENGTH(interpolate)], dd);
+                   Rboolean(LOGICAL(interpolate)[i % LENGTH(interpolate)]), dd);
     }
     GMode(0, dd);
 
@@ -2545,7 +2545,7 @@ SEXP C_title(SEXP args)
     line = asReal(CAR(args));
     args = CDR(args);
 
-    outer = asLogical(CAR(args));
+    outer = Rboolean(Rf_asLogical(CAR(args)));
     if (outer == NA_LOGICAL) outer = 0;
     args = CDR(args);
 
@@ -3597,7 +3597,7 @@ SEXP C_erase(SEXP args)
 /* symbols(..) in ../library/base/R/symbols.R  : */
 
 /* utility just computing range() */
-static Rboolean SymbolRange(double *x, int n, double *xmax, double *xmin)
+static bool SymbolRange(double *x, int n, double *xmax, double *xmin)
 {
     int i;
     *xmax = -DBL_MAX;
@@ -3607,7 +3607,7 @@ static Rboolean SymbolRange(double *x, int n, double *xmax, double *xmin)
 	    if (*xmax < x[i]) *xmax = x[i];
 	    if (*xmin > x[i]) *xmin = x[i];
 	}
-    return(*xmax >= *xmin && *xmin >= 0);
+    return (*xmax >= *xmin && *xmin >= 0);
 }
 
 static void CheckSymbolPar(SEXP p, int *nr, int *nc)
@@ -3935,9 +3935,9 @@ SEXP C_xspline(SEXP args)
     sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
     nx = LENGTH(sx);
     ss = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
-    open = asLogical(CAR(args)); args = CDR(args);
-    repEnds = asLogical(CAR(args)); args = CDR(args);
-    draw = asLogical(CAR(args)); args = CDR(args);
+    open = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
+    repEnds = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
+    draw = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
 
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));	args = CDR(args);
     ncol = LENGTH(col);
@@ -4061,7 +4061,7 @@ SEXP C_convertX(SEXP args)
 
     PROTECT(ans = duplicate(x));
     rx = REAL(ans);
-    for (i = 0; i < n; i++) rx[i] = GConvertX(rx[i], from, to, gdd);
+    for (i = 0; i < n; i++) rx[i] = GConvertX(rx[i], GUnit(from), GUnit(to), gdd);
     UNPROTECT(1);
 
     return ans;
@@ -4088,7 +4088,7 @@ SEXP C_convertY(SEXP args)
 
     PROTECT(ans = duplicate(x));
     rx = REAL(ans);
-    for (i = 0; i < n; i++) rx[i] = GConvertY(rx[i], from, to, gdd);
+    for (i = 0; i < n; i++) rx[i] = GConvertY(rx[i], GUnit(from), GUnit(to), gdd);
     UNPROTECT(1);
 
     return ans;

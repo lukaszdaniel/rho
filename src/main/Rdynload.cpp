@@ -605,14 +605,14 @@ static DllInfo* AddDLL(const char *path, int asLocal, int now,
 #else
 	snprintf(tmp, len, "_%s%s","R_init_", info->name);
 #endif
-	f = DllInfoInitCall( R_osDynSymbol->dlsym(info, tmp));
+	f = DllInfoInitCall(R_osDynSymbol->dlsym(info, tmp));
 	/* If that failed, might have used the package name with
 	   . replaced by _ (as . it not valid in symbol names). */
 	if(!f) {
 	    /* This is potentially unsafe in MBCSs, as '.' might be
 	       part of a character: but is not in UTF-8 */
 	    for(char *p = tmp; *p; p++) if(*p == '.') *p = '_';
-	    f = DllInfoInitCall( R_osDynSymbol->dlsym(info, tmp));
+	    f = DllInfoInitCall(R_osDynSymbol->dlsym(info, tmp));
 	}
 	if(f) f(info);
     }
@@ -806,7 +806,7 @@ R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
 }
 
 DL_FUNC attribute_hidden
-R_dlsym(DllInfo *info, char const *name,
+R_dlsym(DllInfo *info, const char *name,
 	R_RegisteredNativeSymbol *symbol)
 {
     size_t len = strlen(name) + 4;
@@ -855,7 +855,7 @@ R_dlsym(DllInfo *info, char const *name,
    symbol upon success.
  */
 
-DL_FUNC R_FindSymbol(char const *name, char const *pkg,
+DL_FUNC R_FindSymbol(const char *name, const char *pkg,
 		     R_RegisteredNativeSymbol *symbol)
 {
     DL_FUNC fcnptr = RHO_NO_CAST(DL_FUNC) nullptr;

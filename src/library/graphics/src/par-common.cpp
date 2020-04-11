@@ -29,7 +29,7 @@
     }
     else if (streql(what, "ann")) {
 	lengthCheck(what, value, 1);	ix = asLogical(value);
-	R_DEV__(ann) = (ix != 0);/* NA |-> TRUE */
+	R_DEV__(ann) = Rboolean(ix != 0);/* NA |-> TRUE */
     }
     else if (streql(what, "bg")) {
 	/* in par() this means the plot region, inline it means filled points */
@@ -334,7 +334,7 @@
 	if (ix == NA_INTEGER)
 	    R_DEV__(xpd) = 2;
 	else
-	    R_DEV__(xpd) = (ix != 0);
+	    R_DEV__(xpd) = Rboolean(ix != 0);
     }
     else if (streql(what, "yaxp")) {
 	value = coerceVector(value, REALSXP);

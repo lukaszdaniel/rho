@@ -27,7 +27,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
-/* Used by graphics.c, grid and by third-party graphics devices */
+/* Used by graphics.cpp, grid and by third-party graphics devices */
 
 #ifndef R_GRAPHICSENGINE_H_
 #define R_GRAPHICSENGINE_H_
@@ -539,10 +539,9 @@ void GEonExit(void);
 void GEnullDevice(void);
 
 
-/* From ../../main/plot.cpp, used by ../../library/grid/src/grid.c : */
-#define CreateAtVector		Rf_CreateAtVector
+/* From ../../main/plot.cpp, used by ../../library/grid/src/grid.cpp : */
 SEXP CreateAtVector(double*, double*, int, Rboolean);
-/* From ../../main/graphics.cp, used by ../../library/grDevices/src/axis_scales.c : */
+/* From ../../main/graphics.cpp, used by ../../library/grDevices/src/axis_scales.c : */
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis);
 
 #ifdef __cplusplus

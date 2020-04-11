@@ -11,8 +11,8 @@ top_builddir = ../../../..
 subdir = src/library/$(pkg)/src
 R_HOME = $(top_builddir)
 
-SOURCES_C = init.c base.c graphics.c par.c plot.c plot3d.c stem.c
-SOURCES_CXX = graphics.cpp
+SOURCES_C = 
+SOURCES_CXX = init.cpp base.cpp par.cpp plot.cpp plot3d.cpp stem.cpp graphics.cpp
 
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) ../../../gnuwin32/dllversion.o

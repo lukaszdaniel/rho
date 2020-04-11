@@ -145,7 +145,7 @@ int R_finite(double);
  */
 #define ML_ERROR(x, s) { \
    if(x > ME_DOMAIN) { \
-       char const * msg = ""; \
+       const char * msg = ""; \
        switch(x) { \
        case ME_DOMAIN: \
 	   msg = _("argument out of domain in '%s'\n");	\

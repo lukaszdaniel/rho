@@ -29,7 +29,7 @@ CURL_LIBS = @CURL_LIBS@
 ## in case we want to link with this for UBSAN checks
 CXX = @CXX@
 DEFS = @DEFS@ @R_DEFS@
-DISTDIR_TAR_EXCLUDE = --exclude=.svn --exclude=Makefile --exclude="*.o" --exclude="*$(SHLIB_EXT)" --exclude="*~"
+DISTDIR_TAR_EXCLUDE = --exclude=.git --exclude=Makefile --exclude="*.o" --exclude="*$(SHLIB_EXT)" --exclude="*~"
 DYLIB_EXT = @DYLIB_EXT@
 DYLIB_LD = @DYLIB_LD@
 DYLIB_LDFLAGS = @DYLIB_LDFLAGS@@BUILD_LTO_TRUE@ $(DYLIBS_LTO)
@@ -107,6 +107,9 @@ SHLIB_FFLAGS = @SHLIB_FFLAGS@
 SHLIB_LD = @SHLIB_LD@
 SHLIB_LDFLAGS = @SHLIB_LDFLAGS@@BUILD_LTO_TRUE@ $(SHLIB_LTO)
 SHLIB_LINK = $(SHLIB_LD) $(SHLIB_LDFLAGS) $(LIBR0) $(LDFLAGS)
+SHLIB_CXXLD = @SHLIB_CXXLD@
+SHLIB_CXXLDFLAGS = @SHLIB_CXXLDFLAGS@@BUILD_LTO_TRUE@ $(SHLIB_LTO)
+SHLIB_CXXLINK = $(SHLIB_CXXLD) $(SHLIB_CXXLDFLAGS) $(LIBR0) $(LDFLAGS)
 SHLIB_LTO = $(CFLAGS) $(CPICFLAGS)
 STRIP_LIBS = @striplib@
 STRIP_STATIC_LIBS = @stripstaticlib@

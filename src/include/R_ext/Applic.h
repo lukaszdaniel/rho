@@ -114,7 +114,7 @@ void F77_NAME(dqrxb)(double *x, int *n, int *k, double *qraux,
 		     double *y, int *ny, double *xb);
 
 /* end of registered */
-
+
 /* hidden, for use in R.bin/R.dll/libR.so */
 
 /* appl/pretty.c: for use in engine.cpp and util.cpp */
@@ -122,7 +122,7 @@ double R_pretty(double *lo, double *up, int *ndiv, int min_n,
 		double shrink_sml, double high_u_fact[],
 		int eps_correction, int return_bounds);
 
-
+
 /* For use in package stats */
 
 /* appl/uncmin.c : */

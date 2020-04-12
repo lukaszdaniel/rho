@@ -86,8 +86,8 @@ all these files must be updated {path relative to R's topdir}:
   src/include/R_ext/Lapack.h
   src/include/Rmodules/Rlapack.h
   src/main/basedecl.h
-  src/main/lapack.c
-  src/main/registration.c
-  src/modules/lapack/Lapack.c
+  src/main/lapack.cpp
+  src/main/registration.cpp
+  src/modules/lapack/Lapack.cpp
   src/modules/lapack/Lapack.h
   src/modules/lapack/cmplx.f or dlapack.f

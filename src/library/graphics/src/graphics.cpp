@@ -2826,7 +2826,7 @@ int GClipPolygon(double *x, double *y, int n, int coords, int store,
  * This allows new graphics API (GraphicsDevice.h, GraphicsEngine.h)
  * to be developed alongside.
  * Could be removed if Rgraphics.h ever gets REPLACED by new API
- * NOTE that base graphics code (in plotpp) still calls this.
+ * NOTE that base graphics code (in plot.cpp) still calls this.
  */
 /* GPolygon -- Draw a polygon
  *	Filled with color bg and outlined with color fg

@@ -53,6 +53,7 @@ extern int dladdr(void *addr, Dl_info *info);
 #endif
 
 #include "Lapack.h"
+using namespace rho;
 
 /* NB: the handling of dims is odd here.  Most are coerced to be
  * integers (which dimgets currently guarantees), but a couple were
@@ -281,7 +282,7 @@ static SEXP La_rg(SEXP x, SEXP only_values)
 
     ov = asLogical(only_values);
     if (ov == NA_LOGICAL) error(_("invalid '%s' argument"), "only.values");
-    vectors = (Rboolean) (!ov);
+    vectors = Rboolean(!ov);
     left = right = (double *) 0;
     if (vectors) {
 	jobVR[0] = 'V';
@@ -1404,8 +1405,8 @@ static SEXP mod_do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
 #include <Rmodules/Rlapack.h>
 #include <R_ext/Rdynload.h>
 
-void
-R_init_lapack(DllInfo *info)
+extern "C"
+void R_init_lapack(DllInfo *info)
 {
     R_LapackRoutines *tmp;
     tmp = Calloc(1, R_LapackRoutines);

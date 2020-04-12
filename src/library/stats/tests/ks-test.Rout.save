@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2020-04-07 r9828faa63b) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-12 rd8256243fd) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2017-09-01 r73180) -- "Frisbee Sailing"
@@ -368,4 +368,4 @@ difference in location  3.741417e-05  3.741417e-05  3.741417e-05
 > 
 > proc.time()
    user  system elapsed 
-  0.359   0.021   0.372 
+  0.373   0.017   0.382 

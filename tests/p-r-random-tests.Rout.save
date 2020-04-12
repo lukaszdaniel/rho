@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2020-04-07 r9828faa63b) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-12 rd8256243fd) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2017-09-01 r73180) -- "Frisbee Sailing"
@@ -284,6 +284,6 @@ f(df1 = 10, df2 = 2, ncp = 3) PASSED
 > 
 > 
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  1.385 0.004 1.389 0 0 
+Time elapsed:  1.42 0.004 1.424 0 0 
 > 
 > 

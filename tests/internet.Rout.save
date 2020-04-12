@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2020-04-07 r9828faa63b) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-12 rd8256243fd) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2017-09-01 r73180) -- "Frisbee Sailing"
@@ -31,7 +31,7 @@ Type 'q()' to quit R.
 > ap <- available.packages(contrib.url("http://cran.r-project.org"))
 > ## IGNORE_RDIFF_BEGIN
 > nrow(ap)
-[1] 15312
+[1] 15262
 > ## IGNORE_RDIFF_END
 > 
 > # test url connections on http

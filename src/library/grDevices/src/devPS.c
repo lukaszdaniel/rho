@@ -234,7 +234,7 @@ KeyWordDictionary[] = {
     { NULL,		     Unknown },
 };
 
-static int MatchKey(char const * l, char const * k)
+static int MatchKey(const char * l, const char * k)
 {
     while (*k)
 	if (*k++ != *l++) return 0;
@@ -816,7 +816,7 @@ static const char UCS2ENC[] = "UCS-2LE";
 static void
 PostScriptMetricInfo(int c, double *ascent, double *descent, double *width,
 		     FontMetricInfo *metrics,
-		     Rboolean isSymbol,
+		     Rboolean isSymbol_,
 		     const char *encoding)
 {
     Rboolean Unicode = mbcslocale;
@@ -831,7 +831,7 @@ PostScriptMetricInfo(int c, double *ascent, double *descent, double *width,
     if (c < 0) { Unicode = TRUE; c = -c; }
     /* We don't need the restriction to 65536 here any more as we could
        convert from  UCS4ENC, but there are few language chars above 65536. */
-    if(Unicode && !isSymbol && c >= 128 && c < 65536) { /* Unicode */
+    if(Unicode && !isSymbol_ && c >= 128 && c < 65536) { /* Unicode */
 	void *cd = NULL;
 	const char *i_buf; char *o_buf, out[2];
 	size_t i_len, o_len, status;
@@ -1451,7 +1451,7 @@ SEXP Type1FontInUse(SEXP name, SEXP isPDF)
     if (!isString(name) || LENGTH(name) > 1)
 	error(_("invalid font name or more than one font name"));
     return ScalarLogical(
-	findLoadedFont(CHAR(STRING_ELT(name, 0)), NULL, asLogical(isPDF))
+	findLoadedFont(CHAR(STRING_ELT(name, 0)), NULL, (Rboolean) (Rf_asLogical(isPDF)))
 	!= NULL);
 }
 
@@ -1484,7 +1484,7 @@ SEXP CIDFontInUse(SEXP name, SEXP isPDF)
     if (!isString(name) || LENGTH(name) > 1)
 	error(_("invalid font name or more than one font name"));
     return ScalarLogical(
-	findLoadedCIDFont(CHAR(STRING_ELT(name, 0)), asLogical(isPDF))
+	findLoadedCIDFont(CHAR(STRING_ELT(name, 0)), (Rboolean) (Rf_asLogical(isPDF)))
 	!= NULL);
 }
 
@@ -2465,7 +2465,7 @@ static void PSEncodeFonts(FILE *fp, PostScriptDesc *pd)
 	fprintf(fp, "%s", CIDBoldFontStr1);
 	fprintf(fp, "%s", CIDBoldFontStr2);
 	for (i = 0; i < 4 ; i++) {
-	    char *fmt = NULL /* -Wall */;
+	    const char *fmt = NULL /* -Wall */;
 	    fprintf(fp, "%%%%IncludeResource: CID font %s-%s\n", name,
 		    cidfonts->cidfamily->cmap);
 	    switch(i) {
@@ -3128,7 +3128,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
     strncpy(pd->title, title, 1024);
     if (streql(colormodel, "grey")) strcpy(pd->colormodel, "grey");
     else strncpy(pd->colormodel, colormodel, 30);
-    pd->useKern = (useKern != 0);
+    pd->useKern = (Rboolean) (useKern != 0);
     pd->fillOddEven = fillOddEven;
 
     if(strlen(encoding) > PATH_MAX - 1) {
@@ -3142,7 +3142,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding(encoding, pd->encodings, FALSE)))
-	enc = addEncoding(encoding, 0);
+	enc = addEncoding(encoding, (Rboolean) 0);
     if (enc && (enclist = addDeviceEncoding(enc, pd->encodings))) {
 	pd->encodings = enclist;
     } else {
@@ -3162,7 +3162,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      * Could lead to redundant extra loading of a font, but not often(?)
      */
     if (streql(family, "User")) {
-	font = addDefaultFontFromAFMs(encoding, afmpaths, 0, pd->encodings);
+	font = addDefaultFontFromAFMs(encoding, afmpaths, (Rboolean) 0, pd->encodings);
     } else {
 	/*
 	 * Otherwise, family is a device-independent font family.
@@ -3658,8 +3658,8 @@ static void Invalidate(pDevDesc dd)
     pd->current.fontsize = -1;
     pd->current.lwd = -1;
     pd->current.lty = -1;
-    pd->current.lend = 0;
-    pd->current.ljoin = 0;
+    pd->current.lend = (R_GE_lineend) 0;
+    pd->current.ljoin = (R_GE_linejoin) 0;
     pd->current.lmitre = 0;
     pd->current.col = INVALID_COL;
     pd->current.fill = INVALID_COL;
@@ -3882,7 +3882,7 @@ static void PS_MetricInfo(int c,
     if (isType1Font(gc->fontfamily, PostScriptFonts, pd->defaultFont)) {
 	PostScriptMetricInfo(c, ascent, descent, width,
 			     metricInfo(gc->fontfamily, face, pd),
-			     face == 5, convname(gc->fontfamily, pd));
+			     (Rboolean) (face == 5), convname(gc->fontfamily, pd));
     } else { /* cidfont(gc->fontfamily, PostScriptFonts) */
 	if (face < 5) {
 	    PostScriptCIDMetricInfo(c, ascent, descent, width);
@@ -4455,7 +4455,7 @@ static void PS_Text0(double x, double y, const char *str, int enc,
     */
     if((enc == CE_UTF8 || mbcslocale) && !strIsASCII(str)) {
 	R_CheckStack2(strlen(str)+1);
-	buff = alloca(strlen(str)+1); /* Output string cannot be longer */
+	buff = (char *) alloca(strlen(str)+1); /* Output string cannot be longer */
 	mbcsToSbcs(str, buff, convname(gc->fontfamily, pd), enc);
 	str1 = buff;
     }
@@ -4780,7 +4780,7 @@ XFigDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding("ISOLatin1.enc", pd->encodings, FALSE)))
-	enc = addEncoding("ISOLatin1.enc", 0);
+	enc = addEncoding("ISOLatin1.enc", (Rboolean) 0);
     if (enc && (enclist = addDeviceEncoding(enc, pd->encodings))) {
 	pd->encodings = enclist;
     } else {
@@ -4967,7 +4967,7 @@ XFigDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 
     dd->deviceSpecific = (void *) pd;
     dd->displayListOn = FALSE;
-    return 1;
+    return (Rboolean) 1;
 }
 
 static void XFig_cleanup(pDevDesc dd, XFigDesc *pd)
@@ -5359,7 +5359,7 @@ static void XFig_MetricInfo(int c,
 
     PostScriptMetricInfo(c, ascent, descent, width,
 			 &(pd->fonts->family->fonts[face-1]->metrics),
-			 face == 5, "");
+			 (Rboolean) (face == 5), "");
     *ascent = floor(gc->cex * gc->ps + 0.5) * *ascent;
     *descent = floor(gc->cex * gc->ps + 0.5) * *descent;
     *width = floor(gc->cex * gc->ps + 0.5) * *width;
@@ -5549,7 +5549,7 @@ static rasterImage* initRasterArray(int numRasters)
 {
     int i;
     /* why not use calloc? */
-    rasterImage* rasters = malloc(numRasters*sizeof(rasterImage));
+    rasterImage* rasters = (rasterImage *) malloc(numRasters*sizeof(rasterImage));
     if (rasters) {
 	for (i = 0; i < numRasters; i++) {
 	    rasters[i].raster = NULL;
@@ -5573,10 +5573,10 @@ static int addRaster(rcolorPtr raster, int w, int h,
 	/* Do it this way so previous pointer is retained if it fails */
 	tmp = realloc(pd->masks, new_*sizeof(int));
 	if(!tmp) error(_("failed to increase 'maxRaster'"));
-	pd->masks = tmp;
+	pd->masks = (int *) tmp;
 	tmp = realloc(pd->rasters, new_*sizeof(rasterImage));
 	if(!tmp) error(_("failed to increase 'maxRaster'"));
-	pd->rasters = tmp;
+	pd->rasters = (rasterImage *) tmp;
 	for (i = pd->maxRasters; i < new_; i++) {
 	    pd->rasters[i].raster = NULL;
 	    pd->masks[i] = -1;
@@ -5584,7 +5584,7 @@ static int addRaster(rcolorPtr raster, int w, int h,
 	pd->maxRasters = new_;
     }
 
-    newRaster = malloc(w*h*sizeof(rcolor));
+    newRaster = (rcolorPtr) malloc(w*h*sizeof(rcolor));
 
     if (!newRaster)
 	error(_("unable to allocate raster image"));
@@ -5619,7 +5619,7 @@ static void killRasterArray(rasterImage *rasters, int numRasters) {
 /* Detect a mask by masks[] >= 0 */
 static int* initMaskArray(int numRasters) {
     int i;
-    int* masks = malloc(numRasters*sizeof(int));
+    int* masks = (int *) malloc(numRasters*sizeof(int));
     if (masks) {
 	for (i = 0; i < numRasters; i++) masks[i] = -1;
     } /* else error thrown in PDFDeviceDriver */
@@ -5904,8 +5904,8 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
     memset(pd->fontUsed, 0, 100*sizeof(Rboolean));
     if (streql(colormodel, "grey")) strcpy(pd->colormodel, "gray");
     else strncpy(pd->colormodel, colormodel, 30);
-    pd->dingbats = (dingbats != 0);
-    pd->useKern = (useKern != 0);
+    pd->dingbats = (Rboolean) (dingbats != 0);
+    pd->useKern = (Rboolean) (useKern != 0);
     pd->fillOddEven = fillOddEven;
     pd->useCompression = useCompression;
     if(useCompression && pd->versionMajor == 1 && pd->versionMinor < 2) {
@@ -5933,7 +5933,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding(encoding, pd->encodings, TRUE)))
-	enc = addEncoding(encoding, 1);
+	enc = addEncoding(encoding, (Rboolean) 1);
     if (enc && (enclist = addDeviceEncoding(enc,
 					    pd->encodings))) {
 	pd->encodings = enclist;
@@ -5955,7 +5955,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      * Could lead to redundant extra loading of a font, but not often(?)
      */
     if (streql(family, "User")) {
-	font = addDefaultFontFromAFMs(encoding, afmpaths, 0, pd->encodings);
+	font = addDefaultFontFromAFMs(encoding, afmpaths, (Rboolean) 0, pd->encodings);
     } else {
 	/*
 	 * Otherwise, family is a device-independent font family.
@@ -6149,7 +6149,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 	free(dd);
 	error(_("invalid paper type '%s' (pdf)"), errbuf);
     }
-    pd->pagecentre = pagecentre;
+    pd->pagecentre = (Rboolean) (pagecentre);
     pd->paperwidth = (int)(72 * pd->pagewidth);
     pd->paperheight = (int)(72 * pd->pageheight);
     if(strcmp(pd->papername, "special"))
@@ -6174,7 +6174,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 	error(_("invalid foreground/background color (pdf)"));
     }
 
-    pd->onefile = onefile;
+    pd->onefile = (Rboolean) (onefile);
     pd->maxpointsize = (int)(72.0 * ((pd->pageheight > pd->pagewidth) ?
 				     pd->pageheight : pd->pagewidth));
     pd->pageno = pd->fileno = 0;
@@ -6263,8 +6263,8 @@ static void PDF_Invalidate(pDevDesc dd)
     pd->current.fontsize = -1;
     pd->current.lwd = -1;
     pd->current.lty = -1;
-    pd->current.lend = 0;
-    pd->current.ljoin = 0;
+    pd->current.lend = (R_GE_lineend) 0;
+    pd->current.ljoin = (R_GE_linejoin) 0;
     pd->current.lmitre = 0;
     /* page starts with black as the default fill and stroke colours */
     pd->current.col = INVALID_COL;
@@ -7246,7 +7246,7 @@ static void PDF_NewPage(const pGEcontext gc,
 	pd->pdffp = fopen(tmp, "w+b");
 	if (! pd->pdffp) {
             pd->pdffp = pd->mainfp;
-            pd->useCompression = 0;
+            pd->useCompression = (Rboolean) 0;
             warning(_("Cannot open temporary file '%s' for compression (reason: %s); compression has been turned off for this device"), 
                     tmp, strerror(errno));
         }
@@ -7822,7 +7822,7 @@ static void PDFSimpleText(double x, double y, const char *str,
     textoff(pd); /* added in 2.8.0 */
 }
 
-static char *PDFconvname(const char *family, PDFDesc *pd);
+static const char *PDFconvname(const char *family, PDFDesc *pd);
 
 static void PDF_Text0(double x, double y, const char *str, int enc,
 		      double rot, double hadj,
@@ -7877,7 +7877,7 @@ static void PDF_Text0(double x, double y, const char *str, int enc,
 	    /*
 	     * Try to load the font
 	     */
-	    cidfont = addCIDFont(gc->fontfamily, 1);
+	    cidfont = addCIDFont(gc->fontfamily, (Rboolean) 1);
 	    if (cidfont) {
 		if (!addPDFDeviceCIDfont(cidfont, pd, &dontcare)) {
 		    cidfont = NULL;
@@ -7958,7 +7958,7 @@ static void PDF_Text0(double x, double y, const char *str, int enc,
     if((enc == CE_UTF8 || mbcslocale) && !strIsASCII(str) && face < 5) {
 	/* face 5 handled above */
 	R_CheckStack2(strlen(str)+1);
-	buff = alloca(strlen(str)+1); /* Output string cannot be longer */
+	buff = (char *) alloca(strlen(str)+1); /* Output string cannot be longer */
 	mbcsToSbcs(str, buff, PDFconvname(gc->fontfamily, pd), enc);
 	str1 = buff;
     } else str1 = str;
@@ -8008,7 +8008,7 @@ static FontMetricInfo
 	    /*
 	     * Try to load the font
 	     */
-	    fontfamily = addCIDFont(family, 1);
+	    fontfamily = addCIDFont(family, (Rboolean) 1);
 	    if (fontfamily) {
 		if (addPDFDeviceCIDfont(fontfamily, pd, &dontcare)) {
 		    result = &(fontfamily->symfont->metrics);
@@ -8070,10 +8070,10 @@ static FontMetricInfo
     return result;
 }
 
-static char
+static const char
 *PDFconvname(const char *family, PDFDesc *pd)
 {
-    char *result = (pd->fonts) ? pd->fonts->family->encoding->convname : "latin1";
+    const char *result = (pd->fonts) ? pd->fonts->family->encoding->convname : "latin1";
     /* pd->fonts is NULL when CIDfonts are used */
 
     if (strlen(family) > 0) {
@@ -8187,7 +8187,7 @@ void PDF_MetricInfo(int c,
 	PostScriptMetricInfo(c, ascent, descent, width,
 			     PDFmetricInfo(gc->fontfamily,
 					   gc->fontface, pd),
-			     face == 5, PDFconvname(gc->fontfamily, pd));
+			     (Rboolean) (face == 5), PDFconvname(gc->fontfamily, pd));
     } else { /* cidfont(gc->fontfamily) */
 	if (face < 5) {
 	    PostScriptCIDMetricInfo(c, ascent, descent, width);
@@ -8275,7 +8275,7 @@ SEXP PostScript(SEXP args)
     colormodel = CHAR(asChar(CAR(args)));  args = CDR(args);
     useKern = asLogical(CAR(args));   args = CDR(args);
     if (useKern == NA_LOGICAL) useKern = 1;
-    fillOddEven = asLogical(CAR(args));
+    fillOddEven = (Rboolean) (Rf_asLogical(CAR(args)));
     if (fillOddEven == NA_LOGICAL)
 	error(_("invalid value of '%s'"), "fillOddEven");
 
@@ -8286,8 +8286,8 @@ SEXP PostScript(SEXP args)
 	if (!(dev = (pDevDesc) calloc(1, sizeof(DevDesc))))
 	    return 0;
 	if(!PSDeviceDriver(dev, file, paper, family, afms, encoding, bg, fg,
-			   width, height, (double)horizontal, ps, onefile,
-			   pagecentre, printit, cmd, title, fonts,
+			   width, height, (Rboolean) (horizontal), ps, (Rboolean) (onefile),
+			   (Rboolean) (pagecentre), (Rboolean) (printit), cmd, title, fonts,
 			   colormodel, useKern, fillOddEven)) {
 	    /* we no longer get here: error is thrown in PSDeviceDriver */
 	    error(_("unable to start %s() device"), "postscript");
@@ -8354,7 +8354,7 @@ SEXP XFig(SEXP args)
 	if (!(dev = (pDevDesc) calloc(1, sizeof(DevDesc))))
 	    return 0;
 	if(!XFigDeviceDriver(dev, file, paper, family, bg, fg, width, height,
-			     (double) horizontal, ps, onefile, pagecentre, defaultfont, textspecial,
+			     (Rboolean) (horizontal), ps, (Rboolean) (onefile), (Rboolean) (pagecentre), (Rboolean) (defaultfont), (Rboolean) (textspecial),
 			     encoding)) {
 	    /* we no longer get here: error is thrown in XFigDeviceDriver */
 	    error(_("unable to start %s() device"), "xfig");
@@ -8438,7 +8438,7 @@ SEXP PDF(SEXP args)
     if (dingbats == NA_LOGICAL) dingbats = 1;
     useKern = asLogical(CAR(args)); args = CDR(args);
     if (useKern == NA_LOGICAL) useKern = 1;
-    fillOddEven = asLogical(CAR(args)); args = CDR(args);
+    fillOddEven = (Rboolean) (Rf_asLogical(CAR(args))); args = CDR(args);
     if (fillOddEven == NA_LOGICAL)
 	error(_("invalid value of '%s'"), "fillOddEven");
     useCompression = asLogical(CAR(args)); args = CDR(args);
@@ -8455,7 +8455,7 @@ SEXP PDF(SEXP args)
 			    width, height, ps, onefile, pagecentre,
 			    title, fonts, major, minor, colormodel,
 			    dingbats, useKern, fillOddEven,
-			    useCompression)) {
+			    (Rboolean) (useCompression))) {
 	    /* we no longer get here: error is thrown in PDFDeviceDriver */
 	    error(_("unable to start %s() device"), "pdf");
 	}

@@ -19,7 +19,7 @@
 
 #include <config.h>
 #include <Defn.h>
-#include <Internal.h>
+//#include <Internal.h>
 #include "grDevices.h"
 #include "localization.h"
 
@@ -27,6 +27,12 @@
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP do_bmVersion(void);
+SEXP do_getSnapshot(SEXP call, SEXP op, SEXP args, SEXP env);
+SEXP do_playSnapshot(SEXP call, SEXP op, SEXP args, SEXP env);
+SEXP do_contourLines(SEXP call, SEXP op, SEXP args, SEXP env);
+SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env);
+SEXP do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env);
+SEXP do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env);
 
 SEXP X11(SEXP call, SEXP op, SEXP args, SEXP env)
 {
@@ -103,7 +109,7 @@ SEXP devAskNewPage(SEXP call, SEXP op, SEXP args, SEXP env)
     if (!isNull(CAR(args))) {
 	ask = asLogical(CAR(args));
 	if (ask == NA_LOGICAL) error(_("invalid '%s' argument"), "ask");
-	gdd->ask = ask;
+	gdd->ask = (Rboolean) (ask);
 	R_Visible = FALSE;
     } else R_Visible = TRUE;
 

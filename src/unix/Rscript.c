@@ -216,8 +216,8 @@ int main(int argc_, char *argv_[])
     snprintf(cmd, PATH_MAX+1, "%s/bin/rho", p);
 #endif
     av[ac++] = cmd;
-    av[ac++] = "--slave";
-    av[ac++] = "--no-restore";
+    av[ac++] = (char *) "--slave";
+    av[ac++] = (char *) "--no-restore";
 
     if(argc == 2) {
 	if(strcmp(argv[1], "--help") == 0) {
@@ -293,14 +293,14 @@ int main(int argc_, char *argv_[])
     // copy any user arguments, preceded by "--args"
     i = i0+1;
     if (i < argc) {
-	av[ac++] = "--args";
+	av[ac++] = (char *) "--args";
 	for(; i < argc; i++)
 	    av[ac++] = argv[i];
     }
     av[ac] = (char *) NULL;
 #ifdef HAVE_PUTENV
     if(!set_dp && !getenv("R_DEFAULT_PACKAGES"))
-	putenv("R_DEFAULT_PACKAGES=datasets,utils,grDevices,graphics,stats");
+	putenv((char *) "R_DEFAULT_PACKAGES=datasets,utils,grDevices,graphics,stats");
 
 #ifndef _WIN32
     /* pass on r_arch from this binary to R as a default */

@@ -167,7 +167,7 @@ SEXP devcapture(SEXP args)
     
     args = CDR(args);
 
-    native = asLogical(CAR(args));
+    native = (Rboolean) (Rf_asLogical(CAR(args)));
     if (native != TRUE) native = FALSE;
 
     raster = GECap(gdd);

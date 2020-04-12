@@ -131,7 +131,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	volatile int old_interrupts_suspended = R_interrupts_suspended;
 	if (SIGSETJMP(seljmpbuf, 1)) {
 	    myintr();
-	    R_interrupts_suspended = old_interrupts_suspended;
+	    R_interrupts_suspended = (Rboolean) (old_interrupts_suspended);
 	    error(_("interrupt handler must not return"));
 	    return 0; /* not reached */
 	}
@@ -157,7 +157,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	       signal handler, and return the result of the select. */
 	    val = select(n, readfds, writefds, exceptfds, timeout);
 	    signal(SIGINT, oldSigintHandler);
-	    R_interrupts_suspended = old_interrupts_suspended;
+	    R_interrupts_suspended = (Rboolean) (old_interrupts_suspended);
 	    return val;
 	}
     }
@@ -739,12 +739,12 @@ static void initialize_rlcompletion(void)
 	    SEXP cmdSexp, cmdexpr;
 	    ParseStatus status;
 	    int i;
-	    char *p = "try(loadNamespace('rcompgen'), silent=TRUE)";
+	    char *p = (char *) "try(loadNamespace('rcompgen'), silent=TRUE)";
 
 	    PROTECT(cmdSexp = mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
-		for(i = 0; i < length(cmdexpr); i++)
+		for(i = 0; i < Rf_length(cmdexpr); i++)
 		    eval(XVECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
@@ -876,7 +876,7 @@ static char *R_completion_generator(const char *text, int state)
 	eval(completionCall, rcompgen_rho);
 	PROTECT(completions = eval(retrieveCall, rcompgen_rho));
 	list_index = 0;
-	ncomp = length(completions);
+	ncomp = Rf_length(completions);
 	if (ncomp > 0) {
 	    compstrings = (char **) malloc(ncomp * sizeof(char*));
 	    if (!compstrings) {
@@ -1020,7 +1020,7 @@ Rstd_ReadConsole(const char *prompt, unsigned char *buf, int len,
 		    static SEXP opsym = NULL;
 		    if (! opsym)
 			opsym = install("setWidthOnResize");
-		    Rboolean setOK = asLogical(GetOption1(opsym));
+		    Rboolean setOK = (Rboolean) (Rf_asLogical(GetOption1(opsym)));
 		    oldwidth = width;
 		    if (setOK != NA_LOGICAL && setOK)
 			R_SetOptionWidth(width);

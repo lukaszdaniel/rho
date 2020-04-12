@@ -583,7 +583,8 @@ static int XRotDrawHorizontalString(Display *dpy, XFontStruct *font,
     int height;
     int xp, yp;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
     int dir, asc, desc;
     XCharStruct overall;
 
@@ -608,9 +609,9 @@ static int XRotDrawHorizontalString(Display *dpy, XFontStruct *font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* overall font height */
     height=font->ascent+font->descent;
@@ -825,9 +826,10 @@ static RotatedTextItem *XRotCreateTextItem(Display *dpy, XFontStruct *font,
     Pixmap canvas;
     GC font_gc;
     XImage *I_in;
-    register int i, j;
+    volatile int i, j;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
     int height;
     int byte_w_in, byte_w_out;
     int xp, yp;
@@ -856,9 +858,9 @@ static RotatedTextItem *XRotCreateTextItem(Display *dpy, XFontStruct *font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* find width of longest section */
     str1=strdup(text);
@@ -1285,7 +1287,7 @@ static XImage *XRotMagnifyImage(Display *dpy, XImage *ximage)
     XImage *I_out;
     int cols_in, rows_in;
     int cols_out, rows_out;
-    register int i2, j2;
+    volatile int i2, j2;
     double z1, z2, z3, z4;
     int byte_width_in, byte_width_out;
     double mag_inv;
@@ -1391,9 +1393,10 @@ static XImage *XRotMagnifyImage(Display *dpy, XImage *ximage)
 XPoint *XRotTextExtents(Display *dpy, XFontStruct *font, double angle,
 			int x, int y, const char *text, int align)
 {
-    register int i;
+    volatile int i;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
     int height;
     double sin_angle, cos_angle;
     int nl, max_width;
@@ -1421,9 +1424,9 @@ XPoint *XRotTextExtents(Display *dpy, XFontStruct *font, double angle,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* find width of longest section */
     str1=strdup(text);
@@ -1799,7 +1802,8 @@ static int XmbRotDrawHorizontalString(Display *dpy, XFontSet font,
     int height;
     int xp, yp;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
 
     if (text == NULL || *text=='\0') {
       DEBUG_PRINT1("Empty string, ignoring\n");
@@ -1822,9 +1826,9 @@ static int XmbRotDrawHorizontalString(Display *dpy, XFontSet font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* overall font height */
     height
@@ -2041,9 +2045,10 @@ static RotatedTextItem
     Pixmap canvas;
     GC font_gc;
     XImage *I_in;
-    register int i, j;
+    volatile int i, j;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
     int height;
     int byte_w_in, byte_w_out;
     int xp, yp;
@@ -2071,9 +2076,9 @@ static RotatedTextItem
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* find width of longest section */
     str1=strdup(text);
@@ -2366,9 +2371,10 @@ static RotatedTextItem
 XPoint *XmbRotTextExtents(Display *dpy, XFontSet font, double angle,
 			  int x, int y, const char *text, int align)
 {
-    register int i;
+    volatile int i;
     char *str1, *str2, *str3;
-    char *str2_a="\0", *str2_b="\n\0";
+    const char *str2_a = "\0";
+    const char *str2_b = "\n\0";
     int height;
     double sin_angle, cos_angle;
     int nl, max_width;
@@ -2395,9 +2401,9 @@ XPoint *XmbRotTextExtents(Display *dpy, XFontSet font, double angle,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2=str2_a;
+	str2 = (char *) str2_a;
     else
-	str2=str2_b;
+	str2 = (char *) str2_b;
 
     /* find width of longest section */
     str1=strdup(text);

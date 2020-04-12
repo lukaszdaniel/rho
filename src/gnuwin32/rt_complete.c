@@ -77,7 +77,7 @@ static int rt_completion(char *buf, int offset, int *loc)
 	    PROTECT(cmdSexp = mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
-		for(i = 0; i < length(cmdexpr); i++)
+		for(i = 0; i < Rf_length(cmdexpr); i++)
 		    eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
@@ -115,7 +115,7 @@ static int rt_completion(char *buf, int offset, int *loc)
 	return -1; /* no change */
     }
     /* Loop is needed here as EXPRSEXP will be of length > 1 */
-    for(i = 0; i < length(cmdexpr); i++)
+    for(i = 0; i < Rf_length(cmdexpr); i++)
 	ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
     UNPROTECT(2);
 
@@ -130,7 +130,7 @@ static int rt_completion(char *buf, int offset, int *loc)
 #define ADDITION 0
 #define POSSIBLE 1
 
-    alen = length(VECTOR_ELT(ans, POSSIBLE));
+    alen = Rf_length(VECTOR_ELT(ans, POSSIBLE));
     if (alen) {
 	int max_show = 10;
 	printf("\n"); /* finish current line */

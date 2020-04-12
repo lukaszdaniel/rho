@@ -281,7 +281,7 @@ static SEXP La_rg(SEXP x, SEXP only_values)
 
     ov = asLogical(only_values);
     if (ov == NA_LOGICAL) error(_("invalid '%s' argument"), "only.values");
-    vectors = !ov;
+    vectors = (Rboolean) (!ov);
     left = right = (double *) 0;
     if (vectors) {
 	jobVR[0] = 'V';
@@ -578,9 +578,9 @@ static SEXP La_solve_cmplx(SEXP A, SEXP Bin)
 	}
     } else {
 	p = 1;
-	if(length(Bin) != n)
+	if(Rf_length(Bin) != n)
 	    error(_("'b' (%d x %d) must be compatible with 'a' (%d x %d)"),
-		  length(Bin), p, n, n);
+		  Rf_length(Bin), p, n, n);
 	PROTECT(B = allocVector(CPLXSXP, n));
 	if (!isNull(Adn)) setAttrib(B, R_NamesSymbol, VECTOR_ELT(Adn, 1));
     }
@@ -1088,9 +1088,9 @@ static SEXP La_solve(SEXP A, SEXP Bin, SEXP tolin)
 	}
     } else {
 	p = 1;
-	if(length(Bin) != n)
+	if(Rf_length(Bin) != n)
 	    error(_("'b' (%d x %d) must be compatible with 'a' (%d x %d)"),
-		  length(Bin), p, n, n);
+		  Rf_length(Bin), p, n, n);
 	PROTECT(B = allocVector(REALSXP, n));
 	if (!isNull(Adn)) setAttrib(B, R_NamesSymbol, VECTOR_ELT(Adn, 1));
     }
@@ -1380,7 +1380,7 @@ static SEXP mod_do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
     {
 #if defined(HAVE_DLADDR) && defined(HAVE_REALPATH)
 	Dl_info dl_info;
-	if (dladdr(F77_NAME(ilaver), &dl_info)) {
+	if (dladdr((const void *) F77_NAME(ilaver), &dl_info)) {
 	    char buf[PATH_MAX+1];
 	    char *res = realpath(dl_info.dli_fname, buf);
 	    if (res) {

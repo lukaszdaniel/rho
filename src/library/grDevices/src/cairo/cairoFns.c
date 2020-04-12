@@ -424,8 +424,8 @@ static SEXP Cairo_Cap(pDevDesc dd)
         
     size = width*height;
 
-    /* FIXME: the screen surface reference will leak if allocVector() fails */
-    PROTECT(raster = allocVector(INTSXP, size));
+    /* FIXME: the screen surface reference will leak if Rf_allocVector() fails */
+    PROTECT(raster = Rf_allocVector(INTSXP, size));
 
     /* Copy each byte of screen to an R matrix. 
      * The Cairo RGB24 needs to be converted to an R ABGR32.
@@ -437,10 +437,10 @@ static SEXP Cairo_Cap(pDevDesc dd)
     /* Release MY reference to the screen surface (do it here in case anything fails below) */
     cairo_surface_destroy(screen);    
 
-    PROTECT(dim = allocVector(INTSXP, 2));
+    PROTECT(dim = Rf_allocVector(INTSXP, 2));
     INTEGER(dim)[0] = height;
     INTEGER(dim)[1] = width;
-    setAttrib(raster, R_DimSymbol, dim);
+    Rf_setAttrib(raster, R_DimSymbol, dim);
 
     UNPROTECT(2);
     return raster;

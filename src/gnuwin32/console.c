@@ -938,7 +938,7 @@ static void performCompletion(control c)
 	    PROTECT(cmdSexp = mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
-		for(i = 0; i < length(cmdexpr); i++)
+		for(i = 0; i < Rf_length(cmdexpr); i++)
 		    eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
@@ -975,7 +975,7 @@ static void performCompletion(control c)
 	return;
     }
     /* Loop is needed here as EXPSEXP will be of length > 1 */
-    for(i = 0; i < length(cmdexpr); i++)
+    for(i = 0; i < Rf_length(cmdexpr); i++)
 	ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
     UNPROTECT(2);
 
@@ -990,7 +990,7 @@ static void performCompletion(control c)
 #define ADDITION 0
 #define POSSIBLE 1
 
-    alen = length(VECTOR_ELT(ans, POSSIBLE));
+    alen = Rf_length(VECTOR_ELT(ans, POSSIBLE));
     additional_text = CHAR(STRING_ELT( VECTOR_ELT(ans, ADDITION), 0 ));
     alen2 = strlen(additional_text);
     if (alen) {

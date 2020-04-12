@@ -117,7 +117,7 @@ SEXP do_shellexec(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP file;
 
     file = CAR(args);
-    if (!isString(file) || length(file) != 1)
+    if (!isString(file) || Rf_length(file) != 1)
 	errorcall(call, _("invalid '%s' argument"), "file");
     internal_shellexecW(filenameToWchar(STRING_ELT(file, 0), FALSE), FALSE);
     return R_NilValue;

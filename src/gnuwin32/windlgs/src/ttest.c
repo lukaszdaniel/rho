@@ -196,7 +196,7 @@ SEXP menu_ttest3()
 	    error("invalid call %s", cmd);
 	}
 	/* Loop is needed here as EXPSEXP will be of length > 1 */
-	for(i = 0; i < length(cmdexpr); i++)
+	for(i = 0; i < Rf_length(cmdexpr); i++)
 	    ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	UNPROTECT(2);
     }

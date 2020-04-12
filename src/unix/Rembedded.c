@@ -32,7 +32,7 @@
 #include <Defn.h>
 
 int Rf_initialize_R(int ac, char **av); /* in ../unix/system.c */
-void setup_Rmainloop(void); /* in main.c */
+void setup_Rmainloop(void); /* in main.cpp */
 void fpu_setup(Rboolean start);  /* in ../unix/sys-std.c */
 extern void R_CleanTempDir(void);
 

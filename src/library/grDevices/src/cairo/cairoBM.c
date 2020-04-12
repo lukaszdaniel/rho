@@ -101,13 +101,13 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         xd->cc = cairo_create(xd->cs);
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         cairo_set_operator(xd->cc, CAIRO_OPERATOR_OVER);
         cairo_reset_clip(xd->cc);
@@ -123,7 +123,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         if (res != CAIRO_STATUS_SUCCESS) {
             xd->cs = NULL;
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         if(xd->onefile)
             cairo_svg_surface_restrict_to_version(xd->cs, CAIRO_SVG_VERSION_1_2);
@@ -131,7 +131,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         cairo_set_antialias(xd->cc, xd->antialias);
     }
@@ -145,7 +145,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         cairo_surface_set_fallback_resolution(xd->cs, xd->fallback_dpi,
                                               xd->fallback_dpi);
@@ -153,7 +153,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         cairo_set_antialias(xd->cc, xd->antialias);
     }
@@ -167,12 +167,12 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
 // We already require >= 1.2
 #if CAIRO_VERSION_MAJOR > 2 || CAIRO_VERSION_MINOR >= 6
         if(!xd->onefile)
-            cairo_ps_surface_set_eps(xd->cs, TRUE);
+            cairo_ps_surface_set_eps(xd->cs, (Rboolean) TRUE);
 #endif
         cairo_surface_set_fallback_resolution(xd->cs, xd->fallback_dpi,
                                               xd->fallback_dpi);
@@ -180,7 +180,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
             warning("cairo error '%s'", cairo_status_to_string(res));
-            return FALSE;
+            return (Rboolean) FALSE;
         }
         cairo_set_antialias(xd->cc, xd->antialias);
     }
@@ -188,7 +188,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
     else
 	error(_("unimplemented cairo-based device"));
 
-    return TRUE;
+    return (Rboolean) TRUE;
 }
 
 
@@ -196,7 +196,7 @@ static int stride;
 
 static unsigned int Cbitgp(void *xi, int x, int y)
 {
-    unsigned int *data = xi;
+    unsigned int *data = (unsigned int *) xi;
     return data[x*stride+y];
 }
 
@@ -332,7 +332,7 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
 // We already require >= 1.2
 #if CAIRO_VERSION_MAJOR > 2 || CAIRO_VERSION_MINOR >= 6
                 if(!xd->onefile)
-                    cairo_ps_surface_set_eps(xd->cs, TRUE);
+                    cairo_ps_surface_set_eps(xd->cs, (Rboolean) TRUE);
 #endif
                 cairo_surface_set_fallback_resolution(xd->cs, xd->fallback_dpi,
                                                       xd->fallback_dpi);
@@ -392,7 +392,7 @@ BMDeviceDriver(pDevDesc dd, int kind, const char *filename,
     double dps = ps;
 
     /* allocate new device description */
-    if (!(xd = (pX11Desc) calloc(1, sizeof(X11Desc)))) return FALSE;
+    if (!(xd = (pX11Desc) calloc(1, sizeof(X11Desc)))) return (Rboolean) FALSE;
     strcpy(xd->filename, filename);
     xd->quality = quality;
     xd->windowWidth = width;
@@ -418,19 +418,19 @@ BMDeviceDriver(pDevDesc dd, int kind, const char *filename,
     xd->npages = 0;
     xd->col = R_RGB(0, 0, 0);
     xd->fill = xd->canvas = bg;
-    xd->type = kind;
+    xd->type = (X_GTYPE) kind;
     xd->fp = NULL;
     xd->lty = -1;
     xd->lwd = -1;
-    xd->lend = 0;
-    xd->ljoin = 0;
+    xd->lend = (R_GE_lineend) 0;
+    xd->ljoin = (R_GE_linejoin) 0;
 
     if (!BM_Open(dd, xd, width, height)) {
 	free(xd);
-	return FALSE;
+	return (Rboolean) FALSE;
     }
     if (xd->type == SVG || xd->type == PDF || xd->type == PS)
-	xd->onefile = quality != 0;
+	xd->onefile = (Rboolean) (quality != 0);
 
     /* Set up Data Structures  */
     dd->size = cbm_Size;
@@ -451,13 +451,13 @@ BMDeviceDriver(pDevDesc dd, int kind, const char *filename,
     dd->strWidth = dd->strWidthUTF8 = Cairo_StrWidth;
     dd->text = dd->textUTF8 = Cairo_Text;
 #endif
-    dd->hasTextUTF8 = TRUE;
+    dd->hasTextUTF8 = (Rboolean) TRUE;
 #if defined(Win32) && !defined(USE_FC)
     dd->wantSymbolUTF8 = NA_LOGICAL;
 #else
-    dd->wantSymbolUTF8 = TRUE;
+    dd->wantSymbolUTF8 = (Rboolean) TRUE;
 #endif
-    dd->useRotatedTextInContour = FALSE;
+    dd->useRotatedTextInContour = (Rboolean) FALSE;
 
     dd->haveTransparency = 2;
     dd->haveRaster = 2;
@@ -493,18 +493,18 @@ BMDeviceDriver(pDevDesc dd, int kind, const char *filename,
     dd->xCharOffset = 0.4900;
     dd->yCharOffset = 0.3333;
     dd->yLineBias = 0.2;
-    dd->canClip= TRUE;
+    dd->canClip= (Rboolean) TRUE;
     dd->canHAdj = 2;
-    dd->canChangeGamma = FALSE;
+    dd->canChangeGamma = (Rboolean) FALSE;
     dd->startcol = xd->col;
     dd->startfill = xd->fill;
     dd->startlty = LTY_SOLID;
     dd->startfont = 1;
     dd->startgamma = 1;
-    dd->displayListOn = FALSE;
+    dd->displayListOn = (Rboolean) FALSE;
     dd->deviceSpecific = (void *) xd;
 
-    return TRUE;
+    return (Rboolean) TRUE;
 }
 
 const static struct {

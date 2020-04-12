@@ -73,17 +73,17 @@ static void split(int n, double *x,
     /* Local variables (=0 : -Wall) */
     double a=0, b=0, down, d1, up, xt, z;
     int i, is;
-    Rboolean vert, neg_dir=0;
+    Rboolean vert, neg_dir = (Rboolean) 0;
 
     /* Parameter adjustments */
     --x;
 
     xt = x[ii];
     /* Check to see if the line is vertical */
-    vert = (x[jj] == xt);
+    vert = (Rboolean) x[jj] == xt;
     d1 = x[jj + n] - x[ii + n];
     if (vert) {
-	neg_dir = ((s > 0 && d1 < 0.) || (s < 0 && d1 > 0.));
+	neg_dir = (Rboolean) (s > 0 && d1 < 0.) || (s < 0 && d1 > 0.);
     } else {
 	a = d1 / (x[jj] - xt);
 	b = x[ii + n] - a * xt;

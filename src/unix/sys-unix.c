@@ -635,7 +635,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     if (intern) { /* intern = TRUE */
 	FILE *fp;
-	char *x = "r",
+	char *x = (char *) "r",
 #ifdef HAVE_GETLINE
 	    *buf = NULL;
 	size_t buf_len = 0;
@@ -741,7 +741,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	R_Busy(0);
 #endif
 	UNPROTECT(1);
-	R_Visible = 0;
+	R_Visible = (Rboolean) 0;
 	return tlist;
     }
 }

@@ -72,7 +72,7 @@ int attribute_hidden R_X11_Init(void)
 Rboolean attribute_hidden R_access_X11(void)
 {
     R_X11_Init();
-    return (initialized > 0) ? (*ptr->access)() > 0 : FALSE;
+    return (initialized > 0) ? (Rboolean) ((*ptr->access)() > 0) : FALSE;
 }
 
 // called from src/library/grDevices/src/stubs.c

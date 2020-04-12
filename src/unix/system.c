@@ -73,7 +73,7 @@
 attribute_hidden FILE *ifp = NULL; /* used in sys-std.c */
 
 attribute_hidden
-Rboolean UsingReadline = TRUE;  /* used in sys-std.c & ../main/platform.c
+Rboolean UsingReadline = TRUE;  /* used in sys-std.c & ../main/platform.cpp
 				   and also in sys-unix.c for tilde expansion */
 
 /* call pointers to allow interface switching */
@@ -126,7 +126,7 @@ void R_setupHistory()
     char *p;
 
     if ((R_HistoryFile = getenv("R_HISTFILE")) == NULL)
-	R_HistoryFile = ".Rhistory";
+	R_HistoryFile = (char *) ".Rhistory";
     R_HistorySize = 512;
     if ((p = getenv("R_HISTSIZE"))) {
 	value = (int) R_Decode2Long(p, &ierr);
@@ -299,7 +299,7 @@ int Rf_initialize_R(int ac, char **av)
 		    snprintf(msg, 1024,
 			    _("WARNING: --gui or -g without value ignored"));
 		    R_ShowMessage(msg);
-		    p = "X11";
+		    p = (char *) "X11";
 		}
 	    }
 	    if(!strcmp(p, "none"))
@@ -426,7 +426,7 @@ int Rf_initialize_R(int ac, char **av)
 	R_Interactive = useaqua;
     else
 #endif
-	R_Interactive = R_Interactive && (force_interactive || isatty(0));
+	R_Interactive = (Rboolean) (R_Interactive && (force_interactive || isatty(0)));
 
 #ifdef HAVE_AQUA
     /* for Aqua and non-dumb terminal use callbacks instead of connections
@@ -457,7 +457,7 @@ int Rf_initialize_R(int ac, char **av)
     R_setupHistory();
     if (R_RestoreHistory)
 	Rstd_read_history(R_HistoryFile);
-    fpu_setup(1);
+    fpu_setup((Rboolean) 1);
 
     return(0);
 }

@@ -50,7 +50,7 @@
 
 #include <Localization.h>
 
-extern void R_ProcessEvents(void);
+extern "C" void R_ProcessEvents(void);
 
 #ifdef Win32
 #include <io.h>
@@ -1380,7 +1380,7 @@ RxmlNanoHTTPMethod(const char *URL, const char *method, const char *input,
 #ifdef HAVE_ZLIB_H
     blen += 23;
 #endif
-    p = bp = xmlMalloc(blen + 8);
+    p = bp = static_cast<char *>(xmlMalloc(blen + 8));
     memset(p, 0, blen + 8);
     if (proxy) {
 	if (ctxt->port != 80) {

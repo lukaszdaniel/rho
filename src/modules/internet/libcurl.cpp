@@ -26,7 +26,7 @@
 #endif
 #include <Defn.h>
 #include <Localization.h>
-#include <Internal.h>
+//#include <Internal.h>
 #include <Fileio.h>
 #include <errno.h>
 
@@ -53,7 +53,7 @@
 #  error libcurl 7.22.0 or later is required.
 #  endif
 # endif
-extern void Rsleep(double timeint);
+extern "C" void Rsleep(double timeint);
 #endif
 
 # if (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR < 28)
@@ -476,19 +476,19 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     struct curl_slist *slist1 = NULL;
 
     scmd = CAR(args); args = CDR(args);
-    if (!isString(scmd) || length(scmd) < 1)
+    if (!isString(scmd) || Rf_length(scmd) < 1)
 	error(_("invalid '%s' argument"), "url");
-    int nurls = length(scmd);
+    int nurls = Rf_length(scmd);
     sfile = CAR(args); args = CDR(args);
-    if (!isString(sfile) || length(sfile) < 1)
+    if (!isString(sfile) || Rf_length(sfile) < 1)
 	error(_("invalid '%s' argument"), "destfile");
-    if (length(sfile) != length(scmd))
+    if (Rf_length(sfile) != Rf_length(scmd))
 	error(_("lengths of 'url' and 'destfile' must match"));
     quiet = asLogical(CAR(args)); args = CDR(args);
     if (quiet == NA_LOGICAL)
 	error(_("invalid '%s' argument"), "quiet");
     smode =  CAR(args); args = CDR(args);
-    if (!isString(smode) || length(smode) != 1)
+    if (!isString(smode) || Rf_length(smode) != 1)
 	error(_("invalid '%s' argument"), "mode");
     mode = CHAR(STRING_ELT(smode, 0));
     cacheOK = asLogical(CAR(args));
@@ -513,7 +513,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     for(int i = 0; i < nurls; i++) {
 	url = CHAR(STRING_ELT(scmd, i));
-	hnd[i] = curl_easy_init();
+	hnd[i] = static_cast<CURL **>(curl_easy_init());
 	curl_easy_setopt(hnd[i], CURLOPT_URL, url);
 	curl_easy_setopt(hnd[i], CURLOPT_FAILONERROR, 1L);
 	/* Users will normally expect to follow redirections, although
@@ -724,7 +724,7 @@ static size_t rcvData(void *ptr, size_t size, size_t nitems, void *ctx)
 	    size_t newbufsize = mult * ctxt->bufsize;
 	    void *newbuf = realloc(ctxt->buf, newbufsize);
 	    if (!newbuf) error("Failure in re-allocation in rcvData");
-	    ctxt->buf = newbuf; ctxt->bufsize = newbufsize;
+	    ctxt->buf = static_cast<char *>(newbuf); ctxt->bufsize = newbufsize;
 	}
 
 	memcpy(ctxt->buf + ctxt->filled, ptr, add);
@@ -849,8 +849,8 @@ static Rboolean Curl_open(Rconnection con)
     }
 
     con->isopen = TRUE;
-    con->canwrite = (con->mode[0] == 'w' || con->mode[0] == 'a');
-    con->canread = !con->canwrite;
+    con->canwrite = Rboolean(con->mode[0] == 'w' || con->mode[0] == 'a');
+    con->canread = Rboolean(!con->canwrite);
     if (strlen(con->mode) >= 2 && con->mode[1] == 'b') con->text = FALSE;
     else con->text = TRUE;
     con->save = -1000;
@@ -903,7 +903,7 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
     }
     RCurlconn ctxt = (RCurlconn) new_->connprivate;
     ctxt->bufsize = 2 * CURL_MAX_WRITE_SIZE;
-    ctxt->buf = malloc(ctxt->bufsize);
+    ctxt->buf = static_cast<char *>(malloc(ctxt->bufsize));
     if (!ctxt->buf) {
 	free(new_->description); free(new_->connclass); free(new_->connprivate);
 	free(new_);

@@ -31,7 +31,7 @@
 #include <config.h>
 #endif
 
-extern void R_ProcessEvents(void);
+extern "C" void R_ProcessEvents(void);
 #ifdef Win32
 #define R_SelectEx(n,rfd,wrd,efd,tv,ih) select(n,rfd,wrd,efd,tv)
 #endif
@@ -563,7 +563,7 @@ ssize_t R_SockWrite(int sockp, const void *buf, size_t len, int timeout)
 	if (res < 0 && socket_errno() != EWOULDBLOCK)
 	    return -socket_errno();
 	else {
-	    { const char *cbuf = buf; cbuf += res; buf = cbuf; }
+	    { const char *cbuf = static_cast<const char *>(buf); cbuf += res; buf = cbuf; }
 	    len -= res;
 	    out += res;
 	}

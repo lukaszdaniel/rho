@@ -42,7 +42,7 @@
 
 #include <Localization.h>
 
-extern void R_ProcessEvents(void);
+extern "C" void R_ProcessEvents(void);
 
 #ifdef Win32
 #include <io.h>

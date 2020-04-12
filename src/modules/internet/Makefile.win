@@ -4,8 +4,8 @@ include ../../gnuwin32/MkRules
 MODULE = internet
 all: makeMakedeps ../../../modules$(R_ARCH)/internet.dll
 
-CSOURCES = internet.c libcurl.c nanoftp.c nanohttp.c sockconn.c Rsock.c sock.c Rhttpd.c
-
+CSOURCES = 
+SOURCES_CPP = internet.cpp sockconn.cpp Rhttpd.cpp Rsock.cpp libcurl.cpp nanoftp.cpp nanohttp.cpp sock.cpp
 CPPFLAGS = -I../../include -I../../extra/graphapp -DHAVE_CONFIG_H
 
 EXTRA_LIBS = -lwininet -lws2_32

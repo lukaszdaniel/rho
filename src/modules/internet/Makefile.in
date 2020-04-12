@@ -26,8 +26,8 @@ R_HOME = $(top_builddir)
 
 include $(top_builddir)/Makeconf
 
-SOURCES_C = Rhttpd.c Rsock.c libcurl.c nanoftp.c nanohttp.c sock.c
-SOURCES_CPP = internet.cpp sockconn.cpp
+SOURCES_C = 
+SOURCES_CPP = internet.cpp sockconn.cpp Rhttpd.cpp Rsock.cpp libcurl.cpp nanoftp.cpp nanohttp.cpp sock.cpp
 HEADERS = sock.h
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CPP:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CPP:.cpp=.o)
@@ -59,7 +59,7 @@ R: Makedeps
 	@$(MAKE) $(internet_la)
 
 $(internet_la): $(OBJECTS)
-	$(SHLIB_LINK) -o $@ $(OBJECTS) $(internet_la_LIBADD)
+	$(SHLIB_CXXLINK) -o $@ $(OBJECTS) $(internet_la_LIBADD)
 ## <FIXME>
 ## Not sure if we want to do this ...
 	@$(MAKE) rhome="$(abs_top_builddir)" install

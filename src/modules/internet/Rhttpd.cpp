@@ -442,7 +442,7 @@ static SEXP parse_query(char *query)
 	} else if (*s == '&' || !*s) { /* next part */
 	    int last_entry = !*s;
 	    *(t++) = 0;
-	    if (!key) key = "";
+	    if (!key) key = (char *) "";
 	    SET_STRING_ELT(names, parts, mkChar(key));
 	    SET_STRING_ELT(res, parts, mkChar(value));
 	    parts++;
@@ -729,7 +729,7 @@ static void process_request_(void *ptr)
 			send_response(c->sock, hs, strlen(hs));
 		    }
 		}
-		sprintf(buf, "\r\nContent-length: %lu\r\n\r\n", LENGTH(y));
+		sprintf(buf, "\r\nContent-length: %u\r\n\r\n", LENGTH(y));
 		send_response(c->sock, buf, strlen(buf));
 		if (c->method != METHOD_HEAD)
 		    send_response(c->sock, (char*) cs, LENGTH(y));

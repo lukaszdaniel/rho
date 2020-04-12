@@ -48,7 +48,6 @@ static void *in_R_FTPOpen(const char *url);
 static int   in_R_FTPRead(void *ctx, char *dest, int len);
 static void  in_R_FTPClose(void *ctx);
 
-extern "C" {
 SEXP in_do_curlVersion(SEXP call, SEXP op, SEXP args, SEXP rho);
 SEXP in_do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho);
 SEXP in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho);
@@ -89,7 +88,6 @@ static void *in_R_FTPOpen2(const char *url);
 #define Ri_FTPClose in_R_FTPClose
 #endif
 
-}
 
 #include <Rmodules/Rinternet.h>
 

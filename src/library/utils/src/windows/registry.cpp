@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  file registry.c
+ *  file registry.cpp
  *  Copyright (C) 2005--2013  The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify

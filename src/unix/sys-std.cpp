@@ -43,7 +43,7 @@
 #define R_USE_SIGNALS 1
 #include <Defn.h>
 #include <Localization.h>
-#include <Internal.h>
+//#include <Internal.h>
 
 #ifdef HAVE_STRINGS_H
    /* may be needed to define bzero in FD_ZERO (eg AIX) */
@@ -68,7 +68,7 @@
 
 extern SA_TYPE SaveAction;
 extern Rboolean UsingReadline;
-extern FILE* ifp; /* from system.c */
+extern FILE* ifp; /* from system.cpp */
 
 /*
  *  1) FATAL MESSAGES AT STARTUP
@@ -131,7 +131,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	volatile int old_interrupts_suspended = R_interrupts_suspended;
 	if (SIGSETJMP(seljmpbuf, 1)) {
 	    myintr();
-	    R_interrupts_suspended = (Rboolean) (old_interrupts_suspended);
+	    R_interrupts_suspended = Rboolean(old_interrupts_suspended);
 	    error(_("interrupt handler must not return"));
 	    return 0; /* not reached */
 	}
@@ -157,7 +157,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	       signal handler, and return the result of the select. */
 	    val = select(n, readfds, writefds, exceptfds, timeout);
 	    signal(SIGINT, oldSigintHandler);
-	    R_interrupts_suspended = (Rboolean) (old_interrupts_suspended);
+	    R_interrupts_suspended = Rboolean(old_interrupts_suspended);
 	    return val;
 	}
     }
@@ -1020,7 +1020,7 @@ Rstd_ReadConsole(const char *prompt, unsigned char *buf, int len,
 		    static SEXP opsym = NULL;
 		    if (! opsym)
 			opsym = install("setWidthOnResize");
-		    Rboolean setOK = (Rboolean) (Rf_asLogical(GetOption1(opsym)));
+		    Rboolean setOK = Rboolean(Rf_asLogical(GetOption1(opsym)));
 		    oldwidth = width;
 		    if (setOK != NA_LOGICAL && setOK)
 			R_SetOptionWidth(width);

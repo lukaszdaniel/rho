@@ -36,7 +36,7 @@
  *
  *  I have translated them to C and moved the memory allocation
  *  so that it takes place under the control of the algorithm
- *  which calls these; for R, see ../main/fourier.c
+ *  which calls these; for R, see ../main/fourier.cpp
  *
  *  void fft_factor(int n, int *maxf, int *maxp)
  *

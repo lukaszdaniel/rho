@@ -907,7 +907,7 @@ int R_system(const char *);
 */
 Rboolean R_compute_identical(SEXP, SEXP, int);
 
-SEXP R_body_no_src(SEXP x); // body(x) without "srcref" etc, ../main/utils.c
+SEXP R_body_no_src(SEXP x); // body(x) without "srcref" etc, ../main/utils.cpp
 
 /* C version of R's  indx <- order(..., na.last, decreasing) :
    e.g.  arglist = Rf_lang2(x,y)  or  Rf_lang3(x,y,z) */

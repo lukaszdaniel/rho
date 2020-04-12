@@ -31,9 +31,9 @@
 #endif
 #include <Defn.h>
 
-int Rf_initialize_R(int ac, char **av); /* in ../unix/system.c */
+int Rf_initialize_R(int ac, char **av); /* in ../unix/system.cpp */
 void setup_Rmainloop(void); /* in main.cpp */
-void fpu_setup(Rboolean start);  /* in ../unix/sys-std.c */
+void fpu_setup(Rboolean start);  /* in ../unix/sys-std.cpp */
 extern void R_CleanTempDir(void);
 
 

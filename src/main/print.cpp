@@ -44,14 +44,14 @@
  *		-> PrintExpression
  *		-> PrintLanguage        -> PrintLanguageEtc
  *		-> PrintClosure         -> PrintLanguageEtc
- *		-> printVector		>>>>> ./printvector.c
- *		-> printNamedVector	>>>>> ./printvector.c
- *		-> printMatrix		>>>>> ./printarray.c
- *		-> printArray		>>>>> ./printarray.c
+ *		-> printVector		>>>>> ./printvector.cpp
+ *		-> printNamedVector	>>>>> ./printvector.cpp
+ *		-> printMatrix		>>>>> ./printarray.cpp
+ *		-> printArray		>>>>> ./printarray.cpp
  *
  *  do_prmatrix
  *	-> PrintDefaults
- *	-> printMatrix			>>>>> ./printarray.c
+ *	-> printMatrix			>>>>> ./printarray.cpp
  *
  *
  *  See ./printutils.cpp	 for general remarks on Printing

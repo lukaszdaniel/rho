@@ -1166,7 +1166,7 @@ static SEXP *prim_generics;
 static SEXP *prim_mlist;
 #define DEFAULT_N_PRIM_METHODS 100
 
-/* This is used in the methods package, in src/methods_list_dispatch.c */
+/* This is used in the methods package, in src/methods_list_dispatch.cpp */
 SEXP R_set_prim_method(SEXP fname, SEXP op, SEXP code_vec, SEXP fundef,
 		       SEXP mlist)
 {
@@ -1226,7 +1226,7 @@ SEXP R_primitive_generic(SEXP op)
     }
 }
 
-/* This is used in the methods package, in src/methods_list_dispatch.c */
+/* This is used in the methods package, in src/methods_list_dispatch.cpp */
 SEXP do_set_prim_method(SEXP op, const char *code_string, SEXP fundef,
 			SEXP mlist)
 {

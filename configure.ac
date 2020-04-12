@@ -879,7 +879,7 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(dlfcn.h fcntl.h glob.h grp.h pwd.h sched.h strings.h \
   sys/resource.h sys/select.h sys/socket.h sys/stat.h sys/time.h \
   sys/times.h sys/utsname.h unistd.h utime.h)
-## dl.h is used in src/unix/hpdlfcn.c included from src/unix/dynload.c on HP-UX
+## dl.h is used in src/unix/hpdlfcn.cpp included from src/unix/dynload.cpp on HP-UX
 ## features.h is used by date-time code on Linux.
 ## floatingpoint.h is used for fpsetmask on FreeBSD.
 ## sys/param.h is one way to get PATH_MAX.

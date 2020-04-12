@@ -30,9 +30,8 @@
 #include <exception>
 #include <execinfo.h>
 
-extern "C" {
-int Rf_initialize_R(int ac, char **av); /* in ../unix/system.c */
-}
+int Rf_initialize_R(int ac, char **av); /* in ../unix/system.cpp */
+
 
 static void terminate_handler() {
     void* buffer[128];

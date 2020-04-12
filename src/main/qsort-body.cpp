@@ -27,7 +27,7 @@
 
 /*====== BODY of R_qsort() and R_qsorti() functions ====================
  *
- * is included in ./qsort.c  with and without ``qsort_Index'' defined
+ * is included in ./qsort.cpp  with and without ``qsort_Index'' defined
  *======================================================================
 */
 {

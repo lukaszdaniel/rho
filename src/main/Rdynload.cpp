@@ -26,7 +26,7 @@
 
 
 /*
-  This is an effort to merge the 3 different dynload.c files in the
+  This is an effort to merge the 3 different dynload.cpp files in the
   distribution from the unix/, macintosh/dll/ and gnuwin32/ directories.
   The aim is to consolidate these different implementations into
       i) a generic or platform-independent common core
@@ -75,7 +75,7 @@
  *  in ../main/Rdynload.cpp to locate functions in the executable. We do this
  *  by straight linear search through the table.
  *  Note that the base routines registered are listed in
- *               ../main/registration.c
+ *               ../main/registration.cpp
  *  and are registered during the initialization of the R engine.
  *  (This replaces the previous mechanism that built a table
  *  from ../appl/ROUTINES using Perl/sed).
@@ -562,7 +562,7 @@ DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all)
 
 static char DLLerror[DLLerrBUFSIZE] = "";
 
-/* the error message; length taken from ERRBUFSIZE in ./hpdlfcn.c  */
+/* the error message; length taken from ERRBUFSIZE in ./hpdlfcn.cpp  */
 
 	/* Inserts the specified DLL at the head of the DLL list */
 	/* Returns 1 if the DLL was successfully added */

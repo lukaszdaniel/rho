@@ -40,7 +40,7 @@
 #define R_USE_SIGNALS 1
 #include <Defn.h>
 #include <Localization.h>
-#include <Internal.h>
+//#include <Internal.h>
 #include <Fileio.h>
 #include <Rmath.h> /* for fround */
 #include "Runix.h"
@@ -110,7 +110,7 @@ FILE *R_OpenInitFile(void)
      *   R_ChooseFile is interface-specific
      */
 
-char *R_ExpandFileName_readline(const char *s, char *buff);  /* sys-std.c */
+char *R_ExpandFileName_readline(const char *s, char *buff);  /* sys-std.cpp */
 
 static char newFileName[PATH_MAX];
 static int HaveHOME=-1;
@@ -230,7 +230,7 @@ void R_getProcTime(double *data)
 #endif
 }
 
-/* used in memory.c */
+/* used in memory.cpp */
 /* FIXME: maybe should try to find the increment for getrusage */
 attribute_hidden
 double R_getClockIncrement(void)
@@ -741,7 +741,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	R_Busy(0);
 #endif
 	UNPROTECT(1);
-	R_Visible = (Rboolean) 0;
+	R_Visible = Rboolean(0);
 	return tlist;
     }
 }

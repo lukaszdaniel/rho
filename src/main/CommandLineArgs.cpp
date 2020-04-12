@@ -38,7 +38,7 @@
 
 
 /* Remove and process common command-line arguments
- *  Formally part of ../unix/sys-common.c.
+ *  Formally part of ../unix/sys-common.cpp.
  */
 
 /*

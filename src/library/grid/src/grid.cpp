@@ -3356,7 +3356,7 @@ SEXP L_points(SEXP x, SEXP y, SEXP pch, SEXP size)
                 /* 
                  * FIXME:
                  * Resolve any differences between this and FixupPch()
-                 * in plot.c ? 
+                 * in plot.cpp ? 
                  */
 	        if (isString(pch)) {
 		    ipch = GEstring_to_pch(STRING_ELT(pch, i % npch));

@@ -19,7 +19,7 @@
  * instead linked lists of F_points and to remove some globals(!)
  * See copyright etc below.
  *
- * #included from engine.c
+ * #included from engine.cpp
  * That manages the R_alloc stack.
  */
 

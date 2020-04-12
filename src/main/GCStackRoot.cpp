@@ -62,7 +62,6 @@ const char* __asan_default_options()
 }
 #endif
 
-extern "C"
 void R_GetStackLimits();
 
 void* GCStackRootBase::getStackBase()

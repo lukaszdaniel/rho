@@ -40,7 +40,7 @@
  *             = log Gamma(n+1) - 1/2 * [log(2*pi) + log(n)] - n*[log(n) - 1]
  *             = log Gamma(n+1) - (n + 1/2) * log(n) + n - log(2*pi)/2
  *
- * see also lgammacor() in ./lgammacor.c  which computes almost the same!
+ * see also lgammacor() in ./lgammacor.cpp  which computes almost the same!
  */
 
 double attribute_hidden stirlerr(double n)

@@ -429,7 +429,7 @@ R_tryEval(SEXP e, SEXP env, int *ErrorOccurred)
 }
 
 /* Temporary hack to suppress error message printing around a
-   R_tryEval call for use in methods_list_dispatch.c; should be
+   R_tryEval call for use in methods_list_dispatch.cpp; should be
    replaced once we have a way of establishing error handlers from C
    code (probably would want a calling handler if we want to allow
    user-defined calling handlers to enter a debugger, for

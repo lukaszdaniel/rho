@@ -14093,13 +14093,13 @@ The command-line @R{} front-end, @file{@var{R_HOME}/bin/exec/R}, is one
 such example, and the former @acronym{GNOME} (see package @pkg{gnomeGUI}
 on @acronym{CRAN}'s @samp{Archive} area) and macOS consoles are others.
 The source for @file{@var{R_HOME}/bin/exec/R} is in file
-@file{src/main/Rmain.c} and is very simple
+@file{src/main/Rmain.cpp} and is very simple
 
 @example
-int Rf_initialize_R(int ac, char **av); /* in ../unix/system.c */
-void Rf_mainloop();                     /* in main.c */
+int Rf_initialize_R(int ac, char **av); /* in ../unix/system.cpp */
+void Rf_mainloop();                     /* in main.cpp */
 
-extern int R_running_as_main_program;   /* in ../unix/system.c */
+extern int R_running_as_main_program;   /* in ../unix/system.cpp */
 
 int main(int ac, char **av)
 @{
@@ -14157,7 +14157,7 @@ internal defaults are used and that control is handed over to the
 @R{} main loop.  There are a number of small examples@footnote{but these
 are not part of the automated test procedures and so little tested.} in the
 @file{tests/Embedding} directory.  These make use of
-@code{Rf_initEmbeddedR} in @file{src/main/Rembedded.c}, and essentially
+@code{Rf_initEmbeddedR} in @file{src/main/Rembedded.cpp}, and essentially
 use
 @example
 #include <Rembedded.h>
@@ -14565,26 +14565,26 @@ event loops for
 @itemize
 @item
 Preparing input at the console command-line, in file
-@file{src/unix/sys-unix.c}.
+@file{src/unix/sys-unix.cpp}.
 
 @item
 Waiting for a response from a socket in the internal functions
 underlying FTP and HTTP transfers in @code{download.file()} and for
 direct socket access, in files
-@file{src/@/modules/@/internet/@/nanoftp.c},
-@file{src/@/modules/@/internet/@/nanohttp.c} and
-@file{src/@/modules/@/internet/@/Rsock.c}
+@file{src/@/modules/@/internet/@/nanoftp.cpp},
+@file{src/@/modules/@/internet/@/nanohttp.cpp} and
+@file{src/@/modules/@/internet/@/Rsock.cpp}
 
 @item
 Mouse and window events when displaying the X11-based dataentry window,
-in file @file{src/modules/X11/dataentry.c}.  This is regarded as
+in file @file{src/modules/X11/dataentry.cpp}.  This is regarded as
 @emph{modal}, and no other events are serviced whilst it is active.
 @end itemize
 
 There is a protocol for adding event handlers to the first two types of
 event loops, using types and functions declared in the header
 @file{R_ext/eventloop.h} and described in comments in file
-@file{src/unix/sys-std.c}.  It is possible to add (or remove) an input
+@file{src/unix/sys-std.cpp}.  It is possible to add (or remove) an input
 handler for events on a particular file descriptor, or to set a polling
 interval (@emph{via} @code{R_wait_usec}) and a function to be called
 periodically @emph{via} @code{R_PolledEvents}: the polling mechanism is used by

@@ -110,7 +110,7 @@ Rfe.exe: Rfe.o ../rhome.o rcico.o
 
 RSetReg.exe: RSetReg.o ../rhome.o rcico.o
 
-Rscript.o: ../../unix/Rscript.c ../../include/Rversion.h
+Rscript.o: ../../unix/Rscript.cpp ../../include/Rversion.h
 	$(CC) $(CFLAGS) -DBINDIR='"$(BINDIR)"' -I. -I../../include -DHAVE_CONFIG_H -c $< -o $@
 
 Rscript.exe: Rscript.o rsico.o 

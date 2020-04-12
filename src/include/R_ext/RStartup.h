@@ -42,10 +42,6 @@
 
 #include <R_ext/Boolean.h>	/* TRUE/FALSE */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifdef Win32
 typedef int (*blah1) (const char *, char *, int, int);
 typedef void (*blah2) (const char *, int);
@@ -111,9 +107,5 @@ void R_common_command_line(int *, char **, Rstart);
 void R_set_command_line_arguments(int argc, char **argv);
 
 void setup_Rmainloop(void); // also in Rembedded.h
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

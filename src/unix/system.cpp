@@ -70,11 +70,11 @@
 
 #include "Runix.h"
 
-attribute_hidden FILE *ifp = NULL; /* used in sys-std.c */
+attribute_hidden FILE *ifp = NULL; /* used in sys-std.cpp */
 
 attribute_hidden
-Rboolean UsingReadline = TRUE;  /* used in sys-std.c & ../main/platform.cpp
-				   and also in sys-unix.c for tilde expansion */
+Rboolean UsingReadline = TRUE;  /* used in sys-std.cpp & ../main/platform.cpp
+				   and also in sys-unix.cpp for tilde expansion */
 
 /* call pointers to allow interface switching */
 
@@ -103,11 +103,11 @@ int R_ChooseFile(int _new,  char *buf, int len)
 { return ptr_R_ChooseFile(_new, buf, len); }
 
 /* Use header files!  2007/06/11 arr
-void R_setStartTime(void); // in sys-unix.c
+void R_setStartTime(void); // in sys-unix.cpp
 */
 
 #ifdef HAVE_AQUA
-/*  used here and in main/sysutils.c (for system). */
+/*  used here and in main/sysutils.cpp (for system). */
 Rboolean useaqua = FALSE;
 
 // Finally in Sep 2012 R.app sets ptr_R_FlushConsole
@@ -426,7 +426,7 @@ int Rf_initialize_R(int ac, char **av)
 	R_Interactive = useaqua;
     else
 #endif
-	R_Interactive = (Rboolean) (R_Interactive && (force_interactive || isatty(0)));
+	R_Interactive = Rboolean(R_Interactive && (force_interactive || isatty(0)));
 
 #ifdef HAVE_AQUA
     /* for Aqua and non-dumb terminal use callbacks instead of connections
@@ -457,7 +457,7 @@ int Rf_initialize_R(int ac, char **av)
     R_setupHistory();
     if (R_RestoreHistory)
 	Rstd_read_history(R_HistoryFile);
-    fpu_setup((Rboolean) 1);
+    fpu_setup(Rboolean(1));
 
     return(0);
 }

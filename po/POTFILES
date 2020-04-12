@@ -142,9 +142,9 @@ src/main/xspline.cpp
 src/main/jit/Compiler.cpp
 src/main/jit/RuntimeImpl.cpp
 src/modules/internet/internet.cpp
-src/modules/internet/libcurl.c
-src/modules/internet/nanoftp.c
-src/modules/internet/nanohttp.c
+src/modules/internet/libcurl.cpp
+src/modules/internet/nanoftp.cpp
+src/modules/internet/nanohttp.cpp
 src/modules/internet/sockconn.cpp
 src/modules/lapack/Lapack.c
 src/modules/X11/dataentry.cpp
@@ -166,8 +166,8 @@ src/nmath/rmultinom.cpp
 src/nmath/signrank.cpp
 src/nmath/snorm.cpp
 src/nmath/wilcox.cpp
-src/unix/dynload.c
-src/unix/sys-std.c
-src/unix/system.c
-src/unix/sys-unix.c
-src/unix/X11.c
+src/unix/dynload.cpp
+src/unix/sys-std.cpp
+src/unix/system.cpp
+src/unix/sys-unix.cpp
+src/unix/X11.cpp

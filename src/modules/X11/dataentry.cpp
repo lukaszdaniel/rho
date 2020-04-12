@@ -1061,8 +1061,8 @@ static SEXP processEscapes(SEXP x)
        newval <- Rf_eval(parse(text=newval))
 
        We do it this way to avoid extracting the escape handling
-       code from the parser.  We need it in C code because this may be executed
-       numerous times from C in dataentry.c */
+       code from the parser.  We need it in C++ code because this may be executed
+       numerous times from C++ in dataentry.cpp */
 
     PROTECT( pattern = Rf_mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
     PROTECT( replacement = Rf_mkString("\\1\\\\\"") );

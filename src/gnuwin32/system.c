@@ -56,21 +56,21 @@
 #include "Startup.h"
 #include <stdlib.h>		/* for exit */
 
-void R_CleanTempDir(void);		/* from platform.c */
-void editorcleanall(void);                  /* from editor.c */
+void R_CleanTempDir(void);		/* from platform.cpp */
+void editorcleanall(void);                  /* from editor.cpp */
 
 int Rwin_graphicsx = -25, Rwin_graphicsy = 0;
 
 R_size_t R_max_memory = INT_MAX;
 
-extern SA_TYPE SaveAction; /* from ../main/startup.c */
+extern SA_TYPE SaveAction; /* from ../main/startup.cpp */
 Rboolean DebugMenuitem = FALSE;  /* exported for rui.c */
 static FILE *ifp = NULL;
 static char ifile[MAX_PATH] = "\0";
 
 __declspec(dllexport) UImode  CharacterMode = RGui; /* some compilers want initialized for export */
 int ConsoleAcceptCmd;
-void set_workspace_name(const char *fn); /* ../main/startup.c */
+void set_workspace_name(const char *fn); /* ../main/startup.cpp */
 
 /* used to avoid some flashing during cleaning up */
 Rboolean AllDevicesKilled = FALSE;

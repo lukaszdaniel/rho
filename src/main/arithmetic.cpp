@@ -955,7 +955,7 @@ static SEXP math2B(SEXP sa, SEXP sb, double (*f)(double, double, double *),
 	    amax = av;
     }
     if (amax > besselJY_max_nu)
-	amax = besselJY_max_nu; // and warning will happen in ../nmath/bessel_[jy].c
+	amax = besselJY_max_nu; // and warning will happen in ../nmath/bessel_[jy].cpp
     const void *vmax = vmaxget();
     nw = 1 + (size_t)floor(amax);
     work = (double *) R_alloc(nw, sizeof(double));
@@ -991,8 +991,8 @@ SEXP attribute_hidden do_math2(Expression* call,
     switch (op->variant()) {
 
     case  0: return Math2(args, atan2);
-    case 10001: return Math2(args, fround);// round(),  ../nmath/fround.c
-    case 10004: return Math2(args, fprec); // signif(), ../nmath/fprec.c
+    case 10001: return Math2(args, fround);// round(),  ../nmath/fround.cpp
+    case 10004: return Math2(args, fprec); // signif(), ../nmath/fprec.cpp
 
     case  2: return Math2(args, lbeta);
     case  3: return Math2(args, beta);

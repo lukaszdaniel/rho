@@ -294,7 +294,7 @@ SEXP FixupVFont(SEXP vfont) {
 	    error(_("invalid 'vfont' value [typeface %d]"), typeface);
 	/* For each of the typefaces {1..8}, there are several fontindices
 	   available; how many depends on the typeface.
-	   The possible combinations are "given" in ./g_fontdb.c
+	   The possible combinations are "given" in ./g_fontdb.cpp
 	   and also listed in help(Hershey).
 	 */
 	minindex = 1;

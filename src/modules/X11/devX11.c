@@ -289,7 +289,7 @@ static void CairoHandler(void)
     }
 }
 
-/* private hooks in sys-std.c */
+/* private hooks in sys-std.cpp */
 extern void (* Rg_PolledEvents)(void);
 extern int Rg_wait_usec;
 

@@ -18,7 +18,7 @@
  *
  */
 
-/* ansari.c
+/* ansari.cpp
    Compute the exact distribution of the Ansari-Bradley test statistic.
    */
 

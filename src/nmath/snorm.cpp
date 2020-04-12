@@ -45,7 +45,7 @@ N01type N01_kind = INVERSION;
 
 #ifndef MATHLIB_STANDALONE
 typedef void * (*DL_FUNC)();
-extern DL_FUNC  User_norm_fun; /* declared and set in ../main/RNG.c */
+extern DL_FUNC  User_norm_fun; /* declared and set in ../main/RNG.cpp */
 #endif
 
 /*

@@ -20,11 +20,11 @@
 /* Internal header, not installed */
 
 /*  This file was contributed by Ei-ji Nakama.
- *  See also the comments in  ../main/rlocale.c.
+ *  See also the comments in  ../main/rlocale.cpp.
 
  *  It does 2 things:
  * (a) supplies wrapper/substitute wc[s]width functions for use in 
- *    character.c, errors.c, printutils.c, devPS.c, RGui console.
+ *    character.cpp, errors.cpp, printutils.cpp, devPS.c, RGui console.
  * (b) Defines a replacment for iswctype to be used on Windows, maxOS and AIX.
  * in gram.cpp
  *
@@ -99,7 +99,7 @@ extern wctype_t Ri18n_wctype(const char *);
 extern int      Ri18n_iswctype(wint_t, wctype_t);
 
 #ifndef IN_RLOCALE_C
-/* We want to avoid these redefinitions in rlocale.c itself */
+/* We want to avoid these redefinitions in rlocale.cpp itself */
 #undef iswupper
 #undef iswlower
 #undef iswalpha

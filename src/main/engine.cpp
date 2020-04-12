@@ -87,7 +87,7 @@ static void unregisterOne(pGEDevDesc dd, int systemNumber) {
 }
 
 /* NOTE that dd->dev has been shut down by a call
- * to dev->close within devices.c
+ * to dev->close within devices.cpp
  */
 void GEdestroyDevDesc(pGEDevDesc dd)
 {
@@ -253,7 +253,7 @@ void GEunregisterSystem(int registerIndex)
  * It calls back to registered graphics systems and passes on the event
  * so that the graphics systems can respond however they want to.
  *
- * Currently only used for GE_ScalePS in devWindows.c
+ * Currently only used for GE_ScalePS in devWindows.cpp
  */
 SEXP GEhandleEvent(GEevent event, pDevDesc dev, SEXP data)
 {
@@ -3148,7 +3148,7 @@ void GEonExit()
    * Run through all devices and turn graphics recording back on
    * in case an error occurred in the middle of a do_recordGraphics
    * call.
-   * Awkward cos device code still in graphics.c
+   * Awkward cos device code still in graphics.cpp
    * Can be cleaned up when device code moved here.
    */
     int i, devNum;

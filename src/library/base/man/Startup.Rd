@@ -177,8 +177,8 @@
   \env{R_ENVIRON_USER} or \env{R_PROFILE_USER} to (if possible, which it
   is not on Windows) \code{""} or to the name of a non-existent file.
 }
-%% R_PROFLE_USER is used in src/unix/sys-unix.c and src/gnuwin32/sys-win32.c
-%% R_ENVIRON, R_ENVIRON_USER are used in src/main/Renviron.c
+%% R_PROFLE_USER is used in src/unix/sys-unix.cpp and src/gnuwin32/sys-win32.c
+%% R_ENVIRON, R_ENVIRON_USER are used in src/main/Renviron.cpp
 %% R_PROFILE is used in src/main/startup.c
 \seealso{
   For the definition of the \sQuote{home} directory on Windows see the

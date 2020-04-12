@@ -28,7 +28,7 @@
  *             ~~~~~~
  *  NOTE
  *	Because we generate random _vectors_ this doesn't fit easily
- *	into the do_random[1-4](.) framework setup in ../main/random.c
+ *	into the do_random[1-4](.) framework setup in ../main/random.cpp
  *	as that is used only for the univariate random generators.
  *      Multivariate distributions typically have too complex parameter spaces
  *	to be treated uniformly.

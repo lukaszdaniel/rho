@@ -334,7 +334,7 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
 	break;
     case GE_ScalePS:
     {
-	/* called from GEhandleEvent in devWindows.c */
+	/* called from GEhandleEvent in devWindows.cpp */
 	GPar *ddp, *ddpSaved;
 	bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
 	ddp = &(bss->dp);

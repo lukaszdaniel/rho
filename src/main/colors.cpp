@@ -54,7 +54,7 @@ void Rg_set_col_ptrs(F1 f1, F2 f2, F3 f3, F4 f4)
     ptr_savePalette = f4;
 }
 
-/* used in grid/src/gpar.c with bg = R_TRANWHITE,
+/* used in grid/src/gpar.cpp with bg = R_TRANWHITE,
    in packages Cairo, canvas and jpeg */
 /* in GraphicsEngine.h */
 unsigned int RGBpar3(SEXP x, int i, unsigned int bg)

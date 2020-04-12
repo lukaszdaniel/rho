@@ -688,7 +688,7 @@ double	R_FileMtime(const char *);
 int	R_GetFDLimit();
 
 /* environment cell access */
-// Used only by src/library/methods/src/methods_list_dispatch.c
+// Used only by src/library/methods/src/methods_list_dispatch.cpp
 #ifndef __cplusplus
 /* In C code, R_varloc_t is an opaque pointer: */
 typedef struct R_varloc_st *R_varloc_t;
@@ -993,7 +993,7 @@ double R_strtod4(const char *str, char **endptr, char dec, Rboolean NA);
 double R_strtod(const char *str, char **endptr);
 double R_atof(const char *str);
 
-/* unix/sys-std.c, main/options.cpp */
+/* unix/sys-std.cpp, main/options.cpp */
 void set_rl_word_breaks(const char *str);
 
 /* From localecharset.cpp */
@@ -1051,7 +1051,7 @@ extern void *alloca(size_t);
  * Function prototypes that don't appear to be defined anywhere else:
  */
 
-Rboolean R_access_X11(void); /* from src/unix/X11.c */
+Rboolean R_access_X11(void); /* from src/unix/X11.cpp */
 SEXP R_execMethod(SEXP op, SEXP rho);
 double R_getClockIncrement();
 SEXP do_gpregexpr(SEXP pat, SEXP vec, int igcase_opt, int useBytes);

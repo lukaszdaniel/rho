@@ -53,7 +53,7 @@
 #  error libcurl 7.22.0 or later is required.
 #  endif
 # endif
-extern "C" void Rsleep(double timeint);
+void Rsleep(double timeint);
 #endif
 
 # if (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR < 28)
@@ -361,7 +361,7 @@ static void putdashes(int *pold, int new_)
 // ------- Windows progress bar -----------
 #include <ga.h>
 
-/* We could share this window with internet.c, then re-positioning
+/* We could share this window with internet.cpp, then re-positioning
    would apply to both */
 typedef struct {
     window wprog;

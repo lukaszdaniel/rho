@@ -43,8 +43,8 @@ strsplit grep [g]sub [g]regexpr agrep
 
 here prior to 2.10.0 are now in grep.cpp and agrep.cpp
 
-make.unique, duplicated, unique, match, pmatch, charmatch are in unique.c
-iconv is in sysutils.c
+make.unique, duplicated, unique, match, pmatch, charmatch are in unique.cpp
+iconv is in sysutils.cpp
 
 Character strings in R are less than 2^31-1 bytes, so we use int not size_t.
 

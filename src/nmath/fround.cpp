@@ -41,7 +41,7 @@
 # define R_rint private_rint
 # include "nmath2.h" // for private_rint
 
-/* also used potentially in fprec.c and main/format.c */
+/* also used potentially in fprec.cpp and main/format.cpp */
 double attribute_hidden private_rint(double x)
 {
     double tmp, sgn = 1.0;

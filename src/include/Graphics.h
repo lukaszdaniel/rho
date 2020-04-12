@@ -40,7 +40,7 @@
 /* ../main/devices.cpp, used in memory.cpp, gnuwin32/extra.c */
 #define R_MaxDevices 64
 
-/* base.c, graphics.c, par.c */
+/* base.cpp, graphics.cpp, par.cpp */
 #define MAX_LAYOUT_ROWS 200
 #define MAX_LAYOUT_COLS 200
 #define MAX_LAYOUT_CELLS 10007 /* must be less than 65535,
@@ -277,16 +277,16 @@ void GInit(GPar*);
 
 void copyGPar(GPar *, GPar *);
 
- /* from graphics.c, used in par.c */
+ /* from graphics.cpp, used in par.cpp */
 double R_Log10(double);
 
-/* from par.c, called in plot.c, plot3d.c */
+/* from par.cpp, called in plot.cpp, plot3d.cpp */
 void ProcessInlinePars(SEXP, pGEDevDesc);
 
-/* from device.c */
+/* from device.cpp */
 void recordGraphicOperation(SEXP, SEXP, pGEDevDesc);
 
-/* some functions that plot.c needs to share with plot3d.c */
+/* some functions that plot.cpp needs to share with plot3d.cpp */
 SEXP FixupCol(SEXP, unsigned int);
 SEXP FixupLty(SEXP, int);
 SEXP FixupLwd(SEXP, double);

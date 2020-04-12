@@ -653,7 +653,7 @@ SEXP attribute_hidden do_forceAndCall(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* **** FIXME: Temporary code to execute S4 methods in a way that
    **** preserves lexical scope. */
 
-/* called from methods_list_dispatch.c */
+/* called from methods_list_dispatch.cpp */
 SEXP R_execMethod(SEXP op, SEXP rho)
 {
     Closure* func = SEXP_downcast<Closure*>(op);

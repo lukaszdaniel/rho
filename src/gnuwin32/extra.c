@@ -416,7 +416,7 @@ const char *formatError(DWORD res)
 }
 
 
-void R_UTF8fixslash(char *s); /* from main/util.c */
+void R_UTF8fixslash(char *s); /* from main/util.cpp */
 SEXP do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, paths = CAR(args), el, slash;

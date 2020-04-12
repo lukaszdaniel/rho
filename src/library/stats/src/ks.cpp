@@ -17,7 +17,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
-/* ks.c
+/* ks.cpp
    Compute the asymptotic distribution of the one- and two-sample
    two-sided Kolmogorov-Smirnov statistics, and the exact distributions
    in the two-sided one-sample and two-sample cases.

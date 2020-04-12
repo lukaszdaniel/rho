@@ -26,7 +26,7 @@
 /* <UTF8> This does byte-level access, e.g. isspace, but is OK. */
 
 /* ------------------- process .Renviron files in C -----------------
- *  Formerly part of ../unix/sys-common.c.
+ *  Formerly part of ../unix/sys-common.cpp.
  */
 
 #define R_NO_REMAP

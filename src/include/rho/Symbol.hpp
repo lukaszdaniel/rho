@@ -273,7 +273,7 @@ namespace rho {
 
 	int m_dd_index : 31;
         bool m_is_special_symbol : 1;
-	enum S11nType {NORMAL = 0, MISSINGARG, UNBOUNDVALUE};
+	enum S11nType {NORMAL_ = 0, MISSINGARG, UNBOUNDVALUE};
 
 	/**
 	 * @param name Pointer to String object representing the name

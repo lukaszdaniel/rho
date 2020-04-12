@@ -45,12 +45,23 @@ extern void Rf_endEmbeddedR(int fatal);
 # define LibExtern extern
 #endif
 
+#ifdef __cplusplus
+}
+#endif
 int Rf_initialize_R(int ac, char **av);
 void setup_Rmainloop(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void R_ReplDLLinit(void);
 extern int R_ReplDLLdo1(void);
-
+#ifdef __cplusplus
+}
+#endif
 void R_setStartTime(void);  /* 2007/06/11 arr: also prototyped in Rinterface.h */
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void R_RunExitFinalizers(void);
 extern void Rf_CleanEd(void);
 extern void Rf_KillAllDevices(void);
@@ -58,6 +69,9 @@ LibExtern int R_DirtyImage;
 extern void R_CleanTempDir(void);
 LibExtern char *R_TempDir;    
 extern void R_SaveGlobalEnv(void);
+#ifdef __cplusplus
+}
+#endif
 
 #ifdef _WIN32
 extern char *getDLLVersion(void), *getRUser(void), *get_R_HOME(void);
@@ -70,10 +84,6 @@ extern void GA_appcleanup(void);
 extern void readconsolecfg(void);
 #else
 void fpu_setup(Rboolean start);
-#endif
-
-#ifdef __cplusplus
-}
 #endif
 
 #endif /* REMBEDDED_H_ */

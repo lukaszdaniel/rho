@@ -17,7 +17,7 @@
  *  along with this program; if not, a copy is available at
  *  https://www.R-project.org/Licenses/
 
-   fork.c
+   fork.cpp
    interface to system-level tools for spawning copies of the current
    process and IPC
    
@@ -741,7 +741,7 @@ SEXP mc_interactive(SEXP sWhat) {
 }
 
 /*--  mcaffinity --
-  FIXME: we may want to move this outside fork.c in case Windows can do that */
+  FIXME: we may want to move this outside fork.cpp in case Windows can do that */
 #ifdef HAVE_SCHED_SETAFFINITY
 
 #ifdef HAVE_SCHED_H

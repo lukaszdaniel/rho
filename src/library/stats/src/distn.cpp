@@ -428,7 +428,7 @@ DEFMATH4_2(qtukey)
 /* These are here to get them in the correct package */
 
 
-/* from src/nmath/wilcox.c */
+/* from src/nmath/wilcox.cpp */
 extern void signrank_free(void);
 extern void wilcox_free(void);
 

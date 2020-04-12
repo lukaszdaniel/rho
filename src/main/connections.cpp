@@ -68,7 +68,7 @@
    need to be selected explicitly (even on Win64).
 
    There are also issues with the glob(), readdir(), stat() system
-   calls: see platform.cpp and sysutils.c
+   calls: see platform.cpp and sysutils.cpp
 
    saveload.cpp uses f[gs]etpos: they have 64-bit versions on LFS Linux
    and Solaris.  But this only used for pre-1.4.0 formats, and fpos_t
@@ -2291,10 +2291,8 @@ extern int GA_clipboardhastext(void); /* from ga.h */
 #endif
 
 #ifdef Unix
-// Defined in unix/X11.c :
-extern "C" {
+// Defined in unix/X11.cpp :
 Rboolean R_ReadClipboard(Rclpconn clpcon, char *type);
-}
 #endif
 
 static Rboolean clp_open(Rconnection con)

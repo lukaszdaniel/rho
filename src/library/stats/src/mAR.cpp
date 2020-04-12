@@ -95,7 +95,7 @@ static void matrix_prod(Array mat1, Array mat2, int trans1, int trans2,
    The Array structure contains pointers to arrays which are allocated
    using the R_alloc function.	Although the .C() interface cleans up
    all memory assigned with R_alloc, judicious use of vmaxget() vmaxset()
-   to free this memory is probably wise. See memory.c in R core.
+   to free this memory is probably wise. See memory.cpp in R core.
 
 */
 

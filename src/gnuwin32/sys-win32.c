@@ -26,7 +26,7 @@
 
 	 /* See ../unix/system.txt for a description of functions */
 
-	/* Windows analogue of unix/sys-unix.c: often rather similar */
+	/* Windows analogue of unix/sys-unix.cpp: often rather similar */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -168,7 +168,7 @@ void R_getProcTime(double *data)
     data[4] = R_NaReal;
 }
 
-/* use in memory.c: increments for CPU times */
+/* use in memory.cpp: increments for CPU times */
 double R_getClockIncrement(void)
 {
     return 1.0 / 100.0;

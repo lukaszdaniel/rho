@@ -24,7 +24,7 @@
  *
  *  This header contains the declarations of code to be used by
  *  .C, .Fortran, .Call or .External within the base package.
- *  These routines are `registered' in registration.c.
+ *  These routines are `registered' in registration.cpp.
  */
 
 #ifndef BASEDECL_H

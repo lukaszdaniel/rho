@@ -30,7 +30,7 @@
 /* Used by third-party graphics devices.
  *
  * This defines DevDesc, whereas GraphicsEngine.h defines GEDevDesc.
- * Also contains entry points from gevents.c
+ * Also contains entry points from gevents.cpp
  */
 
 #ifndef R_GRAPHICSDEVICE_H_
@@ -794,10 +794,10 @@ void killDevice(int);
 
 int NoDevices(void); /* used in engine, graphics, plot, grid */
 
-void NewFrameConfirm(pDevDesc); /* used in graphics.c, grid */
+void NewFrameConfirm(pDevDesc); /* used in graphics.cpp, grid */
 
 
-/* Graphics events: defined in gevents.c */
+/* Graphics events: defined in gevents.cpp */
 
 /* These give the indices of some known keys */
 

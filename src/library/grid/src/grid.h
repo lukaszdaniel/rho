@@ -583,7 +583,7 @@ void calcViewportLocationFromLayout(SEXP layoutPosRow,
 				    SEXP parent,
 				    LViewportLocation *vpl);
 
-/* From state.c */
+/* From state.cpp */
 void initDL(pGEDevDesc dd);
 
 SEXP gridStateElement(pGEDevDesc dd, int elementIndex);

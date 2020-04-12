@@ -1909,7 +1909,7 @@ SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFun
 static int var_R_can_use_X11 = -1;
 
 /* Use header files!  2007/06/11 arr
-extern Rboolean R_access_X11(void); // from src/unix/X11.c
+extern Rboolean R_access_X11(void); // from src/unix/X11.cpp
 */
 
 static Rboolean R_can_use_X11(void)
@@ -3122,7 +3122,7 @@ do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* platform-specific */
-extern "C" void Rsleep(double timeint);
+void Rsleep(double timeint);
 
 SEXP attribute_hidden do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
@@ -3136,7 +3136,7 @@ SEXP attribute_hidden do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 /* Formerly src/appl/machar.c:
  * void machar()  -- computes ALL `machine constants' at once.
- * -------------  -- compare with ../nmath/i1mach.c & ../nmath/d1mach.c
+ * -------------  -- compare with ../nmath/i1mach.cpp & ../nmath/d1mach.cpp
  *		     which use the C  <float.h> constants !
  *      algorithm 665, collected algorithms from acm.
  *      this work published in transactions on mathematical software,

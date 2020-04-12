@@ -159,7 +159,7 @@ static void prepareToInvokeBuiltIn(const BuiltInFunction* func)
     }
 
 #ifdef Win32
-    // This is an inlined version of Rwin_fpreset (src/gnuwin/extra.c)
+    // This is an inlined version of Rwin_fpreset (src/gnuwin32/extra.c)
     // and resets the precision, rounding and exception modes of a
     // ix86 fpu.
     // It gets called prior to every builtin function, just in case a badly

@@ -24347,7 +24347,7 @@ fi
 
 done
 
-## dl.h is used in src/unix/hpdlfcn.c included from src/unix/dynload.c on HP-UX
+## dl.h is used in src/unix/hpdlfcn.cpp included from src/unix/dynload.cpp on HP-UX
 ## features.h is used by date-time code on Linux.
 ## floatingpoint.h is used for fpsetmask on FreeBSD.
 ## sys/param.h is one way to get PATH_MAX.

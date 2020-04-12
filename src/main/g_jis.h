@@ -14,7 +14,7 @@
  * to the Rho website.
  * */
 
-/* This header file is #include'd by g_cntrlify.c.  It is a database rather
+/* This header file is #include'd by g_cntrlify.cpp.  It is a database rather
    than a true header file: it includes information on characters in the
    JIS X 0208 two-byte encoding (containing Kanji, Kana, Roman letters,
    Greek letters, Cyrillic letters, etc). */
@@ -40,7 +40,7 @@ struct kanjipair
 
 /* The 603 Kanji that we have glyphs for.  1st field is JIS index number;
    2nd is Nelson index number, which we use internally (it indexes into the
-   Hershey oriental glyph array in g_her_glyph.c).  For info on
+   Hershey oriental glyph array in g_her_glyph.cpp).  For info on
    correspondence, see kanji.doc. */
 
 static const struct kanjipair _builtin_kanji_glyphs[] =
@@ -687,7 +687,7 @@ static const struct kanjipair _builtin_kanji_glyphs[] =
 
 /* Non-Kanji characters in the JIS character set.  We map nearly all of
    these into characters (in the 0..255 range) in our existing fonts, which
-   are laid out in g_fontdb.c.  If RAW_HERSHEY_GLYPH bit is set, the font
+   are laid out in g_fontdb.cpp.  If RAW_HERSHEY_GLYPH bit is set, the font
    is ignored, since the character is to be mapped directly to a Hershey
    glyph (presumably one that appears in no font). */
 

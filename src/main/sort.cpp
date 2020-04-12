@@ -166,7 +166,7 @@ Rboolean Rf_isUnsorted(SEXP x, Rboolean strictly)
 			return TRUE;
 	    }
 	    break;
-	case RAWSXP: // being compatible with raw_relop() in ./relop.c
+	case RAWSXP: // being compatible with raw_relop() in ./relop.cpp
 	    if(strictly) {
 		for(i = 0; i+1 < n ; i++)
 		    if(RAW(x)[i] >= RAW(x)[i+1])

@@ -22,7 +22,7 @@
  *
  *	make CFLAGS='-DDEBUG_bratio  ...'
  *MM (w/ Debug, w/o Optimization):
- (cd `R-devel-pbeta-dbg RHOME`/src/nmath ; gcc -I. -I../../src/include -I../../../R/src/include  -DHAVE_CONFIG_H -fopenmp -g -pedantic -Wall --std=gnu99 -DDEBUG_q -DDEBUG_bratio -Wcast-align -Wclobbered  -c ../../../R/src/nmath/toms708.c -o toms708.o; cd ../..; make R)
+ (cd `R-devel-pbeta-dbg RHOME`/src/nmath ; g++ -I. -I../../src/include -I../../../R/src/include  -DHAVE_CONFIG_H -fopenmp -g -pedantic -Wall --std=gnu99 -DDEBUG_q -DDEBUG_bratio -Wcast-align -Wclobbered  -c ../../../R/src/nmath/toms708.cpp -o toms708.o; cd ../..; make R)
 */
 #ifdef DEBUG_bratio
 # define R_ifDEBUG_printf(...) REprintf(__VA_ARGS__)

@@ -141,7 +141,7 @@ int sumFunc(SEXP ua) {
     return fNameMatch(ua, "sum");
 }
 
-/* Functions in lattice.c should use this to determine the length
+/* Functions in lattice.cpp should use this to determine the length
  * of a unit/unitArithmetic object rather than just LENGTH.
  */
 int unitLength(SEXP u) 

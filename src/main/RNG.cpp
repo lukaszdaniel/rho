@@ -36,7 +36,7 @@
 #include <R_ext/Random.h>
 #include <S.h>
 
-/* Normal generator is not actually set here but in ../nmath/snorm.c */
+/* Normal generator is not actually set here but in ../nmath/snorm.cpp */
 #define RNG_DEFAULT MERSENNE_TWISTER
 #define N01_DEFAULT INVERSION
 
@@ -49,12 +49,12 @@ typedef void (*UnifInitFun)(Int32);
 
 UnifInitFun User_unif_init = nullptr; /* some picky compilers */
 
-DL_FUNC  User_norm_fun = nullptr; /* also in ../nmath/snorm.c */
+DL_FUNC  User_norm_fun = nullptr; /* also in ../nmath/snorm.cpp */
 
 #include "nmath2.h"
 static RNGtype RNG_kind = RNG_DEFAULT;
-//extern N01type N01_kind; /* from ../nmath/snorm.c */
-//extern double BM_norm_keep; /* ../nmath/snorm.c */
+//extern N01type N01_kind; /* from ../nmath/snorm.cpp */
+//extern double BM_norm_keep; /* ../nmath/snorm.cpp */
 
 /* typedef unsigned int Int32; in Random.h */
 

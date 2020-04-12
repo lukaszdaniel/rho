@@ -39,7 +39,7 @@
 #include <Fileio.h> /* for R_fopen */
 #include <Startup.h>
 
-/* These are used in ../gnuwin32/system.c, ../unix/sys-std.c */
+/* These are used in ../gnuwin32/system.c, ../unix/sys-std.cpp */
 SA_TYPE SaveAction = SA_SAVEASK;
 SA_TYPE	RestoreAction = SA_RESTORE;
 static Rboolean LoadSiteFile = TRUE;

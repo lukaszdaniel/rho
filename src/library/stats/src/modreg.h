@@ -26,7 +26,7 @@
 
 SEXP isoreg(SEXP y);
 
-/* monoSpl.c : */
+/* monoSpl.cpp : */
 SEXP monoFC_m(SEXP m, SEXP Sx);
 void monoFC_mod(double *m, double Sx[], int n);
 

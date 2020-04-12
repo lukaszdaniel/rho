@@ -47,7 +47,7 @@
 #include "rui.h"
 #include "editor.h"
 
-/* from sysutils.c */
+/* from sysutils.cpp */
 void reEnc2(const char *x, char *y, int ny,
 	    cetype_t ce_in, cetype_t ce_out, int subst);
 

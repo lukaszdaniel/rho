@@ -96,12 +96,17 @@ extern std::FILE * R_Outputfile;
 extern FILE * R_Consolefile;
 extern FILE * R_Outputfile;
 #endif
-
-/* in ../unix/sys-unix.c */
+#ifdef __cplusplus
+}
+#endif
+/* in ../unix/sys-unix.cpp */
 void R_setStartTime(void);
 void fpu_setup(Rboolean);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* in ../unix/system.c */
+/* in ../unix/system.cpp */
 extern int R_running_as_main_program;
 
 #ifdef CSTACK_DEFNS
@@ -166,7 +171,7 @@ extern int  (*ptr_R_EditFiles)(int, const char **, const char **, const char *);
 extern SEXP (*ptr_do_selectlist)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataentry)(SEXP, SEXP, SEXP, SEXP);
 extern SEXP (*ptr_do_dataviewer)(SEXP, SEXP, SEXP, SEXP);
-extern void (*ptr_R_ProcessEvents)();
+//extern void (*ptr_R_ProcessEvents)();
 
 
 /* These two are not used by R itself, but are used by the tcltk package */

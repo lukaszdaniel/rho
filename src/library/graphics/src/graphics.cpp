@@ -1766,7 +1766,7 @@ pGEDevDesc GNewPlot(Rboolean recording)
        so treat separately. */
 
     /* The logic for when to start a new page is mimiced in the
-     * read-only par("page") in par.c, SO if you make changes
+     * read-only par("page") in par.cpp, SO if you make changes
      * to the logic here, you will need to change that as well
      */
     if (!gpptr(dd)->newplot) {
@@ -2826,7 +2826,7 @@ int GClipPolygon(double *x, double *y, int n, int coords, int store,
  * This allows new graphics API (GraphicsDevice.h, GraphicsEngine.h)
  * to be developed alongside.
  * Could be removed if Rgraphics.h ever gets REPLACED by new API
- * NOTE that base graphics code (in plot.c) still calls this.
+ * NOTE that base graphics code (in plotpp) still calls this.
  */
 /* GPolygon -- Draw a polygon
  *	Filled with color bg and outlined with color fg
@@ -2907,7 +2907,7 @@ void GPolyline(int n, double *x, double *y, int coords, pGEDevDesc dd)
  * This allows new graphics API (GraphicsDevice.h, GraphicsEngine.h)
  * to be developed alongside.
  * Could be removed if Rgraphics.h ever gets REPLACED by new API
- * NOTE that base graphics code (do_symbol in plot.c) still calls this.
+ * NOTE that base graphics code (do_symbol in plot.cpp) still calls this.
  *
  * NB: this fiddles with radius = 0.
  */
@@ -3201,7 +3201,7 @@ void GLPretty(double *ul, double *uh, int *n)
 	GPretty(ul, uh, n);
 	*n = -*n;
     }
-    else { /* extra tickmarks --> CreateAtVector() in ./plot.c */
+    else { /* extra tickmarks --> CreateAtVector() in ./plot.cpp */
 	/* round to nice "1e<N>" */
 	*ul = Rexp10((double)p1);
 	*uh = Rexp10((double)p2);
@@ -3350,7 +3350,7 @@ void GMtext(const char *str, cetype_t enc, int side, double line, int outer,
 }/* GMtext */
 
 /* ------------------------------------------------------------
-   code below here moved from plotmath.c, which said
+   code below here moved from plotmath.cpp, which said
 
  *  This source code module:
  *  Copyright (C) 1997, 1998 Paul Murrell and Ross Ihaka

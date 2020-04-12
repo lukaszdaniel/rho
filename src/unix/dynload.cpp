@@ -49,7 +49,7 @@
    is available */
 # ifdef __hpux
 #  ifdef HAVE_DL_H
-#   include "hpdlfcn.c"
+#   include "hpdlfcn.cpp"
 #   define HAVE_DYNAMIC_LOADING
 #  endif
 # else

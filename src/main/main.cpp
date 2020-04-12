@@ -81,7 +81,7 @@ void attribute_hidden nl_Rdummy(void)
 #endif
 
 
-/* The 'real' main() program is in Rmain.c on Unix-alikes, and
+/* The 'real' main() program is in Rmain.cpp on Unix-alikes, and
    src/gnuwin/front-ends/graphappmain.c on Windows, unless of course
    R is embedded */
 

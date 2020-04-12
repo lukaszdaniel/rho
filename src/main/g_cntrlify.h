@@ -14,7 +14,7 @@
  * to the Rho website.
  * */
 
-/* This header file is #include'd by g_cntrlify.c.  It is a database rather
+/* This header file is #include'd by g_cntrlify.cpp.  It is a database rather
    than a true header file: it includes arrays of escape sequences,
    ligatures, etc., which govern the interpretation of a user-specified
    text string, or `label'.
@@ -412,7 +412,7 @@ static const Escape _special_escape_tbl[NUM_SPECIAL_ESCAPES] =
   {0225, "ST", "star"},
   {0226, "AS", "ascendingnode"},
   {0227, "DE", "descendingnode"},
-  /* final `s', treated specially in g_cntrlify.c */
+  /* final `s', treated specially in g_cntrlify.cpp */
 #define FINAL_LOWERCASE_S 0230
   {0230, "s-", "s1"},
   /* non-astronomical Hershey glyphs */
@@ -489,14 +489,14 @@ static const Deligature_escape _deligature_escape_tbl[NUM_DELIGATURED_ESCAPES] =
 };
 
 /* A table of the ligatures present in the Hershey fonts.  Ligaturization
-   is automatic; see g_cntrlify.c.  The eszet ligature, found only in
+   is automatic; see g_cntrlify.cpp.  The eszet ligature, found only in
    HersheyGothic-German, is not listed here because it is not constructed
-   automatically; the user must request it, with either "\ss" or 'ß'.  The
+   automatically; the user must request it, with either "\ss" or 'ï¿½'.  The
    table has the longer ligatures first because it is scanned from first to
    last, with strcmp().
 
    The Hershey fonts are indicated by their index in the internal table of
-   fonts, in g_fontdb.c. */
+   fonts, in g_fontdb.cpp. */
 
 typedef struct
 {

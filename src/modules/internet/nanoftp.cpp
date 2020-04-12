@@ -30,7 +30,7 @@
 
 /* based on libxml2-2.4.10
  * (but updated to protect against CVE-2004-0989):
- * nanoftp.c: basic FTP client support
+ * nanoftp.cpp: basic FTP client support
  *
  *  Reference: RFC 959
  */
@@ -104,7 +104,7 @@ extern int snprintf (char *s, size_t n, const char *format, ...);
 #ifdef Unix
 #include <R_ext/eventloop.h>
 
-/* modified from src/unix/sys-std.c  */
+/* modified from src/unix/sys-std.cpp  */
 static int
 setSelectMask(InputHandler *handlers, fd_set *readMask)
 {

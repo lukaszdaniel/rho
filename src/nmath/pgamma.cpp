@@ -53,7 +53,7 @@
 #include "dpq.h"
 /*----------- DEBUGGING -------------
  * make CFLAGS='-DDEBUG_p -g'
- * (cd `R-devel RHOME`/src/nmath; gcc -I. -I../../src/include -I../../../R/src/include  -DHAVE_CONFIG_H -fopenmp -DDEBUG_p -g -c ../../../R/src/nmath/pgamma.c -o pgamma.o)
+ * (cd `R-devel RHOME`/src/nmath; g++ -I. -I../../src/include -I../../../R/src/include  -DHAVE_CONFIG_H -fopenmp -DDEBUG_p -g -c ../../../R/src/nmath/pgamma.cpp -o pgamma.o)
  */
 
 /* Scalefactor:= (2^32)^8 = 2^256 = 1.157921e+77 */

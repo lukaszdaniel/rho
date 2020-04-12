@@ -201,7 +201,7 @@ static int socket_errno(void)
 #ifdef Unix
 #include <R_ext/eventloop.h>
 
-/* modified from src/unix/sys-std.c  */
+/* modified from src/unix/sys-std.cpp  */
 static int
 setSelectMask(InputHandler *handlers, fd_set *readMask)
 {

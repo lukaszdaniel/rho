@@ -29,7 +29,7 @@
 
 #include <Defn.h>
 #include <Localization.h>
-#include <Internal.h>
+//#include <Internal.h>
 
 #include <Rconnections.h>
 #include <Rdynpriv.h>
@@ -72,10 +72,11 @@ int attribute_hidden R_X11_Init(void)
 Rboolean attribute_hidden R_access_X11(void)
 {
     R_X11_Init();
-    return (initialized > 0) ? (Rboolean) ((*ptr->access)() > 0) : FALSE;
+    return (initialized > 0) ? Rboolean((*ptr->access)() > 0) : FALSE;
 }
 
 // called from src/library/grDevices/src/stubs.c
+extern "C"
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     R_X11_Init();
@@ -88,6 +89,7 @@ SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 // called from src/library/grDevices/src/stubs.c
+extern "C"
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     R_X11_Init();
@@ -100,6 +102,7 @@ SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 // exported for src/include/R_ext/GetX11Image.h (and package tkrplot)
+extern "C"
 Rboolean R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
 {
     R_X11_Init();
@@ -122,6 +125,7 @@ Rboolean attribute_hidden R_ReadClipboard(Rclpconn clpcon, char *type)
     }
 }
 
+extern "C"
 SEXP do_bmVersion(void)
 {
    SEXP ans = PROTECT(allocVector(STRSXP, 3)),
@@ -146,18 +150,21 @@ Rboolean attribute_hidden R_access_X11(void)
     return FALSE;
 }
 
+extern "C"
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     error(_("X11 is not available"));
     return R_NilValue;
 }
 
+extern "C"
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     error(_("X11 is not available"));
     return R_NilValue;
 }
 
+extern "C"
 Rboolean R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
 {
     error(_("X11 is not available"));
@@ -170,6 +177,7 @@ Rboolean attribute_hidden R_ReadClipboard(Rclpconn con, char *type)
     return FALSE;
 }
 
+extern "C"
 SEXP do_bmVersion(void)
 {
     SEXP ans = PROTECT(allocVector(STRSXP, 3)),

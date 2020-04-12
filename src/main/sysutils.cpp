@@ -47,7 +47,7 @@ using namespace std;
 
 /*
   See ../unix/system.txt for a description of some of these functions.
-  Formally part of ../unix/sys-common.c.
+  Formally part of ../unix/sys-common.cpp.
  */
 
 /*
@@ -1053,7 +1053,7 @@ static void *latin1_wobj = nullptr, *utf8_wobj=nullptr;
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-attribute_hidden /* but not hidden on Windows, where it was used in tcltk.c */
+attribute_hidden /* but not hidden on Windows, where it was used in tcltk.cpp */
 const wchar_t *Rf_wtransChar(SEXP x)
 {
     void * obj;
@@ -1642,7 +1642,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
     return strlen(buf);
 }
 
-/* moved from src/unix/sys-unix.c and src/gnuwin32/extra.c */
+/* moved from src/unix/sys-unix.cpp and src/gnuwin32/extra.c */
 
 #ifdef HAVE_STAT
 # ifdef HAVE_ACCESS

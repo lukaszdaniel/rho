@@ -546,9 +546,15 @@ SEXP do_normalizepath(SEXP, SEXP, SEXP, SEXP);
 SEXP do_polyroot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_saveplot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_setGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
 SEXP do_sysinfo(SEXP,SEXP,SEXP,SEXP);
-SEXP do_syssleep(SEXP,SEXP,SEXP,SEXP);
 SEXP do_system(SEXP, SEXP, SEXP, SEXP);
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+SEXP do_syssleep(SEXP,SEXP,SEXP,SEXP);
 SEXP do_getSnapshot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_playSnapshot(SEXP, SEXP, SEXP, SEXP);
 

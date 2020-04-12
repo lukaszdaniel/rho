@@ -367,7 +367,7 @@ extern "C" {
      *          the current length.
      *
      * @deprecated May be withdrawn in future.  Currently used in
-     * library/stats/src/isoreg.c , and possibly in packages.
+     * library/stats/src/isoreg.cpp , and possibly in packages.
      */
     void SETLENGTH(SEXP x, R_xlen_t v);
 

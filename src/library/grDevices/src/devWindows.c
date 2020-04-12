@@ -21,7 +21,7 @@
  */
 
 /*--- Device Driver for Windows; this file started from
- *  src/unix/X11/devX11.c
+ *  src/unix/X11/devX11.cpp
  */
 
 #ifdef HAVE_CONFIG_H

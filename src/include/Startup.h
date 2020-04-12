@@ -34,9 +34,6 @@ extern UImode  CharacterMode;
 #endif
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* originally from Defn.h : */
 
@@ -47,8 +44,5 @@ FILE *R_OpenInitFile(void);
 FILE *R_OpenSysInitFile(void);
 FILE *R_OpenSiteFile(void);
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* STARTUP_H */

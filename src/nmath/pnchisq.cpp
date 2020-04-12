@@ -23,7 +23,7 @@
 /*----------- DEBUGGING -------------
  *
  *	make CFLAGS='-DDEBUG_pnch ....'
-(cd `R-devel RHOME`/src/nmath; gcc -I. -I../../src/include -I../../../R/src/include -I/usr/local/include -DHAVE_CONFIG_H -fopenmp -g -O0 -pedantic -Wall --std=gnu99 -DDEBUG_pnch -DDEBUG_q -Wcast-align -Wclobbered  -c ../../../R/src/nmath/pnchisq.c -o pnchisq.o )
+(cd `R-devel RHOME`/src/nmath; g++ -I. -I../../src/include -I../../../R/src/include -I/usr/local/include -DHAVE_CONFIG_H -fopenmp -g -O0 -pedantic -Wall --std=gnu99 -DDEBUG_pnch -DDEBUG_q -Wcast-align -Wclobbered  -c ../../../R/src/nmath/pnchisq.cpp -o pnchisq.o )
 
  * -- Feb.6, 2000 (R pre0.99); M.Maechler:  still have
  * bad precision & non-convergence in some cases (x ~= f, both LARGE)

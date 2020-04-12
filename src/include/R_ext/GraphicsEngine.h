@@ -340,7 +340,7 @@ double toDeviceHeight(double value, GEUnit from, pGEDevDesc dd);
  *
  *  COLOUR CODE is concerned with the internals of R colour representation
  *
- *  From colors.cpp, used in par.cpp, grid/src/gpar.c
+ *  From colors.cpp, used in par.cpp, grid/src/gpar.cpp
  */
 
 typedef unsigned int rcolor;
@@ -352,7 +352,7 @@ rcolor RGBpar(SEXP, int);
 rcolor RGBpar3(SEXP, int, rcolor);
 
 /* Convert an internal colour specification to/from a colour name */
-const char *col2name(rcolor col); /* used in par.c, grid */
+const char *col2name(rcolor col); /* used in par.cpp, grid */
 
 /* Convert either a name or a #RRGGBB[AA] string to internal.
    Because people were using it, it also converts "1", "2" ...

@@ -1443,7 +1443,7 @@ SEXP attribute_hidden do_subassign3(SEXP call, SEXP op, SEXP args, SEXP env)
     return R_subassign3_dflt(call, arglist.get(0), nlist, arglist.get(2));
 }
 
-/* used in "$<-" (above) and methods_list_dispatch.c */
+/* used in "$<-" (above) and methods_list_dispatch.cpp */
 SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 {
     SEXP t;

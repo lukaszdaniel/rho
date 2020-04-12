@@ -62,13 +62,13 @@ static double afc(int i)
 	/* 10.60460290274525022841722740072165, approx. value below =
 	   10.6046028788027; rel.error = 2.26 10^{-9}
 
-	  FIXME: Use constants and if(n > ..) decisions from ./stirlerr.c
+	  FIXME: Use constants and if(n > ..) decisions from ./stirlerr.cpp
 	  -----  will be even *faster* for n > 500 (or so)
 	*/
     };
 
     if (i < 0) {
-	MATHLIB_WARNING(("rhyper.c: afc(i), i=%d < 0 -- SHOULD NOT HAPPEN!\n"), i);
+	MATHLIB_WARNING(("rhyper.cpp: afc(i), i=%d < 0 -- SHOULD NOT HAPPEN!\n"), i);
 	return -1; // unreached
     }
     if (i <= 7)

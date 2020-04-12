@@ -30,7 +30,7 @@
 
 /* based on libxml2-2.3.6:
  * (but updated to protect against CVE-2004-0989):
- * nanohttp.c: minimalist HTTP GET implementation to fetch external subsets.
+ * nanohttp.cpp: minimalist HTTP GET implementation to fetch external subsets.
  *             focuses on size, streamability, reentrancy and portability
  *
  * This is clearly not a general purpose HTTP implementation
@@ -137,7 +137,7 @@ static void *RxmlNanoHTTPMethod(const char *URL, const char *method,
 #ifdef Unix
 #include <R_ext/eventloop.h>
 
-/* modified from src/unix/sys-std.c  */
+/* modified from src/unix/sys-std.cpp  */
 static int
 setSelectMask(InputHandler *handlers, fd_set *readMask)
 {

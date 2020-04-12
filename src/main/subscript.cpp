@@ -32,7 +32,7 @@
  *  mat2indsub()      -- for "mat[i]"     "    "            "
 
  *  makeSubscript()   -- for "[" and "[<-" in ./subset.cpp and ./subassign.cpp,
- *			 and "[[<-" with a scalar in ./subassign.c
+ *			 and "[[<-" with a scalar in ./subassign.cpp
  *  arraySubscript()  -- for "[i,j,..." and "[<-..." in ./subset.cpp, ./subassign.cpp
  */
 

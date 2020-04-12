@@ -433,7 +433,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	Rf_error(_("invalid '%s' argument"), "scientific");
     if(sci != NA_INTEGER) R_print.scipen = sci;
 
-    // copy/paste from "OutDec" part of ./options.c
+    // copy/paste from "OutDec" part of ./options.cpp
     if (TYPEOF(decimal_mark_) != STRSXP || LENGTH(decimal_mark_) != 1)
 	Rf_error(_("invalid '%s' argument"), "decimal.mark");
     const char *my_OutDec;

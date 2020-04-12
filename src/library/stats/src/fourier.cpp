@@ -19,7 +19,7 @@
  */
 
 /* These are the R interface routines to the plain FFT code
-   fft_factor() & fft_work() in fft.c. */
+   fft_factor() & fft_work() in fft.cpp. */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>

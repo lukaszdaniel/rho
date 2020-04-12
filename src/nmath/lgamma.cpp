@@ -103,7 +103,7 @@ double lgammafn_sign(double x, int *sgn)
 
     if (sinpiy == 0) { /* Negative integer argument ===
 			  Now UNNECESSARY: caught above */
-	MATHLIB_WARNING(" ** should NEVER happen! *** [lgamma.c: Neg.int, y=%g]\n",y);
+	MATHLIB_WARNING(" ** should NEVER happen! *** [lgamma.cpp: Neg.int, y=%g]\n",y);
 	ML_ERR_return_NAN;
     }
 

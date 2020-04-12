@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  bandwidth.c by W. N. Venables and B. D. Ripley  Copyright (C) 1994-2001
+ *  bandwidth.cpp by W. N. Venables and B. D. Ripley  Copyright (C) 1994-2001
  *  Copyright (C) 2012-2017  The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify

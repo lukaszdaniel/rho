@@ -280,7 +280,7 @@ static void icount(int *x, int *o, int n)
     int w = (order==1) ? 0 : range-1;
     for (int i = 0; i < range; i++) 
         /* no point in adding tmp < n && i <= range, since range includes max, 
-           need to go to max, unlike 256 loops elsewhere in radixsort.c */
+           need to go to max, unlike 256 loops elsewhere in radixsort.cpp */
     {
 	if (counts[w]) {
 	    // cumulate but not through 0's.
@@ -364,7 +364,7 @@ static void iinsert(int *x, int *o, int n)
   ~ Note they are LSD, but we do MSD here which is more complicated,
     for efficiency.
   ~ NAs need no special treatment as NA is the most negative integer
-    in R (checked in init.c once,  for efficiency) so NA naturally sort
+    in R (checked in init.cpp once,  for efficiency) so NA naturally sort
     to the front.
   ~ Using 4-pass 1-byte radix for the following reasons :
 
@@ -1272,7 +1272,7 @@ static void csort_pre(SEXP * x, int n)
 
 // order = 1 is ascending and order=-1 is descending; also takes care
 // of na.last argument with check through 'icheck' Relies on
-// NA_INTEGER == INT_MIN, checked in init.c
+// NA_INTEGER == INT_MIN, checked in init.cpp
 static int isorted(int *x, int n)
 {
     int i = 1, j = 0;

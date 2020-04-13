@@ -237,8 +237,7 @@ static const R_CallMethodDef R_CallDef[] = {
 };
 
 extern "C"
-void attribute_visible
-R_init_splines(DllInfo *dll)
+void attribute_visible R_init_splines(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, R_CallDef, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);

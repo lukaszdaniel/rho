@@ -57,8 +57,7 @@ static const R_CallMethodDef CallEntries[] = {
 };
 
 extern "C"
-void attribute_visible
-R_init_methods(DllInfo *dll)
+void attribute_visible R_init_methods(DllInfo *dll)
 {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);

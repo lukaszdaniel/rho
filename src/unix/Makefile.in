@@ -82,7 +82,7 @@ maintainer-clean: distclean
 
 ## we need to build at install time to capture the correct 'rhome'
 install-Rscript:
-	$(CC) $(ALL_CPPFLAGS) $(ALL_CFLAGS0) $(LDFLAGS) -DR_HOME='"$(rhome)"' \
+	$(CXX) $(ALL_CPPFLAGS) $(ALL_CFLAGS0) $(LDFLAGS) -DR_HOME='"$(rhome)"' \
 	  -o Rscript $(srcdir)/Rscript.cpp
 	@$(MKINSTALLDIRS) "$(DESTDIR)$(Rexecbindir)"
 	@$(INSTALL_PROGRAM) Rscript "$(DESTDIR)$(Rexecbindir)/rhoscript"

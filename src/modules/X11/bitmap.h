@@ -17,6 +17,9 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int R_SaveAsPng(void  *d, int width, int height,
 		       unsigned int (*gp)(void *, int, int),
 		       int bgr, FILE *fp, unsigned int transparent, int res);
@@ -33,3 +36,6 @@ extern int R_SaveAsTIFF(void  *d, int width, int height,
 extern int R_SaveAsBmp(void  *d, int width, int height,
 		       unsigned int (*gp)(void *, int, int),
 		       int bgr, FILE *fp, int res);
+#ifdef __cplusplus
+}
+#endif

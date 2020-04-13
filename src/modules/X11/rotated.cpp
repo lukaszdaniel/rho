@@ -609,9 +609,9 @@ static int XRotDrawHorizontalString(Display *dpy, XFontStruct *font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* overall font height */
     height=font->ascent+font->descent;
@@ -858,9 +858,9 @@ static RotatedTextItem *XRotCreateTextItem(Display *dpy, XFontStruct *font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* find width of longest section */
     str1=strdup(text);
@@ -1424,9 +1424,9 @@ XPoint *XRotTextExtents(Display *dpy, XFontStruct *font, double angle,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* find width of longest section */
     str1=strdup(text);
@@ -1826,9 +1826,9 @@ static int XmbRotDrawHorizontalString(Display *dpy, XFontSet font,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* overall font height */
     height
@@ -2076,9 +2076,9 @@ static RotatedTextItem
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* find width of longest section */
     str1=strdup(text);
@@ -2401,9 +2401,9 @@ XPoint *XmbRotTextExtents(Display *dpy, XFontSet font, double angle,
 
     /* ignore newline characters if not doing alignment */
     if(align==NONE)
-	str2 = (char *) str2_a;
+	str2 = const_cast<char *>(str2_a);
     else
-	str2 = (char *) str2_b;
+	str2 = const_cast<char *>(str2_b);
 
     /* find width of longest section */
     str1=strdup(text);

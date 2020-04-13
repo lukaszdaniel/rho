@@ -90,6 +90,7 @@ static void my_png_warning(png_structp png_ptr, png_const_charp msg)
     warning("libpng: %s",(char *) msg);
 }
 
+extern "C"
 int R_SaveAsPng(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		int bgr, FILE *fp, unsigned int transparent, int res)
@@ -298,6 +299,7 @@ int R_SaveAsPng(void  *d, int width, int height,
     return 1;
 }
 #else
+extern "C"
 int R_SaveAsPng(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		int bgr, FILE *fp, unsigned int transparent, int res)
@@ -355,7 +357,7 @@ static void my_output_message (j_common_ptr cinfo)
 }
 
 
-
+extern "C"
 int R_SaveAsJpeg(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		int bgr, int quality, FILE *outfile, int res)
@@ -450,6 +452,7 @@ int R_SaveAsJpeg(void  *d, int width, int height,
 }
 
 #else
+extern "C"
 int R_SaveAsJpeg(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		int bgr, int quality, FILE *outfile, int res)
@@ -463,6 +466,7 @@ int R_SaveAsJpeg(void  *d, int width, int height,
 
 #include <tiffio.h>
 
+extern "C"
 int R_SaveAsTIFF(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		int bgr, const char *outfile, int res, int compression)
@@ -547,6 +551,7 @@ int R_SaveAsTIFF(void  *d, int width, int height,
     return 1;
 }
 #else
+extern "C"
 int R_SaveAsTIFF(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int),
 		 int bgr, const char *outfile, int res, int compression)
@@ -590,6 +595,7 @@ static void bmpdw(unsigned int x, FILE *fp)
 
 #define HEADERSIZE 54
 
+extern "C"
 int R_SaveAsBmp(void  *d, int width, int height,
 		unsigned int (*gp)(void *, int, int), int bgr, FILE *fp,
 		int res)

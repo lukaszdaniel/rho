@@ -730,7 +730,7 @@ SEXP PicTeX(SEXP args)
     fg = CHAR(asChar(CAR(args)));   args = CDR(args);
     width = asReal(CAR(args));	     args = CDR(args);
     height = asReal(CAR(args));	     args = CDR(args);
-    debug = (Rboolean) (Rf_asLogical(CAR(args)));    args = CDR(args);
+    debug = Rboolean(Rf_asLogical(CAR(args)));    args = CDR(args);
     if(debug == NA_LOGICAL) debug = FALSE;
 
     R_CheckDeviceAvailable();

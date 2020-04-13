@@ -26,6 +26,7 @@
 #ifndef _WIN32
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP env);
+extern "C"
 SEXP do_bmVersion(void);
 SEXP do_getSnapshot(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP do_playSnapshot(SEXP call, SEXP op, SEXP args, SEXP env);
@@ -109,7 +110,7 @@ SEXP devAskNewPage(SEXP call, SEXP op, SEXP args, SEXP env)
     if (!isNull(CAR(args))) {
 	ask = asLogical(CAR(args));
 	if (ask == NA_LOGICAL) error(_("invalid '%s' argument"), "ask");
-	gdd->ask = (Rboolean) (ask);
+	gdd->ask = Rboolean(ask);
 	R_Visible = FALSE;
     } else R_Visible = TRUE;
 

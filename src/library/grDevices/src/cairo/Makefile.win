@@ -22,9 +22,9 @@ PKG_CPPFLAGS = -I$(R_HOME)/src/include -I. -I.. -DHAVE_CONFIG_H -DCOMPILING_RHO 
 PKG_LIBS = -L"$(CAIRO_HOME)/win$(WIN)" -lcairo -lpixman-1 -lpng -lz \
   -lgdi32 -lmsimg32 -L.. -lgrDevices
 
-SOURCES = cairoBM.c
-DEPENDS = $(SOURCES:.c=.d)
-OBJECTS = $(SOURCES:.c=.o)
+SOURCES = cairoBM.cpp
+DEPENDS = $(SOURCES:.cpp=.d)
+OBJECTS = $(SOURCES:.cpp=.o)
 
 all: makeMakedeps winCairo.dll
 	@cp winCairo.dll $(R_HOME)/library/grDevices/libs$(R_ARCH)

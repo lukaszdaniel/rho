@@ -517,7 +517,6 @@ SEXP do_tracemem(rho::Expression* call, const rho::BuiltInFunction* op, rho::ROb
 SEXP do_retracemem(SEXP, SEXP, SEXP, SEXP);
 SEXP do_untracemem(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 
-extern "C" {
 #endif  // __cplusplus
 
 #if Win32
@@ -532,13 +531,7 @@ SEXP do_X11(SEXP, SEXP, SEXP, SEXP);
 // Functions that are defined in or called from C.
 SEXP do_complex(SEXP, SEXP, SEXP, SEXP);
 SEXP do_contourLines(SEXP, SEXP, SEXP, SEXP);
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
 SEXP do_edit(SEXP, SEXP, SEXP, SEXP);
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
 SEXP do_filechoose(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEvent(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);
@@ -546,20 +539,10 @@ SEXP do_normalizepath(SEXP, SEXP, SEXP, SEXP);
 SEXP do_polyroot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_saveplot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_setGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
 SEXP do_sysinfo(SEXP,SEXP,SEXP,SEXP);
 SEXP do_system(SEXP, SEXP, SEXP, SEXP);
-#ifdef __cplusplus
-extern "C" {
-#endif  // __cplusplus
 SEXP do_syssleep(SEXP,SEXP,SEXP,SEXP);
 SEXP do_getSnapshot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_playSnapshot(SEXP, SEXP, SEXP, SEXP);
-
-#ifdef __cplusplus
-}  // extern "C"
-#endif  // __cplusplus
 
 #endif /* not R_INTERNAL_H */

@@ -206,7 +206,7 @@ static double GreenGamma = 1.0;
 static double BlueGamma	 = 1.0;
 
 #ifdef HAVE_WORKING_CAIRO
-# include "cairoFns.c"
+# include "cairoFns.cpp"
 
 	/************************/
 	/*        Buffering     */

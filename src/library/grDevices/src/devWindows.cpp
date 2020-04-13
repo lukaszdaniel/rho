@@ -65,7 +65,7 @@ int	imin2(int, int);
 #define GN_(String) String
 #endif
 
-/* from extra.c */
+/* from util.cpp */
 extern size_t Rf_utf8towcs(wchar_t *wc, const char *s, size_t n);
 
 static

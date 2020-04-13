@@ -57,7 +57,7 @@ int attribute_hidden R_X11_Init(void)
     if(initialized) return initialized;
 
     initialized = -1;
-    if(strcmp(R_GUIType, "none") == 0) {
+    if(streql(R_GUIType, "none")) {
 	warning(_("X11 module is not available under this GUI"));
 	return initialized;
     }
@@ -75,8 +75,7 @@ Rboolean attribute_hidden R_access_X11(void)
     return (initialized > 0) ? Rboolean((*ptr->access)() > 0) : FALSE;
 }
 
-// called from src/library/grDevices/src/stubs.c
-extern "C"
+// called from src/library/grDevices/src/stubs.cpp
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     R_X11_Init();
@@ -88,8 +87,7 @@ SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 }
 
-// called from src/library/grDevices/src/stubs.c
-extern "C"
+// called from src/library/grDevices/src/stubs.cpp
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     R_X11_Init();
@@ -150,14 +148,12 @@ Rboolean attribute_hidden R_access_X11(void)
     return FALSE;
 }
 
-extern "C"
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     error(_("X11 is not available"));
     return R_NilValue;
 }
 
-extern "C"
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     error(_("X11 is not available"));

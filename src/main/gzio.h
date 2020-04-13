@@ -37,9 +37,6 @@
 
 #include "zlib.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #ifdef Win32
 # define OS_CODE  0x06
@@ -380,7 +377,7 @@ static int R_gzread (gzFile file, voidp buf, unsigned len)
     return (int)(len - s->stream.avail_out);
 }
 
-/* for devPS.c */
+/* for devPS.cpp */
 char *R_gzgets(gzFile file, char *buf, int len)
 {
     char *b = buf;
@@ -551,6 +548,3 @@ int R_gzclose (gzFile file)
     return destroy((gz_stream*) file);
 }
 
-#ifdef __cplusplus
-}
-#endif

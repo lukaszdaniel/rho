@@ -65,8 +65,7 @@ static void checkHandler(const char * name, SEXP eventEnv)
 	Rf_warning(_("'%s' events not supported in this device"), name);
 }
 
-SEXP
-do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
+SEXP do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP eventEnv;
     int devnum;
@@ -104,8 +103,7 @@ do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
     return(R_NilValue);
 }
 
-SEXP
-do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
+SEXP do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     int devnum;
     pGEDevDesc gdd;
@@ -144,8 +142,7 @@ Rboolean haveListeningDev()
 }
 
 
-SEXP
-do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
+SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP result = R_NilValue, prompt;
     pDevDesc dd;
@@ -222,7 +219,7 @@ do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
     return(result);
 }
 
-/* used in devWindows.c and cairoDevice */
+/* used in devWindows.cpp and cairoDevice */
 void doMouseEvent(pDevDesc dd, R_MouseEvent event,
 		  int buttons, double x, double y)
 {

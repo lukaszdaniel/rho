@@ -14,14 +14,14 @@ pkg = grDevices
 include $(top_builddir)/Makeconf
 
 ## need to find bitmap.h
-ALL_CPPFLAGS = $(R_XTRA_CPPFLAGS) @CAIRO_CPPFLAGS@ \
+ALL_CPPFLAGS = $(R_XTRA_CPPFLAGS) $(CPICFLAGS) @CAIRO_CPPFLAGS@ \
   -I$(top_srcdir)/src/modules/X11 $(CPPFLAGS) $(DEFS)
 ALL_CFLAGS = $(ALL_CFLAGS_LO)
 
 ## the X11 module is not made at all if BUILD_X11 is false.
-SOURCES = cairoBM.c
-DEPENDS = $(SOURCES:.c=.d)
-OBJECTS = $(SOURCES:.c=.o) $(top_builddir)/src/modules/X11/rbitmap.o
+SOURCES = cairoBM.cpp
+DEPENDS = $(SOURCES:.cpp=.d)
+OBJECTS = $(SOURCES:.cpp=.o) $(top_builddir)/src/modules/X11/rbitmap.o
 
 cairo_la = cairo$(SHLIB_EXT)
 ## This order has to be consistent with the other use of rbitmap.o
@@ -47,7 +47,8 @@ $(top_builddir)/src/modules/X11/rbitmap.o:
 	(cd $(top_builddir)/src/modules/X11; $(MAKE) rbitmap.o)
 
 $(cairo_la): $(OBJECTS)
-	$(SHLIB_LINK) -o $@ $(OBJECTS) $(cairo_la_LIBADD)
+	$(SHLIB_CXXLINK) -o $@ $(OBJECTS) $(cairo_la_LIBADD)
+##	$(SHLIB_LINK) -o $@ $(OBJECTS) $(cairo_la_LIBADD)
 
 mostlyclean: clean
 clean:

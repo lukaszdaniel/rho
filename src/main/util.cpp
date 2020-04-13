@@ -1410,7 +1410,7 @@ Rboolean mbcsValid(const char *str)
     return  RHOCONSTRUCT(Rboolean, (int(mbstowcs(nullptr, str, 0)) >= 0));
 }
 
-/* used in src/library/grDevices/src/cairo/cairoFns.c */
+/* used in src/library/grDevices/src/cairo/cairoFns.cpp */
 #include "valid_utf8.h"
 Rboolean utf8Valid(const char *str)
 {

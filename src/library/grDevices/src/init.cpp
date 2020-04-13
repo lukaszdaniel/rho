@@ -128,6 +128,7 @@ extern void setup_RdotApp(void);
 extern Rboolean useaqua;
 #endif
 
+extern "C"
 void attribute_visible R_init_grDevices(DllInfo *dll)
 {
     initPalette();

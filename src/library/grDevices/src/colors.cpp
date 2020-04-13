@@ -407,7 +407,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 	PROTECT(g = coerceVector(g, REALSXP));
 	PROTECT(b = coerceVector(b, REALSXP));
 	if(!isNull(a)) a = coerceVector(a, REALSXP);
-	max_1 = (Rboolean) (mV == 1.);
+	max_1 = Rboolean(mV == 1.);
     }
     PROTECT(a);
 

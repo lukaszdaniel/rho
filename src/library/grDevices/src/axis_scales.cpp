@@ -31,7 +31,7 @@
 SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log)
 {
     int nint_v = asInteger(nint);
-    Rboolean logflag = (Rboolean) (Rf_asLogical(is_log));
+    Rboolean logflag = Rboolean(Rf_asLogical(is_log));
 
     PROTECT(axp = coerceVector(axp, REALSXP));
     PROTECT(usr = coerceVector(usr, REALSXP));
@@ -46,7 +46,7 @@ SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log)
 
 SEXP R_GAxisPars(SEXP usr, SEXP is_log, SEXP nintLog)
 {
-    Rboolean logflag = (Rboolean) (Rf_asLogical(is_log));
+    Rboolean logflag = Rboolean(Rf_asLogical(is_log));
     int n = asInteger(nintLog);// will be changed on output ..
     double min, max;
     const char *nms[] = {"axp", "n", ""};

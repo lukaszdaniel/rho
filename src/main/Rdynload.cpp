@@ -970,7 +970,6 @@ int R_moduleCdynload(const char *module, int local, int now)
     return res != nullptr ? 1 : 0;
 }
 
-extern "C"
 int R_cairoCdynload(int local, int now)
 {
     char dllpath[PATH_MAX];

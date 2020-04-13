@@ -66,7 +66,7 @@ SEXP nextStream(SEXP x)
 	}
 	nseed[i+3] = tmp;
     }
-    SEXP ans = allocVector(INTSXP, 7);
+    SEXP ans = Rf_allocVector(INTSXP, 7);
     INTEGER(ans)[0] = INTEGER(x)[0];
     for (int i = 0;  i < 6; i++) INTEGER(ans)[i+1] = (int) nseed[i];
     return ans;
@@ -92,7 +92,7 @@ SEXP nextSubStream(SEXP x)
 	}
 	nseed[i+3] = tmp;
     }
-    SEXP ans = allocVector(INTSXP, 7);
+    SEXP ans = Rf_allocVector(INTSXP, 7);
     INTEGER(ans)[0] = INTEGER(x)[0];
     for (int i = 0;  i < 6; i++) INTEGER(ans)[i+1] = (int) nseed[i];
     return ans;

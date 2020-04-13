@@ -563,8 +563,8 @@ void calcViewportLayout(SEXP viewport,
     }
     /* Record the widths and heights in the viewport
      */
-    PROTECT(currentWidths = allocVector(REALSXP, layoutNCol(layout)));
-    PROTECT(currentHeights = allocVector(REALSXP, layoutNRow(layout)));
+    PROTECT(currentWidths = Rf_allocVector(REALSXP, layoutNCol(layout)));
+    PROTECT(currentHeights = Rf_allocVector(REALSXP, layoutNRow(layout)));
     for (i=0; i<layoutNCol(layout); i++) {
         /* Layout widths are stored in CM
          */
@@ -584,14 +584,14 @@ Rboolean checkPosRowPosCol(SEXP vp, SEXP parent)
 {
     int ncol = layoutNCol(viewportLayout(parent));
     int nrow = layoutNRow(viewportLayout(parent));
-    if (!isNull(viewportLayoutPosRow(vp)) &&
+    if (!Rf_isNull(viewportLayoutPosRow(vp)) &&
 	(INTEGER(viewportLayoutPosRow(vp))[0] < 1 ||
 	 INTEGER(viewportLayoutPosRow(vp))[1] > nrow))
-        error(_("invalid 'layout.pos.row'"));
-    if (!isNull(viewportLayoutPosCol(vp)) &&
+        Rf_error(_("invalid 'layout.pos.row'"));
+    if (!Rf_isNull(viewportLayoutPosCol(vp)) &&
 	(INTEGER(viewportLayoutPosCol(vp))[0] < 1 ||
 	 INTEGER(viewportLayoutPosCol(vp))[1] > ncol))
-        error(_("invalid 'layout.pos.col'"));
+        Rf_error(_("invalid 'layout.pos.col'"));
     return TRUE;
 }
 
@@ -608,14 +608,14 @@ void calcViewportLocationFromLayout(SEXP layoutPosRow,
      * be NULL;  this is interpreted as "occupy all rows/cols"
      * NOTE: The " - 1" is there because R is 1-based and C is zero-based 
      */
-    if (isNull(layoutPosRow)) {
+    if (Rf_isNull(layoutPosRow)) {
 	minrow = 0;
 	maxrow = layoutNRow(layout) - 1;
     } else {
 	minrow = INTEGER(layoutPosRow)[0] - 1;
 	maxrow = INTEGER(layoutPosRow)[1] - 1;
     }
-    if (isNull(layoutPosCol)) {
+    if (Rf_isNull(layoutPosCol)) {
 	mincol = 0;
 	maxcol = layoutNCol(layout) - 1;
     } else {

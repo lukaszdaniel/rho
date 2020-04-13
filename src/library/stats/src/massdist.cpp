@@ -34,13 +34,13 @@
 /* NB: this only works in the lower half of y, but pads with zeros. */
 SEXP BinDist(SEXP sx, SEXP sw, SEXP slo, SEXP shi, SEXP sn)
 {
-    PROTECT(sx = coerceVector(sx, REALSXP)); 
-    PROTECT(sw = coerceVector(sw, REALSXP));
-    int n = asInteger(sn);
-    if (n == NA_INTEGER || n <= 0) error("invalid '%s' argument", "n");
-    SEXP ans = allocVector(REALSXP, 2*n);
+    PROTECT(sx = Rf_coerceVector(sx, REALSXP)); 
+    PROTECT(sw = Rf_coerceVector(sw, REALSXP));
+    int n = Rf_asInteger(sn);
+    if (n == NA_INTEGER || n <= 0) Rf_error("invalid '%s' argument", "n");
+    SEXP ans = Rf_allocVector(REALSXP, 2*n);
     PROTECT(ans);
-    double xlo = asReal(slo), xhi = asReal(shi);
+    double xlo = Rf_asReal(slo), xhi = Rf_asReal(shi);
     double *x = REAL(sx), *w = REAL(sw), *y = REAL(ans);
 
     int ixmin = 0, ixmax = n - 2;

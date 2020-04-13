@@ -50,34 +50,34 @@ SEXP fft(SEXP z, SEXP inverse)
     case INTSXP:
     case LGLSXP:
     case REALSXP:
-	z = coerceVector(z, CPLXSXP);
+	z = Rf_coerceVector(z, CPLXSXP);
 	break;
     case CPLXSXP:
-	if (MAYBE_REFERENCED(z)) z = duplicate(z);
+	if (MAYBE_REFERENCED(z)) z = Rf_duplicate(z);
 	break;
     default:
-	error(_("non-numeric argument"));
+	Rf_error(_("non-numeric argument"));
     }
     PROTECT(z);
 
     /* -2 for forward transform, complex values */
     /* +2 for backward transform, complex values */
 
-    inv = asLogical(inverse);
+    inv = Rf_asLogical(inverse);
     if (inv == NA_INTEGER || inv == 0)
 	inv = -2;
     else
 	inv = 2;
 
     if (LENGTH(z) > 1) {
-	if (isNull(d = getAttrib(z, R_DimSymbol))) {  /* temporal transform */
+	if (Rf_isNull(d = Rf_getAttrib(z, R_DimSymbol))) {  /* temporal transform */
 	    n = Rf_length(z);
 	    fft_factor(n, &maxf, &maxp);
 	    if (maxf == 0)
-		error(_("fft factorization error"));
+		Rf_error(_("fft factorization error"));
 	    smaxf = maxf;
 	    if (smaxf > maxsize)
-		error("fft too large");
+		Rf_error("fft too large");
 	    work = (double*)R_alloc(4 * smaxf, sizeof(double));
 	    iwork = (int*)R_alloc(maxp, sizeof(int));
 	    fft_work(&(COMPLEX(z)[0].r), &(COMPLEX(z)[0].i),
@@ -92,7 +92,7 @@ SEXP fft(SEXP z, SEXP inverse)
 		if (INTEGER(d)[i] > 1) {
 		    fft_factor(INTEGER(d)[i], &maxf, &maxp);
 		    if (maxf == 0)
-			error(_("fft factorization error"));
+			Rf_error(_("fft factorization error"));
 		    if (maxf > maxmaxf)
 			maxmaxf = maxf;
 		    if (maxp > maxmaxp)
@@ -101,7 +101,7 @@ SEXP fft(SEXP z, SEXP inverse)
 	    }
 	    smaxf = maxmaxf;
 	    if (smaxf > maxsize)
-		error("fft too large");
+		Rf_error("fft too large");
 	    work = (double*)R_alloc(4 * smaxf, sizeof(double));
 	    iwork = (int*)R_alloc(maxmaxp, sizeof(int));
 	    nseg = LENGTH(z);
@@ -135,9 +135,9 @@ SEXP mvfft(SEXP z, SEXP inverse)
     size_t smaxf;
     size_t maxsize = ((size_t) -1) / 4;
 
-    d = getAttrib(z, R_DimSymbol);
+    d = Rf_getAttrib(z, R_DimSymbol);
     if (d == R_NilValue || Rf_length(d) > 2)
-	error(_("vector-valued (multivariate) series required"));
+	Rf_error(_("vector-valued (multivariate) series required"));
     n = INTEGER(d)[0];
     p = INTEGER(d)[1];
 
@@ -145,30 +145,30 @@ SEXP mvfft(SEXP z, SEXP inverse)
     case INTSXP:
     case LGLSXP:
     case REALSXP:
-	z = coerceVector(z, CPLXSXP);
+	z = Rf_coerceVector(z, CPLXSXP);
 	break;
     case CPLXSXP:
-	if (MAYBE_REFERENCED(z)) z = duplicate(z);
+	if (MAYBE_REFERENCED(z)) z = Rf_duplicate(z);
 	break;
     default:
-	error(_("non-numeric argument"));
+	Rf_error(_("non-numeric argument"));
     }
     PROTECT(z);
 
     /* -2 for forward  transform, complex values */
     /* +2 for backward transform, complex values */
 
-    inv = asLogical(inverse);
+    inv = Rf_asLogical(inverse);
     if (inv == NA_INTEGER || inv == 0) inv = -2;
     else inv = 2;
 
     if (n > 1) {
 	fft_factor(n, &maxf, &maxp);
 	if (maxf == 0)
-	    error(_("fft factorization error"));
+	    Rf_error(_("fft factorization error"));
 	smaxf = maxf;
 	if (smaxf > maxsize)
-	    error("fft too large");
+	    Rf_error("fft too large");
 	work = (double*)R_alloc(4 * smaxf, sizeof(double));
 	iwork = (int*)R_alloc(maxp, sizeof(int));
 	for (i = 0; i < p; i++) {
@@ -205,19 +205,19 @@ SEXP nextn(SEXP n, SEXP factors)
     SEXP f, ans;
     int i, nn, nf;
 
-    PROTECT(n = coerceVector(n, INTSXP));
-    PROTECT(f = coerceVector(factors, INTSXP));
+    PROTECT(n = Rf_coerceVector(n, INTSXP));
+    PROTECT(f = Rf_coerceVector(factors, INTSXP));
     nn = LENGTH(n);
     nf = LENGTH(f);
 
     /* check the factors */
 
-    if (nf == 0) error(_("no factors"));
+    if (nf == 0) Rf_error(_("no factors"));
     for (i = 0; i < nf; i++)
 	if (INTEGER(f)[i] == NA_INTEGER || INTEGER(f)[i] <= 1)
-	    error(_("invalid factors"));
+	    Rf_error(_("invalid factors"));
 
-    ans = allocVector(INTSXP, nn);
+    ans = Rf_allocVector(INTSXP, nn);
     for (i = 0; i < nn; i++) {
 	if (INTEGER(n)[i] == NA_INTEGER)
 	    INTEGER(ans)[i] = NA_INTEGER;

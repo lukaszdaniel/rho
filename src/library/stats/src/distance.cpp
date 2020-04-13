@@ -151,7 +151,7 @@ static double R_dist_binary(double *x, int nr, int nc, int i1, int i2)
     for(j = 0 ; j < nc ; j++) {
 	if(both_non_NA(x[i1], x[i2])) {
 	    if(!both_FINITE(x[i1], x[i2])) {
-		warning(_("treating non-finite values as NA"));
+		Rf_warning(_("treating non-finite values as NA"));
 	    }
 	    else {
 		if(x[i1] != 0. || x[i2] != 0.) {
@@ -224,11 +224,11 @@ void R_distance(double *x, int *nr, int *nc, double *d, int *diag,
 	break;
     case MINKOWSKI:
 	if(!R_FINITE(*p) || *p <= 0)
-	    error(_("distance(): invalid p"));
+	    Rf_error(_("distance(): invalid p"));
 	// plus special case below because of extra argument
 	break;
     default:
-	error(_("distance(): invalid distance"));
+	Rf_error(_("distance(): invalid distance"));
     }
     dc = (*diag) ? 0 : 1; /* diag=1:  we do the diagonal */
 #ifdef _OPENMP
@@ -275,19 +275,19 @@ void R_distance(double *x, int *nr, int *nc, double *d, int *diag,
 SEXP Cdist(SEXP x, SEXP smethod, SEXP attrs, SEXP p)
 {
     SEXP ans;
-    int nr = nrows(x), nc = ncols(x), method = asInteger(smethod);
+    int nr = Rf_nrows(x), nc = Rf_ncols(x), method = Rf_asInteger(smethod);
     int diag = 0;
     R_xlen_t N;
-    double rp = asReal(p);
+    double rp = Rf_asReal(p);
     N = (R_xlen_t)nr * (nr-1)/2; /* avoid int overflow for N ~ 50,000 */
-    PROTECT(ans = allocVector(REALSXP, N));
-    if(TYPEOF(x) != REALSXP) x = coerceVector(x, REALSXP);
+    PROTECT(ans = Rf_allocVector(REALSXP, N));
+    if(TYPEOF(x) != REALSXP) x = Rf_coerceVector(x, REALSXP);
     PROTECT(x);
     R_distance(REAL(x), &nr, &nc, REAL(ans), &diag, &method, &rp);
     /* tack on attributes */
-    SEXP names = getAttrib(attrs, R_NamesSymbol);
+    SEXP names = Rf_getAttrib(attrs, R_NamesSymbol);
     for (int i = 0; i < LENGTH(attrs); i++)
-	setAttrib(ans, install(translateChar(STRING_ELT(names, i))),
+	Rf_setAttrib(ans, Rf_install(Rf_translateChar(STRING_ELT(names, i))),
 		  VECTOR_ELT(attrs, i));
     UNPROTECT(2);
     return ans;

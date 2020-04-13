@@ -35,7 +35,7 @@
 static void TypeCheck(SEXP s, SEXPTYPE type)
 {
     if (TYPEOF(s) != type)
-	error("invalid type passed to graphics function");
+	Rf_error("invalid type passed to graphics function");
 }
 
 
@@ -172,26 +172,26 @@ SEXP C_filledcontour(SEXP args)
     PrintDefaults(); /* prepare for labelformat */
 
     args = CDR(args);
-    sx = PROTECT(coerceVector(CAR(args), REALSXP));
+    sx = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nx = LENGTH(sx);
     args = CDR(args);
 
-    sy = PROTECT(coerceVector(CAR(args), REALSXP));
+    sy = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     ny = LENGTH(sy);
     args = CDR(args);
-    if (nx < 2 || ny < 2) error(_("insufficient 'x' or 'y' values"));
+    if (nx < 2 || ny < 2) Rf_error(_("insufficient 'x' or 'y' values"));
 
     // do it this way as coerceVector can lose dims, e.g. for a list matrix
     sz = CAR(args);
-    if (nrows(sz) != nx || ncols(sz) != ny) error(_("dimension mismatch"));
-    sz = PROTECT(coerceVector(sz, REALSXP));
+    if (Rf_nrows(sz) != nx || Rf_ncols(sz) != ny) Rf_error(_("dimension mismatch"));
+    sz = PROTECT(Rf_coerceVector(sz, REALSXP));
     args = CDR(args);
 
-    sc = PROTECT(coerceVector(CAR(args), REALSXP)); /* levels */
+    sc = PROTECT(Rf_coerceVector(CAR(args), REALSXP)); /* levels */
     nc = Rf_length(sc);
     args = CDR(args);
 
-    if (nc < 1) error(_("no contour values"));
+    if (nc < 1) Rf_error(_("no contour values"));
 
     PROTECT(scol = FixupCol(CAR(args), R_TRANWHITE));
     ncol = Rf_length(scol);
@@ -253,9 +253,9 @@ SEXP C_filledcontour(SEXP args)
     return R_NilValue;
 
  badxy:
-    error(_("invalid x / y values or limits"));
+    Rf_error(_("invalid x / y values or limits"));
  badlev:
-    error(_("invalid contour levels: must be strictly increasing"));
+    Rf_error(_("invalid contour levels: must be strictly increasing"));
     return R_NilValue;  /* never used; to keep -Wall happy */
 }
 
@@ -279,15 +279,15 @@ SEXP C_image(SEXP args)
 
     args = CDR(args);
 
-    sx = PROTECT(coerceVector(CAR(args), REALSXP));
+    sx = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nx = LENGTH(sx);
     args = CDR(args);
 
-    sy = PROTECT(coerceVector(CAR(args), REALSXP));
+    sy = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     ny = LENGTH(sy);
     args = CDR(args);
 
-    sz = PROTECT(coerceVector(CAR(args), INTSXP));
+    sz = PROTECT(Rf_coerceVector(CAR(args), INTSXP));
     args = CDR(args);
 
     PROTECT(sc = FixupCol(CAR(args), R_TRANWHITE));
@@ -979,8 +979,8 @@ static void PerspAxis(double *x, double *y, double *z,
 		  v2[0]/v2[3], v2[1]/v2[3], USER, dd);
 	    /* Draw tick label */
 	    GText(v3[0]/v3[3], v3[1]/v3[3], USER,
-		  CHAR(STRING_ELT(lab, i)),
-		  getCharCE(STRING_ELT(lab, i)),
+		  R_CHAR(STRING_ELT(lab, i)),
+		  Rf_getCharCE(STRING_ELT(lab, i)),
 		  .5, .5, 0, dd);
 	}
 	UNPROTECT(2);
@@ -1047,7 +1047,7 @@ static void PerspAxes(double *x, double *y, double *z,
 	xAxis = 2;
 	yAxis = 3;
     } else
-	warning(_("Axis orientation not calculated"));
+	Rf_warning(_("Axis orientation not calculated"));
     PerspAxis(x, y, z, xAxis, 0, nTicks, tickType, xlab, xenc, dd);
     PerspAxis(x, y, z, yAxis, 1, nTicks, tickType, ylab, yenc, dd);
     /* Figure out which Z axis to draw */
@@ -1060,7 +1060,7 @@ static void PerspAxes(double *x, double *y, double *z,
     } else if (lowest(v3[0]/v3[3], v1[0]/v1[3], v2[0]/v2[3], v0[0]/v0[3])) {
 	zAxis = 7;
     } else
-	warning(_("Axis orientation not calculated"));
+	Rf_warning(_("Axis orientation not calculated"));
     PerspAxis(x, y, z, zAxis, 2, nTicks, tickType, zlab, zenc, dd);
 
     gpptr(dd)->xpd = xpdsave;
@@ -1080,66 +1080,66 @@ SEXP C_persp(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 24)  /* 24 plus any inline par()s */
-	error(_("too few parameters"));
+	Rf_error(_("too few parameters"));
 
-    PROTECT(x = coerceVector(CAR(args), REALSXP));
-    if (Rf_length(x) < 2) error(_("invalid '%s' argument"), "x");
+    PROTECT(x = Rf_coerceVector(CAR(args), REALSXP));
+    if (Rf_length(x) < 2) Rf_error(_("invalid '%s' argument"), "x");
     args = CDR(args);
 
-    PROTECT(y = coerceVector(CAR(args), REALSXP));
-    if (Rf_length(y) < 2) error(_("invalid '%s' argument"), "y");
+    PROTECT(y = Rf_coerceVector(CAR(args), REALSXP));
+    if (Rf_length(y) < 2) Rf_error(_("invalid '%s' argument"), "y");
     args = CDR(args);
 
-    PROTECT(z = coerceVector(CAR(args), REALSXP));
-    if (!isMatrix(z) || nrows(z) != Rf_length(x) || ncols(z) != Rf_length(y))
-	error(_("invalid '%s' argument"), "z");
+    PROTECT(z = Rf_coerceVector(CAR(args), REALSXP));
+    if (!Rf_isMatrix(z) || Rf_nrows(z) != Rf_length(x) || Rf_ncols(z) != Rf_length(y))
+	Rf_error(_("invalid '%s' argument"), "z");
     args = CDR(args);
 
-    PROTECT(xlim = coerceVector(CAR(args), REALSXP));
-    if (Rf_length(xlim) != 2) error(_("invalid '%s' argument"), "xlim");
+    PROTECT(xlim = Rf_coerceVector(CAR(args), REALSXP));
+    if (Rf_length(xlim) != 2) Rf_error(_("invalid '%s' argument"), "xlim");
     args = CDR(args);
 
-    PROTECT(ylim = coerceVector(CAR(args), REALSXP));
-    if (Rf_length(ylim) != 2) error(_("invalid '%s' argument"), "ylim");
+    PROTECT(ylim = Rf_coerceVector(CAR(args), REALSXP));
+    if (Rf_length(ylim) != 2) Rf_error(_("invalid '%s' argument"), "ylim");
     args = CDR(args);
 
-    PROTECT(zlim = coerceVector(CAR(args), REALSXP));
-    if (Rf_length(zlim) != 2) error(_("invalid '%s' argument"), "zlim");
+    PROTECT(zlim = Rf_coerceVector(CAR(args), REALSXP));
+    if (Rf_length(zlim) != 2) Rf_error(_("invalid '%s' argument"), "zlim");
     args = CDR(args);
 
     /* Checks on x/y/z Limits */
 
     if (!LimitCheck(REAL(xlim), &xc, &xs))
-	error(_("invalid 'x' limits"));
+	Rf_error(_("invalid 'x' limits"));
     if (!LimitCheck(REAL(ylim), &yc, &ys))
-	error(_("invalid 'y' limits"));
+	Rf_error(_("invalid 'y' limits"));
     if (!LimitCheck(REAL(zlim), &zc, &zs))
-	error(_("invalid 'z' limits"));
+	Rf_error(_("invalid 'z' limits"));
 
-    theta = asReal(CAR(args));	args = CDR(args);
-    phi	  = asReal(CAR(args));	args = CDR(args);
-    r	= asReal(CAR(args));	args = CDR(args);
-    d	= asReal(CAR(args));	args = CDR(args);
-    scale  = asLogical(CAR(args)); args = CDR(args);
-    expand = asReal(CAR(args)); args = CDR(args);
+    theta = Rf_asReal(CAR(args));	args = CDR(args);
+    phi	  = Rf_asReal(CAR(args));	args = CDR(args);
+    r	= Rf_asReal(CAR(args));	args = CDR(args);
+    d	= Rf_asReal(CAR(args));	args = CDR(args);
+    scale  = Rf_asLogical(CAR(args)); args = CDR(args);
+    expand = Rf_asReal(CAR(args)); args = CDR(args);
     col	   = CAR(args);		args = CDR(args);
     border = CAR(args);		args = CDR(args);
-    ltheta = asReal(CAR(args)); args = CDR(args);
-    lphi   = asReal(CAR(args)); args = CDR(args);
-    Shade  = asReal(CAR(args)); args = CDR(args);
-    dobox  = asLogical(CAR(args)); args = CDR(args);
-    doaxes = asLogical(CAR(args)); args = CDR(args);
-    nTicks = asInteger(CAR(args)); args = CDR(args);
-    tickType = asInteger(CAR(args)); args = CDR(args);
+    ltheta = Rf_asReal(CAR(args)); args = CDR(args);
+    lphi   = Rf_asReal(CAR(args)); args = CDR(args);
+    Shade  = Rf_asReal(CAR(args)); args = CDR(args);
+    dobox  = Rf_asLogical(CAR(args)); args = CDR(args);
+    doaxes = Rf_asLogical(CAR(args)); args = CDR(args);
+    nTicks = Rf_asInteger(CAR(args)); args = CDR(args);
+    tickType = Rf_asInteger(CAR(args)); args = CDR(args);
     xlab = CAR(args); args = CDR(args);
     ylab = CAR(args); args = CDR(args);
     zlab = CAR(args); args = CDR(args);
-    if (!isString(xlab) || Rf_length(xlab) < 1)
-	error(_("'xlab' must be a character vector of length 1"));
-    if (!isString(ylab) || Rf_length(ylab) < 1)
-	error(_("'ylab' must be a character vector of length 1"));
-    if (!isString(zlab) || Rf_length(zlab) < 1)
-	error(_("'zlab' must be a character vector of length 1"));
+    if (!Rf_isString(xlab) || Rf_length(xlab) < 1)
+	Rf_error(_("'xlab' must be a character vector of length 1"));
+    if (!Rf_isString(ylab) || Rf_length(ylab) < 1)
+	Rf_error(_("'ylab' must be a character vector of length 1"));
+    if (!Rf_isString(zlab) || Rf_length(zlab) < 1)
+	Rf_error(_("'zlab' must be a character vector of length 1"));
 
     if (R_FINITE(Shade) && Shade <= 0) Shade = 1;
     if (R_FINITE(ltheta) && R_FINITE(lphi) && R_FINITE(Shade))
@@ -1159,15 +1159,15 @@ SEXP C_persp(SEXP args)
 
     if (!R_FINITE(theta) || !R_FINITE(phi) || !R_FINITE(r) || !R_FINITE(d) ||
 	d < 0 || r < 0)
-	error(_("invalid viewing parameters"));
+	Rf_error(_("invalid viewing parameters"));
     if (!R_FINITE(expand) || expand < 0)
-	error(_("invalid '%s' value"), "expand");
+	Rf_error(_("invalid '%s' value"), "expand");
     if (scale == NA_LOGICAL)
 	scale = 0;
     if ((nTicks == NA_INTEGER) || (nTicks < 0))
-	error(_("invalid '%s' value"), "nticks");
+	Rf_error(_("invalid '%s' value"), "nticks");
     if ((tickType == NA_INTEGER) || (tickType < 1) || (tickType > 2))
-	error(_("invalid '%s' value"), "ticktype");
+	Rf_error(_("invalid '%s' value"), "ticktype");
 
     dd = GEcurrentDevice();
 
@@ -1177,11 +1177,11 @@ SEXP C_persp(SEXP args)
 
     PROTECT(col = FixupCol(col, gpptr(dd)->bg));
     ncol = LENGTH(col);
-    if (ncol < 1) error(_("invalid '%s' specification"), "col");
+    if (ncol < 1) Rf_error(_("invalid '%s' specification"), "col");
     if(!R_OPAQUE(INTEGER(col)[0])) DoLighting = FALSE;
     PROTECT(border = FixupCol(border, gpptr(dd)->fg));
     if (Rf_length(border) < 1)
-	error(_("invalid '%s' specification"), "border");
+	Rf_error(_("invalid '%s' specification"), "border");
 
     GSetState(1, dd);
     GSavePars(dd);
@@ -1221,9 +1221,9 @@ SEXP C_persp(SEXP args)
        We order the facets by depth and then draw them back to front.
        This is the "painters" algorithm. */
 
-    PROTECT(depth = allocVector(REALSXP, (nrows(z) - 1)*(ncols(z) - 1)));
-    PROTECT(indx = allocVector(INTSXP, (nrows(z) - 1)*(ncols(z) - 1)));
-    DepthOrder(REAL(z), REAL(x), REAL(y), nrows(z), ncols(z),
+    PROTECT(depth = Rf_allocVector(REALSXP, (Rf_nrows(z) - 1)*(Rf_ncols(z) - 1)));
+    PROTECT(indx = Rf_allocVector(INTSXP, (Rf_nrows(z) - 1)*(Rf_ncols(z) - 1)));
+    DepthOrder(REAL(z), REAL(x), REAL(y), Rf_nrows(z), Rf_ncols(z),
 	       REAL(depth), INTEGER(indx));
 
     GMode(1, dd);
@@ -1235,14 +1235,14 @@ SEXP C_persp(SEXP args)
 	    SEXP xl = STRING_ELT(xlab, 0), yl = STRING_ELT(ylab, 0),
 		zl = STRING_ELT(zlab, 0);
 	    PerspAxes(REAL(xlim), REAL(ylim), REAL(zlim),
-		      (xl == NA_STRING) ? "" : CHAR(xl), getCharCE(xl),
-		      (yl == NA_STRING) ? "" : CHAR(yl), getCharCE(yl),
-		      (zl == NA_STRING) ? "" : CHAR(zl), getCharCE(zl),
+		      (xl == NA_STRING) ? "" : R_CHAR(xl), Rf_getCharCE(xl),
+		      (yl == NA_STRING) ? "" : R_CHAR(yl), Rf_getCharCE(yl),
+		      (zl == NA_STRING) ? "" : R_CHAR(zl), Rf_getCharCE(zl),
 		      nTicks, tickType, dd);
 	}
     }
 
-    DrawFacets(REAL(z), REAL(x), REAL(y), nrows(z), ncols(z), INTEGER(indx),
+    DrawFacets(REAL(z), REAL(x), REAL(y), Rf_nrows(z), Rf_ncols(z), INTEGER(indx),
 	       1/xs, 1/ys, expand/zs,
 	       INTEGER(col), ncol, INTEGER(border)[0]);
 
@@ -1255,14 +1255,14 @@ SEXP C_persp(SEXP args)
     GRestorePars(dd);
     UNPROTECT(10);
 
-    PROTECT(x = allocVector(REALSXP, 16));
-    PROTECT(y = allocVector(INTSXP, 2));
+    PROTECT(x = Rf_allocVector(REALSXP, 16));
+    PROTECT(y = Rf_allocVector(INTSXP, 2));
     for (i = 0; i < 4; i++)
 	for (j = 0; j < 4; j++)
 	    REAL(x)[i + j * 4] = VT[i][j];
     INTEGER(y)[0] = 4;
     INTEGER(y)[1] = 4;
-    setAttrib(x, R_DimSymbol, y);
+    Rf_setAttrib(x, R_DimSymbol, y);
     UNPROTECT(2);
     return x;
 }
@@ -1462,7 +1462,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
     double xStart, yStart;
     double dx, dy, dxy;
     double labelHeight;
-    SEXP label1 = PROTECT(allocVector(REALSXP, 8));
+    SEXP label1 = PROTECT(Rf_allocVector(REALSXP, 8));
     SEXP label2;
     SEXP lab;
     Rboolean gotLabel = FALSE;
@@ -1527,7 +1527,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 		s = s->next;
 	    }
 	    if(ns == max_contour_segments)
-		warning(_("contour(): circular/long seglist -- set %s > %d?"), 
+		Rf_warning(_("contour(): circular/long seglist -- set %s > %d?"), 
 		        "options(\"max.contour.segments\")", max_contour_segments);
 
 	    /* contour midpoint : use for labelling sometime (not yet!)
@@ -1566,16 +1566,16 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 		   Otherwise stringify the z-value of the contour */
 		cetype_t enc = CE_NATIVE;
 		buffer[0] = ' ';
-		if (!isNull(labels)) {
+		if (!Rf_isNull(labels)) {
 		    int numl = Rf_length(labels);
-		    strcpy(&buffer[1], CHAR(STRING_ELT(labels, cnum % numl)));
-		    enc = getCharCE(STRING_ELT(labels, cnum % numl));
+		    strcpy(&buffer[1], R_CHAR(STRING_ELT(labels, cnum % numl)));
+		    enc = Rf_getCharCE(STRING_ELT(labels, cnum % numl));
 		}
 		else {
-		    PROTECT(lab = allocVector(REALSXP, 1));
+		    PROTECT(lab = Rf_allocVector(REALSXP, 1));
 		    REAL(lab)[0] = zc;
 		    lab = labelformat(lab);
-		    strcpy(&buffer[1], CHAR(STRING_ELT(lab, 0))); /* ASCII */
+		    strcpy(&buffer[1], R_CHAR(STRING_ELT(lab, 0))); /* ASCII */
 		    UNPROTECT(1);
 		}
 		buffer[strlen(buffer)+1] = '\0';
@@ -1749,7 +1749,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 			    dxy = hypot(dx, dy);
 
 			    /* save the current label for checking overlap */
-			    label2 = allocVector(REALSXP, 8);
+			    label2 = Rf_allocVector(REALSXP, 8);
 
 			    FindCorners(labelDistance, labelHeight, label2,
 					xxx[indx], yyy[indx],
@@ -1845,7 +1845,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 
 SEXP C_contourDef(void)
 {
-    return ScalarLogical(GEcurrentDevice()->dev->useRotatedTextInContour);
+    return Rf_ScalarLogical(GEcurrentDevice()->dev->useRotatedTextInContour);
 }
 
 /* contour(x, y, z, levels, labels, labcex, drawlabels,
@@ -1870,41 +1870,41 @@ SEXP C_contour(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 12) error(_("too few arguments"));
+    if (Rf_length(args) < 12) Rf_error(_("too few arguments"));
     PrintDefaults(); /* prepare for labelformat */
 
-    x = PROTECT(coerceVector(CAR(args), REALSXP));
+    x = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nx = LENGTH(x);
     args = CDR(args);
 
-    y = PROTECT(coerceVector(CAR(args), REALSXP));
+    y = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     ny = LENGTH(y);
     args = CDR(args);
 
-    z = PROTECT(coerceVector(CAR(args), REALSXP));
+    z = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     args = CDR(args);
 
     /* levels */
-    c = PROTECT(coerceVector(CAR(args), REALSXP));
+    c = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nc = LENGTH(c);
     args = CDR(args);
 
     labels = CAR(args);
-    if (!isNull(labels)) TypeCheck(labels, STRSXP);
+    if (!Rf_isNull(labels)) TypeCheck(labels, STRSXP);
     args = CDR(args);
 
-    labcex = asReal(CAR(args));
+    labcex = Rf_asReal(CAR(args));
     args = CDR(args);
 
-    drawLabels = (Rboolean)asLogical(CAR(args));
+    drawLabels = (Rboolean)Rf_asLogical(CAR(args));
     args = CDR(args);
 
-    method = asInteger(CAR(args)); args = CDR(args);
+    method = Rf_asInteger(CAR(args)); args = CDR(args);
     if (method < 1 || method > 3)
-	error(_("invalid '%s' value"), "method");
+	Rf_error(_("invalid '%s' value"), "method");
 
     PROTECT(vfont = FixupVFont(CAR(args)));
-    if (!isNull(vfont)) {
+    if (!Rf_isNull(vfont)) {
 	strncpy(familysave, gpptr(dd)->family, 201);
 	strncpy(gpptr(dd)->family, "Hershey ", 201);
 	gpptr(dd)->family[7] = (char) INTEGER(vfont)[0];
@@ -1927,31 +1927,31 @@ SEXP C_contour(SEXP args)
     args = CDR(args);
 
     if (nx < 2 || ny < 2)
-	error(_("insufficient 'x' or 'y' values"));
+	Rf_error(_("insufficient 'x' or 'y' values"));
 
-    if (nrows(z) != nx || ncols(z) != ny)
-	error(_("dimension mismatch"));
+    if (Rf_nrows(z) != nx || Rf_ncols(z) != ny)
+	Rf_error(_("dimension mismatch"));
 
     if (nc < 1)
-	error(_("no contour values"));
+	Rf_error(_("no contour values"));
 
     for (i = 0; i < nx; i++) {
 	if (!R_FINITE(REAL(x)[i]))
-	    error(_("missing 'x' values"));
+	    Rf_error(_("missing 'x' values"));
 	if (i > 0 && REAL(x)[i] < REAL(x)[i - 1])
-	    error(_("increasing 'x' values expected"));
+	    Rf_error(_("increasing 'x' values expected"));
     }
 
     for (i = 0; i < ny; i++) {
 	if (!R_FINITE(REAL(y)[i]))
-	    error(_("missing 'y' values"));
+	    Rf_error(_("missing 'y' values"));
 	if (i > 0 && REAL(y)[i] < REAL(y)[i - 1])
-	    error(_("increasing 'y' values expected"));
+	    Rf_error(_("increasing 'y' values expected"));
     }
 
     for (i = 0; i < nc; i++)
 	if (!R_FINITE(REAL(c)[i]))
-	    error(_("invalid NA contour values"));
+	    Rf_error(_("invalid NA contour values"));
 
     zmin = DBL_MAX;
     zmax = DBL_MIN;
@@ -1963,9 +1963,9 @@ SEXP C_contour(SEXP args)
 
     if (zmin >= zmax) {
 	if (zmin == zmax)
-	    warning(_("all z values are equal"));
+	    Rf_warning(_("all z values are equal"));
 	else
-	    warning(_("all z values are NA"));
+	    Rf_warning(_("all z values are NA"));
 	UNPROTECT(8);
 	return R_NilValue;
     }
@@ -2023,7 +2023,7 @@ SEXP C_contour(SEXP args)
     gpptr(dd)->col = colsave;
     gpptr(dd)->lwd = lwdsave;
     gpptr(dd)->cex = cexsave;
-    if(!isNull(vfont)) {
+    if(!Rf_isNull(vfont)) {
 	strncpy(gpptr(dd)->family, familysave, 201);
 	gpptr(dd)->font = fontsave;
     }

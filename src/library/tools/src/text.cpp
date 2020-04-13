@@ -68,22 +68,22 @@ SEXP delim_match(SEXP x, SEXP delims)
     SEXP ans, matchlen;
     mbstate_t mb_st; int used;
 
-    if(!isString(x) || !isString(delims) || (Rf_length(delims) != 2))
-	error(_("invalid argument type"));
+    if(!Rf_isString(x) || !Rf_isString(delims) || (Rf_length(delims) != 2))
+	Rf_error(_("invalid argument type"));
 
-    delim_start = translateChar(STRING_ELT(delims, 0));
-    delim_end = translateChar(STRING_ELT(delims, 1));
+    delim_start = Rf_translateChar(STRING_ELT(delims, 0));
+    delim_end = Rf_translateChar(STRING_ELT(delims, 1));
     lstart = (int) strlen(delim_start); lend = (int) strlen(delim_end);
     equal_start_and_end_delims = streql(delim_start, delim_end);
 
     n = Rf_length(x);
-    PROTECT(ans = allocVector(INTSXP, n));
-    PROTECT(matchlen = allocVector(INTSXP, n));
+    PROTECT(ans = Rf_allocVector(INTSXP, n));
+    PROTECT(matchlen = Rf_allocVector(INTSXP, n));
 
     for(i = 0; i < n; i++) {
 	memset(&mb_st, 0, sizeof(mbstate_t));
 	start = end = -1;
-	s = translateChar(STRING_ELT(x, i));
+	s = Rf_translateChar(STRING_ELT(x, i));
 	pos = 0;
 	is_escaped = FALSE;
 	delim_depth = 0;
@@ -108,7 +108,7 @@ SEXP delim_match(SEXP x, SEXP delims)
 		    pos++;
 		}
 	    }
-	    else if(strncmp(s, delim_end, lend) == 0) {
+	    else if(streqln(s, delim_end, lend)) {
 		if(delim_depth > 1) delim_depth--;
 		else if(delim_depth == 1) {
 		    end = pos;
@@ -119,7 +119,7 @@ SEXP delim_match(SEXP x, SEXP delims)
 		    delim_depth++;
 		}
 	    }
-	    else if(strncmp(s, delim_start, lstart) == 0) {
+	    else if(streqln(s, delim_start, lstart)) {
 		if(delim_depth == 0) start = pos;
 		delim_depth++;
 	    }
@@ -139,7 +139,7 @@ SEXP delim_match(SEXP x, SEXP delims)
 	    INTEGER(ans)[i] = INTEGER(matchlen)[i] = -1;
 	}
     }
-    setAttrib(ans, install("match.length"), matchlen);
+    Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     UNPROTECT(2);
     return(ans);
 }
@@ -160,20 +160,20 @@ check_nonASCII(SEXP text, SEXP ignore_quotes)
     char quote= '\0';
     Rboolean ign, inquote = FALSE;
 
-    if(TYPEOF(text) != STRSXP) error("invalid input");
+    if(TYPEOF(text) != STRSXP) Rf_error("invalid input");
     ign = Rboolean(Rf_asLogical(ignore_quotes));
-    if(ign == NA_LOGICAL) error("'ignore_quotes' must be TRUE or FALSE");
+    if(ign == NA_LOGICAL) Rf_error("'ignore_quotes' must be TRUE or FALSE");
 
     for (i = 0; i < LENGTH(text); i++) {
-	p = CHAR(STRING_ELT(text, i)); // ASCII or not not affected by charset
+	p = R_CHAR(STRING_ELT(text, i)); // ASCII or not not affected by charset
 	inquote = FALSE; /* avoid runaway quotes */
 	for(; *p; p++) {
 	    if(!inquote && *p == '#') break;
 	    if(!inquote || ign) {
 		if((unsigned int) *p > 127) {
-		    /* Rprintf("%s\n", CHAR(STRING_ELT(text, i)));
+		    /* Rprintf("%s\n", R_CHAR(STRING_ELT(text, i)));
 		       Rprintf("found %x\n", (unsigned int) *p); */
-		    return ScalarLogical(TRUE);
+		    return Rf_ScalarLogical(TRUE);
 		}
 	    }
 	    if((nbslash % 2 == 0) && (*p == '"' || *p == '\'')) {
@@ -187,7 +187,7 @@ check_nonASCII(SEXP text, SEXP ignore_quotes)
 	    if(*p == '\\') nbslash++; else nbslash = 0;
 	}
     }
-    return ScalarLogical(FALSE);
+    return Rf_ScalarLogical(FALSE);
 }
 
 SEXP check_nonASCII2(SEXP text)
@@ -196,10 +196,10 @@ SEXP check_nonASCII2(SEXP text)
     int i, m = 0, m_all = 100, *ind, *ians, yes;
     const char *p;
 
-    if(TYPEOF(text) != STRSXP) error("invalid input");
+    if(TYPEOF(text) != STRSXP) Rf_error("invalid input");
     ind = Calloc(m_all, int);
     for (i = 0; i < LENGTH(text); i++) {
-	p = CHAR(STRING_ELT(text, i));
+	p = R_CHAR(STRING_ELT(text, i));
 	yes = 0;
 	for(; *p; p++)
 	    if((unsigned int) *p > 127) {
@@ -215,7 +215,7 @@ SEXP check_nonASCII2(SEXP text)
 	}
     }
     if(m) {
-	ans = allocVector(INTSXP, m);
+	ans = Rf_allocVector(INTSXP, m);
 	ians = INTEGER(ans);
 	for(i = 0; i < m; i++) ians[i] = ind[i];
     }
@@ -229,10 +229,10 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
     char *buffer = static_cast<char *>(malloc(bufsize*sizeof(char))), *b;
     const char *input;
     SEXP result;
-    if (!buffer) error(_("out of memory"));
-    PROTECT(result = allocVector(STRSXP, Rf_length(strings)));
+    if (!buffer) Rf_error(_("out of memory"));
+    PROTECT(result = Rf_allocVector(STRSXP, Rf_length(strings)));
     for (i = 0; i < Rf_length(strings); i++) {
-    	input = CHAR(STRING_ELT(strings, i));
+    	input = R_CHAR(STRING_ELT(strings, i));
     	start = INTEGER(starts)[i];
     	for (b = buffer; *input; ) {   
     	    /* only the first byte of multi-byte chars counts */
@@ -251,7 +251,7 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
     	    	tmp = static_cast<char *>(realloc(buffer, bufsize*sizeof(char)));
     	    	if (!tmp) {
 		    free(buffer); /* free original allocation */
-		    error(_("out of memory"));
+		    Rf_error(_("out of memory"));
 		} else buffer = tmp;
     	    	b = buffer + pos;
     	    }
@@ -270,23 +270,23 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
    DBCS encodings. */
 SEXP splitString(SEXP string, SEXP delims)
 {
-    if(!isString(string) || Rf_length(string) != 1)
-	error("first arg must be a single character string");
-    if(!isString(delims) || Rf_length(delims) != 1)
-	error("first arg must be a single character string");
+    if(!Rf_isString(string) || Rf_length(string) != 1)
+	Rf_error("first arg must be a single character string");
+    if(!Rf_isString(delims) || Rf_length(delims) != 1)
+	Rf_error("first arg must be a single character string");
 
     if(STRING_ELT(string, 0) == NA_STRING)
-	return ScalarString(NA_STRING);	
+	return Rf_ScalarString(NA_STRING);	
     if(STRING_ELT(delims, 0) == NA_STRING)
-	return ScalarString(NA_STRING);
+	return Rf_ScalarString(NA_STRING);
 
-    const char *in = CHAR(STRING_ELT(string, 0)),
-	*del = CHAR(STRING_ELT(delims, 0));
-    cetype_t ienc = getCharCE(STRING_ELT(string, 0));
+    const char *in = R_CHAR(STRING_ELT(string, 0)),
+	*del = R_CHAR(STRING_ELT(delims, 0));
+    cetype_t ienc = Rf_getCharCE(STRING_ELT(string, 0));
     int nc = (int) strlen(in), used = 0;
 
     // Used for short strings, so OK to over-allocate wildly
-    SEXP out = PROTECT(allocVector(STRSXP, nc));
+    SEXP out = PROTECT(Rf_allocVector(STRSXP, nc));
     const char *p;
     char tmp[nc], *this_ = tmp;
     int nthis = 0;
@@ -294,9 +294,9 @@ SEXP splitString(SEXP string, SEXP delims)
 	if(strchr(del, *p)) {
 	    // put out current string (if any)
 	    if(nthis) 
-		SET_STRING_ELT(out, used++, mkCharLenCE(tmp, nthis, ienc));
+		SET_STRING_ELT(out, used++, Rf_mkCharLenCE(tmp, nthis, ienc));
 	    // put out delimiter
-	    SET_STRING_ELT(out, used++, mkCharLen(p, 1));
+	    SET_STRING_ELT(out, used++, Rf_mkCharLen(p, 1));
 	    // restart
 	    this_ = tmp; nthis = 0;
 	} else {
@@ -304,9 +304,9 @@ SEXP splitString(SEXP string, SEXP delims)
 	    nthis++;
 	}
     }
-    if(nthis) SET_STRING_ELT(out, used++, mkCharLenCE(tmp, nthis, ienc));
+    if(nthis) SET_STRING_ELT(out, used++, Rf_mkCharLenCE(tmp, nthis, ienc));
 
-    SEXP ans = lengthgets(out, used);
+    SEXP ans = Rf_lengthgets(out, used);
     UNPROTECT(1);
     return ans;
 }

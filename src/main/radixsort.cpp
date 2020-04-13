@@ -20,6 +20,8 @@
  *  https://www.R-project.org/Licenses/
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -123,7 +125,7 @@ static void savetl(SEXP s)
 #define Error(...) do {savetl_end(); Rf_error(__VA_ARGS__);} while(0)
 #undef warning
 // since it can be turned to error via warn = 2
-#define warning(...) Do not use warning in this file
+#define Rf_warning(...) Do not use warning in this file
 /* use malloc/realloc (not Calloc/Realloc) so we can trap errors
    and call savetl_end() before the Rf_error(). */
 
@@ -911,7 +913,7 @@ static int StrCmp2(SEXP x, SEXP y)
     // already taken care of in 'csorted', won't be 0 here)
     if (x == NA_STRING) return nalast;
     if (y == NA_STRING) return -nalast;     // if y=NA, nalast=1 ? then y > x
-    return order*strcmp(CHAR(x), CHAR(y));  // same as explanation in StrCmp
+    return order*strcmp(R_CHAR(x), R_CHAR(y));  // same as explanation in StrCmp
 }
 
 static int StrCmp(SEXP x, SEXP y)            // also used by bmerge and chmatch
@@ -921,10 +923,10 @@ static int StrCmp(SEXP x, SEXP y)            // also used by bmerge and chmatch
     if (x == NA_STRING) return -1;    // x < y
     if (y == NA_STRING) return 1;     // x > y
     // assumes strings are in same encoding
-    return strcmp(CHAR(x), CHAR(y));
+    return strcmp(R_CHAR(x), R_CHAR(y));
 }
 
-#define CHAR_ENCODING(x) (IS_ASCII(x) ? CE_UTF8 : getCharCE(x))
+#define CHAR_ENCODING(x) (IS_ASCII(x) ? CE_UTF8 : Rf_getCharCE(x))
 
 static void checkEncodings(SEXP x)
 {
@@ -995,7 +997,7 @@ static void cradix_r(SEXP * xsub, int n, int radix)
     for (int i = 0; i < n; i++) {
 	thisx = xsub[i] == NA_STRING ?
 	    0 : (radix < LENGTH(xsub[i]) ?
-		 (unsigned char) (CHAR(xsub[i])[radix]) : 1);
+		 (unsigned char) (R_CHAR(xsub[i])[radix]) : 1);
 	thiscounts[ thisx ]++;   // 0 for NA,  1 for ""
     }
     // this also catches when subx has shorter strings than the rest,
@@ -1014,7 +1016,7 @@ static void cradix_r(SEXP * xsub, int n, int radix)
     for (int i = n - 1; i >= 0; i--) {
 	thisx = xsub[i] == NA_STRING ?
 	    0 : (radix < LENGTH(xsub[i]) ?
-		 (unsigned char) (CHAR(xsub[i])[radix]) : 1);
+		 (unsigned char) (R_CHAR(xsub[i])[radix]) : 1);
 	int j = --thiscounts[thisx];
 	cradix_xtmp[j] = xsub[i];
     }

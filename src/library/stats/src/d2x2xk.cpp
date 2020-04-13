@@ -54,11 +54,11 @@ int_d2x2xk(int K, double *m, double *n, double *t, double *d)
 
 SEXP d2x2xk(SEXP sK, SEXP m, SEXP n, SEXP t, SEXP srn)
 {
-    int K = asInteger(sK), rn = asInteger(srn);
-    m = PROTECT(coerceVector(m, REALSXP));
-    n = PROTECT(coerceVector(n, REALSXP));
-    t = PROTECT(coerceVector(t, REALSXP));
-    SEXP ans = PROTECT(allocVector(REALSXP, rn));
+    int K = Rf_asInteger(sK), rn = Rf_asInteger(srn);
+    m = PROTECT(Rf_coerceVector(m, REALSXP));
+    n = PROTECT(Rf_coerceVector(n, REALSXP));
+    t = PROTECT(Rf_coerceVector(t, REALSXP));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, rn));
     int_d2x2xk(K, REAL(m), REAL(n), REAL(t), REAL(ans));
     UNPROTECT(4);
     return ans;

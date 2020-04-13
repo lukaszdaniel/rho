@@ -364,37 +364,37 @@ spline_coef(int method, R_xlen_t n, double *x, double *y,
 
 SEXP SplineCoef(SEXP method, SEXP x, SEXP y)
 {
-    x = PROTECT(coerceVector(x, REALSXP));
-    y = PROTECT(coerceVector(y, REALSXP));
-    R_xlen_t n = XLENGTH(x); int m = asInteger(method);
-    if(XLENGTH(y) != n) error("inputs of different lengths");
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    y = PROTECT(Rf_coerceVector(y, REALSXP));
+    R_xlen_t n = XLENGTH(x); int m = Rf_asInteger(method);
+    if(XLENGTH(y) != n) Rf_error("inputs of different lengths");
     SEXP b, c, d, ans, nm;
-    b = PROTECT(allocVector(REALSXP, n));
-    c = PROTECT(allocVector(REALSXP, n));
-    d = PROTECT(allocVector(REALSXP, n));
+    b = PROTECT(Rf_allocVector(REALSXP, n));
+    c = PROTECT(Rf_allocVector(REALSXP, n));
+    d = PROTECT(Rf_allocVector(REALSXP, n));
     double *rb = REAL(b), *rc = REAL(c), *rd = REAL(d);
     for (R_xlen_t i = 0; i < n; i++) rb[i] = rc[i] = rd[i] = 0;
 
     spline_coef(m, n, REAL(x), REAL(y), rb, rc, rd);
 
-    ans = PROTECT(allocVector(VECSXP, 7));
-    SET_VECTOR_ELT(ans, 0, ScalarInteger(m));
+    ans = PROTECT(Rf_allocVector(VECSXP, 7));
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarInteger(m));
     SET_VECTOR_ELT(ans, 1, (n > INT_MAX) ?
-		   ScalarReal((double)n) : ScalarInteger(n));
+		   Rf_ScalarReal((double)n) : Rf_ScalarInteger(n));
     SET_VECTOR_ELT(ans, 2, x);
     SET_VECTOR_ELT(ans, 3, y);
     SET_VECTOR_ELT(ans, 4, b);
     SET_VECTOR_ELT(ans, 5, c);
     SET_VECTOR_ELT(ans, 6, d);
-    nm = allocVector(STRSXP, 7);
-    setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("method"));
-    SET_STRING_ELT(nm, 1, mkChar("n"));
-    SET_STRING_ELT(nm, 2, mkChar("x"));
-    SET_STRING_ELT(nm, 3, mkChar("y"));
-    SET_STRING_ELT(nm, 4, mkChar("b"));
-    SET_STRING_ELT(nm, 5, mkChar("c"));
-    SET_STRING_ELT(nm, 6, mkChar("d"));
+    nm = Rf_allocVector(STRSXP, 7);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    SET_STRING_ELT(nm, 0, Rf_mkChar("method"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("n"));
+    SET_STRING_ELT(nm, 2, Rf_mkChar("x"));
+    SET_STRING_ELT(nm, 3, Rf_mkChar("y"));
+    SET_STRING_ELT(nm, 4, Rf_mkChar("b"));
+    SET_STRING_ELT(nm, 5, Rf_mkChar("c"));
+    SET_STRING_ELT(nm, 6, Rf_mkChar("d"));
     UNPROTECT(6);
     return ans;
 }
@@ -457,10 +457,10 @@ static R_xlen_t asXlen(SEXP x) {
 
 SEXP SplineEval(SEXP xout, SEXP z)
 {
-    xout = PROTECT(coerceVector(xout, REALSXP));
+    xout = PROTECT(Rf_coerceVector(xout, REALSXP));
     R_xlen_t nu = XLENGTH(xout), nx = asXlen(getListElement(z, "n"));
-    SEXP yout = PROTECT(allocVector(REALSXP, nu));
-    int method = asInteger(getListElement(z, "method"));
+    SEXP yout = PROTECT(Rf_allocVector(REALSXP, nu));
+    int method = Rf_asInteger(getListElement(z, "method"));
     SEXP x = getListElement(z, "x"), y = getListElement(z, "y"),
 	b = getListElement(z, "b"), c = getListElement(z, "c"),
 	d = getListElement(z, "d");

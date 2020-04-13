@@ -54,7 +54,7 @@ getListElement(SEXP list, SEXP names, const char *str)
     int i;
 
     for (i = 0; i < Rf_length(list); i++) {
-	tempChar = CHAR(STRING_ELT(names, i)); /* ASCII only */
+	tempChar = R_CHAR(STRING_ELT(names, i)); /* ASCII only */
 	if( streql(tempChar,str)) {
 	    elmt = VECTOR_ELT(list, i);
 	    break;
@@ -73,13 +73,13 @@ ConvInfoMsg(char* msg, int iter, int whystop, double fac,
     const char *nms[] = {"isConv", "finIter", "finTol",
 			 "stopCode", "stopMessage",  ""};
     SEXP ans;
-    PROTECT(ans = mkNamed(VECSXP, nms));
+    PROTECT(ans = Rf_mkNamed(VECSXP, nms));
 
-    SET_VECTOR_ELT(ans, 0, ScalarLogical(whystop == 0)); /* isConv */
-    SET_VECTOR_ELT(ans, 1, ScalarInteger(iter));	 /* finIter */
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarLogical(whystop == 0)); /* isConv */
+    SET_VECTOR_ELT(ans, 1, Rf_ScalarInteger(iter));	 /* finIter */
     SET_VECTOR_ELT(ans, 2, ScalarReal   (convNew));	 /* finTol */
-    SET_VECTOR_ELT(ans, 3, ScalarInteger(whystop));      /* stopCode */
-    SET_VECTOR_ELT(ans, 4, mkString(msg));               /* stopMessage */
+    SET_VECTOR_ELT(ans, 3, Rf_ScalarInteger(whystop));      /* stopCode */
+    SET_VECTOR_ELT(ans, 4, Rf_mkString(msg));               /* stopMessage */
 
     UNPROTECT(1);
     return ans;
@@ -99,126 +99,126 @@ nls_iter(SEXP m, SEXP control, SEXP doTraceArg)
     int i, j, maxIter, hasConverged, nPars, doTrace, evaltotCnt = -1, warnOnly, printEval;
     SEXP tmp, conv, incr, deviance, setPars, getPars, pars, newPars, trace;
 
-    doTrace = asLogical(doTraceArg);
+    doTrace = Rf_asLogical(doTraceArg);
 
-    if(!isNewList(control))
-	error(_("'control' must be a list"));
-    if(!isNewList(m))
-	error(_("'m' must be a list"));
+    if(!Rf_isNewList(control))
+	Rf_error(_("'control' must be a list"));
+    if(!Rf_isNewList(m))
+	Rf_error(_("'m' must be a list"));
 
-    PROTECT(tmp = getAttrib(control, R_NamesSymbol));
+    PROTECT(tmp = Rf_getAttrib(control, R_NamesSymbol));
 
     conv = getListElement(control, tmp, "maxiter");
-    if(conv == NULL || !isNumeric(conv))
-	error(_("'%s' absent"), "control$maxiter");
-    maxIter = asInteger(conv);
+    if(conv == NULL || !Rf_isNumeric(conv))
+	Rf_error(_("'%s' absent"), "control$maxiter");
+    maxIter = Rf_asInteger(conv);
 
     conv = getListElement(control, tmp, "tol");
-    if(conv == NULL || !isNumeric(conv))
-	error(_("'%s' absent"), "control$tol");
-    tolerance = asReal(conv);
+    if(conv == NULL || !Rf_isNumeric(conv))
+	Rf_error(_("'%s' absent"), "control$tol");
+    tolerance = Rf_asReal(conv);
 
     conv = getListElement(control, tmp, "minFactor");
-    if(conv == NULL || !isNumeric(conv))
-	error(_("'%s' absent"), "control$minFactor");
-    minFac = asReal(conv);
+    if(conv == NULL || !Rf_isNumeric(conv))
+	Rf_error(_("'%s' absent"), "control$minFactor");
+    minFac = Rf_asReal(conv);
 
     conv = getListElement(control, tmp, "warnOnly");
-    if(conv == NULL || !isLogical(conv))
-	error(_("'%s' absent"), "control$warnOnly");
-    warnOnly = asLogical(conv);
+    if(conv == NULL || !Rf_isLogical(conv))
+	Rf_error(_("'%s' absent"), "control$warnOnly");
+    warnOnly = Rf_asLogical(conv);
 
     conv = getListElement(control, tmp, "printEval");
-    if(conv == NULL || !isLogical(conv))
-	error(_("'%s' absent"), "control$printEval");
-    printEval = asLogical(conv);
+    if(conv == NULL || !Rf_isLogical(conv))
+	Rf_error(_("'%s' absent"), "control$printEval");
+    printEval = Rf_asLogical(conv);
 
 #define CONV_INFO_MSG(_STR_, _I_)					\
 	ConvInfoMsg(_STR_, i, _I_, fac, minFac, maxIter, convNew)
 
 #define NON_CONV_FINIS(_ID_, _MSG_)		\
     if(warnOnly) {				\
-	warning(_MSG_);				\
+	Rf_warning(_MSG_);				\
 	return CONV_INFO_MSG(_MSG_, _ID_);      \
     }						\
     else					\
-	error(_MSG_);
+	Rf_error(_MSG_);
 
 #define NON_CONV_FINIS_1(_ID_, _MSG_, _A1_)	\
     if(warnOnly) {				\
 	char msgbuf[1000];			\
-	warning(_MSG_, _A1_);			\
+	Rf_warning(_MSG_, _A1_);			\
 	snprintf(msgbuf, 1000, _MSG_, _A1_);	\
 	return CONV_INFO_MSG(msgbuf, _ID_);	\
     }						\
     else					\
-	error(_MSG_, _A1_);
+	Rf_error(_MSG_, _A1_);
 
 #define NON_CONV_FINIS_2(_ID_, _MSG_, _A1_, _A2_)	\
     if(warnOnly) {					\
 	char msgbuf[1000];				\
-	warning(_MSG_, _A1_, _A2_);			\
+	Rf_warning(_MSG_, _A1_, _A2_);			\
 	snprintf(msgbuf, 1000, _MSG_, _A1_, _A2_);	\
 	return CONV_INFO_MSG(msgbuf, _ID_);		\
     }							\
     else						\
-	error(_MSG_, _A1_, _A2_);
+	Rf_error(_MSG_, _A1_, _A2_);
 
 
 
     /* now get parts from 'm' */
-    tmp = getAttrib(m, R_NamesSymbol);
+    tmp = Rf_getAttrib(m, R_NamesSymbol);
 
     conv = getListElement(m, tmp, "conv");
-    if(conv == NULL || !isFunction(conv))
-	error(_("'%s' absent"), "m$conv()");
-    PROTECT(conv = lang1(conv));
+    if(conv == NULL || !Rf_isFunction(conv))
+	Rf_error(_("'%s' absent"), "m$conv()");
+    PROTECT(conv = Rf_lang1(conv));
 
     incr = getListElement(m, tmp, "incr");
-    if(incr == NULL || !isFunction(incr))
-	error(_("'%s' absent"), "m$incr()");
-    PROTECT(incr = lang1(incr));
+    if(incr == NULL || !Rf_isFunction(incr))
+	Rf_error(_("'%s' absent"), "m$incr()");
+    PROTECT(incr = Rf_lang1(incr));
 
     deviance = getListElement(m, tmp, "deviance");
-    if(deviance == NULL || !isFunction(deviance))
-	error(_("'%s' absent"), "m$deviance()");
-    PROTECT(deviance = lang1(deviance));
+    if(deviance == NULL || !Rf_isFunction(deviance))
+	Rf_error(_("'%s' absent"), "m$deviance()");
+    PROTECT(deviance = Rf_lang1(deviance));
 
     trace = getListElement(m, tmp, "trace");
-    if(trace == NULL || !isFunction(trace))
-	error(_("'%s' absent"), "m$trace()");
-    PROTECT(trace = lang1(trace));
+    if(trace == NULL || !Rf_isFunction(trace))
+	Rf_error(_("'%s' absent"), "m$trace()");
+    PROTECT(trace = Rf_lang1(trace));
 
     setPars = getListElement(m, tmp, "setPars");
-    if(setPars == NULL || !isFunction(setPars))
-	error(_("'%s' absent"), "m$setPars()");
+    if(setPars == NULL || !Rf_isFunction(setPars))
+	Rf_error(_("'%s' absent"), "m$setPars()");
     PROTECT(setPars);
 
     getPars = getListElement(m, tmp, "getPars");
-    if(getPars == NULL || !isFunction(getPars))
-	error(_("'%s' absent"), "m$getPars()");
-    PROTECT(getPars = lang1(getPars));
+    if(getPars == NULL || !Rf_isFunction(getPars))
+	Rf_error(_("'%s' absent"), "m$getPars()");
+    PROTECT(getPars = Rf_lang1(getPars));
 
-    PROTECT(pars = eval(getPars, R_GlobalEnv));
+    PROTECT(pars = Rf_eval(getPars, R_GlobalEnv));
     nPars = LENGTH(pars);
 
-    dev = asReal(eval(deviance, R_GlobalEnv));
-    if(doTrace) eval(trace,R_GlobalEnv);
+    dev = Rf_asReal(Rf_eval(deviance, R_GlobalEnv));
+    if(doTrace) Rf_eval(trace,R_GlobalEnv);
 
     fac = 1.0;
     hasConverged = FALSE;
 
-    PROTECT(newPars = allocVector(REALSXP, nPars));
+    PROTECT(newPars = Rf_allocVector(REALSXP, nPars));
     if(printEval)
 	evaltotCnt = 1;
     for (i = 0; i < maxIter; i++) {
 	SEXP newIncr;
 	int evalCnt = -1;
-	if((convNew = asReal(eval(conv, R_GlobalEnv))) < tolerance) {
+	if((convNew = Rf_asReal(Rf_eval(conv, R_GlobalEnv))) < tolerance) {
 	    hasConverged = TRUE;
 	    break;
 	}
-	PROTECT(newIncr = eval(incr, R_GlobalEnv));
+	PROTECT(newIncr = Rf_eval(incr, R_GlobalEnv));
 
 	if(printEval)
 	    evalCnt = 1;
@@ -233,15 +233,15 @@ nls_iter(SEXP m, SEXP control, SEXP doTraceArg)
 	    for(j = 0; j < nPars; j++)
 		REAL(newPars)[j] = REAL(pars)[j] + fac * REAL(newIncr)[j];
 
-	    PROTECT(tmp = lang2(setPars, newPars));
-	    if (asLogical(eval(tmp, R_GlobalEnv))) { /* singular gradient */
+	    PROTECT(tmp = Rf_lang2(setPars, newPars));
+	    if (Rf_asLogical(Rf_eval(tmp, R_GlobalEnv))) { /* singular gradient */
 		UNPROTECT(11);
 
 		NON_CONV_FINIS(1, _("singular gradient"));
 	    }
 	    UNPROTECT(1);
 
-	    newDev = asReal(eval(deviance, R_GlobalEnv));
+	    newDev = Rf_asReal(Rf_eval(deviance, R_GlobalEnv));
 	    if(printEval)
 		Rprintf(" new dev = %g\n", newDev);
 	    if(newDev <= dev) {
@@ -261,7 +261,7 @@ nls_iter(SEXP m, SEXP control, SEXP doTraceArg)
 			     _("step factor %g reduced below 'minFactor' of %g"),
 			     fac, minFac);
 	}
-	if(doTrace) eval(trace, R_GlobalEnv);
+	if(doTrace) Rf_eval(trace, R_GlobalEnv);
     }
 
     UNPROTECT(9);
@@ -292,49 +292,49 @@ numeric_deriv(SEXP expr, SEXP theta, SEXP rho, SEXP dir)
     double eps = sqrt(DOUBLE_EPS), *rDir;
     int start, i, j, k, lengthTheta = 0;
 
-    if(!isString(theta))
-	error(_("'theta' should be of type character"));
-    if (isNull(rho)) {
-	error(_("use of NULL environment is defunct"));
+    if(!Rf_isString(theta))
+	Rf_error(_("'theta' should be of type character"));
+    if (Rf_isNull(rho)) {
+	Rf_error(_("use of NULL environment is defunct"));
 	rho = R_BaseEnv;
     } else
-	if(!isEnvironment(rho))
-	    error(_("'rho' should be an environment"));
-    PROTECT(dir = coerceVector(dir, REALSXP));
+	if(!Rf_isEnvironment(rho))
+	    Rf_error(_("'rho' should be an environment"));
+    PROTECT(dir = Rf_coerceVector(dir, REALSXP));
     if(TYPEOF(dir) != REALSXP || LENGTH(dir) != LENGTH(theta))
-	error(_("'dir' is not a numeric vector of the correct length"));
+	Rf_error(_("'dir' is not a numeric vector of the correct length"));
     rDir = REAL(dir);
 
-    PROTECT(pars = allocVector(VECSXP, LENGTH(theta)));
+    PROTECT(pars = Rf_allocVector(VECSXP, LENGTH(theta)));
 
-    PROTECT(ans = duplicate(eval(expr, rho)));
+    PROTECT(ans = Rf_duplicate(Rf_eval(expr, rho)));
 
-    if(!isReal(ans)) {
-	SEXP temp = coerceVector(ans, REALSXP);
+    if(!Rf_isReal(ans)) {
+	SEXP temp = Rf_coerceVector(ans, REALSXP);
 	UNPROTECT(1);
 	PROTECT(ans = temp);
     }
     for(i = 0; i < LENGTH(ans); i++) {
 	if (!R_FINITE(REAL(ans)[i]))
-	    error(_("Missing value or an infinity produced when evaluating the model"));
+	    Rf_error(_("Missing value or an infinity produced when evaluating the model"));
     }
     const void *vmax = vmaxget();
     for(i = 0; i < LENGTH(theta); i++) {
-	const char *name = translateChar(STRING_ELT(theta, i));
-	SEXP s_name = install(name);
-	SEXP temp = findVar(s_name, rho);
-	if(isInteger(temp))
-	    error(_("variable '%s' is integer, not numeric"), name);
-	if(!isReal(temp))
-	    error(_("variable '%s' is not numeric"), name);
+	const char *name = Rf_translateChar(STRING_ELT(theta, i));
+	SEXP s_name = Rf_install(name);
+	SEXP temp = Rf_findVar(s_name, rho);
+	if(Rf_isInteger(temp))
+	    Rf_error(_("variable '%s' is integer, not numeric"), name);
+	if(!Rf_isReal(temp))
+	    Rf_error(_("variable '%s' is not numeric"), name);
 	if (MAYBE_SHARED(temp)) /* We'll be modifying the variable, so need to make sure it's unique PR#15849 */
-	    defineVar(s_name, temp = duplicate(temp), rho);
+	    Rf_defineVar(s_name, temp = Rf_duplicate(temp), rho);
 	MARK_NOT_MUTABLE(temp);
 	SET_VECTOR_ELT(pars, i, temp);
 	lengthTheta += LENGTH(VECTOR_ELT(pars, i));
     }
     vmaxset(vmax);
-    PROTECT(gradient = allocMatrix(REALSXP, LENGTH(ans), lengthTheta));
+    PROTECT(gradient = Rf_allocMatrix(REALSXP, LENGTH(ans), lengthTheta));
 
     for(i = 0, start = 0; i < LENGTH(theta); i++) {
 	for(j = 0; j < LENGTH(VECTOR_ELT(pars, i)); j++, start += LENGTH(ans)) {
@@ -345,19 +345,19 @@ numeric_deriv(SEXP expr, SEXP theta, SEXP rho, SEXP dir)
 	    xx = fabs(origPar);
 	    delta = (xx == 0) ? eps : xx*eps;
 	    REAL(VECTOR_ELT(pars, i))[j] += rDir[i] * delta;
-	    PROTECT(ans_del = eval(expr, rho));
-	    if(!isReal(ans_del)) ans_del = coerceVector(ans_del, REALSXP);
+	    PROTECT(ans_del = Rf_eval(expr, rho));
+	    if(!Rf_isReal(ans_del)) ans_del = Rf_coerceVector(ans_del, REALSXP);
 	    UNPROTECT(1);
 	    for(k = 0; k < LENGTH(ans); k++) {
 		if (!R_FINITE(REAL(ans_del)[k]))
-		    error(_("Missing value or an infinity produced when evaluating the model"));
+		    Rf_error(_("Missing value or an infinity produced when evaluating the model"));
 		REAL(gradient)[start + k] =
 		    rDir[i] * (REAL(ans_del)[k] - REAL(ans)[k])/delta;
 	    }
 	    REAL(VECTOR_ELT(pars, i))[j] = origPar;
 	}
     }
-    setAttrib(ans, install("gradient"), gradient);
+    Rf_setAttrib(ans, Rf_install("gradient"), gradient);
     UNPROTECT(4);
     return ans;
 }

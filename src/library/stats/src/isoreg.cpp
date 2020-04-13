@@ -45,14 +45,14 @@ SEXP isoreg(SEXP y)
     SEXP yc, yf, iKnots, ans;
     const char *anms[] = {"y", "yc", "yf", "iKnots", ""};
 
-    /* unneeded: y = coerceVector(y, REALSXP); */
+    /* unneeded: y = Rf_coerceVector(y, REALSXP); */
 
-    PROTECT(ans = mkNamed(VECSXP, anms));
+    PROTECT(ans = Rf_mkNamed(VECSXP, anms));
 
     SET_VECTOR_ELT(ans, 0, y);
-    SET_VECTOR_ELT(ans, 1, yc = allocVector(REALSXP, n+1));
-    SET_VECTOR_ELT(ans, 2, yf = allocVector(REALSXP, n));
-    SET_VECTOR_ELT(ans, 3, iKnots= allocVector(INTSXP, n));
+    SET_VECTOR_ELT(ans, 1, yc = Rf_allocVector(REALSXP, n+1));
+    SET_VECTOR_ELT(ans, 2, yf = Rf_allocVector(REALSXP, n));
+    SET_VECTOR_ELT(ans, 3, iKnots= Rf_allocVector(INTSXP, n));
 
     /* yc := cumsum(0,y) */
     REAL(yc)[0] = 0.;
@@ -78,7 +78,7 @@ SEXP isoreg(SEXP y)
     } while ((known = ip) < n);
 
     if (n_ip < n)
-	SET_VECTOR_ELT(ans, 3, lengthgets(iKnots, n_ip));
+	SET_VECTOR_ELT(ans, 3, Rf_lengthgets(iKnots, n_ip));
     UNPROTECT(1);
     return(ans);
 }

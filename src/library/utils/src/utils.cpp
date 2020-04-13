@@ -61,13 +61,13 @@ SEXP crc64(SEXP in)
 {
     uint64_t crc = 0;
     char ans[17];
-    if (!isString(in)) error("input must be a character string");
-    const char *str = CHAR(STRING_ELT(in, 0));
+    if (!Rf_isString(in)) Rf_error("input must be a character string");
+    const char *str = R_CHAR(STRING_ELT(in, 0));
 
     /* Seems this is really 64-bit only on 64-bit platforms */
     crc = lzma_crc64((uint8_t *)str, strlen(str), crc);
     snprintf(ans, 17, "%lx", (long unsigned int) crc);
-    return mkString(ans);
+    return Rf_mkString(ans);
 }
 
 // As from 3.3.0 this means on Unix.
@@ -83,30 +83,30 @@ SEXP nsl(SEXP hostname)
     const char *name; char ip[] = "xxx.xxx.xxx.xxx";
     struct hostent *hp;
 
-    if (!isString(hostname) || Rf_length(hostname) != 1)
-	error(_("'hostname' must be a character vector of length 1"));
-    name = translateChar(STRING_ELT(hostname, 0));
+    if (!Rf_isString(hostname) || Rf_length(hostname) != 1)
+	Rf_error(_("'hostname' must be a character vector of length 1"));
+    name = Rf_translateChar(STRING_ELT(hostname, 0));
 
     hp = gethostbyname(name);
 
     if (hp == NULL) {		/* cannot resolve the address */
-	warning(_("nsl() was unable to resolve host '%s'"), name);
+	Rf_warning(_("nsl() was unable to resolve host '%s'"), name);
     } else {
 	if (hp->h_addrtype == AF_INET) {
 	    struct in_addr in;
 	    memcpy(&in.s_addr, *(hp->h_addr_list), sizeof (in.s_addr));
 	    strcpy(ip, inet_ntoa(in));
 	} else {
-	    warning(_("unknown format returned by 'gethostbyname'"));
+	    Rf_warning(_("unknown format returned by 'gethostbyname'"));
 	}
-	ans = mkString(ip);
+	ans = Rf_mkString(ip);
     }
     return ans;
 }
 #else
 SEXP nsl(SEXP hostname)
 {
-    warning(_("nsl() is not supported on this platform"));
+    Rf_warning(_("nsl() is not supported on this platform"));
     return R_NilValue;
 }
 #endif

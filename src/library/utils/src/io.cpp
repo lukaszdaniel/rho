@@ -501,8 +501,8 @@ static void ruleout_types(const char *s, Typecvt_Info *typeInfo, LocalData *data
     char *endp;
 
     if (typeInfo->islogical) {
-	if (strcmp(s, "F") == 0 || strcmp(s, "T") == 0 ||
-	    strcmp(s, "FALSE") == 0 || strcmp(s, "TRUE") == 0) {
+	if (streql(s, "F") || streql(s, "T") ||
+	    streql(s, "FALSE") || streql(s, "TRUE")) {
 	    typeInfo->isinteger = FALSE;
 	    typeInfo->isreal = FALSE;
 	    typeInfo->iscomplex = FALSE;
@@ -580,13 +580,13 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     numerals = CAD4R(args); // string, one of c("allow.loss", "warn.loss", "no.loss")
     if (Rf_isString(numerals)) {
 	tmp = R_CHAR(STRING_ELT(numerals, 0));
-	if(strcmp(tmp, "allow.loss") == 0) {
+	if(streql(tmp, "allow.loss")) {
 	    i_exact = FALSE;
 	    exact = FALSE;
-	} else if(strcmp(tmp, "warn.loss") == 0) {
+	} else if(streql(tmp, "warn.loss")) {
 	    i_exact = NA_INTEGER;
 	    exact = FALSE;
-	} else if(strcmp(tmp, "no.loss") == 0) {
+	} else if(streql(tmp, "no.loss")) {
 	    i_exact = TRUE;
 	    exact = TRUE;
 	} else // should never happen
@@ -627,9 +627,9 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
 		LOGICAL(rval)[i] = NA_LOGICAL;
 	    else {
-		if (strcmp(tmp, "F") == 0 || strcmp(tmp, "FALSE") == 0)
+		if (streql(tmp, "F") || streql(tmp, "FALSE"))
 		    LOGICAL(rval)[i] = 0;
-		else if(strcmp(tmp, "T") == 0 || strcmp(tmp, "TRUE") == 0)
+		else if(streql(tmp, "T") || streql(tmp, "TRUE"))
 		    LOGICAL(rval)[i] = 1;
 		else {
 		    typeInfo.islogical = FALSE;

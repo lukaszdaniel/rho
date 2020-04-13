@@ -42,7 +42,7 @@
 #define checkArity_length 			\
     args = CDR(args);		       	       	\
     if(!LENGTH(CAR(args)))	       	       	\
-	error(_("argument must have positive length"))
+	Rf_error(_("argument must have positive length"))
 
 SEXP devcontrol(SEXP args)
 {
@@ -50,17 +50,17 @@ SEXP devcontrol(SEXP args)
     pGEDevDesc gdd = GEcurrentDevice();
 
     args = CDR(args);
-    listFlag = asLogical(CAR(args));
-    if(listFlag == NA_LOGICAL) error(_("invalid argument"));
+    listFlag = Rf_asLogical(CAR(args));
+    if(listFlag == NA_LOGICAL) Rf_error(_("invalid argument"));
     GEinitDisplayList(gdd);
     gdd->displayListOn = listFlag ? TRUE: FALSE;
-    return ScalarLogical(listFlag);
+    return Rf_ScalarLogical(listFlag);
 }
 
 SEXP devdisplaylist(SEXP args)
 {
     pGEDevDesc gdd = GEcurrentDevice();
-    return ScalarLogical(gdd->displayListOn);
+    return Rf_ScalarLogical(gdd->displayListOn);
 }
 
 SEXP devcopy(SEXP args)
@@ -73,31 +73,31 @@ SEXP devcopy(SEXP args)
 SEXP devcur(SEXP args)
 {
     args = CDR(args);
-    return ScalarInteger(curDevice() + 1);
+    return Rf_ScalarInteger(curDevice() + 1);
 }
 
 SEXP devnext(SEXP args)
 {
     checkArity_length;
     int nxt = INTEGER(CAR(args))[0];
-    if (nxt == NA_INTEGER) error(_("NA argument is invalid"));
-    return ScalarInteger( nextDevice(nxt - 1) + 1 );
+    if (nxt == NA_INTEGER) Rf_error(_("NA argument is invalid"));
+    return Rf_ScalarInteger( nextDevice(nxt - 1) + 1 );
 }
 
 SEXP devprev(SEXP args)
 {
     checkArity_length;
     int prev = INTEGER(CAR(args))[0];
-    if (prev == NA_INTEGER) error(_("NA argument is invalid"));
-    return ScalarInteger( prevDevice(prev - 1) + 1 );
+    if (prev == NA_INTEGER) Rf_error(_("NA argument is invalid"));
+    return Rf_ScalarInteger( prevDevice(prev - 1) + 1 );
 }
 
 SEXP devset(SEXP args)
 {
     checkArity_length;
     int devNum = INTEGER(CAR(args))[0];
-    if (devNum == NA_INTEGER) error(_("NA argument is invalid"));
-    return ScalarInteger( selectDevice(devNum - 1) + 1 );
+    if (devNum == NA_INTEGER) Rf_error(_("NA argument is invalid"));
+    return Rf_ScalarInteger( selectDevice(devNum - 1) + 1 );
 }
 
 SEXP devoff(SEXP args)
@@ -114,7 +114,7 @@ SEXP devsize(SEXP args)
     double left, right, bottom, top;
 
     dd->size(&left, &right, &bottom, &top, dd);
-    ans = allocVector(REALSXP, 2);
+    ans = Rf_allocVector(REALSXP, 2);
     REAL(ans)[0] = fabs(right - left);
     REAL(ans)[1] = fabs(bottom - top);
     return ans;
@@ -125,10 +125,10 @@ SEXP devholdflush(SEXP args)
     pDevDesc dd = GEcurrentDevice()->dev;
 
     args = CDR(args);
-    int level = asInteger(CAR(args));
+    int level = Rf_asInteger(CAR(args));
     if(dd->holdflush && level != NA_INTEGER) level = (dd->holdflush(dd, level));
     else level = 0;
-    return ScalarInteger(level);
+    return Rf_ScalarInteger(level);
 }
 
 SEXP devcap(SEXP args)
@@ -139,7 +139,7 @@ SEXP devcap(SEXP args)
 
     args = CDR(args);
 
-    PROTECT(ans = allocVector(INTSXP, 9));
+    PROTECT(ans = Rf_allocVector(INTSXP, 9));
     INTEGER(ans)[i] = dd->haveTransparency;
     INTEGER(ans)[++i] = dd->haveTransparentBg;
     /* These will be NULL if the device does not define them */
@@ -171,34 +171,34 @@ SEXP devcapture(SEXP args)
     if (native != TRUE) native = FALSE;
 
     raster = GECap(gdd);
-    if (isNull(raster)) /* NULL = unsupported */
+    if (Rf_isNull(raster)) /* NULL = unsupported */
 	return raster;
 
     PROTECT(raster);
     if (native) {
-	setAttrib(raster, R_ClassSymbol, mkString("nativeRaster"));
+	Rf_setAttrib(raster, R_ClassSymbol, Rf_mkString("nativeRaster"));
 	UNPROTECT(1);
 	return raster;
     }
 
     /* non-native, covert to color strings (this is based on grid.cap) */
     size = LENGTH(raster);
-    nrow = INTEGER(getAttrib(raster, R_DimSymbol))[0];
-    ncol = INTEGER(getAttrib(raster, R_DimSymbol))[1];
+    nrow = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[0];
+    ncol = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[1];
         
-    PROTECT(image = allocVector(STRSXP, size));
+    PROTECT(image = Rf_allocVector(STRSXP, size));
     rint = INTEGER(raster);
     for (i = 0; i < size; i++) {
 	col = i % ncol + 1;
 	row = i / ncol + 1;
 	SET_STRING_ELT(image, (col - 1) * nrow + row - 1, 
-		       mkChar(col2name(rint[i])));
+		       Rf_mkChar(col2name(rint[i])));
     }
         
-    PROTECT(idim = allocVector(INTSXP, 2));
+    PROTECT(idim = Rf_allocVector(INTSXP, 2));
     INTEGER(idim)[0] = nrow;
     INTEGER(idim)[1] = ncol;
-    setAttrib(image, R_DimSymbol, idim);
+    Rf_setAttrib(image, R_DimSymbol, idim);
     UNPROTECT(3);
 
     return image;    

@@ -33,14 +33,14 @@
 SEXP ps_kill(SEXP spid, SEXP ssignal)
 {
     SEXP sspid, sres;
-    int *pid, *res, signal = asInteger(ssignal);
-    PROTECT(sspid = coerceVector(spid, INTSXP));
+    int *pid, *res, signal = Rf_asInteger(ssignal);
+    PROTECT(sspid = Rf_coerceVector(spid, INTSXP));
     unsigned int ns = LENGTH(sspid);
-    PROTECT(sres = allocVector(LGLSXP, ns));
+    PROTECT(sres = Rf_allocVector(LGLSXP, ns));
     pid = INTEGER(sspid);
     res = INTEGER(sres);
 #if !defined(_WIN32) && !defined(HAVE_KILL)
-    warning(_("pskill() is not supported on this platform"));
+    Rf_warning(_("pskill() is not supported on this platform"));
 #endif
     if(signal != NA_INTEGER) {
 	for (int i = 0; i < ns; i++) {
@@ -69,10 +69,10 @@ SEXP ps_priority(SEXP spid, SEXP svalue)
 {
     SEXP sspid, sres;
     int *pid, *res, val;
-    val = asInteger(svalue);
-    PROTECT(sspid = coerceVector(spid, INTSXP));
+    val = Rf_asInteger(svalue);
+    PROTECT(sspid = Rf_coerceVector(spid, INTSXP));
     unsigned int ns = LENGTH(sspid);
-    PROTECT(sres = allocVector(INTSXP, ns));
+    PROTECT(sres = Rf_allocVector(INTSXP, ns));
     pid = INTEGER(sspid);
     res = INTEGER(sres);
     for (int i = 0; i < ns; i++) {
@@ -97,10 +97,10 @@ SEXP ps_priority(SEXP spid, SEXP svalue)
 {
     SEXP sspid, sres;
     int *pid, *res, val;
-    val = asInteger(svalue);
-    PROTECT(sspid = coerceVector(spid, INTSXP));
+    val = Rf_asInteger(svalue);
+    PROTECT(sspid = Rf_coerceVector(spid, INTSXP));
     unsigned int ns = LENGTH(sspid);
-    PROTECT(sres = allocVector(INTSXP, ns));
+    PROTECT(sres = Rf_allocVector(INTSXP, ns));
     pid = INTEGER(sspid);
     res = INTEGER(sres);
     for (int i = 0; i < ns; i++) {
@@ -137,7 +137,7 @@ SEXP ps_priority(SEXP spid, SEXP svalue)
 #else
 SEXP ps_priority(SEXP spid, SEXP svalue)
 {
-    error(_("psnice() is not supported on this platform"));
+    Rf_error(_("psnice() is not supported on this platform"));
     return R_NilValue; /* -Wall */
 }
 #endif
@@ -145,7 +145,7 @@ SEXP ps_priority(SEXP spid, SEXP svalue)
 SEXP ps_sigs(SEXP signo)
 {
     int res = NA_INTEGER;
-    switch(asInteger(signo)) {
+    switch(Rf_asInteger(signo)) {
 	/* only SIGINT and SIGTERM are in C99 */
 #ifdef SIGHUP
     case 1: res = SIGHUP; break;
@@ -182,5 +182,5 @@ SEXP ps_sigs(SEXP signo)
 #endif
     default: break;
     }
-    return ScalarInteger(res);
+    return Rf_ScalarInteger(res);
 }

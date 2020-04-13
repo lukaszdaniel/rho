@@ -156,16 +156,16 @@ static int computeDLOpenFlag(int asLocal, int now)
        This allows us to redefine it easily so that it only emits the
        warning once as in
        DL_WARN(i) if(warningMessages[i]) {\
-       warning(warningMessages[i]); \
+       Rf_warning(warningMessages[i]); \
        warningMessages[i] = NULL; \
        }
        or to control the emission via the options currently in effect at
        call time.
     */
 # define DL_WARN(i) \
-    if(asInteger(GetOption1(install("warn"))) == 1 || \
-       asInteger(GetOption1(install("verbose"))) > 0) \
-	warning(_(warningMessages[i]))
+    if(Rf_asInteger(GetOption1(Rf_install("warn"))) == 1 || \
+       Rf_asInteger(GetOption1(Rf_install("verbose"))) > 0) \
+	Rf_warning(_(warningMessages[i]))
 #endif
 
     int openFlag = 0;		/* Default value so no-ops for undefined

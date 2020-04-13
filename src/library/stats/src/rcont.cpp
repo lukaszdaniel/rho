@@ -76,7 +76,7 @@ rcont2(int *nrow, int *ncol,
 		if (x >= dummy)
 		    break;
 		if (x == 0.)/* MM: I haven't seen this anymore */
-		    error(_("rcont2 [%d,%d]: exp underflow to 0; algorithm failure"), l, m);
+		    Rf_error(_("rcont2 [%d,%d]: exp underflow to 0; algorithm failure"), l, m);
 
 		sumprb = x;
 		y = x;

@@ -315,7 +315,7 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 
     PROTECT(ans = Rf_allocMatrix(REALSXP, nx, ny));
     if(opt_counts) {
-	PROTECT(counts = alloc3DArray(INTSXP, nx, ny, 3));
+	PROTECT(counts = Rf_alloc3DArray(INTSXP, nx, ny, 3));
 	PROTECT(trafos = Rf_allocMatrix(STRSXP, nx, ny));
 	buf = Calloc(buflen, char);
     }
@@ -584,8 +584,8 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 
     PROTECT(ans = Rf_allocMatrix(REALSXP, nx, ny));
     if(opt_counts) {
-	PROTECT(counts = alloc3DArray(INTSXP, nx, ny, 3));
-	PROTECT(offsets = alloc3DArray(INTSXP, nx, ny, 2));
+	PROTECT(counts = Rf_alloc3DArray(INTSXP, nx, ny, 3));
+	PROTECT(offsets = Rf_alloc3DArray(INTSXP, nx, ny, 2));
     }
 
     /* Rf_wtransChar and translateChar can R_alloc */

@@ -257,12 +257,12 @@ static SEXP collect_buffers(struct buffer *buf) {
     SEXP res;
     char *dst;
     int len = 0;
-    if (!buf) return allocVector(RAWSXP, 0);
+    if (!buf) return Rf_allocVector(RAWSXP, 0);
     while (buf->prev) { /* count the total length and find the root */
 	len += buf->length;
 	buf = buf->prev;
     }
-    res = allocVector(RAWSXP, len + buf->length);
+    res = Rf_allocVector(RAWSXP, len + buf->length);
     dst = (char*) RAW(res);
     while (buf) {
 	memcpy(dst, buf->data, buf->length);
@@ -429,8 +429,8 @@ static SEXP parse_query(char *query)
 	s++;
     }
     parts++;
-    res = PROTECT(allocVector(STRSXP, parts));
-    names = PROTECT(allocVector(STRSXP, parts));
+    res = PROTECT(Rf_allocVector(STRSXP, parts));
+    names = PROTECT(Rf_allocVector(STRSXP, parts));
     s = query;
     parts = 0;
     while (1) {
@@ -443,8 +443,8 @@ static SEXP parse_query(char *query)
 	    int last_entry = !*s;
 	    *(t++) = 0;
 	    if (!key) key = (char *) "";
-	    SET_STRING_ELT(names, parts, mkChar(key));
-	    SET_STRING_ELT(res, parts, mkChar(value));
+	    SET_STRING_ELT(names, parts, Rf_mkChar(key));
+	    SET_STRING_ELT(res, parts, Rf_mkChar(value));
 	    parts++;
 	    if (last_entry) break;
 	    key = 0;
@@ -466,7 +466,7 @@ static SEXP parse_query(char *query)
 	    *(t++) = (char) ec;
 	} else *(t++) = *(s++);
     }
-    setAttrib(res, R_NamesSymbol, names);
+    Rf_setAttrib(res, R_NamesSymbol, names);
     UNPROTECT(2);
     return res;
 }
@@ -487,8 +487,8 @@ static SEXP parse_request_body(httpd_conn_t *c) {
 	if (c->content_length)
 	    memcpy(RAW(res), c->body, c->content_length);
 	if (c->content_type) { /* attach the content type so it can be interpreted */
-	    if (!R_ContentTypeName) R_ContentTypeName = install("content-type");
-	    setAttrib(res, R_ContentTypeName, mkString(c->content_type));
+	    if (!R_ContentTypeName) R_ContentTypeName = Rf_install("content-type");
+	    Rf_setAttrib(res, R_ContentTypeName, Rf_mkString(c->content_type));
 	}
 	UNPROTECT(1);
 	return res;
@@ -531,26 +531,26 @@ static SEXP handler_for_path(const char *path) {
 	while (*c && *c != '/') c++; /* find out the name */
 	if (c - e > 0 && c - e < 64) { /* if it's 1..63 chars long, proceed */
 	    char fn[64];
-	    memcpy(fn, e, c - e); /* create a local C string with the name for the install() call */
+	    memcpy(fn, e, c - e); /* create a local C string with the name for the Rf_install() call */
 	    fn[c - e] = 0;
 	    DBG(Rprintf("handler_for_path('%s'): looking up custom handler '%s'\n", path, fn));
 	    /* we cache custom_handlers_env so in case it has not been loaded yet, fetch it */
 	    if (!custom_handlers_env) {
-		if (!R_HandlersName) R_HandlersName = install(".httpd.handlers.env");
-		SEXP toolsNS = PROTECT(R_FindNamespace(mkString("tools")));
-		custom_handlers_env = eval(R_HandlersName, toolsNS);
+		if (!R_HandlersName) R_HandlersName = Rf_install(".httpd.handlers.env");
+		SEXP toolsNS = PROTECT(R_FindNamespace(Rf_mkString("tools")));
+		custom_handlers_env = Rf_eval(R_HandlersName, toolsNS);
 		UNPROTECT(1); /* toolsNS */
 	    }
 	    /* we only proceed if .httpd.handlers.env really exists */
 	    if (TYPEOF(custom_handlers_env) == ENVSXP) {
-		SEXP cl = findVarInFrame3(custom_handlers_env, install(fn), TRUE);
+		SEXP cl = Rf_findVarInFrame3(custom_handlers_env, Rf_install(fn), TRUE);
 		if (cl != R_UnboundValue && TYPEOF(cl) == CLOSXP) /* we need a closure */
 		    return cl;
 	    }
 	}
     }
     DBG(Rprintf(" - falling back to default httpd\n"));
-    return install("httpd");
+    return Rf_install("httpd");
 }
 
 /* process a request by calling the httpd() function in R */
@@ -571,21 +571,21 @@ static void process_request_(void *ptr)
     }
     uri_decode(c->url); /* decode the path part */
     {   /* construct "try(httpd(url, query, body), silent=TRUE)" */
-	SEXP sTrue = PROTECT(ScalarLogical(TRUE));
+	SEXP sTrue = PROTECT(Rf_ScalarLogical(TRUE));
 	SEXP sBody = PROTECT(parse_request_body(c));
 	SEXP sQuery = PROTECT(query ? parse_query(query) : R_NilValue);
 	SEXP sReqHeaders = PROTECT(c->headers ? collect_buffers(c->headers) : R_NilValue);
-	SEXP sArgs = PROTECT(list4(mkString(c->url), sQuery, sBody, sReqHeaders));
-	SEXP sTry = install("try");
-	SEXP y, x = PROTECT(lang3(sTry,
+	SEXP sArgs = PROTECT(list4(Rf_mkString(c->url), sQuery, sBody, sReqHeaders));
+	SEXP sTry = Rf_install("try");
+	SEXP y, x = PROTECT(Rf_lang3(sTry,
 				  LCONS(handler_for_path(c->url), sArgs),
 				  sTrue));
-	SET_TAG(CDR(CDR(x)), install("silent"));
-	DBG(Rprintf("eval(try(httpd('%s'),silent=TRUE))\n", c->url));
+	SET_TAG(CDR(CDR(x)), Rf_install("silent"));
+	DBG(Rprintf("Rf_eval(try(httpd('%s'),silent=TRUE))\n", c->url));
 	
 	/* evaluate the above in the tools namespace */
-	SEXP toolsNS = PROTECT(R_FindNamespace(mkString("tools")));
-	x = eval(x, toolsNS);
+	SEXP toolsNS = PROTECT(R_FindNamespace(Rf_mkString("tools")));
+	x = Rf_eval(x, toolsNS);
 	UNPROTECT(1); /* toolsNS */
 	PROTECT(x);
 
@@ -611,7 +611,7 @@ static void process_request_(void *ptr)
 	 */
 
 	if (TYPEOF(x) == STRSXP && LENGTH(x) > 0) { /* string means there was an error */
-	    const char *s = CHAR(STRING_ELT(x, 0));
+	    const char *s = R_CHAR(STRING_ELT(x, 0));
 	    send_http_response(c, " 500 Evaluation error\r\nConnection: close\r\nContent-type: text/plain\r\n\r\n");
 	    DBG(Rprintf("respond with 500 and content: %s\n", s));
 	    if (c->method != METHOD_HEAD)
@@ -622,23 +622,23 @@ static void process_request_(void *ptr)
 	}
 
 	if (TYPEOF(x) == VECSXP && LENGTH(x) > 0) { /* a list (generic vector) can be a real payload */
-	    SEXP xNames = getAttrib(x, R_NamesSymbol);
+	    SEXP xNames = Rf_getAttrib(x, R_NamesSymbol);
 	    if (LENGTH(x) > 1) {
 		SEXP sCT = VECTOR_ELT(x, 1); /* second element is content type if present */
 		if (TYPEOF(sCT) == STRSXP && LENGTH(sCT) > 0)
-		    ct = CHAR(STRING_ELT(sCT, 0));
+		    ct = R_CHAR(STRING_ELT(sCT, 0));
 		if (LENGTH(x) > 2) { /* third element is headers vector */
 		    sHeaders = VECTOR_ELT(x, 2);
 		    if (TYPEOF(sHeaders) != STRSXP)
 			sHeaders = R_NilValue;
 		    if (LENGTH(x) > 3) /* fourth element is HTTP code */
-			code = asInteger(VECTOR_ELT(x, 3));
+			code = Rf_asInteger(VECTOR_ELT(x, 3));
 		}
 	    }
 	    y = VECTOR_ELT(x, 0);
 	    if (TYPEOF(y) == STRSXP && LENGTH(y) > 0) {
 		char buf[64];
-		const char *cs = CHAR(STRING_ELT(y, 0)), *fn = 0;
+		const char *cs = R_CHAR(STRING_ELT(y, 0)), *fn = 0;
 		if (code == 200)
 		    send_http_response(c, " 200 OK\r\nContent-type: ");
 		else {
@@ -649,17 +649,17 @@ static void process_request_(void *ptr)
 		if (sHeaders != R_NilValue) {
 		    unsigned int i = 0, n = LENGTH(sHeaders);
 		    for (; i < n; i++) {
-			const char *hs = CHAR(STRING_ELT(sHeaders, i));
+			const char *hs = R_CHAR(STRING_ELT(sHeaders, i));
 			send_response(c->sock, "\r\n", 2);
 			send_response(c->sock, hs, strlen(hs));
 		    }
 		}
 		/* special content - a file: either list(file="") or list(c("*FILE*", "")) - the latter will go away */
 		if (TYPEOF(xNames) == STRSXP && LENGTH(xNames) > 0 &&
-		    !strcmp(CHAR(STRING_ELT(xNames, 0)), "file"))
+		    !strcmp(R_CHAR(STRING_ELT(xNames, 0)), "file"))
 		    fn = cs;
 		if (LENGTH(y) > 1 && !strcmp(cs, "*FILE*"))
-		    fn = CHAR(STRING_ELT(y, 1));
+		    fn = R_CHAR(STRING_ELT(y, 1));
 		if (fn) {
 		    char *fbuf;
 		    FILE *f = fopen(fn, "rb");
@@ -724,7 +724,7 @@ static void process_request_(void *ptr)
 		if (sHeaders != R_NilValue) {
 		    unsigned int i = 0, n = LENGTH(sHeaders);
 		    for (; i < n; i++) {
-			const char *hs = CHAR(STRING_ELT(sHeaders, i));
+			const char *hs = R_CHAR(STRING_ELT(sHeaders, i));
 			send_response(c->sock, "\r\n", 2);
 			send_response(c->sock, hs, strlen(hs));
 		    }
@@ -1260,6 +1260,6 @@ SEXP R_init_httpd(SEXP sIP, SEXP sPort)
     if (sIP != R_NilValue && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
 	Rf_error("invalid bind address specification");
     if (sIP != R_NilValue)
-	ip = CHAR(STRING_ELT(sIP, 0));
-    return ScalarInteger(in_R_HTTPDCreate(ip, asInteger(sPort)));
+	ip = R_CHAR(STRING_ELT(sIP, 0));
+    return Rf_ScalarInteger(in_R_HTTPDCreate(ip, Rf_asInteger(sPort)));
 }

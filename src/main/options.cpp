@@ -71,7 +71,7 @@ using namespace rho;
  *	"de.cellwidth"		../unix/X11/ & ../gnuwin32/dataentry.cpp
  *	"device"
  *	"pager"
- *	"paper.size"		./devPS.c
+ *	"paper.size"		./devPS.cpp
 
  *	"timeout"		./connections.cpp
 

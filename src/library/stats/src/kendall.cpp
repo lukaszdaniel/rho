@@ -101,9 +101,9 @@ pkendall(int len, double *Q, double *P, int n)
 #include <Rinternals.h>
 SEXP pKendall(SEXP q, SEXP sn)
 {
-    q = PROTECT(coerceVector(q, REALSXP));
-    int len = LENGTH(q), n = asInteger(sn);
-    SEXP p = PROTECT(allocVector(REALSXP, len));
+    q = PROTECT(Rf_coerceVector(q, REALSXP));
+    int len = LENGTH(q), n = Rf_asInteger(sn);
+    SEXP p = PROTECT(Rf_allocVector(REALSXP, len));
     pkendall(len, REAL(q), REAL(p), n);
     UNPROTECT(2);
     return p;

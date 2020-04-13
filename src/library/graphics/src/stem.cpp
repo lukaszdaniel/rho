@@ -144,17 +144,17 @@ stem_leaf(double *x, int n, double scale, int width, double atom)
 /* The R wrapper has removed NAs from x */
 SEXP C_StemLeaf(SEXP x, SEXP scale, SEXP swidth, SEXP atom)
 {
-    if(TYPEOF(x) != REALSXP || TYPEOF(scale) != REALSXP) error("invalid input");
+    if(TYPEOF(x) != REALSXP || TYPEOF(scale) != REALSXP) Rf_error("invalid input");
 #ifdef LONG_VECTOR_SUPPORT
     if (IS_LONG_VEC(x))
-	error(_("long vector '%s' is not supported"), "x");
+	Rf_error(_("long vector '%s' is not supported"), "x");
 #endif
-    int width = asInteger(swidth), n = LENGTH(x);
-    if (n == NA_INTEGER) error(_("invalid '%s' argument"), "x");
-    if (width == NA_INTEGER) error(_("invalid '%s' argument"), "width");
-    double sc = asReal(scale), sa = asReal(atom);
-    if (!R_FINITE(sc)) error(_("invalid '%s' argument"), "scale");
-    if (!R_FINITE(sa)) error(_("invalid '%s' argument"), "atom");
+    int width = Rf_asInteger(swidth), n = LENGTH(x);
+    if (n == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "x");
+    if (width == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "width");
+    double sc = Rf_asReal(scale), sa = Rf_asReal(atom);
+    if (!R_FINITE(sc)) Rf_error(_("invalid '%s' argument"), "scale");
+    if (!R_FINITE(sa)) Rf_error(_("invalid '%s' argument"), "atom");
     stem_leaf(REAL(x), n, sc, width, sa);
     return R_NilValue;
 }
@@ -186,7 +186,7 @@ C_bincount(double *x, R_xlen_t n, double *breaks, R_xlen_t nb, int *count,
 		}
 #ifdef LONG_VECTOR_SUPPORT
 		if(count[lo] >= INT_MAX)
-		    error("count for a bin exceeds INT_MAX");
+		    Rf_error("count for a bin exceeds INT_MAX");
 #endif
 		count[lo]++;
 	    }
@@ -196,13 +196,13 @@ C_bincount(double *x, R_xlen_t n, double *breaks, R_xlen_t nb, int *count,
 /* The R wrapper removed non-finite values */
 SEXP C_BinCount(SEXP x, SEXP breaks, SEXP right, SEXP lowest)
 {
-    x = PROTECT(coerceVector(x, REALSXP));
-    breaks = PROTECT(coerceVector(breaks, REALSXP));
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    breaks = PROTECT(Rf_coerceVector(breaks, REALSXP));
     R_xlen_t n = XLENGTH(x), nB = XLENGTH(breaks);
-    int sr = asLogical(right), sl = asLogical(lowest);
-    if (sr == NA_INTEGER) error(_("invalid '%s' argument"), "right");
-    if (sl == NA_INTEGER) error(_("invalid '%s' argument"), "include.lowest");
-    SEXP counts = PROTECT(allocVector(INTSXP, nB - 1));
+    int sr = Rf_asLogical(right), sl = Rf_asLogical(lowest);
+    if (sr == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "right");
+    if (sl == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "include.lowest");
+    SEXP counts = PROTECT(Rf_allocVector(INTSXP, nB - 1));
     C_bincount(REAL(x), n, REAL(breaks), nB, INTEGER(counts), sr, sl);
     UNPROTECT(3);
     return counts;

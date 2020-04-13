@@ -159,7 +159,7 @@ static cjk_locale_name_t cjk_locale_name[] = {
     {"",				        MB_Default},
 };
 
-// used in character.cpp, ../gnuwin32/console.c , ../library/grDevices/src/devP*.c :
+// used in character.cpp, ../gnuwin32/console.cpp , ../library/grDevices/src/devP*.cpp :
 int Ri18n_wcwidth(Rwchar_t c)
 {
     char lc_str[128];

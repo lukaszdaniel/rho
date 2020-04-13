@@ -71,24 +71,24 @@ SEXP winProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
     pbar = Calloc(1, winprogressbar);
-    width = asInteger(CAR(args)); args = CDR(args);
+    width = Rf_asInteger(CAR(args)); args = CDR(args);
     if(width == NA_INTEGER || width < 0) width = 200;
     tmp = CAR(args); args = CDR(args);
-    if(!isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
+    if(!Rf_isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
 	errorcall(call, "invalid '%s' argument", "title");
-    title = translateChar(STRING_ELT(tmp, 0));
+    title = Rf_translateChar(STRING_ELT(tmp, 0));
     tmp = CAR(args); args = CDR(args);
-    if(!isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
+    if(!Rf_isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
 	errorcall(call, "invalid '%s' argument", "Label");
-    label = translateChar(STRING_ELT(tmp, 0));
+    label = Rf_translateChar(STRING_ELT(tmp, 0));
     haveLabel = strlen(label) > 0;
-    d = asReal(CAR(args)); args = CDR(args);
+    d = Rf_asReal(CAR(args)); args = CDR(args);
     if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "min");
     pbar->min = d;
-    d = asReal(CAR(args)); args = CDR(args);
+    d = Rf_asReal(CAR(args)); args = CDR(args);
     if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "max");
     pbar->max = d;
-    d = asReal(CAR(args)); args = CDR(args);
+    d = Rf_asReal(CAR(args)); args = CDR(args);
     if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "initial");
     pbar->val = d;
 
@@ -103,7 +103,7 @@ SEXP winProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
     iv = pbar->width * (pbar->val - pbar->min)/(pbar->max - pbar->min);
     setprogressbar(pbar->pb, iv);
     show(pbar->wprog);
-    ptr = R_MakeExternalPtr(pbar, install("winProgressBar"), R_NilValue);
+    ptr = R_MakeExternalPtr(pbar, Rf_install("winProgressBar"), R_NilValue);
     R_RegisterCFinalizerEx(ptr, pbarFinalizer, TRUE);
 
     return ptr;
@@ -124,35 +124,35 @@ SEXP setWinProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 
     pbar = R_ExternalPtrAddr(ptr);
     if(!pbar)
-	error("invalid progressbar -- has it been closed?");
+	Rf_error("invalid progressbar -- has it been closed?");
     value = pbar->val;
-    if(!isNull(CADR(args))) {
+    if(!Rf_isNull(CADR(args))) {
 	int iv;
-	double val = asReal(CADR(args));
+	double val = Rf_asReal(CADR(args));
 	SEXP title = CADDR(args), label = CADDDR(args);
 	if (R_FINITE(val) && val >= pbar->min && val <= pbar->max) {
 	    iv = pbar->width * (val - pbar->min)/(pbar->max - pbar->min);
 	    setprogressbar(pbar->pb, iv);
 	    pbar->val = val;
 	}
-	if (!isNull(title)) {
+	if (!Rf_isNull(title)) {
 	    SEXP ctxt;
-	    if(!isString(title) || length(title) < 1)
+	    if(!Rf_isString(title) || length(title) < 1)
 		errorcall(call, "invalid '%s' argument", "title");
 	    ctxt = STRING_ELT(title, 0);
 	    if (ctxt != NA_STRING)
-		settext(pbar->wprog, translateChar(ctxt));
+		settext(pbar->wprog, Rf_translateChar(ctxt));
 	}
-	if(pbar->lab && !isNull(label)) {
+	if(pbar->lab && !Rf_isNull(label)) {
 	    SEXP clab;
-	    if(!isString(label) || length(label) < 1)
+	    if(!Rf_isString(label) || length(label) < 1)
 		errorcall(call, "invalid '%s' argument", "label");
 	    clab = STRING_ELT(label, 0);
 	    if (clab != NA_STRING)
-		settext(pbar->lab, translateChar(clab));
+		settext(pbar->lab, Rf_translateChar(clab));
 	}
     }
-    return ScalarReal(value);
+    return Rf_ScalarReal(value);
 }
 
 SEXP winDialog(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -162,24 +162,24 @@ SEXP winDialog(SEXP call, SEXP op, SEXP args, SEXP env)
     int res=YES;
 
     args = CDR(args);
-    type = translateChar(STRING_ELT(CAR(args), 0));
+    type = Rf_translateChar(STRING_ELT(CAR(args), 0));
     message = CADR(args);
-    if(!isString(message) || length(message) != 1 ||
-       strlen(translateChar(STRING_ELT(message, 0))) > 999)
-	error(_("invalid '%s' argument"), "message");
+    if(!Rf_isString(message) || length(message) != 1 ||
+       strlen(Rf_translateChar(STRING_ELT(message, 0))) > 999)
+	Rf_error(_("invalid '%s' argument"), "message");
     if (streql(type, "ok")) {
-	askok(translateChar(STRING_ELT(message, 0)));
+	askok(Rf_translateChar(STRING_ELT(message, 0)));
 	res = 10;
     } else if (streql(type, "okcancel")) {
-	res = askokcancel(translateChar(STRING_ELT(message, 0)));
+	res = askokcancel(Rf_translateChar(STRING_ELT(message, 0)));
 	if(res == YES) res = 2;
     } else if (streql(type, "yesno")) {
-	res = askyesno(translateChar(STRING_ELT(message, 0)));
+	res = askyesno(Rf_translateChar(STRING_ELT(message, 0)));
     } else if (streql(type, "yesnocancel")) {
-	res = askyesnocancel(translateChar(STRING_ELT(message, 0)));
+	res = askyesnocancel(Rf_translateChar(STRING_ELT(message, 0)));
     } else
 	errorcall(call, _("unknown type"));
-    return ScalarInteger(res);
+    return Rf_ScalarInteger(res);
 }
 
 SEXP winDialogString(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -189,15 +189,15 @@ SEXP winDialogString(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
     message = CAR(args);
-    if(!isString(message) || length(message) != 1 ||
-       strlen(translateChar(STRING_ELT(message, 0))) > 255)
-	error(_("invalid '%s' argument"), "message");
+    if(!Rf_isString(message) || length(message) != 1 ||
+       strlen(Rf_translateChar(STRING_ELT(message, 0))) > 255)
+	Rf_error(_("invalid '%s' argument"), "message");
     def = CADR(args);
-    if(!isString(def) || length(def) != 1)
-	error(_("invalid '%s' argument"), "default");
-    string = askstring(translateChar(STRING_ELT(message, 0)),
-		       translateChar(STRING_ELT(def, 0)));
-    if (string) return mkString(string);
+    if(!Rf_isString(def) || length(def) != 1)
+	Rf_error(_("invalid '%s' argument"), "default");
+    string = askstring(Rf_translateChar(STRING_ELT(message, 0)),
+		       Rf_translateChar(STRING_ELT(def, 0)));
+    if (string) return Rf_mkString(string);
     else return R_NilValue;
 }
 
@@ -214,10 +214,10 @@ SEXP winMenuNames(SEXP call, SEXP op, SEXP args, SEXP env)
 
     nmenus = numwinmenus();
 
-    PROTECT(menuNames = allocVector(STRSXP, nmenus));
+    PROTECT(menuNames = Rf_allocVector(STRSXP, nmenus));
 
     for (i = 0; i < nmenus; i++) {
-	SET_STRING_ELT(menuNames, i, mkChar(getusermenuname(i)));
+	SET_STRING_ELT(menuNames, i, Rf_mkChar(getusermenuname(i)));
     }
 
     UNPROTECT(1);
@@ -237,25 +237,25 @@ SEXP winMenuItems(SEXP call, SEXP op, SEXP args, SEXP env)
 	errorcall(call, _("menu functions can only be used in the GUI"));
 
     mname = CAR(args);
-    if (!isString(mname) || length(mname) != 1)
-	error(_("invalid '%s' argument"), "menuname");
+    if (!Rf_isString(mname) || length(mname) != 1)
+	Rf_error(_("invalid '%s' argument"), "menuname");
 
-    items = wingetmenuitems(translateChar(STRING_ELT(mname,0)), errmsg);
+    items = wingetmenuitems(Rf_translateChar(STRING_ELT(mname,0)), errmsg);
     if (items->numItems == 0) {
 	snprintf(msgbuf, 256, _("unable to retrieve items for %s (%s)"),
-		 translateChar(STRING_ELT(mname,0)), errmsg);
+		 Rf_translateChar(STRING_ELT(mname,0)), errmsg);
 	freemenuitems(items);
 	errorcall(call, msgbuf);
     }
 
-    PROTECT(ans = allocVector(STRSXP, items->numItems));
-    PROTECT(ansnames = allocVector(STRSXP, items->numItems));
+    PROTECT(ans = Rf_allocVector(STRSXP, items->numItems));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, items->numItems));
     for (i = 0; i < items->numItems; i++) {
-	SET_STRING_ELT(ans, i, mkChar(items->mItems[i]->action));
-	SET_STRING_ELT(ansnames, i, mkChar(items->mItems[i]->name));
+	SET_STRING_ELT(ans, i, Rf_mkChar(items->mItems[i]->action));
+	SET_STRING_ELT(ansnames, i, Rf_mkChar(items->mItems[i]->name));
     }
 
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
 
     freemenuitems(items);
 
@@ -274,22 +274,22 @@ SEXP winMenuAdd(SEXP call, SEXP op, SEXP args, SEXP env)
     if (CharacterMode != RGui)
 	errorcall(call, _("menu functions can only be used in the GUI"));
     smenu = CAR(args);
-    if(!isString(smenu) || length(smenu) != 1)
-	error(_("invalid '%s' argument"), "menuname");
+    if(!Rf_isString(smenu) || length(smenu) != 1)
+	Rf_error(_("invalid '%s' argument"), "menuname");
     sitem = CADR(args);
-    if (isNull(sitem)) { /* add a menu */
-	res = winaddmenu (translateChar(STRING_ELT(smenu, 0)), errmsg);
+    if (Rf_isNull(sitem)) { /* add a menu */
+	res = winaddmenu (Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to add menu (%s)"), errmsg);
 	    errorcall(call, msgbuf);
 	}
 
     } else { /* add an item */
-	if(!isString(sitem) || length(sitem) != 1)
-	    error(_("invalid '%s' argument"), "itemname");
-	res = winaddmenuitem (translateChar(STRING_ELT(sitem, 0)),
-			      translateChar(STRING_ELT(smenu, 0)),
-			      translateChar(STRING_ELT(CADDR(args), 0)),
+	if(!Rf_isString(sitem) || length(sitem) != 1)
+	    Rf_error(_("invalid '%s' argument"), "itemname");
+	res = winaddmenuitem (Rf_translateChar(STRING_ELT(sitem, 0)),
+			      Rf_translateChar(STRING_ELT(smenu, 0)),
+			      Rf_translateChar(STRING_ELT(CADDR(args), 0)),
 			      errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to add menu item (%s)"), errmsg);
@@ -309,18 +309,18 @@ SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
     if (CharacterMode != RGui)
 	errorcall(call, _("menu functions can only be used in the GUI"));
     smenu = CAR(args);
-    if(!isString(smenu) || length(smenu) != 1)
-	error(_("invalid '%s' argument"), "menuname");
+    if(!Rf_isString(smenu) || length(smenu) != 1)
+	Rf_error(_("invalid '%s' argument"), "menuname");
     sitem = CADR(args);
-    if (isNull(sitem)) { /* delete a menu */
-	res = windelmenu (translateChar(STRING_ELT(smenu, 0)), errmsg);
+    if (Rf_isNull(sitem)) { /* delete a menu */
+	res = windelmenu (Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0)
 	    errorcall(call, _("menu does not exist"));
     } else { /* delete an item */
-	if(!isString(sitem) || length(sitem) != 1)
-	    error(_("invalid '%s' argument"), "itemname");
-	res = windelmenuitem (translateChar(STRING_ELT(sitem, 0)),
-			      translateChar(STRING_ELT(smenu, 0)), errmsg);
+	if(!Rf_isString(sitem) || length(sitem) != 1)
+	    Rf_error(_("invalid '%s' argument"), "itemname");
+	res = windelmenuitem (Rf_translateChar(STRING_ELT(sitem, 0)),
+			      Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to delete menu item (%s)"), errmsg);
 	    errorcall(call, msgbuf);

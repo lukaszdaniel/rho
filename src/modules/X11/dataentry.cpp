@@ -1294,8 +1294,8 @@ static void handlechar(DEstruct DE, RHOCONST char *text)
     /* NA number? */
     if (get_col_type(DE, DE->ccol + DE->colmin - 1) == NUMERIC) {
 	/* input numeric for NA of buffer , suppress NA etc.*/
-	if(strcmp(buf, "NA") == 0 || strcmp(buf, "NaN") == 0 ||
-	   strcmp(buf, "Inf") == 0 || strcmp(buf, "-Inf") == 0) {
+	if(streql(buf, "NA") || streql(buf, "NaN") ||
+	   streql(buf, "Inf") || streql(buf, "-Inf")) {
 	    buf[0] = '\0';
 	    clength = 0;
 	    bufp = buf;
@@ -1862,7 +1862,7 @@ static const int x_resource_count = XtNumber(x_resources);
 static gx_device_X xdev;
 #endif
 
-/* NB: Keep this in sync with similar handler in devX11.c */
+/* NB: Keep this in sync with similar handler in devX11.cpp */
 static int R_X11Err(Display *dsp, XErrorEvent *event)
 {
     char buff[1000];

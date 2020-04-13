@@ -67,13 +67,13 @@ burg(int n, double*x, int pmax, double *coefs, double *var1, double *var2)
 
 SEXP Burg(SEXP x, SEXP order)
 {
-    x = PROTECT(coerceVector(x, REALSXP));
-    int n = LENGTH(x), pmax = asInteger(order);
-    SEXP coefs = PROTECT(allocVector(REALSXP, pmax * pmax)),
-	var1 = PROTECT(allocVector(REALSXP, pmax + 1)),
-	var2 = PROTECT(allocVector(REALSXP, pmax + 1));
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    int n = LENGTH(x), pmax = Rf_asInteger(order);
+    SEXP coefs = PROTECT(Rf_allocVector(REALSXP, pmax * pmax)),
+	var1 = PROTECT(Rf_allocVector(REALSXP, pmax + 1)),
+	var2 = PROTECT(Rf_allocVector(REALSXP, pmax + 1));
     burg(n, REAL(x), pmax, REAL(coefs), REAL(var1), REAL(var2));
-    SEXP ans = PROTECT(allocVector(VECSXP, 3));
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, 3));
     SET_VECTOR_ELT(ans, 0, coefs);
     SET_VECTOR_ELT(ans, 1, var1);
     SET_VECTOR_ELT(ans, 2, var2);

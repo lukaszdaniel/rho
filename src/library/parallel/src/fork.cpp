@@ -243,15 +243,15 @@ SEXP mc_fork(SEXP sEstranged)
     int pipefd[2]; /* write end, read end */
     int sipfd[2];
     pid_t pid;
-    int estranged = (asInteger(sEstranged) > 0);
-    SEXP res = allocVector(INTSXP, 3);
+    int estranged = (Rf_asInteger(sEstranged) > 0);
+    SEXP res = Rf_allocVector(INTSXP, 3);
     int *res_i = INTEGER(res);
 
     if (!estranged) {
-	if (pipe(pipefd)) error(_("unable to create a pipe"));
+	if (pipe(pipefd)) Rf_error(_("unable to create a pipe"));
 	if (pipe(sipfd)) {
 	    close(pipefd[0]); close(pipefd[1]);
-	    error(_("unable to create a pipe"));
+	    Rf_error(_("unable to create a pipe"));
 	}
 #ifdef MC_DEBUG
 	Dprintf("parent[%d] created pipes: comm (%d->%d), sir (%d->%d)\n",
@@ -269,7 +269,7 @@ SEXP mc_fork(SEXP sEstranged)
 	    close(pipefd[0]); close(pipefd[1]);
 	    close(sipfd[0]); close(sipfd[1]);
 	}
-	error(_("unable to fork, possible reason: %s"), strerror(errno));
+	Rf_error(_("unable to fork, possible reason: %s"), strerror(errno));
     }
     res_i[0] = (int) pid;
     if (pid == 0) { /* child */
@@ -315,7 +315,7 @@ SEXP mc_fork(SEXP sEstranged)
 #endif
 	/* register the new child and its pipes */
 	ci = (child_info_t*) malloc(sizeof(child_info_t));
-	if (!ci) error(_("memory allocation error"));
+	if (!ci) Rf_error(_("memory allocation error"));
 	rm_closed(); /* clean up the list by removing closed entries */
 	ci->pid = pid;
 	ci->pfd = pipefd[0];
@@ -329,7 +329,7 @@ SEXP mc_fork(SEXP sEstranged)
 
 SEXP mc_close_stdout(SEXP toNULL) 
 {
-    if (asLogical(toNULL) == 1) {
+    if (Rf_asLogical(toNULL) == 1) {
 	int fd = open("/dev/null", O_WRONLY);
 	if (fd != -1) {
 	    dup2(fd, STDOUT_FILENO);
@@ -342,7 +342,7 @@ SEXP mc_close_stdout(SEXP toNULL)
 
 SEXP mc_close_stderr(SEXP toNULL) 
 {
-    if (asLogical(toNULL) == 1) {
+    if (Rf_asLogical(toNULL) == 1) {
 	int fd = open("/dev/null", O_WRONLY);
 	if (fd != -1) {
 	    dup2(fd, STDERR_FILENO);
@@ -356,11 +356,11 @@ SEXP mc_close_stderr(SEXP toNULL)
 SEXP mc_close_fds(SEXP sFDS) 
 {
     int *fd, fds, i = 0;
-    if (TYPEOF(sFDS) != INTSXP) error("descriptors must be integers");
+    if (TYPEOF(sFDS) != INTSXP) Rf_error("descriptors must be integers");
     fds = LENGTH(sFDS);
     fd = INTEGER(sFDS);
     while (i < fds) close(fd[i++]);
-    return ScalarLogical(1);
+    return Rf_ScalarLogical(1);
 }
 
 /* This format is read by read_child_ci (only).
@@ -370,11 +370,11 @@ SEXP mc_close_fds(SEXP sFDS)
 SEXP mc_send_master(SEXP what)
 {
     if (is_master)
-	error(_("only children can send data to the master process"));
+	Rf_error(_("only children can send data to the master process"));
     if (master_fd == -1) 
-	error(_("there is no pipe to the master process"));
+	Rf_error(_("there is no pipe to the master process"));
     if (TYPEOF(what) != RAWSXP) 
-	error(_("content to send must be RAW, use serialize() if needed"));
+	Rf_error(_("content to send must be RAW, use serialize() if needed"));
     R_xlen_t len = XLENGTH(what);
     unsigned char *b = RAW(what);
 #ifdef MC_DEBUG
@@ -383,7 +383,7 @@ SEXP mc_send_master(SEXP what)
     if (write(master_fd, &len, sizeof(len)) != sizeof(len)) {
 	close(master_fd);
 	master_fd = -1;
-	error(_("write error, closing pipe to the master"));
+	Rf_error(_("write error, closing pipe to the master"));
     }
     ssize_t n;
     for (R_xlen_t i = 0; i < len; i += n) {
@@ -391,33 +391,33 @@ SEXP mc_send_master(SEXP what)
 	if (n < 1) {
 	    close(master_fd);
 	    master_fd = -1;
-	    error(_("write error, closing pipe to the master"));
+	    Rf_error(_("write error, closing pipe to the master"));
 	}
     }
-    return ScalarLogical(1);
+    return Rf_ScalarLogical(1);
 }
 
 SEXP mc_send_child_stdin(SEXP sPid, SEXP what) 
 {
-    int pid = asInteger(sPid);
+    int pid = Rf_asInteger(sPid);
     if (!is_master) 
-	error(_("only the master process can send data to a child process"));
-    if (TYPEOF(what) != RAWSXP) error("what must be a raw vector");
+	Rf_error(_("only the master process can send data to a child process"));
+    if (TYPEOF(what) != RAWSXP) Rf_error("what must be a raw vector");
     child_info_t *ci = children;
     while (ci) {
 	if (ci->pid == pid) break;
 	ci = ci -> next;
     }
-    if (!ci) error(_("child %d does not exist"), pid);
+    if (!ci) Rf_error(_("child %d does not exist"), pid);
     R_xlen_t  len = XLENGTH(what);
     unsigned char *b = RAW(what);
      unsigned int fd = ci -> sifd;
     for (R_xlen_t i = 0; i < len;) {
 	ssize_t n = write(fd, b + i, len - i);
-	if (n < 1) error(_("write error"));
+	if (n < 1) Rf_error(_("write error"));
 	i += n;
     }
-    return ScalarLogical(1);
+    return Rf_ScalarLogical(1);
 }
 
 SEXP mc_select_children(SEXP sTimeout, SEXP sWhich) 
@@ -429,8 +429,8 @@ SEXP mc_select_children(SEXP sTimeout, SEXP sWhich)
     child_info_t *ci = children;
     fd_set fs;
     struct timeval tv = { 0, 0 }, *tvp = &tv;
-    if (isReal(sTimeout) && LENGTH(sTimeout) == 1) {
-	double tov = asReal(sTimeout);
+    if (Rf_isReal(sTimeout) && LENGTH(sTimeout) == 1) {
+	double tov = Rf_asReal(sTimeout);
 	if (tov < 0.0) tvp = 0; /* Note: I'm not sure we really should allow this .. */
 	else {
 	    tv.tv_sec = (int) tov;
@@ -480,12 +480,12 @@ SEXP mc_select_children(SEXP sTimeout, SEXP sWhich)
 	   go back to select, but potentially this could lead to a much longer
 	   total timeout */
 	if (errno == EINTR)
-	    return ScalarLogical(TRUE);
+	    return Rf_ScalarLogical(TRUE);
 
-	warning(_("error '%s' in select"), strerror(errno));
-	return ScalarLogical(FALSE); /* FALSE on select error */
+	Rf_warning(_("error '%s' in select"), strerror(errno));
+	return Rf_ScalarLogical(FALSE); /* FALSE on select error */
     }
-    if (sr < 1) return ScalarLogical(1); /* TRUE on timeout */
+    if (sr < 1) return Rf_ScalarLogical(1); /* TRUE on timeout */
     ci = children;
     maxfd = 0;
     while (ci && ci->pid) { /* pass 1 - count the FDs (in theory not
@@ -498,7 +498,7 @@ SEXP mc_select_children(SEXP sTimeout, SEXP sWhich)
 #ifdef MC_DEBUG
     Dprintf(" - read select %d children: ", maxfd);
 #endif
-    res = allocVector(INTSXP, maxfd);
+    res = Rf_allocVector(INTSXP, maxfd);
     res_i = INTEGER(res);
     while (ci && ci->pid) { /* pass 2 - fill the array */
 	if (ci->pfd > 0 && FD_ISSET(ci->pfd, &fs)) (res_i++)[0] = ci->pid;
@@ -526,9 +526,9 @@ static SEXP read_child_ci(child_info_t *ci)
 	close(fd);
 	ci->pfd = -1;
 	rm_child_(pid);
-	return ScalarInteger(pid);
+	return Rf_ScalarInteger(pid);
     } else {
-	SEXP rv = allocVector(RAWSXP, len);
+	SEXP rv = Rf_allocVector(RAWSXP, len);
 	unsigned char *rvb = RAW(rv);
 	R_xlen_t i = 0;
 	while (i < len) {
@@ -541,16 +541,16 @@ static SEXP read_child_ci(child_info_t *ci)
 		close(fd);
 		ci->pfd = -1;
 		rm_child_(pid);
-		return ScalarInteger(pid);
+		return Rf_ScalarInteger(pid);
 	    }
 	    i += n;
 	}
 	PROTECT(rv);
 	{
-	    SEXP pa = allocVector(INTSXP, 1);
+	    SEXP pa = Rf_allocVector(INTSXP, 1);
 	    PROTECT(pa);
 	    INTEGER(pa)[0] = ci->pid;
-	    setAttrib(rv, install("pid"), pa);
+	    Rf_setAttrib(rv, Rf_install("pid"), pa);
 	    UNPROTECT(1);
 	}
 	UNPROTECT(1);
@@ -560,7 +560,7 @@ static SEXP read_child_ci(child_info_t *ci)
 
 SEXP mc_read_child(SEXP sPid) 
 {
-    int pid = asInteger(sPid);
+    int pid = Rf_asInteger(sPid);
     child_info_t *ci = children;
     while (ci) {
 	if (ci->pid == pid) break;
@@ -579,8 +579,8 @@ SEXP mc_read_children(SEXP sTimeout)
     child_info_t *ci = children;
     fd_set fs;
     struct timeval tv = { 0, 0 }, *tvp = &tv;
-    if (isReal(sTimeout) && LENGTH(sTimeout) == 1) {
-	double tov = asReal(sTimeout);
+    if (Rf_isReal(sTimeout) && LENGTH(sTimeout) == 1) {
+	double tov = Rf_asReal(sTimeout);
 	if (tov < 0.0) tvp = 0; /* Note: I'm not sure we really should allow this .. */
 	else {
 	    tv.tv_sec = (int) tov;
@@ -606,10 +606,10 @@ SEXP mc_read_children(SEXP sTimeout)
     Dprintf("sr = %d\n", sr);
 #endif
     if (sr < 0) {
-	warning(_("error '%s' in select"), strerror(errno));
-	return ScalarLogical(0); /* FALSE on select error */
+	Rf_warning(_("error '%s' in select"), strerror(errno));
+	return Rf_ScalarLogical(0); /* FALSE on select error */
     }
-    if (sr < 1) return ScalarLogical(1); /* TRUE on timeout */
+    if (sr < 1) return Rf_ScalarLogical(1); /* TRUE on timeout */
     ci = children;
     while (ci && ci->pid) {
 	if (ci->pfd > 0 && FD_ISSET(ci->pfd, &fs)) break;
@@ -620,14 +620,14 @@ SEXP mc_read_children(SEXP sTimeout)
 #endif
     /* this should never occur really - select signalled a read handle
        but none of the handles is set - let's treat it as a timeout */
-    if (!ci) return ScalarLogical(1);
+    if (!ci) return Rf_ScalarLogical(1);
     else return read_child_ci(ci);
 }
 
 SEXP mc_rm_child(SEXP sPid) 
 {
-    int pid = asInteger(sPid);
-    return ScalarLogical(rm_child_(pid));
+    int pid = Rf_asInteger(sPid);
+    return Rf_ScalarLogical(rm_child_(pid));
 }
 
 SEXP mc_children() 
@@ -639,7 +639,7 @@ SEXP mc_children()
 	count++;
 	ci = ci->next;
     }
-    SEXP res = allocVector(INTSXP, count);
+    SEXP res = Rf_allocVector(INTSXP, count);
     if (count) {
 	int *pids = INTEGER(res);
 	ci = children;
@@ -653,7 +653,7 @@ SEXP mc_children()
 	if (pids - INTEGER(res) < LENGTH(res)) {
 	    R_len_t len = (R_len_t) (pids - INTEGER(res));
 	    PROTECT(res);
-	    res = lengthgets(res, len);
+	    res = Rf_lengthgets(res, len);
 	    UNPROTECT(1);
 	}
     }
@@ -662,7 +662,7 @@ SEXP mc_children()
 
 SEXP mc_fds(SEXP sFdi) 
 {
-    int fdi = asInteger(sFdi);
+    int fdi = Rf_asInteger(sFdi);
     unsigned int count = 0;
     SEXP res;
     child_info_t *ci = children;
@@ -670,7 +670,7 @@ SEXP mc_fds(SEXP sFdi)
 	count++;
 	ci = ci->next;
     }
-    res = allocVector(INTSXP, count);
+    res = Rf_allocVector(INTSXP, count);
     if (count) {
 	int *fds = INTEGER(res);
 	ci = children;
@@ -685,30 +685,30 @@ SEXP mc_fds(SEXP sFdi)
 
 SEXP mc_master_fd() 
 {
-    return ScalarInteger(master_fd);
+    return Rf_ScalarInteger(master_fd);
 }
 
 SEXP mc_is_child() 
 {
-    return ScalarLogical(is_master ? FALSE : TRUE);
+    return Rf_ScalarLogical(is_master ? FALSE : TRUE);
 }
 
 SEXP mc_kill(SEXP sPid, SEXP sSig) 
 {
-    int pid = asInteger(sPid);
-    int sig = asInteger(sSig);
+    int pid = Rf_asInteger(sPid);
+    int sig = Rf_asInteger(sSig);
     if (kill((pid_t) pid, sig))
-	error(_("'mckill' failed"));
-    return ScalarLogical(1);
+	Rf_error(_("'mckill' failed"));
+    return Rf_ScalarLogical(1);
 }
 
 SEXP NORET mc_exit(SEXP sRes)
 {
-    int res = asInteger(sRes);
+    int res = Rf_asInteger(sRes);
 #ifdef MC_DEBUG
     Dprintf("child %d: 'mcexit' called\n", getpid());
 #endif
-    if (is_master) error(_("'mcexit' can only be used in a child process"));
+    if (is_master) Rf_error(_("'mcexit' can only be used in a child process"));
     if (master_fd != -1) { /* send 0 to signify that we're leaving */
 	size_t len = 0;
 	/* assign result for Fedora security settings */
@@ -716,7 +716,7 @@ SEXP NORET mc_exit(SEXP sRes)
 	/* make sure the pipe is closed before we enter any waiting */
 	close(master_fd);
 	master_fd = -1;
-	if (n < 0) error(_("write error, closing pipe to the master"));
+	if (n < 0) Rf_error(_("write error, closing pipe to the master"));
     }
     if (!child_can_exit) {
 #ifdef MC_DEBUG
@@ -729,15 +729,15 @@ SEXP NORET mc_exit(SEXP sRes)
     Dprintf("child %d: exiting\n", getpid());
 #endif
     _exit(res);
-    error(_("'mcexit' failed"));
+    Rf_error(_("'mcexit' failed"));
 }
 
 /* NA = query, TRUE/FALSE = set R_Interactive accordingly */
 SEXP mc_interactive(SEXP sWhat) {
-    int what = asInteger(sWhat);
+    int what = Rf_asInteger(sWhat);
     if (what != NA_INTEGER)
 	R_Interactive = Rboolean(what);
-    return ScalarLogical(R_Interactive);
+    return Rf_ScalarLogical(R_Interactive);
 }
 
 /*--  mcaffinity --
@@ -758,16 +758,16 @@ SEXP mc_interactive(SEXP sWhat) {
 /* req is one-based, cpu_set is zero-based */
 SEXP mc_affinity(SEXP req) {
     if (req != R_NilValue && TYPEOF(req) != INTSXP && TYPEOF(req) != REALSXP)
-	error(_("invalid CPU affinity specification"));
+	Rf_error(_("invalid CPU affinity specification"));
     if (TYPEOF(req) == REALSXP)
-	req = coerceVector(req, INTSXP);
+	req = Rf_coerceVector(req, INTSXP);
     if (TYPEOF(req) == INTSXP) {
 	int max_cpu = 0, i, n = LENGTH(req), *v = INTEGER(req);
 	for (i = 0; i < n; i++) {
 	    if (v[i] > max_cpu)
 		max_cpu = v[i];
 	    if (v[i] < 1)
-		error(_("invalid CPU affinity specification"));
+		Rf_error(_("invalid CPU affinity specification"));
 	}
 	/* These are both one-based */
 	if (max_cpu <= CPU_SETSIZE) { /* can use static set */
@@ -778,7 +778,7 @@ SEXP mc_affinity(SEXP req) {
 	    sched_setaffinity(0, sizeof(cpu_set_t), &cs);
 	} else {
 #ifndef CPU_ALLOC
-	    error(_("requested CPU set is too large for this system"));
+	    Rf_error(_("requested CPU set is too large for this system"));
 #else
 	    size_t css = CPU_ALLOC_SIZE(max_cpu);
 	    cpu_set_t *cs = CPU_ALLOC(max_cpu);
@@ -801,10 +801,10 @@ SEXP mc_affinity(SEXP req) {
 	CPU_ZERO(&cs);
 	if (sched_getaffinity(0, sizeof(cs), &cs)) {
 	    if (req == R_NilValue)
-		error(_("retrieving CPU affinity set failed"));
+		Rf_error(_("retrieving CPU affinity set failed"));
 	    return R_NilValue;
 	} else {
-	    SEXP res = allocVector(INTSXP, CPU_COUNT(&cs));
+	    SEXP res = Rf_allocVector(INTSXP, CPU_COUNT(&cs));
 	    int i, *v = INTEGER(res);
 	    for (i = 0; i < CPU_SETSIZE; i++)
 		if (CPU_ISSET(i, &cs))

@@ -30,9 +30,9 @@ SEXP startHTTPD(SEXP sIP, SEXP sPort)
 {
     const char *ip = 0;
     if (sIP != R_NilValue && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
-	error(_("invalid bind address specification"));
-    if (sIP != R_NilValue) ip = CHAR(STRING_ELT(sIP, 0));
-    return ScalarInteger(extR_HTTPDCreate(ip, asInteger(sPort)));
+	Rf_error(_("invalid bind address specification"));
+    if (sIP != R_NilValue) ip = R_CHAR(STRING_ELT(sIP, 0));
+    return Rf_ScalarInteger(extR_HTTPDCreate(ip, Rf_asInteger(sPort)));
 }
 
 SEXP stopHTTPD(void)

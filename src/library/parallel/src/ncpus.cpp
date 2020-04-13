@@ -52,9 +52,9 @@ static DWORD CountSetBits(ULONG_PTR bitMask)
 
 SEXP ncpus(SEXP virtual)
 {
-    // int virt = asLogical(virtual);
+    // int virt = Rf_asLogical(virtual);
 
-    SEXP ans = allocVector(INTSXP, 2);
+    SEXP ans = Rf_allocVector(INTSXP, 2);
     PROTECT(ans);
     int *ians = INTEGER(ans);
     for(int i = 1; i < 2; i++) ians[i] = NA_INTEGER;
@@ -73,7 +73,7 @@ SEXP ncpus(SEXP virtual)
 	GetProcAddress(GetModuleHandle(TEXT("kernel32")),
 		       "GetLogicalProcessorInformation");
     if (NULL == glpi) {
-	warning("GetLogicalProcessorInformation is not supported on this OS.");
+	Rf_warning("GetLogicalProcessorInformation is not supported on this OS.");
         return ans;
     }
 
@@ -83,8 +83,8 @@ SEXP ncpus(SEXP virtual)
             if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
                 if (buffer) free(buffer);
                 buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION) malloc(returnLength);
-                if (!buffer) error("allocation failure");
-            } else error("in reading processor information, probable cause: %d", GetLastError());
+                if (!buffer) Rf_error("allocation failure");
+            } else Rf_error("in reading processor information, probable cause: %d", GetLastError());
         } else done = TRUE;
     }
 

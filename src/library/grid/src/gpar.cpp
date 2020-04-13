@@ -45,7 +45,7 @@ double gpLineHeight(SEXP gp, int i) {
 int gpCol(SEXP gp, int i) {
     SEXP col = VECTOR_ELT(gp, GP_COL);
     int result;
-    if (isNull(col))
+    if (Rf_isNull(col))
 	result = R_TRANWHITE;
     else
 	result = RGBpar3(col, i % LENGTH(col), R_TRANWHITE);
@@ -59,7 +59,7 @@ SEXP gpFillSXP(SEXP gp) {
 int gpFill(SEXP gp, int i) {
     SEXP fill = gpFillSXP(gp);
     int result;
-    if (isNull(fill))
+    if (Rf_isNull(fill))
 	result = R_TRANWHITE;
     else
 	result = RGBpar3(fill, i % LENGTH(fill), R_TRANWHITE);
@@ -117,7 +117,7 @@ SEXP gpFontFamilySXP(SEXP gp) {
 
 const char* gpFontFamily(SEXP gp, int i) {
     SEXP fontfamily = gpFontFamilySXP(gp);
-    return CHAR(STRING_ELT(fontfamily, i % LENGTH(fontfamily)));
+    return R_CHAR(STRING_ELT(fontfamily, i % LENGTH(fontfamily)));
 }
 
 SEXP gpAlphaSXP(SEXP gp) {
@@ -272,74 +272,74 @@ void initGPar(pGEDevDesc dd)
     SEXP gpfill, gpcol, gpgamma, gplty, gplwd, gpcex, gpfs, gplh, gpfont;
     SEXP gpfontfamily, gpalpha, gplineend, gplinejoin, gplinemitre, gplex;
     SEXP gsd = (SEXP) dd->gesd[gridRegisterIndex]->systemSpecific;
-    PROTECT(gpar = allocVector(VECSXP, 15));
-    PROTECT(gparnames = allocVector(STRSXP, 15));
-    SET_STRING_ELT(gparnames, GP_FILL, mkChar("fill"));
-    SET_STRING_ELT(gparnames, GP_COL, mkChar("col"));
-    SET_STRING_ELT(gparnames, GP_GAMMA, mkChar("gamma"));
-    SET_STRING_ELT(gparnames, GP_LTY, mkChar("lty"));
-    SET_STRING_ELT(gparnames, GP_LWD, mkChar("lwd"));
-    SET_STRING_ELT(gparnames, GP_CEX, mkChar("cex"));
-    SET_STRING_ELT(gparnames, GP_FONTSIZE, mkChar("fontsize"));
-    SET_STRING_ELT(gparnames, GP_LINEHEIGHT, mkChar("lineheight"));
-    SET_STRING_ELT(gparnames, GP_FONT, mkChar("font"));
-    SET_STRING_ELT(gparnames, GP_FONTFAMILY, mkChar("fontfamily"));
-    SET_STRING_ELT(gparnames, GP_ALPHA, mkChar("alpha"));
-    SET_STRING_ELT(gparnames, GP_LINEEND, mkChar("lineend"));
-    SET_STRING_ELT(gparnames, GP_LINEJOIN, mkChar("linejoin"));
-    SET_STRING_ELT(gparnames, GP_LINEMITRE, mkChar("linemitre"));
-    SET_STRING_ELT(gparnames, GP_LEX, mkChar("lex"));
-    setAttrib(gpar, R_NamesSymbol, gparnames);
-    PROTECT(gpfill = allocVector(STRSXP, 1));
-    SET_STRING_ELT(gpfill, 0, mkChar(col2name(dev->startfill)));
+    PROTECT(gpar = Rf_allocVector(VECSXP, 15));
+    PROTECT(gparnames = Rf_allocVector(STRSXP, 15));
+    SET_STRING_ELT(gparnames, GP_FILL, Rf_mkChar("fill"));
+    SET_STRING_ELT(gparnames, GP_COL, Rf_mkChar("col"));
+    SET_STRING_ELT(gparnames, GP_GAMMA, Rf_mkChar("gamma"));
+    SET_STRING_ELT(gparnames, GP_LTY, Rf_mkChar("lty"));
+    SET_STRING_ELT(gparnames, GP_LWD, Rf_mkChar("lwd"));
+    SET_STRING_ELT(gparnames, GP_CEX, Rf_mkChar("cex"));
+    SET_STRING_ELT(gparnames, GP_FONTSIZE, Rf_mkChar("fontsize"));
+    SET_STRING_ELT(gparnames, GP_LINEHEIGHT, Rf_mkChar("lineheight"));
+    SET_STRING_ELT(gparnames, GP_FONT, Rf_mkChar("font"));
+    SET_STRING_ELT(gparnames, GP_FONTFAMILY, Rf_mkChar("fontfamily"));
+    SET_STRING_ELT(gparnames, GP_ALPHA, Rf_mkChar("alpha"));
+    SET_STRING_ELT(gparnames, GP_LINEEND, Rf_mkChar("lineend"));
+    SET_STRING_ELT(gparnames, GP_LINEJOIN, Rf_mkChar("linejoin"));
+    SET_STRING_ELT(gparnames, GP_LINEMITRE, Rf_mkChar("linemitre"));
+    SET_STRING_ELT(gparnames, GP_LEX, Rf_mkChar("lex"));
+    Rf_setAttrib(gpar, R_NamesSymbol, gparnames);
+    PROTECT(gpfill = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(gpfill, 0, Rf_mkChar(col2name(dev->startfill)));
     SET_VECTOR_ELT(gpar, GP_FILL, gpfill);
-    PROTECT(gpcol = allocVector(STRSXP, 1));
-    SET_STRING_ELT(gpcol, 0, mkChar(col2name(dev->startcol)));
+    PROTECT(gpcol = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(gpcol, 0, Rf_mkChar(col2name(dev->startcol)));
     SET_VECTOR_ELT(gpar, GP_COL, gpcol);
-    PROTECT(gpgamma = allocVector(REALSXP, 1));
+    PROTECT(gpgamma = Rf_allocVector(REALSXP, 1));
     REAL(gpgamma)[0] = dev->startgamma;
     SET_VECTOR_ELT(gpar, GP_GAMMA, gpgamma);
     PROTECT(gplty = GE_LTYget(dev->startlty));
     SET_VECTOR_ELT(gpar, GP_LTY, gplty);
-    PROTECT(gplwd = allocVector(REALSXP, 1));
+    PROTECT(gplwd = Rf_allocVector(REALSXP, 1));
     REAL(gplwd)[0] = 1;
     SET_VECTOR_ELT(gpar, GP_LWD, gplwd);
-    PROTECT(gpcex = allocVector(REALSXP, 1));
+    PROTECT(gpcex = Rf_allocVector(REALSXP, 1));
     REAL(gpcex)[0] = 1;
     SET_VECTOR_ELT(gpar, GP_CEX, gpcex);
-    PROTECT(gpfs = allocVector(REALSXP, 1));
+    PROTECT(gpfs = Rf_allocVector(REALSXP, 1));
     REAL(gpfs)[0] = dev->startps;
     SET_VECTOR_ELT(gpar, GP_FONTSIZE, gpfs);
-    PROTECT(gplh = allocVector(REALSXP, 1));
+    PROTECT(gplh = Rf_allocVector(REALSXP, 1));
     REAL(gplh)[0] = 1.2;
     SET_VECTOR_ELT(gpar, GP_LINEHEIGHT, gplh);
-    PROTECT(gpfont = allocVector(INTSXP, 1));
+    PROTECT(gpfont = Rf_allocVector(INTSXP, 1));
     INTEGER(gpfont)[0] = dev->startfont;
     SET_VECTOR_ELT(gpar, GP_FONT, gpfont);
-    PROTECT(gpfontfamily = allocVector(STRSXP, 1));
+    PROTECT(gpfontfamily = Rf_allocVector(STRSXP, 1));
     /* 
      * A font family of "" means that the default font
      * set up by the device will be used.
      */
-    SET_STRING_ELT(gpfontfamily, 0, mkChar(""));
+    SET_STRING_ELT(gpfontfamily, 0, Rf_mkChar(""));
     SET_VECTOR_ELT(gpar, GP_FONTFAMILY, gpfontfamily);
-    PROTECT(gpalpha = allocVector(REALSXP, 1));
+    PROTECT(gpalpha = Rf_allocVector(REALSXP, 1));
     REAL(gpalpha)[0] = 1;
     SET_VECTOR_ELT(gpar, GP_ALPHA, gpalpha);
-    PROTECT(gplineend = allocVector(STRSXP, 1));
-    SET_STRING_ELT(gplineend, 0, mkChar("round"));
+    PROTECT(gplineend = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(gplineend, 0, Rf_mkChar("round"));
     SET_VECTOR_ELT(gpar, GP_LINEEND, gplineend);
-    PROTECT(gplinejoin = allocVector(STRSXP, 1));
-    SET_STRING_ELT(gplinejoin, 0, mkChar("round"));
+    PROTECT(gplinejoin = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(gplinejoin, 0, Rf_mkChar("round"));
     SET_VECTOR_ELT(gpar, GP_LINEJOIN, gplinejoin);
-    PROTECT(gplinemitre = allocVector(REALSXP, 1));
+    PROTECT(gplinemitre = Rf_allocVector(REALSXP, 1));
     REAL(gplinemitre)[0] = 10;
     SET_VECTOR_ELT(gpar, GP_LINEMITRE, gplinemitre);
-    PROTECT(gplex = allocVector(REALSXP, 1));
+    PROTECT(gplex = Rf_allocVector(REALSXP, 1));
     REAL(gplex)[0] = 1;
     SET_VECTOR_ELT(gpar, GP_LEX, gplex);
-    PROTECT(class_ = allocVector(STRSXP, 1));
-    SET_STRING_ELT(class_, 0, mkChar("gpar"));
+    PROTECT(class_ = Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(class_, 0, Rf_mkChar("gpar"));
     classgets(gpar, class_);
     SET_VECTOR_ELT(gsd, GSS_GPAR, gpar);
     UNPROTECT(18);

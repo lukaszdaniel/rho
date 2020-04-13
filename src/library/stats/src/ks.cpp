@@ -239,17 +239,17 @@ m_power(double *A, int eA, double *V, int *eV, int m, int n)
 /* Two-sided two-sample */
 SEXP pSmirnov2x(SEXP statistic, SEXP snx, SEXP sny)
 {
-    int nx = asInteger(snx), ny = asInteger(sny);
-    double st = asReal(statistic);
-    return ScalarReal(psmirnov2x(&st, nx, ny));
+    int nx = Rf_asInteger(snx), ny = Rf_asInteger(sny);
+    double st = Rf_asReal(statistic);
+    return Rf_ScalarReal(psmirnov2x(&st, nx, ny));
 }
 
 /* Two-sample two-sided asymptotic distribution */
 SEXP pKS2(SEXP statistic, SEXP stol)
 {
     int n = LENGTH(statistic);
-    double tol = asReal(stol);
-    SEXP ans = duplicate(statistic);
+    double tol = Rf_asReal(stol);
+    SEXP ans = Rf_duplicate(statistic);
     pkstwo(n, REAL(ans), tol);
     return ans;
 }
@@ -258,8 +258,8 @@ SEXP pKS2(SEXP statistic, SEXP stol)
 /* The two-sided one-sample 'exact' distribution */
 SEXP pKolmogorov2x(SEXP statistic, SEXP sn)
 {
-    int n = asInteger(sn);
-    double st = asReal(statistic), p;
+    int n = Rf_asInteger(sn);
+    double st = Rf_asReal(statistic), p;
     p = K(n, st);
-    return ScalarReal(p);
+    return Rf_ScalarReal(p);
 }

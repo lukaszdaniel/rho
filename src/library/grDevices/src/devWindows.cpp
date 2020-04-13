@@ -340,7 +340,7 @@ static void PrivateCopyDevice(pDevDesc dd, pDevDesc ndd, const char *name)
     int saveDev = curDevice();
     gadesc *xd = (gadesc *) dd->deviceSpecific;
     gsetcursor(xd->gawin, WatchCursor);
-    gsetVar(R_DeviceSymbol, mkString(name), R_BaseEnv);
+    gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
     ndd->displayListOn = FALSE;
     gdd = GEcreateDevDesc(ndd);
     GEaddDevice(gdd);
@@ -381,13 +381,13 @@ static void SaveAsWin(pDevDesc dd, const char *display,
 
 static void init_PS_PDF(void)
 {
-    SEXP call, initS, grNS=R_FindNamespace(mkString("grDevices"));
+    SEXP call, initS, grNS=R_FindNamespace(Rf_mkString("grDevices"));
 
-    initS = findVarInFrame3(grNS, install("initPSandPDFfonts"), TRUE);
+    initS = Rf_findVarInFrame3(grNS, Rf_install("initPSandPDFfonts"), TRUE);
     if(initS == R_UnboundValue)
-	error("missing initPSandPDFfonts() in grDevices namespace: this should not happen");
-    PROTECT(call = lang1(initS));
-    eval(call, R_GlobalEnv);
+	Rf_error("missing initPSandPDFfonts() in grDevices namespace: this should not happen");
+    PROTECT(call = Rf_lang1(initS));
+    Rf_eval(call, R_GlobalEnv);
     UNPROTECT(1);
 }
 
@@ -411,7 +411,7 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
 	return;
     }
 
-    if(strchr(fn, '%')) error(_("'%%' is not allowed in file name"));
+    if(strchr(fn, '%')) Rf_error(_("'%%' is not allowed in file name"));
 
     /* need to initialize PS/PDF font database:
        also sets .PostScript.Options */
@@ -423,27 +423,27 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
     strncpy(bg, "transparent", 256);
     strncpy(fg, "black", 256);
     /* and then try to get it from .PostScript.Options */
-    s = findVar(install(".PostScript.Options"), xd->psenv);
+    s = Rf_findVar(Rf_install(".PostScript.Options"), xd->psenv);
     if ((s != R_UnboundValue) && (s != R_NilValue)) {
-	SEXP names = getAttrib(s, R_NamesSymbol);
+	SEXP names = Rf_getAttrib(s, R_NamesSymbol);
 	int i, done;
 	for (i = 0, done = 0; (done<  4) && (i < Rf_length(s)) ; i++) {
-	    if(streql("family", CHAR(STRING_ELT(names, i)))) {
-		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("family", R_CHAR(STRING_ELT(names, i)))) {
+		strncpy(family, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
-	    if(streql("paper", CHAR(STRING_ELT(names, i)))) {
-		strncpy(paper, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("paper", R_CHAR(STRING_ELT(names, i)))) {
+		strncpy(paper, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
-		if(strcmp("paper", "default") == 0)
+		if(streql("paper", "default"))
 		    strncpy(paper, "special", 255);
 	    }
-	    if(streql("bg", CHAR(STRING_ELT(names, i)))) {
-		strncpy(bg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("bg", R_CHAR(STRING_ELT(names, i)))) {
+		strncpy(bg, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
-	    if(streql("fg", CHAR(STRING_ELT(names, i)))) {
-		strncpy(fg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("fg", R_CHAR(STRING_ELT(names, i)))) {
+		strncpy(fg, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
 		done++;
 	    }
 	}
@@ -482,26 +482,26 @@ static void SaveAsPDF(pDevDesc dd, const char *fn)
 	return;
     }
 
-    if(strchr(fn, '%')) error(_("'%%' is not allowed in file name"));
+    if(strchr(fn, '%')) Rf_error(_("'%%' is not allowed in file name"));
 
     /* Set default values... */
     init_PS_PDF();
-    s = findVar(install(".PDF.Options"), xd->psenv);
+    s = Rf_findVar(Rf_install(".PDF.Options"), xd->psenv);
     strncpy(family, "Helvetica", 256);
     strcpy(encoding, "ISOLatin1.enc");
     strncpy(bg, "transparent", 256);
     strncpy(fg, "black", 256);
     /* and then try to get it from .PDF.Options */
     if ((s != R_UnboundValue) && (s != R_NilValue)) {
-	SEXP names = getAttrib(s, R_NamesSymbol);
+	SEXP names = Rf_getAttrib(s, R_NamesSymbol);
 	for (int i = 0; i < Rf_length(s) ; i++) {
-	    if(streql("family", CHAR(STRING_ELT(names, i))))
-		strncpy(family, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)),255);
-	    if(streql("bg", CHAR(STRING_ELT(names, i))))
-		strncpy(bg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
-	    if(streql("fg", CHAR(STRING_ELT(names, i))))
-		strncpy(fg, CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
-	    if(streql("compress", CHAR(STRING_ELT(names, i))))
+	    if(streql("family", R_CHAR(STRING_ELT(names, i))))
+		strncpy(family, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)),255);
+	    if(streql("bg", R_CHAR(STRING_ELT(names, i))))
+		strncpy(bg, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("fg", R_CHAR(STRING_ELT(names, i))))
+		strncpy(fg, R_CHAR(STRING_ELT(VECTOR_ELT(s, i), 0)), 255);
+	    if(streql("compress", R_CHAR(STRING_ELT(names, i))))
 		useCompression = LOGICAL(VECTOR_ELT(s, i))[0] != 0;
 	}
     }
@@ -618,10 +618,10 @@ static void RFontInit()
 static char *SaveFontSpec(SEXP sxp, int offset)
 {
     char *s;
-    if(!isString(sxp) || Rf_length(sxp) <= offset)
-	error(_("invalid font specification"));
-    s = R_alloc(strlen(CHAR(STRING_ELT(sxp, offset)))+1, sizeof(char));
-    strcpy(s, CHAR(STRING_ELT(sxp, offset)));
+    if(!Rf_isString(sxp) || Rf_length(sxp) <= offset)
+	Rf_error(_("invalid font specification"));
+    s = R_alloc(strlen(R_CHAR(STRING_ELT(sxp, offset)))+1, sizeof(char));
+    strcpy(s, R_CHAR(STRING_ELT(sxp, offset)));
     return s;
 }
 
@@ -640,25 +640,25 @@ static char* translateFontFamily(const char* family) {
     char* result = NULL;
     PROTECT_INDEX xpi;
 
-    PROTECT(graphicsNS = R_FindNamespace(ScalarString(mkChar("grDevices"))));
-    PROTECT_WITH_INDEX(windowsenv = findVar(install(".WindowsEnv"),
+    PROTECT(graphicsNS = R_FindNamespace(Rf_ScalarString(Rf_mkChar("grDevices"))));
+    PROTECT_WITH_INDEX(windowsenv = Rf_findVar(Rf_install(".WindowsEnv"),
 					    graphicsNS), &xpi);
     if(TYPEOF(windowsenv) == PROMSXP)
-	REPROTECT(windowsenv = eval(windowsenv, graphicsNS), xpi);
-    PROTECT(fontdb = findVar(install(".Windows.Fonts"), windowsenv));
-    PROTECT(fontnames = getAttrib(fontdb, R_NamesSymbol));
+	REPROTECT(windowsenv = Rf_eval(windowsenv, graphicsNS), xpi);
+    PROTECT(fontdb = Rf_findVar(Rf_install(".Windows.Fonts"), windowsenv));
+    PROTECT(fontnames = Rf_getAttrib(fontdb, R_NamesSymbol));
     nfonts = LENGTH(fontdb);
     if (strlen(family) > 0) {
 	int found = 0;
 	for (i = 0; i < nfonts && !found; i++) {
-	    const char* fontFamily = CHAR(STRING_ELT(fontnames, i));
+	    const char* fontFamily = R_CHAR(STRING_ELT(fontnames, i));
 	    if (streql(family, fontFamily)) {
 		found = 1;
 		result = SaveFontSpec(VECTOR_ELT(fontdb, i), 0);
 	    }
 	}
 	if (!found)
-	    warning(_("font family not found in Windows font database"));
+	    Rf_warning(_("font family not found in Windows font database"));
     }
     UNPROTECT(4);
     return result;
@@ -722,12 +722,12 @@ static void SetFont(pGEcontext gc, double rot, gadesc *xd)
 				"Arial", fontstyle[face - 1],
 				size, rot, usePoints, quality);
 	    if (!xd->font)
-		error("unable to set or substitute a suitable font");
+		Rf_error("unable to set or substitute a suitable font");
 	    xd->fontface = face;
 	    xd->fontsize = size;
 	    xd->fontangle = rot;
 	    strcpy(xd->fontfamily, "Arial");
-	    warning("unable to set font: using Arial");
+	    Rf_warning("unable to set font: using Arial");
 	}
     }
 }
@@ -799,7 +799,7 @@ static void SetLineStyle(const pGEcontext gc, pDevDesc dd)
 	xd->lend = PS_ENDCAP_SQUARE;
 	break;
     default:
-	error(_("invalid line end"));
+	Rf_error(_("invalid line end"));
     }
     switch (gc->ljoin) {
     case GE_ROUND_JOIN:
@@ -812,7 +812,7 @@ static void SetLineStyle(const pGEcontext gc, pDevDesc dd)
 	xd->ljoin = PS_JOIN_BEVEL;
 	break;
     default:
-	error(_("invalid line join"));
+	Rf_error(_("invalid line join"));
     }
 
     xd->lmitre = gc->lmitre;
@@ -881,7 +881,7 @@ static void HelpMouseClick(window w, int button, point pt)
 	    return;
 	if (button & LeftButton) {
 	    int useBeep = xd->locator &&
-		asLogical(GetOption1(install("locatorBell")));
+		Rf_asLogical(GetOption1(Rf_install("locatorBell")));
 	    if(useBeep) gabeep();
 	    xd->clicked = 1;
 	    xd->px = pt.x;
@@ -1071,8 +1071,8 @@ static void grpopupact(control m)
 
 /* NB: this puts .SavedPlots in .GlobalEnv */
 #define GROWTH 4
-#define GETDL SEXP vDL=findVar(install(".SavedPlots"), R_GlobalEnv)
-#define SETDL defineVar(install(".SavedPlots"), vDL, R_GlobalEnv)
+#define GETDL SEXP vDL=Rf_findVar(Rf_install(".SavedPlots"), R_GlobalEnv)
+#define SETDL Rf_defineVar(Rf_install(".SavedPlots"), vDL, R_GlobalEnv)
 /* altered in 1.4.0, as incompatible format */
 #define PLOTHISTORYMAGIC 31416
 #define pMAGIC      (INTEGER(VECTOR_ELT(vDL, 0))[0])
@@ -1106,17 +1106,17 @@ static SEXP NewPlotHistory(int n)
     SEXP  vDL, class;
     int   i;
 
-    PROTECT(vDL = allocVector(VECSXP, 5));
+    PROTECT(vDL = Rf_allocVector(VECSXP, 5));
     for (i = 0; i < 4; i++)
-	PROTECT(SET_VECTOR_ELT(vDL, i, allocVector(INTSXP, 1)));
-    PROTECT(SET_pHISTORY (allocVector(VECSXP, n)));
+	PROTECT(SET_VECTOR_ELT(vDL, i, Rf_allocVector(INTSXP, 1)));
+    PROTECT(SET_pHISTORY (Rf_allocVector(VECSXP, n)));
     pMAGIC = PLOTHISTORYMAGIC;
     pNUMPLOTS = 0;
     pMAXPLOTS = n;
     pCURRENTPOS = -1;
     for (i = 0; i < n; i++)
 	SET_VECTOR_ELT(pHISTORY, i, R_NilValue);
-    PROTECT(class = mkString("SavedPlots"));
+    PROTECT(class = Rf_mkString("SavedPlots"));
     classgets(vDL, class);
     SETDL;
     UNPROTECT(7);
@@ -1163,7 +1163,7 @@ static void AddtoPlotHistory(SEXP snapshot, int replace)
     else
 	where = pNUMPLOTS;
 
-    PROTECT(class = mkString("recordedplot"));
+    PROTECT(class = Rf_mkString("recordedplot"));
     classgets(snapshot, class);
     SET_VECTOR_ELT(pHISTORY, where, snapshot);
     pCURRENTPOS = where;
@@ -1249,7 +1249,7 @@ static void menuprev(control m)
 	    if (gdd->displayList != R_NilValue) {
 		AddtoPlotHistory(GEcreateSnapshot(gdd), 0);
 		xd->needsave = FALSE;
-		vDL = findVar(install(".SavedPlots"), R_GlobalEnv);
+		vDL = Rf_findVar(Rf_install(".SavedPlots"), R_GlobalEnv);
 		/* may have changed vDL pointer */
 	    }
 	}
@@ -1260,7 +1260,7 @@ static void menuprev(control m)
 
 static void menugrclear(control m)
 {
-    defineVar(install(".SavedPlots"), R_NilValue, R_GlobalEnv);
+    Rf_defineVar(Rf_install(".SavedPlots"), R_NilValue, R_GlobalEnv);
 }
 
 static void menugvar(control m)
@@ -1271,7 +1271,7 @@ static void menugvar(control m)
 
     if (!v)
 	return;
-    vDL = findVar(install(v), R_GlobalEnv);
+    vDL = Rf_findVar(Rf_install(v), R_GlobalEnv);
     pMUSTEXIST;
     pCHECK;
     if (!pNUMPLOTS) {
@@ -1293,7 +1293,7 @@ static void menusvar(control m)
     v = askstring(G_("Name of variable to save to"), "");
     if (!v)
 	return;
-    defineVar(install(v), vDL, R_GlobalEnv);
+    Rf_defineVar(Rf_install(v), vDL, R_GlobalEnv);
 }
 /* end of plot history */
 
@@ -1580,7 +1580,7 @@ setupScreenDevice(pDevDesc dd, gadesc *xd, double w, double h,
 				    Document | StandardWindow | Menubar |
 				    VScrollbar | HScrollbar | CanvasSize)
 		)) {
-	    warning("unable to open window");
+	    Rf_warning("unable to open window");
 	    return FALSE;
 	}
     }
@@ -1807,19 +1807,19 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	xd->fast = 0; /* use scalable line widths */
 	xd->gawin = newprinter(MM_PER_INCH * w, MM_PER_INCH * h, &dsp[10]);
 	if (!xd->gawin) {
-	    warning("unable to open printer");
+	    Rf_warning("unable to open printer");
 	    return FALSE;
 	}
     } else if (!strncmp(dsp, "png:", 4) || !strncmp(dsp,"bmp:", 4)) {
 	xd->res_dpi = (xpos == NA_INTEGER) ? 0 : xpos;
 	xd->bg = dd->startfill = canvascolor;
 	xd->kind = (dsp[0]=='p') ? PNG : BMP;
-	if(strlen(dsp+4) >= 512) error(_("filename too long in %s() call"),
+	if(strlen(dsp+4) >= 512) Rf_error(_("filename too long in %s() call"),
 				       (dsp[0]=='p') ? "png" : "bmp");
 	strcpy(xd->filename, R_ExpandFileName(dsp+4));
 
 	if (w < 20 && h < 20)
-	    warning(_("'width=%d, height=%d' are unlikely values in pixels"),
+	    Rf_warning(_("'width=%d, height=%d' are unlikely values in pixels"),
 		    (int)w, (int) h);
 	/*
 	  Observe that given actual graphapp implementation 256 is
@@ -1827,18 +1827,18 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	  if required depth > 1
 	*/
 	if ((xd->gawin = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	xd->bm = xd->gawin;
 	if ((xd->bm2 = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	snprintf(buf, 600, xd->filename, 1);
 	if ((xd->fp = R_fopen(buf, "wb")) == NULL) {
 	    del(xd->gawin);
-	    warning(_("unable to open file '%s' for writing"), buf);
+	    Rf_warning(_("unable to open file '%s' for writing"), buf);
 	    return FALSE;
 	}
 	xd->have_alpha = TRUE;
@@ -1851,24 +1851,24 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	*p = '\0';
 	xd->quality = atoi(&dsp[5]);
 	*p = ':' ;
-	if(strlen(p+1) >= 512) error(_("filename too long in jpeg() call"));
+	if(strlen(p+1) >= 512) Rf_error(_("filename too long in jpeg() call"));
 	strcpy(xd->filename, R_ExpandFileName(p+1));
 	if (w < 20 && h < 20)
-	    warning(_("'width=%d, height=%d' are unlikely values in pixels"),
+	    Rf_warning(_("'width=%d, height=%d' are unlikely values in pixels"),
 		    (int)w, (int) h);
 	if((xd->gawin = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	xd->bm = xd->gawin;
 	if ((xd->bm2 = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	snprintf(buf, 600, xd->filename, 1);
 	if ((xd->fp = R_fopen(buf, "wb")) == NULL) {
 	    del(xd->gawin);
-	    warning(_("unable to open file '%s' for writing"), buf);
+	    Rf_warning(_("unable to open file '%s' for writing"), buf);
 	    return FALSE;
 	}
 	xd->have_alpha = TRUE;
@@ -1881,18 +1881,18 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	*p = '\0';
 	xd->quality = atoi(&dsp[5]);
 	*p = ':' ;
-	if(strlen(p+1) >= 512) error(_("filename too long in tiff() call"));
+	if(strlen(p+1) >= 512) Rf_error(_("filename too long in tiff() call"));
 	strcpy(xd->filename, R_ExpandFileName(p+1));
 	if (w < 20 && h < 20)
-	    warning(_("'width=%d, height=%d' are unlikely values in pixels"),
+	    Rf_warning(_("'width=%d, height=%d' are unlikely values in pixels"),
 		    (int) w, (int) h);
 	if((xd->gawin = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	xd->bm = xd->gawin;
 	if ((xd->bm2 = newbitmap(w, h, 256)) == NULL) {
-	    warning(_("unable to allocate bitmap"));
+	    Rf_warning(_("unable to allocate bitmap"));
 	    return FALSE;
 	}
 	xd->have_alpha = TRUE;
@@ -1909,11 +1909,11 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	if (ls > ld)
 	    return FALSE;
 	if (strncmp(dsp, s, ls) || (dsp[ls] && (dsp[ls] != ':'))) {
-	    warning("invalid specification for file name in win.metafile()");
+	    Rf_warning("invalid specification for file name in win.metafile()");
 	    return FALSE;
 	}
 	if(ld > ls && strlen(&dsp[ls + 1]) >= 512)
-	    error(_("filename too long in win.metafile() call"));
+	    Rf_error(_("filename too long in win.metafile() call"));
 	strcpy(xd->filename, (ld > ls) ? &dsp[ls + 1] : "");
 	snprintf(buf, 600, xd->filename, 1);
 	xd->w = MM_PER_INCH * w;
@@ -1923,9 +1923,9 @@ static Rboolean GA_Open(pDevDesc dd, gadesc *xd, const char *dsp,
 	xd->fast = 0; /* use scalable line widths */
 	if (!xd->gawin) {
 	    if(ld > ls)
-		warning(_("unable to open metafile '%s' for writing"), buf);
+		Rf_warning(_("unable to open metafile '%s' for writing"), buf);
 	    else
-		warning(_("unable to open clipboard to write metafile"));
+		Rf_warning(_("unable to open clipboard to write metafile"));
 	    return FALSE;
 	}
     }
@@ -2091,7 +2091,7 @@ static void GA_Resize(pDevDesc dd)
 	    xd->rescale_factor *= rf;
 	    {
 		SEXP scale;
-		PROTECT(scale = ScalarReal(rf));
+		PROTECT(scale = Rf_ScalarReal(rf));
 		GEhandleEvent(GE_ScalePS, dd, scale);
 		UNPROTECT(1);
 	    }
@@ -2173,13 +2173,13 @@ static void GA_NewPage(const pGEcontext gc,
     if ((xd->kind == METAFILE) && xd->needsave) {
 	char buf[600];
 	if (strlen(xd->filename) == 0)
-	    error(_("a clipboard metafile can store only one figure."));
+	    Rf_error(_("a clipboard metafile can store only one figure."));
 	else {
 	    del(xd->gawin);
 	    snprintf(buf, 600, xd->filename, xd->npage);
 	    xd->gawin = newmetafile(buf, xd->w, xd->h);
 	    if(!xd->gawin)
-		error(_("metafile '%s' could not be created"), buf);
+		Rf_error(_("metafile '%s' could not be created"), buf);
 	}
     }
     if ((xd->kind == PNG || xd->kind == JPEG || xd->kind == BMP)
@@ -2188,7 +2188,7 @@ static void GA_NewPage(const pGEcontext gc,
 	SaveAsBitmap(dd, xd->res_dpi);
 	snprintf(buf, 600, xd->filename, xd->npage);
 	if ((xd->fp = R_fopen(buf, "wb")) == NULL)
-	    error(_("unable to open file '%s' for writing"), buf);
+	    Rf_error(_("unable to open file '%s' for writing"), buf);
     }
     if (xd->kind == TIFF && xd->needsave) {
 	SaveAsBitmap(dd, xd->res_dpi);
@@ -2264,7 +2264,7 @@ static void GA_Close(pDevDesc dd)
 	if(xd->recording) {
 	    AddtoPlotHistory(GEcreateSnapshot(desc2GEDesc(dd)), 0);
 	    /* May have changed vDL, so can't use GETDL above */
-	    vDL = findVar(install(".SavedPlots"), R_GlobalEnv);
+	    vDL = Rf_findVar(Rf_install(".SavedPlots"), R_GlobalEnv);
 	    pCURRENTPOS++; /* so PgUp goes to the last saved plot
 			      when a windows() device is opened */
 	}
@@ -2348,7 +2348,7 @@ static void GA_Deactivate(pDevDesc dd)
 }
 
 #define WARN_SEMI_TRANS { \
-	    if(!xd->warn_trans) warning(_("semi-transparency is not supported on this device: reported only once per page")); \
+	    if(!xd->warn_trans) Rf_warning(_("semi-transparency is not supported on this device: reported only once per page")); \
 	    xd->warn_trans = TRUE; \
 	}
 
@@ -2993,7 +2993,7 @@ static SEXP GA_Cap(pDevDesc dd)
 
 	    screenData = getpixels(img);
 
-	    PROTECT(raster = allocVector(INTSXP, size));
+	    PROTECT(raster = Rf_allocVector(INTSXP, size));
 
 	    /* Copy each byte of screen to an R matrix.
 	     * The ARGB32 needs to be converted to R's ABGR32 */
@@ -3003,10 +3003,10 @@ static SEXP GA_Cap(pDevDesc dd)
 				 screenData[i*4 + 1],
 				 screenData[i*4 + 0],
 				 255);
-	    PROTECT(dim = allocVector(INTSXP, 2));
+	    PROTECT(dim = Rf_allocVector(INTSXP, 2));
 	    INTEGER(dim)[0] = height;
 	    INTEGER(dim)[1] = width;
-	    setAttrib(raster, R_DimSymbol, dim);
+	    Rf_setAttrib(raster, R_DimSymbol, dim);
 
 	    UNPROTECT(2);
 	}
@@ -3133,7 +3133,7 @@ static Rboolean GA_Locator(double *x, double *y, pDevDesc dd)
     if (xd->kind != SCREEN)
 	return FALSE;
     if (xd->holdlevel > 0)
-	error(_("attempt to use the locator after dev.hold()"));
+	Rf_error(_("attempt to use the locator after dev.hold()"));
     xd->locator = TRUE;
     xd->clicked = 0;
     show(xd->gawin);
@@ -3161,10 +3161,10 @@ static Rboolean GA_Locator(double *x, double *y, pDevDesc dd)
 	SH;
 	R_WaitEvent();
 	R_ProcessEvents();
-	if (!dd->deviceSpecific) { /* closing the window on other systems calls error().  
+	if (!dd->deviceSpecific) { /* closing the window on other systems calls Rf_error().  
 	                             But that is not safe on Windows, so we NULL the device
-	                             specific field and call error() here instead. */
-	    error(_("graphics device closed during call to locator or identify"));
+	                             specific field and call Rf_error() here instead. */
+	    Rf_error(_("graphics device closed during call to locator or identify"));
 	}
     }
 
@@ -3244,7 +3244,7 @@ Rboolean GADeviceDriver(pDevDesc dd, const char *display, double width,
 
     /* allocate new device description */
     if (!(xd = (gadesc *) malloc(sizeof(gadesc)))) {
-	warning("allocation failed in GADeviceDriver");
+	Rf_warning("allocation failed in GADeviceDriver");
 	return FALSE;
     }
 
@@ -3280,7 +3280,7 @@ Rboolean GADeviceDriver(pDevDesc dd, const char *display, double width,
 
     if (!GA_Open(dd, xd, display, width, height, recording, resize, canvas,
 		 gamma, xpos, ypos, bg)) {
-	warning("opening device failed");
+	Rf_warning("opening device failed");
 	free(xd);
 	return FALSE;
     }
@@ -3399,12 +3399,12 @@ Rboolean GADeviceDriver(pDevDesc dd, const char *display, double width,
     xd->buffered = buffered;
     xd->psenv = psenv;
     {
-	SEXP timeouts = GetOption1(install("windowsTimeouts"));
-	if(isInteger(timeouts)){
+	SEXP timeouts = GetOption1(Rf_install("windowsTimeouts"));
+	if(Rf_isInteger(timeouts)){
 	    xd->timeafter = INTEGER(timeouts)[0];
 	    xd->timesince = INTEGER(timeouts)[1];
 	} else {
-	    warning(_("option 'windowsTimeouts' should be integer"));
+	    Rf_warning(_("option 'windowsTimeouts' should be integer"));
 	    xd->timeafter = 100;
 	    xd->timesince = 500;
 	}
@@ -3423,21 +3423,21 @@ SEXP savePlot(SEXP args)
     Rboolean restoreConsole;
 
     args = CDR(args); /* skip entry point name */
-    device = asInteger(CAR(args));
+    device = Rf_asInteger(CAR(args));
     if(device < 1 || device > NumDevices())
-	error(_("invalid device number in 'savePlot'"));
+	Rf_error(_("invalid device number in 'savePlot'"));
     dd = GEgetDevice(device - 1)->dev;
-    if(!dd) error(_("invalid device in 'savePlot'"));
+    if(!dd) Rf_error(_("invalid device in 'savePlot'"));
     filename = CADR(args);
-    if (!isString(filename) || LENGTH(filename) != 1)
-	error(_("invalid filename argument in 'savePlot'"));
+    if (!Rf_isString(filename) || LENGTH(filename) != 1)
+	Rf_error(_("invalid filename argument in 'savePlot'"));
     /* in 2.8.0 this will always be passed as native, but be conserative */
-    fn = translateChar(STRING_ELT(filename, 0));
+    fn = Rf_translateChar(STRING_ELT(filename, 0));
     type = CADDR(args);
-    if (!isString(type) || LENGTH(type) != 1)
-	error(_("invalid type argument in 'savePlot'"));
-    tp = CHAR(STRING_ELT(type, 0));
-    restoreConsole = asLogical(CADDDR(args));
+    if (!Rf_isString(type) || LENGTH(type) != 1)
+	Rf_error(_("invalid type argument in 'savePlot'"));
+    tp = R_CHAR(STRING_ELT(type, 0));
+    restoreConsole = Rf_asLogical(CADDDR(args));
 
     if(streql(tp, "png")) {
 	SaveAsPng(dd, fn);
@@ -3462,7 +3462,7 @@ SEXP savePlot(SEXP args)
     } else if (streql(tp, "pdf")) {
 	SaveAsPDF(dd, fn);
     } else
-	error(_("unknown type in savePlot"));
+	Rf_error(_("unknown type in savePlot"));
     return R_NilValue;
 }
 
@@ -3507,7 +3507,7 @@ static void SaveAsBitmap(pDevDesc dd, int res)
 			    privategetpixel2, 0, xd->fp, res);
 	    free(data);
 	} else
-	    warning(_("processing of the plot ran out of memory"));
+	    Rf_warning(_("processing of the plot ran out of memory"));
 	if(xd->fp) fclose(xd->fp);
     }
     gsetcliprect(xd->gawin, r);
@@ -3539,7 +3539,7 @@ static void SaveAsPng(pDevDesc dd, const char *fn)
 		    privategetpixel2, 0, fp, 0, 0) ;
 	free(data);
     } else
-	warning(_("processing of the plot ran out of memory"));
+	Rf_warning(_("processing of the plot ran out of memory"));
     gsetcliprect(xd->bm, r);
     fclose(fp);
 }
@@ -3567,7 +3567,7 @@ static void SaveAsJpeg(pDevDesc dd, int quality, const char *fn)
 		     privategetpixel2, 0, quality, fp, 0) ;
 	free(data);
     } else
-	warning(_("processing of the plot ran out of memory"));
+	Rf_warning(_("processing of the plot ran out of memory"));
     gsetcliprect(xd->bm, r);
     fclose(fp);
 }
@@ -3598,7 +3598,7 @@ static void SaveAsBmp(pDevDesc dd, const char *fn)
 		    privategetpixel2, 0, fp, 0) ;
 	free(data);
     } else
-	warning(_("processing of the plot ran out of memory"));
+	Rf_warning(_("processing of the plot ran out of memory"));
     gsetcliprect(xd->bm, r);
     fclose(fp);
 }
@@ -3619,7 +3619,7 @@ static void SaveAsTiff(pDevDesc dd, const char *fn)
 		     privategetpixel2, 0, fn, 0, 1 /* no compression */) ;
 	free(data);
     } else
-	warning(_("processing of the plot ran out of memory"));
+	Rf_warning(_("processing of the plot ran out of memory"));
     gsetcliprect(xd->bm, r);
 }
 
@@ -3641,70 +3641,70 @@ SEXP devga(SEXP args)
 
     vmax = vmaxget();
     args = CDR(args); /* skip entry point name */
-    display = CHAR(STRING_ELT(CAR(args), 0));
+    display = R_CHAR(STRING_ELT(CAR(args), 0));
     args = CDR(args);
-    width = asReal(CAR(args));
+    width = Rf_asReal(CAR(args));
     args = CDR(args);
-    height = asReal(CAR(args));
+    height = Rf_asReal(CAR(args));
     args = CDR(args);
     if (width <= 0 || height <= 0)
-	error(_("invalid 'width' or 'height'"));
-    ps = asReal(CAR(args));
+	Rf_error(_("invalid 'width' or 'height'"));
+    ps = Rf_asReal(CAR(args));
     args = CDR(args);
-    recording = asLogical(CAR(args));
+    recording = Rf_asLogical(CAR(args));
     if (recording == NA_LOGICAL)
-	error(_("invalid value of '%s'"), "record");
+	Rf_error(_("invalid value of '%s'"), "record");
     args = CDR(args);
-    resize = asInteger(CAR(args));
+    resize = Rf_asInteger(CAR(args));
     if (resize == NA_INTEGER)
-	error(_("invalid value of '%s'"), "rescale");
+	Rf_error(_("invalid value of '%s'"), "rescale");
     args = CDR(args);
-    xpinch = asReal(CAR(args));
+    xpinch = Rf_asReal(CAR(args));
     args = CDR(args);
-    ypinch = asReal(CAR(args));
+    ypinch = Rf_asReal(CAR(args));
     args = CDR(args);
     sc = CAR(args);
-    if (!isString(sc) && !isInteger(sc) && !isLogical(sc) && !isReal(sc))
-	error(_("invalid value of '%s'"), "canvas");
+    if (!Rf_isString(sc) && !Rf_isInteger(sc) && !Rf_isLogical(sc) && !Rf_isReal(sc))
+	Rf_error(_("invalid value of '%s'"), "canvas");
     canvas = RGBpar(sc, 0);
     args = CDR(args);
-    gamma = asReal(CAR(args));
+    gamma = Rf_asReal(CAR(args));
     args = CDR(args);
-    xpos = asInteger(CAR(args)); /* used for res in png/jpeg/bmp */
+    xpos = Rf_asInteger(CAR(args)); /* used for res in png/jpeg/bmp */
     args = CDR(args);
-    ypos = asInteger(CAR(args));
+    ypos = Rf_asInteger(CAR(args));
     args = CDR(args);
-    buffered = asLogical(CAR(args));
+    buffered = Rf_asLogical(CAR(args));
     if (buffered == NA_LOGICAL)
-	error(_("invalid value of '%s'"), "buffered");
+	Rf_error(_("invalid value of '%s'"), "buffered");
     args = CDR(args);
     psenv = CAR(args);
     args = CDR(args);
     sc = CAR(args);
-    if (!isString(sc) && !isInteger(sc) && !isLogical(sc) && !isReal(sc))
-	error(_("invalid value of '%s'"), "bg");
+    if (!Rf_isString(sc) && !Rf_isInteger(sc) && !Rf_isLogical(sc) && !Rf_isReal(sc))
+	Rf_error(_("invalid value of '%s'"), "bg");
     bg = RGBpar(sc, 0);
     args = CDR(args);
-    restoreConsole = asLogical(CAR(args));
+    restoreConsole = Rf_asLogical(CAR(args));
     args = CDR(args);
     sc = CAR(args);
-    if (!isString(sc) || LENGTH(sc) != 1)
-	error(_("invalid value of '%s'"), "title");
-    title = CHAR(STRING_ELT(sc, 0));
+    if (!Rf_isString(sc) || LENGTH(sc) != 1)
+	Rf_error(_("invalid value of '%s'"), "title");
+    title = R_CHAR(STRING_ELT(sc, 0));
     args = CDR(args);
-    clickToConfirm = asLogical(CAR(args));
+    clickToConfirm = Rf_asLogical(CAR(args));
     args = CDR(args);
-    fillOddEven = asLogical(CAR(args));
+    fillOddEven = Rf_asLogical(CAR(args));
     if (fillOddEven == NA_LOGICAL)
-	error(_("invalid value of '%s'"), "fillOddEven");
+	Rf_error(_("invalid value of '%s'"), "fillOddEven");
     args = CDR(args);
     sc = CAR(args);
-    if (!isString(sc) || LENGTH(sc) != 1)
-	error(_("invalid value of '%s'"), "family");
-    family = CHAR(STRING_ELT(sc, 0));
+    if (!Rf_isString(sc) || LENGTH(sc) != 1)
+	Rf_error(_("invalid value of '%s'"), "family");
+    family = R_CHAR(STRING_ELT(sc, 0));
     quality = DEFAULT_QUALITY;
     args = CDR(args);
-    quality = asInteger(CAR(args));
+    quality = Rf_asInteger(CAR(args));
 //    printf("fontquality=%d\n", quality);
     switch (quality) {
     case 1: quality = DEFAULT_QUALITY; break;
@@ -3741,7 +3741,7 @@ SEXP devga(SEXP args)
 			    restoreConsole, title, clickToConfirm,
 			    fillOddEven, family, quality)) {
 	    free(dev);
-	    error(_("unable to start %s() device"), type);
+	    Rf_error(_("unable to start %s() device"), type);
 	}
 	gdd = GEcreateDevDesc(dev);
 	GEaddDevice2f(gdd, type, file);
@@ -3810,11 +3810,11 @@ static void GA_eventHelper(pDevDesc dd, int code)
     	addto(xd->gawin);
     	gchangemenubar(xd->mbar);
     	gchangepopup(xd->gawin, NULL);
-    	if (isEnvironment(dd->eventEnv)) {
-    	    SEXP prompt = findVar(install("prompt"), dd->eventEnv);
-    	    if (isString(prompt) && Rf_length(prompt) == 1) {
-    		setstatus(CHAR(asChar(prompt)));
-    		settext(xd->gawin, CHAR(asChar(prompt)));
+    	if (Rf_isEnvironment(dd->eventEnv)) {
+    	    SEXP prompt = Rf_findVar(Rf_install("prompt"), dd->eventEnv);
+    	    if (Rf_isString(prompt) && Rf_length(prompt) == 1) {
+    		setstatus(R_CHAR(Rf_asChar(prompt)));
+    		settext(xd->gawin, R_CHAR(Rf_asChar(prompt)));
     	    } else {
     	    	setstatus("");
     	    	settext(xd->gawin, "");
@@ -3870,28 +3870,28 @@ static int Load_Rcairo_Dll()
 SEXP devCairo(SEXP args)
 {
     if (!Load_Rcairo_Dll())
-	error("unable to load winCairo.dll: was it built?");
+	Rf_error("unable to load winCairo.dll: was it built?");
     else (R_devCairo)(args);
     return R_NilValue;
 }
 
 SEXP cairoVersion(void)
 {
-    if (!Load_Rcairo_Dll() || R_cairoVersion == NULL) return mkString("");
+    if (!Load_Rcairo_Dll() || R_cairoVersion == NULL) return Rf_mkString("");
     else return (R_cairoVersion)();
 }
 
 SEXP bmVersion(void)
 {
-    SEXP ans = PROTECT(allocVector(STRSXP, 3)),
-	nms = PROTECT(allocVector(STRSXP, 3));
-    setAttrib(ans, R_NamesSymbol, nms);
-    SET_STRING_ELT(nms, 0, mkChar("libpng"));
-    SET_STRING_ELT(nms, 1, mkChar("jpeg"));
-    SET_STRING_ELT(nms, 2, mkChar("libtiff"));
-    SET_STRING_ELT(ans, 0, mkChar((R_pngVersion)()));
-    SET_STRING_ELT(ans, 1, mkChar((R_jpegVersion)()));
-    SET_STRING_ELT(ans, 2, mkChar((R_tiffVersion)()));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 3)),
+	nms = PROTECT(Rf_allocVector(STRSXP, 3));
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    SET_STRING_ELT(nms, 0, Rf_mkChar("libpng"));
+    SET_STRING_ELT(nms, 1, Rf_mkChar("jpeg"));
+    SET_STRING_ELT(nms, 2, Rf_mkChar("libtiff"));
+    SET_STRING_ELT(ans, 0, Rf_mkChar((R_pngVersion)()));
+    SET_STRING_ELT(ans, 1, Rf_mkChar((R_jpegVersion)()));
+    SET_STRING_ELT(ans, 2, Rf_mkChar((R_tiffVersion)()));
     UNPROTECT(2);
     return ans;
 }

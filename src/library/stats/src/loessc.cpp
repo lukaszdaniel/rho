@@ -238,13 +238,13 @@ loess_workspace(int *d, int *n, double *span, int *degree,
 
     nvmax = max(200, N);
     nf = min(N, (int) floor(N * (*span) + 1e-5));
-    if(nf <= 0) error(_("span is too small"));
+    if(nf <= 0) Rf_error(_("span is too small"));
     tau0 = ((*degree) > 1) ? (int)((D + 2) * (D + 1) * 0.5) : (D + 1);
     tau = tau0 - (*sum_drop_sqr);
     lv = 50 + (3 * D + 3) * nvmax + N + (tau0 + 2) * nf;
     double dliv = 50 + (pow(2.0, (double)D) + 4.0) * nvmax + 2.0 * N;
     if (dliv < INT_MAX) liv = (int) dliv;
-    else error("workspace required is too large");
+    else Rf_error("workspace required is too large");
     if(*setLf) {
 	lv = lv + (D + 1) * nf * nvmax;
 	liv = liv + nf * nvmax;
@@ -395,7 +395,7 @@ switch(*i){
      msg = msg2;
  }
 }
-warning(msg);
+Rf_warning(msg);
 }
 #undef MSG
 
@@ -410,7 +410,7 @@ void F77_SUB(ehg183a)(char *s, int *nc,int *i,int *n,int *inc)
 	strcat(mess,num);
     }
     strcat(mess,"\n");
-    warning(mess);
+    Rf_warning(mess);
 }
 
 void F77_SUB(ehg184a)(char *s, int *nc, double *x, int *n, int *inc)
@@ -424,5 +424,5 @@ void F77_SUB(ehg184a)(char *s, int *nc, double *x, int *n, int *inc)
 	strcat(mess,num);
     }
     strcat(mess,"\n");
-    warning(mess);
+    Rf_warning(mess);
 }

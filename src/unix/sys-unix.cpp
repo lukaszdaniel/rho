@@ -491,7 +491,7 @@ int R_pclose_timeout(FILE *fp)
 {
     if (fp != tost.fp)
 	/* should not happen */
-	error("Invalid file pointer in pclose");
+	Rf_error("Invalid file pointer in pclose");
 
     /* Do not use fclose, because on Solaris it sets errno to "Invalid seek"
        when the pipe is already closed (e.g. because of timeout). fclose would
@@ -564,7 +564,7 @@ static int R_system_timeout(const char *cmd, int timeout)
         if (wstatus == -1) {
 	    /* this means that system() failed badly - it didn't
 	       even get to try to run the shell */
-	    warning(_("system call failed: %s"), strerror(errno));
+	    Rf_warning(_("system call failed: %s"), strerror(errno));
 	    /* R system() is documented to return 127 on failure, and a lot of
 	       code relies on that - it will misinterpret -1 as success */
 	    wstatus = 127;
@@ -605,14 +605,14 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     int timeout = 0;
 
     if (!isValidStringF(CAR(args)))
-	error(_("non-empty character argument expected"));
-    intern = asLogical(CADR(args));
+	Rf_error(_("non-empty character argument expected"));
+    intern = Rf_asLogical(CADR(args));
     if (intern == NA_INTEGER)
-	error(_("'intern' must be logical and not NA"));
-    timeout = asInteger(CADDR(args));
+	Rf_error(_("'intern' must be logical and not NA"));
+    timeout = Rf_asInteger(CADDR(args));
     if (timeout == NA_INTEGER || timeout < 0)
-	error(_("invalid '%s' argument"), "timeout");
-    const char *cmd = translateChar(STRING_ELT(CAR(args), 0));
+	Rf_error(_("invalid '%s' argument"), "timeout");
+    const char *cmd = Rf_translateChar(STRING_ELT(CAR(args), 0));
     if (timeout > 0) {
 	/* command ending with & is not supported by timeout */
 	const void *vmax = vmaxget();
@@ -630,7 +630,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 		last_is_amp = 0;
 	}
 	if (last_is_amp)
-	    error("Timeout with background running processes is not supported.");
+	    Rf_error("Timeout with background running processes is not supported.");
 	vmaxset(vmax);
     }
     if (intern) { /* intern = TRUE */
@@ -652,7 +652,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	else
 	    fp = R_popen_timeout(cmd, x, timeout);
 	if(!fp)
-	    error(_("cannot popen '%s', probable reason '%s'"),
+	    Rf_error(_("cannot popen '%s', probable reason '%s'"),
 		  cmd, strerror(errno));
 #ifdef HAVE_GETLINE
         size_t read;
@@ -662,11 +662,11 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	for (i = 0; fgets(buf, INTERN_BUFSIZE, fp); i++) {
 	    size_t read = strlen(buf);
 	    if(read >= INTERN_BUFSIZE - 1)
-		warning(_("line %d may be truncated in call to system(, intern = TRUE)"), i + 1);
+		Rf_warning(_("line %d may be truncated in call to system(, intern = TRUE)"), i + 1);
 	    if (read > 0 && buf[read-1] == '\n')
 #endif
 		buf[read - 1] = '\0'; /* chop final CR */
-	    tchar = mkChar(buf);
+	    tchar = Rf_mkChar(buf);
 	    UNPROTECT(1);
 	    PROTECT(tlist = CONS(tchar, tlist));
 	}
@@ -687,9 +687,9 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
 	if ((res & 0xff)  == 127) {/* 127, aka -1 */
 	    if (errno)
-		error(_("error in running command: '%s'"), strerror(errno));
+		Rf_error(_("error in running command: '%s'"), strerror(errno));
 	    else
-		error(_("error in running command"));
+		Rf_error(_("error in running command"));
 	}
 
 	if (timeout && tost.timedout) {
@@ -699,20 +699,20 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	} else
 	    warn_status(cmd, res);
 
-	rval = PROTECT(allocVector(STRSXP, i));
+	rval = PROTECT(Rf_allocVector(STRSXP, i));
 	for (j = (i - 1); j >= 0; j--) {
 	    SET_STRING_ELT(rval, j, CAR(tlist));
 	    tlist = CDR(tlist);
 	}
 	if(res) {
 	    SEXP sres;
-	    SEXP lsym = install("status");
-	    PROTECT(sres = ScalarInteger(res));
-	    setAttrib(rval, lsym, sres);
+	    SEXP lsym = Rf_install("status");
+	    PROTECT(sres = Rf_ScalarInteger(res));
+	    Rf_setAttrib(rval, lsym, sres);
 	    if(errno) {
-	        SEXP serrno = PROTECT(mkString(strerror(errno)));
-		lsym = install("errmsg");
-		setAttrib(rval, lsym, serrno);
+	        SEXP serrno = PROTECT(Rf_mkString(strerror(errno)));
+		lsym = Rf_install("errmsg");
+		Rf_setAttrib(rval, lsym, serrno);
 		UNPROTECT(1);
 	    }
 	    UNPROTECT(1);
@@ -724,7 +724,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 #ifdef HAVE_AQUA
 	R_Busy(1);
 #endif
-	tlist = PROTECT(allocVector(INTSXP, 1));
+	tlist = PROTECT(Rf_allocVector(INTSXP, 1));
 	fflush(stdout);
 	int res;
 	if (timeout == 0)
@@ -763,53 +763,53 @@ SEXP attribute_hidden do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
     struct utsname name;
     char *login;
 
-    PROTECT(ans = allocVector(STRSXP, 8));
+    PROTECT(ans = Rf_allocVector(STRSXP, 8));
     if(uname(&name) == -1) {
 	UNPROTECT(1);
 	return R_NilValue;
     }
-    SET_STRING_ELT(ans, 0, mkChar(name.sysname));
-    SET_STRING_ELT(ans, 1, mkChar(name.release));
-    SET_STRING_ELT(ans, 2, mkChar(name.version));
-    SET_STRING_ELT(ans, 3, mkChar(name.nodename));
-    SET_STRING_ELT(ans, 4, mkChar(name.machine));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(name.sysname));
+    SET_STRING_ELT(ans, 1, Rf_mkChar(name.release));
+    SET_STRING_ELT(ans, 2, Rf_mkChar(name.version));
+    SET_STRING_ELT(ans, 3, Rf_mkChar(name.nodename));
+    SET_STRING_ELT(ans, 4, Rf_mkChar(name.machine));
     login = getlogin();
-    SET_STRING_ELT(ans, 5, login ? mkChar(login) : mkChar("unknown"));
+    SET_STRING_ELT(ans, 5, login ? Rf_mkChar(login) : Rf_mkChar("unknown"));
 #if defined(HAVE_PWD_H) && defined(HAVE_GETPWUID) && defined(HAVE_GETUID)
     {
 	struct passwd *stpwd;
 	stpwd = getpwuid(getuid());
-	SET_STRING_ELT(ans, 6, stpwd ? mkChar(stpwd->pw_name) : mkChar("unknown"));
+	SET_STRING_ELT(ans, 6, stpwd ? Rf_mkChar(stpwd->pw_name) : Rf_mkChar("unknown"));
     }
 #else
-    SET_STRING_ELT(ans, 6, mkChar("unknown"));
+    SET_STRING_ELT(ans, 6, Rf_mkChar("unknown"));
 #endif
 #if defined(HAVE_PWD_H) && defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
     {
 	struct passwd *stpwd;
 	stpwd = getpwuid(geteuid());
-	SET_STRING_ELT(ans, 7, stpwd ? mkChar(stpwd->pw_name) : mkChar("unknown"));
+	SET_STRING_ELT(ans, 7, stpwd ? Rf_mkChar(stpwd->pw_name) : Rf_mkChar("unknown"));
     }
 #else
-    SET_STRING_ELT(ans, 7, mkChar("unknown"));
+    SET_STRING_ELT(ans, 7, Rf_mkChar("unknown"));
 #endif
-    PROTECT(ansnames = allocVector(STRSXP, 8));
-    SET_STRING_ELT(ansnames, 0, mkChar("sysname"));
-    SET_STRING_ELT(ansnames, 1, mkChar("release"));
-    SET_STRING_ELT(ansnames, 2, mkChar("version"));
-    SET_STRING_ELT(ansnames, 3, mkChar("nodename"));
-    SET_STRING_ELT(ansnames, 4, mkChar("machine"));
-    SET_STRING_ELT(ansnames, 5, mkChar("login"));
-    SET_STRING_ELT(ansnames, 6, mkChar("user"));
-    SET_STRING_ELT(ansnames, 7, mkChar("effective_user"));
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    PROTECT(ansnames = Rf_allocVector(STRSXP, 8));
+    SET_STRING_ELT(ansnames, 0, Rf_mkChar("sysname"));
+    SET_STRING_ELT(ansnames, 1, Rf_mkChar("release"));
+    SET_STRING_ELT(ansnames, 2, Rf_mkChar("version"));
+    SET_STRING_ELT(ansnames, 3, Rf_mkChar("nodename"));
+    SET_STRING_ELT(ansnames, 4, Rf_mkChar("machine"));
+    SET_STRING_ELT(ansnames, 5, Rf_mkChar("login"));
+    SET_STRING_ELT(ansnames, 6, Rf_mkChar("user"));
+    SET_STRING_ELT(ansnames, 7, Rf_mkChar("effective_user"));
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
 #else /* not HAVE_SYS_UTSNAME_H */
 SEXP do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    warning(_("Sys.info() is not implemented on this system"));
+    Rf_warning(_("Sys.info() is not implemented on this system"));
     return R_NilValue;		/* -Wall */
 }
 #endif /* not HAVE_SYS_UTSNAME_H */
@@ -837,17 +837,17 @@ void R_ProcessEvents(void)
 	    cpuLimit = elapsedLimit = -1;
 	    if (elapsedLimit2 > 0.0 && data[2] > elapsedLimit2) {
 		elapsedLimit2 = -1.0;
-		error(_("reached session elapsed time limit"));
+		Rf_error(_("reached session elapsed time limit"));
 	    } else
-		error(_("reached elapsed time limit"));
+		Rf_error(_("reached elapsed time limit"));
 	}
 	if (cpuLimit > 0.0 && cpu > cpuLimit) {
 	    cpuLimit = elapsedLimit = -1;
 	    if (cpuLimit2 > 0.0 && cpu > cpuLimit2) {
 		cpuLimit2 = -1.0;
-		error(_("reached session CPU time limit"));
+		Rf_error(_("reached session CPU time limit"));
 	    } else
-		error(_("reached CPU time limit"));
+		Rf_error(_("reached CPU time limit"));
 	}
     }
 }

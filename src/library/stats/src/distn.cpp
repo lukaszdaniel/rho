@@ -43,22 +43,22 @@
     na = XLENGTH(sa);					\
     nb = XLENGTH(sb);					\
     if ((na == 0) || (nb == 0))	{			\
-	PROTECT(sy = allocVector(REALSXP, 0));		\
+	PROTECT(sy = Rf_allocVector(REALSXP, 0));		\
 	if (na == 0) SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
 	UNPROTECT(1);					\
 	return(sy);					\
     }							\
     n = (na < nb) ? nb : na;				\
-    PROTECT(sa = coerceVector(sa, REALSXP));		\
-    PROTECT(sb = coerceVector(sb, REALSXP));		\
-    PROTECT(sy = allocVector(REALSXP, n));		\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));		\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));		\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));		\
     a = REAL(sa);					\
     b = REAL(sb);					\
     y = REAL(sy);					\
     naflag = 0
 
 #define FINISH_Math2					\
-    if(naflag) warning(R_MSG_NA);			\
+    if(naflag) Rf_warning(R_MSG_NA);			\
     if (n == na)  SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
     else if (n == nb) SHALLOW_DUPLICATE_ATTRIB(sy, sb);	\
     UNPROTECT(3)
@@ -76,11 +76,11 @@ static SEXP math2_1(SEXP sa, SEXP sb, SEXP sI, double (*f)(double, double, int))
     int m_opt;
     int naflag;
 
-    if (!isNumeric(sa) || !isNumeric(sb))
-	error(R_MSG_NONNUM_MATH);
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb))
+	Rf_error(R_MSG_NONNUM_MATH);
 
     SETUP_Math2;
-    m_opt = asInteger(sI);
+    m_opt = Rf_asInteger(sI);
 
     mod_iterate2(na, nb, ia, ib) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
@@ -104,12 +104,12 @@ static SEXP math2_2(SEXP sa, SEXP sb, SEXP sI1, SEXP sI2,
     double ai, bi, *a, *b, *y;
     int i_1, i_2;
     int naflag;
-    if (!isNumeric(sa) || !isNumeric(sb))
-	error(R_MSG_NONNUM_MATH);
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb))
+	Rf_error(R_MSG_NONNUM_MATH);
 
     SETUP_Math2;
-    i_1 = asInteger(sI1);
-    i_2 = asInteger(sI2);
+    i_1 = Rf_asInteger(sI1);
+    i_2 = Rf_asInteger(sI2);
 
     mod_iterate2(na, nb, ia, ib) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
@@ -162,21 +162,21 @@ DEFMATH2_2(qsignrank)
 	else if (ISNAN(a) || ISNAN(b)|| ISNAN(c)) y = R_NaN;
 
 #define SETUP_Math3						\
-    if (!isNumeric(sa) || !isNumeric(sb) || !isNumeric(sc))	\
-	error(R_MSG_NONNUM_MATH);			\
+    if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb) || !Rf_isNumeric(sc))	\
+	Rf_error(R_MSG_NONNUM_MATH);			\
 								\
     na = XLENGTH(sa);						\
     nb = XLENGTH(sb);						\
     nc = XLENGTH(sc);						\
     if ((na == 0) || (nb == 0) || (nc == 0))			\
-	return(allocVector(REALSXP, 0));			\
+	return(Rf_allocVector(REALSXP, 0));			\
     n = na;							\
     if (n < nb) n = nb;						\
     if (n < nc) n = nc;						\
-    PROTECT(sa = coerceVector(sa, REALSXP));			\
-    PROTECT(sb = coerceVector(sb, REALSXP));			\
-    PROTECT(sc = coerceVector(sc, REALSXP));			\
-    PROTECT(sy = allocVector(REALSXP, n));			\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));			\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));			\
+    PROTECT(sc = Rf_coerceVector(sc, REALSXP));			\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));			\
     a = REAL(sa);						\
     b = REAL(sb);						\
     c = REAL(sc);						\
@@ -184,7 +184,7 @@ DEFMATH2_2(qsignrank)
     naflag = 0
 
 #define FINISH_Math3					\
-    if(naflag)  warning(R_MSG_NA);			\
+    if(naflag)  Rf_warning(R_MSG_NA);			\
     							\
     if (n == na) SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
     else if (n == nb) SHALLOW_DUPLICATE_ATTRIB(sy, sb);	\
@@ -201,7 +201,7 @@ static SEXP math3_1(SEXP sa, SEXP sb, SEXP sc, SEXP sI,
     int naflag;
 
     SETUP_Math3;
-    i_1 = asInteger(sI);
+    i_1 = Rf_asInteger(sI);
 
     mod_iterate3 (na, nb, nc, ia, ib, ic) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
@@ -229,8 +229,8 @@ static SEXP math3_2(SEXP sa, SEXP sb, SEXP sc, SEXP sI, SEXP sJ,
     int naflag;
 
     SETUP_Math3;
-    i_1 = asInteger(sI);
-    i_2 = asInteger(sJ);
+    i_1 = Rf_asInteger(sI);
+    i_2 = Rf_asInteger(sJ);
 
     mod_iterate3 (na, nb, nc, ia, ib, ic) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
@@ -312,24 +312,24 @@ DEFMATH3_2(qwilcox)
 	else if (ISNAN(a)|| ISNAN(b)|| ISNAN(c)|| ISNAN(d)) y = R_NaN;
 
 #define SETUP_Math4							\
-    if(!isNumeric(sa)|| !isNumeric(sb)|| !isNumeric(sc)|| !isNumeric(sd))\
-	error(R_MSG_NONNUM_MATH);				\
+    if(!Rf_isNumeric(sa)|| !Rf_isNumeric(sb)|| !Rf_isNumeric(sc)|| !Rf_isNumeric(sd))\
+	Rf_error(R_MSG_NONNUM_MATH);				\
 									\
     na = XLENGTH(sa);							\
     nb = XLENGTH(sb);							\
     nc = XLENGTH(sc);							\
     nd = XLENGTH(sd);							\
     if ((na == 0) || (nb == 0) || (nc == 0) || (nd == 0))		\
-	return(allocVector(REALSXP, 0));				\
+	return(Rf_allocVector(REALSXP, 0));				\
     n = na;								\
     if (n < nb) n = nb;							\
     if (n < nc) n = nc;							\
     if (n < nd) n = nd;							\
-    PROTECT(sa = coerceVector(sa, REALSXP));				\
-    PROTECT(sb = coerceVector(sb, REALSXP));				\
-    PROTECT(sc = coerceVector(sc, REALSXP));				\
-    PROTECT(sd = coerceVector(sd, REALSXP));				\
-    PROTECT(sy = allocVector(REALSXP, n));				\
+    PROTECT(sa = Rf_coerceVector(sa, REALSXP));				\
+    PROTECT(sb = Rf_coerceVector(sb, REALSXP));				\
+    PROTECT(sc = Rf_coerceVector(sc, REALSXP));				\
+    PROTECT(sd = Rf_coerceVector(sd, REALSXP));				\
+    PROTECT(sy = Rf_allocVector(REALSXP, n));				\
     a = REAL(sa);							\
     b = REAL(sb);							\
     c = REAL(sc);							\
@@ -338,7 +338,7 @@ DEFMATH3_2(qwilcox)
     naflag = 0
 
 #define FINISH_Math4					\
-    if(naflag) warning(R_MSG_NA);			\
+    if(naflag) Rf_warning(R_MSG_NA);			\
     							\
     if (n == na) SHALLOW_DUPLICATE_ATTRIB(sy, sa);	\
     else if (n == nb) SHALLOW_DUPLICATE_ATTRIB(sy, sb);	\
@@ -355,7 +355,7 @@ static SEXP math4_1(SEXP sa, SEXP sb, SEXP sc, SEXP sd, SEXP sI, double (*f)(dou
     int naflag;
 
     SETUP_Math4;
-    i_1 = asInteger(sI);
+    i_1 = Rf_asInteger(sI);
 
     mod_iterate4 (na, nb, nc, nd, ia, ib, ic, id) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
@@ -383,8 +383,8 @@ static SEXP math4_2(SEXP sa, SEXP sb, SEXP sc, SEXP sd, SEXP sI, SEXP sJ,
     int naflag;
 
     SETUP_Math4;
-    i_1 = asInteger(sI);
-    i_2 = asInteger(sJ);
+    i_1 = Rf_asInteger(sI);
+    i_2 = Rf_asInteger(sJ);
 
     mod_iterate4 (na, nb, nc, nd, ia, ib, ic, id) {
 //	if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();

@@ -61,9 +61,9 @@ static int R_eval(ClientData clientData,
     int i;
     SEXP text, expr, ans=R_NilValue /* -Wall */;
 
-    text = PROTECT(allocVector(STRSXP, argc - 1));
+    text = PROTECT(Rf_allocVector(STRSXP, argc - 1));
     for (i = 1 ; i < argc ; i++)
-	SET_STRING_ELT(text, i-1, mkChar(argv[i]));
+	SET_STRING_ELT(text, i-1, Rf_mkChar(argv[i]));
 
     expr = PROTECT(R_ParseVector(text, -1, &status, R_NilValue));
     if (status != PARSE_OK) {
@@ -73,18 +73,18 @@ static int R_eval(ClientData clientData,
     }
 
     /* Note that expr becomes an EXPRSXP and hence we need the loop
-       below (a straight eval(expr, R_GlobalEnv) won't work) */
+       below (a straight Rf_eval(expr, R_GlobalEnv) won't work) */
     {
 	R_Busy(1);
 	int n = Rf_length(expr);
 	for(i = 0 ; i < n ; i++)
-	    ans = eval(VECTOR_ELT(expr, i), R_GlobalEnv);
+	    ans = Rf_eval(VECTOR_ELT(expr, i), R_GlobalEnv);
 	PROTECT(ans);
 	R_Busy(0);
     }
 
     /* If return value is of class tclObj, use as Tcl result */
-    if (inherits(ans, "tclObj"))
+    if (Rf_inherits(ans, "tclObj"))
 	    Tcl_SetObjResult(interp, (Tcl_Obj*) R_ExternalPtrAddr(ans));
 
     UNPROTECT(3);
@@ -112,12 +112,12 @@ static int R_call(ClientData clientData,
     SEXP expr, alist, ans;
     void *fun;
 
-    SEXP s_try = install("try");
+    SEXP s_try = Rf_install("try");
 
     alist = R_NilValue;
     for (i = argc - 1 ; i > 1 ; i--){
 	PROTECT(alist);
-	alist = CONS(mkString(argv[i]), alist);
+	alist = CONS(Rf_mkString(argv[i]), alist);
 	UNPROTECT(1);
     }
 
@@ -127,11 +127,11 @@ static int R_call(ClientData clientData,
     PROTECT(expr = LCONS(s_try, LCONS(expr, R_NilValue)));
 
     R_Busy(1);
-    PROTECT(ans = eval(expr, R_GlobalEnv));
+    PROTECT(ans = Rf_eval(expr, R_GlobalEnv));
     R_Busy(0);
 	
     /* If return value is of class tclObj, use as Tcl result */
-    if (inherits(ans, "tclObj"))
+    if (Rf_inherits(ans, "tclObj"))
 	Tcl_SetObjResult(interp, (Tcl_Obj*) R_ExternalPtrAddr(ans));
 
     UNPROTECT(2);
@@ -149,16 +149,16 @@ static int R_call_lang(ClientData clientData,
     sscanf(argv[1], "%p", &expr);
     sscanf(argv[2], "%p", &env);
 
-    SEXP s_try = install("try");
+    SEXP s_try = Rf_install("try");
     expr = LCONS(s_try, CONS(expr, R_NilValue));
     PROTECT((SEXP)expr);
 
     R_Busy(1);
-    PROTECT(ans = eval((SEXP)expr, (SEXP)env));
+    PROTECT(ans = Rf_eval((SEXP)expr, (SEXP)env));
     R_Busy(0);
 
     /* If return value is of class tclObj, use as Tcl result */
-    if (inherits(ans, "tclObj"))
+    if (Rf_inherits(ans, "tclObj"))
 	Tcl_SetObjResult(interp, (Tcl_Obj*) R_ExternalPtrAddr(ans));
 
     UNPROTECT(2);
@@ -189,7 +189,7 @@ static Tcl_Obj * tk_eval(const char *cmd)
 	    snprintf(p, sizeof(p), "[tcl] %s.\n", res);
 	    Tcl_DStringFree(&res_ds);
 	}
-	error(p);
+	Rf_error(p);
     }
     Tcl_DStringFree(&cmd_utf8_ds);
     return Tcl_GetObjResult(RTcl_interp);
@@ -206,8 +206,8 @@ SEXP dotTcl(SEXP args)
     Tcl_Obj *val;
     const void *vmax = vmaxget();
     if(!isValidString(CADR(args)))
-	error(_("invalid argument"));
-    cmd = translateChar(STRING_ELT(CADR(args), 0));
+	Rf_error(_("invalid argument"));
+    cmd = Rf_translateChar(STRING_ELT(CADR(args), 0));
     val = tk_eval(cmd);
     ans = makeRTclObject(val);
     vmaxset(vmax);
@@ -218,15 +218,15 @@ SEXP dotTclObjv(SEXP args)
 {
     SEXP t,
 	avec = CADR(args),
-	nm = getAttrib(avec, R_NamesSymbol);
+	nm = Rf_getAttrib(avec, R_NamesSymbol);
     int objc, i, result;
     Tcl_Obj **objv;
     const void *vmax = vmaxget();
 
     for (objc = 0, i = 0; i < Rf_length(avec); i++){
-	if (!isNull(VECTOR_ELT(avec, i)))
+	if (!Rf_isNull(VECTOR_ELT(avec, i)))
 	    objc++;
-	if (!isNull(nm) && strlen(translateChar(STRING_ELT(nm, i))))
+	if (!Rf_isNull(nm) && strlen(Rf_translateChar(STRING_ELT(nm, i))))
 	    objc++;
     }
 
@@ -235,14 +235,14 @@ SEXP dotTclObjv(SEXP args)
     for (objc = i = 0; i < Rf_length(avec); i++){
 	const char *s;
 	char *tmp;
-	if (!isNull(nm) && strlen(s = translateChar(STRING_ELT(nm, i)))){
+	if (!Rf_isNull(nm) && strlen(s = Rf_translateChar(STRING_ELT(nm, i)))){
 	    tmp = static_cast<char *>(calloc(strlen(s)+2, sizeof(char)));
 	    *tmp = '-';
 	    strcpy(tmp+1, s);
 	    objv[objc++] = Tcl_NewStringObj(tmp, -1);
 	    free(tmp);
 	}
-	if (!isNull(t = VECTOR_ELT(avec, i)))
+	if (!Rf_isNull(t = VECTOR_ELT(avec, i)))
 	    objv[objc++] = (Tcl_Obj *) R_ExternalPtrAddr(t);
     }
 
@@ -265,7 +265,7 @@ SEXP dotTclObjv(SEXP args)
 	    snprintf(p, sizeof(p), "[tcl] %s.\n", res);
 	    Tcl_DStringFree(&res_ds);
 	}
-	error(p);
+	Rf_error(p);
     }
 
     SEXP res = makeRTclObject(Tcl_GetObjResult(RTcl_interp));
@@ -280,7 +280,7 @@ SEXP RTcl_ObjFromVar(SEXP args)
     const void *vmax = vmaxget();
 
     tclobj = Tcl_GetVar2Ex(RTcl_interp,
-                           translateChar(STRING_ELT(CADR(args), 0)),
+                           Rf_translateChar(STRING_ELT(CADR(args), 0)),
                            NULL,
                            0);
     SEXP res = makeRTclObject(tclobj);
@@ -292,7 +292,7 @@ SEXP RTcl_AssignObjToVar(SEXP args)
 {
     const void *vmax = vmaxget();
     Tcl_SetVar2Ex(RTcl_interp,
-		  translateChar(STRING_ELT(CADR(args), 0)),
+		  Rf_translateChar(STRING_ELT(CADR(args), 0)),
 		  NULL,
 		  (Tcl_Obj *) R_ExternalPtrAddr(CADDR(args)),
 		  0);
@@ -310,12 +310,12 @@ SEXP RTcl_StringFromObj(SEXP args)
     Tcl_Obj *obj;
 
     obj = (Tcl_Obj *) R_ExternalPtrAddr(CADR(args));
-    if (!obj) error(_("invalid tclObj -- perhaps saved from another session?"));
+    if (!obj) Rf_error(_("invalid tclObj -- perhaps saved from another session?"));
     Tcl_DStringInit(&s_ds);
     str = Tcl_GetStringFromObj(obj, NULL);
     /* FIXME: could use UTF-8 here */
     s = Tcl_UtfToExternalDString(NULL, str, -1, &s_ds);
-    so = mkString(s);
+    so = Rf_mkString(s);
     Tcl_DStringFree(&s_ds);
     return(so);
 }
@@ -328,12 +328,12 @@ SEXP RTcl_ObjAsCharVector(SEXP args)
     SEXP ans;
 
     obj = (Tcl_Obj *) R_ExternalPtrAddr(CADR(args));
-    if (!obj) error(_("invalid tclObj -- perhaps saved from another session?"));
+    if (!obj) Rf_error(_("invalid tclObj -- perhaps saved from another session?"));
     ret = Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem);
     if (ret != TCL_OK)
 	return RTcl_StringFromObj(args);
 
-    PROTECT(ans = allocVector(STRSXP, count));
+    PROTECT(ans = Rf_allocVector(STRSXP, count));
     for (i = 0 ; i < count ; i++) {
 	char *s;
 	Tcl_DString s_ds;
@@ -342,7 +342,7 @@ SEXP RTcl_ObjAsCharVector(SEXP args)
 	s = Tcl_UtfToExternalDString(NULL,
 				     (Tcl_GetStringFromObj(elem[i], NULL)),
 				     -1, &s_ds);
-	SET_STRING_ELT(ans, i, mkChar(s));
+	SET_STRING_ELT(ans, i, Rf_mkChar(s));
 	Tcl_DStringFree(&s_ds);
     }
     UNPROTECT(1);
@@ -401,18 +401,18 @@ SEXP RTcl_ObjAsDoubleVector(SEXP args)
     SEXP ans;
 
     obj = (Tcl_Obj *) R_ExternalPtrAddr(CADR(args));
-    if (!obj) error(_("invalid tclObj -- perhaps saved from another session?"));
+    if (!obj) Rf_error(_("invalid tclObj -- perhaps saved from another session?"));
 
     /* First try for single value */
     ret = Tcl_GetDoubleFromObj(RTcl_interp, obj, &x);
-    if (ret == TCL_OK) return ScalarReal(x);
+    if (ret == TCL_OK) return Rf_ScalarReal(x);
 
     /* Then try as list */
     ret = Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem);
     if (ret != TCL_OK) /* didn't work, return NULL */
 	return R_NilValue;
 
-    ans = allocVector(REALSXP, count);
+    ans = Rf_allocVector(REALSXP, count);
     for (i = 0 ; i < count ; i++){
 	ret = Tcl_GetDoubleFromObj(RTcl_interp, elem[i], &x);
 	if (ret != TCL_OK) x = NA_REAL;
@@ -464,18 +464,18 @@ SEXP RTcl_ObjAsIntVector(SEXP args)
     SEXP ans;
 
     obj = (Tcl_Obj *) R_ExternalPtrAddr(CADR(args));
-    if (!obj) error(_("invalid tclObj -- perhaps saved from another session?"));
+    if (!obj) Rf_error(_("invalid tclObj -- perhaps saved from another session?"));
 
     /* First try for single value */
     ret = Tcl_GetIntFromObj(RTcl_interp, obj, &x);
-    if (ret == TCL_OK) return ScalarInteger(x);
+    if (ret == TCL_OK) return Rf_ScalarInteger(x);
 
     /* Then try as list */
     ret = Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem);
     if (ret != TCL_OK) /* didn't work, return NULL */
 	return R_NilValue;
 
-    ans = allocVector(INTSXP, count);
+    ans = Rf_allocVector(INTSXP, count);
     for (i = 0 ; i < count ; i++){
 	ret = Tcl_GetIntFromObj(RTcl_interp, elem[i], &x);
 	if (ret != TCL_OK) x = NA_INTEGER;
@@ -516,10 +516,10 @@ SEXP RTcl_ObjAsRawVector(SEXP args)
     SEXP ans, el;
 
     obj = (Tcl_Obj *) R_ExternalPtrAddr(CADR(args));
-    if (!obj) error(_("invalid tclObj -- perhaps saved from another session?"));
+    if (!obj) Rf_error(_("invalid tclObj -- perhaps saved from another session?"));
     ret = Tcl_GetByteArrayFromObj(obj, &nb);
     if (ret) {
-	ans = allocVector(RAWSXP, nb);
+	ans = Rf_allocVector(RAWSXP, nb);
 	for (j = 0 ; j < nb ; j++) RAW(ans)[j] = ret[j];
 	return ans;
     }
@@ -528,9 +528,9 @@ SEXP RTcl_ObjAsRawVector(SEXP args)
     if (Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem)
 	!= TCL_OK) return R_NilValue;
 
-    PROTECT(ans = allocVector(VECSXP, count));
+    PROTECT(ans = Rf_allocVector(VECSXP, count));
     for (i = 0 ; i < count ; i++) {
-	el = allocVector(RAWSXP, nb);
+	el = Rf_allocVector(RAWSXP, nb);
 	SET_VECTOR_ELT(ans, i, el);
 	ret = Tcl_GetByteArrayFromObj(elem[i], &nb);
 	for (j = 0 ; j < nb ; j++) RAW(el)[j] = ret[j];
@@ -564,8 +564,8 @@ SEXP RTcl_GetArrayElem(SEXP args)
     x = CADR(args);
     i = CADDR(args);
 
-    xstr = translateChar(STRING_ELT(x, 0));
-    istr = translateChar(STRING_ELT(i, 0));
+    xstr = Rf_translateChar(STRING_ELT(x, 0));
+    istr = Rf_translateChar(STRING_ELT(i, 0));
     tclobj = Tcl_GetVar2Ex(RTcl_interp, xstr, istr, 0);
     vmaxset(vmax);
 
@@ -586,8 +586,8 @@ SEXP RTcl_SetArrayElem(SEXP args)
     i = CADDR(args);
     value = (Tcl_Obj *) R_ExternalPtrAddr(CADDDR(args));
 
-    xstr = translateChar(STRING_ELT(x, 0));
-    istr = translateChar(STRING_ELT(i, 0));
+    xstr = Rf_translateChar(STRING_ELT(x, 0));
+    istr = Rf_translateChar(STRING_ELT(i, 0));
     Tcl_SetVar2Ex(RTcl_interp, xstr, istr, value, 0);
 
     vmaxset(vmax);
@@ -603,8 +603,8 @@ SEXP RTcl_RemoveArrayElem(SEXP args)
     x = CADR(args);
     i = CADDR(args);
 
-    xstr = translateChar(STRING_ELT(x, 0));
-    istr = translateChar(STRING_ELT(i, 0));
+    xstr = Rf_translateChar(STRING_ELT(x, 0));
+    istr = Rf_translateChar(STRING_ELT(i, 0));
     Tcl_UnsetVar2(RTcl_interp, xstr, istr, 0);
     vmaxset(vmax);
 
@@ -623,10 +623,10 @@ static void callback_closure(char * buf, int buflen, SEXP closure)
     while ( formals != R_NilValue )
     {
 	if (TAG(formals) ==  R_DotsSymbol) break;
-	snprintf(tmp, 20, " %%%s", CHAR(PRINTNAME(TAG(formals))));
+	snprintf(tmp, 20, " %%%s", R_CHAR(PRINTNAME(TAG(formals))));
 	tmp[20] = '\0';
 	if (strlen(buf) + strlen(tmp) >= buflen)
-	    error(_("argument list is too long in tcltk internal function 'callback_closure'"));
+	    Rf_error(_("argument list is too long in tcltk internal function 'callback_closure'"));
 	strcat(buf, tmp);
 	formals = CDR(formals);
     }
@@ -652,18 +652,18 @@ SEXP dotTclcallback(SEXP args)
     char *s;
     Tcl_DString s_ds;
 
-    if (isFunction(callback))
+    if (Rf_isFunction(callback))
         callback_closure(buff, BUFFLEN, callback);
-    else if (isLanguage(callback)) {
+    else if (Rf_isLanguage(callback)) {
         env = CADDR(args);
         callback_lang(buff, BUFFLEN, callback, env);
     }
     else
-    	error(_("argument is not of correct type"));
+    	Rf_error(_("argument is not of correct type"));
 
     Tcl_DStringInit(&s_ds);
     s = Tcl_UtfToExternalDString(NULL, buff, -1, &s_ds);
-    ans = mkString(s);
+    ans = Rf_mkString(s);
     Tcl_DStringFree(&s_ds);
     return ans;
 }
@@ -686,7 +686,7 @@ void tcltk_init(int *TkUp)
 
     RTcl_interp = Tcl_CreateInterp();
     code = Tcl_Init(RTcl_interp);
-    if (code != TCL_OK) error(Tcl_GetStringResult(RTcl_interp));
+    if (code != TCL_OK) Rf_error(Tcl_GetStringResult(RTcl_interp));
 
 /* HAVE_AQUA is not really right here.
    On macOS we might be using Aqua Tcl/Tk or X11 Tcl/Tk, and that
@@ -699,12 +699,12 @@ void tcltk_init(int *TkUp)
     {
 	code = Tk_Init(RTcl_interp);  /* Load Tk into interpreter */
 	if (code != TCL_OK) {
-	    warning(Tcl_GetStringResult(RTcl_interp));
+	    Rf_warning(Tcl_GetStringResult(RTcl_interp));
 	} else {
 	    Tcl_StaticPackage(RTcl_interp, "Tk", Tk_Init, Tk_SafeInit);
 
 	    code = Tcl_Eval(RTcl_interp, "wm withdraw .");  /* Hide window */
-	    if (code != TCL_OK) error(Tcl_GetStringResult(RTcl_interp));
+	    if (code != TCL_OK) Rf_error(Tcl_GetStringResult(RTcl_interp));
 	    *TkUp = 1;
 	}
     }
@@ -741,7 +741,7 @@ void tcltk_init(int *TkUp)
 #if 0
   code = Tcl_EvalFile(RTcl_interp, "init.tcl");
   if (code != TCL_OK)
-    error("%s\n", Tcl_GetStringResult(RTcl_interp));
+    Rf_error("%s\n", Tcl_GetStringResult(RTcl_interp));
 #endif
 
 }
@@ -750,8 +750,8 @@ SEXP RTcl_ServiceMode(SEXP args)
 {
     int value;
     
-    if (!isLogical(CADR(args)) || Rf_length(CADR(args)) > 1)
-    	error(_("invalid argument"));
+    if (!Rf_isLogical(CADR(args)) || Rf_length(CADR(args)) > 1)
+    	Rf_error(_("invalid argument"));
     
     if (Rf_length(CADR(args))) 
 	value = Tcl_SetServiceMode(LOGICAL(CADR(args))[0] ? 
@@ -759,6 +759,6 @@ SEXP RTcl_ServiceMode(SEXP args)
     else
     	value = Tcl_GetServiceMode();
     
-    return ScalarLogical(value == TCL_SERVICE_ALL);
+    return Rf_ScalarLogical(value == TCL_SERVICE_ALL);
 }
     

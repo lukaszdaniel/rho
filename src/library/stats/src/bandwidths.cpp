@@ -32,8 +32,8 @@
 
 SEXP bw_ucv(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
 {
-    double h = asReal(sh), d = asReal(sd), sum = 0.0, term, u;
-    int n = asInteger(sn), nbin = LENGTH(cnt);
+    double h = Rf_asReal(sh), d = Rf_asReal(sd), sum = 0.0, term, u;
+    int n = Rf_asInteger(sn), nbin = LENGTH(cnt);
     double *x = REAL(cnt);
     for (int i = 0; i < nbin; i++) {
 	double delta = i * d / h;
@@ -44,13 +44,13 @@ SEXP bw_ucv(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
     }
     u = (0.5 + sum/n) / (n * h * M_SQRT_PI);
     // = 1 / (2 * n * h * sqrt(PI)) + sum / (n * n * h * sqrt(PI));
-    return ScalarReal(u);
+    return Rf_ScalarReal(u);
 }
 
 SEXP bw_bcv(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
 {
-    double h = asReal(sh), d = asReal(sd), sum = 0.0, term, u;
-    int n = asInteger(sn), nbin = LENGTH(cnt);
+    double h = Rf_asReal(sh), d = Rf_asReal(sd), sum = 0.0, term, u;
+    int n = Rf_asInteger(sn), nbin = LENGTH(cnt);
     double *x = REAL(cnt);
 
     sum = 0.0;
@@ -62,13 +62,13 @@ SEXP bw_bcv(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
     }
     u = (1 + sum/(32.0*n)) / (2.0 * n * h * M_SQRT_PI);
     // = 1 / (2 * n * h * sqrt(PI)) + sum / (64 * n * n * h * sqrt(PI));
-    return ScalarReal(u);
+    return Rf_ScalarReal(u);
 }
 
 SEXP bw_phi4(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
 {
-    double h = asReal(sh), d = asReal(sd), sum = 0.0, term, u;
-    int n = asInteger(sn), nbin = LENGTH(cnt);
+    double h = Rf_asReal(sh), d = Rf_asReal(sd), sum = 0.0, term, u;
+    int n = Rf_asInteger(sn), nbin = LENGTH(cnt);
     double *x = REAL(cnt);
 
     for (int i = 0; i < nbin; i++) {
@@ -80,13 +80,13 @@ SEXP bw_phi4(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
     sum = 2. * sum + n * 3.;	/* add in diagonal */
     u = sum / ((double)n * (n - 1) * pow(h, 5.0)) * M_1_SQRT_2PI;
     // = sum / (n * (n - 1) * pow(h, 5.0) * sqrt(2 * PI));
-    return ScalarReal(u);
+    return Rf_ScalarReal(u);
 }
 
 SEXP bw_phi6(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
 {
-    double h = asReal(sh), d = asReal(sd), sum = 0.0, term, u;
-    int n = asInteger(sn), nbin = LENGTH(cnt);
+    double h = Rf_asReal(sh), d = Rf_asReal(sd), sum = 0.0, term, u;
+    int n = Rf_asInteger(sn), nbin = LENGTH(cnt);
     double *x = REAL(cnt);
 
     for (int i = 0; i < nbin; i++) {
@@ -99,7 +99,7 @@ SEXP bw_phi6(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
     sum = 2. * sum - 15. * n;	/* add in diagonal */
     u = sum / ((double)n * (n - 1) * pow(h, 7.0)) * M_1_SQRT_2PI;
     // = sum / (n * (n - 1) * pow(h, 7.0) * sqrt(2 * PI));
-    return ScalarReal(u);
+    return Rf_ScalarReal(u);
 }
 
 /*
@@ -111,22 +111,22 @@ SEXP bw_phi6(SEXP sn, SEXP sd, SEXP cnt, SEXP sh)
 
 SEXP bw_den(SEXP nbin, SEXP sx)
 {
-    int nb = asInteger(nbin), n = LENGTH(sx);
+    int nb = Rf_asInteger(nbin), n = LENGTH(sx);
     double xmin, xmax, rang, dd, *x = REAL(sx);
 
     xmin = R_PosInf; xmax = R_NegInf;
     for (int i = 0; i < n; i++) {
 	if(!R_FINITE(x[i]))
-	    error(_("non-finite x[%d] in bandwidth calculation"), i+1);
+	    Rf_error(_("non-finite x[%d] in bandwidth calculation"), i+1);
 	if(x[i] < xmin) xmin = x[i];
 	if(x[i] > xmax) xmax = x[i];
     }
     rang = (xmax - xmin) * 1.01;
     dd = rang / nb;
 
-    SEXP ans = PROTECT(allocVector(VECSXP, 2)),
-	sc = SET_VECTOR_ELT(ans, 1, allocVector(REALSXP, nb));
-    SET_VECTOR_ELT(ans, 0, ScalarReal(dd));
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, 2)),
+	sc = SET_VECTOR_ELT(ans, 1, Rf_allocVector(REALSXP, nb));
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarReal(dd));
     double *cnt = REAL(sc);
     for (int i = 0; i < nb; i++) cnt[i] = 0.0;
 
@@ -148,7 +148,7 @@ SEXP bw_den_binned(SEXP sx)
     int nb = LENGTH(sx);
     int *x = INTEGER(sx);
 
-    SEXP ans = PROTECT(allocVector(REALSXP, nb));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, nb));
     double *cnt = REAL(ans);
     for (int ib = 0; ib < nb; ib++) cnt[ib] = 0.0;
 

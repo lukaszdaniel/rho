@@ -36,12 +36,12 @@
 SEXP cfilter(SEXP sx, SEXP sfilter, SEXP ssides, SEXP scircular)
 {
    if (TYPEOF(sx) != REALSXP || TYPEOF(sfilter) != REALSXP)
-       error("invalid input");
+       Rf_error("invalid input");
     R_xlen_t nx = XLENGTH(sx), nf = XLENGTH(sfilter);
-    int sides = asInteger(ssides), circular = asLogical(scircular);
-    if(sides == NA_INTEGER || circular == NA_LOGICAL)  error("invalid input");
+    int sides = Rf_asInteger(ssides), circular = Rf_asLogical(scircular);
+    if(sides == NA_INTEGER || circular == NA_LOGICAL)  Rf_error("invalid input");
 
-    SEXP ans = allocVector(REALSXP, nx);
+    SEXP ans = Rf_allocVector(REALSXP, nx);
 
     R_xlen_t i, j, nshift;
     double z, tmp, *x = REAL(sx), *filter = REAL(sfilter), *out = REAL(ans);
@@ -87,7 +87,7 @@ SEXP cfilter(SEXP sx, SEXP sfilter, SEXP ssides, SEXP scircular)
 SEXP rfilter(SEXP x, SEXP filter, SEXP out)
 {
    if (TYPEOF(x) != REALSXP || TYPEOF(filter) != REALSXP
-       || TYPEOF(out) != REALSXP) error("invalid input");
+       || TYPEOF(out) != REALSXP) Rf_error("invalid input");
     R_xlen_t nx = XLENGTH(x), nf = XLENGTH(filter);
     double sum, tmp, *r = REAL(out), *rx = REAL(x), *rf = REAL(filter);
 
@@ -142,15 +142,15 @@ acf0(double *x, int n, int ns, int nl, Rboolean correlation, double *acf)
 
 SEXP acf(SEXP x, SEXP lmax, SEXP sCor)
 {
-    int nx = nrows(x), ns = ncols(x), lagmax = asInteger(lmax),
-	cor = asLogical(sCor);
-    x = PROTECT(coerceVector(x, REALSXP));
-    SEXP ans = PROTECT(allocVector(REALSXP, (lagmax + 1)*ns*ns));
+    int nx = Rf_nrows(x), ns = Rf_ncols(x), lagmax = Rf_asInteger(lmax),
+	cor = Rf_asLogical(sCor);
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, (lagmax + 1)*ns*ns));
     acf0(REAL(x), nx, ns, lagmax, Rboolean(cor), REAL(ans));
-    SEXP d = PROTECT(allocVector(INTSXP, 3));
+    SEXP d = PROTECT(Rf_allocVector(INTSXP, 3));
     INTEGER(d)[0] = lagmax + 1;
     INTEGER(d)[1] = INTEGER(d)[2] = ns;
-    setAttrib(ans, R_DimSymbol, d);
+    Rf_setAttrib(ans, R_DimSymbol, d);
     UNPROTECT(3);
     return ans;
 }

@@ -35,7 +35,7 @@
 static R_INLINE void TypeCheck(SEXP s, SEXPTYPE type)
 {
     if (TYPEOF(s) != type)
-	error("invalid type passed to graphics function");
+	Rf_error("invalid type passed to graphics function");
 }
 
 
@@ -46,19 +46,19 @@ Rboolean isNAcol(SEXP col, int index, int ncol)
 {
     Rboolean result = TRUE; /* -Wall */
 
-    if (isNull(col))
+    if (Rf_isNull(col))
 	result = TRUE;
     else {
-	if (isLogical(col))
+	if (Rf_isLogical(col))
 	    result = Rboolean(LOGICAL(col)[index % ncol] == NA_LOGICAL);
-	else if (isString(col))
-	    result = streql(CHAR(STRING_ELT(col, index % ncol)), "NA");
-	else if (isInteger(col))
+	else if (Rf_isString(col))
+	    result = streql(R_CHAR(STRING_ELT(col, index % ncol)), "NA");
+	else if (Rf_isInteger(col))
 	    result = Rboolean(INTEGER(col)[index % ncol] == NA_INTEGER);
-	else if (isReal(col))
+	else if (Rf_isReal(col))
 	    result = Rboolean(!R_FINITE(REAL(col)[index % ncol]));
 	else
-	    error(_("invalid color specification"));
+	    Rf_error(_("invalid color specification"));
     }
     return result;
 }
@@ -73,15 +73,15 @@ static SEXP getInlinePar(SEXP s, const char *name)
 {
     SEXP result = R_NilValue;
     int found = 0;
-    if (isList(s) && !found) {
+    if (Rf_isList(s) && !found) {
 	while (s != R_NilValue) {
-	    if (isList(CAR(s))) {
+	    if (Rf_isList(CAR(s))) {
 		result = getInlinePar(CAR(s), name);
 		if (result)
 		    found = 1;
 	    } else
 		if (TAG(s) != R_NilValue)
-		    if (streql(CHAR(PRINTNAME(TAG(s))), name)) {
+		    if (streql(R_CHAR(PRINTNAME(TAG(s))), name)) {
 			result = CAR(s);
 			found = 1;
 		    }
@@ -99,34 +99,34 @@ static SEXP FixupPch(SEXP pch, int dflt)
     SEXP ans = R_NilValue;/* -Wall*/
 
     n = Rf_length(pch);
-    if (n == 0) return ans = ScalarInteger(dflt);
+    if (n == 0) return ans = Rf_ScalarInteger(dflt);
 
-    PROTECT(ans = allocVector(INTSXP, n));
-    if (isList(pch)) {
+    PROTECT(ans = Rf_allocVector(INTSXP, n));
+    if (Rf_isList(pch)) {
 	for (i = 0; pch != R_NilValue;	pch = CDR(pch))
-	    INTEGER(ans)[i++] = asInteger(CAR(pch));
+	    INTEGER(ans)[i++] = Rf_asInteger(CAR(pch));
     }
-    else if (isInteger(pch)) {
+    else if (Rf_isInteger(pch)) {
 	for (i = 0; i < n; i++)
 	    INTEGER(ans)[i] = INTEGER(pch)[i];
     }
-    else if (isReal(pch)) {
+    else if (Rf_isReal(pch)) {
 	for (i = 0; i < n; i++)
 	    INTEGER(ans)[i] = R_FINITE(REAL(pch)[i]) ?
 		(int) REAL(pch)[i] : NA_INTEGER;
     }
-    else if (isString(pch)) {
+    else if (Rf_isString(pch)) {
 	for (i = 0; i < n; i++) {
 	    /* New in 2.7.0: negative values indicate Unicode points. */
 	    INTEGER(ans)[i] = GEstring_to_pch(STRING_ELT(pch, i));
 	}
     }
-    else if (isLogical(pch)) {/* NA, but not TRUE/FALSE */
+    else if (Rf_isLogical(pch)) {/* NA, but not TRUE/FALSE */
 	for (i = 0; i < n; i++)
 	    if(LOGICAL(pch)[i] == NA_LOGICAL) INTEGER(ans)[i] = NA_INTEGER;
-	    else error(_("only NA allowed in logical plotting symbol"));
+	    else Rf_error(_("only NA allowed in logical plotting symbol"));
     }
-    else error(_("invalid plotting symbol"));
+    else Rf_error(_("invalid plotting symbol"));
     UNPROTECT(1);
     return ans;
 }
@@ -137,10 +137,10 @@ SEXP FixupLty(SEXP lty, int dflt)
     SEXP ans;
     n = Rf_length(lty);
     if (n == 0) {
-	ans = ScalarInteger(dflt);
+	ans = Rf_ScalarInteger(dflt);
     }
     else {
-	ans = allocVector(INTSXP, n);
+	ans = Rf_allocVector(INTSXP, n);
 	for (i = 0; i < n; i++)
 	    INTEGER(ans)[i] = GE_LTYpar(lty, i);
     }
@@ -155,11 +155,11 @@ SEXP FixupLwd(SEXP lwd, double dflt)
 
     n = Rf_length(lwd);
     if (n == 0)
-	ans = ScalarReal(dflt);
+	ans = Rf_ScalarReal(dflt);
     else {
-	PROTECT(lwd = coerceVector(lwd, REALSXP));
+	PROTECT(lwd = Rf_coerceVector(lwd, REALSXP));
 	n = Rf_length(lwd);
-	ans = allocVector(REALSXP, n);
+	ans = Rf_allocVector(REALSXP, n);
 	for (i = 0; i < n; i++) {
 	    w = REAL(lwd)[i];
 	    if (w < 0) w = NA_REAL;
@@ -177,10 +177,10 @@ static SEXP FixupFont(SEXP font, int dflt)
     SEXP ans = R_NilValue;/* -Wall*/
     n = Rf_length(font);
     if (n == 0) {
-	ans = ScalarInteger(dflt);
+	ans = Rf_ScalarInteger(dflt);
     }
-    else if (isLogical(font)) {
-	ans = allocVector(INTSXP, n);
+    else if (Rf_isLogical(font)) {
+	ans = Rf_allocVector(INTSXP, n);
 	for (i = 0; i < n; i++) {
 	    k = LOGICAL(font)[i];
 #ifndef Win32
@@ -191,8 +191,8 @@ static SEXP FixupFont(SEXP font, int dflt)
 	    INTEGER(ans)[i] = k;
 	}
     }
-    else if (isInteger(font)) {
-	ans = allocVector(INTSXP, n);
+    else if (Rf_isInteger(font)) {
+	ans = Rf_allocVector(INTSXP, n);
 	for (i = 0; i < n; i++) {
 	    k = INTEGER(font)[i];
 #ifndef Win32
@@ -203,8 +203,8 @@ static SEXP FixupFont(SEXP font, int dflt)
 	    INTEGER(ans)[i] = k;
 	}
     }
-    else if (isReal(font)) {
-	ans = allocVector(INTSXP, n);
+    else if (Rf_isReal(font)) {
+	ans = Rf_allocVector(INTSXP, n);
 	for (i = 0; i < n; i++) {
 	    k = (int) REAL(font)[i];
 #ifndef Win32
@@ -215,7 +215,7 @@ static SEXP FixupFont(SEXP font, int dflt)
 	    INTEGER(ans)[i] = k;
 	}
     }
-    else error(_("invalid font specification"));
+    else Rf_error(_("invalid font specification"));
     return ans;
 }
 
@@ -227,10 +227,10 @@ SEXP FixupCol(SEXP col, unsigned int dflt)
 
     n = Rf_length(col);
     if (n == 0) {
-	PROTECT(ans = ScalarInteger(dflt));
+	PROTECT(ans = Rf_ScalarInteger(dflt));
     } else {
-	ans = PROTECT(allocVector(INTSXP, n));
-	if (isList(col))
+	ans = PROTECT(Rf_allocVector(INTSXP, n));
+	if (Rf_isList(col))
 	    for (i = 0; i < n; i++) {
 		INTEGER(ans)[i] = RGBpar3(CAR(col), 0, bg);
 		col = CDR(col);
@@ -249,7 +249,7 @@ static SEXP FixupCex(SEXP cex, double dflt)
     int i, n;
     n = Rf_length(cex);
     if (n == 0) {
-	ans = allocVector(REALSXP, 1);
+	ans = Rf_allocVector(REALSXP, 1);
 	if (R_FINITE(dflt) && dflt > 0)
 	    REAL(ans)[0] = dflt;
 	else
@@ -257,8 +257,8 @@ static SEXP FixupCex(SEXP cex, double dflt)
     }
     else {
 	double c;
-	ans = allocVector(REALSXP, n);
-	if (isReal(cex))
+	ans = Rf_allocVector(REALSXP, n);
+	if (Rf_isReal(cex))
 	    for (i = 0; i < n; i++) {
 		c = REAL(cex)[i];
 		if (R_FINITE(c) && c > 0)
@@ -266,7 +266,7 @@ static SEXP FixupCex(SEXP cex, double dflt)
 		else
 		    REAL(ans)[i] = NA_REAL;
 	    }
-	else if (isInteger(cex) || isLogical(cex))
+	else if (Rf_isInteger(cex) || Rf_isLogical(cex))
 	    for (i = 0; i < n; i++) {
 		c = INTEGER(cex)[i];
 		if (c == NA_INTEGER || c <= 0)
@@ -274,24 +274,24 @@ static SEXP FixupCex(SEXP cex, double dflt)
 		REAL(ans)[i] = c;
 	    }
 	else
-	    error(_("invalid '%s' value"), "cex");
+	    Rf_error(_("invalid '%s' value"), "cex");
     }
     return ans;
 }
 
 SEXP FixupVFont(SEXP vfont) {
     SEXP ans = R_NilValue;
-    if (!isNull(vfont)) {
+    if (!Rf_isNull(vfont)) {
 	SEXP vf;
 	int typeface, fontindex;
 	int minindex, maxindex=0;/* -Wall*/
 	int i;
-	PROTECT(vf = coerceVector(vfont, INTSXP));
+	PROTECT(vf = Rf_coerceVector(vfont, INTSXP));
 	if (Rf_length(vf) != 2)
-	    error(_("invalid '%s' value"), "vfont");
+	    Rf_error(_("invalid '%s' value"), "vfont");
 	typeface = INTEGER(vf)[0];
 	if (typeface < 1 || typeface > 8)
-	    error(_("invalid 'vfont' value [typeface %d]"), typeface);
+	    Rf_error(_("invalid 'vfont' value [typeface %d]"), typeface);
 	/* For each of the typefaces {1..8}, there are several fontindices
 	   available; how many depends on the typeface.
 	   The possible combinations are "given" in ./g_fontdb.cpp
@@ -315,9 +315,9 @@ SEXP FixupVFont(SEXP vfont) {
 	}
 	fontindex = INTEGER(vf)[1];
 	if (fontindex < minindex || fontindex > maxindex)
-	    error(_("invalid 'vfont' value [typeface = %d, fontindex = %d]"),
+	    Rf_error(_("invalid 'vfont' value [typeface = %d, fontindex = %d]"),
 		  typeface, fontindex);
-	ans = allocVector(INTSXP, 2);
+	ans = Rf_allocVector(INTSXP, 2);
 	for (i = 0; i < 2; i++) INTEGER(ans)[i] = INTEGER(vf)[i];
 	UNPROTECT(1);
     }
@@ -352,44 +352,44 @@ GetTextArg(SEXP spec, SEXP *ptxt, rcolor *pcol, double *pcex, int *pfont)
     switch (TYPEOF(spec)) {
     case LANGSXP:
     case SYMSXP:
-	REPROTECT(txt = coerceVector(spec, EXPRSXP), pi);
+	REPROTECT(txt = Rf_coerceVector(spec, EXPRSXP), pi);
 	break;
     case VECSXP:
 	if (Rf_length(spec) == 0) {
 	    *ptxt = R_NilValue;
 	}
 	else {
-	    nms = getAttrib(spec, R_NamesSymbol);
+	    nms = Rf_getAttrib(spec, R_NamesSymbol);
 	    if (nms == R_NilValue){ /* PR#1939 */
 	       txt = VECTOR_ELT(spec, 0);
 	       if (TYPEOF(txt) == LANGSXP || TYPEOF(txt) == SYMSXP )
-		    REPROTECT(txt = coerceVector(txt, EXPRSXP), pi);
-	       else if (!isExpression(txt))
-		    REPROTECT(txt = coerceVector(txt, STRSXP), pi);
+		    REPROTECT(txt = Rf_coerceVector(txt, EXPRSXP), pi);
+	       else if (!Rf_isExpression(txt))
+		    REPROTECT(txt = Rf_coerceVector(txt, STRSXP), pi);
 	    } else {
 	       n = Rf_length(nms);
 	       for (i = 0; i < n; i++) {
-		if (streql(CHAR(STRING_ELT(nms, i)), "cex")) {
-		    cex = asReal(VECTOR_ELT(spec, i));
+		if (streql(R_CHAR(STRING_ELT(nms, i)), "cex")) {
+		    cex = Rf_asReal(VECTOR_ELT(spec, i));
 		}
-		else if (streql(CHAR(STRING_ELT(nms, i)), "col")) {
+		else if (streql(R_CHAR(STRING_ELT(nms, i)), "col")) {
 		    SEXP colsxp = VECTOR_ELT(spec, i);
 		    if (!isNAcol(colsxp, 0, LENGTH(colsxp))) {
-			col = asInteger(FixupCol(colsxp, R_TRANWHITE));
+			col = Rf_asInteger(FixupCol(colsxp, R_TRANWHITE));
 			colspecd = 1;
 		    }
 		}
-		else if (streql(CHAR(STRING_ELT(nms, i)), "font")) {
-		    font = asInteger(FixupFont(VECTOR_ELT(spec, i), NA_INTEGER));
+		else if (streql(R_CHAR(STRING_ELT(nms, i)), "font")) {
+		    font = Rf_asInteger(FixupFont(VECTOR_ELT(spec, i), NA_INTEGER));
 		}
-		else if (streql(CHAR(STRING_ELT(nms, i)), "")) {
+		else if (streql(R_CHAR(STRING_ELT(nms, i)), "")) {
 		    txt = VECTOR_ELT(spec, i);
 		    if (TYPEOF(txt) == LANGSXP || TYPEOF(txt) == SYMSXP)
-			REPROTECT(txt = coerceVector(txt, EXPRSXP), pi);
-		    else if (!isExpression(txt))
-			REPROTECT(txt = coerceVector(txt, STRSXP), pi);
+			REPROTECT(txt = Rf_coerceVector(txt, EXPRSXP), pi);
+		    else if (!Rf_isExpression(txt))
+			REPROTECT(txt = Rf_coerceVector(txt, STRSXP), pi);
 		}
-		else error(_("invalid graphics parameter"));
+		else Rf_error(_("invalid graphics parameter"));
 	       }
 	    }
 	}
@@ -399,7 +399,7 @@ GetTextArg(SEXP spec, SEXP *ptxt, rcolor *pcol, double *pcex, int *pfont)
 	txt = spec;
 	break;
     default:
-	REPROTECT(txt = coerceVector(spec, STRSXP), pi);
+	REPROTECT(txt = Rf_coerceVector(spec, STRSXP), pi);
 	break;
     }
     UNPROTECT(1);
@@ -475,23 +475,23 @@ SEXP C_plot_window(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 3)
-	error(_("at least 3 arguments required"));
+	Rf_error(_("at least 3 arguments required"));
 
     xlim = CAR(args);
-    if (!isNumeric(xlim) || LENGTH(xlim) != 2)
-	error(_("invalid '%s' value"), "xlim");
+    if (!Rf_isNumeric(xlim) || LENGTH(xlim) != 2)
+	Rf_error(_("invalid '%s' value"), "xlim");
     args = CDR(args);
 
     ylim = CAR(args);
-    if (!isNumeric(ylim) || LENGTH(ylim) != 2)
-	error(_("invalid '%s' value"), "ylim");
+    if (!Rf_isNumeric(ylim) || LENGTH(ylim) != 2)
+	Rf_error(_("invalid '%s' value"), "ylim");
     args = CDR(args);
 
     logscale = FALSE;
     logarg = CAR(args);
-    if (!isString(logarg))
-	error(_("\"log=\" specification must be character"));
-    p = CHAR(STRING_ELT(logarg, 0));
+    if (!Rf_isString(logarg))
+	Rf_error(_("\"log=\" specification must be character"));
+    p = R_CHAR(STRING_ELT(logarg, 0));
     while (*p) {
 	switch (*p) {
 	case 'x':
@@ -501,46 +501,46 @@ SEXP C_plot_window(SEXP args)
 	    dpptr(dd)->ylog = gpptr(dd)->ylog = logscale = TRUE;
 	    break;
 	default:
-	    error(_("invalid \"log=%s\" specification"), p);
+	    Rf_error(_("invalid \"log=%s\" specification"), p);
 	}
 	p++;
     }
     args = CDR(args);
 
-    asp = (logscale) ? NA_REAL : asReal(CAR(args));;
+    asp = (logscale) ? NA_REAL : Rf_asReal(CAR(args));;
     args = CDR(args);
 
     /* This reads [xy]axs and lab, used in GScale */
     GSavePars(dd);
     ProcessInlinePars(args, dd);
 
-    if (isInteger(xlim)) {
+    if (Rf_isInteger(xlim)) {
 	if (INTEGER(xlim)[0] == NA_INTEGER || INTEGER(xlim)[1] == NA_INTEGER)
-	    error(_("NAs not allowed in 'xlim'"));
+	    Rf_error(_("NAs not allowed in 'xlim'"));
 	xmin = INTEGER(xlim)[0];
 	xmax = INTEGER(xlim)[1];
     }
     else {
 	if (!R_FINITE(REAL(xlim)[0]) || !R_FINITE(REAL(xlim)[1]))
-	    error(_("need finite 'xlim' values"));
+	    Rf_error(_("need finite 'xlim' values"));
 	xmin = REAL(xlim)[0];
 	xmax = REAL(xlim)[1];
     }
-    if (isInteger(ylim)) {
+    if (Rf_isInteger(ylim)) {
 	if (INTEGER(ylim)[0] == NA_INTEGER || INTEGER(ylim)[1] == NA_INTEGER)
-	    error(_("NAs not allowed in 'ylim'"));
+	    Rf_error(_("NAs not allowed in 'ylim'"));
 	ymin = INTEGER(ylim)[0];
 	ymax = INTEGER(ylim)[1];
     }
     else {
 	if (!R_FINITE(REAL(ylim)[0]) || !R_FINITE(REAL(ylim)[1]))
-	    error(_("need finite 'ylim' values"));
+	    Rf_error(_("need finite 'ylim' values"));
 	ymin = REAL(ylim)[0];
 	ymax = REAL(ylim)[1];
     }
     if ((dpptr(dd)->xlog && (xmin < 0 || xmax < 0)) ||
        (dpptr(dd)->ylog && (ymin < 0 || ymax < 0)))
-	    error(_("Logarithmic axis must have positive limits"));
+	    Rf_error(_("Logarithmic axis must have positive limits"));
 
     if (R_FINITE(asp) && asp > 0) {
 	double pin1, pin2, scale, xdelta, ydelta, xscale, yscale, xadd, yadd;
@@ -620,49 +620,49 @@ SEXP labelformat(SEXP labels)
 			  (but really uses single precision..) */
     switch(TYPEOF(labels)) {
     case LGLSXP:
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++) {
 	    strp = EncodeLogical(LOGICAL(labels)[i], 0);
-	    SET_STRING_ELT(ans, i, mkChar(strp));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(strp));
 	}
 	UNPROTECT(1);
 	break;
     case INTSXP:
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++) {
 	    strp = EncodeInteger(INTEGER(labels)[i], 0);
-	    SET_STRING_ELT(ans, i, mkChar(strp));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(strp));
 	}
 	UNPROTECT(1);
 	break;
     case REALSXP:
 	formatReal(REAL(labels), n, &w, &d, &e, 0);
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++) {
 	    strp = EncodeReal0(REAL(labels)[i], 0, d, e, OutDec);
-	    SET_STRING_ELT(ans, i, mkChar(strp));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(strp));
 	}
 	UNPROTECT(1);
 	break;
     case CPLXSXP:
 	formatComplex(COMPLEX(labels), n, &w, &d, &e, &wi, &di, &ei, 0);
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++) {
 	    strp = EncodeComplex(COMPLEX(labels)[i], 0, d, e, 0, di, ei,
 				 OutDec);
-	    SET_STRING_ELT(ans, i, mkChar(strp));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(strp));
 	}
 	UNPROTECT(1);
 	break;
     case STRSXP:
-	PROTECT(ans = allocVector(STRSXP, n));
+	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for (i = 0; i < n; i++) {
 	    SET_STRING_ELT(ans, i, STRING_ELT(labels, i));
 	}
 	UNPROTECT(1);
 	break;
     default:
-	error(_("invalid type for axis labels"));
+	Rf_error(_("invalid type for axis labels"));
     }
     return ans;
 }
@@ -763,7 +763,7 @@ SEXP C_axis(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 15)
-	error(_("too few arguments"));
+	Rf_error(_("too few arguments"));
     GCheckState(dd);
 
     PrintDefaults(); /* prepare for labelformat */
@@ -772,9 +772,9 @@ SEXP C_axis(SEXP args)
     /* Which side of the plot the axis is to appear on. */
     /* side = 1 | 2 | 3 | 4. */
 
-    side = asInteger(CAR(args));
+    side = Rf_asInteger(CAR(args));
     if (side < 1 || side > 4)
-	error(_("invalid axis number %d"), side);
+	Rf_error(_("invalid axis number %d"), side);
     args = CDR(args);
 
     /* Required argument: "at" */
@@ -791,17 +791,17 @@ SEXP C_axis(SEXP args)
 
     dolabels = TRUE;
     lab = CAR(args);
-    if (isLogical(lab) && Rf_length(lab) > 0) {
-	i = asLogical(lab);
+    if (Rf_isLogical(lab) && Rf_length(lab) > 0) {
+	i = Rf_asLogical(lab);
 	if (i == 0 || i == NA_LOGICAL)
 	    dolabels = FALSE;
 	PROTECT(lab = R_NilValue);
     } else if (TYPEOF(lab) == LANGSXP || TYPEOF(lab) == SYMSXP) {
-	PROTECT(lab = coerceVector(lab, EXPRSXP));
-    } else if (isExpression(lab)) {
+	PROTECT(lab = Rf_coerceVector(lab, EXPRSXP));
+    } else if (Rf_isExpression(lab)) {
 	PROTECT(lab);
     } else {
-	PROTECT(lab = coerceVector(lab, STRSXP));
+	PROTECT(lab = Rf_coerceVector(lab, STRSXP));
     }
     args = CDR(args);
 
@@ -818,7 +818,7 @@ SEXP C_axis(SEXP args)
     /* Specifies an offset outward from the plot for the axis.
      * The values in the par value "mgp" are interpreted
      * relative to this value. */
-    line = asReal(CAR(args));
+    line = Rf_asReal(CAR(args));
     /* defer processing until after in-line pars */
     args = CDR(args);
 
@@ -827,7 +827,7 @@ SEXP C_axis(SEXP args)
     /* This overrides the value of "line".  Again the "mgp" par values */
     /* are interpreted relative to this value. */
 
-    pos = asReal(CAR(args));
+    pos = Rf_asReal(CAR(args));
     /* defer processing until after in-line pars */
     args = CDR(args);
 
@@ -835,7 +835,7 @@ SEXP C_axis(SEXP args)
     /* Should the axis be drawn in the outer margin. */
     /* This only affects the computation of axis_base. */
 
-    outer = asLogical(CAR(args));
+    outer = Rf_asLogical(CAR(args));
     if (outer == NA_LOGICAL || outer == 0)
 	outer = NPC;
     else
@@ -843,35 +843,35 @@ SEXP C_axis(SEXP args)
     args = CDR(args);
 
     /* Optional argument: "font" */
-    font = asInteger(FixupFont(CAR(args), NA_INTEGER));
+    font = Rf_asInteger(FixupFont(CAR(args), NA_INTEGER));
     args = CDR(args);
 
     /* Optional argument: "lty" */
-    lty = asInteger(FixupLty(CAR(args), 0));
+    lty = Rf_asInteger(FixupLty(CAR(args), 0));
     args = CDR(args);
 
     /* Optional argument: "lwd" */
-    lwd = asReal(FixupLwd(CAR(args), 1));
+    lwd = Rf_asReal(FixupLwd(CAR(args), 1));
     args = CDR(args);
-    lwdticks = asReal(FixupLwd(CAR(args), 1));
+    lwdticks = Rf_asReal(FixupLwd(CAR(args), 1));
     args = CDR(args);
 
     /* Optional argument: "col" */
-    col = asInteger(FixupCol(CAR(args), gpptr(dd)->fg));
+    col = Rf_asInteger(FixupCol(CAR(args), gpptr(dd)->fg));
     args = CDR(args);
-    colticks = asInteger(FixupCol(CAR(args), col));
+    colticks = Rf_asInteger(FixupCol(CAR(args), col));
     args = CDR(args);
 
     /* Optional argument: "hadj" */
     if (Rf_length(CAR(args)) != 1)
-	error(_("'hadj' must be of length one"));
-    hadj = asReal(CAR(args));
+	Rf_error(_("'hadj' must be of length one"));
+    hadj = Rf_asReal(CAR(args));
     args = CDR(args);
 
     /* Optional argument: "padj" */
-    PROTECT(padj = coerceVector(CAR(args), REALSXP));
+    PROTECT(padj = Rf_coerceVector(CAR(args), REALSXP));
     npadj = Rf_length(padj);
-    if (npadj <= 0) error(_("zero-length '%s' specified"), "padj");
+    if (npadj <= 0) Rf_error(_("zero-length '%s' specified"), "padj");
 
     /* Now we process all the remaining inline par values:
        we need to do it now as x/yaxp are retrieved next.
@@ -922,13 +922,13 @@ SEXP C_axis(SEXP args)
     /* Determine the tickmark positions.  Note that these may fall */
     /* outside the plot window. We will clip them in the code below. */
 
-    create_at = isNull(at);
+    create_at = Rf_isNull(at);
     if (create_at) {
 	PROTECT(at = CreateAtVector(axp, usr, nint, logflag));
     }
     else {
-	if (isReal(at)) PROTECT(at = duplicate(at));
-	else PROTECT(at = coerceVector(at, REALSXP));
+	if (Rf_isReal(at)) PROTECT(at = Rf_duplicate(at));
+	else PROTECT(at = Rf_coerceVector(at, REALSXP));
     }
     n = Rf_length(at);
 
@@ -940,11 +940,11 @@ SEXP C_axis(SEXP args)
 	    lab = labelformat(at);
 	else {
 	    if (create_at)
-		error(_("'labels' is supplied and not 'at'"));
-	    if (!isExpression(lab)) lab = labelformat(lab);
+		Rf_error(_("'labels' is supplied and not 'at'"));
+	    if (!Rf_isExpression(lab)) lab = labelformat(lab);
 	}
 	if (Rf_length(at) != Rf_length(lab))
-	    error(_("'at' and 'labels' lengths differ, %d != %d"),
+	    Rf_error(_("'at' and 'labels' lengths differ, %d != %d"),
 		      Rf_length(at), Rf_length(lab));
     }
     PROTECT(lab);
@@ -961,7 +961,7 @@ SEXP C_axis(SEXP args)
 	if(R_FINITE(REAL(at)[i])) ntmp = i+1;
     }
     if (n > 0 && ntmp == 0)
-	error(_("no locations are finite"));
+	Rf_error(_("no locations are finite"));
     n = ntmp;
 
     /* Ok, all systems are "GO".  Let's get to it. */
@@ -1102,7 +1102,7 @@ SEXP C_axis(SEXP args)
 	    if (dolabels) {
 		/* Clip tick labels to user coordinates. */
 		if (x > low && x < high) {
-		    if (isExpression(lab)) {
+		    if (Rf_isExpression(lab)) {
 			GMMathText(XVECTOR_ELT(lab, ind[i]), side,
 				   axis_lab, 0, x, gpptr(dd)->las,
 				   padjval, dd);
@@ -1110,14 +1110,14 @@ SEXP C_axis(SEXP args)
 		    else {
 			label = STRING_ELT(lab, ind[i]);
 			if(label != NA_STRING) {
-			    const char *ss = CHAR(label);
+			    const char *ss = R_CHAR(label);
 			    labw = GStrWidth(ss, cetype_t(0), NFC, dd);
 			    tnew = temp - 0.5 * labw;
 			    /* Check room for perpendicular labels. */
 			    if (gpptr(dd)->las == 2 ||
 				gpptr(dd)->las == 3 ||
 				tnew - tlast >= gap) {
-				GMtext(ss, getCharCE(label),
+				GMtext(ss, Rf_getCharCE(label),
 				       side, axis_lab, 0, x,
 				       gpptr(dd)->las, padjval, dd);
 				tlast = temp + 0.5 *labw;
@@ -1243,7 +1243,7 @@ SEXP C_axis(SEXP args)
 	    if (dolabels) {
 		/* Clip tick labels to user coordinates. */
 		if (y > low && y < high) {
-		    if (isExpression(lab)) {
+		    if (Rf_isExpression(lab)) {
 			GMMathText(XVECTOR_ELT(lab, ind[i]), side,
 				   axis_lab, 0, y, gpptr(dd)->las,
 				   padjval, dd);
@@ -1251,15 +1251,15 @@ SEXP C_axis(SEXP args)
 		    else {
 			label = STRING_ELT(lab, ind[i]);
 			if(label != NA_STRING) {
-			    const char *ss = CHAR(label);
-			    labw = GStrWidth(ss, getCharCE(label), INCHES, dd);
+			    const char *ss = R_CHAR(label);
+			    labw = GStrWidth(ss, Rf_getCharCE(label), INCHES, dd);
 			    labw = GConvertYUnits(labw, INCHES, NFC, dd);
 			    tnew = temp - 0.5 * labw;
 			    /* Check room for perpendicular labels. */
 			    if (gpptr(dd)->las == 1 ||
 				gpptr(dd)->las == 2 ||
 				tnew - tlast >= gap) {
-				GMtext(ss, getCharCE(label),
+				GMtext(ss, Rf_getCharCE(label),
 				       side, axis_lab, 0, y,
 				       gpptr(dd)->las, padjval, dd);
 				tlast = temp + 0.5 *labw;
@@ -1296,40 +1296,40 @@ SEXP C_plotXY(SEXP args)
     GCheckState(dd);
     args = CDR(args);
     if (Rf_length(args) < 7)
-	error(_("too few arguments"));
+	Rf_error(_("too few arguments"));
 
     /* Required Arguments */
 #define PLOT_XY_DEALING(subname)				\
     sx = R_NilValue;		/* -Wall */			\
     sy = R_NilValue;		/* -Wall */			\
     sxy = CAR(args);						\
-    if (isNewList(sxy) && Rf_length(sxy) >= 2) {			\
+    if (Rf_isNewList(sxy) && Rf_length(sxy) >= 2) {			\
 	TypeCheck(sx = VECTOR_ELT(sxy, 0), REALSXP); \
 	TypeCheck(sy = VECTOR_ELT(sxy, 1), REALSXP); \
     }								\
-    else if (isList(sxy) && Rf_length(sxy) >= 2) {			\
+    else if (Rf_isList(sxy) && Rf_length(sxy) >= 2) {			\
 	TypeCheck(sx = CAR(sxy), REALSXP);	\
 	TypeCheck(sy = CADR(sxy), REALSXP);	\
     }								\
     else							\
-	error(_("invalid plotting structure"));	\
+	Rf_error(_("invalid plotting structure"));	\
     if (LENGTH(sx) != LENGTH(sy))				\
-	error(_("'x' and 'y' lengths differ in %s()"), subname);\
+	Rf_error(_("'x' and 'y' lengths differ in %s()"), subname);\
     n = LENGTH(sx);						\
     args = CDR(args)
 
     PLOT_XY_DEALING("plot.xy");
 
-    if (isNull(CAR(args))) type = 'p';
+    if (Rf_isNull(CAR(args))) type = 'p';
     else {
-	if (isString(CAR(args)) && LENGTH(CAR(args)) == 1 &&
+	if (Rf_isString(CAR(args)) && LENGTH(CAR(args)) == 1 &&
 	    LENGTH(pch = STRING_ELT(CAR(args), 0)) >= 1) {
 	    if(LENGTH(pch) > 1)
-		warning(_("plot type '%s' will be truncated to first character"),
-			CHAR(pch));
-	    type = CHAR(pch)[0];
+		Rf_warning(_("plot type '%s' will be truncated to first character"),
+			R_CHAR(pch));
+	    type = R_CHAR(pch)[0];
 	}
-	else error(_("invalid plot type"));
+	else Rf_error(_("invalid plot type"));
     }
     args = CDR(args);
 
@@ -1531,7 +1531,7 @@ SEXP C_plotXY(SEXP args)
 	break;
 
     default:/* OTHERWISE */
-	error(_("invalid plot type '%c'"), type);
+	Rf_error(_("invalid plot type '%c'"), type);
 
     } /* End {switch(type)} - for lines */
 
@@ -1573,39 +1573,39 @@ static void xypoints(SEXP args, int *n)
 {
     int k=0,/* -Wall */ kmin;
 
-    if (!isNumeric(CAR(args)))
-	error(_("invalid first argument"));
-    SETCAR(args, coerceVector(CAR(args), REALSXP));
+    if (!Rf_isNumeric(CAR(args)))
+	Rf_error(_("invalid first argument"));
+    SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));
     k = LENGTH(CAR(args));
     *n = k; kmin = k;
     args = CDR(args);
 
-    if (!isNumeric(CAR(args)))
-	error(_("invalid second argument"));
+    if (!Rf_isNumeric(CAR(args)))
+	Rf_error(_("invalid second argument"));
     k = LENGTH(CAR(args));
-    SETCAR(args, coerceVector(CAR(args), REALSXP));
+    SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));
     if (k > *n) *n = k;
     if (k < kmin) kmin = k;
     args = CDR(args);
 
-    if (!isNumeric(CAR(args)))
-	error(_("invalid third argument"));
-    SETCAR(args, coerceVector(CAR(args), REALSXP));
+    if (!Rf_isNumeric(CAR(args)))
+	Rf_error(_("invalid third argument"));
+    SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));
     k = LENGTH(CAR(args));
     if (k > *n) *n = k;
     if (k < kmin) kmin = k;
     args = CDR(args);
 
-    if (!isNumeric(CAR(args)))
-	error(_("invalid fourth argument"));
-    SETCAR(args, coerceVector(CAR(args), REALSXP));
+    if (!Rf_isNumeric(CAR(args)))
+	Rf_error(_("invalid fourth argument"));
+    SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));
     k = LENGTH(CAR(args));
     if (k > *n) *n = k;
     if (k < kmin) kmin = k;
     args = CDR(args);
 
     if (*n > 0 && kmin == 0)
-	error(_("cannot mix zero-length and non-zero-length coordinates"));
+	Rf_error(_("cannot mix zero-length and non-zero-length coordinates"));
 }
 
 
@@ -1619,7 +1619,7 @@ SEXP C_segments(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (Rf_length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) Rf_error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
@@ -1684,7 +1684,7 @@ SEXP C_rect(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (Rf_length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) Rf_error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
@@ -1759,10 +1759,10 @@ SEXP C_path(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 2) error(_("too few arguments"));
+    if (Rf_length(args) < 2) Rf_error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
-    sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
-    sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sx = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sy = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
     nx = LENGTH(sx);
 
     PROTECT(nper = CAR(args)); args = CDR(args);
@@ -1788,13 +1788,13 @@ SEXP C_path(SEXP args)
     xx = (double*) R_alloc(nx, sizeof(double));
     yy = (double*) R_alloc(nx, sizeof(double));
     if (!xx || !yy)
-	error("unable to allocate memory (in GPath)");
+	Rf_error("unable to allocate memory (in GPath)");
     for (i=0; i<nx; i++) {
         xx[i] = REAL(sx)[i];
         yy[i] = REAL(sy)[i];
         GConvert(&(xx[i]), &(yy[i]), USER, DEVICE, dd);
         if (!(R_FINITE(xx[i]) && R_FINITE(yy[i])))
-            error("invalid 'x' or 'y' (in 'GPath')");
+            Rf_error("invalid 'x' or 'y' (in 'GPath')");
     }
 
     if (INTEGER(lty)[0] == NA_INTEGER)
@@ -1825,18 +1825,18 @@ SEXP C_raster(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (Rf_length(args) < 7) error(_("too few arguments"));
+    if (Rf_length(args) < 7) Rf_error(_("too few arguments"));
     GCheckState(dd);
 
     raster = CAR(args); args = CDR(args);
     n = LENGTH(raster);
-    if (n <= 0) error(_("Empty raster"));  
-    dim = getAttrib(raster, R_DimSymbol);
+    if (n <= 0) Rf_error(_("Empty raster"));  
+    dim = Rf_getAttrib(raster, R_DimSymbol);
 
     vmax = vmaxget();
     /* raster is rather inefficient so allow a native representation as
        an integer array which requires no conversion */
-    if (inherits(raster, "nativeRaster") && isInteger(raster))
+    if (Rf_inherits(raster, "nativeRaster") && Rf_isInteger(raster))
 	image = (unsigned int *) INTEGER(raster);
     else {
 	image = (unsigned int *) R_alloc(n, sizeof(unsigned int));
@@ -1899,7 +1899,7 @@ SEXP C_arrows(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    if (Rf_length(args) < 4) error(_("too few arguments"));
+    if (Rf_length(args) < 4) Rf_error(_("too few arguments"));
     GCheckState(dd);
 
     xypoints(args, &n);
@@ -1910,19 +1910,19 @@ SEXP C_arrows(SEXP args)
     sx1 = CAR(args); nx1 = Rf_length(sx1); args = CDR(args);
     sy1 = CAR(args); ny1 = Rf_length(sy1); args = CDR(args);
 
-    hlength = asReal(CAR(args));
+    hlength = Rf_asReal(CAR(args));
     if (!R_FINITE(hlength) || hlength < 0)
-	error(_("invalid arrow head length"));
+	Rf_error(_("invalid arrow head length"));
     args = CDR(args);
 
-    angle = asReal(CAR(args));
+    angle = Rf_asReal(CAR(args));
     if (!R_FINITE(angle))
-	error(_("invalid arrow head angle"));
+	Rf_error(_("invalid arrow head angle"));
     args = CDR(args);
 
-    code = asInteger(CAR(args));
+    code = Rf_asInteger(CAR(args));
     if (code == NA_INTEGER || code < 0 || code > 3)
-	error(_("invalid arrow head specification"));
+	Rf_error(_("invalid arrow head specification"));
     args = CDR(args);
 
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));
@@ -1994,10 +1994,10 @@ SEXP C_polygon(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 2) error(_("too few arguments"));
+    if (Rf_length(args) < 2) Rf_error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
-    sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
-    sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sx = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sy = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
     nx = LENGTH(sx);
 
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));	args = CDR(args);
@@ -2070,27 +2070,27 @@ SEXP C_text(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 3) error(_("too few arguments"));
+    if (Rf_length(args) < 3) Rf_error(_("too few arguments"));
 
     PLOT_XY_DEALING("text");
 
     /* labels */
     txt = CAR(args);
-    if (isSymbol(txt) || isLanguage(txt))
-	txt = coerceVector(txt, EXPRSXP);
-    else if (!isExpression(txt))
-	txt = coerceVector(txt, STRSXP);
+    if (Rf_isSymbol(txt) || Rf_isLanguage(txt))
+	txt = Rf_coerceVector(txt, EXPRSXP);
+    else if (!Rf_isExpression(txt))
+	txt = Rf_coerceVector(txt, STRSXP);
     PROTECT(txt);
     if (Rf_length(txt) <= 0)
-	error(_("zero-length '%s' specified"), "labels");
+	Rf_error(_("zero-length '%s' specified"), "labels");
     args = CDR(args);
 
     PROTECT(adj = CAR(args));
-    if (isNull(adj) || (isNumeric(adj) && Rf_length(adj) == 0)) {
+    if (Rf_isNull(adj) || (Rf_isNumeric(adj) && Rf_length(adj) == 0)) {
 	adjx = gpptr(dd)->adj;
 	adjy = NA_REAL;
     }
-    else if (isReal(adj)) {
+    else if (Rf_isReal(adj)) {
 	if (LENGTH(adj) == 1) {
 	    adjx = REAL(adj)[0];
 	    adjy = NA_REAL;
@@ -2100,7 +2100,7 @@ SEXP C_text(SEXP args)
 	    adjy = REAL(adj)[1];
 	}
     }
-    else if (isInteger(adj)) {
+    else if (Rf_isInteger(adj)) {
 	if (LENGTH(adj) == 1) {
 	    adjx = INTEGER(adj)[0];
 	    adjy = NA_REAL;
@@ -2110,17 +2110,17 @@ SEXP C_text(SEXP args)
 	    adjy = INTEGER(adj)[1];
 	}
     }
-    else error(_("invalid '%s' value"), "adj");
+    else Rf_error(_("invalid '%s' value"), "adj");
     args = CDR(args);
 
-    PROTECT(pos = coerceVector(CAR(args), INTSXP));
+    PROTECT(pos = Rf_coerceVector(CAR(args), INTSXP));
     npos = Rf_length(pos);
     for (i = 0; i < npos; i++)
 	if (INTEGER(pos)[i] < 1 || INTEGER(pos)[i] > 4)
-	    error(_("invalid '%s' value"), "pos");
+	    Rf_error(_("invalid '%s' value"), "pos");
     args = CDR(args);
 
-    offset = GConvertXUnits(asReal(CAR(args)), CHARS, INCHES, dd);
+    offset = GConvertXUnits(Rf_asReal(CAR(args)), CHARS, INCHES, dd);
     args = CDR(args);
 
     PROTECT(vfont = FixupVFont(CAR(args)));
@@ -2148,7 +2148,7 @@ SEXP C_text(SEXP args)
     ProcessInlinePars(args, dd);
 
     /* Done here so 'vfont' trumps inline 'family' */
-    if (!isNull(vfont) && !isExpression(txt)) {
+    if (!Rf_isNull(vfont) && !Rf_isExpression(txt)) {
 	strncpy(gpptr(dd)->family, "Hershey ", 201);
 	gpptr(dd)->family[7] = (char) INTEGER(vfont)[0];
 	vectorFonts = TRUE;
@@ -2156,7 +2156,7 @@ SEXP C_text(SEXP args)
 
     GMode(1, dd);
     if (n == 0 && ntxt > 0)
-	error(_("no coordinates were supplied"));
+	Rf_error(_("no coordinates were supplied"));
     for (i = 0; i < imax2(n,ntxt); i++) {
 	xx = x[i % n];
 	yy = y[i % n];
@@ -2201,13 +2201,13 @@ SEXP C_text(SEXP args)
 		    break;
 		}
 	    }
-	    if (isExpression(txt)) {
+	    if (Rf_isExpression(txt)) {
 		GMathText(xx, yy, INCHES, XVECTOR_ELT(txt, i % ntxt),
 			  adjx, adjy, gpptr(dd)->srt, dd);
 	    } else {
 		string = STRING_ELT(txt, i % ntxt);
 		if(string != NA_STRING)
-		    GText(xx, yy, INCHES, CHAR(string), getCharCE(string),
+		    GText(xx, yy, INCHES, R_CHAR(string), Rf_getCharCE(string),
 			  adjx, adjy, gpptr(dd)->srt, dd);
 	    }
 	}
@@ -2348,67 +2348,67 @@ SEXP C_mtext(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 9)
-	error(_("too few arguments"));
+	Rf_error(_("too few arguments"));
 
     /* Arg1 : text= */
     text = CAR(args);
-    if (isSymbol(text) || isLanguage(text))
-	text = coerceVector(text, EXPRSXP);
-    else if (!isExpression(text))
-	text = coerceVector(text, STRSXP);
+    if (Rf_isSymbol(text) || Rf_isLanguage(text))
+	text = Rf_coerceVector(text, EXPRSXP);
+    else if (!Rf_isExpression(text))
+	text = Rf_coerceVector(text, STRSXP);
     PROTECT(text);
     n = ntext = Rf_length(text);
     if (ntext <= 0)
-	error(_("zero-length '%s' specified"), "text");
+	Rf_error(_("zero-length '%s' specified"), "text");
     args = CDR(args);
 
     /* Arg2 : side= */
-    PROTECT(side = coerceVector(CAR(args), INTSXP));
+    PROTECT(side = Rf_coerceVector(CAR(args), INTSXP));
     nside = Rf_length(side);
-    if (nside <= 0) error(_("zero-length '%s' specified"), "side");
+    if (nside <= 0) Rf_error(_("zero-length '%s' specified"), "side");
     if (n < nside) n = nside;
     args = CDR(args);
 
     /* Arg3 : line= */
-    PROTECT(line = coerceVector(CAR(args), REALSXP));
+    PROTECT(line = Rf_coerceVector(CAR(args), REALSXP));
     nline = Rf_length(line);
-    if (nline <= 0) error(_("zero-length '%s' specified"), "line");
+    if (nline <= 0) Rf_error(_("zero-length '%s' specified"), "line");
     if (n < nline) n = nline;
     args = CDR(args);
 
     /* Arg4 : outer= */
     /* outer == NA => outer <- 0 */
-    PROTECT(outer = coerceVector(CAR(args), INTSXP));
+    PROTECT(outer = Rf_coerceVector(CAR(args), INTSXP));
     nouter = Rf_length(outer);
-    if (nouter <= 0) error(_("zero-length '%s' specified"), "outer");
+    if (nouter <= 0) Rf_error(_("zero-length '%s' specified"), "outer");
     if (n < nouter) n = nouter;
     args = CDR(args);
 
     /* Arg5 : at= */
-    PROTECT(at = coerceVector(CAR(args), REALSXP));
+    PROTECT(at = Rf_coerceVector(CAR(args), REALSXP));
     nat = Rf_length(at);
-    if (nat <= 0) error(_("zero-length '%s' specified"), "at");
+    if (nat <= 0) Rf_error(_("zero-length '%s' specified"), "at");
     if (n < nat) n = nat;
     args = CDR(args);
 
     /* Arg6 : adj= */
-    PROTECT(adj = coerceVector(CAR(args), REALSXP));
+    PROTECT(adj = Rf_coerceVector(CAR(args), REALSXP));
     nadj = Rf_length(adj);
-    if (nadj <= 0) error(_("zero-length '%s' specified"), "adj");
+    if (nadj <= 0) Rf_error(_("zero-length '%s' specified"), "adj");
     if (n < nadj) n = nadj;
     args = CDR(args);
 
     /* Arg7 : padj= */
-    PROTECT(padj = coerceVector(CAR(args), REALSXP));
+    PROTECT(padj = Rf_coerceVector(CAR(args), REALSXP));
     npadj = Rf_length(padj);
-    if (npadj <= 0) error(_("zero-length '%s' specified"), "padj");
+    if (npadj <= 0) Rf_error(_("zero-length '%s' specified"), "padj");
     if (n < npadj) n = npadj;
     args = CDR(args);
 
     /* Arg8 : cex */
     PROTECT(cex = FixupCex(CAR(args), 1.0));
     ncex = Rf_length(cex);
-    if (ncex <= 0) error(_("zero-length '%s' specified"), "cex");
+    if (ncex <= 0) Rf_error(_("zero-length '%s' specified"), "cex");
     if (n < ncex) n = ncex;
     args = CDR(args);
 
@@ -2416,14 +2416,14 @@ SEXP C_mtext(SEXP args)
     rawcol = CAR(args);
     PROTECT(col = FixupCol(rawcol, R_TRANWHITE));
     ncol = Rf_length(col);
-    if (ncol <= 0) error(_("zero-length '%s' specified"), "col");
+    if (ncol <= 0) Rf_error(_("zero-length '%s' specified"), "col");
     if (n < ncol) n = ncol;
     args = CDR(args);
 
     /* Arg10 : font */
     PROTECT(font = FixupFont(CAR(args), NA_INTEGER));
     nfont = Rf_length(font);
-    if (nfont <= 0) error(_("zero-length '%s' specified"), "font");
+    if (nfont <= 0) Rf_error(_("zero-length '%s' specified"), "font");
     if (n < nfont) n = nfont;
     args = CDR(args);
 
@@ -2480,14 +2480,14 @@ SEXP C_mtext(SEXP args)
 	atval = ComputeAtValue(atval, gpptr(dd)->adj, sideval, gpptr(dd)->las,
 			       outerval, dd);
 
-	if (isExpression(text))
+	if (Rf_isExpression(text))
 	    GMMathText(XVECTOR_ELT(text, i % ntext),
 		       sideval, lineval, outerval, atval, gpptr(dd)->las,
 		       padjval, dd);
 	else {
 	    string = STRING_ELT(text, i % ntext);
 	    if(string != NA_STRING)
-		GMtext(CHAR(string), getCharCE(string), sideval, lineval,
+		GMtext(R_CHAR(string), Rf_getCharCE(string), sideval, lineval,
 		       outerval, atval, gpptr(dd)->las, padjval, dd);
 	}
 
@@ -2522,7 +2522,7 @@ SEXP C_title(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 6) error(_("too few arguments"));
+    if (Rf_length(args) < 6) Rf_error(_("too few arguments"));
 
     Main = sub = xlab = ylab = R_NilValue;
 
@@ -2542,7 +2542,7 @@ SEXP C_title(SEXP args)
 	ylab = CAR(args);
     args = CDR(args);
 
-    line = asReal(CAR(args));
+    line = Rf_asReal(CAR(args));
     args = CDR(args);
 
     outer = Rboolean(Rf_asLogical(CAR(args)));
@@ -2595,7 +2595,7 @@ SEXP C_title(SEXP args)
 	    hpos = GConvertX(adj, NPC, USER, dd);
 	    where = MAR3;
 	}
-	if (isExpression(Main)) {
+	if (Rf_isExpression(Main)) {
 	    GMathText(hpos, vpos, where, XVECTOR_ELT(Main, 0),
 		      adj, 0.5, 0.0, dd);
 	}
@@ -2605,7 +2605,7 @@ SEXP C_title(SEXP args)
 	  for (i = 0; i < n; i++) {
 		string = STRING_ELT(Main, i);
 		if(string != NA_STRING)
-		    GText(hpos, offset - i, where, CHAR(string), getCharCE(string),
+		    GText(hpos, offset - i, where, R_CHAR(string), Rf_getCharCE(string),
 			  adj, adjy, 0.0, dd);
 	  }
 	}
@@ -2633,7 +2633,7 @@ SEXP C_title(SEXP args)
 	    hpos = GConvertX(adj, NPC, USER, dd);
 	    where = 0;
 	}
-	if (isExpression(sub))
+	if (Rf_isExpression(sub))
 	    GMMathText(XVECTOR_ELT(sub, 0), 1, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
@@ -2641,7 +2641,7 @@ SEXP C_title(SEXP args)
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(sub, i);
 		if(string != NA_STRING)
-		    GMtext(CHAR(string), getCharCE(string), 1, vpos, where,
+		    GMtext(R_CHAR(string), Rf_getCharCE(string), 1, vpos, where,
 			   hpos, 0, 0.0, dd);
 	    }
 	}
@@ -2669,7 +2669,7 @@ SEXP C_title(SEXP args)
 	    hpos = GConvertX(adj, NPC, USER, dd);
 	    where = 0;
 	}
-	if (isExpression(xlab))
+	if (Rf_isExpression(xlab))
 	    GMMathText(XVECTOR_ELT(xlab, 0), 1, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
@@ -2677,7 +2677,7 @@ SEXP C_title(SEXP args)
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(xlab, i);
 		if(string != NA_STRING)
-		    GMtext(CHAR(string), getCharCE(string), 1, vpos + i,
+		    GMtext(R_CHAR(string), Rf_getCharCE(string), 1, vpos + i,
 			   where, hpos, 0, 0.0, dd);
 	    }
 	}
@@ -2705,7 +2705,7 @@ SEXP C_title(SEXP args)
 	    hpos = GConvertY(adj, NPC, USER, dd);
 	    where = 0;
 	}
-	if (isExpression(ylab))
+	if (Rf_isExpression(ylab))
 	    GMMathText(XVECTOR_ELT(ylab, 0), 2, vpos, where,
 		       hpos, 0, 0.0, dd);
 	else {
@@ -2713,7 +2713,7 @@ SEXP C_title(SEXP args)
 	    for (i = 0; i < n; i++) {
 		string = STRING_ELT(ylab, i);
 		if(string != NA_STRING)
-		    GMtext(CHAR(string), getCharCE(string), 2, vpos - i,
+		    GMtext(R_CHAR(string), Rf_getCharCE(string), 2, vpos - i,
 			   where, hpos, 0, 0.0, dd);
 	    }
 	}
@@ -2738,26 +2738,26 @@ SEXP C_abline(SEXP args)
     GCheckState(dd);
 
     args = CDR(args);
-    if (Rf_length(args) < 5) error(_("too few arguments"));
+    if (Rf_length(args) < 5) Rf_error(_("too few arguments"));
 
     if ((a = CAR(args)) != R_NilValue)
-	SETCAR(args, a = coerceVector(a, REALSXP));
+	SETCAR(args, a = Rf_coerceVector(a, REALSXP));
     args = CDR(args);
 
     if ((b = CAR(args)) != R_NilValue)
-	SETCAR(args, b = coerceVector(b, REALSXP));
+	SETCAR(args, b = Rf_coerceVector(b, REALSXP));
     args = CDR(args);
 
     if ((h = CAR(args)) != R_NilValue)
-	SETCAR(args, h = coerceVector(h, REALSXP));
+	SETCAR(args, h = Rf_coerceVector(h, REALSXP));
     args = CDR(args);
 
     if ((v = CAR(args)) != R_NilValue)
-	SETCAR(args, v = coerceVector(v, REALSXP));
+	SETCAR(args, v = Rf_coerceVector(v, REALSXP));
     args = CDR(args);
 
     if ((untf = CAR(args)) != R_NilValue)
-	SETCAR(args, untf = coerceVector(untf, LGLSXP));
+	SETCAR(args, untf = Rf_coerceVector(untf, LGLSXP));
     args = CDR(args);
 
 
@@ -2779,16 +2779,16 @@ SEXP C_abline(SEXP args)
     if (a != R_NilValue) {  /* case where a ans b are supplied */
 	if (b == R_NilValue) {
 	    if (LENGTH(a) != 2)
-		error(_("invalid a=, b= specification"));
+		Rf_error(_("invalid a=, b= specification"));
 	    aa = REAL(a)[0];
 	    bb = REAL(a)[1];
 	}
 	else {
-	    aa = asReal(a);
-	    bb = asReal(b);
+	    aa = Rf_asReal(a);
+	    bb = Rf_asReal(b);
 	}
 	if (!R_FINITE(aa) || !R_FINITE(bb))
-	    error(_("'a' and 'b' must be finite"));
+	    Rf_error(_("'a' and 'b' must be finite"));
 	gpptr(dd)->col = INTEGER(col)[0];
 	gpptr(dd)->lwd = REAL(lwd)[0];
 	if (nlty && INTEGER(lty)[0] != NA_INTEGER)
@@ -2921,9 +2921,9 @@ SEXP C_box(SEXP args)
     GCheckState(dd);
     GSavePars(dd);
     args = CDR(args);
-    which = asInteger(CAR(args)); args = CDR(args);
+    which = Rf_asInteger(CAR(args)); args = CDR(args);
     if (which < 1 || which > 4)
-	error(_("invalid '%s' argument"), "which");
+	Rf_error(_("invalid '%s' argument"), "which");
     /*
      * If specified non-NA col then use that, else ...
      *
@@ -2976,7 +2976,7 @@ SEXP C_locator(SEXP call, SEXP op, SEXP args, SEXP rho)
 	nobs = CAR(args); args = CDR(args);
 	n = INTEGER(nobs)[0];
 	stype = CAR(args); args = CDR(args);
-	type = CHAR(STRING_ELT(stype, 0))[0];
+	type = R_CHAR(STRING_ELT(stype, 0))[0];
 	if (type != 'n') {
 	    GMode(1, dd);
 	    for (i = 0; i < n; i++) {
@@ -2993,18 +2993,18 @@ SEXP C_locator(SEXP call, SEXP op, SEXP args, SEXP rho)
     } else {
 	GCheckState(dd);
 
-	n = asInteger(CAR(args));
+	n = Rf_asInteger(CAR(args));
 	if (n <= 0 || n == NA_INTEGER)
-	    error(_("invalid number of points in %s"), "locator()");
+	    Rf_error(_("invalid number of points in %s"), "locator()");
 	args = CDR(args);
-	if (isString(CAR(args)) && LENGTH(CAR(args)) == 1)
+	if (Rf_isString(CAR(args)) && LENGTH(CAR(args)) == 1)
 	    stype = CAR(args);
 	else
-	    error(_("invalid plot type"));
-	type = CHAR(STRING_ELT(stype, 0))[0];
-	PROTECT(x = allocVector(REALSXP, n));
-	PROTECT(y = allocVector(REALSXP, n));
-	PROTECT(nobs=allocVector(INTSXP,1));
+	    Rf_error(_("invalid plot type"));
+	type = R_CHAR(STRING_ELT(stype, 0))[0];
+	PROTECT(x = Rf_allocVector(REALSXP, n));
+	PROTECT(y = Rf_allocVector(REALSXP, n));
+	PROTECT(nobs=Rf_allocVector(INTSXP,1));
 
 	GMode(2, dd);
 	for (i = 0; i < n; i++) {
@@ -3026,12 +3026,12 @@ SEXP C_locator(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    REAL(x)[i] = NA_REAL;
 	    REAL(y)[i] = NA_REAL;
 	}
-	PROTECT(ans = allocList(3));
+	PROTECT(ans = Rf_allocList(3));
 	SETCAR(ans, x);
 	SETCADR(ans, y);
 	SETCADDR(ans, nobs);
 	if (GRecording(call, dd)) {
-	    PROTECT(saveans = allocList(5));
+	    PROTECT(saveans = Rf_allocList(5));
 	    SETCAR(saveans, name);
 	    SETCADR(saveans, x);
 	    SETCADDR(saveans, y);
@@ -3108,7 +3108,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	 * BUT par(cex) only sets cexbase, so here we set cex from cexbase
 	 */
 	gpptr(dd)->cex = gpptr(dd)->cexbase;
-	offset = GConvertXUnits(asReal(Offset), CHARS, INCHES, dd);
+	offset = GConvertXUnits(Rf_asReal(Offset), CHARS, INCHES, dd);
 	for (i = 0; i < n; i++) {
 	    plot = LOGICAL(ind)[i];
 	    if (LOGICAL(draw)[0] && plot) {
@@ -3117,8 +3117,8 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 		GConvert(&xi, &yi, USER, INCHES, dd);
 		posi = INTEGER(pos)[i];
 		drawLabel(xi, yi, posi, offset,
-			  CHAR(STRING_ELT(l, i % nl)),
-			  getCharCE(STRING_ELT(l, i % nl)), dd);
+			  R_CHAR(STRING_ELT(l, i % nl)),
+			  Rf_getCharCE(STRING_ELT(l, i % nl)), dd);
 	    }
 	}
 	return R_NilValue;
@@ -3129,29 +3129,29 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	x = CAR(args); args = CDR(args);
 	y = CAR(args); args = CDR(args);
 	l = CAR(args); args = CDR(args);
-	npts = asInteger(CAR(args)); args = CDR(args);
-	plot = asLogical(CAR(args)); args = CDR(args);
+	npts = Rf_asInteger(CAR(args)); args = CDR(args);
+	plot = Rf_asLogical(CAR(args)); args = CDR(args);
 	Offset = CAR(args); args = CDR(args);
-	tol = asReal(CAR(args)); args = CDR(args);
-	atpen = asLogical(CAR(args));
+	tol = Rf_asReal(CAR(args)); args = CDR(args);
+	atpen = Rf_asLogical(CAR(args));
 	if (npts <= 0 || npts == NA_INTEGER)
-	    error(_("invalid number of points in %s"), "identify()");
-	if (!isReal(x) || !isReal(y) || !isString(l) || !isReal(Offset))
-	    error(_("incorrect argument type"));
+	    Rf_error(_("invalid number of points in %s"), "identify()");
+	if (!Rf_isReal(x) || !Rf_isReal(y) || !Rf_isString(l) || !Rf_isReal(Offset))
+	    Rf_error(_("incorrect argument type"));
 	if (tol <= 0 || ISNAN(tol))
-	    error(_("invalid '%s' value"), "tolerance");
+	    Rf_error(_("invalid '%s' value"), "tolerance");
 	if (plot == NA_LOGICAL)
-	    error(_("invalid '%s' value"), "plot");
+	    Rf_error(_("invalid '%s' value"), "plot");
 	if (atpen == NA_LOGICAL)
-	    error(_("invalid '%s' value"), "atpen");
+	    Rf_error(_("invalid '%s' value"), "atpen");
 	nl = LENGTH(l);
 	if (nl <= 0)
-	    error(_("zero-length '%s' specified"), "labels");
+	    Rf_error(_("zero-length '%s' specified"), "labels");
 	n = LENGTH(x);
 	if (n != LENGTH(y))
-	    error(_("different argument lengths"));
+	    Rf_error(_("different argument lengths"));
 	if (nl > n)
-	    warning(_("more 'labels' than points"));
+	    Rf_warning(_("more 'labels' than points"));
 
 	/*
 	 * Most of the appropriate settings have been set up in
@@ -3163,15 +3163,15 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	 * BUT par(cex) only sets cexbase, so here we set cex from cexbase
 	 */
 	gpptr(dd)->cex = gpptr(dd)->cexbase;
-	offset = GConvertXUnits(asReal(Offset), CHARS, INCHES, dd);
-	PROTECT(ind = allocVector(LGLSXP, n));
-	PROTECT(pos = allocVector(INTSXP, n));
+	offset = GConvertXUnits(Rf_asReal(Offset), CHARS, INCHES, dd);
+	PROTECT(ind = Rf_allocVector(LGLSXP, n));
+	PROTECT(pos = Rf_allocVector(INTSXP, n));
 	for (i = 0; i < n; i++) LOGICAL(ind)[i] = 0;
 
 	k = 0;
 	GMode(2, dd);
-	PROTECT(x = duplicate(x));
-	PROTECT(y = duplicate(y));
+	PROTECT(x = Rf_duplicate(x));
+	PROTECT(y = Rf_duplicate(y));
 	while (k < npts) {
 	    if (!GLocator(&xp, &yp, INCHES, dd)) break;
 	    /*
@@ -3197,7 +3197,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    /* can't use warning because we want to print immediately  */
 	    /* might want to handle warn=2? */
-	    warn = asInteger(GetOption1(install("warn")));
+	    warn = Rf_asInteger(GetOption1(Rf_install("warn")));
 	    if (dmin > tol) {
 		if(warn >= 0) {
 		    REprintf(_("warning: no point within %.2f inches\n"), tol);
@@ -3239,21 +3239,21 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 		}
 		if (plot) {
 		    drawLabel(xi, yi, INTEGER(pos)[imin], offset,
-			      CHAR(STRING_ELT(l, imin % nl)),
-			      getCharCE(STRING_ELT(l, imin % nl)), dd);
+			      R_CHAR(STRING_ELT(l, imin % nl)),
+			      Rf_getCharCE(STRING_ELT(l, imin % nl)), dd);
 		    GMode(0, dd);
 		    GMode(2, dd);
 		}
 	    }
 	}
 	GMode(0, dd);
-	PROTECT(ans = allocList(2));
+	PROTECT(ans = Rf_allocList(2));
 	SETCAR(ans, ind);
 	SETCADR(ans, pos);
 	if (GRecording(call, dd)) {
 	    /* If we are recording, save enough information to be able to
 	       redraw the text labels beside identified points */
-	    PROTECT(saveans = allocList(8));
+	    PROTECT(saveans = Rf_allocList(8));
 	    SETCAR(saveans, name);
 	    SETCADR(saveans, ind);
 	    SETCADDR(saveans, pos);
@@ -3261,7 +3261,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SETCAD4R(saveans, y);
 	    SETCAR(nthcdr(saveans,5), Offset);
 	    SETCAR(nthcdr(saveans,6), l);
-	    SETCAR(nthcdr(saveans,7), ScalarLogical(plot));
+	    SETCAR(nthcdr(saveans,7), Rf_ScalarLogical(plot));
 
 	    GErecordGraphicOperation(op, saveans, dd);
 	    UNPROTECT(1);
@@ -3280,25 +3280,25 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
     double cex, cexsave;						\
     pGEDevDesc dd = GEcurrentDevice();					\
     args = CDR(args);							\
-    if (Rf_length(args) < 5) error(_("too few arguments"));		\
+    if (Rf_length(args) < 5) Rf_error(_("too few arguments"));		\
 									\
     str = CAR(args);							\
-    if (isSymbol(str) || isLanguage(str))				\
-	str = coerceVector(str, EXPRSXP);				\
-    else if (!isExpression(str))					\
-	str = coerceVector(str, STRSXP);				\
+    if (Rf_isSymbol(str) || Rf_isLanguage(str))				\
+	str = Rf_coerceVector(str, EXPRSXP);				\
+    else if (!Rf_isExpression(str))					\
+	str = Rf_coerceVector(str, STRSXP);				\
     PROTECT(str);							\
     args = CDR(args);							\
 									\
-    if ((units = asInteger(CAR(args))) == NA_INTEGER || units < 0)	\
-	error(_("invalid units"));					\
+    if ((units = Rf_asInteger(CAR(args))) == NA_INTEGER || units < 0)	\
+	Rf_error(_("invalid units"));					\
     if(units == 1)  GCheckState(dd); \
     args = CDR(args);							\
 									\
-    if (isNull(CAR(args)))						\
+    if (Rf_isNull(CAR(args)))						\
 	cex = gpptr(dd)->cex;						\
-    else if (!R_FINITE((cex = asReal(CAR(args)))) || cex <= 0.0)	\
-	error(_("invalid '%s' value"), "cex");				\
+    else if (!R_FINITE((cex = Rf_asReal(CAR(args)))) || cex <= 0.0)	\
+	Rf_error(_("invalid '%s' value"), "cex");				\
     args = CDR(args);							\
     PROTECT(font = FixupFont(CAR(args), NA_INTEGER)); args = CDR(args); \
     PROTECT(vfont = FixupVFont(CAR(args))); args = CDR(args);		\
@@ -3306,24 +3306,24 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
     ProcessInlinePars(args, dd);					\
 									\
     /* 'vfont' trumps inline 'family' */				\
-    if (!isNull(vfont) && !isExpression(str)) {				\
+    if (!Rf_isNull(vfont) && !Rf_isExpression(str)) {				\
 	strncpy(gpptr(dd)->family, "Hershey ", 201);			\
 	gpptr(dd)->family[7] = (char)INTEGER(vfont)[0];			\
 	gpptr(dd)->font = INTEGER(vfont)[1];				\
     } else gpptr(dd)->font = INTEGER(font)[0];				\
 									\
     n = LENGTH(str);							\
-    PROTECT(ans = allocVector(REALSXP, n));				\
+    PROTECT(ans = Rf_allocVector(REALSXP, n));				\
     cexsave = gpptr(dd)->cex;						\
     gpptr(dd)->cex = cex * gpptr(dd)->cexbase;				\
     for (i = 0; i < n; i++)						\
-	if (isExpression(str))						\
+	if (Rf_isExpression(str))						\
 	    REAL(ans)[i] = GExpression ## KIND(XVECTOR_ELT(str, i),	\
 					     GMapUnits(units), dd);	\
 	else {								\
 	    ch = STRING_ELT(str, i);					\
 	    REAL(ans)[i] = (ch == NA_STRING) ? 0.0 :			\
-		GStr ## KIND(CHAR(ch), getCharCE(ch), GMapUnits(units), dd);		\
+		GStr ## KIND(R_CHAR(ch), Rf_getCharCE(ch), GMapUnits(units), dd);		\
 	}								\
     gpptr(dd)->cex = cexsave;						\
     GRestorePars(dd);							\
@@ -3369,8 +3369,8 @@ static void drawdend(int node, double *x, double *y, SEXP dnd_llabels,
 	yl = (dnd_hang >= 0) ? *y - dnd_hang : 0;
 	if(STRING_ELT(dnd_llabels, -k-1) != NA_STRING)
 	    GText(xl, yl-dnd_offset, USER,
-		  CHAR(STRING_ELT(dnd_llabels, -k-1)),
-		  getCharCE(STRING_ELT(dnd_llabels, -k-1)),
+		  R_CHAR(STRING_ELT(dnd_llabels, -k-1)),
+		  Rf_getCharCE(STRING_ELT(dnd_llabels, -k-1)),
 		  1.0, 0.3, 90.0, dd);
     }
     /* right part */
@@ -3381,8 +3381,8 @@ static void drawdend(int node, double *x, double *y, SEXP dnd_llabels,
 	yr = (dnd_hang >= 0) ? *y - dnd_hang : 0;
 	if(STRING_ELT(dnd_llabels, -k-1) != NA_STRING)
 	    GText(xr, yr-dnd_offset, USER,
-		  CHAR(STRING_ELT(dnd_llabels, -k-1)),
-		  getCharCE(STRING_ELT(dnd_llabels, -k-1)),
+		  R_CHAR(STRING_ELT(dnd_llabels, -k-1)),
+		  Rf_getCharCE(STRING_ELT(dnd_llabels, -k-1)),
 		  1.0, 0.3, 90.0, dd);
     }
     xx[0] = xl; yy[0] = yl;
@@ -3407,10 +3407,10 @@ SEXP C_dend(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 6)
-	error(_("too few arguments"));
+	Rf_error(_("too few arguments"));
 
     /* n */
-    n = asInteger(CAR(args));
+    n = Rf_asInteger(CAR(args));
     if (n == NA_INTEGER || n < 2)
 	goto badargs;
     args = CDR(args);
@@ -3431,12 +3431,12 @@ SEXP C_dend(SEXP args)
     /* ord = order(x$order) */
     if (Rf_length(CAR(args)) != n+1)
 	goto badargs;
-    PROTECT(xpos = coerceVector(CAR(args), REALSXP));
+    PROTECT(xpos = Rf_coerceVector(CAR(args), REALSXP));
     dnd_xpos = REAL(xpos);
     args = CDR(args);
 
     /* hang */
-    dnd_hang = asReal(CAR(args));
+    dnd_hang = Rf_asReal(CAR(args));
     if (!R_FINITE(dnd_hang))
 	goto badargs;
     dnd_hang = dnd_hang * (dnd_hght[n-1] - dnd_hght[0]);
@@ -3467,7 +3467,7 @@ SEXP C_dend(SEXP args)
     return R_NilValue;
 
   badargs:
-    error(_("invalid dendrogram input"));
+    Rf_error(_("invalid dendrogram input"));
     return R_NilValue;/* never used; to keep -Wall happy */
 }
 
@@ -3483,8 +3483,8 @@ SEXP C_dendwindow(SEXP args)
     GCheckState(dd);
     args = CDR(args);
     if (Rf_length(args) < 5)
-	error(_("too few arguments"));
-    n = asInteger(CAR(args));
+	Rf_error(_("too few arguments"));
+    n = Rf_asInteger(CAR(args));
     if (n == NA_INTEGER || n < 2)
 	goto badargs;
     args = CDR(args);
@@ -3498,7 +3498,7 @@ SEXP C_dendwindow(SEXP args)
     height = CAR(args);
 
     args = CDR(args);
-    dnd_hang = asReal(CAR(args));
+    dnd_hang = Rf_asReal(CAR(args));
     if (!R_FINITE(dnd_hang))
 	goto badargs;
 
@@ -3530,7 +3530,7 @@ SEXP C_dendwindow(SEXP args)
     for (i = 0; i <= n; i++) {
 	str = STRING_ELT(llabels, i);
 	ll[i] = (str == NA_STRING) ? 0.0 :
-	    GStrWidth(CHAR(str), getCharCE(str), INCHES, dd) + dnd_offset;
+	    GStrWidth(R_CHAR(str), Rf_getCharCE(str), INCHES, dd) + dnd_offset;
     }
 
     imax = -1; yval = -DBL_MAX;
@@ -3574,7 +3574,7 @@ SEXP C_dendwindow(SEXP args)
     vmaxset(vmax);
     return R_NilValue;
   badargs:
-    error(_("invalid dendrogram input"));
+    Rf_error(_("invalid dendrogram input"));
     return R_NilValue;/* never used; to keep -Wall happy */
 }
 
@@ -3612,7 +3612,7 @@ static bool SymbolRange(double *x, int n, double *xmax, double *xmin)
 
 static void CheckSymbolPar(SEXP p, int *nr, int *nc)
 {
-    SEXP dim = getAttrib(p, R_DimSymbol);
+    SEXP dim = Rf_getAttrib(p, R_DimSymbol);
     switch(Rf_length(dim)) {
     case 0:
 	*nr = LENGTH(p);
@@ -3631,7 +3631,7 @@ static void CheckSymbolPar(SEXP p, int *nr, int *nc)
 	*nc = 0;
     }
     if (*nr == 0 || *nc == 0)
-	error(_("invalid symbol parameter vector"));
+	Rf_error(_("invalid symbol parameter vector"));
 }
 
 /* Internal  symbols(x, y, type, data, inches, bg, fg, ...) */
@@ -3649,22 +3649,22 @@ SEXP C_symbols(SEXP args)
     args = CDR(args);
 
     if (Rf_length(args) < 7)
-	error(_("too few arguments"));
+	Rf_error(_("too few arguments"));
 
-    PROTECT(x = coerceVector(CAR(args), REALSXP)); args = CDR(args);
-    PROTECT(y = coerceVector(CAR(args), REALSXP)); args = CDR(args);
-    if (!isNumeric(x) || !isNumeric(y) || Rf_length(x) <= 0 || LENGTH(x) <= 0)
-	error(_("invalid symbol coordinates"));
+    PROTECT(x = Rf_coerceVector(CAR(args), REALSXP)); args = CDR(args);
+    PROTECT(y = Rf_coerceVector(CAR(args), REALSXP)); args = CDR(args);
+    if (!Rf_isNumeric(x) || !Rf_isNumeric(y) || Rf_length(x) <= 0 || LENGTH(x) <= 0)
+	Rf_error(_("invalid symbol coordinates"));
 
-    type = asInteger(CAR(args)); args = CDR(args);
+    type = Rf_asInteger(CAR(args)); args = CDR(args);
 
     /* data: */
-    p = PROTECT(coerceVector(CAR(args), REALSXP)); args = CDR(args);
+    p = PROTECT(Rf_coerceVector(CAR(args), REALSXP)); args = CDR(args);
     CheckSymbolPar(p, &nr, &nc);
     if (LENGTH(x) != nr || LENGTH(y) != nr)
-	error(_("x/y/parameter length mismatch"));
+	Rf_error(_("x/y/parameter length mismatch"));
 
-    inches = asReal(CAR(args)); args = CDR(args);
+    inches = Rf_asReal(CAR(args)); args = CDR(args);
     if (!R_FINITE(inches) || inches < 0)
 	inches = 0;
 
@@ -3681,9 +3681,9 @@ SEXP C_symbols(SEXP args)
     switch (type) {
     case 1: /* circles */
 	if (nc != 1)
-	    error(_("invalid circles data"));
+	    Rf_error(_("invalid circles data"));
 	if (!SymbolRange(REAL(p), nr, &pmax, &pmin))
-	    error(_("invalid symbol parameter"));
+	    Rf_error(_("invalid symbol parameter"));
 	for (i = 0; i < nr; i++) {
 	    if (R_FINITE(REAL(x)[i]) && R_FINITE(REAL(y)[i]) &&
 		R_FINITE(REAL(p)[i])) {
@@ -3702,9 +3702,9 @@ SEXP C_symbols(SEXP args)
 	break;
     case 2: /* squares */
 	if(nc != 1)
-	    error(_("invalid squares data"));
+	    Rf_error(_("invalid squares data"));
 	if(!SymbolRange(REAL(p), nr, &pmax, &pmin))
-	    error(_("invalid symbol parameter"));
+	    Rf_error(_("invalid symbol parameter"));
 	for (i = 0; i < nr; i++) {
 	    if (R_FINITE(REAL(x)[i]) && R_FINITE(REAL(y)[i]) &&
 		R_FINITE(REAL(p)[i])) {
@@ -3727,9 +3727,9 @@ SEXP C_symbols(SEXP args)
 	break;
     case 3: /* rectangles */
 	if (nc != 2)
-	    error(_("invalid rectangles data (need 2 columns)"));
+	    Rf_error(_("invalid rectangles data (need 2 columns)"));
 	if (!SymbolRange(REAL(p), 2 * nr, &pmax, &pmin))
-	    error(_("invalid symbol parameter"));
+	    Rf_error(_("invalid symbol parameter"));
 	for (i = 0; i < nr; i++) {
 	    if (R_FINITE(REAL(x)[i]) && R_FINITE(REAL(y)[i]) &&
 		R_FINITE(REAL(p)[i]) && R_FINITE(REAL(p)[i+nr])) {
@@ -3757,9 +3757,9 @@ SEXP C_symbols(SEXP args)
 	break;
     case 4: /* stars */
 	if (nc < 3)
-	    error(_("invalid stars data"));
+	    Rf_error(_("invalid stars data"));
 	if (!SymbolRange(REAL(p), nc * nr, &pmax, &pmin))
-	    error(_("invalid symbol parameter"));
+	    Rf_error(_("invalid symbol parameter"));
 	vmax = vmaxget();
 	pp = (double*)R_alloc(nc, sizeof(double));
 	xp = (double*)R_alloc(nc, sizeof(double));
@@ -3799,16 +3799,16 @@ SEXP C_symbols(SEXP args)
 	break;
     case 5: /* thermometers */
 	if (nc != 3 && nc != 4)
-	    error(_("invalid thermometers data (need 3 or 4 columns)"));
+	    Rf_error(_("invalid thermometers data (need 3 or 4 columns)"));
 	SymbolRange(REAL(p)+2*nr/* <-- pointer arith*/, nr, &pmax, &pmin);
 	if (pmax < pmin)
-	    error(_("invalid 'thermometers[, %s]'"),
+	    Rf_error(_("invalid 'thermometers[, %s]'"),
 		      (nc == 4)? "3:4" : "3");
 	if (pmin < 0. || pmax > 1.) /* S-PLUS has an error here */
-	    warning(_("'thermometers[, %s]' not in [0,1] -- may look funny"),
+	    Rf_warning(_("'thermometers[, %s]' not in [0,1] -- may look funny"),
 		    (nc == 4)? "3:4" : "3");
 	if (!SymbolRange(REAL(p), 2 * nr, &pmax, &pmin))
-	    error(_("invalid 'thermometers[, 1:2]'"));
+	    Rf_error(_("invalid 'thermometers[, 1:2]'"));
 	for (i = 0; i < nr; i++) {
 	    xx = REAL(x)[i];
 	    yy = REAL(y)[i];
@@ -3847,7 +3847,7 @@ SEXP C_symbols(SEXP args)
 	break;
     case 6: /* boxplots (wid, hei, loWhsk, upWhsk, medProp) */
 	if (nc != 5)
-	    error(_("invalid 'boxplots' data (need 5 columns)"));
+	    Rf_error(_("invalid 'boxplots' data (need 5 columns)"));
 	pmax = -DBL_MAX;
 	pmin =	DBL_MAX;
 	for(i = 0; i < nr; i++) {
@@ -3856,9 +3856,9 @@ SEXP C_symbols(SEXP args)
 	    if (pmin > p4) pmin = p4;
 	}
 	if (pmin < 0. || pmax > 1.) /* S-PLUS has an error here */
-	    warning(_("'boxplots[, 5]' outside [0,1] -- may look funny"));
+	    Rf_warning(_("'boxplots[, 5]' outside [0,1] -- may look funny"));
 	if (!SymbolRange(REAL(p), 4 * nr, &pmax, &pmin))
-	    error(_("invalid 'boxplots[, 1:4]'"));
+	    Rf_error(_("invalid 'boxplots[, 1:4]'"));
 	for (i = 0; i < nr; i++) {
 	    xx = REAL(x)[i];
 	    yy = REAL(y)[i];
@@ -3904,7 +3904,7 @@ SEXP C_symbols(SEXP args)
 	}
 	break;
     default:
-	error(_("invalid symbol type"));
+	Rf_error(_("invalid symbol type"));
     }
     GMode(0, dd);
     GRestorePars(dd);
@@ -3929,12 +3929,12 @@ SEXP C_xspline(SEXP args)
     GCheckState(dd);
     args = CDR(args);
 
-    if (Rf_length(args) < 6) error(_("too few arguments"));
+    if (Rf_length(args) < 6) Rf_error(_("too few arguments"));
     /* (x,y) is checked in R via xy.coords() ; no need here : */
-    sx = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
-    sy = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sx = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    sy = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
     nx = LENGTH(sx);
-    ss = SETCAR(args, coerceVector(CAR(args), REALSXP));  args = CDR(args);
+    ss = SETCAR(args, Rf_coerceVector(CAR(args), REALSXP));  args = CDR(args);
     open = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
     repEnds = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
     draw = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
@@ -3942,16 +3942,16 @@ SEXP C_xspline(SEXP args)
     PROTECT(col = FixupCol(CAR(args), R_TRANWHITE));	args = CDR(args);
     ncol = LENGTH(col);
     if(ncol < 1)
-	error(_("incorrect length for '%s' argument"), "col");
+	Rf_error(_("incorrect length for '%s' argument"), "col");
     if(ncol > 1)
-	warning(_("incorrect length for '%s' argument"), "col");
+	Rf_warning(_("incorrect length for '%s' argument"), "col");
 
     PROTECT(border = FixupCol(CAR(args), gpptr(dd)->fg)); args = CDR(args);
     nborder = LENGTH(border);
     if(nborder < 1)
-	error(_("incorrect length for '%s' argument"), "border");
+	Rf_error(_("incorrect length for '%s' argument"), "border");
     if(nborder > 1)
-	warning(_("incorrect length for '%s' argument"), "border");
+	Rf_warning(_("incorrect length for '%s' argument"), "border");
 
     GSavePars(dd);
     ProcessInlinePars(args, dd);
@@ -3968,7 +3968,7 @@ SEXP C_xspline(SEXP args)
     xx = (double *) R_alloc(nx, sizeof(double));
     yy = (double *) R_alloc(nx, sizeof(double));
     if (!xx || !yy)
-	error("unable to allocate memory (in xspline)");
+	Rf_error("unable to allocate memory (in xspline)");
     for (i = 0; i < nx; i++) {
 	xx[i] = x[i];
 	yy[i] = y[i];
@@ -3985,15 +3985,15 @@ SEXP C_xspline(SEXP args)
 	SEXP nm, tmpx, tmpy;
 	double *xx, *yy, *x0, *y0;
 	PROTECT(ans = res);
-	PROTECT(nm = allocVector(STRSXP, 2));
-	SET_STRING_ELT(nm, 0, mkChar("x"));
-	SET_STRING_ELT(nm, 1, mkChar("y"));
-	setAttrib(ans, R_NamesSymbol, nm);
+	PROTECT(nm = Rf_allocVector(STRSXP, 2));
+	SET_STRING_ELT(nm, 0, Rf_mkChar("x"));
+	SET_STRING_ELT(nm, 1, Rf_mkChar("y"));
+	Rf_setAttrib(ans, R_NamesSymbol, nm);
 	nx = LENGTH(VECTOR_ELT(ans, 0));
 	x0 = REAL(VECTOR_ELT(ans, 0));
 	y0 = REAL(VECTOR_ELT(ans, 1));
-	PROTECT(tmpx = allocVector(REALSXP, nx));
-	PROTECT(tmpy = allocVector(REALSXP, nx));
+	PROTECT(tmpx = Rf_allocVector(REALSXP, nx));
+	PROTECT(tmpy = Rf_allocVector(REALSXP, nx));
 	xx = REAL(tmpx);
 	yy = REAL(tmpy);
 	for (i = 0; i < nx; i++) {
@@ -4019,17 +4019,17 @@ SEXP C_clip(SEXP args)
     pGEDevDesc dd = GEcurrentDevice();
 
     args = CDR(args);
-    x1 = asReal(CAR(args));
-    if(!R_FINITE(x1)) error("invalid '%s' argument", "x1");
+    x1 = Rf_asReal(CAR(args));
+    if(!R_FINITE(x1)) Rf_error("invalid '%s' argument", "x1");
     args = CDR(args);
-    x2 = asReal(CAR(args));
-    if(!R_FINITE(x2)) error("invalid '%s' argument", "x2");
+    x2 = Rf_asReal(CAR(args));
+    if(!R_FINITE(x2)) Rf_error("invalid '%s' argument", "x2");
     args = CDR(args);
-    y1 = asReal(CAR(args));
-    if(!R_FINITE(y1)) error("invalid '%s' argument", "y1");
+    y1 = Rf_asReal(CAR(args));
+    if(!R_FINITE(y1)) Rf_error("invalid '%s' argument", "y1");
     args = CDR(args);
-    y2 = asReal(CAR(args));
-    if(!R_FINITE(y2)) error("invalid '%s' argument", "y2");
+    y2 = Rf_asReal(CAR(args));
+    if(!R_FINITE(y2)) Rf_error("invalid '%s' argument", "y2");
 
     GConvert(&x1, &y1, USER, DEVICE, dd);
     GConvert(&x2, &y2, USER, DEVICE, dd);
@@ -4049,17 +4049,17 @@ SEXP C_convertX(SEXP args)
 
     args = CDR(args);
     x = CAR(args);
-    if (TYPEOF(x) != REALSXP) error(_("invalid '%s' argument"), "x");
+    if (TYPEOF(x) != REALSXP) Rf_error(_("invalid '%s' argument"), "x");
     n = LENGTH(x);
-    from = asInteger(CADR(args));
+    from = Rf_asInteger(CADR(args));
     if (from == NA_INTEGER || from <= 0 || from > 17 )
-	error(_("invalid '%s' argument"), "from");
-    to = asInteger(CADDR(args));
+	Rf_error(_("invalid '%s' argument"), "from");
+    to = Rf_asInteger(CADDR(args));
     if (to == NA_INTEGER || to <= 0 || to > 17 )
-	error(_("invalid '%s' argument"), "to");
+	Rf_error(_("invalid '%s' argument"), "to");
     from--; to--;
 
-    PROTECT(ans = duplicate(x));
+    PROTECT(ans = Rf_duplicate(x));
     rx = REAL(ans);
     for (i = 0; i < n; i++) rx[i] = GConvertX(rx[i], GUnit(from), GUnit(to), gdd);
     UNPROTECT(1);
@@ -4076,17 +4076,17 @@ SEXP C_convertY(SEXP args)
 
     args = CDR(args);
     x = CAR(args);
-    if (TYPEOF(x) != REALSXP) error(_("invalid '%s' argument"), "x");
+    if (TYPEOF(x) != REALSXP) Rf_error(_("invalid '%s' argument"), "x");
     n = LENGTH(x);
-    from = asInteger(CADR(args));
+    from = Rf_asInteger(CADR(args));
     if (from == NA_INTEGER || from <= 0 || from > 17 )
-	error(_("invalid '%s' argument"), "from");
-    to = asInteger(CADDR(args));
+	Rf_error(_("invalid '%s' argument"), "from");
+    to = Rf_asInteger(CADDR(args));
     if (to == NA_INTEGER || to <= 0 || to > 17 )
-	error(_("invalid '%s' argument"), "to");
+	Rf_error(_("invalid '%s' argument"), "to");
     from--; to--;
 
-    PROTECT(ans = duplicate(x));
+    PROTECT(ans = Rf_duplicate(x));
     rx = REAL(ans);
     for (i = 0; i < n; i++) rx[i] = GConvertY(rx[i], GUnit(from), GUnit(to), gdd);
     UNPROTECT(1);

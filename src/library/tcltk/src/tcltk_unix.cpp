@@ -69,7 +69,7 @@ static void TclHandler(void)
 
 static void addTcl(void)
 {
-    if (Tcl_loaded) return; // error(_("Tcl already loaded"));
+    if (Tcl_loaded) return; // Rf_error(_("Tcl already loaded"));
     Tcl_loaded = 1;
     OldHandler = R_PolledEvents;
     OldRwait = R_wait_usec;
@@ -86,11 +86,11 @@ static void addTcl(void)
 */
 void delTcl(void)
 {
-    if (!Tcl_loaded) error(_("Tcl is not loaded"));
+    if (!Tcl_loaded) Rf_error(_("Tcl is not loaded"));
     Tcl_DeleteInterp(RTcl_interp);
     Tcl_Finalize();
     if (R_PolledEvents != TclHandler)
-	error(_("Tcl is not last loaded handler"));
+	Rf_error(_("Tcl is not last loaded handler"));
     R_PolledEvents = OldHandler;
     R_wait_usec = OldRwait;
     Tcl_loaded = 0;

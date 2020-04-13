@@ -204,15 +204,15 @@ struct callinfo {
 static double fcn1(double x, struct callinfo *info)
 {
     SEXP s, sx;
-    PROTECT(sx = ScalarReal(x));
+    PROTECT(sx = Rf_ScalarReal(x));
     SETCADR(info->R_fcall, sx);
-    s = eval(info->R_fcall, info->R_env);
+    s = Rf_eval(info->R_fcall, info->R_env);
     UNPROTECT(1);
     switch(TYPEOF(s)) {
     case INTSXP:
 	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
-	    warning(_("NA replaced by maximum positive value"));
+	    Rf_warning(_("NA replaced by maximum positive value"));
 	    return DBL_MAX;
 	}
 	else return INTEGER(s)[0];
@@ -220,7 +220,7 @@ static double fcn1(double x, struct callinfo *info)
     case REALSXP:
 	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
-	    warning(_("NA/Inf replaced by maximum positive value"));
+	    Rf_warning(_("NA/Inf replaced by maximum positive value"));
 	    return DBL_MAX;
 	}
 	else return REAL(s)[0];
@@ -229,7 +229,7 @@ static double fcn1(double x, struct callinfo *info)
 	goto badvalue;
     }
  badvalue:
-    error(_("invalid function value in 'optimize'"));
+    Rf_error(_("invalid function value in 'optimize'"));
     return 0;/* for -Wall */
 }
 
@@ -246,35 +246,35 @@ SEXP do_fmin(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* the function to be minimized */
 
     v = CAR(args);
-    if (!isFunction(v))
-	error(_("attempt to minimize non-function"));
+    if (!Rf_isFunction(v))
+	Rf_error(_("attempt to minimize non-function"));
     args = CDR(args);
 
     /* xmin */
 
-    xmin = asReal(CAR(args));
+    xmin = Rf_asReal(CAR(args));
     if (!R_FINITE(xmin))
-	error(_("invalid '%s' value"), "xmin");
+	Rf_error(_("invalid '%s' value"), "xmin");
     args = CDR(args);
 
     /* xmax */
 
-    xmax = asReal(CAR(args));
+    xmax = Rf_asReal(CAR(args));
     if (!R_FINITE(xmax))
-	error(_("invalid '%s' value"), "xmax");
+	Rf_error(_("invalid '%s' value"), "xmax");
     if (xmin >= xmax)
-	error(_("'xmin' not less than 'xmax'"));
+	Rf_error(_("'xmin' not less than 'xmax'"));
     args = CDR(args);
 
     /* tol */
 
-    tol = asReal(CAR(args));
+    tol = Rf_asReal(CAR(args));
     if (!R_FINITE(tol) || tol <= 0.0)
-	error(_("invalid '%s' value"), "tol");
+	Rf_error(_("invalid '%s' value"), "tol");
 
     info.R_env = rho;
-    PROTECT(info.R_fcall = lang2(v, R_NilValue));
-    PROTECT(res = allocVector(REALSXP, 1));
+    PROTECT(info.R_fcall = Rf_lang2(v, R_NilValue));
+    PROTECT(res = Rf_allocVector(REALSXP, 1));
     REAL(res)[0] = Brent_fmin(xmin, xmax,
 			      (double (*)(double, void*)) fcn1, &info, tol);
     UNPROTECT(2);
@@ -290,15 +290,15 @@ SEXP do_fmin(SEXP call, SEXP op, SEXP args, SEXP rho)
 static double fcn2(double x, struct callinfo *info)
 {
     SEXP s, sx;
-    PROTECT(sx = ScalarReal(x));
+    PROTECT(sx = Rf_ScalarReal(x));
     SETCADR(info->R_fcall, sx);
-    s = eval(info->R_fcall, info->R_env);
+    s = Rf_eval(info->R_fcall, info->R_env);
     UNPROTECT(1);
     switch(TYPEOF(s)) {
     case INTSXP:
 	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
-	    warning(_("NA replaced by maximum positive value"));
+	    Rf_warning(_("NA replaced by maximum positive value"));
 	    return	DBL_MAX;
 	}
 	else return INTEGER(s)[0];
@@ -307,10 +307,10 @@ static double fcn2(double x, struct callinfo *info)
 	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
 	    if(REAL(s)[0] == R_NegInf) { // keep sign for root finding !
-		warning(_("-Inf replaced by maximally negative value"));
+		Rf_warning(_("-Inf replaced by maximally negative value"));
 		return -DBL_MAX;
 	    } else {
-		warning(_("NA/Inf replaced by maximum positive value"));
+		Rf_warning(_("NA/Inf replaced by maximum positive value"));
 		return DBL_MAX;
 	    }
 	}
@@ -320,7 +320,7 @@ static double fcn2(double x, struct callinfo *info)
 	goto badvalue;
     }
  badvalue:
-    error(_("invalid function value in 'zeroin'"));
+    Rf_error(_("invalid function value in 'zeroin'"));
     return 0;/* for -Wall */
 
 }
@@ -339,42 +339,42 @@ SEXP zeroin2(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* the function to be minimized */
     v = CAR(args);
-    if (!isFunction(v)) error(_("attempt to minimize non-function"));
+    if (!Rf_isFunction(v)) Rf_error(_("attempt to minimize non-function"));
     args = CDR(args);
 
     /* xmin */
-    xmin = asReal(CAR(args));
-    if (!R_FINITE(xmin)) error(_("invalid '%s' value"), "xmin");
+    xmin = Rf_asReal(CAR(args));
+    if (!R_FINITE(xmin)) Rf_error(_("invalid '%s' value"), "xmin");
     args = CDR(args);
 
     /* xmax */
-    xmax = asReal(CAR(args));
-    if (!R_FINITE(xmax)) error(_("invalid '%s' value"), "xmax");
-    if (xmin >= xmax) error(_("'xmin' not less than 'xmax'"));
+    xmax = Rf_asReal(CAR(args));
+    if (!R_FINITE(xmax)) Rf_error(_("invalid '%s' value"), "xmax");
+    if (xmin >= xmax) Rf_error(_("'xmin' not less than 'xmax'"));
     args = CDR(args);
 
     /* f(ax) = f(xmin) */
-    f_ax = asReal(CAR(args));
-    if (ISNA(f_ax)) error(_("NA value for '%s' is not allowed"), "f.lower");
+    f_ax = Rf_asReal(CAR(args));
+    if (ISNA(f_ax)) Rf_error(_("NA value for '%s' is not allowed"), "f.lower");
     args = CDR(args);
 
     /* f(bx) = f(xmax) */
-    f_bx = asReal(CAR(args));
-    if (ISNA(f_bx)) error(_("NA value for '%s' is not allowed"), "f.upper");
+    f_bx = Rf_asReal(CAR(args));
+    if (ISNA(f_bx)) Rf_error(_("NA value for '%s' is not allowed"), "f.upper");
     args = CDR(args);
 
     /* tol */
-    tol = asReal(CAR(args));
-    if (!R_FINITE(tol) || tol <= 0.0) error(_("invalid '%s' value"), "tol");
+    tol = Rf_asReal(CAR(args));
+    if (!R_FINITE(tol) || tol <= 0.0) Rf_error(_("invalid '%s' value"), "tol");
     args = CDR(args);
 
     /* maxiter */
-    iter = asInteger(CAR(args));
-    if (iter <= 0) error(_("'maxiter' must be positive"));
+    iter = Rf_asInteger(CAR(args));
+    if (iter <= 0) Rf_error(_("'maxiter' must be positive"));
 
     info.R_env = rho;
-    PROTECT(info.R_fcall = lang2(v, R_NilValue)); /* the info used in fcn2() */
-    PROTECT(res = allocVector(REALSXP, 3));
+    PROTECT(info.R_fcall = Rf_lang2(v, R_NilValue)); /* the info used in fcn2() */
+    PROTECT(res = Rf_allocVector(REALSXP, 3));
     REAL(res)[0] =
 	R_zeroin2(xmin, xmax, f_ax, f_bx, (double (*)(double, void*)) fcn2,
 		 (void *) &info, &tol, &iter);
@@ -509,18 +509,18 @@ static void fcn(int n, const double x[], double *f, function_info
 	return;
     }
 				/* calculate for a new value of x */
-    s = allocVector(REALSXP, n);
+    s = Rf_allocVector(REALSXP, n);
     SETCADR(R_fcall, s);
     for (i = 0; i < n; i++) {
-	if (!R_FINITE(x[i])) error(_("non-finite value supplied by 'nlm'"));
+	if (!R_FINITE(x[i])) Rf_error(_("non-finite value supplied by 'nlm'"));
 	REAL(s)[i] = x[i];
     }
-    s = PROTECT(eval(state->R_fcall, state->R_env));
+    s = PROTECT(Rf_eval(state->R_fcall, state->R_env));
     switch(TYPEOF(s)) {
     case INTSXP:
 	if (Rf_length(s) != 1) goto badvalue;
 	if (INTEGER(s)[0] == NA_INTEGER) {
-	    warning(_("NA replaced by maximum positive value"));
+	    Rf_warning(_("NA replaced by maximum positive value"));
 	    *f = DBL_MAX;
 	}
 	else *f = INTEGER(s)[0];
@@ -528,7 +528,7 @@ static void fcn(int n, const double x[], double *f, function_info
     case REALSXP:
 	if (Rf_length(s) != 1) goto badvalue;
 	if (!R_FINITE(REAL(s)[0])) {
-	    warning(_("NA/Inf replaced by maximum positive value"));
+	    Rf_warning(_("NA/Inf replaced by maximum positive value"));
 	    *f = DBL_MAX;
 	}
 	else *f = REAL(s)[0];
@@ -537,9 +537,9 @@ static void fcn(int n, const double x[], double *f, function_info
 	goto badvalue;
     }
     if (state->have_gradient) {
-	g = REAL(PROTECT(coerceVector(getAttrib(s, install("gradient")), REALSXP)));
+	g = REAL(PROTECT(Rf_coerceVector(Rf_getAttrib(s, Rf_install("gradient")), REALSXP)));
 	if (state->have_hessian) {
-	    h = REAL(PROTECT(coerceVector(getAttrib(s, install("hessian")), REALSXP)));
+	    h = REAL(PROTECT(Rf_coerceVector(Rf_getAttrib(s, Rf_install("hessian")), REALSXP)));
 	}
     }
     FT_store(n, *f, x, g, h, state);
@@ -547,7 +547,7 @@ static void fcn(int n, const double x[], double *f, function_info
     return;
 
  badvalue:
-    error(_("invalid function value in 'nlm' optimizer"));
+    Rf_error(_("invalid function value in 'nlm' optimizer"));
 }
 
 
@@ -558,7 +558,7 @@ static void Cd1fcn(int n, const double x[], double *g, function_info *state)
     if ((ind = FT_lookup(n, x, state)) < 0) {	/* shouldn't happen */
 	fcn(n, x, g, state);
 	if ((ind = FT_lookup(n, x, state)) < 0) {
-	    error(_("function value caching for optimization is seriously confused"));
+	    Rf_error(_("function value caching for optimization is seriously confused"));
 	}
     }
     Memcpy(g, state->Ftable[ind].grad, n);
@@ -573,7 +573,7 @@ static void Cd2fcn(int nr, int n, const double x[], double *h,
     if ((ind = FT_lookup(n, x, state)) < 0) {	/* shouldn't happen */
 	fcn(n, x, h, state);
 	if ((ind = FT_lookup(n, x, state)) < 0) {
-	    error(_("function value caching for optimization is seriously confused"));
+	    Rf_error(_("function value caching for optimization is seriously confused"));
 	}
     }
     for (j = 0; j < n; j++) {  /* fill in lower triangle only */
@@ -587,16 +587,16 @@ static double *fixparam(SEXP p, int *n)
     double *x;
     int i;
 
-    if (!isNumeric(p))
-	error(_("numeric parameter expected"));
+    if (!Rf_isNumeric(p))
+	Rf_error(_("numeric parameter expected"));
 
     if (*n) {
 	if (LENGTH(p) != *n)
-	    error(_("conflicting parameter lengths"));
+	    Rf_error(_("conflicting parameter lengths"));
     }
     else {
 	if (LENGTH(p) <= 0)
-	    error(_("invalid parameter length"));
+	    Rf_error(_("invalid parameter length"));
 	*n = LENGTH(p);
     }
 
@@ -606,19 +606,19 @@ static double *fixparam(SEXP p, int *n)
     case INTSXP:
 	for (i = 0; i < *n; i++) {
 	    if (INTEGER(p)[i] == NA_INTEGER)
-		error(_("missing value in parameter"));
+		Rf_error(_("missing value in parameter"));
 	    x[i] = INTEGER(p)[i];
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < *n; i++) {
 	    if (!R_FINITE(REAL(p)[i]))
-		error(_("missing value in parameter"));
+		Rf_error(_("missing value in parameter"));
 	    x[i] = REAL(p)[i];
 	}
 	break;
     default:
-	error(_("invalid parameter type"));
+	Rf_error(_("invalid parameter type"));
     }
     return x;
 }
@@ -629,25 +629,25 @@ static void NORET opterror(int nerr)
 {
     switch(nerr) {
     case -1:
-	error(_("non-positive number of parameters in nlm"));
+	Rf_error(_("non-positive number of parameters in nlm"));
     case -2:
-	error(_("nlm is inefficient for 1-d problems"));
+	Rf_error(_("nlm is inefficient for 1-d problems"));
     case -3:
-	error(_("invalid gradient tolerance in nlm"));
+	Rf_error(_("invalid gradient tolerance in nlm"));
     case -4:
-	error(_("invalid iteration limit in nlm"));
+	Rf_error(_("invalid iteration limit in nlm"));
     case -5:
-	error(_("minimization function has no good digits in nlm"));
+	Rf_error(_("minimization function has no good digits in nlm"));
     case -6:
-	error(_("no analytic gradient to check in nlm!"));
+	Rf_error(_("no analytic gradient to check in nlm!"));
     case -7:
-	error(_("no analytic Hessian to check in nlm!"));
+	Rf_error(_("no analytic Hessian to check in nlm!"));
     case -21:
-	error(_("probable coding error in analytic gradient"));
+	Rf_error(_("probable coding error in analytic gradient"));
     case -22:
-	error(_("probable coding error in analytic Hessian"));
+	Rf_error(_("probable coding error in analytic Hessian"));
     default:
-	error(_("*** unknown error message (msg = %d) in nlm()\n*** should not happen!"), nerr);
+	Rf_error(_("*** unknown error message (msg = %d) in nlm()\n*** should not happen!"), nerr);
     }
 }
 
@@ -712,9 +712,9 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* the function to be minimized */
 
     v = CAR(args);
-    if (!isFunction(v))
-	error(_("attempt to minimize non-function"));
-    PROTECT(state->R_fcall = lang2(v, R_NilValue));
+    if (!Rf_isFunction(v))
+	Rf_error(_("attempt to minimize non-function"));
+    PROTECT(state->R_fcall = Rf_lang2(v, R_NilValue));
     args = CDR(args);
 
     /* `p' : inital parameter value */
@@ -725,7 +725,7 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* `hessian' : H. required? */
 
-    want_hessian = asLogical(CAR(args));
+    want_hessian = Rf_asLogical(CAR(args));
     if (want_hessian == NA_LOGICAL) want_hessian = 0;
     args = CDR(args);
 
@@ -736,34 +736,34 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* `fscale' : expected function size */
 
-    fscale = asReal(CAR(args));
-    if (ISNA(fscale)) error(_("invalid NA value in parameter"));
+    fscale = Rf_asReal(CAR(args));
+    if (ISNA(fscale)) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
     /* `msg' (bit pattern) */
-    omsg = msg = asInteger(CAR(args));
-    if (msg == NA_INTEGER) error(_("invalid NA value in parameter"));
+    omsg = msg = Rf_asInteger(CAR(args));
+    if (msg == NA_INTEGER) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
-    ndigit = asInteger(CAR(args));
-    if (ndigit == NA_INTEGER) error(_("invalid NA value in parameter"));
+    ndigit = Rf_asInteger(CAR(args));
+    if (ndigit == NA_INTEGER) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
-    gradtl = asReal(CAR(args));
-    if (ISNA(gradtl)) error(_("invalid NA value in parameter"));
+    gradtl = Rf_asReal(CAR(args));
+    if (ISNA(gradtl)) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
-    stepmx = asReal(CAR(args));
-    if (ISNA(stepmx)) error(_("invalid NA value in parameter"));
+    stepmx = Rf_asReal(CAR(args));
+    if (ISNA(stepmx)) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
-    steptol = asReal(CAR(args));
-    if (ISNA(steptol)) error(_("invalid NA value in parameter"));
+    steptol = Rf_asReal(CAR(args));
+    if (ISNA(steptol)) Rf_error(_("invalid NA value in parameter"));
     args = CDR(args);
 
     /* `iterlim' (def. 100) */
-    itnlim = asInteger(CAR(args));
-    if (itnlim == NA_INTEGER) error(_("invalid NA value in parameter"));
+    itnlim = Rf_asInteger(CAR(args));
+    if (itnlim == NA_INTEGER) Rf_error(_("invalid NA value in parameter"));
 
     state->R_env = rho;
 
@@ -772,31 +772,31 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
     iahflg = 0;			/* No analytic hessian */
     state->have_gradient = 0;
     state->have_hessian = 0;
-    R_gradientSymbol = install("gradient");
-    R_hessianSymbol = install("hessian");
+    R_gradientSymbol = Rf_install("gradient");
+    R_hessianSymbol = Rf_install("hessian");
 
-    v = allocVector(REALSXP, n);
+    v = Rf_allocVector(REALSXP, n);
     for (i = 0; i < n; i++) REAL(v)[i] = x[i];
     SETCADR(state->R_fcall, v);
-    PROTECT(value = eval(state->R_fcall, state->R_env));
+    PROTECT(value = Rf_eval(state->R_fcall, state->R_env));
 
-    v = getAttrib(value, R_gradientSymbol);
+    v = Rf_getAttrib(value, R_gradientSymbol);
     if (v != R_NilValue) {
-	if (LENGTH(v) == n && (isReal(v) || isInteger(v))) {
+	if (LENGTH(v) == n && (Rf_isReal(v) || Rf_isInteger(v))) {
 	    iagflg = 1;
 	    state->have_gradient = 1;
-	    v = getAttrib(value, R_hessianSymbol);
+	    v = Rf_getAttrib(value, R_hessianSymbol);
 
 	    if (v != R_NilValue) {
-		if (LENGTH(v) == (n * n) && (isReal(v) || isInteger(v))) {
+		if (LENGTH(v) == (n * n) && (Rf_isReal(v) || Rf_isInteger(v))) {
 		    iahflg = 1;
 		    state->have_hessian = 1;
 		} else {
-		    warning(_("hessian supplied is of the wrong length or mode, so ignored"));
+		    Rf_warning(_("hessian supplied is of the wrong length or mode, so ignored"));
 		}
 	    }
 	} else {
-	    warning(_("gradient supplied is of the wrong length or mode, so ignored"));
+	    Rf_warning(_("gradient supplied is of the wrong length or mode, so ignored"));
 	}
     }
     UNPROTECT(1); /* value */
@@ -849,8 +849,8 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
 	optcode(code);
 
     if (want_hessian) {
-	PROTECT(value = allocVector(VECSXP, 6));
-	PROTECT(names = allocVector(STRSXP, 6));
+	PROTECT(value = Rf_allocVector(VECSXP, 6));
+	PROTECT(names = Rf_allocVector(STRSXP, 6));
 	fdhess(n, xpls, fpls, (fcn_p) fcn, state, a, n, &wrk[0], &wrk[n],
 	       ndigit, typsiz);
 	for (i = 0; i < n; i++)
@@ -858,47 +858,47 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
 		a[i + j * n] = a[j + i * n];
     }
     else {
-	PROTECT(value = allocVector(VECSXP, 5));
-	PROTECT(names = allocVector(STRSXP, 5));
+	PROTECT(value = Rf_allocVector(VECSXP, 5));
+	PROTECT(names = Rf_allocVector(STRSXP, 5));
     }
     k = 0;
 
-    SET_STRING_ELT(names, k, mkChar("minimum"));
-    SET_VECTOR_ELT(value, k, ScalarReal(fpls));
+    SET_STRING_ELT(names, k, Rf_mkChar("minimum"));
+    SET_VECTOR_ELT(value, k, Rf_ScalarReal(fpls));
     k++;
 
-    SET_STRING_ELT(names, k, mkChar("estimate"));
-    SET_VECTOR_ELT(value, k, allocVector(REALSXP, n));
+    SET_STRING_ELT(names, k, Rf_mkChar("estimate"));
+    SET_VECTOR_ELT(value, k, Rf_allocVector(REALSXP, n));
     for (i = 0; i < n; i++)
 	REAL(VECTOR_ELT(value, k))[i] = xpls[i];
     k++;
 
-    SET_STRING_ELT(names, k, mkChar("gradient"));
-    SET_VECTOR_ELT(value, k, allocVector(REALSXP, n));
+    SET_STRING_ELT(names, k, Rf_mkChar("gradient"));
+    SET_VECTOR_ELT(value, k, Rf_allocVector(REALSXP, n));
     for (i = 0; i < n; i++)
 	REAL(VECTOR_ELT(value, k))[i] = gpls[i];
     k++;
 
     if (want_hessian) {
-	SET_STRING_ELT(names, k, mkChar("hessian"));
-	SET_VECTOR_ELT(value, k, allocMatrix(REALSXP, n, n));
+	SET_STRING_ELT(names, k, Rf_mkChar("hessian"));
+	SET_VECTOR_ELT(value, k, Rf_allocMatrix(REALSXP, n, n));
 	for (i = 0; i < n * n; i++)
 	    REAL(VECTOR_ELT(value, k))[i] = a[i];
 	k++;
     }
 
-    SET_STRING_ELT(names, k, mkChar("code"));
-    SET_VECTOR_ELT(value, k, allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, k, Rf_mkChar("code"));
+    SET_VECTOR_ELT(value, k, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(value, k))[0] = code;
     k++;
 
     /* added by Jim K Lindsey */
-    SET_STRING_ELT(names, k, mkChar("iterations"));
-    SET_VECTOR_ELT(value, k, allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, k, Rf_mkChar("iterations"));
+    SET_VECTOR_ELT(value, k, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(value, k))[0] = itncnt;
     k++;
 
-    setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, R_NamesSymbol, names);
     UNPROTECT(3);
     return value;
 }

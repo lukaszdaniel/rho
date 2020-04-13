@@ -103,15 +103,15 @@ fisher_sim(int *nrow, int *ncol, int *nrowt, int *ncolt, int *n,
 
 SEXP Fisher_sim(SEXP sr, SEXP sc, SEXP sB)
 {
-    sr = PROTECT(coerceVector(sr, INTSXP));
-    sc = PROTECT(coerceVector(sc, INTSXP));
-    int nr = LENGTH(sr), nc = LENGTH(sc), B = asInteger(sB);
+    sr = PROTECT(Rf_coerceVector(sr, INTSXP));
+    sc = PROTECT(Rf_coerceVector(sc, INTSXP));
+    int nr = LENGTH(sr), nc = LENGTH(sc), B = Rf_asInteger(sB);
     int n = 0, *isr = INTEGER(sr);
     for (int i = 0; i < nr; i++) n += isr[i];
     int *observed = (int *) R_alloc(nr * nc, sizeof(int));
     double *fact = (double *) R_alloc(n+1, sizeof(double));
     int *jwork = (int *) R_alloc(nc, sizeof(int));
-    SEXP ans = PROTECT(allocVector(REALSXP, B));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, B));
     fisher_sim(&nr, &nc, isr, INTEGER(sc), &n, B, observed, fact, 
 	       jwork, REAL(ans));
     UNPROTECT(3);
@@ -120,16 +120,16 @@ SEXP Fisher_sim(SEXP sr, SEXP sc, SEXP sB)
 
 SEXP chisq_sim(SEXP sr, SEXP sc, SEXP sB, SEXP E)
 {
-    sr = PROTECT(coerceVector(sr, INTSXP));
-    sc = PROTECT(coerceVector(sc, INTSXP));
-    E = PROTECT(coerceVector(E, REALSXP));
-    int nr = LENGTH(sr), nc = LENGTH(sc), B = asInteger(sB);
+    sr = PROTECT(Rf_coerceVector(sr, INTSXP));
+    sc = PROTECT(Rf_coerceVector(sc, INTSXP));
+    E = PROTECT(Rf_coerceVector(E, REALSXP));
+    int nr = LENGTH(sr), nc = LENGTH(sc), B = Rf_asInteger(sB);
     int n = 0, *isr = INTEGER(sr);
     for (int i = 0; i < nr; i++) n += isr[i];
     int *observed = (int *) R_alloc(nr * nc, sizeof(int));
     double *fact = (double *) R_alloc(n+1, sizeof(double));
     int *jwork = (int *) R_alloc(nc, sizeof(int));
-    SEXP ans = PROTECT(allocVector(REALSXP, B));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, B));
     chisqsim(&nr, &nc, isr, INTEGER(sc), &n, B, REAL(E), observed, fact,
 	     jwork, REAL(ans));
     UNPROTECT(4);

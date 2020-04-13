@@ -426,14 +426,14 @@ static void in_chull(int *n, double *x, int *m, int *in,
 SEXP chull(SEXP x)
 {
     // x is a two-column matrix
-    int n = nrows(x), nh;
+    int n = Rf_nrows(x), nh;
     int *in = (int*)R_alloc(n, sizeof(int));
     for (int i = 0; i < n; i++) in[i] = i+1;
     int *ih = (int*)R_alloc(4*n, sizeof(int));
-    x = PROTECT(coerceVector(x, REALSXP));
-    if(TYPEOF(x) != REALSXP) error("'x' is not numeric");
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    if(TYPEOF(x) != REALSXP) Rf_error("'x' is not numeric");
     in_chull(&n, REAL(x), &n, in, ih+n, ih+2*n, ih, &nh, ih+3*n);
-    SEXP ans = allocVector(INTSXP, nh);
+    SEXP ans = Rf_allocVector(INTSXP, nh);
     int *ians = INTEGER(ans);
     for (int i = 0; i < nh; i++) ians[i] = ih[nh - 1 -i];
     UNPROTECT(1);

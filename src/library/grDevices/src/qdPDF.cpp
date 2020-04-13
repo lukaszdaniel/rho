@@ -95,7 +95,7 @@ QuartzPDF_DeviceCreate(void *dd, QuartzFunctions_t *fn, QuartzParameters_t *par)
     else if (par->file && *par->file) {
         CFStringRef path = CFStringCreateWithBytes(kCFAllocatorDefault, (UInt8*) par->file, strlen(par->file), kCFStringEncodingUTF8, FALSE);
         if (!path || !(dev->url = CFURLCreateWithFileSystemPath (NULL, path, kCFURLPOSIXPathStyle, false))) {
-	    warning(_("cannot open file '%s'"), par->file);
+	    Rf_warning(_("cannot open file '%s'"), par->file);
             free(dev);
             return ret;
         }

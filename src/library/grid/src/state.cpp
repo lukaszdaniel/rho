@@ -59,7 +59,7 @@ int gridRegisterIndex;
 
 SEXP createGridSystemState()
 {
-    return allocVector(VECSXP, 16);
+    return Rf_allocVector(VECSXP, 16);
 }
 
 void initDL(pGEDevDesc dd)
@@ -69,10 +69,10 @@ void initDL(pGEDevDesc dd)
     SEXP gsd = (SEXP) dd->gesd[gridRegisterIndex]->systemSpecific;
     /* The top-level viewport goes at the start of the display list
      */
-    PROTECT(dl = allocVector(VECSXP, 100));
+    PROTECT(dl = Rf_allocVector(VECSXP, 100));
     SET_VECTOR_ELT(dl, 0, vp);
     SET_VECTOR_ELT(gsd, GSS_DL, dl);
-    PROTECT(dlindex = allocVector(INTSXP, 1));
+    PROTECT(dlindex = Rf_allocVector(INTSXP, 1));
     INTEGER(dlindex)[0] = 1;
     SET_VECTOR_ELT(gsd, GSS_DLINDEX, dlindex);
     UNPROTECT(2);
@@ -107,7 +107,7 @@ void fillGridSystemState(SEXP state, pGEDevDesc dd)
     SEXP devsize, currloc, prevloc;
 
     PROTECT(state);
-    devsize = allocVector(REALSXP, 2);
+    devsize = Rf_allocVector(REALSXP, 2);
     REAL(devsize)[0] = 0;
     REAL(devsize)[1] = 0;
     SET_VECTOR_ELT(state, GSS_DEVSIZE, devsize);
@@ -115,18 +115,18 @@ void fillGridSystemState(SEXP state, pGEDevDesc dd)
      * Initial setting relies on the fact that all values sent to devices
      * are in INCHES;  so (0, 0) is the bottom-left corner of the device.
      */
-    currloc = allocVector(REALSXP, 2);
+    currloc = Rf_allocVector(REALSXP, 2);
     REAL(currloc)[0] = NA_REAL;
     REAL(currloc)[1] = NA_REAL;    
     SET_VECTOR_ELT(state, GSS_CURRLOC, currloc);
-    prevloc = allocVector(REALSXP, 2);
+    prevloc = Rf_allocVector(REALSXP, 2);
     REAL(prevloc)[0] = NA_REAL;
     REAL(prevloc)[1] = NA_REAL;    
     SET_VECTOR_ELT(state, GSS_PREVLOC, prevloc);
-    SET_VECTOR_ELT(state, GSS_DLON, ScalarLogical(TRUE));
-    SET_VECTOR_ELT(state, GSS_ENGINEDLON, ScalarLogical(TRUE));
+    SET_VECTOR_ELT(state, GSS_DLON, Rf_ScalarLogical(TRUE));
+    SET_VECTOR_ELT(state, GSS_ENGINEDLON, Rf_ScalarLogical(TRUE));
     SET_VECTOR_ELT(state, GSS_CURRGROB, R_NilValue);
-    SET_VECTOR_ELT(state, GSS_ENGINERECORDING, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(state, GSS_ENGINERECORDING, Rf_ScalarLogical(FALSE));
     initGPar(dd);
     SET_VECTOR_ELT(state, GSS_GPSAVED, R_NilValue);
     /* Do NOT initialise top-level viewport or grid display list for
@@ -135,11 +135,11 @@ void fillGridSystemState(SEXP state, pGEDevDesc dd)
     SET_VECTOR_ELT(state, GSS_GLOBALINDEX, R_NilValue);
     /* Note that no grid output has occurred on the device yet.
      */
-    SET_VECTOR_ELT(state, GSS_GRIDDEVICE, ScalarLogical(FALSE));
+    SET_VECTOR_ELT(state, GSS_GRIDDEVICE, Rf_ScalarLogical(FALSE));
 #if 0
-    SET_VECTOR_ELT(state, GSS_ASK, ScalarLogical(dd->ask));
+    SET_VECTOR_ELT(state, GSS_ASK, Rf_ScalarLogical(dd->ask));
 #endif
-    SET_VECTOR_ELT(state, GSS_SCALE, ScalarReal(1.0));
+    SET_VECTOR_ELT(state, GSS_SCALE, Rf_ScalarReal(1.0));
     UNPROTECT(1);
 }
 
@@ -158,7 +158,7 @@ void setGridStateElement(pGEDevDesc dd, int elementIndex, SEXP value)
 static void deglobaliseState(SEXP state)
 {
     int index = INTEGER(VECTOR_ELT(state, GSS_GLOBALINDEX))[0];
-    SET_VECTOR_ELT(findVar(install(".GRID.STATE"), R_gridEvalEnv), 
+    SET_VECTOR_ELT(Rf_findVar(Rf_install(".GRID.STATE"), R_gridEvalEnv), 
 		   index, R_NilValue);
 }
 
@@ -166,14 +166,14 @@ static int findStateSlot()
 {
     int i;
     int result = -1;
-    SEXP globalstate = findVar(install(".GRID.STATE"), R_gridEvalEnv);
+    SEXP globalstate = Rf_findVar(Rf_install(".GRID.STATE"), R_gridEvalEnv);
     for (i = 0; i < Rf_length(globalstate); i++)
 	if (VECTOR_ELT(globalstate, i) == R_NilValue) {
 	    result = i;
 	    break;
 	}
     if (result < 0)
-	error(_("unable to store 'grid' state.  Too many devices open?"));
+	Rf_error(_("unable to store 'grid' state.  Too many devices open?"));
     return result;
 }
 
@@ -181,10 +181,10 @@ static void globaliseState(SEXP state)
 {
     int index = findStateSlot();
     SEXP globalstate, indexsxp;
-    PROTECT(globalstate = findVar(install(".GRID.STATE"), R_gridEvalEnv));
+    PROTECT(globalstate = Rf_findVar(Rf_install(".GRID.STATE"), R_gridEvalEnv));
     /* Record the index for deglobalisation
      */
-    PROTECT(indexsxp = allocVector(INTSXP, 1));
+    PROTECT(indexsxp = Rf_allocVector(INTSXP, 1));
     INTEGER(indexsxp)[0] = index;
     SET_VECTOR_ELT(state, GSS_GLOBALINDEX, indexsxp);
     SET_VECTOR_ELT(globalstate, index, state);
@@ -234,7 +234,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
 	break;
     case GE_RestoreState:
 	gsd = (SEXP) dd->gesd[gridRegisterIndex]->systemSpecific;
-	PROTECT(devsize = allocVector(REALSXP, 2));
+	PROTECT(devsize = Rf_allocVector(REALSXP, 2));
 	getDeviceSize(dd, &(REAL(devsize)[0]), &(REAL(devsize)[1]));
 	SET_VECTOR_ELT(gsd, GSS_DEVSIZE, devsize);
 	UNPROTECT(1);
@@ -266,12 +266,12 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
                     SEXP firstDLentry = CAR(data);
                     SEXP args = CADR(firstDLentry);
                     int newpage = 1;
-                    if (isVector(CAR(args))) {
+                    if (Rf_isVector(CAR(args))) {
                         SEXP name = VECTOR_ELT(CAR(args), 0);
-                        if (isString(name) &&
-                            (streql(CHAR(STRING_ELT(name, 0)), 
+                        if (Rf_isString(name) &&
+                            (streql(R_CHAR(STRING_ELT(name, 0)), 
                                      "C_par") ||
-                             streql(CHAR(STRING_ELT(name, 0)), 
+                             streql(R_CHAR(STRING_ELT(name, 0)), 
                                      "C_plot_new"))) {
                             newpage = 0;
                         }
@@ -291,15 +291,15 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
 		 * then we have to redraw the scene ourselves
 		 */
 		SEXP fcall;
-		PROTECT(fcall = lang1(install("draw.all")));
-		eval(fcall, R_gridEvalEnv); 
+		PROTECT(fcall = Rf_lang1(Rf_install("draw.all")));
+		Rf_eval(fcall, R_gridEvalEnv); 
 		UNPROTECT(1);
 	    }
 	}
 	break;
     case GE_CopyState:
         { 
-            if (!isNull(gridStateElement(dd, GSS_DL))) {
+            if (!Rf_isNull(gridStateElement(dd, GSS_DL))) {
                 int dlIndex = INTEGER(gridStateElement(dd, GSS_DLINDEX))[0];
                 if (dlIndex > 0) {
                     /* called from GEcopyDisplayList */
@@ -309,7 +309,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
                      */
                     SEXP gsd, griddev;
                     gsd = (SEXP) curdd->gesd[gridRegisterIndex]->systemSpecific;
-                    PROTECT(griddev = allocVector(LGLSXP, 1));
+                    PROTECT(griddev = Rf_allocVector(LGLSXP, 1));
                     LOGICAL(griddev)[0] = TRUE;
                     SET_VECTOR_ELT(gsd, GSS_GRIDDEVICE, griddev);
                     UNPROTECT(1);
@@ -323,7 +323,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
         }
 	break;
     case GE_CheckPlot:
-	PROTECT(valid = allocVector(LGLSXP, 1));
+	PROTECT(valid = Rf_allocVector(LGLSXP, 1));
 	LOGICAL(valid)[0] = TRUE;
 	UNPROTECT(1);
 	result = valid;
@@ -334,11 +334,11 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
             /*
              * Save the current 'grid' DL.
              */
-            PROTECT(result = allocVector(VECSXP, 2));
+            PROTECT(result = Rf_allocVector(VECSXP, 2));
             SET_VECTOR_ELT(result, 0, gridStateElement(dd, GSS_DL));
             SET_VECTOR_ELT(result, 1, gridStateElement(dd, GSS_DLINDEX));
-            PROTECT(pkgName = mkString("grid"));
-            setAttrib(result, install("pkgName"), pkgName);
+            PROTECT(pkgName = Rf_mkString("grid"));
+            Rf_setAttrib(result, Rf_install("pkgName"), pkgName);
             UNPROTECT(2);
         }
 	break;
@@ -354,14 +354,14 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
              * (though this could be fatal).
              */
             PROTECT(snapshotEngineVersion = 
-                    getAttrib(data, install("engineVersion")));
-            if (isNull(snapshotEngineVersion)) {
+                    Rf_getAttrib(data, Rf_install("engineVersion")));
+            if (Rf_isNull(snapshotEngineVersion)) {
                 gridState = VECTOR_ELT(data, imin2(nState, 2));
             } else {
                 for (i=0; i<nState; i++) {
                     SEXP state = VECTOR_ELT(data, i + 1);
-                    if (streql(CHAR(STRING_ELT(getAttrib(state, 
-                                                          install("pkgName")), 
+                    if (streql(R_CHAR(STRING_ELT(Rf_getAttrib(state, 
+                                                          Rf_install("pkgName")), 
                                                 0)), 
                                 "grid")) {
                         gridState = state;
@@ -372,7 +372,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
              * OR it might have been recorded with 'grid' loaded, but WITHOUT
              * any grid drawing
              */
-            if (!isNull(gridState) && !isNull(VECTOR_ELT(gridState, 0))) {
+            if (!Rf_isNull(gridState) && !Rf_isNull(VECTOR_ELT(gridState, 0))) {
                 int dlIndex = INTEGER(VECTOR_ELT(gridState, 1))[0];
                 if (dlIndex > 0) {
                     /*
@@ -397,7 +397,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
                     if (!LOGICAL(gridStateElement(dd, GSS_GRIDDEVICE))[0]) {
                         SEXP gsd, griddev;
                         gsd = (SEXP) dd->gesd[gridRegisterIndex]->systemSpecific;
-                        PROTECT(griddev = allocVector(LGLSXP, 1));
+                        PROTECT(griddev = Rf_allocVector(LGLSXP, 1));
                         LOGICAL(griddev)[0] = TRUE;
                         SET_VECTOR_ELT(gsd, GSS_GRIDDEVICE, griddev);
                         UNPROTECT(1);
@@ -424,7 +424,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
 	/*
 	 * data is a numeric scale factor
 	 */
-	PROTECT(scale = allocVector(REALSXP, 1));
+	PROTECT(scale = Rf_allocVector(REALSXP, 1));
 	REAL(scale)[0] = REAL(gridStateElement(dd, GSS_SCALE))[0]*
 	    REAL(data)[0];
 	setGridStateElement(dd, GSS_SCALE, scale);

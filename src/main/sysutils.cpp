@@ -1506,7 +1506,7 @@ static const char UNICODE[] = "UCS-4BE";
 static const char UNICODE[] = "UCS-4LE";
 #endif
 
-/* used in gram.cpp and devX11.c */
+/* used in gram.cpp and devX11.cpp */
 size_t Rf_ucstomb(char *s, const unsigned int wc)
 {
     vector<char> bufv(MB_CUR_MAX+1);

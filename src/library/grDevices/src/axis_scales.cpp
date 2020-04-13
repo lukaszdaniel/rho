@@ -30,13 +30,13 @@
 
 SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log)
 {
-    int nint_v = asInteger(nint);
+    int nint_v = Rf_asInteger(nint);
     Rboolean logflag = Rboolean(Rf_asLogical(is_log));
 
-    PROTECT(axp = coerceVector(axp, REALSXP));
-    PROTECT(usr = coerceVector(usr, REALSXP));
-    if(LENGTH(axp) != 3) error(_("'%s' must be numeric of length %d"), "axp", 3);
-    if(LENGTH(usr) != 2) error(_("'%s' must be numeric of length %d"), "usr", 2);
+    PROTECT(axp = Rf_coerceVector(axp, REALSXP));
+    PROTECT(usr = Rf_coerceVector(usr, REALSXP));
+    if(LENGTH(axp) != 3) Rf_error(_("'%s' must be numeric of length %d"), "axp", 3);
+    if(LENGTH(usr) != 2) Rf_error(_("'%s' must be numeric of length %d"), "usr", 2);
 
     SEXP res = CreateAtVector(REAL(axp), REAL(usr), nint_v, logflag);
     // -> ../../../main/plot.cpp
@@ -47,22 +47,22 @@ SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log)
 SEXP R_GAxisPars(SEXP usr, SEXP is_log, SEXP nintLog)
 {
     Rboolean logflag = Rboolean(Rf_asLogical(is_log));
-    int n = asInteger(nintLog);// will be changed on output ..
+    int n = Rf_asInteger(nintLog);// will be changed on output ..
     double min, max;
     const char *nms[] = {"axp", "n", ""};
     SEXP axp, ans;
 
-    usr = coerceVector(usr, REALSXP);
-    if(LENGTH(usr) != 2) error(_("'%s' must be numeric of length %d"), "usr", 2);
+    usr = Rf_coerceVector(usr, REALSXP);
+    if(LENGTH(usr) != 2) Rf_error(_("'%s' must be numeric of length %d"), "usr", 2);
     min = REAL(usr)[0];
     max = REAL(usr)[1];
 
     GAxisPars(&min, &max, &n, logflag, 0);// axis = 0 :<==> do not warn.. [TODO!]
     // -> ../../../main/graphics.cpp
 
-    PROTECT(ans = mkNamed(VECSXP, nms));
-    SET_VECTOR_ELT(ans, 0, (axp = allocVector(REALSXP, 2)));// protected
-    SET_VECTOR_ELT(ans, 1, ScalarInteger(n));
+    PROTECT(ans = Rf_mkNamed(VECSXP, nms));
+    SET_VECTOR_ELT(ans, 0, (axp = Rf_allocVector(REALSXP, 2)));// protected
+    SET_VECTOR_ELT(ans, 1, Rf_ScalarInteger(n));
     REAL(axp)[0] = min;
     REAL(axp)[1] = max;
 

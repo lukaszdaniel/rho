@@ -30,34 +30,34 @@ void F77_NAME(lminfl)(double *x, int *ldx, int *n, int *k, int *docoef,
 SEXP influence(SEXP mqr, SEXP do_coef, SEXP e, SEXP stol)
 {
     SEXP qr = getListElement(mqr, "qr"), qraux = getListElement(mqr, "qraux");
-    int n = nrows(qr), k = asInteger(getListElement(mqr, "rank"));
-    int docoef = asLogical(do_coef);
-    double tol = asReal(stol);
+    int n = Rf_nrows(qr), k = Rf_asInteger(getListElement(mqr, "rank"));
+    int docoef = Rf_asLogical(do_coef);
+    double tol = Rf_asReal(stol);
 
-    SEXP hat = PROTECT(allocVector(REALSXP, n));
+    SEXP hat = PROTECT(Rf_allocVector(REALSXP, n));
     double *rh = REAL(hat);
     SEXP coefficients;
-    if(docoef) coefficients = PROTECT(allocMatrix(REALSXP, n, k));
-    else coefficients = PROTECT(allocVector(REALSXP, 0));
-    SEXP sigma = PROTECT(allocVector(REALSXP, n));
+    if(docoef) coefficients = PROTECT(Rf_allocMatrix(REALSXP, n, k));
+    else coefficients = PROTECT(Rf_allocVector(REALSXP, 0));
+    SEXP sigma = PROTECT(Rf_allocVector(REALSXP, n));
     F77_CALL(lminfl)(REAL(qr), &n, &n, &k, &docoef, REAL(qraux),
 		     REAL(e), rh, REAL(coefficients), REAL(sigma), &tol);
 
     for (int i = 0; i < n; i++) if (rh[i] > 1. - tol) rh[i] = 1.;
-    SEXP ans = PROTECT(allocVector(VECSXP, docoef ? 4 : 3));
-    SEXP nm = allocVector(STRSXP, docoef ? 4 : 3);
-    setAttrib(ans, R_NamesSymbol, nm);
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, docoef ? 4 : 3));
+    SEXP nm = Rf_allocVector(STRSXP, docoef ? 4 : 3);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
     int m = 0;
     SET_VECTOR_ELT(ans, m, hat);
-    SET_STRING_ELT(nm, m++, mkChar("hat"));
+    SET_STRING_ELT(nm, m++, Rf_mkChar("hat"));
     if (docoef) {
 	SET_VECTOR_ELT(ans, m, coefficients);
-	SET_STRING_ELT(nm, m++, mkChar("coefficients"));
+	SET_STRING_ELT(nm, m++, Rf_mkChar("coefficients"));
     }
     SET_VECTOR_ELT(ans, m, sigma);
-    SET_STRING_ELT(nm, m++, mkChar("sigma"));
+    SET_STRING_ELT(nm, m++, Rf_mkChar("sigma"));
     SET_VECTOR_ELT(ans, m, e);
-    SET_STRING_ELT(nm, m, mkChar("wt.res"));
+    SET_STRING_ELT(nm, m, Rf_mkChar("wt.res"));
     UNPROTECT(4);
     return ans;
 }

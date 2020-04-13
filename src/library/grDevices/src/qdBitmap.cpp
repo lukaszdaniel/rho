@@ -76,7 +76,7 @@ void QuartzBitmap_Output(QuartzDesc_t dev, QuartzBitmapDevice *qbd)
 		CGImageDestinationFinalize(dest);
 		CFRelease(dest);
 	    } else 
-		error(_("QuartzBitmap_Output - unable to open file '%s'"), buf);
+		Rf_error(_("QuartzBitmap_Output - unable to open file '%s'"), buf);
         } else if(CFStringCompare(scheme, CFSTR("clipboard"), 0) == 0) { /* clipboard output */
             CFMutableDataRef      data = CFDataCreateMutable(kCFAllocatorDefault, 0);
             CGImageDestinationRef dest = CGImageDestinationCreateWithData(data, type, 1, NULL);
@@ -91,7 +91,7 @@ void QuartzBitmap_Output(QuartzDesc_t dev, QuartzBitmapDevice *qbd)
             }
             CFRelease(data);
         } else
-            warning(_("not a supported scheme, no image data written"));
+            Rf_warning(_("not a supported scheme, no image data written"));
         CFRelease(scheme);
        	CFRelease(type);
         CFRelease(path);

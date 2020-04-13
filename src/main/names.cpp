@@ -820,7 +820,7 @@ new BuiltInFunction("setS4Object",	do_setS4Object, 0,	11,	3,	{PP_FUNCALL, PREC_F
 new BuiltInFunction("traceOnOff",	do_traceOnOff,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("debugOnOff",	do_traceOnOff,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 
-// do_lapack : all in ---> ../modules/lapack/Lapack.c
+// do_lapack : all in ---> ../modules/lapack/Lapack.cpp
 new BuiltInFunction("La_qr_cmplx",	do_lapack,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_rs",	do_lapack,	1,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_rs_cmplx",do_lapack,	2,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),

@@ -43,7 +43,7 @@ static int Load_Rcairo_Dll(void)
     int res = R_cairoCdynload(1, 1);
     if(!res) return initialized;
     R_devCairo = (R_cairo) R_FindSymbol("in_Cairo", "cairo", NULL);
-    if (!R_devCairo) error("failed to load cairo DLL");
+    if (!R_devCairo) Rf_error("failed to load cairo DLL");
     R_cairoVersion = (R_cairoVersion_t) R_FindSymbol("in_CairoVersion", "cairo", NULL);
     initialized = 1;
     return initialized;
@@ -52,7 +52,7 @@ static int Load_Rcairo_Dll(void)
 
 SEXP devCairo(SEXP args)
 {
-    if (Load_Rcairo_Dll() < 0) warning("failed to load cairo DLL");
+    if (Load_Rcairo_Dll() < 0) Rf_warning("failed to load cairo DLL");
     else (R_devCairo)(args);
     return R_NilValue;
 }
@@ -60,9 +60,9 @@ SEXP devCairo(SEXP args)
 SEXP cairoVersion(void)
 {
 #ifdef HAVE_WORKING_CAIRO
-    if (Load_Rcairo_Dll() < 0) return mkString("");
+    if (Load_Rcairo_Dll() < 0) return Rf_mkString("");
     else return (R_cairoVersion)();
 #else
-    return mkString("");
+    return Rf_mkString("");
 #endif
 }

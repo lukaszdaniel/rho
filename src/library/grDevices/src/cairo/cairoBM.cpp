@@ -99,13 +99,13 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
 					    xd->windowHeight);
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         xd->cc = cairo_create(xd->cs);
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         cairo_set_operator(xd->cc, CAIRO_OPERATOR_OVER);
@@ -121,7 +121,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
             xd->cs = NULL;
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         if(xd->onefile)
@@ -129,7 +129,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         xd->cc = cairo_create(xd->cs);
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         cairo_set_antialias(xd->cc, xd->antialias);
@@ -143,7 +143,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
                                           (double)xd->windowHeight);
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         cairo_surface_set_fallback_resolution(xd->cs, xd->fallback_dpi,
@@ -151,7 +151,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         xd->cc = cairo_create(xd->cs);
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         cairo_set_antialias(xd->cc, xd->antialias);
@@ -165,7 +165,7 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
                                          (double)xd->windowHeight);
         res = cairo_surface_status(xd->cs);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
 // We already require >= 1.2
@@ -178,14 +178,14 @@ BM_Open(pDevDesc dd, pX11Desc xd, int width, int height)
         xd->cc = cairo_create(xd->cs);
         res = cairo_status(xd->cc);
         if (res != CAIRO_STATUS_SUCCESS) {
-            warning("cairo error '%s'", cairo_status_to_string(res));
+            Rf_warning("cairo error '%s'", cairo_status_to_string(res));
             return Rboolean(FALSE);
         }
         cairo_set_antialias(xd->cc, xd->antialias);
     }
 #endif
     else
-	error(_("unimplemented cairo-based device"));
+	Rf_error(_("unimplemented cairo-based device"));
 
     return Rboolean(TRUE);
 }
@@ -210,7 +210,7 @@ static void BM_Close_bitmap(pX11Desc xd)
 
     void *xi = cairo_image_surface_get_data(xd->cs);
     if (!xi) {
-	warning("BM_Close_bitmap called on non-surface");
+	Rf_warning("BM_Close_bitmap called on non-surface");
 	return;
     }
 
@@ -249,7 +249,7 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
 	snprintf(buf, PATH_MAX, xd->filename, xd->npages);
 	xd->fp = R_fopen(R_ExpandFileName(buf), "wb");
 	if (!xd->fp)
-	    error(_("could not open file '%s'"), buf);
+	    Rf_error(_("could not open file '%s'"), buf);
     }
     else if(xd->type == PNGdirect || xd->type == TIFF) {
 	if (xd->npages > 1) {
@@ -272,14 +272,14 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
                 res = cairo_surface_status(xd->cs);
                 if (res != CAIRO_STATUS_SUCCESS) {
                     xd->cs = NULL;
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
                 if(xd->onefile)
                     cairo_svg_surface_restrict_to_version(xd->cs, CAIRO_SVG_VERSION_1_2);
                 xd->cc = cairo_create(xd->cs);
                 res = cairo_status(xd->cc);
                 if (res != CAIRO_STATUS_SUCCESS) {
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
                 cairo_set_antialias(xd->cc, xd->antialias);
             }
@@ -299,14 +299,14 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
                                                   (double)xd->windowHeight);
                 res = cairo_surface_status(xd->cs);
                 if (res != CAIRO_STATUS_SUCCESS) {
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
                 cairo_surface_set_fallback_resolution(xd->cs, xd->fallback_dpi,
                                                       xd->fallback_dpi);
                 xd->cc = cairo_create(xd->cs);
                 res = cairo_status(xd->cc);
                 if (res != CAIRO_STATUS_SUCCESS) {
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
                 cairo_set_antialias(xd->cc, xd->antialias);
             }
@@ -326,7 +326,7 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
                                                  (double)xd->windowHeight);
                 res = cairo_surface_status(xd->cs);
                 if (res != CAIRO_STATUS_SUCCESS) {
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
 // We already require >= 1.2
 #if CAIRO_VERSION_MAJOR > 2 || CAIRO_VERSION_MINOR >= 6
@@ -338,7 +338,7 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
                 xd->cc = cairo_create(xd->cs);
                 res = cairo_status(xd->cc);
                 if (res != CAIRO_STATUS_SUCCESS) {
-                    error("cairo error '%s'", cairo_status_to_string(res));
+                    Rf_error("cairo error '%s'", cairo_status_to_string(res));
                 }
                 cairo_set_antialias(xd->cc, xd->antialias);
             }
@@ -346,7 +346,7 @@ static void BM_NewPage(const pGEcontext gc, pDevDesc dd)
     }
 #endif
     else
-	error(_("unimplemented cairo-based device"));
+	Rf_error(_("unimplemented cairo-based device"));
 
     cairo_reset_clip(xd->cc);
     if (xd->type == PNG  || xd->type == TIFF|| xd->type == PNGdirect) {
@@ -537,48 +537,48 @@ SEXP in_Cairo(SEXP args)
     const void *vmax = vmaxget();
 
     args = CDR(args); /* skip entry point name */
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) < 1)
-	error(_("invalid '%s' argument"), "filename");
-    filename = translateChar(STRING_ELT(CAR(args), 0));
+    if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) < 1)
+	Rf_error(_("invalid '%s' argument"), "filename");
+    filename = Rf_translateChar(STRING_ELT(CAR(args), 0));
     args = CDR(args);
-    type = asInteger(CAR(args));
+    type = Rf_asInteger(CAR(args));
     if(type == NA_INTEGER || type <= 0)
-	error(_("invalid '%s' argument"), "type");
+	Rf_error(_("invalid '%s' argument"), "type");
     args = CDR(args);
-    width = asInteger(CAR(args));
+    width = Rf_asInteger(CAR(args));
     if(width == NA_INTEGER || width <= 0)
-	error(_("invalid '%s' argument"), "width");
+	Rf_error(_("invalid '%s' argument"), "width");
     args = CDR(args);
-    height = asInteger(CAR(args));
+    height = Rf_asInteger(CAR(args));
     if(height == NA_INTEGER || height <= 0)
-	error(_("invalid '%s' argument"), "height");
+	Rf_error(_("invalid '%s' argument"), "height");
     args = CDR(args);
-    pointsize = asInteger(CAR(args));
+    pointsize = Rf_asInteger(CAR(args));
     if(pointsize == NA_INTEGER || pointsize <= 0)
-	error(_("invalid '%s' argument"), "pointsize");
+	Rf_error(_("invalid '%s' argument"), "pointsize");
     args = CDR(args);
     sc = CAR(args);
-    if (!isString(sc) && !isInteger(sc) && !isLogical(sc) && !isReal(sc))
-	error(_("invalid '%s' value"), "bg");
+    if (!Rf_isString(sc) && !Rf_isInteger(sc) && !Rf_isLogical(sc) && !Rf_isReal(sc))
+	Rf_error(_("invalid '%s' value"), "bg");
     bgcolor = RGBpar(sc, 0);
     args = CDR(args);
-    res = asInteger(CAR(args));
+    res = Rf_asInteger(CAR(args));
     args = CDR(args);
-    antialias = asInteger(CAR(args));
+    antialias = Rf_asInteger(CAR(args));
     if(antialias == NA_INTEGER)
-	error(_("invalid '%s' argument"), "antialias");
+	Rf_error(_("invalid '%s' argument"), "antialias");
     args = CDR(args);
-    quality = asInteger(CAR(args));
+    quality = Rf_asInteger(CAR(args));
     if(quality == NA_INTEGER || quality < 0 || quality > 100)
-	error(_("invalid '%s' argument"), "quality");
+	Rf_error(_("invalid '%s' argument"), "quality");
     args = CDR(args);
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) < 1)
-	error(_("invalid '%s' argument"), "family");
-    family = translateChar(STRING_ELT(CAR(args), 0));
+    if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) < 1)
+	Rf_error(_("invalid '%s' argument"), "family");
+    family = Rf_translateChar(STRING_ELT(CAR(args), 0));
     args = CDR(args);
-    dpi = asReal(CAR(args));
+    dpi = Rf_asReal(CAR(args));
     if(ISNAN(dpi) || dpi <= 0)
-	error(_("invalid '%s' argument"), "dpi");
+	Rf_error(_("invalid '%s' argument"), "dpi");
 
     R_GE_checkVersionOrDie(R_GE_version);
     R_CheckDeviceAvailable();
@@ -590,7 +590,7 @@ SEXP in_Cairo(SEXP args)
 			    width, height, pointsize,
 			    bgcolor, res, antialias, family, dpi)) {
 	    free(dev);
-	    error(_("unable to start device '%s'"), devtable[type].name);
+	    Rf_error(_("unable to start device '%s'"), devtable[type].name);
 	}
 	gdd = GEcreateDevDesc(dev);
 	GEaddDevice2f(gdd, devtable[type].name, filename);
@@ -603,8 +603,8 @@ SEXP in_Cairo(SEXP args)
 extern "C"
 SEXP in_CairoVersion(void)
 {
-    SEXP ans = PROTECT(allocVector(STRSXP, 1));
-    SET_STRING_ELT(ans, 0, mkChar(cairo_version_string()));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(cairo_version_string()));
     UNPROTECT(1);
     return ans;
 }

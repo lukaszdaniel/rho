@@ -39,7 +39,7 @@ SEXP winver(void)
 
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     if(!GetVersionEx((OSVERSIONINFO *)&osvi))
-	error(_("unsupported version of Windows"));
+	Rf_error(_("unsupported version of Windows"));
 
     /* see http://msdn2.microsoft.com/en-us/library/ms724429.aspx
        for ways to get more info.
@@ -104,7 +104,7 @@ SEXP winver(void)
 		 LOWORD(osvi.dwBuildNumber), osvi.szCSDVersion);
     }
 
-    return mkString(ver);
+    return Rf_mkString(ver);
 }
 
 SEXP dllversion(SEXP path)
@@ -113,13 +113,13 @@ SEXP dllversion(SEXP path)
     DWORD dwVerInfoSize;
     DWORD dwVerHnd;
 
-    if(!isString(path) || LENGTH(path) != 1)
-	error(_("invalid '%s' argument"), "path");
+    if(!Rf_isString(path) || LENGTH(path) != 1)
+	Rf_error(_("invalid '%s' argument"), "path");
     dll = filenameToWchar(STRING_ELT(path, 0), FALSE);
     dwVerInfoSize = GetFileVersionInfoSizeW(dll, &dwVerHnd);
-    SEXP ans = PROTECT(allocVector(STRSXP, 2));
-    SET_STRING_ELT(ans, 0, mkChar(""));
-    SET_STRING_ELT(ans, 1, mkChar(""));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(""));
+    SET_STRING_ELT(ans, 1, Rf_mkChar(""));
     if (dwVerInfoSize) {
 	BOOL  fRet;
 	LPSTR lpstrVffInfo;
@@ -132,17 +132,17 @@ SEXP dllversion(SEXP path)
 	    fRet = VerQueryValue(lpstrVffInfo,
 				 TEXT("\\StringFileInfo\\040904E4\\FileVersion"),
 				 (LPVOID)&lszVer, &cchVer);
-	    if(fRet) SET_STRING_ELT(ans, 0, mkChar(lszVer));
+	    if(fRet) SET_STRING_ELT(ans, 0, Rf_mkChar(lszVer));
 
 	    fRet = VerQueryValue(lpstrVffInfo,
 				 TEXT("\\StringFileInfo\\040904E4\\R Version"),
 				 (LPVOID)&lszVer, &cchVer);
-	    if(fRet) SET_STRING_ELT(ans, 1, mkChar(lszVer));
+	    if(fRet) SET_STRING_ELT(ans, 1, Rf_mkChar(lszVer));
 	    else {
 		fRet = VerQueryValue(lpstrVffInfo,
 				     TEXT("\\StringFileInfo\\040904E4\\Compiled under R Version"),
 				     (LPVOID)&lszVer, &cchVer);
-		if(fRet) SET_STRING_ELT(ans, 1, mkChar(lszVer));
+		if(fRet) SET_STRING_ELT(ans, 1, Rf_mkChar(lszVer));
 	    }
 
 	} else ans = R_NilValue;
@@ -159,7 +159,7 @@ SEXP getClipboardFormats(void)
 
     if(OpenClipboard(NULL)) {
 	size = CountClipboardFormats();
-	PROTECT(ans = allocVector(INTSXP, size));
+	PROTECT(ans = Rf_allocVector(INTSXP, size));
 	for (j = 0; j < size; j++) {
 	    format = EnumClipboardFormats(format);
 	    INTEGER(ans)[j] = format;
@@ -204,7 +204,7 @@ static SEXP splitClipboardText(const char *s, int ienc)
     if (cnt_r == cnt_n) CRLF = TRUE;
     /* over-allocate a line buffer */
     line = R_chk_calloc(1+line_len, 1);
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     for(p = s, q = line, nl = 0; *p; p++) {
 	if (*p == eol) {
 	    *q = '\0';
@@ -231,8 +231,8 @@ SEXP readClipboard(SEXP sformat, SEXP sraw)
     const char *pc;
     int j, format, raw, size;
 
-    format = asInteger(sformat);
-    raw = asLogical(sraw);
+    format = Rf_asInteger(sformat);
+    raw = Rf_asLogical(sraw);
 
     if(OpenClipboard(NULL)) {
 	if(IsClipboardFormatAvailable(format) &&
@@ -241,7 +241,7 @@ SEXP readClipboard(SEXP sformat, SEXP sraw)
 	    if(raw) {
 		Rbyte *pans;
 		size = GlobalSize(hglb);
-		ans = allocVector(RAWSXP, size); /* no R allocation below */
+		ans = Rf_allocVector(RAWSXP, size); /* no R allocation below */
 		pans = RAW(ans);
 		for (j = 0; j < size; j++) pans[j] = *pc++;
 	    } else if (format == CF_UNICODETEXT) {
@@ -257,7 +257,7 @@ SEXP readClipboard(SEXP sformat, SEXP sraw)
 		/* can we get the encoding out of a CF_LOCALE entry? */
 		ans = splitClipboardText(pc, 0);
 	    } else
-		error("'raw = FALSE' and format is a not a known text format");
+		Rf_error("'raw = FALSE' and format is a not a known text format");
 	    GlobalUnlock(hglb);
 	}
 	CloseClipboard();
@@ -274,11 +274,11 @@ SEXP writeClipboard(SEXP text, SEXP sformat)
     Rboolean success = FALSE, raw = FALSE;
     const void *vmax = vmaxget();
 
-    format = asInteger(sformat);
+    format = Rf_asInteger(sformat);
 
     if (TYPEOF(text) == RAWSXP) raw = TRUE;
-    else if(!isString(text))
-	error(_("argument must be a character vector or a raw vector"));
+    else if(!Rf_isString(text))
+	Rf_error(_("argument must be a character vector or a raw vector"));
 
     n = length(text);
     if(n > 0) {
@@ -289,7 +289,7 @@ SEXP writeClipboard(SEXP text, SEXP sformat)
 		len += 2 * (wcslen(wtransChar(STRING_ELT(text, i))) + 2);
 	else
 	    for(i = 0; i < n; i++)
-		len += strlen(translateChar(STRING_ELT(text, i))) + 2;
+		len += strlen(Rf_translateChar(STRING_ELT(text, i))) + 2;
 
 	if ( (hglb = GlobalAlloc(GHND, len)) &&
 	     (s = (char *)GlobalLock(hglb)) ) {
@@ -306,7 +306,7 @@ SEXP writeClipboard(SEXP text, SEXP sformat)
 		*ws = L'\0';
 	    } else {
 		for(i = 0; i < n; i++) {
-		    p = translateChar(STRING_ELT(text, i));
+		    p = Rf_translateChar(STRING_ELT(text, i));
 		    while(*p) *s++ = *p++;
 		    *s++ = '\r'; *s++ = '\n';
 		}
@@ -315,12 +315,12 @@ SEXP writeClipboard(SEXP text, SEXP sformat)
 
 	    GlobalUnlock(hglb);
 	    if (!OpenClipboard(NULL) || !EmptyClipboard()) {
-		warning(_("unable to open the clipboard"));
+		Rf_warning(_("unable to open the clipboard"));
 		GlobalFree(hglb);
 	    } else {
 		success = SetClipboardData(CF_TEXT, hglb) != 0;
 		if(!success) {
-		    warning(_("unable to write to the clipboard"));
+		    Rf_warning(_("unable to write to the clipboard"));
 		    GlobalFree(hglb);
 		}
 		CloseClipboard();
@@ -328,7 +328,7 @@ SEXP writeClipboard(SEXP text, SEXP sformat)
 	}
     }
     vmaxset(vmax);
-    return ScalarLogical(success);
+    return Rf_ScalarLogical(success);
 }
 
 #include "Startup.h"
@@ -351,7 +351,7 @@ SEXP getIdentification(void)
 	/* do nothing */
 	break; /* -Wall */
     }
-    return mkString(res);
+    return Rf_mkString(res);
 }
 
 SEXP getWindowTitle(void)
@@ -372,7 +372,7 @@ SEXP getWindowTitle(void)
 	/* do nothing */
 	break;
     }
-    return mkString(res);
+    return Rf_mkString(res);
 }
 
 
@@ -397,20 +397,20 @@ static SEXP in_setTitle(const char *title)
 
 SEXP setWindowTitle(SEXP title)
 {
-    if(!isString(title)  || LENGTH(title) != 1 ||
+    if(!Rf_isString(title)  || LENGTH(title) != 1 ||
        STRING_ELT(title, 0) == NA_STRING)
-	error(_("'title' must be a character string"));
-    return in_setTitle(translateChar(STRING_ELT(title, 0)));
+	Rf_error(_("'title' must be a character string"));
+    return in_setTitle(Rf_translateChar(STRING_ELT(title, 0)));
 }
 
 
 SEXP setStatusBar(SEXP text)
 {
-    if(!isString(text)  || LENGTH(text) != 1 ||
+    if(!Rf_isString(text)  || LENGTH(text) != 1 ||
        STRING_ELT(text, 0) == NA_STRING)
-	error(_("'text' must be a character string"));
+	Rf_error(_("'text' must be a character string"));
     showstatusbar();
-    setstatus(translateChar(STRING_ELT(text, 0)));
+    setstatus(Rf_translateChar(STRING_ELT(text, 0)));
     return R_NilValue;
 }
 
@@ -447,9 +447,9 @@ SEXP getWindowsHandle(SEXP which)
 {
     void * handle;
 
-    if(length(which) != 1) error(_("'%s' must be length 1"), "which");
-    if (isString(which)) handle = getConsoleHandle(CHAR(STRING_ELT(which,0)));
-    else if (isInteger(which)) handle = getDeviceHandle(INTEGER(which)[0]);
+    if(length(which) != 1) Rf_error(_("'%s' must be length 1"), "which");
+    if (Rf_isString(which)) handle = getConsoleHandle(R_CHAR(STRING_ELT(which,0)));
+    else if (Rf_isInteger(which)) handle = getDeviceHandle(INTEGER(which)[0]);
     else handle = NULL;
 
     if (handle)
@@ -476,13 +476,13 @@ static BOOL CALLBACK EnumWindowsProc(HWND handle, LPARAM param)
     	if (!EnumMinimized && IsIconic(handle)) return TRUE;
     	if (EnumCount >= length(EnumResult)) {
     	    int newlen = 2*length(EnumResult);
-    	    REPROTECT(EnumResult = lengthgets(EnumResult, newlen), EnumIndex);
-    	    setAttrib(EnumResult, R_NamesSymbol, 
-    	              lengthgets(getAttrib(EnumResult, R_NamesSymbol), newlen));
+    	    REPROTECT(EnumResult = Rf_lengthgets(EnumResult, newlen), EnumIndex);
+    	    Rf_setAttrib(EnumResult, R_NamesSymbol, 
+    	              Rf_lengthgets(Rf_getAttrib(EnumResult, R_NamesSymbol), newlen));
     	}
     	SET_VECTOR_ELT(EnumResult, EnumCount, R_MakeExternalPtr(handle,R_NilValue,R_NilValue));
     	if (GetWindowText(handle, title, 1024)) 
-    	    SET_STRING_ELT(getAttrib(EnumResult, R_NamesSymbol), EnumCount, mkChar(title));
+    	    SET_STRING_ELT(Rf_getAttrib(EnumResult, R_NamesSymbol), EnumCount, Rf_mkChar(title));
     	EnumCount++;
     }
     return TRUE;
@@ -490,13 +490,13 @@ static BOOL CALLBACK EnumWindowsProc(HWND handle, LPARAM param)
 
 SEXP getWindowsHandles(SEXP which, SEXP minimized)
 {
-    PROTECT_WITH_INDEX(EnumResult = allocVector(VECSXP, 8), &EnumIndex);
-    setAttrib(EnumResult, R_NamesSymbol, allocVector(STRSXP, 8));
+    PROTECT_WITH_INDEX(EnumResult = Rf_allocVector(VECSXP, 8), &EnumIndex);
+    Rf_setAttrib(EnumResult, R_NamesSymbol, Rf_allocVector(STRSXP, 8));
     EnumCount = 0;
     const char * w;
 
-    w = CHAR(STRING_ELT(which, 0));
-    EnumMinimized = asLogical(minimized);
+    w = R_CHAR(STRING_ELT(which, 0));
+    EnumMinimized = Rf_asLogical(minimized);
 
     if (streql(w, "R")) EnumProcessId = GetCurrentProcessId();
     else EnumProcessId = 0;
@@ -506,7 +506,7 @@ SEXP getWindowsHandles(SEXP which, SEXP minimized)
     else
     	EnumWindows(EnumWindowsProc, 0);
     	
-    EnumResult = lengthgets(EnumResult, EnumCount);
+    EnumResult = Rf_lengthgets(EnumResult, EnumCount);
     UNPROTECT(1);
     return EnumResult;
 }
@@ -560,16 +560,16 @@ SEXP arrangeWindows(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     windows = CAR(args);
     if (length(windows)) {
-	if (TYPEOF(windows) != VECSXP) error(_("'%s' must be a list"), "windows");
+	if (TYPEOF(windows) != VECSXP) Rf_error(_("'%s' must be a list"), "windows");
 	void **handles = (void **) R_alloc(length(windows), sizeof(void *));
 	for (int i = 0; i < length(windows); i++) {
 	    if (TYPEOF(VECTOR_ELT(windows, i)) != EXTPTRSXP)
-		error(_("'%s' element %d is not a window handle"), "windows", i+1);
+		Rf_error(_("'%s' element %d is not a window handle"), "windows", i+1);
 	    handles[i] = R_ExternalPtrAddr(VECTOR_ELT(windows, i));
 	}
-	action = asInteger(CADR(args));
-	preserve = asInteger(CADDR(args));
-	outer = asInteger(CADDDR(args));
+	action = Rf_asInteger(CADR(args));
+	preserve = Rf_asInteger(CADDR(args));
+	outer = Rf_asInteger(CADDDR(args));
 	in_ArrangeWindows(length(windows), handles, action, preserve, outer);
     }
     return windows;

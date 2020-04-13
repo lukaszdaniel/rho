@@ -289,7 +289,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     }
 
     /* NB: the actual conversion to the symbol is done in
-       R_dlsym in Rdynload.c.  That prepends an underscore (usually),
+       R_dlsym in Rdynload.cpp.  That prepends an underscore (usually),
        and may append one or more underscores.
     */
 

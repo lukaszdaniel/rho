@@ -67,36 +67,36 @@ char *RGBA2rgb(unsigned int r, unsigned int g, unsigned int b, unsigned int a)
 static unsigned int ScaleColor(double x)
 {
     if (ISNA(x))
-    	error(_("color intensity %s, not in [0,1]"), "NA");
+    	Rf_error(_("color intensity %s, not in [0,1]"), "NA");
     if (!R_FINITE(x) || x < 0.0 || x > 1.0)
-	error(_("color intensity %g, not in [0,1]"), x);
+	Rf_error(_("color intensity %g, not in [0,1]"), x);
     return (unsigned int)(255*x + 0.5);
 }
 
 static unsigned int CheckColor(int x)
 {
     if (x == NA_INTEGER)
-    	error(_("color intensity %s, not in 0:255"), "NA");
+    	Rf_error(_("color intensity %s, not in 0:255"), "NA");
     if (x < 0 || x > 255)
-	error(_("color intensity %d, not in 0:255"), x);
+	Rf_error(_("color intensity %d, not in 0:255"), x);
     return (unsigned int)x;
 }
 
 static unsigned int ScaleAlpha(double x)
 {
     if (ISNA(x))
-	error(_("alpha level %s, not in [0,1]"), "NA"); 
+	Rf_error(_("alpha level %s, not in [0,1]"), "NA"); 
     if (!R_FINITE(x) || x < 0.0 || x > 1.0)
-	error(_("alpha level %g, not in [0,1]"), x);
+	Rf_error(_("alpha level %g, not in [0,1]"), x);
     return (unsigned int)(255*x + 0.5);
 }
 
 static unsigned int CheckAlpha(int x)
 {
     if (x == NA_INTEGER)
-    	error(_("alpha level %s, not in 0:255"), "NA");
+    	Rf_error(_("alpha level %s, not in 0:255"), "NA");
     if (x < 0 || x > 255)
-	error(_("alpha level %d, not in 0:255"), x);
+	Rf_error(_("alpha level %d, not in 0:255"), x);
     return (unsigned int)x;
 }
 
@@ -111,7 +111,7 @@ static void hsv2rgb(double h, double s, double v,
     int i;
 
     if (!R_FINITE(h) || !R_FINITE(s) || !R_FINITE(v)) 
-	error(_("inputs must be finite")); 
+	Rf_error(_("inputs must be finite")); 
     f = modf(h * 6.0, &t);
     i = ((int) t) % 6;
 
@@ -126,7 +126,7 @@ static void hsv2rgb(double h, double s, double v,
     case 4:	*r = t;		*g = p;		*b = v; break;
     case 5:	*r = v;		*g = p;		*b = q;	break;
     default:
-	error(_("bad hsv to rgb color conversion"));
+	Rf_error(_("bad hsv to rgb color conversion"));
     }
 }
 
@@ -186,11 +186,11 @@ SEXP hsv(SEXP h, SEXP s, SEXP v, SEXP a)
     double hh, ss, vv, aa, r=0., g=0., b=0.; /* -Wall */
     R_xlen_t i, max, nh, ns, nv, na = 1;
 
-    PROTECT(h = coerceVector(h,REALSXP));
-    PROTECT(s = coerceVector(s,REALSXP));
-    PROTECT(v = coerceVector(v,REALSXP));
-    if (!isNull(a)) {
-	a = coerceVector(a, REALSXP);
+    PROTECT(h = Rf_coerceVector(h,REALSXP));
+    PROTECT(s = Rf_coerceVector(s,REALSXP));
+    PROTECT(v = Rf_coerceVector(v,REALSXP));
+    if (!Rf_isNull(a)) {
+	a = Rf_coerceVector(a, REALSXP);
 	na = XLENGTH(a);
     }
     PROTECT(a);
@@ -200,27 +200,27 @@ SEXP hsv(SEXP h, SEXP s, SEXP v, SEXP a)
     nv = XLENGTH(v);
     if (nh <= 0 || ns <= 0 || nv <= 0 || na <= 0) {
 	UNPROTECT(4);
-	return allocVector(STRSXP, 0);
+	return Rf_allocVector(STRSXP, 0);
     }
     max = nh;
     if (max < ns) max = ns;
     if (max < nv) max = nv;
     if (max < na) max = na;
-    SEXP c = PROTECT(allocVector(STRSXP, max));
+    SEXP c = PROTECT(Rf_allocVector(STRSXP, max));
     if(max == 0) {
         UNPROTECT(5);
         return(c);
     }
 
-    if(isNull(a)) {
+    if(Rf_isNull(a)) {
 	for (i = 0; i < max; i++) {
 	hh = REAL(h)[i % nh];
 	ss = REAL(s)[i % ns];
 	vv = REAL(v)[i % nv];
 	if (hh < 0 || hh > 1 || ss < 0 || ss > 1 || vv < 0 || vv > 1)
-	    error(_("invalid hsv color"));
+	    Rf_error(_("invalid hsv color"));
 	hsv2rgb(hh, ss, vv, &r, &g, &b);
-	SET_STRING_ELT(c, i, mkChar(RGB2rgb(ScaleColor(r), ScaleColor(g),
+	SET_STRING_ELT(c, i, Rf_mkChar(RGB2rgb(ScaleColor(r), ScaleColor(g),
 					    ScaleColor(b))));
 
 	}
@@ -232,9 +232,9 @@ SEXP hsv(SEXP h, SEXP s, SEXP v, SEXP a)
 	aa = REAL(a)[i % na];
 	if (hh < 0 || hh > 1 || ss < 0 || ss > 1 || vv < 0 || vv > 1 ||
 	    aa < 0 || aa > 1)
-	    error(_("invalid hsv color"));
+	    Rf_error(_("invalid hsv color"));
 	hsv2rgb(hh, ss, vv, &r, &g, &b);
-	SET_STRING_ELT(c, i, mkChar(RGBA2rgb(ScaleColor(r), ScaleColor(g),
+	SET_STRING_ELT(c, i, Rf_mkChar(RGBA2rgb(ScaleColor(r), ScaleColor(g),
 					     ScaleColor(b), ScaleAlpha(aa))));
 	}
     }
@@ -317,34 +317,34 @@ SEXP hcl(SEXP h, SEXP c, SEXP l, SEXP a, SEXP sfixup)
     int ir, ig, ib;
     int fixup;
 
-    PROTECT(h = coerceVector(h, REALSXP));
-    PROTECT(c = coerceVector(c, REALSXP));
-    PROTECT(l = coerceVector(l, REALSXP));
-    if (!isNull(a)) {
-	a = coerceVector(a, REALSXP);
+    PROTECT(h = Rf_coerceVector(h, REALSXP));
+    PROTECT(c = Rf_coerceVector(c, REALSXP));
+    PROTECT(l = Rf_coerceVector(l, REALSXP));
+    if (!Rf_isNull(a)) {
+	a = Rf_coerceVector(a, REALSXP);
 	na = XLENGTH(a);
     }
     PROTECT(a);
-    fixup = asLogical(sfixup);
+    fixup = Rf_asLogical(sfixup);
     nh = XLENGTH(h);
     nc = XLENGTH(c);
     nl = XLENGTH(l);
     if (nh <= 0 || nc <= 0 || nl <= 0 || na <= 0) {
 	UNPROTECT(4);
-	return(allocVector(STRSXP, 0));
+	return(Rf_allocVector(STRSXP, 0));
     }
     max = nh;
     if (max < nc) max = nc;
     if (max < nl) max = nl;
     if (max < na) max = na;
-    SEXP ans = PROTECT(allocVector(STRSXP, max));
-    if (isNull(a)) {
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, max));
+    if (Rf_isNull(a)) {
 	for (i = 0; i < max; i++) {
 	    H = REAL(h)[i % nh];
 	    C = REAL(c)[i % nc];
 	    L = REAL(l)[i % nl];
 	    if (R_FINITE(H) && R_FINITE(C) && R_FINITE(L)) {
-		if (L < 0 || L > WHITE_Y || C < 0) error(_("invalid hcl color"));
+		if (L < 0 || L > WHITE_Y || C < 0) Rf_error(_("invalid hcl color"));
 		hcl2rgb(H, C, L, &r, &g, &b);
 		ir = (int) (255 * r + .5);
 		ig = (int) (255 * g + .5);
@@ -352,7 +352,7 @@ SEXP hcl(SEXP h, SEXP c, SEXP l, SEXP a, SEXP sfixup)
 		if (FixupColor(&ir, &ig, &ib) && !fixup)
 		    SET_STRING_ELT(ans, i, NA_STRING);
 		else
-		    SET_STRING_ELT(ans, i, mkChar(RGB2rgb(ir, ig, ib)));
+		    SET_STRING_ELT(ans, i, Rf_mkChar(RGB2rgb(ir, ig, ib)));
 	    } else SET_STRING_ELT(ans, i, NA_STRING);
 	}
     } else {
@@ -364,7 +364,7 @@ SEXP hcl(SEXP h, SEXP c, SEXP l, SEXP a, SEXP sfixup)
 	    if (!R_FINITE(A)) A = 1;
 	    if (R_FINITE(H) && R_FINITE(C) && R_FINITE(L)) {
 		if (L < 0 || L > WHITE_Y || C < 0 || A < 0 || A > 1)
-		    error(_("invalid hcl color"));
+		    Rf_error(_("invalid hcl color"));
 		hcl2rgb(H, C, L, &r, &g, &b);
 		ir = (int) (255 * r + .5);
 		ig = (int) (255 * g + .5);
@@ -372,7 +372,7 @@ SEXP hcl(SEXP h, SEXP c, SEXP l, SEXP a, SEXP sfixup)
 		if (FixupColor(&ir, &ig, &ib) && !fixup)
 		    SET_STRING_ELT(ans, i, NA_STRING);
 		else
-		    SET_STRING_ELT(ans, i, mkChar(RGBA2rgb(ir, ig, ib,
+		    SET_STRING_ELT(ans, i, Rf_mkChar(RGBA2rgb(ir, ig, ib,
 							   ScaleAlpha(A))));
 	    } else SET_STRING_ELT(ans, i, NA_STRING);
 	}
@@ -383,52 +383,52 @@ SEXP hcl(SEXP h, SEXP c, SEXP l, SEXP a, SEXP sfixup)
 
 #define _R_set_c_RGB(_R,_G,_B) \
     { for (i = 0; i < l_max; i++)  \
-	    SET_STRING_ELT(c, i, mkChar(RGB2rgb(_R,_G,_B))); }
+	    SET_STRING_ELT(c, i, Rf_mkChar(RGB2rgb(_R,_G,_B))); }
 
 #define _R_set_c_RGBA(_R,_G,_B,_A) \
     { for (i = 0; i < l_max; i++)  \
-	    SET_STRING_ELT(c, i, mkChar(RGBA2rgb(_R,_G,_B,_A))); }
+	    SET_STRING_ELT(c, i, Rf_mkChar(RGBA2rgb(_R,_G,_B,_A))); }
 
 SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 {
     R_xlen_t i, l_max, nr, ng, nb, na = 1;
     Rboolean max_1 = FALSE;
-    double mV = asReal(MCV);
+    double mV = Rf_asReal(MCV);
 
     if(!R_FINITE(mV) || mV == 0.)
-	error(_("invalid value of 'maxColorValue'"));
+	Rf_error(_("invalid value of 'maxColorValue'"));
     if(mV == 255.) {
-	PROTECT(r = coerceVector(r, INTSXP));
-	PROTECT(g = coerceVector(g, INTSXP));
-	PROTECT(b = coerceVector(b, INTSXP));
-	if(!isNull(a)) a = coerceVector(a, INTSXP);
+	PROTECT(r = Rf_coerceVector(r, INTSXP));
+	PROTECT(g = Rf_coerceVector(g, INTSXP));
+	PROTECT(b = Rf_coerceVector(b, INTSXP));
+	if(!Rf_isNull(a)) a = Rf_coerceVector(a, INTSXP);
     } else {
-	PROTECT(r = coerceVector(r, REALSXP));
-	PROTECT(g = coerceVector(g, REALSXP));
-	PROTECT(b = coerceVector(b, REALSXP));
-	if(!isNull(a)) a = coerceVector(a, REALSXP);
+	PROTECT(r = Rf_coerceVector(r, REALSXP));
+	PROTECT(g = Rf_coerceVector(g, REALSXP));
+	PROTECT(b = Rf_coerceVector(b, REALSXP));
+	if(!Rf_isNull(a)) a = Rf_coerceVector(a, REALSXP);
 	max_1 = Rboolean(mV == 1.);
     }
     PROTECT(a);
 
     nr = XLENGTH(r); ng = XLENGTH(g); nb = XLENGTH(b); 
-    if (!isNull(a)) na = XLENGTH(a);
+    if (!Rf_isNull(a)) na = XLENGTH(a);
     if (nr <= 0 || ng <= 0 || nb <= 0 || na <= 0) {
 	UNPROTECT(4);
-	return allocVector(STRSXP, 0);
+	return Rf_allocVector(STRSXP, 0);
     }
     l_max = nr;
     if (l_max < ng) l_max = ng;
     if (l_max < nb) l_max = nb;
     if (l_max < na) l_max = na;
 
-    PROTECT(nam = coerceVector(nam, STRSXP));
+    PROTECT(nam = Rf_coerceVector(nam, STRSXP));
     if (Rf_length(nam) != 0 && Rf_length(nam) != l_max)
-	error(_("invalid 'names' vector"));
-    SEXP c = PROTECT(allocVector(STRSXP, l_max));
+	Rf_error(_("invalid 'names' vector"));
+    SEXP c = PROTECT(Rf_allocVector(STRSXP, l_max));
 
     if(mV == 255.0) {
-	if(isNull(a)) {
+	if(Rf_isNull(a)) {
 	    _R_set_c_RGB(CheckColor(INTEGER(r)[i%nr]),
 			  CheckColor(INTEGER(g)[i%ng]),
 			  CheckColor(INTEGER(b)[i%nb]));
@@ -440,7 +440,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 	}
     }
     else if(max_1) {
-	if(isNull(a)) {
+	if(Rf_isNull(a)) {
 	    _R_set_c_RGB(ScaleColor(REAL(r)[i%nr]),
 			 ScaleColor(REAL(g)[i%ng]),
 			 ScaleColor(REAL(b)[i%nb]));
@@ -452,7 +452,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 	}
     }
     else { /* maxColorVal not in {1, 255} */
-	if(isNull(a)) {
+	if(Rf_isNull(a)) {
 	    _R_set_c_RGB(ScaleColor(REAL(r)[i%nr] / mV),
 			 ScaleColor(REAL(g)[i%ng] / mV),
 			 ScaleColor(REAL(b)[i%nb] / mV));
@@ -463,7 +463,7 @@ SEXP rgb(SEXP r, SEXP g, SEXP b, SEXP a, SEXP MCV, SEXP nam)
 			  ScaleAlpha(REAL(a)[i%na] / mV));
 	}
     }
-    if (Rf_length(nam) != 0) setAttrib(c, R_NamesSymbol, nam);
+    if (Rf_length(nam) != 0) Rf_setAttrib(c, R_NamesSymbol, nam);
     UNPROTECT(6);
     return c;
 }
@@ -474,28 +474,28 @@ SEXP gray(SEXP lev, SEXP a)
     double level;
     int i, ilevel, nlev;
 
-    lev  = PROTECT(coerceVector(lev,REALSXP));
-    if(!isNull(a)) a = coerceVector(a,REALSXP);
+    lev  = PROTECT(Rf_coerceVector(lev,REALSXP));
+    if(!Rf_isNull(a)) a = Rf_coerceVector(a,REALSXP);
     PROTECT(a);
     nlev = LENGTH(lev);
-    PROTECT(ans = allocVector(STRSXP, nlev));
-    if(isNull(a)) {
+    PROTECT(ans = Rf_allocVector(STRSXP, nlev));
+    if(Rf_isNull(a)) {
 	for (i = 0; i < nlev; i++) {
 	    level = REAL(lev)[i];
 	    if (ISNAN(level) || level < 0 || level > 1)
-		error(_("invalid gray level, must be in [0,1]."));
+		Rf_error(_("invalid gray level, must be in [0,1]."));
 	    ilevel = (int)(255 * level + 0.5);
-	    SET_STRING_ELT(ans, i, mkChar(RGB2rgb(ilevel, ilevel, ilevel)));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(RGB2rgb(ilevel, ilevel, ilevel)));
 	}
     } else {
 	int na = Rf_length(a);
 	for (i = 0; i < (nlev > na ? nlev : na); i++) {
 	    level = REAL(lev)[i % nlev];
 	    if (ISNAN(level) || level < 0 || level > 1)
-		error(_("invalid gray level, must be in [0,1]."));
+		Rf_error(_("invalid gray level, must be in [0,1]."));
 	    ilevel = (int)(255 * level + 0.5);
 	    double aa = REAL(a)[i % na];
-	    SET_STRING_ELT(ans, i, mkChar(RGBA2rgb(ilevel, ilevel, ilevel,
+	    SET_STRING_ELT(ans, i, Rf_mkChar(RGBA2rgb(ilevel, ilevel, ilevel,
 						   ScaleAlpha(aa))));
 	}
     }
@@ -513,25 +513,25 @@ SEXP RGB2hsv(SEXP rgb)
     SEXP dd, ans, names, dmns;
     int n, i, i3;
 
-    rgb = PROTECT(coerceVector(rgb, REALSXP));
-    if(!isMatrix(rgb)) error("rgb is not a matrix (internally)");
-    dd = getAttrib(rgb, R_DimSymbol);
-    if(INTEGER(dd)[0] != 3) error("rgb must have 3 rows (internally)");
+    rgb = PROTECT(Rf_coerceVector(rgb, REALSXP));
+    if(!Rf_isMatrix(rgb)) Rf_error("rgb is not a matrix (internally)");
+    dd = Rf_getAttrib(rgb, R_DimSymbol);
+    if(INTEGER(dd)[0] != 3) Rf_error("rgb must have 3 rows (internally)");
     n = INTEGER(dd)[1];
 
-    ans = PROTECT(allocMatrix(REALSXP, 3, n));
-    PROTECT(dmns = allocVector(VECSXP, 2));
+    ans = PROTECT(Rf_allocMatrix(REALSXP, 3, n));
+    PROTECT(dmns = Rf_allocVector(VECSXP, 2));
     /* row names: */
-    PROTECT(names = allocVector(STRSXP, 3));
-    SET_STRING_ELT(names, 0, mkChar("h"));
-    SET_STRING_ELT(names, 1, mkChar("s"));
-    SET_STRING_ELT(names, 2, mkChar("v"));
+    PROTECT(names = Rf_allocVector(STRSXP, 3));
+    SET_STRING_ELT(names, 0, Rf_mkChar("h"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("s"));
+    SET_STRING_ELT(names, 2, Rf_mkChar("v"));
     SET_VECTOR_ELT(dmns, 0, names);
     /* column names if input has: */
-    if ((dd = getAttrib(rgb, R_DimNamesSymbol)) != R_NilValue &&
+    if ((dd = Rf_getAttrib(rgb, R_DimNamesSymbol)) != R_NilValue &&
 	(names = VECTOR_ELT(dd, 1)) != R_NilValue)
 	SET_VECTOR_ELT(dmns, 1, names);
-    setAttrib(ans, R_DimNamesSymbol, dmns);
+    Rf_setAttrib(ans, R_DimNamesSymbol, dmns);
     UNPROTECT(2);/* names, dmns */
 
     for(i = i3 = 0; i < n; i++, i3 += 3) {
@@ -547,34 +547,34 @@ SEXP col2rgb(SEXP colors, SEXP alpha)
 {
     SEXP ans, names, dmns;
 
-    int alph = asLogical(alpha);
-    if(alph == NA_LOGICAL) error(_("invalid '%s' value"), "alpha");
+    int alph = Rf_asLogical(alpha);
+    if(alph == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "alpha");
     switch(TYPEOF(colors)) {
     case INTSXP:
     case STRSXP:
 	break;
     case REALSXP:
-	colors = coerceVector(colors, INTSXP);
+	colors = Rf_coerceVector(colors, INTSXP);
 	break;
     default:
-	colors = coerceVector(colors, STRSXP);
+	colors = Rf_coerceVector(colors, STRSXP);
 	break;
     }
     PROTECT(colors);
     int n = LENGTH(colors);
 
     /* First set up the output matrix */
-    PROTECT(ans = allocMatrix(INTSXP, 3+alph, n));
-    PROTECT(dmns = allocVector(VECSXP, 2));
-    PROTECT(names = allocVector(STRSXP, 3+alph));
-    SET_STRING_ELT(names, 0, mkChar("red"));
-    SET_STRING_ELT(names, 1, mkChar("green"));
-    SET_STRING_ELT(names, 2, mkChar("blue"));
-    if(alph) SET_STRING_ELT(names, 3, mkChar("alpha"));
+    PROTECT(ans = Rf_allocMatrix(INTSXP, 3+alph, n));
+    PROTECT(dmns = Rf_allocVector(VECSXP, 2));
+    PROTECT(names = Rf_allocVector(STRSXP, 3+alph));
+    SET_STRING_ELT(names, 0, Rf_mkChar("red"));
+    SET_STRING_ELT(names, 1, Rf_mkChar("green"));
+    SET_STRING_ELT(names, 2, Rf_mkChar("blue"));
+    if(alph) SET_STRING_ELT(names, 3, Rf_mkChar("alpha"));
     SET_VECTOR_ELT(dmns, 0, names);
-    if ((names = getAttrib(colors, R_NamesSymbol)) != R_NilValue)
+    if ((names = Rf_getAttrib(colors, R_NamesSymbol)) != R_NilValue)
 	SET_VECTOR_ELT(dmns, 1, names);
-    setAttrib(ans, R_DimNamesSymbol, dmns);
+    Rf_setAttrib(ans, R_DimNamesSymbol, dmns);
 
     for(int i = 0, j = 0; i < n; i++) {
 	rcolor icol = inRGBpar3(colors, i, R_TRANWHITE);
@@ -1340,7 +1340,7 @@ static unsigned int hexdigit(int digit)
     if('0' <= digit && digit <= '9') return digit - '0';
     if('A' <= digit && digit <= 'F') return 10 + digit - 'A';
     if('a' <= digit && digit <= 'f') return 10 + digit - 'a';
-    /*else */ error(_("invalid hex digit in 'color' or 'lty'"));
+    /*else */ Rf_error(_("invalid hex digit in 'color' or 'lty'"));
     return digit; /* never occurs (-Wall) */
 }
 
@@ -1350,7 +1350,7 @@ static rcolor rgb2col(const char *rgb)
 {
     unsigned int r = 0, g = 0, b = 0, a = 0; /* -Wall */
     if(rgb[0] != '#')
-	error(_("invalid RGB specification"));
+	Rf_error(_("invalid RGB specification"));
     switch (strlen(rgb)) {
     case 9:
 	a = 16 * hexdigit(rgb[7]) + hexdigit(rgb[8]);
@@ -1360,7 +1360,7 @@ static rcolor rgb2col(const char *rgb)
 	b = 16 * hexdigit(rgb[5]) + hexdigit(rgb[6]);
 	break;
     default:
-	error(_("invalid RGB specification"));
+	Rf_error(_("invalid RGB specification"));
     }
     if (strlen(rgb) == 7)
 	return R_RGB(r, g, b);
@@ -1393,7 +1393,7 @@ static rcolor name2col(const char *nm)
 	if(StrMatch(ColorDataBase[i].name, nm))
 	    return ColorDataBase[i].code;
     }
-    error(_("invalid color name '%s'"), nm);
+    Rf_error(_("invalid color name '%s'"), nm);
     return 0U;		/* never occurs but avoid compiler warnings */
 }
 
@@ -1443,7 +1443,7 @@ static rcolor str2col(const char *s, rcolor bg)
     else if(isdigit((int)s[0])) {
 	char *ptr;
 	int indx = (int) strtod(s, &ptr);
-	if(*ptr) error(_("invalid color specification \"%s\""), s);
+	if(*ptr) Rf_error(_("invalid color specification \"%s\""), s);
 	if (indx == 0) return bg;
 	return Palette[(indx-1) % PaletteSize];
     } else return name2col(s);
@@ -1452,7 +1452,7 @@ static rcolor str2col(const char *s, rcolor bg)
 rcolor inR_GE_str2col(const char *s)
 {
     if (streql(s, "0")) 
-	error(_("invalid color specification \"%s\""), s);
+	Rf_error(_("invalid color specification \"%s\""), s);
     return str2col(s, R_TRANWHITE); // bg is irrelevant
 }
 
@@ -1466,7 +1466,7 @@ rcolor inRGBpar3(SEXP x, int i, rcolor bg)
     switch(TYPEOF(x))
     {
     case STRSXP:
-	return str2col(CHAR(STRING_ELT(x, i)), bg);
+	return str2col(R_CHAR(STRING_ELT(x, i)), bg);
     case LGLSXP:
 	indx = LOGICAL(x)[i];
 	if (indx == NA_LOGICAL) return R_TRANWHITE;
@@ -1480,11 +1480,11 @@ rcolor inRGBpar3(SEXP x, int i, rcolor bg)
 	indx = (int) REAL(x)[i];
 	break;
 	   default:
-	   warning(_("supplied color is neither numeric nor character"));
+	   Rf_warning(_("supplied color is neither numeric nor character"));
 	   return bg;
     }
     if (indx < 0) 
-	error(_("numerical color values must be >= 0, found %d"), indx);
+	Rf_error(_("numerical color values must be >= 0, found %d"), indx);
     if (indx == 0) return bg;
     else return Palette[(indx-1) % PaletteSize];
 }
@@ -1495,24 +1495,24 @@ SEXP palette(SEXP val)
     rcolor color[MAX_PALETTE_SIZE];
     int i, n;
 
-    if (!isString(val)) error(_("invalid argument type"));
+    if (!Rf_isString(val)) Rf_error(_("invalid argument type"));
     /* Record the current palette */
-    PROTECT(ans = allocVector(STRSXP, PaletteSize));
+    PROTECT(ans = Rf_allocVector(STRSXP, PaletteSize));
     for (i = 0; i < PaletteSize; i++)
-	SET_STRING_ELT(ans, i, mkChar(incol2name(Palette[i])));
+	SET_STRING_ELT(ans, i, Rf_mkChar(incol2name(Palette[i])));
     if ((n = Rf_length(val)) == 1) {
-	if (StrMatch("default", CHAR(STRING_ELT(val, 0)))) {
+	if (StrMatch("default", R_CHAR(STRING_ELT(val, 0)))) {
 	    int i;
 	    for (i = 0; (i < MAX_PALETTE_SIZE) && DefaultPalette[i]; i++)
 		Palette[i] = name2col(DefaultPalette[i]);
 	    PaletteSize = i;
-	} else error(_("unknown palette (need >= 2 colors)"));
+	} else Rf_error(_("unknown palette (need >= 2 colors)"));
     }
     else if (n > 1) {
 	if (n > MAX_PALETTE_SIZE)
-	    error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
+	    Rf_error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
 	for (i = 0; i < n; i++) {
-	    const char *s = CHAR(STRING_ELT(val, i));
+	    const char *s = R_CHAR(STRING_ELT(val, i));
 	    color[i] = (s[0] == '#') ? rgb2col(s) : name2col(s);
 	}
 	for (i = 0; i < n; i++)
@@ -1526,13 +1526,13 @@ SEXP palette(SEXP val)
 /* A version using 'rcolor' type */
 SEXP palette2(SEXP val)
 {
-    SEXP ans = PROTECT(allocVector(INTSXP, PaletteSize));
+    SEXP ans = PROTECT(Rf_allocVector(INTSXP, PaletteSize));
     int n = Rf_length(val), *ians = INTEGER(ans); 
     for (int i = 0; i < PaletteSize; i++) ians[i] = (int)Palette[i];
     if (n) {
-	if (TYPEOF(val) != INTSXP) error("requires INTSXP argment");
+	if (TYPEOF(val) != INTSXP) Rf_error("requires INTSXP argment");
 	if (n > MAX_PALETTE_SIZE)
-	    error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
+	    Rf_error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
 	for (int i = 0; i < n; i++) Palette[i] = (rcolor)INTEGER(val)[i];
 	PaletteSize = n;
     }
@@ -1545,9 +1545,9 @@ SEXP colors(void)
     int n;
 
     for (n = 0; ColorDataBase[n].name != NULL; n++) ;
-    SEXP ans = PROTECT(allocVector(STRSXP, n));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, n));
     for (n = 0; ColorDataBase[n].name != NULL; n++)
-	SET_STRING_ELT(ans, n, mkChar(ColorDataBase[n].name));
+	SET_STRING_ELT(ans, n, Rf_mkChar(ColorDataBase[n].name));
     UNPROTECT(1);
     return ans;
 }

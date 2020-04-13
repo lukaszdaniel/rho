@@ -34,10 +34,10 @@ SEXP Rmd5(SEXP files)
     FILE *fp;
     unsigned char resblock[16];
 
-    if(!isString(files)) error(_("argument 'files' must be character"));
-    PROTECT(ans = allocVector(STRSXP, nfiles));
+    if(!Rf_isString(files)) Rf_error(_("argument 'files' must be character"));
+    PROTECT(ans = Rf_allocVector(STRSXP, nfiles));
     for(i = 0; i < nfiles; i++) {
-	path = translateChar(STRING_ELT(files, i));
+	path = Rf_translateChar(STRING_ELT(files, i));
 #ifdef _WIN32
 	fp = fopen(path, "rb");
 #else
@@ -48,12 +48,12 @@ SEXP Rmd5(SEXP files)
 	} else {
 	    res = md5_stream(fp, &resblock);
 	    if(res) {
-		warning(_("md5 failed on file '%s'"), path);
+		Rf_warning(_("md5 failed on file '%s'"), path);
 		SET_STRING_ELT(ans, i, NA_STRING);
 	    } else {
 		for(j = 0; j < 16; j++)
 		    sprintf (out+2*j, "%02x", resblock[j]);
-		SET_STRING_ELT(ans, i, mkChar(out));
+		SET_STRING_ELT(ans, i, Rf_mkChar(out));
 	    }
 	    fclose(fp);
 	}

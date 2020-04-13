@@ -45,50 +45,50 @@ SEXP Cdqrls(SEXP x, SEXP y, SEXP tol, SEXP chk)
     SEXP ans;
     SEXP qr, coefficients, residuals, effects, pivot, qraux;
     int n, ny = 0, p, rank, nprotect = 4, pivoted = 0;
-    double rtol = asReal(tol), *work;
+    double rtol = Rf_asReal(tol), *work;
     Rboolean check = Rboolean(Rf_asLogical(chk));
 
-    ans = getAttrib(x, R_DimSymbol);
-    if(check && Rf_length(ans) != 2) error(_("'x' is not a matrix"));
+    ans = Rf_getAttrib(x, R_DimSymbol);
+    if(check && Rf_length(ans) != 2) Rf_error(_("'x' is not a matrix"));
     int *dims = INTEGER(ans);
     n = dims[0]; p = dims[1];
     if(n) ny = (int)(XLENGTH(y)/n); /* y :  n x ny, or an n - vector */
     if(check && n * ny != XLENGTH(y))
-	error(_("dimensions of 'x' (%d,%d) and 'y' (%d) do not match"),
+	Rf_error(_("dimensions of 'x' (%d,%d) and 'y' (%d) do not match"),
 	      n,p, XLENGTH(y));
 
     /* These lose attributes, so do after we have extracted dims */
     if (TYPEOF(x) != REALSXP) {
-	PROTECT(x = coerceVector(x, REALSXP));
+	PROTECT(x = Rf_coerceVector(x, REALSXP));
 	nprotect++;
     }
     if (TYPEOF(y) != REALSXP) {
-	PROTECT(y = coerceVector(y, REALSXP));
+	PROTECT(y = Rf_coerceVector(y, REALSXP));
 	nprotect++;
     }
 
     double *rptr = REAL(x);
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++)
-	if(!R_FINITE(rptr[i])) error(_("NA/NaN/Inf in '%s'"), "x");
+	if(!R_FINITE(rptr[i])) Rf_error(_("NA/NaN/Inf in '%s'"), "x");
 
     rptr = REAL(y);
     for (R_xlen_t i = 0 ; i < XLENGTH(y) ; i++)
-	if(!R_FINITE(rptr[i])) error(_("NA/NaN/Inf in '%s'"), "y");
+	if(!R_FINITE(rptr[i])) Rf_error(_("NA/NaN/Inf in '%s'"), "y");
 
     const char *ansNms[] = {"qr", "coefficients", "residuals", "effects",
 			    "rank", "pivot", "qraux", "tol", "pivoted", ""};
-    PROTECT(ans = mkNamed(VECSXP, ansNms));
-    SET_VECTOR_ELT(ans, 0, qr = shallow_duplicate(x));
-    coefficients = (ny > 1) ? allocMatrix(REALSXP, p, ny) : allocVector(REALSXP, p);
+    PROTECT(ans = Rf_mkNamed(VECSXP, ansNms));
+    SET_VECTOR_ELT(ans, 0, qr = Rf_shallow_duplicate(x));
+    coefficients = (ny > 1) ? Rf_allocMatrix(REALSXP, p, ny) : Rf_allocVector(REALSXP, p);
     PROTECT(coefficients);
     SET_VECTOR_ELT(ans, 1, coefficients);
-    SET_VECTOR_ELT(ans, 2, residuals = shallow_duplicate(y));
-    SET_VECTOR_ELT(ans, 3, effects = shallow_duplicate(y));
-    PROTECT(pivot = allocVector(INTSXP, p));
+    SET_VECTOR_ELT(ans, 2, residuals = Rf_shallow_duplicate(y));
+    SET_VECTOR_ELT(ans, 3, effects = Rf_shallow_duplicate(y));
+    PROTECT(pivot = Rf_allocVector(INTSXP, p));
     int *ip = INTEGER(pivot);
     for(int i = 0; i < p; i++) ip[i] = i+1;
     SET_VECTOR_ELT(ans, 5, pivot);
-    PROTECT(qraux = allocVector(REALSXP, p));
+    PROTECT(qraux = Rf_allocVector(REALSXP, p));
     SET_VECTOR_ELT(ans, 6, qraux);
     SET_VECTOR_ELT(ans, 7, tol);
 
@@ -96,10 +96,10 @@ SEXP Cdqrls(SEXP x, SEXP y, SEXP tol, SEXP chk)
     F77_CALL(dqrls)(REAL(qr), &n, &p, REAL(y), &ny, &rtol,
 		    REAL(coefficients), REAL(residuals), REAL(effects),
 		    &rank, INTEGER(pivot), REAL(qraux), work);
-    SET_VECTOR_ELT(ans, 4, ScalarInteger(rank));
+    SET_VECTOR_ELT(ans, 4, Rf_ScalarInteger(rank));
     for(int i = 0; i < p; i++)
 	if(ip[i] != i+1) { pivoted = 1; break; }
-    SET_VECTOR_ELT(ans, 8, ScalarLogical(pivoted));
+    SET_VECTOR_ELT(ans, 8, Rf_ScalarLogical(pivoted));
     UNPROTECT(nprotect);
 
     return ans;

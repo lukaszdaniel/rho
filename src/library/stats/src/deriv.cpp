@@ -78,46 +78,46 @@ static void InitDerivSymbols(void)
 {
     /* Called from doD() and deriv() */
     if(Initialized) return;
-    ParenSymbol = install("(");
-    PlusSymbol = install("+");
-    MinusSymbol = install("-");
-    TimesSymbol = install("*");
-    DivideSymbol = install("/");
-    PowerSymbol = install("^");
-    ExpSymbol = install("exp");
-    LogSymbol = install("log");
-    SinSymbol = install("sin");
-    CosSymbol = install("cos");
-    TanSymbol = install("tan");
-    SinhSymbol = install("sinh");
-    CoshSymbol = install("cosh");
-    TanhSymbol = install("tanh");
-    SqrtSymbol = install("sqrt");
-    PnormSymbol = install("pnorm");
-    DnormSymbol = install("dnorm");
-    AsinSymbol = install("asin");
-    AcosSymbol = install("acos");
-    AtanSymbol = install("atan");
-    GammaSymbol = install("gamma");
-    LGammaSymbol = install("lgamma");
-    DiGammaSymbol = install("digamma");
-    TriGammaSymbol = install("trigamma");
-    PsiSymbol = install("psigamma");
+    ParenSymbol = Rf_install("(");
+    PlusSymbol = Rf_install("+");
+    MinusSymbol = Rf_install("-");
+    TimesSymbol = Rf_install("*");
+    DivideSymbol = Rf_install("/");
+    PowerSymbol = Rf_install("^");
+    ExpSymbol = Rf_install("exp");
+    LogSymbol = Rf_install("log");
+    SinSymbol = Rf_install("sin");
+    CosSymbol = Rf_install("cos");
+    TanSymbol = Rf_install("tan");
+    SinhSymbol = Rf_install("sinh");
+    CoshSymbol = Rf_install("cosh");
+    TanhSymbol = Rf_install("tanh");
+    SqrtSymbol = Rf_install("sqrt");
+    PnormSymbol = Rf_install("pnorm");
+    DnormSymbol = Rf_install("dnorm");
+    AsinSymbol = Rf_install("asin");
+    AcosSymbol = Rf_install("acos");
+    AtanSymbol = Rf_install("atan");
+    GammaSymbol = Rf_install("gamma");
+    LGammaSymbol = Rf_install("lgamma");
+    DiGammaSymbol = Rf_install("digamma");
+    TriGammaSymbol = Rf_install("trigamma");
+    PsiSymbol = Rf_install("psigamma");
 /* new symbols */
-    PiSymbol = install("pi");
-    ExpM1Symbol = install("expm1");
-    Log1PSymbol = install("log1p");
-    Log2Symbol = install("log2");
-    Log10Symbol = install("log10");
-    SinPiSymbol = install("sinpi");
-    CosPiSymbol = install("cospi");
-    TanPiSymbol = install("tanpi");
-    FactorialSymbol = install("factorial");
-    LFactorialSymbol = install("lfactorial");
+    PiSymbol = Rf_install("pi");
+    ExpM1Symbol = Rf_install("expm1");
+    Log1PSymbol = Rf_install("log1p");
+    Log2Symbol = Rf_install("log2");
+    Log10Symbol = Rf_install("log10");
+    SinPiSymbol = Rf_install("sinpi");
+    CosPiSymbol = Rf_install("cospi");
+    TanPiSymbol = Rf_install("tanpi");
+    FactorialSymbol = Rf_install("factorial");
+    LFactorialSymbol = Rf_install("lfactorial");
 /* possible future symbols
-    Log1PExpSymbol = install("log1pexp");    # log(1+exp(x))
-    Log1MExpSymbol = install("log1mexp");    # log(1-exp(-x)), for x > 0
-    Log1PMxSymbol = install("log1pmx");      # log1p(x)-x
+    Log1PExpSymbol = Rf_install("log1pexp");    # log(1+exp(x))
+    Log1MExpSymbol = Rf_install("log1mexp");    # log(1-exp(-x)), for x > 0
+    Log1PMxSymbol = Rf_install("log1pmx");      # log1p(x)-x
 */
 
     Initialized = TRUE;
@@ -125,17 +125,17 @@ static void InitDerivSymbols(void)
 
 static SEXP Constant(double x)
 {
-    return ScalarReal(x);
+    return Rf_ScalarReal(x);
 }
 
 static int isZero(SEXP s)
 {
-    return asReal(s) == 0.0;
+    return Rf_asReal(s) == 0.0;
 }
 
 static int isOne(SEXP s)
 {
-    return asReal(s) == 1.0;
+    return Rf_asReal(s) == 1.0;
 }
 
 static int isUminus(SEXP s)
@@ -149,7 +149,7 @@ static int isUminus(SEXP s)
 		return 1;
 	    else return 0;
 	default:
-	    error(_("invalid form in unary minus check"));
+	    Rf_error(_("invalid form in unary minus check"));
 	    return -1;/* for -Wall */
 	}
     }
@@ -177,7 +177,7 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 	else if (isUminus(arg2))
 	    ans = simplify(MinusSymbol, arg1, CADR(arg2));
 	else
-	    ans = lang3(PlusSymbol, arg1, arg2);
+	    ans = Rf_lang3(PlusSymbol, arg1, arg2);
     }
     else if (fun == MinusSymbol) {
 	if (arg2 == R_MissingArg) {
@@ -186,7 +186,7 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 	    else if (isUminus(arg1))
 		ans = CADR(arg1);
 	    else
-		ans = lang2(MinusSymbol, arg1);
+		ans = Rf_lang2(MinusSymbol, arg1);
 	}
 	else {
 	    if (isZero(arg2))
@@ -202,7 +202,7 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 	    else if (isUminus(arg2))
 		ans = simplify(PlusSymbol, arg1, CADR(arg2));
 	    else
-		ans = lang3(MinusSymbol, arg1, arg2);
+		ans = Rf_lang3(MinusSymbol, arg1, arg2);
 	}
     }
     else if (fun == TimesSymbol) {
@@ -225,7 +225,7 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 	    UNPROTECT(1);
 	}
 	else
-	    ans = lang3(TimesSymbol, arg1, arg2);
+	    ans = Rf_lang3(TimesSymbol, arg1, arg2);
     }
     else if (fun == DivideSymbol) {
 	if (isZero(arg1))
@@ -246,7 +246,7 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 			   R_MissingArg);
 	    UNPROTECT(1);
 	}
-	else ans = lang3(DivideSymbol, arg1, arg2);
+	else ans = Rf_lang3(DivideSymbol, arg1, arg2);
     }
     else if (fun == PowerSymbol) {
 	if (isZero(arg2))
@@ -258,67 +258,67 @@ static SEXP simplify(SEXP fun, SEXP arg1, SEXP arg2)
 	else if (isOne(arg2))
 	    ans = arg1;
 	else
-	    ans = lang3(PowerSymbol, arg1, arg2);
+	    ans = Rf_lang3(PowerSymbol, arg1, arg2);
     }
     else if (fun == ExpSymbol) {
         /* FIXME: simplify exp(lgamma( E )) = gamma( E ) */
         /* FIXME: simplify exp(lfactorial( E )) = factorial( E ) */
-        ans = lang2(ExpSymbol, arg1);
+        ans = Rf_lang2(ExpSymbol, arg1);
     }
     else if (fun == LogSymbol) {
         /* FIXME: simplify log(gamma( E )) = lgamma( E ) */
         /* FIXME: simplify log(factorial( E )) = lfactorial( E ) */
-        ans = lang2(LogSymbol, arg1);
+        ans = Rf_lang2(LogSymbol, arg1);
     }
-    else if (fun == CosSymbol)  ans = lang2(CosSymbol, arg1);
-    else if (fun == SinSymbol)  ans = lang2(SinSymbol, arg1);
-    else if (fun == TanSymbol)  ans = lang2(TanSymbol, arg1);
-    else if (fun == CoshSymbol) ans = lang2(CoshSymbol, arg1);
-    else if (fun == SinhSymbol) ans = lang2(SinhSymbol, arg1);
-    else if (fun == TanhSymbol) ans = lang2(TanhSymbol, arg1);
-    else if (fun == SqrtSymbol) ans = lang2(SqrtSymbol, arg1);
-    else if (fun == PnormSymbol)ans = lang2(PnormSymbol, arg1);
-    else if (fun == DnormSymbol)ans = lang2(DnormSymbol, arg1);
-    else if (fun == AsinSymbol) ans = lang2(AsinSymbol, arg1);
-    else if (fun == AcosSymbol) ans = lang2(AcosSymbol, arg1);
-    else if (fun == AtanSymbol) ans = lang2(AtanSymbol, arg1);
-    else if (fun == GammaSymbol)ans = lang2(GammaSymbol, arg1);
-    else if (fun == LGammaSymbol)ans = lang2(LGammaSymbol, arg1);
-    else if (fun == DiGammaSymbol) ans = lang2(DiGammaSymbol, arg1);
-    else if (fun == TriGammaSymbol) ans = lang2(TriGammaSymbol, arg1);
+    else if (fun == CosSymbol)  ans = Rf_lang2(CosSymbol, arg1);
+    else if (fun == SinSymbol)  ans = Rf_lang2(SinSymbol, arg1);
+    else if (fun == TanSymbol)  ans = Rf_lang2(TanSymbol, arg1);
+    else if (fun == CoshSymbol) ans = Rf_lang2(CoshSymbol, arg1);
+    else if (fun == SinhSymbol) ans = Rf_lang2(SinhSymbol, arg1);
+    else if (fun == TanhSymbol) ans = Rf_lang2(TanhSymbol, arg1);
+    else if (fun == SqrtSymbol) ans = Rf_lang2(SqrtSymbol, arg1);
+    else if (fun == PnormSymbol)ans = Rf_lang2(PnormSymbol, arg1);
+    else if (fun == DnormSymbol)ans = Rf_lang2(DnormSymbol, arg1);
+    else if (fun == AsinSymbol) ans = Rf_lang2(AsinSymbol, arg1);
+    else if (fun == AcosSymbol) ans = Rf_lang2(AcosSymbol, arg1);
+    else if (fun == AtanSymbol) ans = Rf_lang2(AtanSymbol, arg1);
+    else if (fun == GammaSymbol)ans = Rf_lang2(GammaSymbol, arg1);
+    else if (fun == LGammaSymbol)ans = Rf_lang2(LGammaSymbol, arg1);
+    else if (fun == DiGammaSymbol) ans = Rf_lang2(DiGammaSymbol, arg1);
+    else if (fun == TriGammaSymbol) ans = Rf_lang2(TriGammaSymbol, arg1);
     else if (fun == PsiSymbol){
-       if (arg2 == R_MissingArg) ans = lang2(PsiSymbol, arg1);
-       else ans = lang3(PsiSymbol, arg1, arg2);
+       if (arg2 == R_MissingArg) ans = Rf_lang2(PsiSymbol, arg1);
+       else ans = Rf_lang3(PsiSymbol, arg1, arg2);
     }
 /* new symbols */
     else if (fun == ExpM1Symbol) {
         /* FIXME: simplify expm1(log1p( E )) = E */
-        ans = lang2(ExpM1Symbol, arg1);
+        ans = Rf_lang2(ExpM1Symbol, arg1);
     }
     else if (fun == LogSymbol) {
         /* FIXME: simplify log1p(expm1( E )) = E */
-        ans = lang2(Log1PSymbol, arg1);
+        ans = Rf_lang2(Log1PSymbol, arg1);
     }
-    else if (fun == Log2Symbol) ans = lang2(Log2Symbol, arg1);
-    else if (fun == Log10Symbol) ans = lang2(Log10Symbol, arg1);
-    else if (fun == CosPiSymbol) ans = lang2(CosPiSymbol, arg1);
-    else if (fun == SinPiSymbol) ans = lang2(SinPiSymbol, arg1);
-    else if (fun == TanPiSymbol) ans = lang2(TanPiSymbol, arg1);
-    else if (fun == FactorialSymbol)ans = lang2(FactorialSymbol, arg1);
-    else if (fun == LFactorialSymbol)ans = lang2(LFactorialSymbol, arg1);
+    else if (fun == Log2Symbol) ans = Rf_lang2(Log2Symbol, arg1);
+    else if (fun == Log10Symbol) ans = Rf_lang2(Log10Symbol, arg1);
+    else if (fun == CosPiSymbol) ans = Rf_lang2(CosPiSymbol, arg1);
+    else if (fun == SinPiSymbol) ans = Rf_lang2(SinPiSymbol, arg1);
+    else if (fun == TanPiSymbol) ans = Rf_lang2(TanPiSymbol, arg1);
+    else if (fun == FactorialSymbol)ans = Rf_lang2(FactorialSymbol, arg1);
+    else if (fun == LFactorialSymbol)ans = Rf_lang2(LFactorialSymbol, arg1);
 /* possible future symbols
-    else if (fun == Log1PExpSymbol) ans = lang2(Log1PExpSymbol, arg1);
-    else if (fun == Log1MExpSymbol) ans = lang2(Log1MExpSymbol, arg1);
-    else if (fun == Log1PMxSymbol) ans = lang2(Log1PMxSymbol, arg1);
+    else if (fun == Log1PExpSymbol) ans = Rf_lang2(Log1PExpSymbol, arg1);
+    else if (fun == Log1MExpSymbol) ans = Rf_lang2(Log1MExpSymbol, arg1);
+    else if (fun == Log1PMxSymbol) ans = Rf_lang2(Log1PMxSymbol, arg1);
 */
 
     else ans = Constant(NA_REAL);
     /* FIXME */
 #ifdef NOTYET
     if (Rf_length(ans) == 2 && isAtomic(CADR(ans)) && CAR(ans) != MinusSymbol)
-	c = eval(c, rho);
+	c = Rf_eval(c, rho);
     if (Rf_length(c) == 3 && isAtomic(CADR(ans)) && isAtomic(CADDR(ans)))
-	c = eval(c, rho);
+	c = Rf_eval(c, rho);
 #endif
     return ans;
 }/* simplify() */
@@ -344,7 +344,7 @@ static SEXP D(SEXP expr, SEXP var)
 	else ans = Constant(0.);
 	break;
     case LISTSXP:
-	if (inherits(expr, "expression")) ans = D(CAR(expr), var);
+	if (Rf_inherits(expr, "expression")) ans = D(CAR(expr), var);
 	else ans = Constant(NA_REAL);
 	break;
     case LANGSXP:
@@ -392,14 +392,14 @@ static SEXP D(SEXP expr, SEXP var)
 	    UNPROTECT(7);
 	}
 	else if (CAR(expr) == PowerSymbol) {
-	    if (isLogical(CADDR(expr)) || isNumeric(CADDR(expr))) {
+	    if (Rf_isLogical(CADDR(expr)) || Rf_isNumeric(CADDR(expr))) {
 		ans = simplify(TimesSymbol,
 			       CADDR(expr),
 			       PP_S(TimesSymbol,
 				    PP(D(CADR(expr), var)),
 				    PP_S(PowerSymbol,
 					 CADR(expr),
-					 PP(Constant(asReal(CADDR(expr))-1.)))));
+					 PP(Constant(Rf_asReal(CADDR(expr))-1.)))));
 		UNPROTECT(4);
 	    }
 	    else {
@@ -433,7 +433,7 @@ static SEXP D(SEXP expr, SEXP var)
 	}
 	else if (CAR(expr) == LogSymbol) {
 	    if (Rf_length(expr) != 2)
-		error("only single-argument calls to log() are supported;\n"
+		Rf_error("only single-argument calls to log() are supported;\n"
 		      "  maybe use log(x,a) = log(x)/log(a)");
 	    ans = simplify(DivideSymbol,
 			   PP(D(CADR(expr), var)),
@@ -549,14 +549,14 @@ static SEXP D(SEXP expr, SEXP var)
 	else if (CAR(expr) == TriGammaSymbol) {
 	    ans = simplify(TimesSymbol,
 			   PP(D(CADR(expr), var)),
-			   PP_S(PsiSymbol, CADR(expr), PP(ScalarInteger(2))));
+			   PP_S(PsiSymbol, CADR(expr), PP(Rf_ScalarInteger(2))));
 	    UNPROTECT(3);
 	}
 	else if (CAR(expr) == PsiSymbol) {
 	    if (Rf_length(expr) == 2){
 		ans = simplify(TimesSymbol,
 			       PP(D(CADR(expr), var)),
-			       PP_S(PsiSymbol, CADR(expr), PP(ScalarInteger(1))));
+			       PP_S(PsiSymbol, CADR(expr), PP(Rf_ScalarInteger(1))));
 		UNPROTECT(3);
 	    } else if (TYPEOF(CADDR(expr)) == INTSXP ||
 		       TYPEOF(CADDR(expr)) == REALSXP) {
@@ -564,7 +564,7 @@ static SEXP D(SEXP expr, SEXP var)
 			       PP(D(CADR(expr), var)),
 			       PP_S(PsiSymbol,
 				    CADR(expr),
-				    PP(ScalarInteger(asInteger(CADDR(expr))+1))));
+				    PP(Rf_ScalarInteger(Rf_asInteger(CADDR(expr))+1))));
 		UNPROTECT(3);
 	    } else {
 		ans = simplify(TimesSymbol,
@@ -572,7 +572,7 @@ static SEXP D(SEXP expr, SEXP var)
 			       PP_S(PsiSymbol,
 				    CADR(expr),
 				    simplify(PlusSymbol, CADDR(expr),
-					     PP(ScalarInteger(1)))));
+					     PP(Rf_ScalarInteger(1)))));
 		UNPROTECT(3);
 	    }
 	}
@@ -630,7 +630,7 @@ static SEXP D(SEXP expr, SEXP var)
                            PP(D(CADR(expr), var)),
                            PP_S2(DiGammaSymbol, PP_S(PlusSymbol,
 						     CADR(expr),
-						     PP(ScalarInteger(1)))));
+						     PP(Rf_ScalarInteger(1)))));
             UNPROTECT(4);
         }
         else if (CAR(expr) == FactorialSymbol) {
@@ -640,7 +640,7 @@ static SEXP D(SEXP expr, SEXP var)
                                 expr,
                                 PP_S2(DiGammaSymbol, PP_S(PlusSymbol,
 							  CADR(expr),
-							  PP(ScalarInteger(1))))));
+							  PP(Rf_ScalarInteger(1))))));
             UNPROTECT(5);
         }
 /* possible future symbols
@@ -668,9 +668,9 @@ static SEXP D(SEXP expr, SEXP var)
 */
 
 	else {
-	    SEXP u = deparse1(CAR(expr), Rboolean(0), SIMPLEDEPARSE);
-	    error(_("Function '%s' is not in the derivatives table"),
-		  translateChar(STRING_ELT(u, 0)));
+	    SEXP u = Rf_deparse1(CAR(expr), Rboolean(0), SIMPLEDEPARSE);
+	    Rf_error(_("Function '%s' is not in the derivatives table"),
+		  Rf_translateChar(STRING_ELT(u, 0)));
 	}
 
 	break;
@@ -731,39 +731,39 @@ static SEXP AddParens(SEXP expr)
     }
     if (isPlusForm(expr)) {
 	if (isPlusForm(CADDR(expr))) {
-	    SETCADDR(expr, lang2(ParenSymbol, CADDR(expr)));
+	    SETCADDR(expr, Rf_lang2(ParenSymbol, CADDR(expr)));
 	}
     }
     else if (isMinusForm(expr)) {
 	if (isPlusForm(CADDR(expr)) || isMinusForm(CADDR(expr))) {
-	    SETCADDR(expr, lang2(ParenSymbol, CADDR(expr)));
+	    SETCADDR(expr, Rf_lang2(ParenSymbol, CADDR(expr)));
 	}
     }
     else if (isTimesForm(expr)) {
 	if (isPlusForm(CADDR(expr)) || isMinusForm(CADDR(expr))
 	    || isTimesForm(CADDR(expr)) || isDivideForm(CADDR(expr))) {
-	    SETCADDR(expr, lang2(ParenSymbol, CADDR(expr)));
+	    SETCADDR(expr, Rf_lang2(ParenSymbol, CADDR(expr)));
 	}
 	if (isPlusForm(CADR(expr)) || isMinusForm(CADR(expr))) {
-	    SETCADR(expr, lang2(ParenSymbol, CADR(expr)));
+	    SETCADR(expr, Rf_lang2(ParenSymbol, CADR(expr)));
 	}
     }
     else if (isDivideForm(expr)) {
 	if (isPlusForm(CADDR(expr)) || isMinusForm(CADDR(expr))
 	    || isTimesForm(CADDR(expr)) || isDivideForm(CADDR(expr))) {
-	    SETCADDR(expr, lang2(ParenSymbol, CADDR(expr)));
+	    SETCADDR(expr, Rf_lang2(ParenSymbol, CADDR(expr)));
 	}
 	if (isPlusForm(CADR(expr)) || isMinusForm(CADR(expr))) {
-	    SETCADR(expr, lang2(ParenSymbol, CADR(expr)));
+	    SETCADR(expr, Rf_lang2(ParenSymbol, CADR(expr)));
 	}
     }
     else if (isPowerForm(expr)) {
 	if (isPowerForm(CADR(expr))) {
-	    SETCADR(expr, lang2(ParenSymbol, CADR(expr)));
+	    SETCADR(expr, Rf_lang2(ParenSymbol, CADR(expr)));
 	}
 	if (isPlusForm(CADDR(expr)) || isMinusForm(CADDR(expr))
 	    || isTimesForm(CADDR(expr)) || isDivideForm(CADDR(expr))) {
-	    SETCADDR(expr, lang2(ParenSymbol, CADDR(expr)));
+	    SETCADDR(expr, Rf_lang2(ParenSymbol, CADDR(expr)));
 	}
     }
     return expr;
@@ -773,16 +773,16 @@ SEXP doD(SEXP args)
 {
     SEXP expr, var;
     args = CDR(args);
-    if (isExpression(CAR(args))) expr = VECTOR_ELT(CAR(args), 0);
+    if (Rf_isExpression(CAR(args))) expr = VECTOR_ELT(CAR(args), 0);
     else expr = CAR(args);
-    if (!(isLanguage(expr) || isSymbol(expr) || isNumeric(expr) || isComplex(expr)))
-        error(_("expression must not be type '%s'"), type2char(TYPEOF(expr)));
+    if (!(Rf_isLanguage(expr) || Rf_isSymbol(expr) || Rf_isNumeric(expr) || Rf_isComplex(expr)))
+        Rf_error(_("expression must not be type '%s'"), Rf_type2char(TYPEOF(expr)));
     var = CADR(args);
-    if (!isString(var) || Rf_length(var) < 1)
-	error(_("variable must be a character string"));
+    if (!Rf_isString(var) || Rf_length(var) < 1)
+	Rf_error(_("variable must be a character string"));
     if (Rf_length(var) > 1)
-	warning(_("only the first element is used as variable name"));
-    var = installTrChar(STRING_ELT(var, 0));
+	Rf_warning(_("only the first element is used as variable name"));
+    var = Rf_installTrChar(STRING_ELT(var, 0));
     InitDerivSymbols();
     PROTECT(expr = D(expr, var));
     expr = AddParens(expr);
@@ -794,7 +794,7 @@ SEXP doD(SEXP args)
 
 static void NORET InvalidExpression(const char *where)
 {
-    error(_("invalid expression in '%s'"), where);
+    Rf_error(_("invalid expression in '%s'"), where);
 }
 
 static int equal(SEXP expr1, SEXP expr2)
@@ -858,9 +858,9 @@ static SEXP MakeVariable(int k, SEXP tag)
 {
     const void *vmax = vmaxget();
     char buf[64];
-    snprintf(buf, 64, "%s%d", translateChar(STRING_ELT(tag, 0)), k);
+    snprintf(buf, 64, "%s%d", Rf_translateChar(STRING_ELT(tag, 0)), k);
     vmaxset(vmax);
-    return install(buf);
+    return Rf_install(buf);
 }
 
 static int FindSubexprs(SEXP expr, SEXP exprlist, SEXP tag)
@@ -876,12 +876,12 @@ static int FindSubexprs(SEXP expr, SEXP exprlist, SEXP tag)
 	return 0;
 	break;
     case LISTSXP:
-	if (inherits(expr, "expression"))
+	if (Rf_inherits(expr, "expression"))
 	    return FindSubexprs(CAR(expr), exprlist, tag);
 	else { InvalidExpression("FindSubexprs"); return -1/*-Wall*/; }
 	break;
     case LANGSXP:
-	if (CAR(expr) == install("(")) {
+	if (CAR(expr) == Rf_install("(")) {
 	    return FindSubexprs(CADR(expr), exprlist, tag);
 	}
 	else {
@@ -935,23 +935,23 @@ static SEXP CreateGrad(SEXP names)
     SEXP p, q, data, dim, dimnames;
     int i, n;
     n = Rf_length(names);
-    PROTECT(dimnames = lang3(R_NilValue, R_NilValue, R_NilValue));
-    SETCAR(dimnames, install("list"));
-    p = install("c");
-    PROTECT(q = allocList(n));
+    PROTECT(dimnames = Rf_lang3(R_NilValue, R_NilValue, R_NilValue));
+    SETCAR(dimnames, Rf_install("list"));
+    p = Rf_install("c");
+    PROTECT(q = Rf_allocList(n));
     SETCADDR(dimnames, LCONS(p, q));
     UNPROTECT(1);
     for(i = 0 ; i < n ; i++) {
-	SETCAR(q, ScalarString(STRING_ELT(names, i)));
+	SETCAR(q, Rf_ScalarString(STRING_ELT(names, i)));
 	q = CDR(q);
     }
-    PROTECT(dim = lang3(R_NilValue, R_NilValue, R_NilValue));
-    SETCAR(dim, install("c"));
-    SETCADR(dim, lang2(install("length"), install(".value")));
-    SETCADDR(dim, ScalarInteger(Rf_length(names))); /* was real? */
-    PROTECT(data = ScalarReal(0.));
-    PROTECT(p = lang4(install("array"), data, dim, dimnames));
-    p = lang3(install("<-"), install(".grad"), p);
+    PROTECT(dim = Rf_lang3(R_NilValue, R_NilValue, R_NilValue));
+    SETCAR(dim, Rf_install("c"));
+    SETCADR(dim, Rf_lang2(Rf_install("length"), Rf_install(".value")));
+    SETCADDR(dim, Rf_ScalarInteger(Rf_length(names))); /* was real? */
+    PROTECT(data = Rf_ScalarReal(0.));
+    PROTECT(p = Rf_lang4(Rf_install("array"), data, dim, dimnames));
+    p = Rf_lang3(Rf_install("<-"), Rf_install(".grad"), p);
     UNPROTECT(4);
     return p;
 }
@@ -961,25 +961,25 @@ static SEXP CreateHess(SEXP names)
     SEXP p, q, data, dim, dimnames;
     int i, n;
     n = Rf_length(names);
-    PROTECT(dimnames = lang4(R_NilValue, R_NilValue, R_NilValue, R_NilValue));
-    SETCAR(dimnames, install("list"));
-    p = install("c");
-    PROTECT(q = allocList(n));
+    PROTECT(dimnames = Rf_lang4(R_NilValue, R_NilValue, R_NilValue, R_NilValue));
+    SETCAR(dimnames, Rf_install("list"));
+    p = Rf_install("c");
+    PROTECT(q = Rf_allocList(n));
     SETCADDR(dimnames, LCONS(p, q));
     UNPROTECT(1);
     for(i = 0 ; i < n ; i++) {
-	SETCAR(q, ScalarString(STRING_ELT(names, i)));
+	SETCAR(q, Rf_ScalarString(STRING_ELT(names, i)));
 	q = CDR(q);
     }
-    SETCADDDR(dimnames, duplicate(CADDR(dimnames)));
-    PROTECT(dim = lang4(R_NilValue, R_NilValue, R_NilValue,R_NilValue));
-    SETCAR(dim, install("c"));
-    SETCADR(dim, lang2(install("length"), install(".value")));
-    SETCADDR(dim, ScalarInteger(Rf_length(names)));
-    SETCADDDR(dim, ScalarInteger(Rf_length(names)));
-    PROTECT(data = ScalarReal(0.));
-    PROTECT(p = lang4(install("array"), data, dim, dimnames));
-    p = lang3(install("<-"), install(".hessian"), p);
+    SETCADDDR(dimnames, Rf_duplicate(CADDR(dimnames)));
+    PROTECT(dim = Rf_lang4(R_NilValue, R_NilValue, R_NilValue,R_NilValue));
+    SETCAR(dim, Rf_install("c"));
+    SETCADR(dim, Rf_lang2(Rf_install("length"), Rf_install(".value")));
+    SETCADDR(dim, Rf_ScalarInteger(Rf_length(names)));
+    SETCADDDR(dim, Rf_ScalarInteger(Rf_length(names)));
+    PROTECT(data = Rf_ScalarReal(0.));
+    PROTECT(p = Rf_lang4(Rf_install("array"), data, dim, dimnames));
+    p = Rf_lang3(Rf_install("<-"), Rf_install(".hessian"), p);
     UNPROTECT(4);
     return p;
 }
@@ -987,9 +987,9 @@ static SEXP CreateHess(SEXP names)
 static SEXP DerivAssign(SEXP name, SEXP expr)
 {
     SEXP ans, newname;
-    PROTECT(ans = lang3(install("<-"), R_NilValue, expr));
-    PROTECT(newname = ScalarString(name));
-    SETCADR(ans, lang4(R_BracketSymbol, install(".grad"), R_MissingArg, newname));
+    PROTECT(ans = Rf_lang3(Rf_install("<-"), R_NilValue, expr));
+    PROTECT(newname = Rf_ScalarString(name));
+    SETCADR(ans, Rf_lang4(R_BracketSymbol, Rf_install(".grad"), R_MissingArg, newname));
     UNPROTECT(2);
     return ans;
 }
@@ -997,9 +997,9 @@ static SEXP DerivAssign(SEXP name, SEXP expr)
 static SEXP HessAssign1(SEXP name, SEXP expr)
 {
     SEXP ans, newname;
-    PROTECT(ans = lang3(install("<-"), R_NilValue, expr));
-    PROTECT(newname = ScalarString(name));
-    SETCADR(ans, lang5(R_BracketSymbol, install(".hessian"), R_MissingArg,
+    PROTECT(ans = Rf_lang3(Rf_install("<-"), R_NilValue, expr));
+    PROTECT(newname = Rf_ScalarString(name));
+    SETCADR(ans, Rf_lang5(R_BracketSymbol, Rf_install(".hessian"), R_MissingArg,
 		       newname, newname));
     UNPROTECT(2);
     return ans;
@@ -1008,15 +1008,15 @@ static SEXP HessAssign1(SEXP name, SEXP expr)
 static SEXP HessAssign2(SEXP name1, SEXP name2, SEXP expr)
 {
     SEXP ans, newname1, newname2, tmp1, tmp2, tmp3;
-    PROTECT(newname1 = ScalarString(name1));
-    PROTECT(newname2 = ScalarString(name2));
+    PROTECT(newname1 = Rf_ScalarString(name1));
+    PROTECT(newname2 = Rf_ScalarString(name2));
     /* this is overkill, but PR#14772 found an issue */
-    PROTECT(tmp1 = lang5(R_BracketSymbol, install(".hessian"), R_MissingArg,
+    PROTECT(tmp1 = Rf_lang5(R_BracketSymbol, Rf_install(".hessian"), R_MissingArg,
 			 newname1, newname2));
-    PROTECT(tmp2 = lang5(R_BracketSymbol, install(".hessian"), R_MissingArg,
+    PROTECT(tmp2 = Rf_lang5(R_BracketSymbol, Rf_install(".hessian"), R_MissingArg,
 			 newname2, newname1));
-    PROTECT(tmp3 = lang3(install("<-"), tmp2, expr));
-    ans = lang3(install("<-"), tmp1, tmp3);
+    PROTECT(tmp3 = Rf_lang3(Rf_install("<-"), tmp2, expr));
+    ans = Rf_lang3(Rf_install("<-"), tmp1, tmp3);
     UNPROTECT(5);
     return ans;
 }
@@ -1026,9 +1026,9 @@ static SEXP HessAssign2(SEXP name1, SEXP name2, SEXP expr)
 static SEXP AddGrad(void)
 {
     SEXP ans;
-    PROTECT(ans = mkString("gradient"));
-    PROTECT(ans = lang3(install("attr"), install(".value"), ans));
-    ans = lang3(install("<-"), ans, install(".grad"));
+    PROTECT(ans = Rf_mkString("gradient"));
+    PROTECT(ans = Rf_lang3(Rf_install("attr"), Rf_install(".value"), ans));
+    ans = Rf_lang3(Rf_install("<-"), ans, Rf_install(".grad"));
     UNPROTECT(2);
     return ans;
 }
@@ -1036,9 +1036,9 @@ static SEXP AddGrad(void)
 static SEXP AddHess(void)
 {
     SEXP ans;
-    PROTECT(ans = mkString("hessian"));
-    PROTECT(ans = lang3(install("attr"), install(".value"), ans));
-    ans = lang3(install("<-"), ans, install(".hessian"));
+    PROTECT(ans = Rf_mkString("hessian"));
+    PROTECT(ans = Rf_lang3(Rf_install("attr"), Rf_install(".value"), ans));
+    ans = Rf_lang3(Rf_install("<-"), ans, Rf_install(".hessian"));
     UNPROTECT(2);
     return ans;
 }
@@ -1065,30 +1065,30 @@ SEXP deriv(SEXP args)
     InitDerivSymbols();
     PROTECT(exprlist = LCONS(R_BraceSymbol, R_NilValue));
     /* expr: */
-    if (isExpression(CAR(args)))
+    if (Rf_isExpression(CAR(args)))
 	PROTECT(expr = VECTOR_ELT(CAR(args), 0));
     else PROTECT(expr = CAR(args));
     args = CDR(args);
     /* namevec: */
     names = CAR(args);
-    if (!isString(names) || (nderiv = Rf_length(names)) < 1)
-	error(_("invalid variable names"));
+    if (!Rf_isString(names) || (nderiv = Rf_length(names)) < 1)
+	Rf_error(_("invalid variable names"));
     args = CDR(args);
     /* function.arg: */
     funarg = CAR(args);
     args = CDR(args);
     /* tag: */
     tag = CAR(args);
-    if (!isString(tag) || Rf_length(tag) < 1
+    if (!Rf_isString(tag) || Rf_length(tag) < 1
 	|| Rf_length(STRING_ELT(tag, 0)) < 1 || Rf_length(STRING_ELT(tag, 0)) > 60)
-	error(_("invalid tag"));
+	Rf_error(_("invalid tag"));
     args = CDR(args);
     /* hessian: */
-    hessian = asLogical(CAR(args));
+    hessian = Rf_asLogical(CAR(args));
     /* NOTE: FindSubexprs is destructive, hence the duplication.
        It can allocate, so protect the duplicate.
      */
-    PROTECT(ans = duplicate(expr));
+    PROTECT(ans = Rf_duplicate(expr));
     f_index = FindSubexprs(ans, exprlist, tag);
     d_index = (int*)R_alloc((size_t) nderiv, sizeof(int));
     if (hessian)
@@ -1097,15 +1097,15 @@ SEXP deriv(SEXP args)
     else d2_index = d_index;/*-Wall*/
     UNPROTECT(1);
     for(i=0, k=0; i<nderiv ; i++) {
-	PROTECT(ans = duplicate(expr));
-	PROTECT(ans = D(ans, installTrChar(STRING_ELT(names, i))));
-	PROTECT(ans2 = duplicate(ans));	/* keep a temporary copy */
+	PROTECT(ans = Rf_duplicate(expr));
+	PROTECT(ans = D(ans, Rf_installTrChar(STRING_ELT(names, i))));
+	PROTECT(ans2 = Rf_duplicate(ans));	/* keep a temporary copy */
 	d_index[i] = FindSubexprs(ans, exprlist, tag); /* examine the derivative first */
-	PROTECT(ans = duplicate(ans2));	/* restore the copy */
+	PROTECT(ans = Rf_duplicate(ans2));	/* restore the copy */
 	if (hessian) {
 	    for(j = i; j < nderiv; j++) {
-		PROTECT(ans2 = duplicate(ans)); /* install could allocate */
-		PROTECT(ans2 = D(ans2, installTrChar(STRING_ELT(names, j))));
+		PROTECT(ans2 = Rf_duplicate(ans)); /* install could allocate */
+		PROTECT(ans2 = D(ans2, Rf_installTrChar(STRING_ELT(names, j))));
 		d2_index[k] = FindSubexprs(ans2, exprlist, tag);
 		k++;
 		UNPROTECT(2);
@@ -1118,7 +1118,7 @@ SEXP deriv(SEXP args)
 	Accumulate2(MakeVariable(f_index, tag), exprlist);
     }
     else {
-	PROTECT(ans = duplicate(expr));
+	PROTECT(ans = Rf_duplicate(expr));
 	Accumulate2(expr, exprlist);
 	UNPROTECT(1);
     }
@@ -1128,14 +1128,14 @@ SEXP deriv(SEXP args)
 	if (d_index[i]) {
 	    Accumulate2(MakeVariable(d_index[i], tag), exprlist);
 	    if (hessian) {
-		PROTECT(ans = duplicate(expr));
-		PROTECT(ans = D(ans, installTrChar(STRING_ELT(names, i))));
+		PROTECT(ans = Rf_duplicate(expr));
+		PROTECT(ans = D(ans, Rf_installTrChar(STRING_ELT(names, i))));
 		for (j = i; j < nderiv; j++) {
 		    if (d2_index[k]) {
 			Accumulate2(MakeVariable(d2_index[k], tag), exprlist);
 		    } else {
-			PROTECT(ans2 = duplicate(ans));
-			PROTECT(ans2 = D(ans2, installTrChar(STRING_ELT(names, j))));
+			PROTECT(ans2 = Rf_duplicate(ans));
+			PROTECT(ans2 = D(ans2, Rf_installTrChar(STRING_ELT(names, j))));
 			Accumulate2(ans2, exprlist);
 			UNPROTECT(2);
 		    }
@@ -1144,8 +1144,8 @@ SEXP deriv(SEXP args)
 		UNPROTECT(2);
 	    }
 	} else { /* the first derivative is constant or simple variable */
-	    PROTECT(ans = duplicate(expr));
-	    PROTECT(ans = D(ans, installTrChar(STRING_ELT(names, i))));
+	    PROTECT(ans = Rf_duplicate(expr));
+	    PROTECT(ans = D(ans, Rf_installTrChar(STRING_ELT(names, i))));
 	    Accumulate2(ans, exprlist);
 	    UNPROTECT(2);
 	    if (hessian) {
@@ -1153,8 +1153,8 @@ SEXP deriv(SEXP args)
 		    if (d2_index[k]) {
 			Accumulate2(MakeVariable(d2_index[k], tag), exprlist);
 		    } else {
-			PROTECT(ans2 = duplicate(ans));
-			PROTECT(ans2 = D(ans2, installTrChar(STRING_ELT(names, j))));
+			PROTECT(ans2 = Rf_duplicate(ans));
+			PROTECT(ans2 = D(ans2, Rf_installTrChar(STRING_ELT(names, j))));
 			if(isZero(ans2)) Accumulate2(R_MissingArg, exprlist);
 			else Accumulate2(ans2, exprlist);
 			UNPROTECT(2);
@@ -1178,14 +1178,14 @@ SEXP deriv(SEXP args)
 	else {
             SEXP var;
             PROTECT(var = MakeVariable(i+1, tag));
-            SETCAR(ans, lang3(install("<-"), var, AddParens(CAR(ans))));
+            SETCAR(ans, Rf_lang3(Rf_install("<-"), var, AddParens(CAR(ans))));
             UNPROTECT(1);
         }
 	i = i + 1;
 	ans = CDR(ans);
     }
     /* .value <- ... */
-    SETCAR(ans, lang3(install("<-"), install(".value"), AddParens(CAR(ans))));
+    SETCAR(ans, Rf_lang3(Rf_install("<-"), Rf_install(".value"), AddParens(CAR(ans))));
     ans = CDR(ans);
     /* .grad <- ... */
     SETCAR(ans, CreateGrad(names));
@@ -1217,7 +1217,7 @@ SEXP deriv(SEXP args)
     ans = CDR(ans);
     if (hessian) { SETCAR(ans, AddHess()); ans = CDR(ans); }
     /* .value */
-    SETCAR(ans, install(".value"));
+    SETCAR(ans, Rf_install(".value"));
     /* Prune the expression list removing eliminated sub-expressions */
     SETCDR(exprlist, Prune(CDR(exprlist)));
 
@@ -1227,22 +1227,22 @@ SEXP deriv(SEXP args)
 
     if (TYPEOF(funarg) == CLOSXP)
     {
-	funarg = mkCLOSXP(FORMALS(funarg), exprlist, CLOENV(funarg));
+	funarg = Rf_mkCLOSXP(FORMALS(funarg), exprlist, CLOENV(funarg));
     }
-    else if (isString(funarg)) {
-        SEXP formals = allocList(Rf_length(funarg));
+    else if (Rf_isString(funarg)) {
+        SEXP formals = Rf_allocList(Rf_length(funarg));
         ans = formals;
 	for(i = 0; i < Rf_length(funarg); i++) {
-	    SET_TAG(ans, installTrChar(STRING_ELT(funarg, i)));
+	    SET_TAG(ans, Rf_installTrChar(STRING_ELT(funarg, i)));
 	    SETCAR(ans, R_MissingArg);
 	    ans = CDR(ans);
 	}
-	funarg = mkCLOSXP(formals, exprlist, R_GlobalEnv);
+	funarg = Rf_mkCLOSXP(formals, exprlist, R_GlobalEnv);
     }
     else {
-	funarg = allocVector(EXPRSXP, 1);
+	funarg = Rf_allocVector(EXPRSXP, 1);
 	SET_VECTOR_ELT(funarg, 0, exprlist);
-	/* funarg = lang2(install("expression"), exprlist); */
+	/* funarg = Rf_lang2(Rf_install("expression"), exprlist); */
     }
     UNPROTECT(2);
     return funarg;

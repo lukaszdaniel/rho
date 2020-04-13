@@ -58,13 +58,13 @@ int attribute_hidden R_X11_Init(void)
 
     initialized = -1;
     if(streql(R_GUIType, "none")) {
-	warning(_("X11 module is not available under this GUI"));
+	Rf_warning(_("X11 module is not available under this GUI"));
 	return initialized;
     }
     res = R_moduleCdynload("R_X11", 1, 1);
     if(!res) return initialized;
     if(!ptr->access)
-	error(_("X11 routines cannot be accessed in module"));
+	Rf_error(_("X11 routines cannot be accessed in module"));
     initialized = 1;
     return initialized;
 }
@@ -82,7 +82,7 @@ SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(initialized > 0)
 	return (*ptr->X11)(call, op, args, rho);
     else {
-	error(_("X11 module cannot be loaded"));
+	Rf_error(_("X11 module cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -94,7 +94,7 @@ SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(initialized > 0)
 	return (*ptr->saveplot)(call, op, args, rho);
     else {
-	error(_("X11 module cannot be loaded"));
+	Rf_error(_("X11 module cannot be loaded"));
 	return R_NilValue;
     }
 }
@@ -107,7 +107,7 @@ Rboolean R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
     if(initialized > 0)
 	return (*ptr->image)(d, pximage, pwidth, pheight);
     else {
-	error(_("X11 module cannot be loaded"));
+	Rf_error(_("X11 module cannot be loaded"));
 	return FALSE;
     }
 }
@@ -118,7 +118,7 @@ Rboolean attribute_hidden R_ReadClipboard(Rclpconn clpcon, char *type)
     if(initialized > 0)
 	return (*ptr->readclp)(clpcon, type);
     else {
-	error(_("X11 module cannot be loaded"));
+	Rf_error(_("X11 module cannot be loaded"));
 	return FALSE;
     }
 }
@@ -126,17 +126,17 @@ Rboolean attribute_hidden R_ReadClipboard(Rclpconn clpcon, char *type)
 extern "C"
 SEXP do_bmVersion(void)
 {
-   SEXP ans = PROTECT(allocVector(STRSXP, 3)),
-	nms = PROTECT(allocVector(STRSXP, 3));
-    setAttrib(ans, R_NamesSymbol, nms);
-    SET_STRING_ELT(nms, 0, mkChar("libpng"));
-    SET_STRING_ELT(nms, 1, mkChar("jpeg"));
-    SET_STRING_ELT(nms, 2, mkChar("libtiff"));
+   SEXP ans = PROTECT(Rf_allocVector(STRSXP, 3)),
+	nms = PROTECT(Rf_allocVector(STRSXP, 3));
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    SET_STRING_ELT(nms, 0, Rf_mkChar("libpng"));
+    SET_STRING_ELT(nms, 1, Rf_mkChar("jpeg"));
+    SET_STRING_ELT(nms, 2, Rf_mkChar("libtiff"));
     R_X11_Init();
     if(initialized > 0) {
-	SET_STRING_ELT(ans, 0, mkChar((*ptr->R_pngVersion)()));
-	SET_STRING_ELT(ans, 1, mkChar((*ptr->R_jpegVersion)()));
-	SET_STRING_ELT(ans, 2, mkChar((*ptr->R_tiffVersion)()));
+	SET_STRING_ELT(ans, 0, Rf_mkChar((*ptr->R_pngVersion)()));
+	SET_STRING_ELT(ans, 1, Rf_mkChar((*ptr->R_jpegVersion)()));
+	SET_STRING_ELT(ans, 2, Rf_mkChar((*ptr->R_tiffVersion)()));
     }
     UNPROTECT(2);
     return ans;
@@ -150,38 +150,38 @@ Rboolean attribute_hidden R_access_X11(void)
 
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    error(_("X11 is not available"));
+    Rf_error(_("X11 is not available"));
     return R_NilValue;
 }
 
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    error(_("X11 is not available"));
+    Rf_error(_("X11 is not available"));
     return R_NilValue;
 }
 
 extern "C"
 Rboolean R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
 {
-    error(_("X11 is not available"));
+    Rf_error(_("X11 is not available"));
     return FALSE;
 }
 
 Rboolean attribute_hidden R_ReadClipboard(Rclpconn con, char *type)
 {
-    error(_("X11 is not available"));
+    Rf_error(_("X11 is not available"));
     return FALSE;
 }
 
 extern "C"
 SEXP do_bmVersion(void)
 {
-    SEXP ans = PROTECT(allocVector(STRSXP, 3)),
-	nms = PROTECT(allocVector(STRSXP, 3));
-    setAttrib(ans, R_NamesSymbol, nms);
-    SET_STRING_ELT(nms, 0, mkChar("libpng"));
-    SET_STRING_ELT(nms, 1, mkChar("jpeg"));
-    SET_STRING_ELT(nms, 2, mkChar("libtiff"));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 3)),
+	nms = PROTECT(Rf_allocVector(STRSXP, 3));
+    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    SET_STRING_ELT(nms, 0, Rf_mkChar("libpng"));
+    SET_STRING_ELT(nms, 1, Rf_mkChar("jpeg"));
+    SET_STRING_ELT(nms, 2, Rf_mkChar("libtiff"));
     UNPROTECT(2);
     return ans;
 }

@@ -469,9 +469,9 @@ static double PicTeX_StrWidth(const char *str,
 		    if(ucs[i] < 128) sum += charwidth[ptd->fontface-1][ucs[i]];
 		    else sum += (double) Ri18n_wcwidth(ucs[i]) * 0.5; /* A guess */
 	    else
-		warning(_("invalid string in '%s'"), "PicTeX_StrWidth");
+		Rf_warning(_("invalid string in '%s'"), "PicTeX_StrWidth");
 	} else
-	    warning(_("invalid string in '%s'"), "PicTeX_StrWidth");
+	    Rf_warning(_("invalid string in '%s'"), "PicTeX_StrWidth");
     } else
 	for(p = str; *p; p++)
 	    sum += charwidth[ptd->fontface-1][(int)*p];
@@ -725,11 +725,11 @@ SEXP PicTeX(SEXP args)
 
     const void *vmax = vmaxget();
     args = CDR(args); /* skip entry point name */
-    file = translateChar(asChar(CAR(args))); args = CDR(args);
-    bg = CHAR(asChar(CAR(args)));   args = CDR(args);
-    fg = CHAR(asChar(CAR(args)));   args = CDR(args);
-    width = asReal(CAR(args));	     args = CDR(args);
-    height = asReal(CAR(args));	     args = CDR(args);
+    file = Rf_translateChar(Rf_asChar(CAR(args))); args = CDR(args);
+    bg = R_CHAR(Rf_asChar(CAR(args)));   args = CDR(args);
+    fg = R_CHAR(Rf_asChar(CAR(args)));   args = CDR(args);
+    width = Rf_asReal(CAR(args));	     args = CDR(args);
+    height = Rf_asReal(CAR(args));	     args = CDR(args);
     debug = Rboolean(Rf_asLogical(CAR(args)));    args = CDR(args);
     if(debug == NA_LOGICAL) debug = FALSE;
 
@@ -740,7 +740,7 @@ SEXP PicTeX(SEXP args)
 	    return 0;
 	if(!PicTeXDeviceDriver(dev, file, bg, fg, width, height, debug)) {
 	    free(dev);
-	    error(_("unable to start %s() device"), "pictex");
+	    Rf_error(_("unable to start %s() device"), "pictex");
 	}
 	dd = GEcreateDevDesc(dev);
 	GEaddDevice2f(dd, "pictex", file);

@@ -189,7 +189,7 @@ static SEXP ssNewVector(DEstruct DE, SEXPTYPE type, int vlen)
     SEXP tvec;
     int j;
 
-    tvec = allocVector(type, vlen);
+    tvec = Rf_allocVector(type, vlen);
     for (j = 0; j < vlen; j++)
 	if (type == REALSXP)
 	    REAL(tvec)[j] = NA_REAL;
@@ -215,12 +215,12 @@ SEXP Win_dataentry(SEXP args)
 
     DE->isEditor = TRUE;
     nprotect = 0;/* count the PROTECT()s */
-    PROTECT_WITH_INDEX(DE->work = duplicate(CAR(args)), &DE->wpi); nprotect++;
+    PROTECT_WITH_INDEX(DE->work = Rf_duplicate(CAR(args)), &DE->wpi); nprotect++;
     colmodes = CADR(args);
-    tnames = getAttrib(DE->work, R_NamesSymbol);
+    tnames = Rf_getAttrib(DE->work, R_NamesSymbol);
 
     if (TYPEOF(DE->work) != VECSXP || TYPEOF(colmodes) != VECSXP)
-	error(G_("invalid argument"));
+	Rf_error(G_("invalid argument"));
 
     /* initialize the constants */
 
@@ -235,43 +235,43 @@ SEXP Win_dataentry(SEXP args)
     DE->crow = 1;
     DE->colmin = 1;
     DE->rowmin = 1;
-    PROTECT(DE->ssNA_STRING = duplicate(NA_STRING));
+    PROTECT(DE->ssNA_STRING = Rf_duplicate(NA_STRING));
     nprotect++;
     DE->bwidth = 0;
     DE->hwidth = 5;
 
     /* setup work, names, lens  */
     DE->xmaxused = length(DE->work); DE->ymaxused = 0;
-    PROTECT_WITH_INDEX(DE->lens = allocVector(INTSXP, DE->xmaxused), &DE->lpi);
+    PROTECT_WITH_INDEX(DE->lens = Rf_allocVector(INTSXP, DE->xmaxused), &DE->lpi);
     nprotect++;
 
-    if (isNull(tnames)) {
-	PROTECT_WITH_INDEX(DE->names = allocVector(STRSXP, DE->xmaxused),
+    if (Rf_isNull(tnames)) {
+	PROTECT_WITH_INDEX(DE->names = Rf_allocVector(STRSXP, DE->xmaxused),
 			   &DE->npi);
 	for(i = 0; i < DE->xmaxused; i++) {
 	    snprintf(clab, 25, "var%d", i);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
     } else
-	PROTECT_WITH_INDEX(DE->names = duplicate(tnames), &DE->npi);
+	PROTECT_WITH_INDEX(DE->names = Rf_duplicate(tnames), &DE->npi);
     nprotect++;
     for (i = 0; i < DE->xmaxused; i++) {
 	int len = LENGTH(VECTOR_ELT(DE->work, i));
 	INTEGER(DE->lens)[i] = len;
 	DE->ymaxused = max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
-	if (LENGTH(colmodes) > 0 && !isNull(VECTOR_ELT(colmodes, i)))
-	    type = str2type(CHAR(STRING_ELT(VECTOR_ELT(colmodes, i), 0)));
+	if (LENGTH(colmodes) > 0 && !Rf_isNull(VECTOR_ELT(colmodes, i)))
+	    type = str2type(R_CHAR(STRING_ELT(VECTOR_ELT(colmodes, i), 0)));
 	if (type != STRSXP) type = REALSXP;
-	if (isNull(VECTOR_ELT(DE->work, i))) {
+	if (Rf_isNull(VECTOR_ELT(DE->work, i))) {
 	    if (type == NILSXP) type = REALSXP;
 	    SET_VECTOR_ELT(DE->work, i, ssNewVector(DE, type, 100));
-	} else if (!isVector(VECTOR_ELT(DE->work, i)))
-	    error(G_("invalid type for value"));
+	} else if (!Rf_isVector(VECTOR_ELT(DE->work, i)))
+	    Rf_error(G_("invalid type for value"));
 	else {
 	    if (TYPEOF(VECTOR_ELT(DE->work, i)) != type)
 		SET_VECTOR_ELT(DE->work, i,
-			       coerceVector(VECTOR_ELT(DE->work, i), type));
+			       Rf_coerceVector(VECTOR_ELT(DE->work, i), type));
 	}
     }
 
@@ -279,7 +279,7 @@ SEXP Win_dataentry(SEXP args)
 
     /* start up the window, more initializing in here */
     if (initwin(DE, G_("Data Editor")))
-	error("unable to start data editor");
+	Rf_error("unable to start data editor");
     R_de_up = TRUE;
 
     /* set up a context which will close the window if there is an error */
@@ -300,18 +300,18 @@ SEXP Win_dataentry(SEXP args)
 
     /* drop out unused columns */
     for(i = 0, cnt = 0; i < DE->xmaxused; i++)
-	if(!isNull(VECTOR_ELT(DE->work, i))) cnt++;
+	if(!Rf_isNull(VECTOR_ELT(DE->work, i))) cnt++;
     if (cnt < DE->xmaxused) {
-	PROTECT(work2 = allocVector(VECSXP, cnt)); nprotect++;
+	PROTECT(work2 = Rf_allocVector(VECSXP, cnt)); nprotect++;
 	for(i = 0, j = 0; i < DE->xmaxused; i++) {
-	    if(!isNull(VECTOR_ELT(DE->work, i))) {
+	    if(!Rf_isNull(VECTOR_ELT(DE->work, i))) {
 		SET_VECTOR_ELT(work2, j, VECTOR_ELT(DE->work, i));
 		INTEGER(DE->lens)[j] = INTEGER(DE->lens)[i];
 		SET_STRING_ELT(DE->names, j, STRING_ELT(DE->names, i));
 		j++;
 	    }
 	}
-	REPROTECT(DE->names = lengthgets(DE->names, cnt), DE->npi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, cnt), DE->npi);
     } else work2 = DE->work;
 
     for (i = 0; i < LENGTH(work2); i++) {
@@ -328,13 +328,13 @@ SEXP Win_dataentry(SEXP args)
 		    else
 			SET_STRING_ELT(tvec2, j, NA_STRING);
 		} else
-		    error(G_("dataentry: internal memory problem"));
+		    Rf_error(G_("dataentry: internal memory problem"));
 	    }
 	    SET_VECTOR_ELT(work2, i, tvec2);
 	}
     }
 
-    setAttrib(work2, R_NamesSymbol, DE->names);
+    Rf_setAttrib(work2, R_NamesSymbol, DE->names);
     UNPROTECT(nprotect);
     return work2;
 }
@@ -505,7 +505,7 @@ static const char *get_col_name(DEstruct DE, int col)
     if (col <= DE->xmaxused) {
 	/* don't use NA labels */
 	SEXP tmp = STRING_ELT(DE->names, col - 1);
-	if(tmp != NA_STRING) return(CHAR(tmp));
+	if(tmp != NA_STRING) return(R_CHAR(tmp));
     }
     snprintf(clab, 25, "var%d", col);
     return clab;
@@ -520,10 +520,10 @@ static int get_col_width(DEstruct DE, int col)
     if (DE->nboxchars > 0) return DE->nboxchars;
     if (col <= DE->xmaxused) {
 	tmp = VECTOR_ELT(DE->work, col - 1);
-	if (isNull(tmp)) return fw;
+	if (Rf_isNull(tmp)) return fw;
 	/* don't use NA labels */
 	lab = STRING_ELT(DE->names, col - 1);
-	if(lab != NA_STRING) w = strlen(CHAR(lab)); else w = fw;
+	if(lab != NA_STRING) w = strlen(R_CHAR(lab)); else w = fw;
 	PrintDefaults();
 	for (i = 0; i < INTEGER(DE->lens)[col - 1]; i++) {
 	    strp = EncodeElement(tmp, i, 0, '.');
@@ -572,7 +572,7 @@ static void drawcol(DEstruct DE, int whichcol)
 
     if (DE->xmaxused >= whichcol) {
 	tmp = VECTOR_ELT(DE->work, whichcol - 1);
-	if (!isNull(tmp)) {
+	if (!Rf_isNull(tmp)) {
 	    len = min(DE->rowmax, INTEGER(DE->lens)[whichcol - 1]);
 	    for (i = (DE->rowmin - 1); i < len; i++)
 		printelt(DE, tmp, i, i - DE->rowmin + 2, col);
@@ -604,7 +604,7 @@ static void drawrow(DEstruct DE, int whichrow)
 
     for (i = DE->colmin; i <= DE->colmax; i++) {
 	if (i > DE->xmaxused) break;
-	if (!isNull(tvec = VECTOR_ELT(DE->work, i - 1)))
+	if (!Rf_isNull(tvec = VECTOR_ELT(DE->work, i - 1)))
 	    if (whichrow <= INTEGER(DE->lens)[i - 1])
 		printelt(DE, tvec, whichrow - 1, row, i - DE->colmin + 1);
     }
@@ -631,7 +631,7 @@ static void printelt(DEstruct DE, SEXP invec, int vrow, int ssrow, int sscol)
 	}
     }
     else
-	error(G_("dataentry: internal memory error"));
+	Rf_error(G_("dataentry: internal memory error"));
 }
 
 
@@ -647,7 +647,7 @@ static void drawelt(DEstruct DE, int whichrow, int whichcol)
     } else {
 	if (DE->xmaxused >= whichcol + DE->colmin - 1) {
 	    tmp = VECTOR_ELT(DE->work, whichcol + DE->colmin - 2);
-	    if (!isNull(tmp) && (i = DE->rowmin + whichrow - 2) <
+	    if (!Rf_isNull(tmp) && (i = DE->rowmin + whichrow - 2) <
 		INTEGER(DE->lens)[whichcol + DE->colmin - 2] )
 		printelt(DE, tmp, i, whichrow, whichcol);
 	} else
@@ -738,23 +738,23 @@ static Rboolean getccol(DEstruct DE)
     wrow = DE->crow + DE->rowmin - 1;
     if (wcol > DE->xmaxused) {
 	/* extend work, names and lens */
-	REPROTECT(DE->work = lengthgets(DE->work, wcol), DE->wpi);
-	REPROTECT(DE->names = lengthgets(DE->names, wcol), DE->npi);
+	REPROTECT(DE->work = Rf_lengthgets(DE->work, wcol), DE->wpi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, wcol), DE->npi);
 	for (i = DE->xmaxused; i < wcol; i++) {
 	    snprintf(clab, 25, "var%d", i + 1);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
-	REPROTECT(DE->lens = lengthgets(DE->lens, wcol), DE->lpi);
+	REPROTECT(DE->lens = Rf_lengthgets(DE->lens, wcol), DE->lpi);
 	DE->xmaxused = wcol;
     }
-    if (isNull(VECTOR_ELT(DE->work, wcol - 1))) {
+    if (Rf_isNull(VECTOR_ELT(DE->work, wcol - 1))) {
 	newcol = TRUE;
 	SET_VECTOR_ELT(DE->work, wcol - 1,
 		       ssNewVector(DE, REALSXP, max(100, wrow)));
 	INTEGER(DE->lens)[wcol - 1] = 0;
     }
-    if (!isVector(tmp = VECTOR_ELT(DE->work, wcol - 1)))
-	error(G_("internal type error in dataentry"));
+    if (!Rf_isVector(tmp = VECTOR_ELT(DE->work, wcol - 1)))
+	Rf_error(G_("internal type error in dataentry"));
     len = INTEGER(DE->lens)[wcol - 1];
     type = TYPEOF(tmp);
     if (len < wrow) {
@@ -767,7 +767,7 @@ static Rboolean getccol(DEstruct DE)
 	    else if (type == STRSXP)
 		SET_STRING_ELT(tmp2, i, STRING_ELT(tmp, i));
 	    else
-		error(G_("internal type error in dataentry"));
+		Rf_error(G_("internal type error in dataentry"));
 	SET_VECTOR_ELT(DE->work, wcol - 1, tmp2);
     }
     return newcol;
@@ -784,30 +784,30 @@ static SEXP processEscapes(SEXP x)
 
        newval <- gsub(perl=TRUE, "(?<!\\\\)((\\\\\\\\)*)\"", "\\1\\\\\"", x)
        newval <- sub('(^.*$)', '"\1"', newval)
-       newval <- eval(parse(text=newval))
+       newval <- Rf_eval(parse(text=newval))
 
        We do it this way to avoid extracting the escape handling
        code from the parser.  We need it in C++ code because this may be executed
        numerous times from C++ in dataentry.cpp */
     	
-    PROTECT( pattern = mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
-    PROTECT( replacement = mkString("\\1\\\\\"") );
-    SEXP s_gsub = install("gsub");
-    PROTECT( expr = lang5(s_gsub, ScalarLogical(1), pattern, replacement, x) );
-    SET_TAG( CDR(expr), install("perl") );
+    PROTECT( pattern = Rf_mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
+    PROTECT( replacement = Rf_mkString("\\1\\\\\"") );
+    SEXP s_gsub = Rf_install("gsub");
+    PROTECT( expr = Rf_lang5(s_gsub, Rf_ScalarLogical(1), pattern, replacement, x) );
+    SET_TAG( CDR(expr), Rf_install("perl") );
 
-    PROTECT( newval = eval(expr, R_BaseEnv) );
-    PROTECT( pattern = mkString("(^.*$)") );
-    PROTECT( replacement = mkString("\"\\1\"") );
-    PROTECT( expr = lang4(install("sub"), pattern, replacement, newval) );
-    PROTECT( newval = eval(expr, R_BaseEnv) );
+    PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
+    PROTECT( pattern = Rf_mkString("(^.*$)") );
+    PROTECT( replacement = Rf_mkString("\"\\1\"") );
+    PROTECT( expr = Rf_lang4(Rf_install("sub"), pattern, replacement, newval) );
+    PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
     PROTECT( expr = R_ParseVector( newval, 1, &status, R_NilValue) );
     
     /* We only handle the first entry. If this were available more generally,
        we'd probably want to loop over all of expr */
        
     if (status == PARSE_OK && length(expr))
-	PROTECT( newval = eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
+	PROTECT( newval = Rf_eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
     else
 	PROTECT( newval = R_NilValue );  /* protect just so the count doesn't change */
     UNPROTECT(10);
@@ -845,19 +845,19 @@ static void closerect(DEstruct DE)
 	    int warn = !isBlankString(endp);
 	    if (TYPEOF(cvec) == STRSXP) {
 	    	SEXP newval;
-	    	PROTECT( newval = mkString(DE->buf) );
+	    	PROTECT( newval = Rf_mkString(DE->buf) );
 	    	PROTECT( newval = processEscapes(newval) );
 	    	if (TYPEOF(newval) == STRSXP && length(newval) == 1)
 		    SET_STRING_ELT(cvec, wrow - 1, STRING_ELT(newval, 0));
 		else
-		    warning(G_("dataentry: parse error on string"));
+		    Rf_warning(G_("dataentry: parse error on string"));
 		UNPROTECT(2);
 	    } else
 		REAL(cvec)[wrow - 1] = new_;
 	    if (newcol && warn) {
 		/* change mode to character */
-		SEXP tmp = coerceVector(cvec, STRSXP);
-		SET_STRING_ELT(tmp, wrow - 1, mkChar(DE->buf));
+		SEXP tmp = Rf_coerceVector(cvec, STRSXP);
+		SET_STRING_ELT(tmp, wrow - 1, Rf_mkChar(DE->buf));
 		SET_VECTOR_ELT(DE->work, wcol - 1, tmp);
 	    }
 	} else {
@@ -993,7 +993,7 @@ static void handlechar(DEstruct DE, const char *text)
 	}
 
     if (DE->clength++ > 199) {
-	warning(G_("dataentry: expression too long"));
+	Rf_warning(G_("dataentry: expression too long"));
 	DE->clength--;
 	goto donehc;
     }
@@ -1212,14 +1212,14 @@ static const char *get_cell_text(DEstruct DE)
 
     if (wcol <= DE->xmaxused) {
 	tvec = VECTOR_ELT(DE->work, wcol - 1);
-	if (!isNull(tvec) && wrow < INTEGER(DE->lens)[wcol - 1]) {
+	if (!Rf_isNull(tvec) && wrow < INTEGER(DE->lens)[wcol - 1]) {
 	    PrintDefaults();
 	    if (TYPEOF(tvec) == REALSXP) {
 		prev = EncodeElement(tvec, wrow, 0, '.');
 	    } else if (TYPEOF(tvec) == STRSXP) {
 		if (STRING_ELT(tvec, wrow) != DE->ssNA_STRING)
 		    prev = EncodeElement(tvec, wrow, 0, '.');
-	    } else error(G_("dataentry: internal memory error"));
+	    } else Rf_error(G_("dataentry: internal memory error"));
 	}
     }
     return prev;
@@ -1410,7 +1410,7 @@ static Rboolean initwin(DEstruct DE, const char *title)
     DE->oldWIDTH = DE->oldHEIGHT = 0;
     DE->nboxchars = 5;
 
-    DE->nboxchars = asInteger(GetOption1(install("de.cellwidth")));
+    DE->nboxchars = Rf_asInteger(GetOption1(Rf_install("de.cellwidth")));
     if (DE->nboxchars == NA_INTEGER || DE->nboxchars < 0) DE->nboxchars = 0;
     if (DE->nboxchars > 0) check(DE->de_mvw);
     DE->box_w = ((DE->nboxchars >0)?DE->nboxchars:FIELDWIDTH)*(DE->p->fw) + 8;
@@ -1475,31 +1475,31 @@ static void popupclose(control c)
     }
     if (popupcol > DE->xmaxused) {
 	/* extend work, names and lens */
-	REPROTECT(DE->work = lengthgets(DE->work, popupcol), DE->wpi);
-	REPROTECT(DE->names = lengthgets(DE->names, popupcol), DE->npi);
+	REPROTECT(DE->work = Rf_lengthgets(DE->work, popupcol), DE->wpi);
+	REPROTECT(DE->names = Rf_lengthgets(DE->names, popupcol), DE->npi);
 	/* Last col name is set later */
 	for (i = DE->xmaxused+1; i < popupcol - 1; i++) {
 	    snprintf(clab, 25, "var%d", i + 1);
-	    SET_STRING_ELT(DE->names, i, mkChar(clab));
+	    SET_STRING_ELT(DE->names, i, Rf_mkChar(clab));
 	}
-	REPROTECT(DE->lens = lengthgets(DE->lens, popupcol), DE->lpi);
+	REPROTECT(DE->lens = Rf_lengthgets(DE->lens, popupcol), DE->lpi);
 	DE->xmaxused = popupcol;
     }
     tvec = VECTOR_ELT(DE->work, popupcol - 1);
     if(ischecked(rb_num) && !isnumeric) {
-	if (isNull(tvec))
+	if (Rf_isNull(tvec))
 	    SET_VECTOR_ELT(DE->work, popupcol - 1,
 			   ssNewVector(DE, REALSXP, 100));
 	else
-	    SET_VECTOR_ELT(DE->work, popupcol - 1, coerceVector(tvec, REALSXP));
+	    SET_VECTOR_ELT(DE->work, popupcol - 1, Rf_coerceVector(tvec, REALSXP));
     } else if(ischecked(rb_char) && isnumeric) {
-	if (isNull(tvec))
+	if (Rf_isNull(tvec))
 	    SET_VECTOR_ELT(DE->work, popupcol - 1,
 			   ssNewVector(DE, STRSXP, 100));
 	else
-	    SET_VECTOR_ELT(DE->work, popupcol - 1, coerceVector(tvec, STRSXP));
+	    SET_VECTOR_ELT(DE->work, popupcol - 1, Rf_coerceVector(tvec, STRSXP));
     }
-    SET_STRING_ELT(DE->names, popupcol - 1, mkChar(buf));
+    SET_STRING_ELT(DE->names, popupcol - 1, Rf_mkChar(buf));
     hide(wconf);
     del(wconf);
 }
@@ -1845,13 +1845,13 @@ SEXP Win_dataviewer(SEXP args)
     DE->isEditor = FALSE;
     nprotect = 0;/* count the PROTECT()s */
     DE->work = CAR(args);
-    DE->names = getAttrib(DE->work, R_NamesSymbol);
+    DE->names = Rf_getAttrib(DE->work, R_NamesSymbol);
 
     if (TYPEOF(DE->work) != VECSXP)
-	error(G_("invalid argument"));
+	Rf_error(G_("invalid argument"));
     stitle = CADR(args);
-    if (!isString(stitle) || LENGTH(stitle) != 1)
-	error(G_("invalid argument"));
+    if (!Rf_isString(stitle) || LENGTH(stitle) != 1)
+	Rf_error(G_("invalid argument"));
 
     /* initialize the constants */
 
@@ -1866,14 +1866,14 @@ SEXP Win_dataviewer(SEXP args)
     DE->crow = 1;
     DE->colmin = 1;
     DE->rowmin = 1;
-    PROTECT(DE->ssNA_STRING = duplicate(NA_STRING));
+    PROTECT(DE->ssNA_STRING = Rf_duplicate(NA_STRING));
     nprotect++;
     DE->bwidth = 0;
     DE->hwidth = 5;
 
     /* setup lens  */
     DE->xmaxused = length(DE->work); DE->ymaxused = 0;
-    PROTECT_WITH_INDEX(DE->lens = allocVector(INTSXP, DE->xmaxused), &DE->lpi);
+    PROTECT_WITH_INDEX(DE->lens = Rf_allocVector(INTSXP, DE->xmaxused), &DE->lpi);
     nprotect++;
 
     for (i = 0; i < DE->xmaxused; i++) {
@@ -1882,14 +1882,14 @@ SEXP Win_dataviewer(SEXP args)
 	DE->ymaxused = max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
 	if (type != STRSXP && type != REALSXP)
-	    error(G_("invalid argument"));
+	    Rf_error(G_("invalid argument"));
     }
 
     DE->xScrollbarScale = DE->yScrollbarScale = 1;
 
     /* start up the window, more initializing in here */
-    if (initwin(DE, CHAR(STRING_ELT(stitle, 0))))
-	error("unable to start data viewer");
+    if (initwin(DE, R_CHAR(STRING_ELT(stitle, 0))))
+	Rf_error("unable to start data viewer");
 
     /* set up a context which will close the window if there is an error */
     begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_BaseEnv, R_BaseEnv,

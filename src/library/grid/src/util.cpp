@@ -32,11 +32,11 @@
 SEXP getListElement(SEXP list, const char *str)
 {
   SEXP elmt = R_NilValue;
-  SEXP names = getAttrib(list, R_NamesSymbol);
+  SEXP names = Rf_getAttrib(list, R_NamesSymbol);
   int i;
 
   for (i = 0; i < Rf_length(list); i++)
-    if(streql(CHAR(STRING_ELT(names, i)), str)) {
+    if(streql(R_CHAR(STRING_ELT(names, i)), str)) {
       elmt = VECTOR_ELT(list, i);
       break;
     }
@@ -45,11 +45,11 @@ SEXP getListElement(SEXP list, const char *str)
 
 void setListElement(SEXP list, char *str, SEXP value)
 {
-  SEXP names = getAttrib(list, R_NamesSymbol);
+  SEXP names = Rf_getAttrib(list, R_NamesSymbol);
   int i;
 
   for (i = 0; i < Rf_length(list); i++)
-    if(streql(CHAR(STRING_ELT(names, i)), str)) {
+    if(streql(R_CHAR(STRING_ELT(names, i)), str)) {
       SET_VECTOR_ELT(list, i, value);
       break;
     }
@@ -62,9 +62,9 @@ void setListElement(SEXP list, char *str, SEXP value)
  */
 double numeric(SEXP x, int index)
 {
-    if (isReal(x))
+    if (Rf_isReal(x))
 	return REAL(x)[index];
-    else if (isInteger(x))
+    else if (Rf_isInteger(x))
 	return INTEGER(x)[index];
     return NA_REAL;
 }
@@ -191,22 +191,22 @@ void textRect(double x, double y, SEXP text, int i,
     LTransform thisLocation, thisRotation, thisJustification;
     LTransform tempTransform, transform;
     double w, h;
-    if (isExpression(text)) {
+    if (Rf_isExpression(text)) {
 	SEXP expr = VECTOR_ELT(text, i % LENGTH(text));
 	w = fromDeviceWidth(GEExpressionWidth(expr, gc, dd),
 			    GE_INCHES, dd);
 	h = fromDeviceHeight(GEExpressionHeight(expr, gc, dd),
 			     GE_INCHES, dd);
     } else {
-	const char* string = CHAR(STRING_ELT(text, i % LENGTH(text)));
+	const char* string = R_CHAR(STRING_ELT(text, i % LENGTH(text)));
 	w = fromDeviceWidth(GEStrWidth(string,
 				       (gc->fontface == 5) ? CE_SYMBOL :
-				       getCharCE(STRING_ELT(text, i % LENGTH(text))),
+				       Rf_getCharCE(STRING_ELT(text, i % LENGTH(text))),
 				       gc, dd),
 			    GE_INCHES, dd);
 	h = fromDeviceHeight(GEStrHeight(string,
 					 (gc->fontface == 5) ? CE_SYMBOL :
-					 getCharCE(STRING_ELT(text, i % LENGTH(text))),
+					 Rf_getCharCE(STRING_ELT(text, i % LENGTH(text))),
 					 gc, dd),
 			     GE_INCHES, dd);
     }
@@ -259,7 +259,7 @@ SEXP L_CreateSEXPPtr(SEXP s)
     /* Allocate a list of length one on the R heap
      */
     SEXP data, result;
-    PROTECT(data = allocVector(VECSXP, 1));
+    PROTECT(data = Rf_allocVector(VECSXP, 1));
     SET_VECTOR_ELT(data, 0, s);
     result = R_MakeExternalPtr(data, R_NilValue, data);
     UNPROTECT(1);
@@ -274,7 +274,7 @@ SEXP L_GetSEXPPtr(SEXP sp)
      * and then loaded.  The saved grob has its ptr null'ed
      */
     if (data == NULL)
-	error("grid grob object is empty");
+	Rf_error("grid grob object is empty");
     return VECTOR_ELT(data, 0);
 }
 
@@ -286,7 +286,7 @@ SEXP L_SetSEXPPtr(SEXP sp, SEXP s)
      * and then loaded.  The saved grob has its ptr null'ed
      */
     if (data == NULL)
-	error("grid grob object is empty");
+	Rf_error("grid grob object is empty");
     SET_VECTOR_ELT(data, 0, s);
     return R_NilValue;
 }

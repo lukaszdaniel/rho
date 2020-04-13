@@ -100,7 +100,7 @@ static Rboolean sm_3(double *x, double *y, R_xlen_t n, int end_rule)
 	   break;							\
 									\
     default:								\
-	   error(_("invalid end-rule for running median of 3: %d"),	\
+	   Rf_error(_("invalid end-rule for running median of 3: %d"),	\
 		 end_rule);						\
     }
 
@@ -253,14 +253,14 @@ static int sm_3RSR(double *x, double *y, double *z, double *w, R_xlen_t n,
 #include <Rinternals.h>
 SEXP Rsm(SEXP x, SEXP stype, SEXP send)
 {
-    int iend = asInteger(send), type = asInteger(stype);
+    int iend = Rf_asInteger(send), type = Rf_asInteger(stype);
     R_xlen_t n = XLENGTH(x);
-    SEXP ans = PROTECT(allocVector(VECSXP, 2));
-    SEXP y = allocVector(REALSXP, n);
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, 2));
+    SEXP y = Rf_allocVector(REALSXP, n);
     SET_VECTOR_ELT(ans, 0, y);
-    SEXP nm = allocVector(STRSXP, 2);
-    setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("y"));
+    SEXP nm = Rf_allocVector(STRSXP, 2);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    SET_STRING_ELT(nm, 0, Rf_mkChar("y"));
     if (type <= 5) {
 	int iter = 0 /* -Wall */;
 	switch(type){
@@ -296,12 +296,12 @@ SEXP Rsm(SEXP x, SEXP stype, SEXP send)
 	case 5: // "3"
 	    iter = sm_3(REAL(x), REAL(y), n, iend);
 	}
-	SET_VECTOR_ELT(ans, 1, ScalarInteger(iter));
-	SET_STRING_ELT(nm, 1, mkChar("iter"));
+	SET_VECTOR_ELT(ans, 1, Rf_ScalarInteger(iter));
+	SET_STRING_ELT(nm, 1, Rf_mkChar("iter"));
     } else { // type > 5  ==> =~ "S"
 	int changed = sm_split3(REAL(x), REAL(y), n, (Rboolean) iend);
-	SET_VECTOR_ELT(ans, 1, ScalarLogical(changed));
-	SET_STRING_ELT(nm, 1, mkChar("changed"));
+	SET_VECTOR_ELT(ans, 1, Rf_ScalarLogical(changed));
+	SET_STRING_ELT(nm, 1, Rf_mkChar("changed"));
     }
     UNPROTECT(1);
     return ans;

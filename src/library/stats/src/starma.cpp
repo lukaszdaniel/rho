@@ -362,7 +362,7 @@ forkal(Starma G, int d, int il, double *delta, double *y, double *amse,
 	for (j = 0; j < d; j++) {
 	    store[j] = w[n - j - 2];
 	    if(ISNAN(store[j]))
-		error(_("missing value in last %d observations"), d);
+		Rf_error(_("missing value in last %d observations"), d);
 	}
 	for (i = 0; i < nt; i++) {
 	    aa = 0.0;

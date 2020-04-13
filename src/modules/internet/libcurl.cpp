@@ -96,26 +96,26 @@ R_curl_multi_wait(CURLM *multi_handle,
 SEXP attribute_hidden in_do_curlVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
-    SEXP ans = PROTECT(allocVector(STRSXP, 1));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 1));
 #ifdef HAVE_LIBCURL
     curl_version_info_data *d = curl_version_info(CURLVERSION_NOW);
-    SET_STRING_ELT(ans, 0, mkChar(d->version));
-    SEXP sSSLVersion = install("ssl_version");
-    setAttrib(ans, sSSLVersion,
-	      mkString(d->ssl_version ? d->ssl_version : "none"));
-    SEXP sLibSSHVersion = install("libssh_version");
-    setAttrib(ans, sLibSSHVersion,
-	      mkString(((d->age >= 3) && d->libssh_version) ? d->libssh_version : ""));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(d->version));
+    SEXP sSSLVersion = Rf_install("ssl_version");
+    Rf_setAttrib(ans, sSSLVersion,
+	      Rf_mkString(d->ssl_version ? d->ssl_version : "none"));
+    SEXP sLibSSHVersion = Rf_install("libssh_version");
+    Rf_setAttrib(ans, sLibSSHVersion,
+	      Rf_mkString(((d->age >= 3) && d->libssh_version) ? d->libssh_version : ""));
     const char * const *p;
     int n, i;
     for (p = d->protocols, n = 0; *p; p++, n++) ;
-    SEXP protocols = PROTECT(allocVector(STRSXP, n));
+    SEXP protocols = PROTECT(Rf_allocVector(STRSXP, n));
     for (p = d->protocols, i = 0; i < n; i++, p++)
-	SET_STRING_ELT(protocols, i, mkChar(*p));
-    setAttrib(ans, install("protocols"), protocols);
+	SET_STRING_ELT(protocols, i, Rf_mkChar(*p));
+    Rf_setAttrib(ans, Rf_install("protocols"), protocols);
     UNPROTECT(1);
 #else
-    SET_STRING_ELT(ans, 0, mkChar(""));
+    SET_STRING_ELT(ans, 0, Rf_mkChar(""));
 #endif
     UNPROTECT(1);
     return ans;
@@ -212,11 +212,11 @@ static int curlMultiCheckerrs(CURLM *mhnd)
 		    strerr = ftp_errstr(status);
 		    type = "FTP";
 		}
-		warning(_("cannot open URL '%s': %s status was '%d %s'"),
+		Rf_warning(_("cannot open URL '%s': %s status was '%d %s'"),
 			url, type, status, strerr);
 	    } else {
 		strerr = curl_easy_strerror(msg->data.result);
-		warning(_("URL '%s': status was '%s'"), url, strerr);
+		Rf_warning(_("URL '%s': status was '%s'"), url, strerr);
 	    }
 	    retval++;
 	}
@@ -239,16 +239,16 @@ static void curlCommon(CURL *hnd, int redirect, int verify)
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYPEER, 0L);
     }
     // for consistency, but all utils:::makeUserAgent does is look up an option.
-    SEXP sMakeUserAgent = install("makeUserAgent");
-    SEXP agentFun = PROTECT(lang2(sMakeUserAgent, ScalarLogical(0)));
-    SEXP utilsNS = PROTECT(R_FindNamespace(mkString("utils")));
-    SEXP sua = eval(agentFun, utilsNS);
+    SEXP sMakeUserAgent = Rf_install("makeUserAgent");
+    SEXP agentFun = PROTECT(Rf_lang2(sMakeUserAgent, Rf_ScalarLogical(0)));
+    SEXP utilsNS = PROTECT(R_FindNamespace(Rf_mkString("utils")));
+    SEXP sua = Rf_eval(agentFun, utilsNS);
     UNPROTECT(1); /* utilsNS */
     PROTECT(sua);
     if(TYPEOF(sua) != NILSXP)
-	curl_easy_setopt(hnd, CURLOPT_USERAGENT, CHAR(STRING_ELT(sua, 0)));
+	curl_easy_setopt(hnd, CURLOPT_USERAGENT, R_CHAR(STRING_ELT(sua, 0)));
     UNPROTECT(2);
-    int timeout0 = asInteger(GetOption1(install("timeout")));
+    int timeout0 = Rf_asInteger(GetOption1(Rf_install("timeout")));
     long timeout = timeout0 = NA_INTEGER ? 0 : 1000L * timeout0;
     curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT_MS, timeout);
     curl_easy_setopt(hnd, CURLOPT_TIMEOUT_MS, timeout);
@@ -256,7 +256,7 @@ static void curlCommon(CURL *hnd, int redirect, int verify)
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 20L);
     }
-    int verbosity = asInteger(GetOption1(install("internet.info")));
+    int verbosity = Rf_asInteger(GetOption1(Rf_install("internet.info")));
     if (verbosity < 2) curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 
     // enable the cookie engine, keep cookies in memory
@@ -293,19 +293,19 @@ in_do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 #ifndef HAVE_LIBCURL
-    error(_("curlGetHeaders is not supported on this platform"));
+    Rf_error(_("curlGetHeaders is not supported on this platform"));
     return R_NilValue;
 #else
-    if (!isString(CAR(args)) || LENGTH(CAR(args)) != 1)
-       error("invalid %s argument", "url");
-    const char *url = translateChar(STRING_ELT(CAR(args), 0));
+    if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) != 1)
+       Rf_error("invalid %s argument", "url");
+    const char *url = Rf_translateChar(STRING_ELT(CAR(args), 0));
     used = 0;
-    int redirect = asLogical(CADR(args));
+    int redirect = Rf_asLogical(CADR(args));
     if (redirect == NA_LOGICAL)
-	error(_("invalid %s argument"), "redirect");
-    int verify = asLogical(CADDR(args));
+	Rf_error(_("invalid %s argument"), "redirect");
+    int verify = Rf_asLogical(CADDR(args));
     if (verify == NA_LOGICAL)
-	error(_("invalid %s argument"), "verify");
+	Rf_error(_("invalid %s argument"), "verify");
 
     CURL *hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_URL, url);
@@ -325,22 +325,22 @@ in_do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho)
     CURLcode ret = curl_easy_perform(hnd);
     if (ret != CURLE_OK) {
 	if (errbuf[0]) 
-	    error(_("libcurl error code %d:\n\t%s\n"), ret, errbuf);
+	    Rf_error(_("libcurl error code %d:\n\t%s\n"), ret, errbuf);
 	else if(ret == 77)
-	    error(_("libcurl error code %d:\n\t%s\n"), ret, 
+	    Rf_error(_("libcurl error code %d:\n\t%s\n"), ret, 
 		  "unable to access SSL/TLS CA certificates");
 	else // rare case, error but no message
-	    error("libcurl error code %d\n", ret);
+	    Rf_error("libcurl error code %d\n", ret);
     }
     long http_code = 0;
     curl_easy_getinfo (hnd, CURLINFO_RESPONSE_CODE, &http_code);
     curl_easy_cleanup(hnd);
 
-    SEXP ans = PROTECT(allocVector(STRSXP, used));
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, used));
     for (int i = 0; i < used; i++)
-	SET_STRING_ELT(ans, i, mkChar(headers[i]));
-    SEXP sStatus = install("status");
-    setAttrib(ans, sStatus, ScalarInteger((int) http_code));
+	SET_STRING_ELT(ans, i, Rf_mkChar(headers[i]));
+    SEXP sStatus = Rf_install("status");
+    Rf_setAttrib(ans, sStatus, Rf_ScalarInteger((int) http_code));
     UNPROTECT(1);
     return ans;
 #endif
@@ -467,7 +467,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 #ifndef HAVE_LIBCURL
-    error(_("download.file(method = \"libcurl\") is not supported on this platform"));
+    Rf_error(_("download.file(method = \"libcurl\") is not supported on this platform"));
     return R_NilValue;
 #else
     SEXP scmd, sfile, smode;
@@ -476,24 +476,24 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     struct curl_slist *slist1 = NULL;
 
     scmd = CAR(args); args = CDR(args);
-    if (!isString(scmd) || Rf_length(scmd) < 1)
-	error(_("invalid '%s' argument"), "url");
+    if (!Rf_isString(scmd) || Rf_length(scmd) < 1)
+	Rf_error(_("invalid '%s' argument"), "url");
     int nurls = Rf_length(scmd);
     sfile = CAR(args); args = CDR(args);
-    if (!isString(sfile) || Rf_length(sfile) < 1)
-	error(_("invalid '%s' argument"), "destfile");
+    if (!Rf_isString(sfile) || Rf_length(sfile) < 1)
+	Rf_error(_("invalid '%s' argument"), "destfile");
     if (Rf_length(sfile) != Rf_length(scmd))
-	error(_("lengths of 'url' and 'destfile' must match"));
-    quiet = asLogical(CAR(args)); args = CDR(args);
+	Rf_error(_("lengths of 'url' and 'destfile' must match"));
+    quiet = Rf_asLogical(CAR(args)); args = CDR(args);
     if (quiet == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "quiet");
+	Rf_error(_("invalid '%s' argument"), "quiet");
     smode =  CAR(args); args = CDR(args);
-    if (!isString(smode) || Rf_length(smode) != 1)
-	error(_("invalid '%s' argument"), "mode");
-    mode = CHAR(STRING_ELT(smode, 0));
-    cacheOK = asLogical(CAR(args));
+    if (!Rf_isString(smode) || Rf_length(smode) != 1)
+	Rf_error(_("invalid '%s' argument"), "mode");
+    mode = R_CHAR(STRING_ELT(smode, 0));
+    cacheOK = Rf_asLogical(CAR(args));
     if (cacheOK == NA_LOGICAL)
-	error(_("invalid '%s' argument"), "cacheOK");
+	Rf_error(_("invalid '%s' argument"), "cacheOK");
 
     /* This comes mainly from curl --libcurl on the call used by
        download.file(method = "curl").
@@ -512,7 +512,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     FILE *out[nurls];
 
     for(int i = 0; i < nurls; i++) {
-	url = CHAR(STRING_ELT(scmd, i));
+	url = R_CHAR(STRING_ELT(scmd, i));
 	hnd[i] = static_cast<CURL **>(curl_easy_init());
 	curl_easy_setopt(hnd[i], CURLOPT_URL, url);
 	curl_easy_setopt(hnd[i], CURLOPT_FAILONERROR, 1L);
@@ -526,11 +526,11 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    curl_easy_setopt(hnd[i], CURLOPT_HTTPHEADER, slist1);
 
 	/* check that destfile can be written */
-	file = translateChar(STRING_ELT(sfile, i));
+	file = Rf_translateChar(STRING_ELT(sfile, i));
 	out[i] = R_fopen(R_ExpandFileName(file), mode);
 	if (!out[i]) {
 	    n_err += 1;
-	    warning(_("URL %s: cannot open destfile '%s', reason '%s'"),
+	    Rf_warning(_("URL %s: cannot open destfile '%s', reason '%s'"),
 		    url, file, strerror(errno));
 	    if (nurls == 1) break; else continue;
 	} else {
@@ -585,7 +585,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (n_err == nurls) {
 	// no dest files could be opened, so bail out
 	curl_multi_cleanup(mhnd);
-	return ScalarInteger(1);
+	return Rf_ScalarInteger(1);
     }
 
     R_Busy(1);
@@ -595,7 +595,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 	int numfds;
 	CURLMcode mc = curl_multi_wait(mhnd, NULL, 0, 100, &numfds);
 	if (mc != CURLM_OK)  { // internal, do not translate
-	    warning("curl_multi_wait() failed, code %d", mc);
+	    Rf_warning("curl_multi_wait() failed, code %d", mc);
 	    break;
 	}
 	if (!numfds) {
@@ -637,7 +637,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 	curl_easy_getinfo(hnd[0], CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cl);
 	if (cl >= 0 && dl != cl)
-	    warning(_("downloaded length %0.f != reported length %0.f"), dl, cl);
+	    Rf_warning(_("downloaded length %0.f != reported length %0.f"), dl, cl);
     }
 
     n_err += curlMultiCheckerrs(mhnd);
@@ -651,7 +651,7 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    curl_easy_getinfo(hnd[i], CURLINFO_RESPONSE_CODE, &status);
 	    // should we do something about incomplete transfers?
 	    if (status != 200 && dl == 0. && strchr(mode, 'w'))
-		unlink(R_ExpandFileName(translateChar(STRING_ELT(sfile, i))));
+		unlink(R_ExpandFileName(Rf_translateChar(STRING_ELT(sfile, i))));
 	}
 	curl_multi_remove_handle(mhnd, hnd[i]);
 	curl_easy_cleanup(hnd[i]);
@@ -664,16 +664,16 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (!cacheOK) curl_slist_free_all(slist1);
 
     if(nurls > 1) {
-	if (n_err == nurls) error(_("cannot download any files"));
-	else if (n_err) warning(_("some files were not downloaded"));
+	if (n_err == nurls) Rf_error(_("cannot download any files"));
+	else if (n_err) Rf_warning(_("some files were not downloaded"));
     } else if(n_err) {
 	if (status != 200)
-	    error(_("cannot open URL '%s'"), CHAR(STRING_ELT(scmd, 0)));
+	    Rf_error(_("cannot open URL '%s'"), R_CHAR(STRING_ELT(scmd, 0)));
 	else
-	    error(_("download from '%s' failed"), CHAR(STRING_ELT(scmd, 0)));
+	    Rf_error(_("download from '%s' failed"), R_CHAR(STRING_ELT(scmd, 0)));
     }
 
-    return ScalarInteger(0);
+    return Rf_ScalarInteger(0);
 #endif
 }
 
@@ -723,7 +723,7 @@ static size_t rcvData(void *ptr, size_t size, size_t nitems, void *ctx)
 	    int mult = (int) ceil((double)(ctxt->filled + add)/ctxt->bufsize);
 	    size_t newbufsize = mult * ctxt->bufsize;
 	    void *newbuf = realloc(ctxt->buf, newbufsize);
-	    if (!newbuf) error("Failure in re-allocation in rcvData");
+	    if (!newbuf) Rf_error("Failure in re-allocation in rcvData");
 	    ctxt->buf = static_cast<char *>(newbuf); ctxt->bufsize = newbufsize;
 	}
 
@@ -754,7 +754,7 @@ static int fetchData(RCurlconn ctxt)
 	int numfds;
 	CURLMcode mc = curl_multi_wait(mhnd, NULL, 0, 100, &numfds);
 	if (mc != CURLM_OK) {
-	    warning("curl_multi_wait() failed, code %d", mc);
+	    Rf_warning("curl_multi_wait() failed, code %d", mc);
 	    break;
 	}
 	if (!numfds) {
@@ -807,7 +807,7 @@ static size_t Curl_read(void *ptr, size_t size, size_t nitems,
     }
     if (n_err != 0) {
 	Curl_close(con);
-	error(_("cannot read from connection"), n_err);
+	Rf_error(_("cannot read from connection"), n_err);
     }
     return total/size;
 }
@@ -845,7 +845,7 @@ static Rboolean Curl_open(Rconnection con)
 	n_err += fetchData(ctxt);
     if (n_err != 0) {
 	Curl_close(con);
-	error(_("cannot open the connection to '%s'"), url);
+	Rf_error(_("cannot open the connection to '%s'"), url);
     }
 
     con->isopen = TRUE;
@@ -873,18 +873,18 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
 {
 #ifdef HAVE_LIBCURL
     Rconnection new_ = (Rconnection) malloc(sizeof(struct Rconn));
-    if (!new_) error(_("allocation of url connection failed"));
+    if (!new_) Rf_error(_("allocation of url connection failed"));
     new_->connclass = (char *) malloc(strlen("url-libcurl") + 1);
     if (!new_->connclass) {
 	free(new_);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
 	/* for Solaris 12.5 */ new_ = NULL;
     }
     strcpy(new_->connclass, "url-libcurl");
     new_->description = (char *) malloc(strlen(description) + 1);
     if (!new_->description) {
 	free(new_->connclass); free(new_);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
 	/* for Solaris 12.5 */ new_ = NULL;
     }
     init_con(new_, description, CE_NATIVE, mode);
@@ -898,7 +898,7 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
     new_->connprivate = (void *) malloc(sizeof(struct Curlconn));
     if (!new_->connprivate) {
 	free(new_->description); free(new_->connclass); free(new_);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
 	/* for Solaris 12.5 */ new_ = NULL;
     }
     RCurlconn ctxt = (RCurlconn) new_->connprivate;
@@ -907,12 +907,12 @@ in_newCurlUrl(const char *description, const char * const mode, int type)
     if (!ctxt->buf) {
 	free(new_->description); free(new_->connclass); free(new_->connprivate);
 	free(new_);
-	error(_("allocation of url connection failed"));
+	Rf_error(_("allocation of url connection failed"));
 	/* for Solaris 12.5 */ new_ = NULL;
     }
     return new_;
 #else
-    error(_("url(method = \"libcurl\") is not supported on this platform"));
+    Rf_error(_("url(method = \"libcurl\") is not supported on this platform"));
     return (Rconnection)0; /* -Wall */
 #endif
 }

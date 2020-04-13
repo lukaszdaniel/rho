@@ -104,9 +104,9 @@ static void chmod_one(const char *name, const int grpwrt)
 extern "C"
 SEXP dirchmod(SEXP dr, SEXP gwsxp)
 {
-    if(!isString(dr) || LENGTH(dr) != 1)
-	error(_("invalid '%s' argument"), "dir");
-    chmod_one(translateChar(STRING_ELT(dr, 0)), asLogical(gwsxp));
+    if(!Rf_isString(dr) || LENGTH(dr) != 1)
+	Rf_error(_("invalid '%s' argument"), "dir");
+    chmod_one(Rf_translateChar(STRING_ELT(dr, 0)), Rf_asLogical(gwsxp));
 
     return R_NilValue;
 }
@@ -123,14 +123,14 @@ SEXP dirchmod(SEXP dr, SEXP gwsxp)
 SEXP codeFilesAppend(SEXP f1, SEXP f2)
 {
     int n, n1, n2;
-    if (!isString(f1) || (n1 = LENGTH(f1)) != 1)
-	error(_("invalid '%s' argument"), "file1");
-    if (!isString(f2))
-	error(_("invalid '%s' argument"), "file2");
+    if (!Rf_isString(f1) || (n1 = LENGTH(f1)) != 1)
+	Rf_error(_("invalid '%s' argument"), "file1");
+    if (!Rf_isString(f2))
+	Rf_error(_("invalid '%s' argument"), "file2");
     n2 = LENGTH(f2);
-    if (n2 < 1) return allocVector(LGLSXP, 0);
+    if (n2 < 1) return Rf_allocVector(LGLSXP, 0);
     n = (n1 > n2) ? n1 : n2; // will be n2.
-    SEXP ans = PROTECT(allocVector(LGLSXP, n));
+    SEXP ans = PROTECT(Rf_allocVector(LGLSXP, n));
     for (int i = 0; i < n; i++) LOGICAL(ans)[i] = 0;  /* all FALSE */
     FILE *fp1, *fp2;
     char buf[APPENDBUFSIZE];
@@ -144,7 +144,7 @@ SEXP codeFilesAppend(SEXP f1, SEXP f2)
 	if (STRING_ELT(f2, i) == NA_STRING ||
 	    !(fp2 = RC_fopen(STRING_ELT(f2, i), "rb", TRUE))) continue;
 	snprintf(buf, APPENDBUFSIZE, "#line 1 \"%s\"\n",
-		 CHAR(STRING_ELT(f2, i)));
+		 R_CHAR(STRING_ELT(f2, i)));
 	if(fwrite(buf, 1, strlen(buf), fp1) != strlen(buf)) goto append_error;
 	while ((nchar = fread(buf, 1, APPENDBUFSIZE, fp2)) == APPENDBUFSIZE)
 	    if (fwrite(buf, 1, APPENDBUFSIZE, fp1) != APPENDBUFSIZE)
@@ -155,7 +155,7 @@ SEXP codeFilesAppend(SEXP f1, SEXP f2)
 	
 	status = 1;
     append_error:
-	if (status == 0) warning(_("write error during file append"));
+	if (status == 0) Rf_warning(_("write error during file append"));
 	LOGICAL(ans)[i] = status;
 	fclose(fp2);
     }

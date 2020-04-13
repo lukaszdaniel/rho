@@ -191,7 +191,7 @@ SEXP attribute_hidden do_printfunction(/*const*/ Expression* call, const BuiltIn
 	PrintSpecial(s);
 	break;
 
-    default: /* if(!isFunction(s)) */
+    default: /* if(!Rf_isFunction(s)) */
 	Rf_error(_("non-function argument to .Internal(print.function(.))"));
     }
     return s;

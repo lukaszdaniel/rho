@@ -107,14 +107,14 @@ SEXP devAskNewPage(SEXP call, SEXP op, SEXP args, SEXP env)
     Rboolean oldask = gdd->ask;
 
     args = CDR(args);
-    if (!isNull(CAR(args))) {
-	ask = asLogical(CAR(args));
-	if (ask == NA_LOGICAL) error(_("invalid '%s' argument"), "ask");
+    if (!Rf_isNull(CAR(args))) {
+	ask = Rf_asLogical(CAR(args));
+	if (ask == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "ask");
 	gdd->ask = Rboolean(ask);
 	R_Visible = FALSE;
     } else R_Visible = TRUE;
 
-    return ScalarLogical(oldask);
+    return Rf_ScalarLogical(oldask);
 }
 
 

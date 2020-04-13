@@ -40,52 +40,52 @@ SEXP compcases(SEXP args)
     len = -1;
 
     for (s = args; s != R_NilValue; s = CDR(s)) {
-	if (isList(CAR(s))) {
+	if (Rf_isList(CAR(s))) {
 	    for (t = CAR(s); t != R_NilValue; t = CDR(t))
-		if (isMatrix(CAR(t))) {
-		    u = getAttrib(CAR(t), R_DimSymbol);
+		if (Rf_isMatrix(CAR(t))) {
+		    u = Rf_getAttrib(CAR(t), R_DimSymbol);
 		    if (len < 0)
 			len = INTEGER(u)[0];
 		    else if (len != INTEGER(u)[0])
 			goto bad;
 		}
-		else if (isVector(CAR(t))) {
+		else if (Rf_isVector(CAR(t))) {
 		    if (len < 0)
 			len = LENGTH(CAR(t));
 		    else if (len != LENGTH(CAR(t)))
 			goto bad;
 		}
 		else
-		    error(R_MSG_type, type2char(TYPEOF(CAR(t))));
+		    Rf_error(R_MSG_type, Rf_type2char(TYPEOF(CAR(t))));
 	}
-	/* FIXME : Need to be careful with the use of isVector() */
+	/* FIXME : Need to be careful with the use of Rf_isVector() */
 	/* since this includes lists and expressions. */
-	else if (isNewList(CAR(s))) {
+	else if (Rf_isNewList(CAR(s))) {
 	    int it, nt;
 	    t = CAR(s);
 	    nt = Rf_length(t);
 	    /* 0-column data frames are a special case */
 	    if(nt) {
 		for (it = 0 ; it < nt ; it++) {
-		    if (isMatrix(VECTOR_ELT(t, it))) {
-			u = getAttrib(VECTOR_ELT(t, it), R_DimSymbol);
+		    if (Rf_isMatrix(VECTOR_ELT(t, it))) {
+			u = Rf_getAttrib(VECTOR_ELT(t, it), R_DimSymbol);
 			if (len < 0)
 			    len = INTEGER(u)[0];
 			else if (len != INTEGER(u)[0])
 			    goto bad;
 		    }
-		    else if (isVector(VECTOR_ELT(t, it))) {
+		    else if (Rf_isVector(VECTOR_ELT(t, it))) {
 			if (len < 0)
 			    len = LENGTH(VECTOR_ELT(t, it));
 			else if (len != LENGTH(VECTOR_ELT(t, it)))
 			    goto bad;
 		    }
 		    else
-			error(R_MSG_type, "unknown");
+			Rf_error(R_MSG_type, "unknown");
 		}
 	    } else {
-		u = getAttrib(t, R_RowNamesSymbol);
-		if (!isNull(u)) {
+		u = Rf_getAttrib(t, R_RowNamesSymbol);
+		if (!Rf_isNull(u)) {
 		    if (len < 0)
 			len = LENGTH(u);
 		    else if (len != INTEGER(u)[0])
@@ -93,31 +93,31 @@ SEXP compcases(SEXP args)
 		}
 	    }
 	}
-	else if (isMatrix(CAR(s))) {
-	    u = getAttrib(CAR(s), R_DimSymbol);
+	else if (Rf_isMatrix(CAR(s))) {
+	    u = Rf_getAttrib(CAR(s), R_DimSymbol);
 	    if (len < 0)
 		len = INTEGER(u)[0];
 	    else if (len != INTEGER(u)[0])
 		goto bad;
 	}
-	else if (isVector(CAR(s))) {
+	else if (Rf_isVector(CAR(s))) {
 	    if (len < 0)
 		len = LENGTH(CAR(s));
 	    else if (len != LENGTH(CAR(s)))
 		goto bad;
 	}
 	else
-	    error(R_MSG_type, type2char(TYPEOF(CAR(s))));
+	    Rf_error(R_MSG_type, Rf_type2char(TYPEOF(CAR(s))));
     }
 
     if (len < 0)
-	error(_("no input has determined the number of cases"));
-    PROTECT(rval = allocVector(LGLSXP, len));
+	Rf_error(_("no input has determined the number of cases"));
+    PROTECT(rval = Rf_allocVector(LGLSXP, len));
     for (i = 0; i < len; i++) INTEGER(rval)[i] = 1;
     /* FIXME : there is a lot of shared code here for vectors. */
     /* It should be abstracted out and optimized. */
     for (s = args; s != R_NilValue; s = CDR(s)) {
-	if (isList(CAR(s))) {
+	if (Rf_isList(CAR(s))) {
 	    /* Now we only need to worry about vectors */
 	    /* since we use mod to handle arrays. */
 	    /* FIXME : using mod like this causes */
@@ -145,12 +145,12 @@ SEXP compcases(SEXP args)
 			break;
 		    default:
 			UNPROTECT(1);
-			error(R_MSG_type, type2char(TYPEOF(u)));
+			Rf_error(R_MSG_type, Rf_type2char(TYPEOF(u)));
 		    }
 		}
 	    }
 	}
-	if (isNewList(CAR(s))) {
+	if (Rf_isNewList(CAR(s))) {
 	    int it, nt;
 	    t = CAR(s);
 	    nt = Rf_length(t);
@@ -177,7 +177,7 @@ SEXP compcases(SEXP args)
 			break;
 		    default:
 			UNPROTECT(1);
-			error(R_MSG_type, type2char(TYPEOF(u)));
+			Rf_error(R_MSG_type, Rf_type2char(TYPEOF(u)));
 		    }
 		}
 	    }
@@ -205,7 +205,7 @@ SEXP compcases(SEXP args)
 		    break;
 		default:
 		    UNPROTECT(1);
-		    error(R_MSG_type, type2char(TYPEOF(u)));
+		    Rf_error(R_MSG_type, Rf_type2char(TYPEOF(u)));
 		}
 	    }
 	}
@@ -214,6 +214,6 @@ SEXP compcases(SEXP args)
     return rval;
 
  bad:
-    error(_("not all arguments have the same length"));
+    Rf_error(_("not all arguments have the same length"));
     return R_NilValue; /* -Wall */
 }

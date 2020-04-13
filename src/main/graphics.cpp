@@ -45,7 +45,7 @@
 
 static void GLPretty(double *ul, double *uh, int *n);
 
-// used in GScale(), but also grDevices/src/axis_scales.c :
+// used in GScale(), but also grDevices/src/axis_scales.cpp :
 // (usr, log, n_inp) |--> (axp, n_out) :
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
 {

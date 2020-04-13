@@ -36,7 +36,7 @@ loglin(int nvar, int *dim, int ncon, int *config, int ntab,
        double *dev, int *nlast, int *ifault)
 {
     // nvar could be zero (no-segfault test)
-    if (!nvar) error("no variables");  // not translated
+    if (!nvar) Rf_error("no variables");  // not translated
     int i, j, k, n, point, size, check[nvar], icon[nvar];
     double x, y, xmax;
 
@@ -343,45 +343,45 @@ SEXP LogLin(SEXP dtab, SEXP conf, SEXP table, SEXP start,
 	    SEXP snmar, SEXP eps, SEXP iter) 
 {
     int nvar = Rf_length(dtab), 
-	ncon = ncols(conf), 
+	ncon = Rf_ncols(conf), 
 	ntab = Rf_length(table),
-	nmar = asInteger(snmar), 
-	maxit = asInteger(iter), 
+	nmar = Rf_asInteger(snmar), 
+	maxit = Rf_asInteger(iter), 
 	nlast, ifault;
-    double maxdev = asReal(eps);
-    SEXP fit = PROTECT(TYPEOF(start) == REALSXP ? duplicate(start) :
-		       coerceVector(start, REALSXP)),
-	locmar = PROTECT(allocVector(INTSXP, ncon)),
-	marg = PROTECT(allocVector(REALSXP, nmar)),
-	u = PROTECT(allocVector(REALSXP, ntab)),
-	dev = PROTECT(allocVector(REALSXP, maxit));
-    dtab = PROTECT(coerceVector(dtab, INTSXP));
-    conf = PROTECT(coerceVector(conf, INTSXP));
-    table = PROTECT(coerceVector(table, REALSXP));
+    double maxdev = Rf_asReal(eps);
+    SEXP fit = PROTECT(TYPEOF(start) == REALSXP ? Rf_duplicate(start) :
+		       Rf_coerceVector(start, REALSXP)),
+	locmar = PROTECT(Rf_allocVector(INTSXP, ncon)),
+	marg = PROTECT(Rf_allocVector(REALSXP, nmar)),
+	u = PROTECT(Rf_allocVector(REALSXP, ntab)),
+	dev = PROTECT(Rf_allocVector(REALSXP, maxit));
+    dtab = PROTECT(Rf_coerceVector(dtab, INTSXP));
+    conf = PROTECT(Rf_coerceVector(conf, INTSXP));
+    table = PROTECT(Rf_coerceVector(table, REALSXP));
     loglin(nvar, INTEGER(dtab), ncon, INTEGER(conf), ntab,
 	   REAL(table), REAL(fit), INTEGER(locmar), nmar, REAL(marg),
 	   ntab, REAL(u), maxdev, maxit, REAL(dev), &nlast, &ifault);
     switch(ifault) {
     case 1:
     case 2:
-	error(_("this should not happen")); break;
+	Rf_error(_("this should not happen")); break;
     case 3:
-	warning(_("algorithm did not converge")); break;
+	Rf_warning(_("algorithm did not converge")); break;
     case 4:
-	error(_("incorrect specification of 'table' or 'start'")); break;
+	Rf_error(_("incorrect specification of 'table' or 'start'")); break;
     default: 
 	break;
     }
 
-    SEXP ans = PROTECT(allocVector(VECSXP, 3)), nm;
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, 3)), nm;
     SET_VECTOR_ELT(ans, 0, fit);
     SET_VECTOR_ELT(ans, 1, dev);
-    SET_VECTOR_ELT(ans, 2, ScalarInteger(nlast));
-    nm = allocVector(STRSXP, 3);
-    setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("fit"));
-    SET_STRING_ELT(nm, 1, mkChar("dev"));
-    SET_STRING_ELT(nm, 2, mkChar("nlast"));
+    SET_VECTOR_ELT(ans, 2, Rf_ScalarInteger(nlast));
+    nm = Rf_allocVector(STRSXP, 3);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    SET_STRING_ELT(nm, 0, Rf_mkChar("fit"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("dev"));
+    SET_STRING_ELT(nm, 2, Rf_mkChar("nlast"));
     UNPROTECT(9);
     return ans;
 }

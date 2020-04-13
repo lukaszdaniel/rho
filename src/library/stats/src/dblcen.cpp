@@ -24,7 +24,7 @@
 /* NB: this does not duplicate A */
 SEXP DoubleCentre(SEXP A)
 {
-    int n = nrows(A);
+    int n = Rf_nrows(A);
     double *a = REAL(A);
     size_t N = n; /* avoid integer overflow with long vectors */
 

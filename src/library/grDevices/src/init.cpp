@@ -33,9 +33,9 @@
 /* This really belongs with the X11 module, but it is about devices */
 static SEXP cairoProps(SEXP in)
 {
-    int which = asInteger(in);
+    int which = Rf_asInteger(in);
     if(which == 1)
-	return ScalarLogical(
+	return Rf_ScalarLogical(
 #ifdef HAVE_WORKING_CAIRO
 	    1
 #else
@@ -43,7 +43,7 @@ static SEXP cairoProps(SEXP in)
 #endif
 	    );
     else if(which == 2)
-	return ScalarLogical(
+	return Rf_ScalarLogical(
 #ifdef HAVE_PANGOCAIRO
 	    1
 #else

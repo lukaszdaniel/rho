@@ -62,7 +62,7 @@ static void BDRksmooth(double *x, double *y, R_xlen_t n,
 extern "C"
 void NORET F77_SUB(bdrsplerr)(void)
 {
-    error(_("only 2500 rows are allowed for sm.method=\"spline\""));
+    Rf_error(_("only 2500 rows are allowed for sm.method=\"spline\""));
 }
 
 extern "C"
@@ -86,22 +86,22 @@ void F77_SUB(smoothprt)(double* span, int* iper, double* var, double* cvar)
 
 SEXP ksmooth(SEXP x, SEXP y, SEXP xp, SEXP skrn, SEXP sbw)
 {
-    int krn = asInteger(skrn);
-    double bw = asReal(sbw);
-    x = PROTECT(coerceVector(x, REALSXP));
-    y = PROTECT(coerceVector(y, REALSXP));
-    xp = PROTECT(coerceVector(xp, REALSXP));
+    int krn = Rf_asInteger(skrn);
+    double bw = Rf_asReal(sbw);
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    y = PROTECT(Rf_coerceVector(y, REALSXP));
+    xp = PROTECT(Rf_coerceVector(xp, REALSXP));
     R_xlen_t nx = XLENGTH(x), np = XLENGTH(xp);
-    SEXP yp = PROTECT(allocVector(REALSXP, np));
+    SEXP yp = PROTECT(Rf_allocVector(REALSXP, np));
 
     BDRksmooth(REAL(x), REAL(y), nx, REAL(xp), REAL(yp), np, krn, bw);
-    SEXP ans = PROTECT(allocVector(VECSXP, 2));
+    SEXP ans = PROTECT(Rf_allocVector(VECSXP, 2));
     SET_VECTOR_ELT(ans, 0, xp);
     SET_VECTOR_ELT(ans, 1, yp);
-    SEXP nm = allocVector(STRSXP, 2);
-    setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("x"));
-    SET_STRING_ELT(nm, 1, mkChar("y"));
+    SEXP nm = Rf_allocVector(STRSXP, 2);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    SET_STRING_ELT(nm, 0, Rf_mkChar("x"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("y"));
     UNPROTECT(5);
     return ans;
 }

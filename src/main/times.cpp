@@ -76,7 +76,7 @@
     and getrusage, then times for CPU times on a Unix-alike,
     GetProcessTimes on Windows.
 
-    devPS.c uses time() and localtime() for timestamps.
+    devPS.cpp uses time() and localtime() for timestamps.
 
     do_date (platform.cpp) uses ctime.
  */

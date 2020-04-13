@@ -132,7 +132,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	if (SIGSETJMP(seljmpbuf, 1)) {
 	    myintr();
 	    R_interrupts_suspended = Rboolean(old_interrupts_suspended);
-	    error(_("interrupt handler must not return"));
+	    Rf_error(_("interrupt handler must not return"));
 	    return 0; /* not reached */
 	}
 	else {
@@ -564,7 +564,7 @@ static void
 pushReadline(const char *prompt, rl_vcpfunc_t f)
 {
    if(ReadlineStack.current >= ReadlineStack.max) {
-     warning(_("An unusual circumstance has arisen in the nesting of readline input. Please report using bug.report()"));
+     Rf_warning(_("An unusual circumstance has arisen in the nesting of readline input. Please report using bug.report()"));
    } else
      ReadlineStack.fun[++ReadlineStack.current] = f;
 
@@ -733,7 +733,7 @@ static void initialize_rlcompletion(void)
 	    return;
 	}
 	/* First check if namespace is loaded */
-	if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	   != R_UnboundValue) rcompgen_active = 1;
 	else { /* Then try to load it */
 	    SEXP cmdSexp, cmdexpr;
@@ -741,14 +741,14 @@ static void initialize_rlcompletion(void)
 	    int i;
 	    char *p = (char *) "try(loadNamespace('rcompgen'), silent=TRUE)";
 
-	    PROTECT(cmdSexp = mkString(p));
+	    PROTECT(cmdSexp = Rf_mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
 		for(i = 0; i < Rf_length(cmdexpr); i++)
-		    eval(XVECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+		    Rf_eval(XVECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
-	    if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	    if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	       != R_UnboundValue) rcompgen_active = 1;
 	    else {
 		rcompgen_active = 0;
@@ -757,15 +757,15 @@ static void initialize_rlcompletion(void)
 	}
     }
 
-    rcompgen_rho = R_FindNamespace(mkString("utils"));
+    rcompgen_rho = R_FindNamespace(Rf_mkString("utils"));
 
-    RComp_assignBufferSym  = install(".assignLinebuffer");
-    RComp_assignStartSym   = install(".assignStart");
-    RComp_assignEndSym     = install(".assignEnd");
-    RComp_assignTokenSym   = install(".assignToken");
-    RComp_completeTokenSym = install(".completeToken");
-    RComp_getFileCompSym   = install(".getFileComp");
-    RComp_retrieveCompsSym = install(".retrieveCompletions");
+    RComp_assignBufferSym  = Rf_install(".assignLinebuffer");
+    RComp_assignStartSym   = Rf_install(".assignStart");
+    RComp_assignEndSym     = Rf_install(".assignEnd");
+    RComp_assignTokenSym   = Rf_install(".assignToken");
+    RComp_completeTokenSym = Rf_install(".completeToken");
+    RComp_getFileCompSym   = Rf_install(".getFileComp");
+    RComp_retrieveCompsSym = Rf_install(".retrieveCompletions");
 
     /* Tell the completer that we want a crack first. */
     rl_attempted_completion_function = R_custom_completion;
@@ -824,24 +824,24 @@ R_custom_completion(const char *text, int start, int end)
 {
     char **matches = (char **)NULL;
     SEXP infile,
-	linebufferCall = PROTECT(lang2(RComp_assignBufferSym,
-				       mkString(rl_line_buffer))),
-	startCall = PROTECT(lang2(RComp_assignStartSym, ScalarInteger(start))),
-	endCall = PROTECT(lang2(RComp_assignEndSym,ScalarInteger(end)));
+	linebufferCall = PROTECT(Rf_lang2(RComp_assignBufferSym,
+				       Rf_mkString(rl_line_buffer))),
+	startCall = PROTECT(Rf_lang2(RComp_assignStartSym, Rf_ScalarInteger(start))),
+	endCall = PROTECT(Rf_lang2(RComp_assignEndSym,Rf_ScalarInteger(end)));
     SEXP filecompCall;
 
     /* Don't want spaces appended at the end.  Need to do this
        everytime, as readline>=6 resets it to ' ' */
     rl_completion_append_character = '\0';
 
-    eval(linebufferCall, rcompgen_rho);
-    eval(startCall, rcompgen_rho);
-    eval(endCall, rcompgen_rho);
+    Rf_eval(linebufferCall, rcompgen_rho);
+    Rf_eval(startCall, rcompgen_rho);
+    Rf_eval(endCall, rcompgen_rho);
     UNPROTECT(3);
     matches = rl_completion_matches(text, R_completion_generator);
-    filecompCall = PROTECT(lang1(RComp_getFileCompSym));
-    infile = PROTECT(eval(filecompCall, rcompgen_rho));
-    if (!asLogical(infile)) rl_attempted_completion_over = 1;
+    filecompCall = PROTECT(Rf_lang1(RComp_getFileCompSym));
+    infile = PROTECT(Rf_eval(filecompCall, rcompgen_rho));
+    if (!Rf_asLogical(infile)) rl_attempted_completion_over = 1;
     UNPROTECT(2);
     return matches;
 }
@@ -867,14 +867,14 @@ static char *R_completion_generator(const char *text, int state)
     if (!state) {
 	int i;
 	SEXP completions,
-	    assignCall = PROTECT(lang2(RComp_assignTokenSym, mkString(text))),
-	    completionCall = PROTECT(lang1(RComp_completeTokenSym)),
-	    retrieveCall = PROTECT(lang1(RComp_retrieveCompsSym));
+	    assignCall = PROTECT(Rf_lang2(RComp_assignTokenSym, Rf_mkString(text))),
+	    completionCall = PROTECT(Rf_lang1(RComp_completeTokenSym)),
+	    retrieveCall = PROTECT(Rf_lang1(RComp_retrieveCompsSym));
 	const void *vmax = vmaxget();
 
-	eval(assignCall, rcompgen_rho);
-	eval(completionCall, rcompgen_rho);
-	PROTECT(completions = eval(retrieveCall, rcompgen_rho));
+	Rf_eval(assignCall, rcompgen_rho);
+	Rf_eval(completionCall, rcompgen_rho);
+	PROTECT(completions = Rf_eval(retrieveCall, rcompgen_rho));
 	list_index = 0;
 	ncomp = Rf_length(completions);
 	if (ncomp > 0) {
@@ -884,7 +884,7 @@ static char *R_completion_generator(const char *text, int state)
 		return (char *)NULL;
 	    }
 	    for (i = 0; i < ncomp; i++)
-		compstrings[i] = strdup(translateChar(STRING_ELT(completions, i)));
+		compstrings[i] = strdup(Rf_translateChar(STRING_ELT(completions, i)));
 	}
 	UNPROTECT(4);
 	vmaxset(vmax);
@@ -949,7 +949,7 @@ Rstd_ReadConsole(const char *prompt, unsigned char *buf, int len,
 	    char *ob = obuf;
 	    if(!cd) {
 		cd = Riconv_open("", R_StdinEnc);
-		if(cd == (void *)-1) error(_("encoding '%s' is not recognised"), R_StdinEnc);
+		if(cd == (void *)-1) Rf_error(_("encoding '%s' is not recognised"), R_StdinEnc);
 	    }
 	    res = Riconv(cd, &ib, &inb, &ob, &onb);
 	    *ob = '\0';
@@ -1019,7 +1019,7 @@ Rstd_ReadConsole(const char *prompt, unsigned char *buf, int len,
 		if (oldwidth >= 0 && oldwidth != width) {
 		    static SEXP opsym = NULL;
 		    if (! opsym)
-			opsym = install("setWidthOnResize");
+			opsym = Rf_install("setWidthOnResize");
 		    Rboolean setOK = Rboolean(Rf_asLogical(GetOption1(opsym)));
 		    oldwidth = width;
 		    if (setOK != NA_LOGICAL && setOK)
@@ -1190,7 +1190,7 @@ void attribute_hidden NORET Rstd_CleanUp(SA_TYPE saveact, int status, int runLas
 	    R_setupHistory(); /* re-read the history size and filename */
 	    stifle_history(R_HistorySize);
 	    err = write_history(R_HistoryFile);
-	    if(err) warning(_("problem in saving the history file '%s'"),
+	    if(err) Rf_warning(_("problem in saving the history file '%s'"),
 			    R_HistoryFile);
 	}
 #endif
@@ -1324,9 +1324,9 @@ void attribute_hidden Rstd_loadhistory(SEXP call, SEXP op, SEXP args, SEXP env)
     const char *p;
 
     sfile = CAR(args);
-    if (!isString(sfile) || LENGTH(sfile) < 1)
+    if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
 	errorcall(call, _("invalid '%s' argument"), "file");
-    p = R_ExpandFileName(translateChar(STRING_ELT(sfile, 0)));
+    p = R_ExpandFileName(Rf_translateChar(STRING_ELT(sfile, 0)));
     if(strlen(p) > PATH_MAX - 1)
 	errorcall(call, _("'file' argument is too long"));
     strcpy(file, p);
@@ -1347,9 +1347,9 @@ void attribute_hidden Rstd_savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
     const char *p;
 
     sfile = CAR(args);
-    if (!isString(sfile) || LENGTH(sfile) < 1)
+    if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
 	errorcall(call, _("invalid '%s' argument"), "file");
-    p = R_ExpandFileName(translateChar(STRING_ELT(sfile, 0)));
+    p = R_ExpandFileName(Rf_translateChar(STRING_ELT(sfile, 0)));
     if(strlen(p) > PATH_MAX - 1)
 	errorcall(call, _("'file' argument is too long"));
     strcpy(file, p);
@@ -1357,13 +1357,13 @@ void attribute_hidden Rstd_savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
     if(R_Interactive && UsingReadline) {
 	int err;
 	err = write_history(file);
-	if(err) error(_("problem in saving the history file '%s'"), file);
+	if(err) Rf_error(_("problem in saving the history file '%s'"), file);
 	/* Note that q() uses stifle_history, but here we do not want
 	 * to truncate the active history when saving during a session */
 #ifdef HAVE_HISTORY_TRUNCATE_FILE
 	R_setupHistory(); /* re-read the history size */
 	err = history_truncate_file(file, R_HistorySize);
-	if(err) warning(_("problem in truncating the history file"));
+	if(err) Rf_warning(_("problem in truncating the history file"));
 #endif
     } else errorcall(call, _("no history available to save"));
 #else
@@ -1378,12 +1378,12 @@ void attribute_hidden Rstd_addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
 
     checkArity(op, args);
     stamp = CAR(args);
-    if (!isString(stamp))
+    if (!Rf_isString(stamp))
 	errorcall(call, _("invalid timestamp"));
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_HISTORY_H)
     if(R_Interactive && UsingReadline)
 	for (i = 0; i < LENGTH(stamp); i++)
-	    add_history(CHAR(STRING_ELT(stamp, i))); /* ASCII */
+	    add_history(R_CHAR(STRING_ELT(stamp, i))); /* ASCII */
 # endif
 }
 

@@ -105,16 +105,16 @@ R_approxtest(double *x, double *y, R_xlen_t nxy, int method, double f)
       	break;
     case 2: /* constant */
 	if(!R_FINITE(f) || f < 0 || f > 1)
-	    error(_("approx(): invalid f value"));
+	    Rf_error(_("approx(): invalid f value"));
 	break;
     default:
-	error(_("approx(): invalid interpolation method"));
+	Rf_error(_("approx(): invalid interpolation method"));
 	break;
     }
     /* check interpolation method */
     for(R_xlen_t i = 0; i < nxy; i++)
 	if(ISNAN(x[i]) || ISNAN(y[i]))
-	    error(_("approx(): attempted to interpolate NA values"));
+	    Rf_error(_("approx(): attempted to interpolate NA values"));
 }
 
 /* R Frontend for Linear and Constant Interpolation, no testing */
@@ -143,8 +143,8 @@ R_approxfun(double *x, double *y, R_xlen_t nxy, double *xout, double *yout,
 SEXP ApproxTest(SEXP x, SEXP y, SEXP method, SEXP sf)
 {
     R_xlen_t nx = XLENGTH(x);
-    int m = asInteger(method);
-    double f = asReal(sf);
+    int m = Rf_asInteger(method);
+    double f = Rf_asReal(sf);
     R_approxtest(REAL(x), REAL(y), nx, m, f);
     return R_NilValue;
 }
@@ -152,11 +152,11 @@ SEXP ApproxTest(SEXP x, SEXP y, SEXP method, SEXP sf)
 SEXP Approx(SEXP x, SEXP y, SEXP v, SEXP method,
 	    SEXP yleft, SEXP yright, SEXP sf)
 {
-    SEXP xout = PROTECT(coerceVector(v, REALSXP));
+    SEXP xout = PROTECT(Rf_coerceVector(v, REALSXP));
     R_xlen_t nx = XLENGTH(x), nout = XLENGTH(xout);
-    SEXP yout = PROTECT(allocVector(REALSXP, nout));
+    SEXP yout = PROTECT(Rf_allocVector(REALSXP, nout));
     R_approxfun(REAL(x), REAL(y), nx, REAL(xout), REAL(yout), nout,
-		asInteger(method), asReal(yleft), asReal(yright), asReal(sf));
+		Rf_asInteger(method), Rf_asReal(yleft), Rf_asReal(yright), Rf_asReal(sf));
     UNPROTECT(2);
     return yout;
 }

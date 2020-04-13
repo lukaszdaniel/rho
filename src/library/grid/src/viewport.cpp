@@ -88,7 +88,7 @@ SEXP viewportgpar(SEXP vp) {
 }
 
 const char* viewportFontFamily(SEXP vp) {
-    return CHAR(STRING_ELT(VECTOR_ELT(VECTOR_ELT(vp, PVP_GPAR), GP_FONTFAMILY),
+    return R_CHAR(STRING_ELT(VECTOR_ELT(VECTOR_ELT(vp, PVP_GPAR), GP_FONTFAMILY),
 			   0));
 }
 
@@ -215,7 +215,7 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
     /* This should never be true when we are doing an incremental
      * calculation
      */
-    if (isNull(parent)) {
+    if (Rf_isNull(parent)) {
 	/* We have a top-level viewport; the parent is the device
 	 */
 	getDeviceSize(dd, &parentWidthCM, &parentHeightCM);
@@ -274,9 +274,9 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
 	 * FIXME:  Actually, in addition, layout.pos.row and
 	 * layout.pos.col must be valid for the layout
 	 */
-	if ((isNull(viewportLayoutPosRow(vp)) && 
-	     isNull(viewportLayoutPosCol(vp))) ||
-	    isNull(viewportLayout(parent)))
+	if ((Rf_isNull(viewportLayoutPosRow(vp)) && 
+	     Rf_isNull(viewportLayoutPosCol(vp))) ||
+	    Rf_isNull(viewportLayout(parent)))
 	    fillViewportLocationFromViewport(vp, &vpl);
 	else if (checkPosRowPosCol(vp, parent))
 	    calcViewportLocationFromLayout(viewportLayoutPosRow(vp),
@@ -313,7 +313,7 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
 	!R_FINITE(yINCHES) || 
 	!R_FINITE(vpWidthCM) || 
 	!R_FINITE(vpHeightCM))
-	error(_("non-finite location and/or size for viewport"));
+	Rf_error(_("non-finite location and/or size for viewport"));
     /* Determine justification required
      */
     justification(vpWidthCM, vpHeightCM, vpl.hjust, vpl.vjust,
@@ -344,7 +344,7 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
     /* Finally, allocate the rows and columns for this viewport's
      * layout if it has one
      */
-    if (!isNull(viewportLayout(vp))) {
+    if (!Rf_isNull(viewportLayout(vp))) {
 	fillViewportContextFromViewport(vp, &vpc);
 	gcontextFromViewport(vp, &gc, dd);
 	calcViewportLayout(vp, vpWidthCM, vpHeightCM, vpc, &gc, dd);
@@ -352,10 +352,10 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
     /* Record all of the answers in the viewport
      * (the layout calculations are done within calcViewportLayout)
      */
-    PROTECT(currentWidthCM = ScalarReal(vpWidthCM));
-    PROTECT(currentHeightCM = ScalarReal(vpHeightCM));
-    PROTECT(currentRotation = ScalarReal(rotationAngle));
-    PROTECT(currentTransform = allocMatrix(REALSXP, 3, 3));
+    PROTECT(currentWidthCM = Rf_ScalarReal(vpWidthCM));
+    PROTECT(currentHeightCM = Rf_ScalarReal(vpHeightCM));
+    PROTECT(currentRotation = Rf_ScalarReal(rotationAngle));
+    PROTECT(currentTransform = Rf_allocMatrix(REALSXP, 3, 3));
     for (i=0; i<3; i++)
 	for (j=0; j<3; j++)
 	    REAL(currentTransform)[i + 3*j] = transform[i][j];
@@ -372,19 +372,19 @@ void initVP(pGEDevDesc dd)
     SEXP xscale, yscale;
     SEXP currentgp = gridStateElement(dd, GSS_GPAR);
     SEXP gsd = (SEXP) dd->gesd[gridRegisterIndex]->systemSpecific;
-    PROTECT(vpfnname = findFun(install("grid.top.level.vp"), R_gridEvalEnv));
-    PROTECT(vpfn = lang1(vpfnname));
-    PROTECT(vp = eval(vpfn, R_GlobalEnv));
+    PROTECT(vpfnname = Rf_findFun(Rf_install("grid.top.level.vp"), R_gridEvalEnv));
+    PROTECT(vpfn = Rf_lang1(vpfnname));
+    PROTECT(vp = Rf_eval(vpfn, R_GlobalEnv));
     /* 
      * Set the "native" scale of the top viewport to be the
      * natural device coordinate system (e.g., points in 
      * postscript, pixels in X11, ...)
      */
-    PROTECT(xscale = allocVector(REALSXP, 2));
+    PROTECT(xscale = Rf_allocVector(REALSXP, 2));
     REAL(xscale)[0] = dd->dev->left;
     REAL(xscale)[1] = dd->dev->right;
     SET_VECTOR_ELT(vp, VP_XSCALE, xscale);
-    PROTECT(yscale = allocVector(REALSXP, 2));
+    PROTECT(yscale = Rf_allocVector(REALSXP, 2));
     REAL(yscale)[0] = dd->dev->bottom;
     REAL(yscale)[1] = dd->dev->top;
     SET_VECTOR_ELT(vp, VP_YSCALE, yscale);

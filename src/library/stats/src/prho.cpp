@@ -150,8 +150,8 @@ prho(int n, double is, double *pv, int ifault, int lower_tail)
 #include <Rinternals.h>
 SEXP pRho(SEXP q, SEXP sn, SEXP lower)
 {
-    double s = asReal(q), p;
-    int n = asInteger(sn), ltail = asInteger(lower), ifault = 0;
+    double s = Rf_asReal(q), p;
+    int n = Rf_asInteger(sn), ltail = Rf_asInteger(lower), ifault = 0;
     prho(n, s, &p, ifault, ltail);
-    return ScalarReal(p);
+    return Rf_ScalarReal(p);
 }

@@ -31,11 +31,11 @@
 #include <algorithm>
 
 int isUnitArithmetic(SEXP ua) {
-    return inherits(ua, "unit.arithmetic");
+    return Rf_inherits(ua, "unit.arithmetic");
 }
 
 int isUnitList(SEXP ul) {
-    return inherits(ul, "unit.list");
+    return Rf_inherits(ul, "unit.list");
 }
 
 /* Function to build a single-value unit SEXP internally.
@@ -44,12 +44,12 @@ int isUnitList(SEXP ul) {
 SEXP unit(double value, int unit) 
 {
     SEXP u, units, classname;
-    PROTECT(u = ScalarReal(value));
-    PROTECT(units = ScalarInteger(unit));
+    PROTECT(u = Rf_ScalarReal(value));
+    PROTECT(units = Rf_ScalarInteger(unit));
     /* NOTE that we do not set the "unit" attribute */
-    setAttrib(u, install("valid.unit"), units);
-    setAttrib(u, install("data"), R_NilValue);
-    PROTECT(classname = mkString("unit"));
+    Rf_setAttrib(u, Rf_install("valid.unit"), units);
+    Rf_setAttrib(u, Rf_install("data"), R_NilValue);
+    PROTECT(classname = Rf_mkString("unit"));
     classgets(u, classname);
     UNPROTECT(3);
     return u;
@@ -71,7 +71,7 @@ double unitValue(SEXP unit, int index) {
 }
 
 int unitUnit(SEXP unit, int index) {
-    SEXP units = getAttrib(unit, install("valid.unit"));
+    SEXP units = Rf_getAttrib(unit, Rf_install("valid.unit"));
     /* Recycle units if necessary 
      */
     int n = LENGTH(units);
@@ -80,8 +80,8 @@ int unitUnit(SEXP unit, int index) {
 
 SEXP unitData(SEXP unit, int index) {
     SEXP result;
-    SEXP data = getAttrib(unit, install("data"));
-    if (isNull(data))
+    SEXP data = Rf_getAttrib(unit, Rf_install("data"));
+    if (Rf_isNull(data))
 	result = R_NilValue;
     else if(TYPEOF(data) == VECSXP) {
 	/* Recycle data if necessary 
@@ -89,7 +89,7 @@ SEXP unitData(SEXP unit, int index) {
 	int n = LENGTH(data);
 	result = VECTOR_ELT(data, index % n);
     } else {
-	warning("unit attribute 'data' is of incorrect type");
+	Rf_warning("unit attribute 'data' is of incorrect type");
 	return R_NilValue;
     }
     return result;
@@ -98,7 +98,7 @@ SEXP unitData(SEXP unit, int index) {
 /* Accessor functions for unit arithmetic object
  */
 const char* fName(SEXP ua) {
-    return CHAR(STRING_ELT(getListElement(ua, "fname"), 0));
+    return R_CHAR(STRING_ELT(getListElement(ua, "fname"), 0));
 }
 
 SEXP arg1(SEXP ua) {
@@ -264,7 +264,7 @@ double pureNullUnitValue(SEXP unit, int index)
 	    }
 	}
 	else 
-	    error(_("unimplemented unit function"));
+	    Rf_error(_("unimplemented unit function"));
     } else if (isUnitList(unit)) {
 	/*
 	 * Recycle if necessary;  it is up to the calling code
@@ -307,36 +307,36 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 	    PROTECT(grob = unitData(unit, index));
 	    PROTECT(savedgpar = gridStateElement(dd, GSS_GPAR));
 	    PROTECT(savedgrob = gridStateElement(dd, GSS_CURRGROB));
-	    PROTECT(widthPreFn = findFun(install("preDraw"), 
+	    PROTECT(widthPreFn = Rf_findFun(Rf_install("preDraw"), 
 					 R_gridEvalEnv));
-	    PROTECT(widthFn = findFun(install("width"), R_gridEvalEnv));
-	    PROTECT(widthPostFn = findFun(install("postDraw"), 
+	    PROTECT(widthFn = Rf_findFun(Rf_install("width"), R_gridEvalEnv));
+	    PROTECT(widthPostFn = Rf_findFun(Rf_install("postDraw"), 
 					  R_gridEvalEnv));
-	    if (inherits(grob, "gPath")) {
-		if (isNull(savedgrob)) {
-		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
+	    if (Rf_inherits(grob, "gPath")) {
+		if (Rf_isNull(savedgrob)) {
+		    PROTECT(findGrobFn = Rf_findFun(Rf_install("findGrobinDL"), 
 						 R_gridEvalEnv));
-		    PROTECT(R_fcall0 = lang2(findGrobFn, 
+		    PROTECT(R_fcall0 = Rf_lang2(findGrobFn, 
 					     getListElement(grob, "name")));
-		    grob = eval(R_fcall0, R_gridEvalEnv);
+		    grob = Rf_eval(R_fcall0, R_gridEvalEnv);
 		} else {
-		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
+		    PROTECT(findGrobFn =Rf_findFun(Rf_install("findGrobinChildren"), 
 						R_gridEvalEnv));
-		    PROTECT(R_fcall0 = lang3(findGrobFn, 
+		    PROTECT(R_fcall0 = Rf_lang3(findGrobFn, 
 					     getListElement(grob, "name"),
 					     getListElement(savedgrob, 
 							    "children")));
-		    grob = eval(R_fcall0, R_gridEvalEnv);
+		    grob = Rf_eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
 	    }
-	    PROTECT(R_fcall1 = lang2(widthPreFn, grob));
-            PROTECT(updatedgrob = eval(R_fcall1, R_gridEvalEnv));
-	    PROTECT(R_fcall2 = lang2(widthFn, updatedgrob));
-	    PROTECT(width = eval(R_fcall2, R_gridEvalEnv));
+	    PROTECT(R_fcall1 = Rf_lang2(widthPreFn, grob));
+            PROTECT(updatedgrob = Rf_eval(R_fcall1, R_gridEvalEnv));
+	    PROTECT(R_fcall2 = Rf_lang2(widthFn, updatedgrob));
+	    PROTECT(width = Rf_eval(R_fcall2, R_gridEvalEnv));
 	    result = pureNullUnit(width, 0, dd);
-	    PROTECT(R_fcall3 = lang2(widthPostFn, updatedgrob));
-	    eval(R_fcall3, R_gridEvalEnv);
+	    PROTECT(R_fcall3 = Rf_lang2(widthPostFn, updatedgrob));
+	    Rf_eval(R_fcall3, R_gridEvalEnv);
 	    setGridStateElement(dd, GSS_GPAR, savedgpar);
 	    setGridStateElement(dd, GSS_CURRGROB, savedgrob);
 	    UNPROTECT(11);
@@ -353,36 +353,36 @@ int pureNullUnit(SEXP unit, int index, pGEDevDesc dd) {
 	    PROTECT(grob = unitData(unit, index));
 	    PROTECT(savedgpar = gridStateElement(dd, GSS_GPAR));
 	    PROTECT(savedgrob = gridStateElement(dd, GSS_CURRGROB));
-	    PROTECT(heightPreFn = findFun(install("preDraw"), 
+	    PROTECT(heightPreFn = Rf_findFun(Rf_install("preDraw"), 
 					 R_gridEvalEnv));
-	    PROTECT(heightFn = findFun(install("height"), R_gridEvalEnv));
-	    PROTECT(heightPostFn = findFun(install("postDraw"), 
+	    PROTECT(heightFn = Rf_findFun(Rf_install("height"), R_gridEvalEnv));
+	    PROTECT(heightPostFn = Rf_findFun(Rf_install("postDraw"), 
 					  R_gridEvalEnv));
-	    if (inherits(grob, "gPath")) {
-		if (isNull(savedgrob)) {
-		    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
+	    if (Rf_inherits(grob, "gPath")) {
+		if (Rf_isNull(savedgrob)) {
+		    PROTECT(findGrobFn = Rf_findFun(Rf_install("findGrobinDL"), 
 						 R_gridEvalEnv));
-		    PROTECT(R_fcall0 = lang2(findGrobFn, 
+		    PROTECT(R_fcall0 = Rf_lang2(findGrobFn, 
 					     getListElement(grob, "name")));
-		    grob = eval(R_fcall0, R_gridEvalEnv);
+		    grob = Rf_eval(R_fcall0, R_gridEvalEnv);
 		} else {
-		    PROTECT(findGrobFn =findFun(install("findGrobinChildren"), 
+		    PROTECT(findGrobFn =Rf_findFun(Rf_install("findGrobinChildren"), 
 						R_gridEvalEnv));
-		    PROTECT(R_fcall0 = lang3(findGrobFn, 
+		    PROTECT(R_fcall0 = Rf_lang3(findGrobFn, 
 					     getListElement(grob, "name"),
 					     getListElement(savedgrob, 
 							    "children")));
-		    grob = eval(R_fcall0, R_gridEvalEnv);
+		    grob = Rf_eval(R_fcall0, R_gridEvalEnv);
 		}
 		UNPROTECT(2);
 	    }
-	    PROTECT(R_fcall1 = lang2(heightPreFn, grob));
-	    PROTECT(updatedgrob = eval(R_fcall1, R_gridEvalEnv));
-	    PROTECT(R_fcall2 = lang2(heightFn, updatedgrob));
-	    PROTECT(height = eval(R_fcall2, R_gridEvalEnv));
+	    PROTECT(R_fcall1 = Rf_lang2(heightPreFn, grob));
+	    PROTECT(updatedgrob = Rf_eval(R_fcall1, R_gridEvalEnv));
+	    PROTECT(R_fcall2 = Rf_lang2(heightFn, updatedgrob));
+	    PROTECT(height = Rf_eval(R_fcall2, R_gridEvalEnv));
 	    result = pureNullUnit(height, 0, dd);
-	    PROTECT(R_fcall3 = lang2(heightPostFn, updatedgrob));
-	    eval(R_fcall3, R_gridEvalEnv);
+	    PROTECT(R_fcall3 = Rf_lang2(heightPostFn, updatedgrob));
+	    Rf_eval(R_fcall3, R_gridEvalEnv);
 	    setGridStateElement(dd, GSS_GPAR, savedgpar);
 	    setGridStateElement(dd, GSS_CURRGROB, savedgrob);
 	    UNPROTECT(11);
@@ -414,7 +414,7 @@ int pureNullUnitArithmetic(SEXP unit, int index, pGEDevDesc dd) {
 	}
     } 
     else 
-	error(_("unimplemented unit function"));
+	Rf_error(_("unimplemented unit function"));
     return result;
 }
 
@@ -484,31 +484,31 @@ double evaluateGrobUnit(double value, SEXP grob,
     /*
      * Set up for calling R functions 
      */
-    PROTECT(preFn = findFun(install("preDraw"), R_gridEvalEnv));
+    PROTECT(preFn = Rf_findFun(Rf_install("preDraw"), R_gridEvalEnv));
     switch(evalType) {
     case 0:
     case 1:
-	PROTECT(evalFnx = findFun(install("xDetails"), R_gridEvalEnv));
-	PROTECT(evalFny = findFun(install("yDetails"), R_gridEvalEnv));
+	PROTECT(evalFnx = Rf_findFun(Rf_install("xDetails"), R_gridEvalEnv));
+	PROTECT(evalFny = Rf_findFun(Rf_install("yDetails"), R_gridEvalEnv));
 	break;
     case 2:
-	PROTECT(evalFnx = findFun(install("width"), R_gridEvalEnv));
+	PROTECT(evalFnx = Rf_findFun(Rf_install("width"), R_gridEvalEnv));
 	break;
     case 3:
-	PROTECT(evalFny = findFun(install("height"), R_gridEvalEnv));
+	PROTECT(evalFny = Rf_findFun(Rf_install("height"), R_gridEvalEnv));
 	break;
     case 4:
-	PROTECT(evalFny = findFun(install("ascentDetails"), R_gridEvalEnv));
+	PROTECT(evalFny = Rf_findFun(Rf_install("ascentDetails"), R_gridEvalEnv));
         break;
     case 5:
-	PROTECT(evalFny = findFun(install("descentDetails"), R_gridEvalEnv));
+	PROTECT(evalFny = Rf_findFun(Rf_install("descentDetails"), R_gridEvalEnv));
         break;
     }
-    PROTECT(postFn = findFun(install("postDraw"), R_gridEvalEnv));
+    PROTECT(postFn = Rf_findFun(Rf_install("postDraw"), R_gridEvalEnv));
     /*
      * If grob is actually a gPath, use it to find an actual grob
      */
-    if (inherits(grob, "gPath")) {
+    if (Rf_inherits(grob, "gPath")) {
 	/* 
 	 * If the current grob is NULL then we are at the top level
 	 * and we search the display list, otherwise we search the 
@@ -516,19 +516,19 @@ double evaluateGrobUnit(double value, SEXP grob,
 	 *
 	 * NOTE: assume here that only gPath of depth == 1 are valid
 	 */
-	if (isNull(savedgrob)) {
-	    PROTECT(findGrobFn = findFun(install("findGrobinDL"), 
+	if (Rf_isNull(savedgrob)) {
+	    PROTECT(findGrobFn = Rf_findFun(Rf_install("findGrobinDL"), 
 					 R_gridEvalEnv));
-	    PROTECT(R_fcall0 = lang2(findGrobFn, 
+	    PROTECT(R_fcall0 = Rf_lang2(findGrobFn, 
 				     getListElement(grob, "name")));
-	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
+	    PROTECT(grob = Rf_eval(R_fcall0, R_gridEvalEnv));
 	} else {
-	    PROTECT(findGrobFn = findFun(install("findGrobinChildren"), 
+	    PROTECT(findGrobFn = Rf_findFun(Rf_install("findGrobinChildren"), 
 					 R_gridEvalEnv));
-	    PROTECT(R_fcall0 = lang3(findGrobFn, 
+	    PROTECT(R_fcall0 = Rf_lang3(findGrobFn, 
 				     getListElement(grob, "name"),
 				     getListElement(savedgrob, "children")));
-	    PROTECT(grob = eval(R_fcall0, R_gridEvalEnv));
+	    PROTECT(grob = Rf_eval(R_fcall0, R_gridEvalEnv));
 	}
 	/*
 	 * Flag to make sure we UNPROTECT these at the end
@@ -537,8 +537,8 @@ double evaluateGrobUnit(double value, SEXP grob,
     }
     /* Call preDraw(grob) 
      */
-    PROTECT(R_fcall1 = lang2(preFn, grob));
-    PROTECT(updatedgrob = eval(R_fcall1, R_gridEvalEnv));
+    PROTECT(R_fcall1 = Rf_lang2(preFn, grob));
+    PROTECT(updatedgrob = Rf_eval(R_fcall1, R_gridEvalEnv));
     /* 
      * The call to preDraw may have pushed viewports and/or
      * enforced gpar settings, SO we need to re-establish the
@@ -572,22 +572,22 @@ double evaluateGrobUnit(double value, SEXP grob,
 	 */
 	{
 	    SEXP val;
-	    PROTECT(val = ScalarReal(value));
-	    PROTECT(R_fcall2x = lang3(evalFnx, updatedgrob, val));
-	    PROTECT(unitx = eval(R_fcall2x, R_gridEvalEnv));
-	    PROTECT(R_fcall2y = lang3(evalFny, updatedgrob, val));
-	    PROTECT(unity = eval(R_fcall2y, R_gridEvalEnv));
+	    PROTECT(val = Rf_ScalarReal(value));
+	    PROTECT(R_fcall2x = Rf_lang3(evalFnx, updatedgrob, val));
+	    PROTECT(unitx = Rf_eval(R_fcall2x, R_gridEvalEnv));
+	    PROTECT(R_fcall2y = Rf_lang3(evalFny, updatedgrob, val));
+	    PROTECT(unity = Rf_eval(R_fcall2y, R_gridEvalEnv));
 	}
 	break;
     case 2:
-	PROTECT(R_fcall2x = lang2(evalFnx, updatedgrob));
-	PROTECT(unitx = eval(R_fcall2x, R_gridEvalEnv));
+	PROTECT(R_fcall2x = Rf_lang2(evalFnx, updatedgrob));
+	PROTECT(unitx = Rf_eval(R_fcall2x, R_gridEvalEnv));
 	break;
     case 3:
     case 4:
     case 5:
-	PROTECT(R_fcall2y = lang2(evalFny, updatedgrob));
-	PROTECT(unity = eval(R_fcall2y, R_gridEvalEnv));
+	PROTECT(R_fcall2y = Rf_lang2(evalFny, updatedgrob));
+	PROTECT(unity = Rf_eval(R_fcall2y, R_gridEvalEnv));
 	break;
     }
     /* 
@@ -659,8 +659,8 @@ double evaluateGrobUnit(double value, SEXP grob,
     }
     /* Call postDraw(grob)
      */
-    PROTECT(R_fcall3 = lang2(postFn, updatedgrob));
-    eval(R_fcall3, R_gridEvalEnv);
+    PROTECT(R_fcall3 = Rf_lang2(postFn, updatedgrob));
+    Rf_eval(R_fcall3, R_gridEvalEnv);
     /* 
      * Restore the saved gpar state and grob
      */
@@ -820,20 +820,20 @@ double transform(double value, int unit, SEXP data,
 	break;
     case L_STRINGWIDTH:
     case L_MYSTRINGWIDTH: /* FIXME: Remove this when I can */
-	if (isExpression(data))
+	if (Rf_isExpression(data))
 	    result = result*
 		fromDeviceWidth(GEExpressionWidth(VECTOR_ELT(data, 0), gc, dd),
 				GE_INCHES, dd);
 	else
 	    result = result*
-		fromDeviceWidth(GEStrWidth(CHAR(STRING_ELT(data, 0)), 
-					   getCharCE(STRING_ELT(data, 0)), 
+		fromDeviceWidth(GEStrWidth(R_CHAR(STRING_ELT(data, 0)), 
+					   Rf_getCharCE(STRING_ELT(data, 0)), 
 					   gc, dd),
 				GE_INCHES, dd);
 	break;
     case L_STRINGHEIGHT:
     case L_MYSTRINGHEIGHT: /* FIXME: Remove this when I can */
-	if (isExpression(data))
+	if (Rf_isExpression(data))
 	    result = result*
 		fromDeviceHeight(GEExpressionHeight(VECTOR_ELT(data, 0), 
 						    gc, dd),
@@ -841,30 +841,30 @@ double transform(double value, int unit, SEXP data,
 	else
 	    /* FIXME: what encoding is this? */
 	    result = result*
-		fromDeviceHeight(GEStrHeight(CHAR(STRING_ELT(data, 0)), cetype_t(-1),
+		fromDeviceHeight(GEStrHeight(R_CHAR(STRING_ELT(data, 0)), cetype_t(-1),
 					     gc, dd),
 				 GE_INCHES, dd);
 	break;
     case L_STRINGASCENT:        
-	if (isExpression(data))
+	if (Rf_isExpression(data))
             GEExpressionMetric(VECTOR_ELT(data, 0), gc, 
                                &asc, &dsc, &wid,
                                dd);
 	else
-            GEStrMetric(CHAR(STRING_ELT(data, 0)), 
-                        getCharCE(STRING_ELT(data, 0)), gc,
+            GEStrMetric(R_CHAR(STRING_ELT(data, 0)), 
+                        Rf_getCharCE(STRING_ELT(data, 0)), gc,
                         &asc, &dsc, &wid,
                         dd);
         result = result*fromDeviceHeight(asc, GE_INCHES, dd);
 	break;
     case L_STRINGDESCENT:        
-	if (isExpression(data))
+	if (Rf_isExpression(data))
             GEExpressionMetric(VECTOR_ELT(data, 0), gc, 
                                &asc, &dsc, &wid,
                                dd);
 	else
-            GEStrMetric(CHAR(STRING_ELT(data, 0)), 
-                        getCharCE(STRING_ELT(data, 0)), gc,
+            GEStrMetric(R_CHAR(STRING_ELT(data, 0)), 
+                        Rf_getCharCE(STRING_ELT(data, 0)), gc,
                         &asc, &dsc, &wid,
                         dd);
         result = result*fromDeviceHeight(dsc, GE_INCHES, dd);
@@ -897,7 +897,7 @@ double transform(double value, int unit, SEXP data,
 	result = evaluateNullUnit(result, thisCM, nullLMode, nullAMode);
 	break;
     default:
-	error(_("invalid unit or unit not yet implemented"));
+	Rf_error(_("invalid unit or unit not yet implemented"));
     }
     /*
      * For physical units, scale the result by GSS_SCALE (a "zoom" factor)
@@ -1214,7 +1214,7 @@ double transformXArithmetic(SEXP x, int index,
 	}
     }
     else 
-	error(_("unimplemented unit function"));
+	Rf_error(_("unimplemented unit function"));
     return result;
 }
 
@@ -1294,7 +1294,7 @@ double transformYArithmetic(SEXP y, int index,
 	}
     }
     else 
-	error(_("unimplemented unit function"));
+	Rf_error(_("unimplemented unit function"));
     return result;
 }
 
@@ -1374,7 +1374,7 @@ double transformWidthArithmetic(SEXP width, int index,
 	}
     }
     else 
-	error(_("unimplemented unit function"));
+	Rf_error(_("unimplemented unit function"));
     return result;
 }
 
@@ -1454,7 +1454,7 @@ double transformHeightArithmetic(SEXP height, int index,
 	}
     }
     else 
-	error(_("unimplemented unit function"));
+	Rf_error(_("unimplemented unit function"));
     return result;
 }
 
@@ -1649,7 +1649,7 @@ double transformFromINCHES(double value, int unit,
     case L_GROBHEIGHT:
     case L_NULL:
     default:
-	error(_("invalid unit or unit not yet implemented"));
+	Rf_error(_("invalid unit or unit not yet implemented"));
     }
     /*
      * For physical units, reverse the scale by GSS_SCALE (a "zoom" factor)
@@ -1706,7 +1706,7 @@ double transformXYFromINCHES(double location, int unit,
     if ((unit == L_NATIVE || unit == L_NPC) &&
         thisCM < 1e-6) {
         if (result != 0)
-            error(_("Viewport has zero dimension(s)"));
+            Rf_error(_("Viewport has zero dimension(s)"));
     } else {
         switch (unit) {
         case L_NATIVE:
@@ -1737,7 +1737,7 @@ double transformWidthHeightFromINCHES(double dimension, int unit,
     if ((unit == L_NATIVE || unit == L_NPC) &&
         thisCM < 1e-6) {
         if (result != 0)
-            error(_("Viewport has zero dimension(s)"));
+            Rf_error(_("Viewport has zero dimension(s)"));
     } else {
         switch (unit) {
         case L_NATIVE:       
@@ -1769,7 +1769,7 @@ double transformXYtoNPC(double x, int from, double min, double max)
         result = (x - min)/(max - min);
         break;
     default:
-        error(_("Unsupported unit conversion"));
+        Rf_error(_("Unsupported unit conversion"));
     }
     return(result);
 }
@@ -1784,7 +1784,7 @@ double transformWHtoNPC(double x, int from, double min, double max)
         result = x/(max - min);
         break;
     default:
-        error(_("Unsupported unit conversion"));
+        Rf_error(_("Unsupported unit conversion"));
     }
     return(result);
 }
@@ -1799,7 +1799,7 @@ double transformXYfromNPC(double x, int to, double min, double max)
         result = min + x*(max - min);
         break;
     default:
-        error(_("Unsupported unit conversion"));
+        Rf_error(_("Unsupported unit conversion"));
     }
     return(result);
 }
@@ -1814,7 +1814,7 @@ double transformWHfromNPC(double x, int to, double min, double max)
         result = x*(max - min);
         break;
     default:
-        error(_("Unsupported unit conversion"));
+        Rf_error(_("Unsupported unit conversion"));
     }
     return(result);
 }
@@ -1890,7 +1890,7 @@ int convertUnit(SEXP unit, int index)
 	if (UnitTable[i].name == NULL) 
 	    result = -1;
 	else {
-	    found = streql(CHAR(STRING_ELT(unit, index)), UnitTable[i].name);
+	    found = streql(R_CHAR(STRING_ELT(unit, index)), UnitTable[i].name);
 	    if (found) {
 		result = UnitTable[i].code;
                 /* resolve pseudonyms */
@@ -1902,7 +1902,7 @@ int convertUnit(SEXP unit, int index)
 	i += 1;
     }
     if (result < 0)
-	error(_("Invalid unit"));
+	Rf_error(_("Invalid unit"));
     return result;
 }
 	    
@@ -1912,16 +1912,16 @@ SEXP validUnits(SEXP units)
     int n = LENGTH(units);
     SEXP answer = R_NilValue;
     if (n > 0) {
-	if (isString(units)) {
-	    PROTECT(answer = allocVector(INTSXP, n));
+	if (Rf_isString(units)) {
+	    PROTECT(answer = Rf_allocVector(INTSXP, n));
 	    for (i = 0; i<n; i++) 
 		INTEGER(answer)[i] = convertUnit(units, i);
 	    UNPROTECT(1);
 	} else {
-	    error(_("'units' must be character"));
+	    Rf_error(_("'units' must be character"));
 	}
     } else {
-	error(_("'units' must be of length > 0"));
+	Rf_error(_("'units' must be of length > 0"));
     }
     return answer;
 }

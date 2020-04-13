@@ -302,7 +302,7 @@ void QuartzDevice_RestoreSnapshot(QuartzDesc_t desc, void* snap)
     if(NULL == snap) return; /*Aw, hell no!*/
     PROTECT((SEXP)snap);
     if(R_NilValue == VECTOR_ELT(snap,0))
-        warning("Tried to restore an empty snapshot?");
+        Rf_warning("Tried to restore an empty snapshot?");
     qd->redraw = 1;
     GEplaySnapshot((SEXP)snap, gd);
     qd->redraw = 0;
@@ -522,7 +522,7 @@ __attribute__((constructor)) static void RQ_init() {
 	(r = dlsym(RTLD_DEFAULT, "CGFontGetGlyphsForUnichars")) || (r = dlsym(RTLD_DEFAULT, "CGFontGetGlyphsForUnicodes")))
 	RQFontGetGlyphsForUnichars = (RQFontGetGlyphsForUnichars_t) r;
     else
-	error("Cannot load CoreGraphics"); /* this should never be reached but I suppose it's better than a hidden segfault */
+	Rf_error("Cannot load CoreGraphics"); /* this should never be reached but I suppose it's better than a hidden segfault */
 }
 #define CGFontGetGlyphsForUnichars RQFontGetGlyphsForUnichars
 /* and some missing declarations */
@@ -611,17 +611,17 @@ const char *RQuartz_LookUpFontName(int fontface, const char *fontfamily)
     const char *mappedFont = 0;
     SEXP ns, env, db, names;
     PROTECT_INDEX index;
-    PROTECT(ns = R_FindNamespace(ScalarString(mkChar("grDevices"))));
-    PROTECT_WITH_INDEX(env = findVar(install(".Quartzenv"), ns), &index);
+    PROTECT(ns = R_FindNamespace(Rf_ScalarString(Rf_mkChar("grDevices"))));
+    PROTECT_WITH_INDEX(env = Rf_findVar(Rf_install(".Quartzenv"), ns), &index);
     if(TYPEOF(env) == PROMSXP)
-        REPROTECT(env = eval(env,ns) ,index);
-    PROTECT(db    = findVar(install(".Quartz.Fonts"), env));
-    PROTECT(names = getAttrib(db, R_NamesSymbol));
+        REPROTECT(env = Rf_eval(env,ns) ,index);
+    PROTECT(db    = Rf_findVar(Rf_install(".Quartz.Fonts"), env));
+    PROTECT(names = Rf_getAttrib(db, R_NamesSymbol));
     if (*fontfamily) {
         int i;
         for(i = 0; i < Rf_length(names); i++)
-            if(streql(fontfamily, CHAR(STRING_ELT(names, i)))) {
-                mappedFont = CHAR(STRING_ELT(VECTOR_ELT(db, i), fontface - 1));
+            if(streql(fontfamily, R_CHAR(STRING_ELT(names, i)))) {
+                mappedFont = R_CHAR(STRING_ELT(VECTOR_ELT(db, i), fontface - 1));
                 break;
             }
     }
@@ -649,7 +649,7 @@ CGFontRef RQuartz_Font(CTXDESC)
                 atsFont = ATSFontFindFromPostScriptName(cfFontName, kATSOptionFlagsDefault);
             CFRelease(cfFontName);
             if (!atsFont) {
-                warning(_("font \"%s\" could not be found for family \"%s\""), fontName, fontFamily);
+                Rf_warning(_("font \"%s\" could not be found for family \"%s\""), fontName, fontFamily);
                 return NULL;
             }
             RQuartz_CacheAddFont(fontName, 0, atsFont);
@@ -667,7 +667,7 @@ CGFontRef RQuartz_Font(CTXDESC)
 	       text-matching heuristics ... very nasty ... */
             char compositeFontName[256];
             /* CFStringRef cfFontName; */
-            if (strlen(fontFamily) > 210) error(_("font family name is too long"));
+            if (strlen(fontFamily) > 210) Rf_error(_("font family name is too long"));
             while (!atsFont) { /* try different faces until exhausted or successful */
                 strcpy(compositeFontName, fontFamily);
                 if (fontFace == 2 || fontFace == 4) strcat(compositeFontName, " Bold");
@@ -707,7 +707,7 @@ CGFontRef RQuartz_Font(CTXDESC)
                 }
             }
             if (!atsFont)
-                warning(_("no font could be found for family \"%s\""), fontFamily);
+                Rf_warning(_("no font could be found for family \"%s\""), fontFamily);
             else
                 RQuartz_CacheAddFont(fontFamily, fontFace, atsFont);
         }
@@ -1332,7 +1332,7 @@ Quartz_C(QuartzParameters_t *par, quartz_create_fn_t q_create, int *errorCode)
 	    if(streql(par->type, "") || streql(par->type, "native")
 	       || streql(par->type, "cocoa") || streql(par->type, "carbon"))
 		devname = "quartz";
-            gsetVar(R_DeviceSymbol, mkString(devname), R_BaseEnv);
+            gsetVar(R_DeviceSymbol, Rf_mkString(devname), R_BaseEnv);
             pGEDevDesc dd = GEcreateDevDesc(dev);
             GEaddDevice(dd);
             GEinitDisplayList(dd);
@@ -1361,31 +1361,31 @@ SEXP Quartz(SEXP args)
     if (TYPEOF(CAR(args)) != STRSXP || LENGTH(CAR(args)) < 1)
         type = "";
     else
-        type  = CHAR(STRING_ELT(CAR(args), 0));
+        type  = R_CHAR(STRING_ELT(CAR(args), 0));
     args = CDR(args);
     /* we may want to support connections at some point, but not yet ... */
     tmps = CAR(args);    args = CDR(args);
-    if (isNull(tmps)) 
+    if (Rf_isNull(tmps)) 
 	file = NULL;
-    else if (isString(tmps) && LENGTH(tmps) >= 1) {
-        const char *tmp = R_ExpandFileName(CHAR(STRING_ELT(tmps, 0)));
+    else if (Rf_isString(tmps) && LENGTH(tmps) >= 1) {
+        const char *tmp = R_ExpandFileName(R_CHAR(STRING_ELT(tmps, 0)));
 	file = R_alloc(strlen(tmp) + 1, sizeof(char));
 	strcpy(file, tmp);
     } else
-        error(_("invalid 'file' argument"));
+        Rf_error(_("invalid 'file' argument"));
     width     = ARG(asReal,args);
     height    = ARG(asReal,args);
     ps        = ARG(asReal,args);
-    family    = CHAR(STRING_ELT(CAR(args), 0)); args = CDR(args);
+    family    = R_CHAR(STRING_ELT(CAR(args), 0)); args = CDR(args);
     antialias = ARG(asLogical,args);
-    title     = CHAR(STRING_ELT(CAR(args), 0)); args = CDR(args);
+    title     = R_CHAR(STRING_ELT(CAR(args), 0)); args = CDR(args);
     bgs       = CAR(args); args = CDR(args);
     bg        = RGBpar(bgs, 0);
     canvass   = CAR(args); args = CDR(args);
     canvas    = RGBpar(canvass, 0) | 0xff000000; /* force opaque */
     tmps      = CAR(args); args = CDR(args);
-    if (!isNull(tmps)) {
-        tmps = coerceVector(tmps, REALSXP);
+    if (!Rf_isNull(tmps)) {
+        tmps = Rf_coerceVector(tmps, REALSXP);
         if (LENGTH(tmps) > 0) {
             dpi = mydpi;
             mydpi[0] = REAL(tmps)[0];
@@ -1399,7 +1399,7 @@ SEXP Quartz(SEXP args)
     if (dpi && (ISNAN(dpi[0]) || ISNAN(dpi[1]))) dpi=0;
 
     if (ISNAN(width) || ISNAN(height) || width <= 0.0 || height <= 0.0)
-        error(_("invalid quartz() device size"));
+        Rf_error(_("invalid quartz() device size"));
 
     if (type) {
         const quartz_module_t *m = quartz_modules;
@@ -1427,7 +1427,7 @@ SEXP Quartz(SEXP args)
 	pDevDesc dev = calloc(1, sizeof(DevDesc));
 
 	if (!dev)
-	    error(_("unable to create device description"));
+	    Rf_error(_("unable to create device description"));
 
 	QuartzParameters_t qpar = {
 	    sizeof(qpar),
@@ -1477,13 +1477,13 @@ SEXP Quartz(SEXP args)
 	if (qd == NULL) {
 	    vmaxset(vmax);
 	    free(dev);
-	    error(_("unable to create quartz() device target, given type may not be supported"));
+	    Rf_error(_("unable to create quartz() device target, given type may not be supported"));
 	}
 	const char *devname = "quartz_off_screen";
 	if(streql(type, "") || streql(type, "native") || streql(type, "cocoa") 
 	   || streql(type, "carbon")) devname = "quartz";
-	SEXP f = PROTECT(mkString(devname));
-	if(file) setAttrib(f, install("filepath"), mkString(file));
+	SEXP f = PROTECT(Rf_mkString(devname));
+	if(file) Rf_setAttrib(f, Rf_install("filepath"), Rf_mkString(file));
  	gsetVar(R_DeviceSymbol, f, R_BaseEnv);
 	UNPROTECT(1);
 	pGEDevDesc dd = GEcreateDevDesc(dev);
@@ -1596,7 +1596,7 @@ static int has_wss() {
 }
 
 SEXP makeQuartzDefault() {
-    return ScalarLogical(has_wss());
+    return Rf_ScalarLogical(has_wss());
 }
 
 #else
@@ -1608,12 +1608,12 @@ SEXP makeQuartzDefault() {
 
 SEXP Quartz(SEXP args)
 {
-    warning(_("Quartz device is not available on this platform"));
+    Rf_warning(_("Quartz device is not available on this platform"));
     return R_NilValue;
 }
 
 SEXP makeQuartzDefault() {
-    return ScalarLogical(FALSE);
+    return Rf_ScalarLogical(FALSE);
 }
 
 QuartzDesc_t 

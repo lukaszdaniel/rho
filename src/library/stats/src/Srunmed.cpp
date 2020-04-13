@@ -52,7 +52,7 @@ static void Srunmed(double* y, double* smo, R_xlen_t n, int bw,
     /*was  malloc( (unsigned) bw * sizeof(double));*/
 
     if(bw > n)
-	error(_("bandwidth/span of running medians is larger than n"));
+	Rf_error(_("bandwidth/span of running medians is larger than n"));
 
 /* 1. Compute  'rmed' := Median of the first 'band' values
    ======================================================== */
@@ -195,14 +195,14 @@ static void Srunmed(double* y, double* smo, R_xlen_t n, int bw,
 
 SEXP runmed(SEXP x, SEXP stype, SEXP sk, SEXP end, SEXP print_level)
 {
-    if (TYPEOF(x) != REALSXP) error("numeric 'x' required");
+    if (TYPEOF(x) != REALSXP) Rf_error("numeric 'x' required");
     R_xlen_t n = XLENGTH(x);
-    int type = asInteger(stype), k = asInteger(sk),
-	iend = asInteger(end), pl = asInteger(print_level);
-    SEXP ans = PROTECT(allocVector(REALSXP, n));
+    int type = Rf_asInteger(stype), k = Rf_asInteger(sk),
+	iend = Rf_asInteger(end), pl = Rf_asInteger(print_level);
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, n));
     if (type == 1) {
 	if (IS_LONG_VEC(x)) 
-	    error("long vectors are not supported for algorithm = \"Turlach\"");
+	    Rf_error("long vectors are not supported for algorithm = \"Turlach\"");
 	int *i1 = (int *) R_alloc(k + 1, sizeof(int)), 
 	    *i2 = (int *) R_alloc(2*k + 1, sizeof(int));
 	double *d1 = (double *) R_alloc(2*k + 1, sizeof(double));

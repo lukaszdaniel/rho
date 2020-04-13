@@ -116,7 +116,7 @@ qansari(int len, double *P, double *Q, int m, int n)
     for (i = 0; i < len; i++) {
 	xi = P[i];
 	if(xi < 0 || xi > 1)
-	    error(_("probabilities outside [0,1] in qansari()"));
+	    Rf_error(_("probabilities outside [0,1] in qansari()"));
 	if(xi == 0)
 	    Q[i] = l;
 	else if(xi == 1)
@@ -137,10 +137,10 @@ qansari(int len, double *P, double *Q, int m, int n)
 #include <Rinternals.h>
 SEXP pAnsari(SEXP q, SEXP sm, SEXP sn)
 {
-    int m = asInteger(sm), n = asInteger(sn);
-    q = PROTECT(coerceVector(q, REALSXP));
+    int m = Rf_asInteger(sm), n = Rf_asInteger(sn);
+    q = PROTECT(Rf_coerceVector(q, REALSXP));
     int len = LENGTH(q);
-    SEXP p = PROTECT(allocVector(REALSXP, len));
+    SEXP p = PROTECT(Rf_allocVector(REALSXP, len));
     pansari(len, REAL(q), REAL(p), m, n);
     UNPROTECT(2);
     return p;
@@ -148,10 +148,10 @@ SEXP pAnsari(SEXP q, SEXP sm, SEXP sn)
 
 SEXP qAnsari(SEXP p, SEXP sm, SEXP sn)
 {
-    int m = asInteger(sm), n = asInteger(sn);
-    p = PROTECT(coerceVector(p, REALSXP));
+    int m = Rf_asInteger(sm), n = Rf_asInteger(sn);
+    p = PROTECT(Rf_coerceVector(p, REALSXP));
     int len = LENGTH(p);
-    SEXP q = PROTECT(allocVector(REALSXP, len));
+    SEXP q = PROTECT(Rf_allocVector(REALSXP, len));
     qansari(len, REAL(p), REAL(q), m, n);
     UNPROTECT(2);
     return q;

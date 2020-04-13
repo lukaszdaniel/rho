@@ -144,23 +144,23 @@ void tukeyline0(double *x, double *y, double *z, double *w, int *n,
 SEXP tukeyline(SEXP x, SEXP y, SEXP iter, SEXP call)
 {
     int n = LENGTH(x);
-    if (n < 2) error("insufficient observations");
+    if (n < 2) Rf_error("insufficient observations");
     SEXP ans;
-    ans = PROTECT(allocVector(VECSXP, 4));
-    SEXP nm = allocVector(STRSXP, 4);
-    setAttrib(ans, R_NamesSymbol, nm);
-    SET_STRING_ELT(nm, 0, mkChar("call"));
-    SET_STRING_ELT(nm, 1, mkChar("coefficients"));
-    SET_STRING_ELT(nm, 2, mkChar("residuals"));
-    SET_STRING_ELT(nm, 3, mkChar("fitted.values"));
+    ans = PROTECT(Rf_allocVector(VECSXP, 4));
+    SEXP nm = Rf_allocVector(STRSXP, 4);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    SET_STRING_ELT(nm, 0, Rf_mkChar("call"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("coefficients"));
+    SET_STRING_ELT(nm, 2, Rf_mkChar("residuals"));
+    SET_STRING_ELT(nm, 3, Rf_mkChar("fitted.values"));
     SET_VECTOR_ELT(ans, 0, call);
-    SEXP coef = allocVector(REALSXP, 2);
+    SEXP coef = Rf_allocVector(REALSXP, 2);
     SET_VECTOR_ELT(ans, 1, coef);
-    SEXP res = allocVector(REALSXP, n);
+    SEXP res = Rf_allocVector(REALSXP, n);
     SET_VECTOR_ELT(ans, 2, res);
-    SEXP fit = allocVector(REALSXP, n);
+    SEXP fit = Rf_allocVector(REALSXP, n);
     SET_VECTOR_ELT(ans, 3, fit);
-    line(REAL(x), REAL(y), REAL(res), REAL(fit), n, asInteger(iter), REAL(coef));
+    line(REAL(x), REAL(y), REAL(res), REAL(fit), n, Rf_asInteger(iter), REAL(coef));
     UNPROTECT(1);
     return ans;
 }

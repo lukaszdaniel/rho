@@ -43,7 +43,7 @@ static const double INVEPS = 1/DOUBLE_EPS;
  */
 static R_INLINE double x_d_omx(double x) {
     if (x < 0 || x > 1)
-	error(_("Value %g out of range (0, 1)"), x);
+	Rf_error(_("Value %g out of range (0, 1)"), x);
     return x/(1 - x);
 }
 
@@ -60,11 +60,11 @@ static R_INLINE double x_d_opx(double x) {return x/(1 + x);}
 SEXP logit_link(SEXP mu)
 {
     int i, n = LENGTH(mu);
-    SEXP ans = PROTECT(shallow_duplicate(mu));
+    SEXP ans = PROTECT(Rf_shallow_duplicate(mu));
     double *rans = REAL(ans), *rmu=REAL(mu);
 
-    if (!n || !isReal(mu))
-	error(_("Argument %s must be a nonempty numeric vector"), "mu");
+    if (!n || !Rf_isReal(mu))
+	Rf_error(_("Argument %s must be a nonempty numeric vector"), "mu");
     for (i = 0; i < n; i++)
 	rans[i] = log(x_d_omx(rmu[i]));
     UNPROTECT(1);
@@ -73,12 +73,12 @@ SEXP logit_link(SEXP mu)
 
 SEXP logit_linkinv(SEXP eta)
 {
-    SEXP ans = PROTECT(shallow_duplicate(eta));
+    SEXP ans = PROTECT(Rf_shallow_duplicate(eta));
     int i, n = LENGTH(eta);
     double *rans = REAL(ans), *reta = REAL(eta);
 
-    if (!n || !isReal(eta))
-	error(_("Argument %s must be a nonempty numeric vector"), "eta");
+    if (!n || !Rf_isReal(eta))
+	Rf_error(_("Argument %s must be a nonempty numeric vector"), "eta");
     for (i = 0; i < n; i++) {
 	double etai = reta[i], tmp;
 	tmp = (etai < MTHRESH) ? DOUBLE_EPS :
@@ -91,12 +91,12 @@ SEXP logit_linkinv(SEXP eta)
 
 SEXP logit_mu_eta(SEXP eta)
 {
-    SEXP ans = PROTECT(shallow_duplicate(eta));
+    SEXP ans = PROTECT(Rf_shallow_duplicate(eta));
     int i, n = LENGTH(eta);
     double *rans = REAL(ans), *reta = REAL(eta);
 
-    if (!n || !isReal(eta))
-	error(_("Argument %s must be a nonempty numeric vector"), "eta");
+    if (!n || !Rf_isReal(eta))
+	Rf_error(_("Argument %s must be a nonempty numeric vector"), "eta");
     for (i = 0; i < n; i++) {
 	double etai = reta[i];
 	double opexp = 1 + exp(etai);
@@ -120,19 +120,19 @@ SEXP binomial_dev_resids(SEXP y, SEXP mu, SEXP wt)
     SEXP ans;
     double mui, yi, *rmu, *ry, *rwt, *rans;
 
-    if (!isReal(y)) {y = PROTECT(coerceVector(y, REALSXP)); nprot++;}
+    if (!Rf_isReal(y)) {y = PROTECT(Rf_coerceVector(y, REALSXP)); nprot++;}
     ry = REAL(y);
-    ans = PROTECT(shallow_duplicate(y));
+    ans = PROTECT(Rf_shallow_duplicate(y));
     rans = REAL(ans);
-    if (!isReal(mu)) {mu = PROTECT(coerceVector(mu, REALSXP)); nprot++;}
-    if (!isReal(wt)) {wt = PROTECT(coerceVector(wt, REALSXP)); nprot++;}
+    if (!Rf_isReal(mu)) {mu = PROTECT(Rf_coerceVector(mu, REALSXP)); nprot++;}
+    if (!Rf_isReal(wt)) {wt = PROTECT(Rf_coerceVector(wt, REALSXP)); nprot++;}
     rmu = REAL(mu);
     rwt = REAL(wt);
     if (lmu != n && lmu != 1)
-	error(_("argument %s must be a numeric vector of length 1 or length %d"),
+	Rf_error(_("argument %s must be a numeric vector of length 1 or length %d"),
 	      "mu", n);
     if (lwt != n && lwt != 1)
-	error(_("argument %s must be a numeric vector of length 1 or length %d"),
+	Rf_error(_("argument %s must be a numeric vector of length 1 or length %d"),
 	      "wt", n);
     /* Written separately to avoid an optimization bug on Solaris cc */
     if(lmu > 1) {

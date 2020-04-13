@@ -75,20 +75,20 @@ SEXP Win_selectlist(SEXP args)
     Rboolean haveTitle;
 
     choices = CAR(args);
-    if(!isString(choices)) error(_("invalid '%s' argument"), "choices");
+    if(!Rf_isString(choices)) Rf_error(_("invalid '%s' argument"), "choices");
     preselect = CADR(args);
-    if(!isNull(preselect) && !isString(preselect))
-	error(_("invalid '%s' argument"), "preselect");
-    multiple = asLogical(CADDR(args));
+    if(!Rf_isNull(preselect) && !Rf_isString(preselect))
+	Rf_error(_("invalid '%s' argument"), "preselect");
+    multiple = Rf_asLogical(CADDR(args));
     if(multiple == NA_LOGICAL) multiple = 0;
-    haveTitle = isString(CADDDR(args));
-    if(!multiple && isString(preselect) && LENGTH(preselect) != 1)
-	error(_("invalid '%s' argument"), "preselect");
+    haveTitle = Rf_isString(CADDDR(args));
+    if(!multiple && Rf_isString(preselect) && LENGTH(preselect) != 1)
+	Rf_error(_("invalid '%s' argument"), "preselect");
 
     n = LENGTH(choices);
     clist = (const char **) R_alloc(n + 1, sizeof(char *));
     for(i = 0; i < n; i++) {
-	clist[i] = translateChar(STRING_ELT(choices, i));
+	clist[i] = Rf_translateChar(STRING_ELT(choices, i));
 	mw = max(mw, gstrwidth(NULL, SystemFont, clist[i]));
     }
     clist[n] = NULL;
@@ -104,7 +104,7 @@ SEXP Win_selectlist(SEXP args)
     }
     ymax = min(80+fht*n, h0-100); /* allow for window widgets, toolbar */
     ylist = ymax - 60;
-    wselect = newwindow(haveTitle ? translateChar(STRING_ELT(CADDDR(args), 0)):
+    wselect = newwindow(haveTitle ? Rf_translateChar(STRING_ELT(CADDDR(args), 0)):
 			(multiple ? _("Select one or more") : _("Select one")),
 			rect(0, 0, xmax, ymax),
 			Titlebar | Centered | Modal | Floating);
@@ -113,10 +113,10 @@ SEXP Win_selectlist(SEXP args)
 	f_list = newmultilist(clist, rect(10, 10, xmax-25, ylist), NULL, finish);
     else
 	f_list = newlistbox(clist, rect(10, 10, xmax-25, ylist), NULL, finish);
-    if(!isNull(preselect) && LENGTH(preselect)) {
+    if(!Rf_isNull(preselect) && LENGTH(preselect)) {
 	for(i = 0; i < n; i++)
 	    for(j = 0; j < LENGTH(preselect); j++)
-		if(streql(clist[i], translateChar(STRING_ELT(preselect, j)))) {
+		if(streql(clist[i], Rf_translateChar(STRING_ELT(preselect, j)))) {
 		    setlistitem(f_list, i);
 		    break;
 		}
@@ -134,15 +134,15 @@ SEXP Win_selectlist(SEXP args)
     if(multiple) {
 	if (done == 1) { /* Finish */
 	    for(i = 0; i < n; i++)  if(isselected(f_list, i)) nsel++;
-	    PROTECT(ans = allocVector(STRSXP, nsel));
+	    PROTECT(ans = Rf_allocVector(STRSXP, nsel));
 	    for(i = 0, j = 0; i < n; i++)
 		if(isselected(f_list, i))
-		    SET_STRING_ELT(ans, j++, mkChar(clist[i]));
+		    SET_STRING_ELT(ans, j++, Rf_mkChar(clist[i]));
 	} else { /* cancel */
-	    PROTECT(ans = allocVector(STRSXP, 0));
+	    PROTECT(ans = Rf_allocVector(STRSXP, 0));
 	}
     } else
-	PROTECT(ans = mkString(selected));
+	PROTECT(ans = Rf_mkString(selected));
 
     cleanup();
     show(RConsole);
@@ -176,20 +176,20 @@ SEXP chooseFiles(SEXP def, SEXP caption, SEXP smulti, SEXP filters, SEXP sindex)
     wchar_t path[32768], filename[32768];
     int multi, filterindex, i, count, lfilters, pathlen;
 
-    multi = asLogical(smulti);
-    filterindex = asInteger(sindex);
+    multi = Rf_asLogical(smulti);
+    filterindex = Rf_asInteger(sindex);
     if(length(def) != 1 )
-	error(_("'default' must be a character string"));
+	Rf_error(_("'default' must be a character string"));
     p = filenameToWchar(STRING_ELT(def, 0), 1);
-    if(wcslen(p) >= 32768) error(_("'default' is overlong"));
+    if(wcslen(p) >= 32768) Rf_error(_("'default' is overlong"));
     wcscpy(path, p);
     for(temp = path; *temp; temp++) if(*temp == L'/') *temp = L'\\';
     if(length(caption) != 1 )
-	error(_("'caption' must be a character string"));
+	Rf_error(_("'caption' must be a character string"));
     if(multi == NA_LOGICAL)
-	error(_("'multi' must be a logical value"));
+	Rf_error(_("'multi' must be a logical value"));
     if(filterindex == NA_INTEGER)
-	error(_("'filterindex' must be an integer value"));
+	Rf_error(_("'filterindex' must be an integer value"));
     lfilters = 1 + length(filters);
     for (i = 0; i < length(filters); i++)
 	lfilters += wcslen(filenameToWchar(STRING_ELT(filters, i), 0));
@@ -213,8 +213,8 @@ SEXP chooseFiles(SEXP def, SEXP caption, SEXP smulti, SEXP filters, SEXP sindex)
     	count = wcslen(res) ? 1 : 0;
     	
     SEXP ans;
-    if (count < 2) PROTECT(ans = allocVector(STRSXP, count));
-    else PROTECT(ans = allocVector(STRSXP, count-1));
+    if (count < 2) PROTECT(ans = Rf_allocVector(STRSXP, count));
+    else PROTECT(ans = Rf_allocVector(STRSXP, count-1));
 
     switch (count) {
     case 0: break;
@@ -246,18 +246,18 @@ SEXP chooseDir(SEXP def, SEXP caption)
     const char *p;
     char path[MAX_PATH];
 
-    if(!isString(def) || length(def) != 1 )
-	error(_("'default' must be a character string"));
-    p = translateChar(STRING_ELT(def, 0));
-    if(strlen(p) >= MAX_PATH) error(_("'default' is overlong"));
+    if(!Rf_isString(def) || length(def) != 1 )
+	Rf_error(_("'default' must be a character string"));
+    p = Rf_translateChar(STRING_ELT(def, 0));
+    if(strlen(p) >= MAX_PATH) Rf_error(_("'default' is overlong"));
     strcpy(path, R_ExpandFileName(p));
     R_fixbackslash(path);
-    if(!isString(caption) || length(caption) != 1 )
-	error(_("'caption' must be a character string"));
-    p = askcdstring(translateChar(STRING_ELT(caption, 0)), path);
+    if(!Rf_isString(caption) || length(caption) != 1 )
+	Rf_error(_("'caption' must be a character string"));
+    p = askcdstring(Rf_translateChar(STRING_ELT(caption, 0)), path);
 
-    SEXP ans = PROTECT(allocVector(STRSXP, 1));
-    SET_STRING_ELT(ans, 0, p ? mkChar(p): NA_STRING);
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, 1));
+    SET_STRING_ELT(ans, 0, p ? Rf_mkChar(p): NA_STRING);
     UNPROTECT(1);
     return ans;
 }

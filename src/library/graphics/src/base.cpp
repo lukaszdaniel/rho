@@ -34,7 +34,7 @@
 
 static R_INLINE GPar* dpSavedptr(pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
-	error(_("no base graphics system is registered"));
+	Rf_error(_("no base graphics system is registered"));
     baseSystemState *bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->dpSaved);
 }
@@ -261,10 +261,10 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
             bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
             /* Changed from INTSXP in 2.7.0: but saved graphics lists
                are protected by an R version number */
-            PROTECT(result = allocVector(RAWSXP, sizeof(GPar)));
+            PROTECT(result = Rf_allocVector(RAWSXP, sizeof(GPar)));
             copyGPar(&(bss->dpSaved), (GPar*) RAW(result));
-            PROTECT(pkgName = mkString("graphics"));
-            setAttrib(result, install("pkgName"), pkgName);
+            PROTECT(pkgName = Rf_mkString("graphics"));
+            Rf_setAttrib(result, Rf_install("pkgName"), pkgName);
             UNPROTECT(2);
         }
 	break;
@@ -280,28 +280,28 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
              * (though this could be fatal).
              */
             PROTECT(snapshotEngineVersion = 
-                    getAttrib(data, install("engineVersion")));
-            if (isNull(snapshotEngineVersion)) {
+                    Rf_getAttrib(data, Rf_install("engineVersion")));
+            if (Rf_isNull(snapshotEngineVersion)) {
                 graphicsState = VECTOR_ELT(data, 1);
             } else {
                 for (i=0; i<nState; i++) {
                     SEXP state = VECTOR_ELT(data, i + 1);
-                    if (streql(CHAR(STRING_ELT(getAttrib(state, 
-                                                          install("pkgName")), 
+                    if (streql(R_CHAR(STRING_ELT(Rf_getAttrib(state, 
+                                                          Rf_install("pkgName")), 
                                                 0)), 
                                 "graphics")) {
                         graphicsState = state;
                     }
                 }
             }
-            if (!isNull(graphicsState)) {
+            if (!Rf_isNull(graphicsState)) {
                 /* Check that RAW blob being restored is same size
                  * as GPar struct in current R version.
                  * Any version difference will have been warned about,
                  * but a difference here means STOP.
                  */
                 if (LENGTH(graphicsState) != sizeof(GPar)) {
-                    error(_("Incompatible graphics state"));
+                    Rf_error(_("Incompatible graphics state"));
                 }
                 bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
                 copyGPar((GPar*) RAW(graphicsState), &(bss->dpSaved));
@@ -328,7 +328,7 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
 	   Check that the current plotting state is "valid"
 	 */
 	bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
-	result = ScalarLogical(bss->baseDevice ?
+	result = Rf_ScalarLogical(bss->baseDevice ?
 			       (bss->gp.state == 1) && bss->gp.valid :
 			       TRUE);
 	break;
@@ -339,13 +339,13 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
 	bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
 	ddp = &(bss->dp);
 	ddpSaved = &(bss->dpSaved);
-	if (isReal(data) && LENGTH(data) == 1) {
+	if (Rf_isReal(data) && LENGTH(data) == 1) {
 	    double rf = REAL(data)[0];
 	    ddp->scale *= rf;
 	    /* Modify the saved settings so this effects display list too */
 	    ddpSaved->scale *= rf;
 	} else
-	  error("event 'GE_ScalePS' requires a single numeric value");
+	  Rf_error("event 'GE_ScalePS' requires a single numeric value");
 	break;
     }
     }
@@ -376,14 +376,14 @@ SEXP RunregisterBase(void)
  */
 GPar* gpptr(pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
-	error(_("the base graphics system is not registered"));
+	Rf_error(_("the base graphics system is not registered"));
     baseSystemState *bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->gp);
 }
 
 GPar* dpptr(pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
-	error(_("the base graphics system is not registered"));
+	Rf_error(_("the base graphics system is not registered"));
     baseSystemState *bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->dp);
 }
@@ -391,7 +391,7 @@ GPar* dpptr(pGEDevDesc dd) {
 /* called in GNewPlot to mark device as 'dirty' */
 void Rf_setBaseDevice(Rboolean val, pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
-	error(_("the base graphics system is not registered"));
+	Rf_error(_("the base graphics system is not registered"));
     baseSystemState *bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);
     bss->baseDevice = val;
 }

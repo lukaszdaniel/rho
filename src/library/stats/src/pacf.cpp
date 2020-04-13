@@ -65,14 +65,14 @@ static void uni_pacf(double *cor, double *p, int nlag)
 
 SEXP pacf1(SEXP acf, SEXP lmax)
 {
-    int lagmax = asInteger(lmax);
-    acf = PROTECT(coerceVector(acf, REALSXP));
-    SEXP ans = PROTECT(allocVector(REALSXP, lagmax));
+    int lagmax = Rf_asInteger(lmax);
+    acf = PROTECT(Rf_coerceVector(acf, REALSXP));
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, lagmax));
     uni_pacf(REAL(acf), REAL(ans), lagmax);
-    SEXP d = PROTECT(allocVector(INTSXP, 3));
+    SEXP d = PROTECT(Rf_allocVector(INTSXP, 3));
     INTEGER(d)[0] = lagmax;
     INTEGER(d)[1] = INTEGER(d)[2] = 1;
-    setAttrib(ans, R_DimSymbol, d);
+    Rf_setAttrib(ans, R_DimSymbol, d);
     UNPROTECT(3);
     return ans;
 }
@@ -85,7 +85,7 @@ static SEXP Starma_tag;
 #define GET_STARMA \
     Starma G; \
     if (TYPEOF(pG) != EXTPTRSXP || R_ExternalPtrTag(pG) != Starma_tag) \
-	error(_("bad Starma struct"));\
+	Rf_error(_("bad Starma struct"));\
     G = (Starma) R_ExternalPtrAddr(pG)
 
 SEXP setup_starma(SEXP na, SEXP x, SEXP pn, SEXP xreg, SEXP pm,
@@ -102,16 +102,16 @@ SEXP setup_starma(SEXP na, SEXP x, SEXP pn, SEXP xreg, SEXP pm,
     G->msp = INTEGER(na)[2];
     G->msq = INTEGER(na)[3];
     G->ns = INTEGER(na)[4];
-    G->n = n = asInteger(pn);
-    G->ncond = asInteger(sncond);
-    G->m = m = asInteger(pm);
+    G->n = n = Rf_asInteger(pn);
+    G->ncond = Rf_asInteger(sncond);
+    G->m = m = Rf_asInteger(pm);
     G->params = Calloc(G->mp + G->mq + G->msp + G->msq + G->m, double);
     G->p = ip = G->ns*G->msp + G->mp;
     G->q = iq = G->ns*G->msq + G->mq;
     G->r = ir = max(ip, iq + 1);
     G->np = np = (ir*(ir + 1))/2;
     G->nrbar = max(1, np*(np - 1)/2);
-    G->trans = asInteger(ptrans);
+    G->trans = Rf_asInteger(ptrans);
     G->a = Calloc(ir, double);
     G->P = Calloc(np, double);
     G->V = Calloc(np, double);
@@ -125,10 +125,10 @@ SEXP setup_starma(SEXP na, SEXP x, SEXP pn, SEXP xreg, SEXP pm,
     G->phi = Calloc(ir, double);
     G->theta = Calloc(ir, double);
     G->reg = Calloc(1 + n*m, double); /* AIX can't calloc 0 items */
-    G->delta = asReal(dt);
+    G->delta = Rf_asReal(dt);
     for(i = 0; i < n; i++) G->w[i] = G->wkeep[i] = rx[i];
     for(i = 0; i < n*m; i++) G->reg[i] = rxreg[i];
-    Starma_tag = install("STARMA_TAG");
+    Starma_tag = Rf_install("STARMA_TAG");
     res = R_MakeExternalPtr(G, Starma_tag, R_NilValue);
     return res;
 }
@@ -148,13 +148,13 @@ SEXP Starma_method(SEXP pG, SEXP method)
 {
     GET_STARMA;
 
-    G->method = asInteger(method);
+    G->method = Rf_asInteger(method);
     return R_NilValue;
 }
 
 SEXP Dotrans(SEXP pG, SEXP x)
 {
-    SEXP y = allocVector(REALSXP, LENGTH(x));
+    SEXP y = Rf_allocVector(REALSXP, LENGTH(x));
     GET_STARMA;
 
     dotrans(G, REAL(x), REAL(y), 1);
@@ -165,7 +165,7 @@ SEXP set_trans(SEXP pG, SEXP ptrans)
 {
     GET_STARMA;
 
-    G->trans = asInteger(ptrans);
+    G->trans = Rf_asInteger(ptrans);
     return R_NilValue;
 }
 
@@ -231,7 +231,7 @@ SEXP arma0fa(SEXP pG, SEXP inparams)
 	ans = 0.5 * log(G->s2);
     } else {
 	starma(G, &ifault);
-	if(ifault) error(_("starma error code %d"), ifault);
+	if(ifault) Rf_error(_("starma error code %d"), ifault);
 	sumlog = 0.0;
 	ssq = 0.0;
 	it = 0;
@@ -239,13 +239,13 @@ SEXP arma0fa(SEXP pG, SEXP inparams)
 	G->s2 = ssq/(double)G->nused;
 	ans = 0.5*(log(ssq/(double)G->nused) + sumlog/(double)G->nused);
     }
-    return ScalarReal(ans);
+    return Rf_ScalarReal(ans);
 }
 
 SEXP get_s2(SEXP pG)
 {
     GET_STARMA;
-    return ScalarReal(G->s2);
+    return Rf_ScalarReal(G->s2);
 }
 
 SEXP get_resid(SEXP pG)
@@ -255,7 +255,7 @@ SEXP get_resid(SEXP pG)
     double *rres;
     GET_STARMA;
 
-    res = allocVector(REALSXP, G->n);
+    res = Rf_allocVector(REALSXP, G->n);
     rres = REAL(res);
     for(i = 0; i < G->n; i++) rres[i] = G->resid[i];
     return res;
@@ -263,17 +263,17 @@ SEXP get_resid(SEXP pG)
 
 SEXP arma0_kfore(SEXP pG, SEXP pd, SEXP psd, SEXP nahead)
 {
-    int dd = asInteger(pd);
-    int d, il = asInteger(nahead), ifault = 0, i, j;
+    int dd = Rf_asInteger(pd);
+    int d, il = Rf_asInteger(nahead), ifault = 0, i, j;
     double *del, *del2;
     SEXP res, x, var;
     GET_STARMA;
 
-    PROTECT(res = allocVector(VECSXP, 2));
-    SET_VECTOR_ELT(res, 0, x = allocVector(REALSXP, il));
-    SET_VECTOR_ELT(res, 1, var = allocVector(REALSXP, il));
+    PROTECT(res = Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(res, 0, x = Rf_allocVector(REALSXP, il));
+    SET_VECTOR_ELT(res, 1, var = Rf_allocVector(REALSXP, il));
 
-    d = dd + G->ns * asInteger(psd);
+    d = dd + G->ns * Rf_asInteger(psd);
 
     del = (double *) R_alloc(d + 1, sizeof(double));
     del2 = (double *) R_alloc(d + 1, sizeof(double));
@@ -283,7 +283,7 @@ SEXP arma0_kfore(SEXP pG, SEXP pd, SEXP psd, SEXP nahead)
 	for(i = 0; i <= d; i++) del2[i] = del[i];
 	for(i = 0; i <= d - 1; i++) del[i+1] -= del2[i];
     }
-    for (j = 0; j < asInteger(psd); j++) {
+    for (j = 0; j < Rf_asInteger(psd); j++) {
 	for(i = 0; i <= d; i++) del2[i] = del[i];
 	for(i = 0; i <= d - G->ns; i++) del[i + G->ns] -= del2[i];
     }
@@ -291,7 +291,7 @@ SEXP arma0_kfore(SEXP pG, SEXP pd, SEXP psd, SEXP nahead)
 
 
     forkal(G, d, il, del + 1, REAL(x), REAL(var), &ifault);
-    if(ifault) error(_("forkal error code %d"), ifault);
+    if(ifault) Rf_error(_("forkal error code %d"), ifault);
     UNPROTECT(1);
     return res;
 }
@@ -308,11 +308,11 @@ static void artoma(int p, double *phi, double *psi, int npsi)
 
 SEXP ar2ma(SEXP ar, SEXP npsi)
 {
-    ar = PROTECT(coerceVector(ar, REALSXP));
-    int p = LENGTH(ar), ns = asInteger(npsi), ns1 = ns + p + 1;
-    SEXP psi = PROTECT(allocVector(REALSXP, ns1));
+    ar = PROTECT(Rf_coerceVector(ar, REALSXP));
+    int p = LENGTH(ar), ns = Rf_asInteger(npsi), ns1 = ns + p + 1;
+    SEXP psi = PROTECT(Rf_allocVector(REALSXP, ns1));
     artoma(p, REAL(ar), REAL(psi), ns1);
-    SEXP ans = lengthgets(psi, ns);
+    SEXP ans = Rf_lengthgets(psi, ns);
     UNPROTECT(2);
     return ans;
 }
@@ -322,7 +322,7 @@ static void partrans(int p, double *raw, double *new_)
     int j, k;
     double a, work[100];
 
-    if(p > 100) error(_("can only transform 100 pars in arima0"));
+    if(p > 100) Rf_error(_("can only transform 100 pars in arima0"));
 
     /* Step one: map (-Inf, Inf) to (-1, 1) via tanh
        The parameters are now the pacf phi_{kk} */
@@ -361,7 +361,7 @@ static void invpartrans(int p, double *phi, double *new_)
     int j, k;
     double a, work[100];
 
-    if(p > 100) error(_("can only transform 100 pars in arima0"));
+    if(p > 100) Rf_error(_("can only transform 100 pars in arima0"));
 
     for(j = 0; j < p; j++) work[j] = new_[j] = phi[j];
     /* Run the Durbin-Levinson recursions backwards
@@ -377,7 +377,7 @@ static void invpartrans(int p, double *phi, double *new_)
 
 SEXP Invtrans(SEXP pG, SEXP x)
 {
-    SEXP y = allocVector(REALSXP, LENGTH(x));
+    SEXP y = Rf_allocVector(REALSXP, LENGTH(x));
     int i, v, n;
     double *raw = REAL(x), *new_ = REAL(y);
     GET_STARMA;
@@ -399,7 +399,7 @@ SEXP Invtrans(SEXP pG, SEXP x)
 #define eps 1e-3
 SEXP Gradtrans(SEXP pG, SEXP x)
 {
-    SEXP y = allocMatrix(REALSXP, LENGTH(x), LENGTH(x));
+    SEXP y = Rf_allocMatrix(REALSXP, LENGTH(x), LENGTH(x));
     int i, j, v, n;
     double *raw = REAL(x), *A = REAL(y), w1[100], w2[100], w3[100];
     GET_STARMA;
@@ -459,13 +459,13 @@ SEXP Gradtrans(SEXP pG, SEXP x)
 SEXP
 ARMAtoMA(SEXP ar, SEXP ma, SEXP lag_max)
 {
-    int i, j, p = LENGTH(ar), q = LENGTH(ma), m = asInteger(lag_max);
+    int i, j, p = LENGTH(ar), q = LENGTH(ma), m = Rf_asInteger(lag_max);
     double *phi = REAL(ar), *theta = REAL(ma), *psi, tmp;
     SEXP res;
 
     if(m <= 0 || m == NA_INTEGER)
-	error(_("invalid value of lag.max"));
-    PROTECT(res = allocVector(REALSXP, m));
+	Rf_error(_("invalid value of lag.max"));
+    PROTECT(res = Rf_allocVector(REALSXP, m));
     psi = REAL(res);
     for(i = 0; i < m; i++) {
 	tmp = (i < q) ? theta[i] : 0.0;

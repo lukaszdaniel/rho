@@ -51,11 +51,11 @@ static double
     int pp1 = p + 1;
 
     if (nu < (double) p || p <= 0)
-	error(_("inconsistent degrees of freedom and dimension"));
+	Rf_error(_("inconsistent degrees of freedom and dimension"));
 
     memset(ans, 0, p * p * sizeof(double));
     for (int j = 0; j < p; j++) {	/* jth column */
-	ans[j * pp1] = sqrt(rchisq(nu - (double) j));
+	ans[j * pp1] = sqrt(Rf_rchisq(nu - (double) j));
 	for (int i = 0; i < j; i++) {
 	    int uind = i + j * p, /* upper triangle index */
 		lind = j + i * p; /* lower triangle index */
@@ -79,15 +79,15 @@ SEXP
 rWishart(SEXP ns, SEXP nuP, SEXP scal)
 {
     SEXP ans;
-    int *dims = INTEGER(getAttrib(scal, R_DimSymbol)), info,
-	n = asInteger(ns), psqr;
-    double *scCp, *ansp, *tmp, nu = asReal(nuP), one = 1, zero = 0;
+    int *dims = INTEGER(Rf_getAttrib(scal, R_DimSymbol)), info,
+	n = Rf_asInteger(ns), psqr;
+    double *scCp, *ansp, *tmp, nu = Rf_asReal(nuP), one = 1, zero = 0;
 
-    if (!isMatrix(scal) || !isReal(scal) || dims[0] != dims[1])
-	error(_("'scal' must be a square, real matrix"));
+    if (!Rf_isMatrix(scal) || !Rf_isReal(scal) || dims[0] != dims[1])
+	Rf_error(_("'scal' must be a square, real matrix"));
     if (n <= 0) n = 1;
     // allocate early to avoid memory leaks in Callocs below.
-    PROTECT(ans = alloc3DArray(REALSXP, dims[0], dims[0], n));
+    PROTECT(ans = Rf_alloc3DArray(REALSXP, dims[0], dims[0], n));
     psqr = dims[0] * dims[0];
     tmp = Calloc(psqr, double);
     scCp = Calloc(psqr, double);
@@ -96,7 +96,7 @@ rWishart(SEXP ns, SEXP nuP, SEXP scal)
     memset(tmp, 0, psqr * sizeof(double));
     F77_CALL(dpotrf)("U", &(dims[0]), scCp, &(dims[0]), &info);
     if (info)
-	error(_("'scal' matrix is not positive-definite"));
+	Rf_error(_("'scal' matrix is not positive-definite"));
     ansp = REAL(ans);
     GetRNGstate();
     for (int j = 0; j < n; j++) {

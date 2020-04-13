@@ -37,19 +37,19 @@ static double R_pp_sum (double *u, int n, int l)
 
 SEXP pp_sum(SEXP u, SEXP sl)
 {
-    u = PROTECT(coerceVector(u, REALSXP));
-    int n = LENGTH(u), l = asInteger(sl);
+    u = PROTECT(Rf_coerceVector(u, REALSXP));
+    int n = LENGTH(u), l = Rf_asInteger(sl);
     double trm = R_pp_sum(REAL(u), n, l);
     UNPROTECT(1);
-    return ScalarReal(trm);
+    return Rf_ScalarReal(trm);
 }
 
 SEXP intgrt_vec(SEXP x, SEXP xi, SEXP slag)
 {
-    x = PROTECT(coerceVector(x, REALSXP));
-    xi = PROTECT(coerceVector(xi, REALSXP));
-    int n = LENGTH(x), lag = asInteger(slag);
-    SEXP ans = PROTECT(allocVector(REALSXP, n + lag));
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    xi = PROTECT(Rf_coerceVector(xi, REALSXP));
+    int n = LENGTH(x), lag = Rf_asInteger(slag);
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, n + lag));
     double *rx = REAL(x), *y = REAL(ans);
     Memzero(y, n + lag); Memcpy(y, REAL(xi), lag);
     for (int i = lag; i < lag + n; i++) y[i] = rx[i - lag] + y[i - lag];

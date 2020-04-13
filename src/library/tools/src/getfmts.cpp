@@ -50,24 +50,24 @@ SEXP getfmts(SEXP format)
     Rboolean use_UTF8;
     const void *vmax = vmaxget();
     
-    SEXP res = PROTECT(allocVector(STRSXP, MAXNARGS));
+    SEXP res = PROTECT(Rf_allocVector(STRSXP, MAXNARGS));
     
 #define SET_RESULT(n, s) {						\
-     if (n >= MAXNARGS) error(_("only %d arguments are allowed"), MAXNARGS); \
+     if (n >= MAXNARGS) Rf_error(_("only %d arguments are allowed"), MAXNARGS); \
 	maxlen = (n) < maxlen ? maxlen : (n) + 1;			\
-	SET_STRING_ELT(res, (n), mkChar(s));				\
+	SET_STRING_ELT(res, (n), Rf_mkChar(s));				\
     }
     
-    if (!isString(format)) error(_("'fmt' is not a character vector"));
+    if (!Rf_isString(format)) Rf_error(_("'fmt' is not a character vector"));
     nfmt = LENGTH(format);
     if (nfmt != 1) 
-        error(_("'fmt' must be length 1"));
+        Rf_error(_("'fmt' must be length 1"));
 
     use_UTF8 = Rboolean(Rf_getCharCE(STRING_ELT(format, 0)) == CE_UTF8);
     formatString = TRANSLATE_CHAR(format, 0);
     n = strlen(formatString);
     if (n > MAXLINE)
-	error(_("'fmt' length exceeds maximal format length %d"), MAXLINE);
+	Rf_error(_("'fmt' length exceeds maximal format length %d"), MAXLINE);
     /* process the format string */
     for (cur = 0, cnt = 0; cur < n; cur += chunk) {
 	const char *curFormat = formatString + cur;
@@ -88,7 +88,7 @@ SEXP getfmts(SEXP format)
 		/*  C code as well */
 		chunk = strcspn(curFormat + 1, "diosfeEgGxXaAcupn") + 2;
 		if (cur + chunk > n)
-		    error(_("unrecognised format specification '%s'"), curFormat);
+		    Rf_error(_("unrecognised format specification '%s'"), curFormat);
 
 		strncpy(fmt, curFormat, chunk);
 		fmt[chunk] = '\0';
@@ -128,7 +128,7 @@ SEXP getfmts(SEXP format)
 		    }
 
 		    if (Rf_strchr(starc+1, '*'))
-			error(_("at most one asterisk '*' is supported in each conversion specification"));
+			Rf_error(_("at most one asterisk '*' is supported in each conversion specification"));
 
 		    SET_RESULT(nstar, "*");
 
@@ -151,7 +151,7 @@ SEXP getfmts(SEXP format)
 	}
     }  /* end for ( each chunk ) */
 
-    res = xlengthgets(res, maxlen);
+    res = Rf_xlengthgets(res, maxlen);
     vmaxset(vmax);
     UNPROTECT(1);
     return res;

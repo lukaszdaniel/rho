@@ -288,7 +288,7 @@ static double yDevtoCharUnits(double y, pGEDevDesc dd)
 
 static void NORET BadUnitsError(const char *where)
 {
-    error(_("bad units specified in '%s'"), where);
+    Rf_error(_("bad units specified in '%s'"), where);
 }
 
 /* GConvertXUnits() and GConvertYUnits() convert
@@ -1735,7 +1735,7 @@ static void NORET invalidError(const char *message, pGEDevDesc dd)
     if (dpptr(dd)->currentFigure < 1)
 	dpptr(dd)->currentFigure = dpptr(dd)->lastFigure;
     gpptr(dd)->currentFigure = dpptr(dd)->currentFigure;
-    error(message);
+    Rf_error(message);
 }
 
 Rboolean GRecording(SEXP call, pGEDevDesc dd)
@@ -1782,7 +1782,7 @@ pGEDevDesc GNewPlot(Rboolean recording)
 		     * User may have killed device during pause for prompt
 		     */
 		    if (NoDevices())
-			error(_("attempt to plot on null device"));
+			Rf_error(_("attempt to plot on null device"));
 		    else
 			dd = GEcurrentDevice();
 		}
@@ -1804,7 +1804,7 @@ pGEDevDesc GNewPlot(Rboolean recording)
 		 * User may have killed device during pause for prompt
 		 */
 		if (NoDevices())
-		    error(_("attempt to plot on null device"));
+		    Rf_error(_("attempt to plot on null device"));
 		else
 		    dd = GEcurrentDevice();
 	    }
@@ -1969,7 +1969,7 @@ void GScale(double min, double max, int axis, pGEDevDesc dd)
     case 's':/* FIXME --- implement  's' and 'e' axis styles ! */
     case 'e':
     default:
-	error(_("axis style \"%c\" unimplemented"), style);
+	Rf_error(_("axis style \"%c\" unimplemented"), style);
     }
 
     if (log) { /* 10^max may have gotten +Inf ; or  10^min has become 0 */
@@ -2207,7 +2207,7 @@ void copyGPar(GPar *source, GPar *dest)
 /* Restore the graphics parameters from the device copy. */
 void GRestore(pGEDevDesc dd)
 {
-    if (NoDevices()) error(_("no graphics device is active"));
+    if (NoDevices()) Rf_error(_("no graphics device is active"));
     copyGPar(dpptr(dd), gpptr(dd));
 }
 
@@ -2402,9 +2402,9 @@ void GSetState(int newstate, pGEDevDesc dd)
 void GCheckState(pGEDevDesc dd)
 {
     if(gpptr(dd)->state == 0)
-	error(_("plot.new has not been called yet"));
+	Rf_error(_("plot.new has not been called yet"));
     if (!gpptr(dd)->valid)
-	error(_("invalid graphics state"));
+	Rf_error(_("invalid graphics state"));
 }
 
 /*-------------------------------------------------------------------
@@ -2551,11 +2551,11 @@ locator_close(pDevDesc dd)
     if(old_close) old_close(dd);
     dd->close = old_close;
     old_close = NULL;
-    /* It's not safe to call error() in a Windows event handler, so 
+    /* It's not safe to call Rf_error() in a Windows event handler, so 
        the GA_Close method records the close event separately.
     */
 #ifndef WIN32
-    error(_("graphics device closed during call to locator or identify"));
+    Rf_error(_("graphics device closed during call to locator or identify"));
 #endif
 }
 
@@ -2605,7 +2605,7 @@ void GMetricInfo(int c, double *ascent, double *descent, double *width,
 void GMode(int mode, pGEDevDesc dd)
 {
     if (NoDevices())
-	error(_("No graphics device is active"));
+	Rf_error(_("No graphics device is active"));
     if(mode != gpptr(dd)->devmode) GEMode(mode, dd); /* dd->dev->mode(mode, dd->dev); */
     gpptr(dd)->newplot = dpptr(dd)->newplot = FALSE;
     gpptr(dd)->devmode = dpptr(dd)->devmode = mode;
@@ -2851,7 +2851,7 @@ void GPolygon(int n, double *x, double *y, int coords,
     xx = (double*) R_alloc(n, sizeof(double));
     yy = (double*) R_alloc(n, sizeof(double));
     if (!xx || !yy)
-	error("unable to allocate memory (in GPolygon)");
+	Rf_error("unable to allocate memory (in GPolygon)");
     for (i=0; i<n; i++) {
 	xx[i] = x[i];
 	yy[i] = y[i];
@@ -2887,7 +2887,7 @@ void GPolyline(int n, double *x, double *y, int coords, pGEDevDesc dd)
     xx = (double*) R_alloc(n, sizeof(double));
     yy = (double*) R_alloc(n, sizeof(double));
     if (!xx || !yy)
-	error("unable to allocate memory (in GPolyline)");
+	Rf_error("unable to allocate memory (in GPolyline)");
     for (i=0; i<n; i++) {
 	xx[i] = x[i];
 	yy[i] = y[i];
@@ -3169,7 +3169,7 @@ void GBox(int which, pGEDevDesc dd)
 		 R_TRANWHITE, gpptr(dd)->col, dd);
 	break;
     default:
-	error(_("invalid argument to GBox"));
+	Rf_error(_("invalid argument to GBox"));
     }
 }
 
@@ -3414,7 +3414,7 @@ void GMMathText(SEXP str, int side, double line, int outer,
     double ascent, descent, width;
     GMetricInfo('M', &ascent, &descent, &width, DEVICE, dd);
     if ((ascent == 0) && (descent == 0) && (width == 0))
-	error(_("metric information not available for this device"));
+	Rf_error(_("metric information not available for this device"));
 
     xadj = gpptr(dd)->adj;
 

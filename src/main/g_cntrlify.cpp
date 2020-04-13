@@ -29,7 +29,7 @@
    This conversion is to facilitate rendering.  _controlify() is called by
    alabel(), and the converted label is rendered by _alabel_standard(),
    _alabel_stroke(), or _alabel_device(), depending on what sort of font is
-   currently selected.  See g_alabel.c (_controlify() is called by
+   currently selected.  See g_alabel.cpp (_controlify() is called by
    labelwidth() too).
 
    If the currently selected font is a font with ISO-Latin-1 encoding, the

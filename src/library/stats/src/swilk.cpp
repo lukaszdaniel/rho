@@ -202,12 +202,12 @@ SEXP SWilk(SEXP x)
 {
     int n, ifault = 0;
     double W = 0, pw;  /* original version tested W on entry */
-    x = PROTECT(coerceVector(x, REALSXP));
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
     n = LENGTH(x);
     swilk(REAL(x), n, &W, &pw, &ifault);
     if (ifault > 0 && ifault != 7)
-	error("ifault=%d. This should not happen", ifault);
-    SEXP ans = PROTECT(allocVector(REALSXP, 2));
+	Rf_error("ifault=%d. This should not happen", ifault);
+    SEXP ans = PROTECT(Rf_allocVector(REALSXP, 2));
     REAL(ans)[0] = W, REAL(ans)[1] = pw;
     UNPROTECT(2);
     return ans;

@@ -2067,11 +2067,11 @@ L30:
 
 SEXP Fexact(SEXP x, SEXP pars, SEXP work, SEXP smult)
 {
-    int nr = nrows(x), nc = ncols(x), ws = asInteger(work),
-	mult = asInteger(smult);
-    pars = PROTECT(coerceVector(pars, REALSXP));
+    int nr = Rf_nrows(x), nc = Rf_ncols(x), ws = Rf_asInteger(work),
+	mult = Rf_asInteger(smult);
+    pars = PROTECT(Rf_coerceVector(pars, REALSXP));
     double p, prt, *rp =  REAL(pars);
     fexact(&nr, &nc, INTEGER(x), &nr, rp, rp+1, rp+2, &prt, &p, &ws, &mult);
     UNPROTECT(1);
-    return ScalarReal(p);
+    return Rf_ScalarReal(p);
 }

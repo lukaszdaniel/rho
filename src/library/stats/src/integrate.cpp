@@ -46,22 +46,22 @@ static void Rintfn(double *x, int n, void *ex)
     int i;
     IntStruct IS = (IntStruct) ex;
 
-    PROTECT(args = allocVector(REALSXP, n));
+    PROTECT(args = Rf_allocVector(REALSXP, n));
     for(i = 0; i < n; i++) REAL(args)[i] = x[i];
 
-    PROTECT(tmp = lang2(IS->f , args));
-    PROTECT(resultsxp = eval(tmp, IS->env));
+    PROTECT(tmp = Rf_lang2(IS->f , args));
+    PROTECT(resultsxp = Rf_eval(tmp, IS->env));
 
     if(Rf_length(resultsxp) != n)
-	error("evaluation of function gave a result of wrong length");
+	Rf_error("evaluation of function gave a result of wrong length");
     if(TYPEOF(resultsxp) == INTSXP) {
-	resultsxp = coerceVector(resultsxp, REALSXP);
+	resultsxp = Rf_coerceVector(resultsxp, REALSXP);
     } else if(TYPEOF(resultsxp) != REALSXP)
-	error("evaluation of function gave a result of wrong type");
+	Rf_error("evaluation of function gave a result of wrong type");
     for(i = 0; i < n; i++) {
 	x[i] = REAL(resultsxp)[i];
 	if(!R_FINITE(x[i]))
-	    error("non-finite function value");
+	    Rf_error("non-finite function value");
     }
     UNPROTECT(3);
     return;
@@ -77,13 +77,13 @@ SEXP call_dqags(SEXP args)
     args = CDR(args);
     is.f = CAR(args); args = CDR(args);
     is.env = CAR(args); args = CDR(args);
-    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "lower");
-    lower = asReal(CAR(args)); args = CDR(args);
-    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "upper");
-    upper = asReal(CAR(args)); args = CDR(args);
-    epsabs = asReal(CAR(args)); args = CDR(args);
-    epsrel = asReal(CAR(args)); args = CDR(args);
-    limit = asInteger(CAR(args)); args = CDR(args);
+    if(Rf_length(CAR(args)) > 1) Rf_error(_("'%s' must be of length one"), "lower");
+    lower = Rf_asReal(CAR(args)); args = CDR(args);
+    if(Rf_length(CAR(args)) > 1) Rf_error(_("'%s' must be of length one"), "upper");
+    upper = Rf_asReal(CAR(args)); args = CDR(args);
+    epsabs = Rf_asReal(CAR(args)); args = CDR(args);
+    epsrel = Rf_asReal(CAR(args)); args = CDR(args);
+    limit = Rf_asInteger(CAR(args)); args = CDR(args);
     lenw = 4 * limit;
     iwork = (int *) R_alloc((size_t) limit, sizeof(int));
     work = (double *) R_alloc((size_t) lenw, sizeof(double));
@@ -92,21 +92,21 @@ SEXP call_dqags(SEXP args)
 	   &lower, &upper, &epsabs, &epsrel, &result,
 	   &abserr, &neval, &ier, &limit, &lenw, &last, iwork, work);
 
-    PROTECT(ans = allocVector(VECSXP, 4));
-    PROTECT(ansnames = allocVector(STRSXP, 4));
-    SET_STRING_ELT(ansnames, 0, mkChar("value"));
-    SET_VECTOR_ELT(ans, 0, allocVector(REALSXP, 1));
+    PROTECT(ans = Rf_allocVector(VECSXP, 4));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, 4));
+    SET_STRING_ELT(ansnames, 0, Rf_mkChar("value"));
+    SET_VECTOR_ELT(ans, 0, Rf_allocVector(REALSXP, 1));
     REAL(VECTOR_ELT(ans, 0))[0] = result;
-    SET_STRING_ELT(ansnames, 1, mkChar("abs.error"));
-    SET_VECTOR_ELT(ans, 1, allocVector(REALSXP, 1));
+    SET_STRING_ELT(ansnames, 1, Rf_mkChar("abs.error"));
+    SET_VECTOR_ELT(ans, 1, Rf_allocVector(REALSXP, 1));
     REAL(VECTOR_ELT(ans, 1))[0] = abserr;
-    SET_STRING_ELT(ansnames, 2, mkChar("subdivisions"));
-    SET_VECTOR_ELT(ans, 2, allocVector(INTSXP, 1));
+    SET_STRING_ELT(ansnames, 2, Rf_mkChar("subdivisions"));
+    SET_VECTOR_ELT(ans, 2, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(ans, 2))[0] = last;
-    SET_STRING_ELT(ansnames, 3, mkChar("ierr"));
-    SET_VECTOR_ELT(ans, 3, allocVector(INTSXP, 1));
+    SET_STRING_ELT(ansnames, 3, Rf_mkChar("ierr"));
+    SET_VECTOR_ELT(ans, 3, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(ans, 3))[0] = ier;
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
@@ -121,12 +121,12 @@ SEXP call_dqagi(SEXP args)
     args = CDR(args);
     is.f = CAR(args); args = CDR(args);
     is.env = CAR(args); args = CDR(args);
-    if(Rf_length(CAR(args)) > 1) error(_("'%s' must be of length one"), "bound");
-    bound = asReal(CAR(args)); args = CDR(args);
-    inf = asInteger(CAR(args)); args = CDR(args);
-    epsabs = asReal(CAR(args)); args = CDR(args);
-    epsrel = asReal(CAR(args)); args = CDR(args);
-    limit = asInteger(CAR(args)); args = CDR(args);
+    if(Rf_length(CAR(args)) > 1) Rf_error(_("'%s' must be of length one"), "bound");
+    bound = Rf_asReal(CAR(args)); args = CDR(args);
+    inf = Rf_asInteger(CAR(args)); args = CDR(args);
+    epsabs = Rf_asReal(CAR(args)); args = CDR(args);
+    epsrel = Rf_asReal(CAR(args)); args = CDR(args);
+    limit = Rf_asInteger(CAR(args)); args = CDR(args);
     lenw = 4 * limit;
     iwork = (int *) R_alloc((size_t) limit, sizeof(int));
     work = (double *) R_alloc((size_t) lenw, sizeof(double));
@@ -134,21 +134,21 @@ SEXP call_dqagi(SEXP args)
     Rdqagi(Rintfn, (void*)&is, &bound,&inf,&epsabs,&epsrel,&result,
 	   &abserr,&neval,&ier,&limit,&lenw,&last,iwork,work);
 
-    PROTECT(ans = allocVector(VECSXP, 4));
-    PROTECT(ansnames = allocVector(STRSXP, 4));
-    SET_STRING_ELT(ansnames, 0, mkChar("value"));
-    SET_VECTOR_ELT(ans, 0, allocVector(REALSXP, 1));
+    PROTECT(ans = Rf_allocVector(VECSXP, 4));
+    PROTECT(ansnames = Rf_allocVector(STRSXP, 4));
+    SET_STRING_ELT(ansnames, 0, Rf_mkChar("value"));
+    SET_VECTOR_ELT(ans, 0, Rf_allocVector(REALSXP, 1));
     REAL(VECTOR_ELT(ans, 0))[0] = result;
-    SET_STRING_ELT(ansnames, 1, mkChar("abs.error"));
-    SET_VECTOR_ELT(ans, 1, allocVector(REALSXP, 1));
+    SET_STRING_ELT(ansnames, 1, Rf_mkChar("abs.error"));
+    SET_VECTOR_ELT(ans, 1, Rf_allocVector(REALSXP, 1));
     REAL(VECTOR_ELT(ans, 1))[0] = abserr;
-    SET_STRING_ELT(ansnames, 2, mkChar("subdivisions"));
-    SET_VECTOR_ELT(ans, 2, allocVector(INTSXP, 1));
+    SET_STRING_ELT(ansnames, 2, Rf_mkChar("subdivisions"));
+    SET_VECTOR_ELT(ans, 2, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(ans, 2))[0] = last;
-    SET_STRING_ELT(ansnames, 3, mkChar("ierr"));
-    SET_VECTOR_ELT(ans, 3, allocVector(INTSXP, 1));
+    SET_STRING_ELT(ansnames, 3, Rf_mkChar("ierr"));
+    SET_VECTOR_ELT(ans, 3, Rf_allocVector(INTSXP, 1));
     INTEGER(VECTOR_ELT(ans, 3))[0] = ier;
-    setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }

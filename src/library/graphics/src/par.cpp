@@ -158,14 +158,14 @@ static int ParCode(const char *what)
 
 static void NORET par_error(const char *what)
 {
-    error(_("invalid value specified for graphical parameter \"%s\""),  what);
+    Rf_error(_("invalid value specified for graphical parameter \"%s\""),  what);
 }
 
 
 static void lengthCheck(const char *what, SEXP v, int n)
 {
     if (Rf_length(v) != n)
-	error(_("graphical parameter \"%s\" has the wrong length"), what);
+	Rf_error(_("graphical parameter \"%s\" has the wrong length"), what);
 }
 
 
@@ -260,7 +260,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     /* If we get here, Query has already checked that 'what' is valid */
 
     if (ParCode(what) == 2) {
-	warning(_("graphical parameter \"%s\" cannot be set"), what);
+	Rf_warning(_("graphical parameter \"%s\" cannot be set"), what);
 	return;
     }
 #define FOR_PAR
@@ -276,11 +276,11 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     }
 /*--- and these are "Specify() only" {i.e. par(nam = val)} : */
     else if (streql(what, "ask")) {
-	lengthCheck(what, value, 1);	ix = asLogical(value);
+	lengthCheck(what, value, 1);	ix = Rf_asLogical(value);
 	dd->ask = Rboolean(ix == 1);/* NA |-> FALSE */
     }
     else if (streql(what, "fig")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	if (0.0 <= REAL(value)[0] && REAL(value)[0] < REAL(value)[1] &&
 	    REAL(value)[1] <= 1.0 &&
@@ -308,7 +308,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	else par_error(what);
     }
     else if (streql(what, "fin")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 2);
 	R_DEV_2(defaultFigure) = Rboolean(0);
 	R_DEV_2(fUnits) = INCHES;
@@ -329,12 +329,12 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     /* -- */
     else if (streql(what, "lheight")) {
 	lengthCheck(what, value, 1);
-	x = asReal(value);
+	x = Rf_asReal(value);
 	posRealCheck(x, what);
 	R_DEV__(lheight) = x;
     }
     else if (streql(what, "mai")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -349,7 +349,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "mar")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -364,14 +364,14 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "mex")) {
-	lengthCheck(what, value, 1);	x = asReal(value);
+	lengthCheck(what, value, 1);	x = Rf_asReal(value);
 	posRealCheck(x, what);
 	R_DEV__(mex) = x;
 	GReset(dd);
     }
     else if (streql(what, "mfrow")) {
 	int nrow, ncol;
-	value = coerceVector(value, INTSXP);
+	value = Rf_coerceVector(value, INTSXP);
 	lengthCheck(what, value, 2);
 	posIntCheck(INTEGER(value)[0], what);
 	posIntCheck(INTEGER(value)[1], what);
@@ -400,7 +400,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     }
     else if (streql(what, "mfcol")) {
 	int nrow, ncol;
-	value = coerceVector(value, INTSXP);
+	value = Rf_coerceVector(value, INTSXP);
 	lengthCheck(what, value, 2);
 	posIntCheck(INTEGER(value)[0], what);
 	posIntCheck(INTEGER(value)[1], what);
@@ -429,10 +429,10 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     }
     else if (streql(what, "mfg")) {
 	int row, col, nrow, ncol, np;
-	PROTECT(value = coerceVector(value, INTSXP));
+	PROTECT(value = Rf_coerceVector(value, INTSXP));
 	np = Rf_length(value);
 	if(np != 2 && np != 4)
-	    error(_("parameter \"mfg\" has the wrong length"));
+	    Rf_error(_("parameter \"mfg\" has the wrong length"));
 	posIntCheck(INTEGER(value)[0], what);
 	posIntCheck(INTEGER(value)[1], what);
 	row = INTEGER(value)[0];
@@ -440,16 +440,16 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	nrow = dpptr(dd)->numrows;
 	ncol = dpptr(dd)->numcols;
 	if(row <= 0 || row > nrow)
-	    error(_("parameter \"i\" in \"mfg\" is out of range"));
+	    Rf_error(_("parameter \"i\" in \"mfg\" is out of range"));
 	if(col <= 0 || col > ncol)
-	    error(_("parameter \"j\" in \"mfg\" is out of range"));
+	    Rf_error(_("parameter \"j\" in \"mfg\" is out of range"));
 	if(np == 4) {
 	    posIntCheck(INTEGER(value)[2], what);
 	    posIntCheck(INTEGER(value)[3], what);
 	    if(nrow != INTEGER(value)[2])
-		warning(_("value of 'nr' in \"mfg\" is wrong and will be ignored"));
+		Rf_warning(_("value of 'nr' in \"mfg\" is wrong and will be ignored"));
 	    if(ncol != INTEGER(value)[3])
-		warning(_("value of 'nc' in \"mfg\" is wrong and will be ignored"));
+		Rf_warning(_("value of 'nc' in \"mfg\" is wrong and will be ignored"));
 	}
 	UNPROTECT(1);
 	R_DEV_2(lastFigure) = nrow*ncol;
@@ -473,16 +473,16 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 
     else if (streql(what, "new")) {
 	lengthCheck(what, value, 1);
-	ix = asLogical(value);
+	ix = Rf_asLogical(value);
 	if(!gpptr(dd)->state) {
 	    /* no need to warn with new=FALSE and no plot */
-	    if(ix != 0) warning(_("calling par(new=TRUE) with no plot"));
+	    if(ix != 0) Rf_warning(_("calling par(new=TRUE) with no plot"));
 	} else R_DEV__(newplot) = Rboolean(ix != 0);
     }
     /* -- */
 
     else if (streql(what, "oma")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -498,7 +498,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "omd")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	BoundsCheck(REAL(value)[0], 0.0, 1.0, what);
 	BoundsCheck(REAL(value)[1], 0.0, 1.0, what);
@@ -514,7 +514,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "omi")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -532,7 +532,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     /* -- */
 
     else if (streql(what, "pin")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 2);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -543,7 +543,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "plt")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	nonnegRealCheck(REAL(value)[0], what);
 	nonnegRealCheck(REAL(value)[1], what);
@@ -558,14 +558,14 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	GReset(dd);
     }
     else if (streql(what, "ps")) {
-	lengthCheck(what, value, 1);	ix = asInteger(value);
+	lengthCheck(what, value, 1);	ix = Rf_asInteger(value);
 	nonnegIntCheck(ix, what);
 	R_DEV__(ps) = ix;
     }
     else if (streql(what, "pty")) {
-	if (!isString(value) || LENGTH(value) < 1)
+	if (!Rf_isString(value) || LENGTH(value) < 1)
 	    par_error(what);
-	cx = CHAR(STRING_ELT(value, 0))[0];
+	cx = R_CHAR(STRING_ELT(value, 0))[0];
 	if (cx == 'm' || cx == 's') {
 	    R_DEV__(pty) = cx;
 	    R_DEV__(defaultPlot) = TRUE;
@@ -574,7 +574,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     }
     /* -- */
     else if (streql(what, "usr")) {
-	value = coerceVector(value, REALSXP);
+	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 4);
 	naRealCheck(REAL(value)[0], what);
 	naRealCheck(REAL(value)[1], what);
@@ -614,26 +614,26 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     }/* usr */
 
     else if (streql(what, "xlog")) {
-	lengthCheck(what, value, 1);	ix = asLogical(value);
+	lengthCheck(what, value, 1);	ix = Rf_asLogical(value);
 	if (ix == NA_LOGICAL)
 	    par_error(what);
 	R_DEV__(xlog) = Rboolean(ix != 0);
     }
     else if (streql(what, "ylog")) {
-	lengthCheck(what, value, 1);	ix = asLogical(value);
+	lengthCheck(what, value, 1);	ix = Rf_asLogical(value);
 	if (ix == NA_LOGICAL)
 	    par_error(what);
 	R_DEV__(ylog) = Rboolean(ix != 0);
     }
     else if (streql(what, "ylbias")) {
 	lengthCheck(what, value, 1);
-	dd->dev->yLineBias = asReal(value);
+	dd->dev->yLineBias = Rf_asReal(value);
     }
     /* We do not need these as Query will already have warned.
     else if (streql(what, "type")) {
-	warning(_("graphical parameter \"%s\" is obsolete"), what);
+	Rf_warning(_("graphical parameter \"%s\" is obsolete"), what);
     }
-    else warning(_("unknown graphical parameter \"%s\""), what);
+    else Rf_warning(_("unknown graphical parameter \"%s\""), what);
     */
 
     return;
@@ -663,15 +663,15 @@ static void Specify2(const char *what, SEXP value, pGEDevDesc dd)
 	return;
     }
     if (ptype == -2) {
-	warning(_("graphical parameter \"%s\" is obsolete"), what);
+	Rf_warning(_("graphical parameter \"%s\" is obsolete"), what);
 	return;
     }
     if (ptype < 0) {
-	warning(_("\"%s\" is not a graphical parameter"), what);
+	Rf_warning(_("\"%s\" is not a graphical parameter"), what);
 	return;
     }
     if (ptype == 2) {
-	warning(_("graphical parameter \"%s\" cannot be set"), what);
+	Rf_warning(_("graphical parameter \"%s\" cannot be set"), what);
 	return;
     }
 
@@ -687,81 +687,81 @@ static SEXP Query(const char *what, pGEDevDesc dd)
     SEXP value;
 
     if (streql(what, "adj")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->adj;
     }
     else if (streql(what, "ann")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	LOGICAL(value)[0] = (dpptr(dd)->ann != 0);
     }
     else if (streql(what, "ask")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	LOGICAL(value)[0] = dd->ask;
     }
     else if (streql(what, "bg")) {
-	value = mkString(col2name(dpptr(dd)->bg));
+	value = Rf_mkString(col2name(dpptr(dd)->bg));
     }
     else if (streql(what, "bty")) {
 	char buf[2];
 	buf[0] = dpptr(dd)->bty;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "cex")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->cexbase;
     }
     else if (streql(what, "cex.main")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->cexmain;
     }
     else if (streql(what, "cex.lab")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->cexlab;
     }
     else if (streql(what, "cex.sub")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->cexsub;
     }
     else if (streql(what, "cex.axis")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->cexaxis;
     }
     else if (streql(what, "cin")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	REAL(value)[0] = dpptr(dd)->scale * dd->dev->cra[0] * dd->dev->ipr[0];
 	REAL(value)[1] = dpptr(dd)->scale * dd->dev->cra[1] * dd->dev->ipr[1];
     }
     else if (streql(what, "col")) {
-	value = mkString(col2name(dpptr(dd)->col));
+	value = Rf_mkString(col2name(dpptr(dd)->col));
     }
     else if (streql(what, "col.main")) {
-	value = mkString(col2name(dpptr(dd)->colmain));
+	value = Rf_mkString(col2name(dpptr(dd)->colmain));
     }
     else if (streql(what, "col.lab")) {
-	value = mkString(col2name(dpptr(dd)->collab));
+	value = Rf_mkString(col2name(dpptr(dd)->collab));
     }
     else if (streql(what, "col.sub")) {
-	value = mkString(col2name(dpptr(dd)->colsub));
+	value = Rf_mkString(col2name(dpptr(dd)->colsub));
     }
     else if (streql(what, "col.axis")) {
-	value = mkString(col2name(dpptr(dd)->colaxis));
+	value = Rf_mkString(col2name(dpptr(dd)->colaxis));
     }
     else if (streql(what, "cra")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	REAL(value)[0] = dpptr(dd)->scale * dd->dev->cra[0];
 	REAL(value)[1] = dpptr(dd)->scale * dd->dev->cra[1];
     }
     else if (streql(what, "crt")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->crt;
     }
     else if (streql(what, "csi")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = GConvertYUnits(1.0, CHARS, INCHES, dd);
     }
     else if (streql(what, "cxy")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	/* == par("cin") / par("pin") : */
 	REAL(value)[0] = dpptr(dd)->scale * dd->dev->cra[0]
 	    * dd->dev->ipr[0] / dpptr(dd)->pin[0]
@@ -771,111 +771,111 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	    * (dpptr(dd)->usr[3] - dpptr(dd)->usr[2]);
     }
     else if (streql(what, "din")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	REAL(value)[0] = GConvertXUnits(1.0, NDC, INCHES, dd);
 	REAL(value)[1] = GConvertYUnits(1.0, NDC, INCHES, dd);
     }
     else if (streql(what, "err")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->err;
     }
     else if (streql(what, "family")) {
-	value = mkString(dpptr(dd)->family);
+	value = Rf_mkString(dpptr(dd)->family);
     }
     else if (streql(what, "fg")) {
-	value = mkString(col2name(dpptr(dd)->fg));
+	value = Rf_mkString(col2name(dpptr(dd)->fg));
     }
     else if (streql(what, "fig")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->fig[0];
 	REAL(value)[1] = dpptr(dd)->fig[1];
 	REAL(value)[2] = dpptr(dd)->fig[2];
 	REAL(value)[3] = dpptr(dd)->fig[3];
     }
     else if (streql(what, "fin")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	REAL(value)[0] = dpptr(dd)->fin[0];
 	REAL(value)[1] = dpptr(dd)->fin[1];
     }
     else if (streql(what, "font")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->font;
     }
     else if (streql(what, "font.main")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->fontmain;
     }
     else if (streql(what, "font.lab")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->fontlab;
     }
     else if (streql(what, "font.sub")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->fontsub;
     }
     else if (streql(what, "font.axis")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->fontaxis;
     }
     else if (streql(what, "lab")) {
-	value = allocVector(INTSXP, 3);
+	value = Rf_allocVector(INTSXP, 3);
 	INTEGER(value)[0] = dpptr(dd)->lab[0];
 	INTEGER(value)[1] = dpptr(dd)->lab[1];
 	INTEGER(value)[2] = dpptr(dd)->lab[2];
     }
     else if (streql(what, "las")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	INTEGER(value)[0] = dpptr(dd)->las;
     }
     else if (streql(what, "lend")) {
 	value = GE_LENDget(dpptr(dd)->lend);
     }
     else if (streql(what, "lheight")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->lheight;
     }
     else if (streql(what, "ljoin")) {
 	value = GE_LJOINget(dpptr(dd)->ljoin);
     }
     else if (streql(what, "lmitre")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->lmitre;
     }
     else if (streql(what, "lty")) {
 	value = GE_LTYget(dpptr(dd)->lty);
     }
     else if (streql(what, "lwd")) {
-	value =	 allocVector(REALSXP, 1);
+	value =	 Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->lwd;
     }
     else if (streql(what, "mai")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->mai[0];
 	REAL(value)[1] = dpptr(dd)->mai[1];
 	REAL(value)[2] = dpptr(dd)->mai[2];
 	REAL(value)[3] = dpptr(dd)->mai[3];
     }
     else if (streql(what, "mar")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->mar[0];
 	REAL(value)[1] = dpptr(dd)->mar[1];
 	REAL(value)[2] = dpptr(dd)->mar[2];
 	REAL(value)[3] = dpptr(dd)->mar[3];
     }
     else if (streql(what, "mex")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->mex;
     }
     /* NOTE that if a complex layout has been specified */
     /* then this simple information may not be very useful. */
     else if (streql(what, "mfrow") || streql(what, "mfcol")) {
-	value = allocVector(INTSXP, 2);
+	value = Rf_allocVector(INTSXP, 2);
 	INTEGER(value)[0] = dpptr(dd)->numrows;
 	INTEGER(value)[1] = dpptr(dd)->numcols;
     }
     else if (streql(what, "mfg")) {
 	int row, col;
-	value = allocVector(INTSXP, 4);
+	value = Rf_allocVector(INTSXP, 4);
 	currentFigureLocation(&row, &col, dd);
 	INTEGER(value)[0] = row+1;
 	INTEGER(value)[1] = col+1;
@@ -883,36 +883,36 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	INTEGER(value)[3] = dpptr(dd)->numcols;
     }
     else if (streql(what, "mgp")) {
-	value = allocVector(REALSXP, 3);
+	value = Rf_allocVector(REALSXP, 3);
 	REAL(value)[0] = dpptr(dd)->mgp[0];
 	REAL(value)[1] = dpptr(dd)->mgp[1];
 	REAL(value)[2] = dpptr(dd)->mgp[2];
     }
     else if (streql(what, "mkh")) {
 	/* Unused in R, but settable */
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->mkh;
     }
     else if (streql(what, "new")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	LOGICAL(value)[0] = dpptr(dd)->newplot;
     }
     else if (streql(what, "oma")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->oma[0];
 	REAL(value)[1] = dpptr(dd)->oma[1];
 	REAL(value)[2] = dpptr(dd)->oma[2];
 	REAL(value)[3] = dpptr(dd)->oma[3];
     }
     else if (streql(what, "omd")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->omd[0];
 	REAL(value)[1] = dpptr(dd)->omd[1];
 	REAL(value)[2] = dpptr(dd)->omd[2];
 	REAL(value)[3] = dpptr(dd)->omd[3];
     }
     else if (streql(what, "omi")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->omi[0];
 	REAL(value)[1] = dpptr(dd)->omi[1];
 	REAL(value)[2] = dpptr(dd)->omi[2];
@@ -922,7 +922,7 @@ static SEXP Query(const char *what, pGEDevDesc dd)
         /* This calculation mimics the decision-making in GNewPlot()
          * in graphics.cpp SO it MUST be kept in synch with the logic there
          */
-        value = allocVector(LGLSXP, 1);
+        value = Rf_allocVector(LGLSXP, 1);
         LOGICAL(value)[0] = 0;
         if (dpptr(dd)->newplot) {
             if (!dpptr(dd)->state) 
@@ -941,26 +941,26 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	    char buf[2];
 	    buf[0] = (char) val;
 	    buf[1] = '\0';
-	    value = mkString(buf);
+	    value = Rf_mkString(buf);
 	} else {
 	    /* Could return as UTF-8 string */
-	    value = ScalarInteger(val);
+	    value = Rf_ScalarInteger(val);
 	}
     }
     else if (streql(what, "pin")) {
-	value = allocVector(REALSXP, 2);
+	value = Rf_allocVector(REALSXP, 2);
 	REAL(value)[0] = dpptr(dd)->pin[0];
 	REAL(value)[1] = dpptr(dd)->pin[1];
     }
     else if (streql(what, "plt")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	REAL(value)[0] = dpptr(dd)->plt[0];
 	REAL(value)[1] = dpptr(dd)->plt[1];
 	REAL(value)[2] = dpptr(dd)->plt[2];
 	REAL(value)[3] = dpptr(dd)->plt[3];
     }
     else if (streql(what, "ps")) {
-	value = allocVector(INTSXP, 1);
+	value = Rf_allocVector(INTSXP, 1);
 	/* was reporting unscaled prior to 2.7.0 */
 	INTEGER(value)[0] = (int)(dpptr(dd)->ps * dpptr(dd)->scale);
     }
@@ -968,26 +968,26 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	char buf[2];
 	buf[0] = dpptr(dd)->pty;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "smo")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->smo;
     }
     else if (streql(what, "srt")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->srt;
     }
     else if (streql(what, "tck")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->tck;
     }
     else if (streql(what, "tcl")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dpptr(dd)->tcl;
     }
     else if (streql(what, "usr")) {
-	value = allocVector(REALSXP, 4);
+	value = Rf_allocVector(REALSXP, 4);
 	if (gpptr(dd)->xlog) {
 	    REAL(value)[0] = gpptr(dd)->logusr[0];
 	    REAL(value)[1] = gpptr(dd)->logusr[1];
@@ -1006,7 +1006,7 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	}
     }
     else if (streql(what, "xaxp")) {
-	value = allocVector(REALSXP, 3);
+	value = Rf_allocVector(REALSXP, 3);
 	REAL(value)[0] = dpptr(dd)->xaxp[0];
 	REAL(value)[1] = dpptr(dd)->xaxp[1];
 	REAL(value)[2] = dpptr(dd)->xaxp[2];
@@ -1015,27 +1015,27 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	char buf[2];
 	buf[0] = dpptr(dd)->xaxs;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "xaxt")) {
 	char buf[2];
 	buf[0] = dpptr(dd)->xaxt;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "xlog")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	LOGICAL(value)[0] = dpptr(dd)->xlog;
     }
     else if (streql(what, "xpd")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	if (dpptr(dd)->xpd == 2)
 	    LOGICAL(value)[0] = NA_LOGICAL;
 	else
 	    LOGICAL(value)[0] = dpptr(dd)->xpd;
     }
     else if (streql(what, "yaxp")) {
-	value = allocVector(REALSXP, 3);
+	value = Rf_allocVector(REALSXP, 3);
 	REAL(value)[0] = dpptr(dd)->yaxp[0];
 	REAL(value)[1] = dpptr(dd)->yaxp[1];
 	REAL(value)[2] = dpptr(dd)->yaxp[2];
@@ -1044,28 +1044,28 @@ static SEXP Query(const char *what, pGEDevDesc dd)
 	char buf[2];
 	buf[0] = dpptr(dd)->yaxs;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "yaxt")) {
 	char buf[2];
 	buf[0] = dpptr(dd)->yaxt;
 	buf[1] = '\0';
-	value = mkString(buf);
+	value = Rf_mkString(buf);
     }
     else if (streql(what, "ylbias")) {
-	value = allocVector(REALSXP, 1);
+	value = Rf_allocVector(REALSXP, 1);
 	REAL(value)[0] = dd->dev->yLineBias;
     }
     else if (streql(what, "ylog")) {
-	value = allocVector(LGLSXP, 1);
+	value = Rf_allocVector(LGLSXP, 1);
 	LOGICAL(value)[0] = dpptr(dd)->ylog;
     }
     else if (ParCode(what) == -2) {
-	warning(_("graphical parameter \"%s\" is obsolete"), what);
+	Rf_warning(_("graphical parameter \"%s\" is obsolete"), what);
 	value = R_NilValue;
     }
     else {
-	warning(_("\"%s\" is not a graphical parameter"), what);
+	Rf_warning(_("\"%s\" is not a graphical parameter"), what);
 	value = R_NilValue;
     }
     return value;
@@ -1084,12 +1084,12 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
     new_spec = 0;
     args = CAR(args);
     nargs = Rf_length(args);
-    if (isNewList(args)) {
+    if (Rf_isNewList(args)) {
 	SEXP oldnames, newnames, tag, val;
 	int i;
-	PROTECT(newnames = allocVector(STRSXP, nargs));
-	PROTECT(value = allocVector(VECSXP, nargs));
-	oldnames = getAttrib(args, R_NamesSymbol);
+	PROTECT(newnames = Rf_allocVector(STRSXP, nargs));
+	PROTECT(value = Rf_allocVector(VECSXP, nargs));
+	oldnames = Rf_getAttrib(args, R_NamesSymbol);
 	for (i = 0 ; i < nargs ; i++) {
 	    if (oldnames != R_NilValue)
 		tag = STRING_ELT(oldnames, i);
@@ -1097,16 +1097,16 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 		tag = R_NilValue;
 	    val = VECTOR_ELT(args, i);
 	    /* tags are all ASCII */
-	    if (tag != R_NilValue && CHAR(tag)[0]) {
+	    if (tag != R_NilValue && R_CHAR(tag)[0]) {
 		new_spec = 1;
-		SET_VECTOR_ELT(value, i, Query(CHAR(tag), dd));
+		SET_VECTOR_ELT(value, i, Query(R_CHAR(tag), dd));
 		SET_STRING_ELT(newnames, i, tag);
-		Specify(CHAR(tag), val, dd);
+		Specify(R_CHAR(tag), val, dd);
 	    }
-	    else if (isString(val) && Rf_length(val) > 0) {
+	    else if (Rf_isString(val) && Rf_length(val) > 0) {
 		tag = STRING_ELT(val, 0);
-		if (tag != R_NilValue && CHAR(tag)[0]) {
-		    SET_VECTOR_ELT(value, i, Query(CHAR(tag), dd));
+		if (tag != R_NilValue && R_CHAR(tag)[0]) {
+		    SET_VECTOR_ELT(value, i, Query(R_CHAR(tag), dd));
 		    SET_STRING_ELT(newnames, i, tag);
 		}
 	    }
@@ -1115,10 +1115,10 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SET_STRING_ELT(newnames, i, R_BlankString);
 	    }
 	}
-	setAttrib(value, R_NamesSymbol, newnames);
+	Rf_setAttrib(value, R_NamesSymbol, newnames);
     }
     else {
-	error(_("invalid argument passed to par()"));
+	Rf_error(_("invalid argument passed to par()"));
 	return R_NilValue/* -Wall */;
     }
     /* should really only do this if specifying new pars ?  yes! [MM] */
@@ -1162,15 +1162,15 @@ SEXP C_layout(SEXP args)
     nrow = dpptr(dd)->numrows = gpptr(dd)->numrows =
 	INTEGER(CAR(args))[0];
     if (nrow > MAX_LAYOUT_ROWS)
-	error(_("too many rows in layout, limit %d"), MAX_LAYOUT_ROWS);
+	Rf_error(_("too many rows in layout, limit %d"), MAX_LAYOUT_ROWS);
     args = CDR(args);
     /* num.cols: */
     ncol = dpptr(dd)->numcols = gpptr(dd)->numcols =
 	INTEGER(CAR(args))[0];
     if (ncol > MAX_LAYOUT_COLS)
-	error(_("too many columns in layout, limit %d"), MAX_LAYOUT_COLS);
+	Rf_error(_("too many columns in layout, limit %d"), MAX_LAYOUT_COLS);
     if (nrow * ncol > MAX_LAYOUT_CELLS)
-	error(_("too many cells in layout, limit %d"), MAX_LAYOUT_CELLS);
+	Rf_error(_("too many cells in layout, limit %d"), MAX_LAYOUT_CELLS);
     args = CDR(args);
     /* mat[i,j] == order[i+j*nrow] : */
     for (i = 0; i < nrow * ncol; i++)
@@ -1250,12 +1250,12 @@ SEXP C_layout(SEXP args)
 
 void ProcessInlinePars(SEXP s, pGEDevDesc dd)
 {
-    if (isList(s)) {
+    if (Rf_isList(s)) {
 	while (s != R_NilValue) {
-	    if (isList(CAR(s)))
+	    if (Rf_isList(CAR(s)))
 		ProcessInlinePars(CAR(s), dd);
 	    else if (TAG(s) != R_NilValue)
-		Specify2(CHAR(PRINTNAME(TAG(s))), CAR(s), dd);
+		Specify2(R_CHAR(PRINTNAME(TAG(s))), CAR(s), dd);
 	    s = CDR(s);
 	}
     }

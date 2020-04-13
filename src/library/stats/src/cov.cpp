@@ -560,7 +560,7 @@ cov_na_2(int n, int ncx, int ncy, double *x, double *y,
 #define NA_LOOP								\
 	for (i = 0 ; i < n ; i++)					\
 	    if (ISNAN(z[i])) {						\
-		if (na_fail) error(_("missing observations in cov/cor"));\
+		if (na_fail) Rf_error(_("missing observations in cov/cor"));\
 		else ind[i] = 0;					\
 	    }
 
@@ -633,49 +633,49 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
     int i, method, n, ncx, ncy, nprotect = 2;
 
     /* Arg.1: x */
-    if(isNull(x)) /* never allowed */
-	error(_("'x' is NULL"));
+    if(Rf_isNull(x)) /* never allowed */
+	Rf_error(_("'x' is NULL"));
 #ifdef _R_in_2017_
-    if(isFactor(x)) error(_("'x' is a factor"));
+    if(Rf_isFactor(x)) Rf_error(_("'x' is a factor"));
 #else
 # define VAR_FACTOR_MSG "Calling var(x) on a factor x is deprecated and will become an error.\n  Use something like 'all(duplicated(x)[-1L])' to test for a constant vector."
-    if(isFactor(x)) warning(_(VAR_FACTOR_MSG));
+    if(Rf_isFactor(x)) Rf_warning(_(VAR_FACTOR_MSG));
 #endif
     /* length check of x -- only if(empty_err) --> below */
-    x = PROTECT(coerceVector(x, REALSXP));
-    if ((ansmat = isMatrix(x))) {
-	n = nrows(x);
-	ncx = ncols(x);
+    x = PROTECT(Rf_coerceVector(x, REALSXP));
+    if ((ansmat = Rf_isMatrix(x))) {
+	n = Rf_nrows(x);
+	ncx = Rf_ncols(x);
     }
     else {
 	n = Rf_length(x);
 	ncx = 1;
     }
     /* Arg.2: y */
-    if (isNull(y)) {/* y = x  : var() */
+    if (Rf_isNull(y)) {/* y = x  : var() */
 	ncy = ncx;
     } else {
 #ifdef _R_in_2017_
-	if(isFactor(y)) error(_("'y' is a factor"));
+	if(Rf_isFactor(y)) Rf_error(_("'y' is a factor"));
 #else
-	if(isFactor(y)) warning(_(VAR_FACTOR_MSG));
+	if(Rf_isFactor(y)) Rf_warning(_(VAR_FACTOR_MSG));
 #endif
-	y = PROTECT(coerceVector(y, REALSXP));
+	y = PROTECT(Rf_coerceVector(y, REALSXP));
 	nprotect++;
-	if (isMatrix(y)) {
-	    if (nrows(y) != n)
-		error(_("incompatible dimensions"));
-	    ncy = ncols(y);
+	if (Rf_isMatrix(y)) {
+	    if (Rf_nrows(y) != n)
+		Rf_error(_("incompatible dimensions"));
+	    ncy = Rf_ncols(y);
 	    ansmat = TRUE;
 	}
 	else {
 	    if (Rf_length(y) != n)
-		error(_("incompatible dimensions"));
+		Rf_error(_("incompatible dimensions"));
 	    ncy = 1;
 	}
     }
     /* Arg.3:  method */
-    method = asInteger(na_method);
+    method = Rf_asInteger(na_method);
 
     /* Arg.4:  kendall */
     kendall = Rboolean(Rf_asLogical(skendall));
@@ -689,7 +689,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	break;
     case 2:		/* complete */
 	/* did na.omit in R */
-	if (!LENGTH(x)) error(_("no complete element pairs"));
+	if (!LENGTH(x)) Rf_error(_("no complete element pairs"));
 	break;
     case 3:		/* pairwise.complete */
 	pair = TRUE;
@@ -702,26 +702,26 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	empty_err = FALSE;
 	break;
     default:
-	error(_("invalid 'use' (computational method)"));
+	Rf_error(_("invalid 'use' (computational method)"));
     }
     if (empty_err && !LENGTH(x))
-	error(_("'x' is empty"));
+	Rf_error(_("'x' is empty"));
 
-    if (ansmat) PROTECT(ans = allocMatrix(REALSXP, ncx, ncy));
-    else PROTECT(ans = allocVector(REALSXP, ncx * ncy));
+    if (ansmat) PROTECT(ans = Rf_allocMatrix(REALSXP, ncx, ncy));
+    else PROTECT(ans = Rf_allocVector(REALSXP, ncx * ncy));
     sd_0 = FALSE;
-    if (isNull(y)) {
+    if (Rf_isNull(y)) {
 	if (everything) { /* NA's are propagated */
-	    PROTECT(xm = allocVector(REALSXP, ncx));
-	    PROTECT(ind = allocVector(LGLSXP, ncx));
+	    PROTECT(xm = Rf_allocVector(REALSXP, ncx));
+	    PROTECT(ind = Rf_allocVector(LGLSXP, ncx));
 	    find_na_1(n, ncx, REAL(x), /* --> has_na[] = */ LOGICAL(ind));
 	    cov_na_1 (n, ncx, REAL(x), REAL(xm), LOGICAL(ind), REAL(ans), &sd_0, cor, kendall);
 
 	    UNPROTECT(2);
 	}
 	else if (!pair) { /* all | complete "var" */
-	    PROTECT(xm = allocVector(REALSXP, ncx));
-	    PROTECT(ind = allocVector(INTSXP, n));
+	    PROTECT(xm = Rf_allocVector(REALSXP, ncx));
+	    PROTECT(ind = Rf_allocVector(INTSXP, n));
 	    complete1(n, ncx, REAL(x), INTEGER(ind), na_fail);
 	    cov_complete1(n, ncx, REAL(x), REAL(xm),
 			  INTEGER(ind), REAL(ans), &sd_0, cor, kendall);
@@ -730,7 +730,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 		for(i = 0; i < n; i++) {
 		    if(INTEGER(ind)[i] == 1) { indany = TRUE; break; }
 		}
-		if(!indany) error(_("no complete element pairs"));
+		if(!indany) Rf_error(_("no complete element pairs"));
 	    }
 	    UNPROTECT(2);
 	}
@@ -741,10 +741,10 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
     else { /* Co[vr] (x, y) */
 	if (everything) {
 	    SEXP has_na_y;
-	    PROTECT(xm = allocVector(REALSXP, ncx));
-	    PROTECT(ym = allocVector(REALSXP, ncy));
-	    PROTECT(ind      = allocVector(LGLSXP, ncx));
-	    PROTECT(has_na_y = allocVector(LGLSXP, ncy));
+	    PROTECT(xm = Rf_allocVector(REALSXP, ncx));
+	    PROTECT(ym = Rf_allocVector(REALSXP, ncy));
+	    PROTECT(ind      = Rf_allocVector(LGLSXP, ncx));
+	    PROTECT(has_na_y = Rf_allocVector(LGLSXP, ncy));
 
 	    find_na_2(n, ncx, ncy, REAL(x), REAL(y), INTEGER(ind), INTEGER(has_na_y));
 	    cov_na_2 (n, ncx, ncy, REAL(x), REAL(y), REAL(xm), REAL(ym),
@@ -752,9 +752,9 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	    UNPROTECT(4);
 	}
 	else if (!pair) { /* all | complete */
-	    PROTECT(xm = allocVector(REALSXP, ncx));
-	    PROTECT(ym = allocVector(REALSXP, ncy));
-	    PROTECT(ind = allocVector(INTSXP, n));
+	    PROTECT(xm = Rf_allocVector(REALSXP, ncx));
+	    PROTECT(ym = Rf_allocVector(REALSXP, ncy));
+	    PROTECT(ind = Rf_allocVector(INTSXP, n));
 	    complete2(n, ncx, ncy, REAL(x), REAL(y), INTEGER(ind), na_fail);
 	    cov_complete2(n, ncx, ncy, REAL(x), REAL(y), REAL(xm), REAL(ym),
 			  INTEGER(ind), REAL(ans), &sd_0, cor, kendall);
@@ -763,7 +763,7 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 		for(i = 0; i < n; i++) {
 		    if(INTEGER(ind)[i] == 1) { indany = TRUE; break; }
 		}
-		if(!indany) error(_("no complete element pairs"));
+		if(!indany) Rf_error(_("no complete element pairs"));
 	    }
 	    UNPROTECT(3);
 	}
@@ -773,33 +773,33 @@ static SEXP corcov(SEXP x, SEXP y, SEXP na_method, SEXP skendall, Rboolean cor)
 	}
     }
     if (ansmat) { /* set dimnames() when applicable */
-	if (isNull(y)) {
-	    x = getAttrib(x, R_DimNamesSymbol);
-	    if (!isNull(x) && !isNull(VECTOR_ELT(x, 1))) {
-		PROTECT(ind = allocVector(VECSXP, 2));
-		SET_VECTOR_ELT(ind, 0, duplicate(VECTOR_ELT(x, 1)));
-		SET_VECTOR_ELT(ind, 1, duplicate(VECTOR_ELT(x, 1)));
-		setAttrib(ans, R_DimNamesSymbol, ind);
+	if (Rf_isNull(y)) {
+	    x = Rf_getAttrib(x, R_DimNamesSymbol);
+	    if (!Rf_isNull(x) && !Rf_isNull(VECTOR_ELT(x, 1))) {
+		PROTECT(ind = Rf_allocVector(VECSXP, 2));
+		SET_VECTOR_ELT(ind, 0, Rf_duplicate(VECTOR_ELT(x, 1)));
+		SET_VECTOR_ELT(ind, 1, Rf_duplicate(VECTOR_ELT(x, 1)));
+		Rf_setAttrib(ans, R_DimNamesSymbol, ind);
 		UNPROTECT(1);
 	    }
 	}
 	else {
-	    x = getAttrib(x, R_DimNamesSymbol);
-	    y = getAttrib(y, R_DimNamesSymbol);
-	    if ((Rf_length(x) >= 2 && !isNull(VECTOR_ELT(x, 1))) ||
-		(Rf_length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))) {
-		PROTECT(ind = allocVector(VECSXP, 2));
-		if (Rf_length(x) >= 2 && !isNull(VECTOR_ELT(x, 1)))
-		    SET_VECTOR_ELT(ind, 0, duplicate(VECTOR_ELT(x, 1)));
-		if (Rf_length(y) >= 2 && !isNull(VECTOR_ELT(y, 1)))
-		    SET_VECTOR_ELT(ind, 1, duplicate(VECTOR_ELT(y, 1)));
-		setAttrib(ans, R_DimNamesSymbol, ind);
+	    x = Rf_getAttrib(x, R_DimNamesSymbol);
+	    y = Rf_getAttrib(y, R_DimNamesSymbol);
+	    if ((Rf_length(x) >= 2 && !Rf_isNull(VECTOR_ELT(x, 1))) ||
+		(Rf_length(y) >= 2 && !Rf_isNull(VECTOR_ELT(y, 1)))) {
+		PROTECT(ind = Rf_allocVector(VECSXP, 2));
+		if (Rf_length(x) >= 2 && !Rf_isNull(VECTOR_ELT(x, 1)))
+		    SET_VECTOR_ELT(ind, 0, Rf_duplicate(VECTOR_ELT(x, 1)));
+		if (Rf_length(y) >= 2 && !Rf_isNull(VECTOR_ELT(y, 1)))
+		    SET_VECTOR_ELT(ind, 1, Rf_duplicate(VECTOR_ELT(y, 1)));
+		Rf_setAttrib(ans, R_DimNamesSymbol, ind);
 		UNPROTECT(1);
 	    }
 	}
     }
     if(sd_0)/* only in cor() */
-	warning(_("the standard deviation is zero"));
+	Rf_warning(_("the standard deviation is zero"));
     UNPROTECT(nprotect);
     return ans;
 }

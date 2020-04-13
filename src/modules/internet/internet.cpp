@@ -482,7 +482,7 @@ static SEXP in_do_download(SEXP args)
     cacheOK = Rf_asLogical(CAR(args));
     if(cacheOK == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "cacheOK");
-    bool file_URL = (strncmp(url, "file://", 7) == 0);
+    bool file_URL = (streqln(url, "file://", 7));
 #ifdef Win32
     int meth = Rf_asLogical(CADR(args));
     if(meth == NA_LOGICAL)
@@ -527,9 +527,9 @@ static SEXP in_do_download(SEXP args)
 	}
 	fclose(out); fclose(in);
 
-    } else if (strncmp(url, "http://", 7) == 0
+    } else if (streqln(url, "http://", 7)
 #ifdef Win32
-	       || ((strncmp(url, "https://", 8) == 0) && meth)
+	       || ((streqln(url, "https://", 8)) && meth)
 #endif
 	) {
 
@@ -657,7 +657,7 @@ static SEXP in_do_download(SEXP args)
 	R_Busy(0);
 	if (status == 1) Rf_error(_("cannot open URL '%s'"), url);
 
-    } else if (strncmp(url, "ftp://", 6) == 0) {
+    } else if (streqln(url, "ftp://", 6)) {
 
 	FILE *out;
 	void *ctxt;

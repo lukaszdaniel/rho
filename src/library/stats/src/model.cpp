@@ -1770,7 +1770,7 @@ SEXP termsform(SEXP args)
 
     PROTECT(varnames = Rf_allocVector(STRSXP, nvar));
     for (v = CDR(varlist), i = 0; v != R_NilValue; v = CDR(v))
-	SET_STRING_ELT(varnames, i++, STRING_ELT(Rf_deparse1line(CAR(v), RHO_FALSE), 0));
+	SET_STRING_ELT(varnames, i++, STRING_ELT(Rf_deparse1line(CAR(v), FALSE), 0));
 
     /* Step 2b: Find and remove any offset(s) */
 

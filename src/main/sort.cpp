@@ -335,7 +335,7 @@ SEXP attribute_hidden do_sort(/*const*/ Expression* call, const BuiltInFunction*
     SEXP ans;
     Rboolean decreasing;
 
-    decreasing = RHOCONSTRUCT(Rboolean, Rf_asLogical(decreasing_));
+    decreasing = Rboolean(Rf_asLogical(decreasing_));
     if(decreasing == NA_LOGICAL)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     if(x_ == R_NilValue) return R_NilValue;
@@ -819,7 +819,7 @@ orderVector(int *indx, int n, SEXP key, Rboolean nalast,
 	    itmp = indx[i];
 	    j = i;
 	    while (j >= h &&
-		   greater_sub(indx[j - h], itmp, key, RHOCONSTRUCT(Rboolean, nalast^decreasing),
+		   greater_sub(indx[j - h], itmp, key, Rboolean(nalast^decreasing),
 			       decreasing)) {
 		indx[j] = indx[j - h];
 		j -= h;
@@ -882,7 +882,7 @@ orderVectorl(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 	    itmp = indx[i];
 	    j = i;
 	    while (j >= h &&
-		   greater_sub(indx[j - h], itmp, key, RHOCONSTRUCT(Rboolean, nalast^decreasing),
+		   greater_sub(indx[j - h], itmp, key, Rboolean(nalast^decreasing),
 			       decreasing)) {
 		indx[j] = indx[j - h];
 		j -= h;
@@ -1052,7 +1052,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 
     if (Rf_isObject(key) && !Rf_isNull(rho)) {
 /* only reached from do_rank */
-#define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
+#define less(a, b) greater(a, b, key, Rboolean(nalast^decreasing), decreasing, rho)
 	    sort2_with_index
 #undef less
     } else {
@@ -1082,11 +1082,11 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 	    break;
 	case CPLXSXP:
 	    if (decreasing) {
-#define less(a, b) (ccmp(cx[a], cx[b], RHO_FALSE) < 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
+#define less(a, b) (ccmp(cx[a], cx[b], FALSE) < 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
 		sort2_with_index
 #undef less
 	    } else {
-#define less(a, b) (ccmp(cx[a], cx[b], RHO_FALSE) > 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
+#define less(a, b) (ccmp(cx[a], cx[b], FALSE) > 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
 		sort2_with_index
 #undef less
 	    }
@@ -1102,7 +1102,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 #undef less
 	    break;
 	default:  /* only reached from do_rank */
-#define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
+#define less(a, b) greater(a, b, key, Rboolean(nalast^decreasing), decreasing, rho)
 	    sort2_with_index
 #undef less
 	}
@@ -1193,7 +1193,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 
     if (Rf_isObject(key) && !Rf_isNull(rho)) {
 /* only reached from do_rank */
-#define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
+#define less(a, b) greater(a, b, key, Rboolean(nalast^decreasing), decreasing, rho)
 	    sort2_with_index
 #undef less
     } else {
@@ -1223,11 +1223,11 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 	    break;
 	case CPLXSXP:
 	    if (decreasing) {
-#define less(a, b) (ccmp(cx[a], cx[b], RHO_FALSE) < 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
+#define less(a, b) (ccmp(cx[a], cx[b], FALSE) < 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
 		sort2_with_index
 #undef less
 	    } else {
-#define less(a, b) (ccmp(cx[a], cx[b], RHO_FALSE) > 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
+#define less(a, b) (ccmp(cx[a], cx[b], FALSE) > 0 || (cx[a].r == cx[b].r && cx[a].i == cx[b].i && a > b))
 		sort2_with_index
 #undef less
 	    }
@@ -1243,7 +1243,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 #undef less
 	    break;
 	default:  /* only reached from do_rank */
-#define less(a, b) greater(a, b, key, RHOCONSTRUCT(Rboolean, nalast^decreasing), decreasing, rho)
+#define less(a, b) greater(a, b, key, Rboolean(nalast^decreasing), decreasing, rho)
 	    sort2_with_index
 #undef less
 	}
@@ -1260,11 +1260,11 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
     R_xlen_t n = -1;
     Rboolean nalast, decreasing;
 
-    nalast = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args)));
+    nalast = Rboolean(Rf_asLogical(CAR(args)));
     if(nalast == NA_LOGICAL)
 	Rf_error(_("invalid '%s' value"), "na.last");
     args = CDR(args);
-    decreasing = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args)));
+    decreasing = Rboolean(Rf_asLogical(CAR(args)));
     if(decreasing == NA_LOGICAL)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     args = CDR(args);
@@ -1351,7 +1351,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
 	    Rf_error(_("invalid '%s' value"), "length(xx)");
 	n = nn;
     }
-    isLong = RHOCONSTRUCT(Rboolean, n > INT_MAX);
+    isLong = Rboolean(n > INT_MAX);
 #else
     int n = Rf_asInteger(CADR(args));
     if (n == NA_INTEGER || n < 0)

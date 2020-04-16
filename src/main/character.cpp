@@ -342,10 +342,10 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
 	    size_t slen = strlen(ss); /* FIXME -- should handle embedded nuls */
 	    char* buf = static_cast<char*>(R_AllocStringBuffer(slen+1, &cbuff));
 	    if (start < 1) start = 1;
-	    if (start > stop || start > RHOCONSTRUCT(int, slen)) {
+	    if (start > stop || start > int(slen)) {
 		buf[0] = '\0';
 	    } else {
-		if (stop > RHOCONSTRUCT(int, slen)) stop = int(slen);
+		if (stop > int(slen)) stop = int(slen);
 		substr(buf, ss, ienc, start, stop);
 	    }
 	    SET_STRING_ELT(s, i, Rf_mkCharCE(buf, ienc));
@@ -793,9 +793,9 @@ donewsc:
 		if (iswspace((int)wc[i])) mywcscpy(wc + i, wc + i + 1);
     }
 
-    int nb = (int) wcstoutf8(NULL, wc, INT_MAX);
+    int nb = (int) Rf_wcstoutf8(NULL, wc, INT_MAX);
     char *cbuf = CallocCharBuf(nb);
-    wcstoutf8(cbuf, wc, nb);
+    Rf_wcstoutf8(cbuf, wc, nb);
     SEXP ans = Rf_mkCharCE(cbuf, CE_UTF8);
     Free(cbuf);
     return ans;
@@ -936,7 +936,7 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 	l = int(strlen(tmp));        /* needed? */
 	SET_STRING_ELT(ans, i, Rf_mkChar(tmp));
 	/* do we have a reserved word?  If so the name is invalid */
-	if (!isValidName(tmp)) {
+	if (!Rf_isValidName(tmp)) {
 	    /* FIXME: could use R_Realloc instead */
 	    cbuf = CallocCharBuf(strlen(tmp) + 1);
 	    strcpy(cbuf, tmp);
@@ -1007,9 +1007,9 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 		    if (ienc == CE_UTF8) {
 			Rf_utf8towcs(wc, xi, nc + 1);
 			for (j = 0; j < nc; j++) wc[j] = towctrans(wc[j], tr);
-			nb = int(wcstoutf8(nullptr, wc, INT_MAX));
+			nb = int(Rf_wcstoutf8(nullptr, wc, INT_MAX));
 			cbuf = CallocCharBuf(nb);
-			wcstoutf8(cbuf, wc, nb);
+			Rf_wcstoutf8(cbuf, wc, nb);
 			SET_STRING_ELT(y, i, Rf_mkCharCE(cbuf, CE_UTF8));
 		    } else {
 			mbstowcs(wc, xi, nc + 1);
@@ -1017,7 +1017,7 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 			nb = int(wcstombs(nullptr, wc, 0));
 			cbuf = CallocCharBuf(nb);
 			wcstombs(cbuf, wc, nb + 1);
-			SET_STRING_ELT(y, i, markKnown(cbuf, el));
+			SET_STRING_ELT(y, i, Rf_markKnown(cbuf, el));
 		    }
 		    Free(cbuf);
 		} else {
@@ -1038,7 +1038,7 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 		strcpy(xi, Rf_translateChar(STRING_ELT(x, i)));
 		for (p = xi; *p != '\0'; p++)
 		    *p = char( ul ? toupper(*p) : tolower(*p));
-		SET_STRING_ELT(y, i, markKnown(xi, STRING_ELT(x, i)));
+		SET_STRING_ELT(y, i, Rf_markKnown(xi, STRING_ELT(x, i)));
 		Free(xi);
 	    }
 	    vmaxset(vmax);
@@ -1051,7 +1051,7 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 }
 
 
-typedef enum { WTR_INIT, WTR_CHAR, WTR_RANGE } wtr_type;
+enum wtr_type { WTR_INIT, WTR_CHAR, WTR_RANGE };
 struct wtr_spec {
     wtr_type type;
     struct wtr_spec *next;
@@ -1137,7 +1137,7 @@ wtr_get_next_char_from_spec(struct wtr_spec **p) {
     return(c);
 }
 
-typedef enum { TR_INIT, TR_CHAR, TR_RANGE } tr_spec_type;
+enum tr_spec_type { TR_INIT, TR_CHAR, TR_RANGE };
 struct tr_spec {
     tr_spec_type type;
     struct tr_spec *next;
@@ -1223,16 +1223,16 @@ tr_get_next_char_from_spec(struct tr_spec **p) {
     return(c);
 }
 
-typedef struct { wchar_t c_old, c_new; } xtable_t;
+struct xtable_t { wchar_t c_old, c_new; };
 
 static R_INLINE int xtable_comp(const void *a, const void *b)
 {
-    return (static_cast<RHOCONST xtable_t *>(a))->c_old - (static_cast<RHOCONST xtable_t *>(b))->c_old;
+    return (static_cast<const xtable_t *>(a))->c_old - (static_cast<const xtable_t *>(b))->c_old;
 }
 
 static R_INLINE int xtable_key_comp(const void *a, const void *b)
 {
-    return *(static_cast<RHOCONST wchar_t *>(a)) - (static_cast<RHOCONST xtable_t *>(b))->c_old;
+    return *(static_cast<const wchar_t *>(a)) - (static_cast<const xtable_t *>(b))->c_old;
 }
 
 #define SWAP(_a, _b, _TYPE)                                    \
@@ -1445,15 +1445,15 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 		    if (tbl) wc[j] = tbl->c_new;
 		}
 		if (ienc == CE_UTF8) {
-		    nb = int(wcstoutf8(nullptr, wc, INT_MAX));
+		    nb = int(Rf_wcstoutf8(nullptr, wc, INT_MAX));
 		    cbuf = CallocCharBuf(nb);
-		    wcstoutf8(cbuf, wc, nb);
+		    Rf_wcstoutf8(cbuf, wc, nb);
 		    SET_STRING_ELT(y, i, Rf_mkCharCE(cbuf, CE_UTF8));
 		} else {
 		    nb = int(wcstombs(nullptr, wc, 0));
 		    cbuf = CallocCharBuf(nb);
 		    wcstombs(cbuf, wc, nb + 1);
-		    SET_STRING_ELT(y, i, markKnown(cbuf, el));
+		    SET_STRING_ELT(y, i, Rf_markKnown(cbuf, el));
 		}
 		Free(cbuf);
 	    }
@@ -1512,7 +1512,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
 		strcpy(cbuf, xi);
 		for (p = reinterpret_cast<unsigned char *>(cbuf); *p != '\0'; p++)
 		    *p = xtable[*p];
-		SET_STRING_ELT(y, i, markKnown(cbuf, STRING_ELT(x, i)));
+		SET_STRING_ELT(y, i, Rf_markKnown(cbuf, STRING_ELT(x, i)));
 		Free(cbuf);
 	    }
 	}
@@ -1574,7 +1574,7 @@ SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFuncti
 		} else break;
 	    }
 	    *q = '\0';
-	    SET_STRING_ELT(s, i, markKnown(buf, STRING_ELT(x, i)));
+	    SET_STRING_ELT(s, i, Rf_markKnown(buf, STRING_ELT(x, i)));
 	    vmaxset(vmax);
 	}
 	R_FreeStringBufferL(&cbuff);

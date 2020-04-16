@@ -372,12 +372,12 @@ void attribute_hidden z_prec_r(Rcomplex *r, Rcomplex *x, double digits)
     if (dig > 306) {
 	double pow10 = 1.0e4;
 	digits = (double)(dig - 4);
-	r->r = Rf_fround(pow10 * x->r, digits)/pow10;
-	r->i = Rf_fround(pow10 * x->i, digits)/pow10;
+	r->r = fround(pow10 * x->r, digits)/pow10;
+	r->i = fround(pow10 * x->i, digits)/pow10;
     } else {
 	digits = (double)(dig);
-	r->r = Rf_fround(x->r, digits);
-	r->i = Rf_fround(x->i, digits);
+	r->r = fround(x->r, digits);
+	r->i = fround(x->i, digits);
     }
 }
 

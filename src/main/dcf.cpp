@@ -101,7 +101,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 	dynwhat = (nwhat == 0);
 
 	PROTECT(fold_excludes = Rf_coerceVector(keep_white_, STRSXP));
-	has_fold_excludes = RHOCONSTRUCT(Rboolean, (LENGTH(fold_excludes) > 0));
+	has_fold_excludes = Rboolean((LENGTH(fold_excludes) > 0));
 
 	buf = static_cast<char *>(malloc(buflen));
 	if(!buf) Rf_error(_("could not allocate memory for 'read.dcf'"));
@@ -200,7 +200,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 		    if(tre_regexecb(&regline, line, 1, regmatch, 0) == 0){
 			for(m = 0; m < nwhat; m++){
 			    whatlen = int(strlen(R_CHAR(STRING_ELT(what, m))));
-			    if(RHO_S_CAST(int, strlen(line)) > whatlen &&
+			    if(static_cast<int>(strlen(line)) > whatlen &&
 			       line[whatlen] == ':' &&
 			       strncmp(R_CHAR(STRING_ELT(what, m)),
 				       line, whatlen) == 0) {
@@ -310,7 +310,7 @@ SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::Bui
 
     /* and now transpose the whole matrix */
     PROTECT(retval2 = allocMatrixNA(STRSXP, k, LENGTH(what)));
-    Rf_copyMatrix(retval2, retval, RHO_TRUE);
+    Rf_copyMatrix(retval2, retval, TRUE);
 
     PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
     PROTECT(dims = Rf_allocVector(INTSXP, 2));

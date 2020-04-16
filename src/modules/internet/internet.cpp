@@ -164,8 +164,8 @@ static Rboolean url_open(Rconnection con)
     }
 
     con->isopen = TRUE;
-    con->canwrite = (RHOCONSTRUCT(Rboolean, con->mode[0] == 'w' || con->mode[0] == 'a'));
-    con->canread = RHOCONSTRUCT(Rboolean, !con->canwrite);
+    con->canwrite = (Rboolean(con->mode[0] == 'w' || con->mode[0] == 'a'));
+    con->canread = Rboolean(!con->canwrite);
     if(strlen(con->mode) >= 2 && con->mode[1] == 'b') con->text = FALSE;
     else con->text = TRUE;
     con->save = -1000;
@@ -221,10 +221,10 @@ static size_t url_read(void *ptr, size_t size, size_t nitems,
     switch(type) {
     case HTTPsh:
     case HTTPSsh:
-	n = in_R_HTTPRead(ctxt, RHO_S_CAST(char*, ptr), size*nitems);
+	n = in_R_HTTPRead(ctxt, static_cast<char *>(ptr), size*nitems);
 	break;
     case FTPsh:
-	n = in_R_FTPRead(ctxt, RHO_S_CAST(char*, ptr), size*nitems);
+	n = in_R_FTPRead(ctxt, static_cast<char *>(ptr), size*nitems);
 	break;
     default:
 	break;
@@ -420,22 +420,22 @@ static void putdashes(int *pold, int newi)
 }
 
 /* note, ALL the possible structures have the first two elements */
-typedef struct {
+struct inetconn {
     DLsize_t length;
     char *type;
     void *ctxt;
-} inetconn;
+};
 
 #ifdef Win32
 #include <ga.h>
 
-typedef struct {
+struct winprogressbar {
     window wprog;
     progressbar pb;
     label l_url;
     Context cntxt;
     int pc;
-} winprogressbar;
+};
 
 static winprogressbar pbar = {NULL, NULL, NULL};
 
@@ -472,7 +472,7 @@ static SEXP in_do_download(SEXP args)
     if(Rf_length(sfile) > 1)
 	Rf_warning(_("only first element of 'destfile' argument used"));
     file = Rf_translateChar(STRING_ELT(sfile, 0));
-    quiet = IDquiet = RHOCONSTRUCT(Rboolean, Rf_asLogical(CAR(args))); args = CDR(args);
+    quiet = IDquiet = Rboolean(Rf_asLogical(CAR(args))); args = CDR(args);
     if(quiet == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "quiet");
     smode =  CAR(args); args = CDR(args);
@@ -599,7 +599,7 @@ static SEXP in_do_download(SEXP args)
 #endif
 	    while ((len = Ri_HTTPRead(ctxt, buf, sizeof(buf))) > 0) {
 		size_t res = fwrite(buf, 1, len, out);
-		if(RHOCONSTRUCT(int, res) != len) Rf_error(_("write failed"));
+		if(int(res) != len) Rf_error(_("write failed"));
 		nbytes += len;
 		if(!quiet) {
 #ifdef Win32
@@ -711,7 +711,7 @@ static SEXP in_do_download(SEXP args)
 #endif
 	    while ((len = Ri_FTPRead(ctxt, buf, sizeof(buf))) > 0) {
 		size_t res = fwrite(buf, 1, len, out);
-		if(RHOCONSTRUCT(int, res) != len) Rf_error(_("write failed"));
+		if(int(res) != len) Rf_error(_("write failed"));
 		nbytes += len;
 		if(!quiet) {
 #ifdef Win32

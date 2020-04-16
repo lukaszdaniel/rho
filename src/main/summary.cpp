@@ -476,7 +476,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 #endif
 
     SEXP ans = Rf_matchArgExact(R_NaRmSymbol, &args);
-    narm = RHOCONSTRUCT(Rboolean, Rf_asLogical(ans));
+    narm = Rboolean(Rf_asLogical(ans));
     updated = 0;
     empty = 1;/*- =1: only zero-length arguments, or NA with na.rm=T */
 

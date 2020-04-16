@@ -119,11 +119,11 @@ int addContourLines(double *x, int nx, double *y, int ny,
 		s = start;
 		ns = 0;
 		/* max_contour_segments: prevent inf.loop (shouldn't be needed) */
-		while (s && ns < RHOCONSTRUCT(int, max_contour_segments)) {
+		while (s && ns < int(max_contour_segments)) {
 		    ns++;
 		    s = s->next;
 		}
-		if(ns == RHOCONSTRUCT(int, max_contour_segments))
+		if(ns == int(max_contour_segments))
 		    Rf_warning(_("contour(): circular/long seglist -- set %s > %d?"), 
 		            "options(\"max.contour.segments\")", max_contour_segments);
 		/*
@@ -138,7 +138,7 @@ int addContourLines(double *x, int nx, double *y, int ny,
 		REAL(xsxp)[0] = s->x0;
 		REAL(ysxp)[0] = s->y0;
 		ns = 1;
-		while (s->next && ns < RHOCONSTRUCT(int, max_contour_segments)) {
+		while (s->next && ns < int(max_contour_segments)) {
 		    s = s->next;
 		    REAL(xsxp)[ns] = s->x0;
 		    REAL(ysxp)[ns++] = s->y0;
@@ -269,6 +269,8 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
 }
 
 /* This is for contourLines() in package grDevices */
+//contourLines(x=, y=, z=, nlevels=, levels=)
+//SEXP do_contourLines(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* y_, rho::RObject* z_, rho::RObject* nlevels_, rho::RObject* levels_);
 SEXP do_contourLines(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP c, x, y, z;

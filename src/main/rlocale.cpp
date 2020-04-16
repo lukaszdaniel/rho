@@ -42,18 +42,13 @@
 #include <config.h>
 #endif
 
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-# define attribute_hidden __attribute__ ((visibility ("hidden")))
-#else
-# define attribute_hidden
-#endif
+#include <R_ext/Visibility.h>
 
 #include <string.h>
 #include <stdlib.h>
 
 #define IN_RLOCALE_C 1 /* used in rlocale.h */
 #include <rlocale.h>
-#include "rho/unrho.hpp"
 #include "rlocale_data.h"
 
 #include <wctype.h>
@@ -122,8 +117,8 @@ static int wcwidthsearch(int wint, const struct interval_wcwidth *table,
    e.g. ja_JP.SJIS, ko_KR.CP949, zh_CN.eucCN, zh_HK.Big5HKSCS.
 */
 
-typedef struct {
-    RHOCONST char *name;
+typedef struct cjk_locale_name_t {
+    const char *name;
     int locale;
 } cjk_locale_name_t;
 
@@ -165,7 +160,7 @@ int Ri18n_wcwidth(Rwchar_t c)
     char lc_str[128];
     unsigned int i, j;
 
-    static RHOCONST char *lc_cache = "";
+    static const char *lc_cache = "";
     static int lc = 0;
 
     if (0 != strcmp(setlocale(LC_CTYPE, nullptr), lc_cache)) {
@@ -314,8 +309,8 @@ static int Ri18n_iswalnum (wint_t wc)
 /*
  * iswctype
  */
-typedef struct {
-    RHOCONST char * name;
+typedef struct Ri18n_wctype_func_l {
+    const char * name;
     wctype_t wctype;
     int(*func)(wint_t);
 } Ri18n_wctype_func_l ;

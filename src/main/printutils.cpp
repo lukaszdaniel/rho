@@ -172,7 +172,7 @@ const char *EncodeEnvironment(SEXP x)
     else if (R_IsNamespaceEnv(x))
 	snprintf(ch, 1000, "<environment: namespace:%s>",
 		 Rf_translateChar(STRING_ELT(R_NamespaceEnvSpec(x), 0)));
-    else snprintf(ch, 1000, "<environment: %p>", RHO_NO_CAST(void *)x);
+    else snprintf(ch, 1000, "<environment: %p>", x);
 
     vmaxset(vmax);
     return ch;
@@ -537,7 +537,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
     int b, b0, i, j, cnt;
     const char *p; char *q, buf[11];
     cetype_t ienc = Rf_getCharCE(s);
-    Rboolean useUTF8 = RHOCONSTRUCT(Rboolean, w < 0);
+    Rboolean useUTF8 = Rboolean(w < 0);
     const void *vmax = vmaxget();
 
     if (w < 0) w = w + 1000000;
@@ -717,7 +717,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 		    i += (res - 1);
 		}
 	    } else { /* invalid char */
-		snprintf(q, 5, "\\x%02x", *(reinterpret_cast<RHOCONST unsigned char *>(p)));
+		snprintf(q, 5, "\\x%02x", *(reinterpret_cast<const unsigned char *>(p)));
 		q += 4; p++;
 	    }
 	}

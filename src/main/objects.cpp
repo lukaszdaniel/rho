@@ -1038,7 +1038,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
     R_stdGen_ptr_t old = R_get_standardGeneric_ptr();
     int ival =  !NOT_METHODS_DISPATCH_PTR(old);
     if(Rf_length(onOff) > 0) {
-	Rboolean onOffValue = RHOCONSTRUCT(Rboolean, Rf_asLogical(onOff));
+	Rboolean onOffValue = Rboolean(Rf_asLogical(onOff));
 	if(onOffValue == NA_INTEGER)
 	    Rf_error(_("'onOff' must be TRUE or FALSE"));
 	else if(onOffValue == FALSE)
@@ -1062,7 +1062,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 attribute_hidden
 Rboolean isMethodsDispatchOn(void)
 {
-    return RHOCONSTRUCT(Rboolean, !NOT_METHODS_DISPATCH_PTR(R_standardGeneric_ptr));
+    return Rboolean(!NOT_METHODS_DISPATCH_PTR(R_standardGeneric_ptr));
 }
 
 
@@ -1159,7 +1159,7 @@ SEXP attribute_hidden do_standardGeneric(/*const*/ Expression* call, const Built
 
 static int maxMethodsOffset = 0, curMaxOffset;
 static Rboolean allowPrimitiveMethods = TRUE;
-typedef enum {NO_METHODS, NEEDS_RESET, HAS_METHODS, SUPPRESSED} prim_methods_t;
+enum prim_methods_t {NO_METHODS, NEEDS_RESET, HAS_METHODS, SUPPRESSED};
 
 static prim_methods_t *prim_methods;
 static SEXP *prim_generics;
@@ -1575,10 +1575,10 @@ SEXP attribute_hidden do_setS4Object(/*const*/ Expression* call, const BuiltInFu
 	Rf_error("invalid '%s' argument", "flag");
     if(complete == NA_INTEGER)
 	Rf_error("invalid '%s' argument", "complete");
-    if(flag == RHOCONSTRUCT(Rboolean, IS_S4_OBJECT(object)))
+    if(flag == Rboolean(IS_S4_OBJECT(object)))
 	return object;
     else
-      return Rf_asS4(object, RHOCONSTRUCT(Rboolean, flag), complete);
+      return Rf_asS4(object, Rboolean(flag), complete);
 }
 
 #ifdef UNUSED

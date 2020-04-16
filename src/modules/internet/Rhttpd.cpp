@@ -178,7 +178,7 @@ struct buffer {
 static int in_process;
 
 /* --- connection/worker structure holding all data for an active connection --- */
-typedef struct httpd_conn {
+struct httpd_conn_t {
     SOCKET sock;         /* client socket */
     struct in_addr peer; /* IP address of the peer */
 #ifdef _WIN32
@@ -193,7 +193,7 @@ typedef struct httpd_conn {
     long content_length;           /* desired content length */
     char part, method, attr;       /* request part, method and connection attributes */
     struct buffer *headers;        /* buffer holding header lines */
-} httpd_conn_t;
+};
 
 #define IS_HTTP_1_1(C) (((C)->attr & HTTP_1_0) == 0)
 
@@ -575,7 +575,7 @@ static void process_request_(void *ptr)
 	SEXP sBody = PROTECT(parse_request_body(c));
 	SEXP sQuery = PROTECT(query ? parse_query(query) : R_NilValue);
 	SEXP sReqHeaders = PROTECT(c->headers ? collect_buffers(c->headers) : R_NilValue);
-	SEXP sArgs = PROTECT(list4(Rf_mkString(c->url), sQuery, sBody, sReqHeaders));
+	SEXP sArgs = PROTECT(Rf_list4(Rf_mkString(c->url), sQuery, sBody, sReqHeaders));
 	SEXP sTry = Rf_install("try");
 	SEXP y, x = PROTECT(Rf_lang3(sTry,
 				  LCONS(handler_for_path(c->url), sArgs),

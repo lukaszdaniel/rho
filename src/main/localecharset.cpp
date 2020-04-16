@@ -61,13 +61,12 @@
 
 //#include <rlocale.h> /* To get the correct linkage for locale2charset */
 
-#include "rho/unrho.hpp"
 
 /* name_value struct */
-typedef struct {
-    RHOCONST char *name;
-    RHOCONST char *value;
-} name_value;
+struct name_value {
+    const char *name;
+    const char *value;
+};
 
 
 #ifndef __APPLE__
@@ -485,7 +484,7 @@ static const name_value guess[] = {
     {"zh_TW",                          ENC_BIG5},
     {"zu_ZA",                          ENC_ISO8859_1},
 };
-static const int guess_count = (RHOCONSTRUCT(int, sizeof(guess)/sizeof(name_value)));
+static const int guess_count = (int(sizeof(guess)/sizeof(name_value)));
 #endif
 
 static const name_value known[] = {
@@ -535,11 +534,11 @@ static const name_value known[] = {
     {"big5hkscs", "BIG5-HKSCS"},
 #endif
 };
-static const int known_count = (RHOCONSTRUCT(int, sizeof(known)/sizeof(name_value)));
+static const int known_count = (int(sizeof(known)/sizeof(name_value)));
 
 
 #ifndef __APPLE__
-static RHOCONST char* name_value_search(const char *name, const name_value table[],
+static const char* name_value_search(const char *name, const name_value table[],
 			       const int table_count)
 {
     int min, mid, max;
@@ -600,7 +599,7 @@ const char *locale2charset(const char *locale)
     int i;
     int  cp;
 #ifndef __APPLE__
-    RHOCONST char *value;
+    const char *value;
 #endif
 
     if ((locale == nullptr) || streql(locale, "NULL"))

@@ -882,7 +882,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 		} else
 		    Rf_errorcall(call, _("invalid '(to - from)/by'"));
 	    }
-	    double dd = fabs(del)/Rf_fmax2(fabs(rto), fabs(rfrom));
+	    double dd = fabs(del)/fmax2(fabs(rto), fabs(rfrom));
 	    if(dd < 100 * DBL_EPSILON) {
 		ans = miss_from ? Rf_ScalarReal(rfrom) : from;
 		goto done;

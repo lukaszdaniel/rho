@@ -157,7 +157,7 @@ int R_IsNaN(double x)
     if (isnan(x)) {
 	ieee_double y;
 	y.value = x;
-	return RHOCONSTRUCT(Rboolean, (y.word[lw] != 1954));
+	return Rboolean((y.word[lw] != 1954));
     }
     return 0;
 }

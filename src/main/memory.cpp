@@ -139,7 +139,7 @@ SEXP attribute_hidden do_gctorture(/*const*/ Expression* call, const BuiltInFunc
     SEXP old = Rf_ScalarLogical(gc_force_wait > 0);
 
     if (Rf_isLogical(on_)) {
-	Rboolean on = RHOCONSTRUCT(Rboolean, Rf_asLogical(on_));
+	Rboolean on = Rboolean(Rf_asLogical(on_));
 	if (on == NA_LOGICAL) gap = NA_INTEGER;
 	else if (on) gap = 1;
 	else gap = 0;
@@ -159,7 +159,7 @@ SEXP attribute_hidden do_gctorture2(/*const*/ Expression* call, const BuiltInFun
 
     gap = Rf_asInteger(step_);
     wait = Rf_asInteger(wait_);
-    inhibit = RHOCONSTRUCT(Rboolean, Rf_asLogical(inhibit_release_));
+    inhibit = Rboolean(Rf_asLogical(inhibit_release_));
     R_gc_torture(gap, wait, inhibit);
 
     return old;
@@ -575,7 +575,7 @@ SEXP do_Rprofmem(SEXP args)
 	Rf_error(_("invalid '%s' argument"), "filename");
     append_mode = Rf_asLogical(CADR(args));
     filename = STRING_ELT(CAR(args), 0);
-    threshold = RHOCONSTRUCT(R_size_t, REAL(CADDR(args))[0]);
+    threshold = R_size_t(REAL(CADDR(args))[0]);
     if (strlen(R_CHAR(filename)))
 	R_InitMemReporting(filename, append_mode, threshold);
     else

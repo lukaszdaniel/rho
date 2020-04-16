@@ -2630,12 +2630,12 @@ void GMode(int mode, pGEDevDesc dd)
  * NOTE:  most of this code (up to GPolygon) is only now used by
  * GClipPolygon -- GPolygon runs the new GEPolygon in engine.cpp
  */
-typedef enum {
+enum Edge {
     Left = 0,
     Right = 1,
     Bottom = 2,
     Top = 3
-} Edge;
+};
 
 inline Edge& operator++(Edge& edge, int)
 {
@@ -2645,23 +2645,21 @@ inline Edge& operator++(Edge& edge, int)
 }
 
 /* Clipper State Variables */
-typedef struct {
+struct GClipState {
     int first;    /* true if we have seen the first point */
     double fx;    /* x coord of the first point */
     double fy;    /* y coord of the first point */
     double sx;    /* x coord of the most recent point */
     double sy;    /* y coord of the most recent point */
-}
-GClipState;
+};
 
 /* The Clipping Rectangle */
-typedef struct {
+struct GClipRect {
     double xmin;
     double xmax;
     double ymin;
     double ymax;
-}
-GClipRect;
+};
 
 static
 int inside (Edge b, double px, double py, GClipRect *clip)

@@ -178,9 +178,9 @@ RObject* Frame::Binding::unforcedValue() const
  */
 int attribute_hidden R_Newhashpjw(const char *s)
 {
-    RHOCONST char *p;
+    const char *p;
     unsigned h = 0, g;
-    for (p = RHO_NO_CAST(char *) s; *p; p++) {
+    for (p = s; *p; p++) {
 	h = (h << 4) + (*p);
 	if ((g = h & 0xf0000000) != 0) {
 	    h = h ^ (g >> 24);
@@ -631,7 +631,7 @@ SEXP Rf_findFun3(SEXP symbol, SEXP rho, SEXP call)
 SEXP Rf_findFun(SEXP symbol, SEXP rho)
 {
     FunctionContext *c = FunctionContext::innermost();
-    return Rf_findFun3(symbol, rho, c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr));
+    return Rf_findFun3(symbol, rho, c ? const_cast<Expression*>(c->call()) : static_cast<RObject*>(nullptr));
 }
 
 /*----------------------------------------------------------------------
@@ -1695,7 +1695,7 @@ SEXP do_lockEnv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* 
     SEXP frame;
     Rboolean bindings;
     frame = env_;
-    bindings = RHOCONSTRUCT(Rboolean, Rf_asLogical(bindings_));
+    bindings = Rboolean(Rf_asLogical(bindings_));
     R_LockEnvironment(frame, bindings);
     return R_NilValue;
 }
@@ -1833,7 +1833,7 @@ Rboolean R_IsPackageEnv(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
 	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
-	RHOCONST char *packprefix = "package:";
+	const char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, R_CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */
@@ -1849,7 +1849,7 @@ SEXP R_PackageEnvName(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
 	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
-	RHOCONST char *packprefix = "package:";
+	const char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
 	   ! strncmp(packprefix, R_CHAR(STRING_ELT(name, 0)), pplen)) /* ASCII */

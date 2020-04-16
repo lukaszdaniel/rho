@@ -152,7 +152,7 @@ static int CountDLL = 0;
 /* Allocated in initLoadedDLL at R session start. Never free'd */
 static DllInfo* LoadedDLL = NULL;
 
-static int addDLL(char *dpath, RHOCONST char *name, HINSTANCE handle);
+static int addDLL(char *dpath, const char *name, HINSTANCE handle);
 static SEXP Rf_MakeDLLInfo(DllInfo *info);
 
 static SEXP createRSymbolObject(SEXP sname, DL_FUNC f,
@@ -293,7 +293,7 @@ R_getDllInfo(const char *path)
     for(i = 0; i < CountDLL; i++) {
 	if(streql(LoadedDLL[i].path, path)) return(&LoadedDLL[i]);
     }
-    return RHO_NO_CAST(DllInfo*) nullptr;
+    return nullptr;
 }
 
 /*
@@ -549,7 +549,7 @@ DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all)
 	    return CPFun[i].func;
 #endif
 
-    return(RHO_NO_CAST(DL_FUNC) nullptr);
+    return(nullptr);
 }
 
 
@@ -664,7 +664,7 @@ static DllInfo *R_RegisterDLL(HINSTANCE handle, const char *path)
 }
 
 static int
-addDLL(char *dpath, RHOCONST char *DLLname, HINSTANCE handle)
+addDLL(char *dpath, const char *DLLname, HINSTANCE handle)
 {
     int ans = CountDLL;
     char *name = static_cast<char *>(malloc(strlen(DLLname)+1));
@@ -713,7 +713,7 @@ Rf_lookupRegisteredFortranSymbol(DllInfo *info, const char *name)
 	    return(&(info->FortranSymbols[i]));
     }
 
-    return RHO_NO_CAST(Rf_DotFortranSymbol*) nullptr;
+    return nullptr;
 }
 
 static Rf_DotCallSymbol *
@@ -723,7 +723,7 @@ Rf_lookupRegisteredCallSymbol(DllInfo *info, const char *name)
 	if(streql(name, info->CallSymbols[i].name))
 	    return(&(info->CallSymbols[i]));
     }
-    return RHO_NO_CAST(Rf_DotCallSymbol*) nullptr;
+    return nullptr;
 }
 
 static Rf_DotExternalSymbol *
@@ -733,7 +733,7 @@ Rf_lookupRegisteredExternalSymbol(DllInfo *info, const char *name)
 	if(streql(name, info->ExternalSymbols[i].name))
 	    return(&(info->ExternalSymbols[i]));
     }
-    return RHO_NO_CAST(Rf_DotExternalSymbol*) nullptr;
+    return nullptr;
 }
 
 static DL_FUNC
@@ -802,7 +802,7 @@ R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
 	}
     }
 
-    return(RHO_NO_CAST(DL_FUNC) nullptr);
+    return nullptr;
 }
 
 DL_FUNC attribute_hidden
@@ -858,7 +858,7 @@ R_dlsym(DllInfo *info, const char *name,
 DL_FUNC R_FindSymbol(const char *name, const char *pkg,
 		     R_RegisteredNativeSymbol *symbol)
 {
-    DL_FUNC fcnptr = RHO_NO_CAST(DL_FUNC) nullptr;
+    DL_FUNC fcnptr = nullptr;
     int i, all = (strlen(pkg) == 0), doit;
 
     if(R_osDynSymbol->lookupCachedSymbol)
@@ -878,7 +878,7 @@ DL_FUNC R_FindSymbol(const char *name, const char *pkg,
 	if(doit && LoadedDLL[i].forceSymbols) doit = 0;
 	if(doit) {
 	    fcnptr = R_dlsym(&LoadedDLL[i], name, symbol); /* R_osDynSymbol->dlsym */
-	    if (fcnptr != RHO_NO_CAST(DL_FUNC) nullptr) {
+	    if (fcnptr != nullptr) {
 		if(symbol)
 		    symbol->dll = LoadedDLL+i;
 #ifdef CACHE_DLL_SYM
@@ -892,10 +892,10 @@ DL_FUNC R_FindSymbol(const char *name, const char *pkg,
 		return fcnptr;
 	    }
 	}
-	if(doit > 1) return RHO_NO_CAST(DL_FUNC) nullptr;  /* Only look in the first-matching DLL */
+	if(doit > 1) return nullptr;  /* Only look in the first-matching DLL */
     }
 
-    return RHO_NO_CAST(DL_FUNC) nullptr;
+    return nullptr;
 }
 
 
@@ -1157,7 +1157,7 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
 
     if(f)
 	sym = createRSymbolObject(sname, f, &symbol,
-				  RHOCONSTRUCT(Rboolean, LOGICAL(withRegistrationInfo)[0]));
+				  Rboolean(LOGICAL(withRegistrationInfo)[0]));
 
     vmaxset(vmax);
     return sym;
@@ -1226,7 +1226,7 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
 	   the number of arguments and the classname.
 	*/
 	int nargs = -1;
-	RHOCONST char *className = "";
+	const char *className = "";
 	switch(symbol->type) {
 	case R_C_SYM:
 	    nargs = symbol->symbol.c->numArgs;
@@ -1377,7 +1377,7 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 	f = R_FindSymbol(name, package, &symbol);
     if(f)
 	sym = createRSymbolObject(sname, f, &symbol,
-				  RHOCONSTRUCT(Rboolean, LOGICAL(withRegistrationInfo)[0]));
+				  Rboolean(LOGICAL(withRegistrationInfo)[0]));
     return sym;
 }
 

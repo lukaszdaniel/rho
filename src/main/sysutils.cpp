@@ -65,7 +65,7 @@ using namespace std;
 # include <sys/stat.h>
 #endif
 
-static int isDir(RHOCONST char *path);
+static int isDir(const char *path);
 
 #ifdef HAVE_AQUA
 int (*ptr_CocoaSystem)(const char*);
@@ -89,7 +89,7 @@ double attribute_hidden R_FileMtime(const char *path)
 Rboolean R_FileExists(const char *path)
 {
     struct stat sb;
-    return RHOCONSTRUCT(Rboolean, stat(R_ExpandFileName(path), &sb) == 0);
+    return Rboolean(stat(R_ExpandFileName(path), &sb) == 0);
 }
 
 double attribute_hidden R_FileMtime(const char *path)
@@ -107,8 +107,8 @@ double attribute_hidden R_FileMtime(const char *path)
 
 Rboolean attribute_hidden R_HiddenFile(const char *name)
 {
-    if (name && name[0] != '.') return RHO_FALSE;
-    else return RHO_TRUE;
+    if (name && name[0] != '.') return FALSE;
+    else return TRUE;
 }
 
 /* The MSVC runtime has a global to determine whether an unspecified
@@ -388,7 +388,7 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 	char* buf = &bufv[0];
 	PROTECT(ans = Rf_allocVector(STRSXP, i));
 	for (i = 0, w = _wenviron; *w != NULL; i++, w++) {
-	    wcstoutf8(buf, *w, sizeof(buf));
+	    Rf_wcstoutf8(buf, *w, sizeof(buf));
 	    SET_STRING_ELT(ans, i, Rf_mkCharCE(buf, CE_UTF8));
 	}
 #else
@@ -410,7 +410,7 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 		int n = wcslen(w), N = 4*n+1; /* UTF-16 maps to <= 4 UTF-8 */
 		vector<char> bufv(N);
 		char* buf = &bufv[0];
-		wcstoutf8(buf, w, sizeof(buf));
+		Rf_wcstoutf8(buf, w, sizeof(buf));
 		SET_STRING_ELT(ans, j, Rf_mkCharCE(buf, CE_UTF8));
 	    }
 #else
@@ -639,7 +639,7 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 #else
 	    Rf_error(_("unsupported conversion from '%s' to '%s'"), from, to);
 #endif
-	isRawlist = RHOCONSTRUCT(Rboolean, (TYPEOF(x) == VECSXP));
+	isRawlist = Rboolean((TYPEOF(x) == VECSXP));
 	if(isRawlist) {
 	    if(toRaw)
 		PROTECT(ans = Rf_duplicate(x));
@@ -688,10 +688,10 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	    *outbuf = '\0';
 	    /* other possible error conditions are incomplete
 	       and invalid multibyte chars */
-	    if(res == RHOCONSTRUCT(size_t, -1) && errno == E2BIG) {
+	    if(res == size_t(-1) && errno == E2BIG) {
 		R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 		goto top_of_loop;
-	    } else if(res == RHOCONSTRUCT(size_t, -1) && sub && 
+	    } else if(res == size_t(-1) && sub && 
 		      (errno == EILSEQ || errno == EINVAL)) {
 		/* it seems this gets thrown for non-convertible input too */
 		if(streql(sub, "byte")) {
@@ -716,14 +716,14 @@ SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::Built
 	    }
 
 	    if(toRaw) {
-		if(res != RHOCONSTRUCT(size_t, -1) && inb == 0) {
+		if(res != size_t(-1) && inb == 0) {
 		    size_t nout = cbuff.bufsize - 1 - outb;
 		    SEXP el = Rf_allocVector(RAWSXP, nout);
 		    memcpy(RAW(el), cbuff.data, nout);
 		    SET_VECTOR_ELT(ans, i, el);
 		} /* otherwise is already NULL */
 	    } else {
-		if(res != RHOCONSTRUCT(size_t, -1) && inb == 0) {
+		if(res != size_t(-1) && inb == 0) {
 		    cetype_t ienc = CE_NATIVE;
 
 		    size_t nout = cbuff.bufsize - 1 - outb;
@@ -801,11 +801,11 @@ int Riconv_close (void *cd)
     return iconv_close(iconv_t( cd));
 }
 
-typedef enum {
+enum nttype_t {
     NT_NONE        = 0, /* no translation to native encoding is needed */
     NT_FROM_UTF8   = 1, /* need to translate from UTF8 */
     NT_FROM_LATIN1 = 2, /* need to translated from latin1 */
-} nttype_t;
+};
 
 /* Decides whether translation to native encoding is needed. */
 static R_INLINE nttype_t needsTranslation(SEXP x) {
@@ -1012,10 +1012,10 @@ top_of_loop:
 next_char:
     /* Then convert input  */
     res = Riconv(obj, &inbuf , &inb, &outbuf, &outb);
-    if(res == RHOCONSTRUCT(size_t, -1) && errno == E2BIG) {
+    if(res == size_t(-1) && errno == E2BIG) {
 	R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 	goto top_of_loop;
-    } else if(res == RHOCONSTRUCT(size_t, -1) && (errno == EILSEQ || errno == EINVAL)) {
+    } else if(res == size_t(-1) && (errno == EILSEQ || errno == EINVAL)) {
 	if(outb < 5) {
 	    R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 	    goto top_of_loop;
@@ -1110,10 +1110,10 @@ top_of_loop:
 next_char:
     /* Then convert input  */
     res = Riconv(obj, &inbuf , &inb, &outbuf, &outb);
-    if(RHOCONSTRUCT(int, res) == -1 && errno == E2BIG) {
+    if(int(res) == -1 && errno == E2BIG) {
 	R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 	goto top_of_loop;
-    } else if(RHOCONSTRUCT(int, res) == -1 && (errno == EILSEQ || errno == EINVAL)) {
+    } else if(int(res) == -1 && (errno == EILSEQ || errno == EINVAL)) {
 	if(outb < 5) {
 	    R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 	    goto top_of_loop;
@@ -1145,7 +1145,7 @@ const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst)
     const char *inbuf;
     char *outbuf, *p;
     size_t inb, outb, res, top;
-    RHOCONST char *tocode = nullptr, *fromcode = nullptr;
+    const char *tocode = nullptr, *fromcode = nullptr;
 #ifdef Win32
     char buf[20];
 #endif
@@ -1158,7 +1158,7 @@ const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst)
 	if(ce_out == CE_UTF8) {
 	    size_t nc = 3*strlen(x)+1; /* all in BMP */
 	    p = R_alloc(nc, 1);
-	    Rf_AdobeSymbol2utf8(p, x, RHOCONSTRUCT(int, nc));
+	    Rf_AdobeSymbol2utf8(p, x, int(nc));
 	    return p;
 	} else return x;
     }
@@ -1215,10 +1215,10 @@ top_of_loop:
 next_char:
     /* Then convert input  */
     res = Riconv(obj, &inbuf , &inb, &outbuf, &outb);
-    if(res == RHOCONSTRUCT(size_t, -1) && errno == E2BIG) {
+    if(res == size_t(-1) && errno == E2BIG) {
 	R_AllocStringBuffer(2*cbuff.bufsize, &cbuff);
 	goto top_of_loop;
-    } else if(res == RHOCONSTRUCT(size_t, -1) && (errno == EILSEQ || errno == EINVAL)) {
+    } else if(res == size_t(-1) && (errno == EILSEQ || errno == EINVAL)) {
 	switch(subst) {
 	case 1: /* substitute hex */
 	    if(outb < 5) {
@@ -1597,7 +1597,7 @@ Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
     }
     Riconv_close(cd);
     *wc = wcs[0];
-    return RHO_NO_CAST(size_t) 1;
+    return 1;
 }
 
 /* made available for use in graphics devices */
@@ -1660,7 +1660,7 @@ size_t Rf_ucstoutf8(char *s, const unsigned int wc)
 # define S_IFDIR __S_IFDIR
 #endif
 
-static int isDir(RHOCONST char *path)
+static int isDir(const char *path)
 {
 #ifdef Win32
     struct _stati64 sb;
@@ -1684,7 +1684,7 @@ static int isDir(RHOCONST char *path)
     return isdir;
 }
 #else
-static int isDir(RHOCONST char *path)
+static int isDir(const char *path)
 {
     return 1;
 }
@@ -1701,7 +1701,7 @@ extern char * mkdtemp (char *template);
 void R_reInitTempDir(int die_on_fail)
 {
     char *tmp, tmp1[PATH_MAX+11], *p;
-    RHOCONST char* tm;
+    const char* tm;
 #ifdef Win32
     char tmp2[PATH_MAX];
     int hasspace = 0;
@@ -1988,9 +1988,9 @@ SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltI
     {
 	wchar_t *w = globbuf.gl_pathv[i];
 	char *buf;
-	int nb = wcstoutf8(NULL, w, INT_MAX);
+	int nb = Rf_wcstoutf8(NULL, w, INT_MAX);
 	buf = R_AllocStringBuffer(nb, &cbuff);
-	wcstoutf8(buf, w, nb);
+	Rf_wcstoutf8(buf, w, nb);
 	SET_STRING_ELT(ans, i, Rf_mkCharCE(buf, CE_UTF8));
     }
 #else

@@ -31,14 +31,14 @@
 #include <R_ext/QuartzDevice.h>
 #include "localization.h"
 
-typedef struct {
+struct QuartzBitmapDevice {
     CGContextRef bitmap;	/* Bitmap drawing context */
     char *uti;			/* Type of bitmap to produce */
     char *path;			/* Path for file save during close (can be NULL) */
     int page;			/* current page number increased by NewPage (0 right after init) */
     unsigned int length;	/* Size of the bitmap */
     char data[1];		/* Actual bitmap bytes */
-} QuartzBitmapDevice;
+};
 
 static QuartzFunctions_t *qf;
 

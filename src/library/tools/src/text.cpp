@@ -258,7 +258,7 @@ SEXP doTabExpand(SEXP strings, SEXP starts)  /* does tab expansion for UTF-8 str
     	    input++;
     	}
     	*b = '\0';
-    	SET_STRING_ELT(result, i, mkCharCE(buffer, Rf_getCharCE(STRING_ELT(strings, i))));
+    	SET_STRING_ELT(result, i, Rf_mkCharCE(buffer, Rf_getCharCE(STRING_ELT(strings, i))));
     }
     UNPROTECT(1);
     free(buffer);

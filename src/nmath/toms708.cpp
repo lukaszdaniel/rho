@@ -7,10 +7,6 @@
    14 digits accuracy.
 */
 
-// #undef min
-// #define min(a,b) ((a < b)?a:b)
-// #undef max
-// #define max(a,b) ((a > b)?a:b)
 
 #include "nmath.h" /* includes config.h, math.h */
 #include <algorithm>

@@ -1293,12 +1293,12 @@ R_strptime (const char *buf, const char *format, stm *tm,
 	n = mbstowcs(NULL, buf, 1000);
 	if(n > 1000) Rf_error(_("input string is too long"));
 	n = mbstowcs(wbuf, buf, 1000);
-	if(RHOCONSTRUCT(int, n) == -1) Rf_error(_("invalid multibyte input string"));
+	if(int(n) == -1) Rf_error(_("invalid multibyte input string"));
 
 	n = mbstowcs(NULL, format, 1000);
 	if(n > 1000) Rf_error(_("format string is too long"));
 	n = mbstowcs(wfmt, format, 1000);
-	if(RHOCONSTRUCT(int, n) == -1) Rf_error(_("invalid multibyte format string"));
+	if(int(n) == -1) Rf_error(_("invalid multibyte format string"));
 	return (void *) w_strptime_internal (wbuf, wfmt, tm, psecs, poffset);
     } else
 #endif

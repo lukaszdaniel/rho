@@ -176,18 +176,18 @@ int R_finite(double);
 /* Formerly private part of Mathlib.h */
 
 /* always remap internal functions */
-#define bd0       	Rf_bd0
-#define chebyshev_eval	Rf_chebyshev_eval
-#define chebyshev_init	Rf_chebyshev_init
-#define gammalims	Rf_gammalims
-#define lfastchoose	Rf_lfastchoose
-#define lgammacor	Rf_lgammacor
-#define stirlerr       	Rf_stirlerr
-#define pnchisq_raw   	Rf_pnchisq_raw
-#define pgamma_raw   	Rf_pgamma_raw
-#define pnbeta_raw   	Rf_pnbeta_raw
-#define pnbeta2       	Rf_pnbeta2
-#define bratio       	Rf_bratio
+// #define bd0       	Rf_bd0
+// #define chebyshev_eval	Rf_chebyshev_eval
+// #define chebyshev_init	Rf_chebyshev_init
+// #define gammalims	Rf_gammalims
+// #define lfastchoose	Rf_lfastchoose
+// #define lgammacor	Rf_lgammacor
+// #define stirlerr       	Rf_stirlerr
+// #define pnchisq_raw   	Rf_pnchisq_raw
+// #define pgamma_raw   	Rf_pgamma_raw
+// #define pnbeta_raw   	Rf_pnbeta_raw
+// #define pnbeta2       	Rf_pnbeta2
+// #define bratio       	Rf_bratio
 
 	/* Chebyshev Series */
 

@@ -73,7 +73,7 @@ extern int R_HistorySize;	/* Size of the history file */
 extern int R_RestoreHistory;	/* restore the history file? */
 extern char *R_Home;		    /* Root of the R tree */
 
-#ifndef R_NO_REMAP
+#if 0 //#ifndef R_NO_REMAP
 # define jump_to_toplevel	Rf_jump_to_toplevel
 # define mainloop		Rf_mainloop
 # define onintr			Rf_onintr

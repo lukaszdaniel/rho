@@ -105,7 +105,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     n = Rf_xlength(XX);
     if (n == NA_INTEGER) Rf_error(_("invalid length"));
-    Rboolean realIndx = RHOCONSTRUCT(Rboolean, n > INT_MAX);
+    Rboolean realIndx = Rboolean(n > INT_MAX);
 
     commonLen = Rf_length(value);
     if (commonLen > 1 && n > INT_MAX)
@@ -118,7 +118,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	commonType != VECSXP)
 	Rf_error(_("type '%s' is not supported"), Rf_type2char(commonType));
     dim_v = Rf_getAttrib(value, R_DimSymbol);
-    array_value = RHOCONSTRUCT(Rboolean, (TYPEOF(dim_v) == INTSXP && LENGTH(dim_v) >= 1));
+    array_value = Rboolean((TYPEOF(dim_v) == INTSXP && LENGTH(dim_v) >= 1));
     PROTECT(ans = Rf_allocVector(commonType, n*commonLen));
     if (useNames) {
 	PROTECT(names = Rf_getAttrib(XX, R_NamesSymbol));
@@ -334,7 +334,7 @@ SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunctio
     deflt = args[0]; args = (args + 1);
     how = args[0];
     if(!Rf_isString(how)) Rf_error(_("invalid '%s' argument"), "how");
-    replace = RHOCONSTRUCT(Rboolean, streql(R_CHAR(STRING_ELT(how, 0)), "replace")); /* ASCII */
+    replace = Rboolean(streql(R_CHAR(STRING_ELT(how, 0)), "replace")); /* ASCII */
     n = Rf_length(X);
     if (replace) {
       PROTECT(ans = Rf_shallow_duplicate(X));
@@ -383,7 +383,7 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
     int i, n;
 
     X = x_;
-    recursive = RHOCONSTRUCT(Rboolean, Rf_asLogical(recursive_));
+    recursive = Rboolean(Rf_asLogical(recursive_));
     n = Rf_length(X);
     if(n == 0 || !Rf_isVectorList(X)) {
 	lans = FALSE;

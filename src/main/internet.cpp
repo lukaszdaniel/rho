@@ -107,7 +107,7 @@ R_newurl(const char *description, const char * const mode, int type)
 	return (*ptr->newurl)(description, mode, type);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return RHO_NO_CAST(Rconnection)nullptr;
+	return nullptr;
     }
 }
 
@@ -120,7 +120,7 @@ R_newsock(const char *host, int port, int server, const char * const mode,
 	return (*ptr->newsock)(host, port, server, mode, timeout);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return RHO_NO_CAST(Rconnection)nullptr;
+	return nullptr;
     }
 }
 

@@ -42,13 +42,13 @@
 /* NB:  interv(.) in ../../../appl/interv.c
         ------    is conceptually a special case of this, where y = 1:n */
 
-typedef struct {
+struct appr_meth {
     double ylow;
     double yhigh;
     double f1;
     double f2;
     int kind;
-} appr_meth;
+};
 
 static double approx1(double v, double *x, double *y, R_xlen_t n,
 		      appr_meth *Meth)

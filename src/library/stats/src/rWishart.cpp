@@ -55,7 +55,7 @@ static double
 
     memset(ans, 0, p * p * sizeof(double));
     for (int j = 0; j < p; j++) {	/* jth column */
-	ans[j * pp1] = sqrt(Rf_rchisq(nu - (double) j));
+	ans[j * pp1] = sqrt(rchisq(nu - (double) j));
 	for (int i = 0; i < j; i++) {
 	    int uind = i + j * p, /* upper triangle index */
 		lind = j + i * p; /* lower triangle index */
@@ -67,7 +67,7 @@ static double
 }
 
 /**
- * Simulate a sample of random matrices from a Wishart distribution
+ * @brief Simulate a sample of random matrices from a Wishart distribution
  *
  * @param ns Number of samples to generate
  * @param nuP Degrees of freedom

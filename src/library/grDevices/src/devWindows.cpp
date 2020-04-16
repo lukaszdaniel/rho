@@ -52,8 +52,8 @@
 #include "localization.h"
 
 /* there are conflicts with Rmath.h */
-#define imax2		Rf_imax2
-#define imin2		Rf_imin2
+// #define imax2		Rf_imax2
+// #define imin2		Rf_imin2
 int	imax2(int, int);
 int	imin2(int, int);
 
@@ -146,10 +146,10 @@ static drawing _d;
 static rect getregion(gadesc *xd)
 {
     rect r = getrect(xd->bm);
-    r.x += max(0, xd->xshift);
-    r.y += max(0, xd->yshift);
-    r.width = min(r.width, xd->showWidth);
-    r.height = min(r.height, xd->showHeight);
+    r.x += std::max(0, xd->xshift);
+    r.y += std::max(0, xd->yshift);
+    r.width = std::min(r.width, xd->showWidth);
+    r.height = std::min(r.height, xd->showHeight);
     return r;
 }
 
@@ -881,7 +881,7 @@ static void HelpMouseClick(window w, int button, point pt)
 	    return;
 	if (button & LeftButton) {
 	    int useBeep = xd->locator &&
-		Rf_asLogical(GetOption1(Rf_install("locatorBell")));
+		Rf_asLogical(Rf_GetOption1(Rf_install("locatorBell")));
 	    if(useBeep) gabeep();
 	    xd->clicked = 1;
 	    xd->px = pt.x;
@@ -1117,7 +1117,7 @@ static SEXP NewPlotHistory(int n)
     for (i = 0; i < n; i++)
 	SET_VECTOR_ELT(pHISTORY, i, R_NilValue);
     PROTECT(class = Rf_mkString("SavedPlots"));
-    classgets(vDL, class);
+    Rf_classgets(vDL, class);
     SETDL;
     UNPROTECT(7);
     return vDL;
@@ -1164,7 +1164,7 @@ static void AddtoPlotHistory(SEXP snapshot, int replace)
 	where = pNUMPLOTS;
 
     PROTECT(class = Rf_mkString("recordedplot"));
-    classgets(snapshot, class);
+    Rf_classgets(snapshot, class);
     SET_VECTOR_ELT(pHISTORY, where, snapshot);
     pCURRENTPOS = where;
     if (!replace) pNUMPLOTS += 1;
@@ -2115,21 +2115,21 @@ static void GA_Resize(pDevDesc dd)
 	    xd->clip = getregion(xd);
 	} else if (xd->resizing == 3) {
 	    if(iw0 < iw) shift = (iw - iw0)/2.0;
-	    else shift = min(0, xd->xshift);
+	    else shift = std::min(0, xd->xshift);
 	    dd->left = shift;
 	    dd->right = iw0 + shift;
 	    xd->xshift = shift;
-	    gchangescrollbar(xd->gawin, HWINSB, max(-shift,0)/SF,
+	    gchangescrollbar(xd->gawin, HWINSB, std::max(-shift,0)/SF,
 			     xd->origWidth/SF - 1, xd->windowWidth/SF, 0);
 	    if(ih0 < ih) shift = (ih - ih0)/2.0;
-	    else shift = min(0, xd->yshift);
+	    else shift = std::min(0, xd->yshift);
 	    dd->top = shift;
 	    dd->bottom = ih0 + shift;
 	    xd->yshift = shift;
-	    gchangescrollbar(xd->gawin, VWINSB, max(-shift,0)/SF,
+	    gchangescrollbar(xd->gawin, VWINSB, std::max(-shift,0)/SF,
 			     xd->origHeight/SF - 1, xd->windowHeight/SF, 0);
-	    xd->showWidth = xd->origWidth + min(0, xd->xshift);
-	    xd->showHeight = xd->origHeight + min(0,  xd->yshift);
+	    xd->showWidth = xd->origWidth + std::min(0, xd->xshift);
+	    xd->showHeight = xd->origHeight + std::min(0,  xd->yshift);
 	}
 	xd->resize = FALSE;
 	if (xd->kind == SCREEN) {
@@ -3399,7 +3399,7 @@ Rboolean GADeviceDriver(pDevDesc dd, const char *display, double width,
     xd->buffered = buffered;
     xd->psenv = psenv;
     {
-	SEXP timeouts = GetOption1(Rf_install("windowsTimeouts"));
+	SEXP timeouts = Rf_GetOption1(Rf_install("windowsTimeouts"));
 	if(Rf_isInteger(timeouts)){
 	    xd->timeafter = INTEGER(timeouts)[0];
 	    xd->timesince = INTEGER(timeouts)[1];

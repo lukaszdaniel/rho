@@ -53,7 +53,7 @@ int baseRegisterIndex = -1;
 GPar* dpptr(pGEDevDesc dd) {
     if (baseRegisterIndex == -1)
 	Rf_error(_("the base graphics system is not registered"));
-    baseSystemState *bss = RHO_S_CAST(baseSystemState*, dd->gesd[baseRegisterIndex]->systemSpecific);
+    baseSystemState *bss = static_cast<baseSystemState*>(dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->dp);
 }
 

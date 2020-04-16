@@ -154,7 +154,7 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
 	Rf_error(_("argument 'x' must be raw, integer or logical"));
     if (!Rf_isString(stype)  || LENGTH(stype) != 1)
 	Rf_error(_("argument '%s' must be a character string"), "type");
-    useRaw = RHOCONSTRUCT(Rboolean, strcmp(R_CHAR(STRING_ELT(stype, 0)), "integer"));
+    useRaw = Rboolean(strcmp(R_CHAR(STRING_ELT(stype, 0)), "integer"));
     fac = useRaw ? 8 : 32;
     if (len% fac)
 	Rf_error(_("argument 'x' must be a multiple of %d long"), fac);
@@ -197,7 +197,7 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
 static int mbrtoint(int *w, const char *s)
 {
     unsigned int byte;
-    byte = *(reinterpret_cast<unsigned char *>(RHO_C_CAST(char*, s)));
+    byte = *(reinterpret_cast<unsigned char *>(const_cast<char *>(s)));
 
     if (byte == 0) {
 	*w = 0;
@@ -307,8 +307,8 @@ static size_t inttomb(char *s, const int wc)
 
     b = s ? s : buf;
     if (cvalue == 0) {*b = 0; return 0;}
-    for (i = 0; i < RHOCONSTRUCT(int, sizeof(utf8_table1)/sizeof(int)); i++)
-	if (RHOCONSTRUCT(int, cvalue) <= utf8_table1[i]) break;
+    for (i = 0; i < int(sizeof(utf8_table1)/sizeof(int)); i++)
+	if (int(cvalue) <= utf8_table1[i]) break;
     b += i;
     for (j = i; j > 0; j--) {
 	*b-- = char((0x80 | (cvalue & 0x3f)));
@@ -362,7 +362,7 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	    tmp = Calloc(len+1, char);
 	} else {
 	    R_CheckStack2(len+1);
-	    tmp = RHO_S_CAST(char*, alloca(len+1)); tmp[len] = '\0';
+	    tmp = static_cast<char *>(alloca(len+1)); tmp[len] = '\0';
 	}
 	for (i = 0, len = 0; i < nc; i++) {
 	    used = inttomb(buf, INTEGER(x)[i]);

@@ -171,7 +171,7 @@ SEXP doSetViewport(SEXP vp,
 	 * NOTE that we are deliberately using defineVar to
 	 * assign the vp SEXP itself, NOT a copy.
 	 */
-	Rf_defineVar(installChar(STRING_ELT(VECTOR_ELT(vp, VP_NAME), 0)),
+	Rf_defineVar(Rf_installChar(STRING_ELT(VECTOR_ELT(vp, VP_NAME), 0)),
 		  vp, 
 		  VECTOR_ELT(parent, PVP_CHILDREN));
     }
@@ -413,7 +413,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
     PROTECT(result);
     while (count < n && !found) {
 	result = findViewport(name, strict,
-			      PROTECT(Rf_findVar(installChar(STRING_ELT(childnames, count)),
+			      PROTECT(Rf_findVar(Rf_installChar(STRING_ELT(childnames, count)),
 				      children)),
 			      depth);
 	found = Rboolean(INTEGER(VECTOR_ELT(result, 0))[0] > 0);
@@ -467,7 +467,7 @@ static SEXP findViewport(SEXP name, SEXP strict, SEXP vp, int depth)
 		       /*
 			* Does this do inherits=FALSE?
 			*/
-		       Rf_findVar(installChar(STRING_ELT(name, 0)),
+		       Rf_findVar(Rf_installChar(STRING_ELT(name, 0)),
 			       viewportChildren(vp)));
     } else {
 	/*
@@ -569,7 +569,7 @@ static SEXP findvppathInChildren(SEXP path, SEXP name,
     PROTECT(result);
     while (count < n && !found) {
 	SEXP vp, newpathsofar;
-	PROTECT(vp = Rf_findVar(installChar(STRING_ELT(childnames, count)),
+	PROTECT(vp = Rf_findVar(Rf_installChar(STRING_ELT(childnames, count)),
 			     children));
 	PROTECT(newpathsofar = growPath(pathsofar,
 					VECTOR_ELT(vp, VP_NAME)));
@@ -620,7 +620,7 @@ static SEXP findvppath(SEXP path, SEXP name, SEXP strict,
 		       /*
 			* Does this do inherits=FALSE?
 			*/
-		       Rf_findVar(installChar(STRING_ELT(name, 0)),
+		       Rf_findVar(Rf_installChar(STRING_ELT(name, 0)),
 			       viewportChildren(vp)));
     } else {
 	result = findvppathInChildren(path, name, strict, pathsofar,

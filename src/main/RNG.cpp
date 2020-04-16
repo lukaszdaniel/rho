@@ -63,13 +63,13 @@ static RNGtype RNG_kind = RNG_DEFAULT;
  * where  RNGkind :=  RNG_kind  +  100 * N01_kind   currently in  outer(0:7, 100*(0:5), "+")
  */
 
-typedef struct {
+struct RNGTAB {
     RNGtype kind;
     N01type Nkind;
-    RHOCONST char *name; /* print name */
+    const char *name; /* print name */
     int n_seed; /* length of seed vector */
     Int32 *i_seed;
-} RNGTAB;
+};
 
 
 static Int32 dummy[625];
@@ -426,7 +426,7 @@ void GetRNGstate()
 	else {
 	    int j, *is = INTEGER(seeds);
 	    for(j = 1; j <= len_seed; j++)
-		RNG_Table[RNG_kind].i_seed[j - 1] = RHOCONSTRUCT(Int32, is[j]);
+		RNG_Table[RNG_kind].i_seed[j - 1] = Int32(is[j]);
 	    FixupSeeds(RNG_kind, 0);
 	}
     }
@@ -449,7 +449,7 @@ void PutRNGstate()
 
     INTEGER(seeds)[0] = RNG_kind + 100 * N01_kind;
     for(j = 0; j < len_seed; j++)
-	INTEGER(seeds)[j+1] = RHOCONSTRUCT(int, RNG_Table[RNG_kind].i_seed[j]);
+	INTEGER(seeds)[j+1] = int(RNG_Table[RNG_kind].i_seed[j]);
 					    
     /* assign only in the workspace */
     Rf_defineVar(R_SeedsSymbol, seeds, R_GlobalEnv);
@@ -641,7 +641,7 @@ static double MT_genrand(void)
     static Int32 mag01[2]={0x0, MATRIX_A};
     /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
-    mti = RHOCONSTRUCT(int, dummy[0]);
+    mti = int(dummy[0]);
 
     if (mti >= N) { /* generate N words at one time */
 	int kk;
@@ -668,7 +668,7 @@ static double MT_genrand(void)
     y ^= TEMPERING_SHIFT_S(y) & TEMPERING_MASK_B;
     y ^= TEMPERING_SHIFT_T(y) & TEMPERING_MASK_C;
     y ^= TEMPERING_SHIFT_L(y);
-    dummy[0] = RHOCONSTRUCT(Int32, mti);
+    dummy[0] = Int32(mti);
 
     return ( double(y) * 2.3283064365386963e-10 ); /* reals: [0,1)-interval */
 }

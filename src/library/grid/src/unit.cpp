@@ -50,7 +50,7 @@ SEXP unit(double value, int unit)
     Rf_setAttrib(u, Rf_install("valid.unit"), units);
     Rf_setAttrib(u, Rf_install("data"), R_NilValue);
     PROTECT(classname = Rf_mkString("unit"));
-    classgets(u, classname);
+    Rf_classgets(u, classname);
     UNPROTECT(3);
     return u;
 }
@@ -1821,10 +1821,10 @@ double transformWHfromNPC(double x, int to, double min, double max)
 
 /* Attempt to make validating units faster
  */
-typedef struct {
+struct UnitTab {
     const char *name;
     int code;
-} UnitTab;
+};
 
 /* NOTE this table must match the order in grid.h
  */

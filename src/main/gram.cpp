@@ -3661,7 +3661,7 @@ SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
     {
 	ProtectStack::Scope psscope;
 	if (gencode) {
-	    keepSource = RHOCONSTRUCT(Rboolean, Rf_asLogical(Rf_GetOption1(Rf_install("keep.source"))));
+	    keepSource = Rboolean(Rf_asLogical(Rf_GetOption1(Rf_install("keep.source"))));
 	    if (keepSource) {
 		ParseState.keepSrcRefs = TRUE;
 		REPROTECT(ParseState.SrcFile = Rf_NewEnvironment(R_NilValue, R_NilValue, R_EmptyEnv), ParseState.SrcFileProt);
@@ -3984,7 +3984,7 @@ static int nextchar(int expect)
 /* Syntactic Keywords + Symbolic Constants */
 
 struct {
-    RHOCONST char *name;
+    const char *name;
     int token;
 }
 static keywords[] = {
@@ -4175,7 +4175,7 @@ static void yyerror(const char *s)
     if (streqln(s, yyunexpected, sizeof yyunexpected -1)) {
 	int i;
 	/* Edit the error message */
-	expecting = RHO_C_CAST(char*, strstr(s + sizeof yyunexpected -1, yyexpecting));
+	expecting = const_cast<char *>(strstr(s + sizeof yyunexpected -1, yyexpecting));
 	if (expecting) *expecting = '\0';
 	for (i = 0; yytname_translations[i]; i += 2) {
 	    if (streql(s + sizeof yyunexpected - 1, yytname_translations[i])) {
@@ -4299,7 +4299,7 @@ static int SkipComment(void)
     int _first_parsed = ParseState.xxparseno ;
     int type = COMMENT ;
 
-    Rboolean maybeLine = RHOCONSTRUCT(Rboolean, (ParseState.xxcolno == 1));
+    Rboolean maybeLine = Rboolean((ParseState.xxcolno == 1));
     Rboolean doSave;
 
     DECLARE_YYTEXT_BUFP(yyp);
@@ -4328,13 +4328,13 @@ static int SkipComment(void)
         _last_parsed = prevparse[prevpos];
     }
     
-    doSave = RHOCONSTRUCT(Rboolean, !maybeLine);
+    doSave = Rboolean(!maybeLine);
     
     while (c != '\n' && c != R_EOF) {
         // Comments can be any length; we only record the ones that fit in yytext.
         if (doSave) {
             YYTEXT_PUSH(c, yyp);
-            doSave = RHOCONSTRUCT(Rboolean, (yyp - yytext) < int(sizeof(yytext)) - 2);
+            doSave = Rboolean((yyp - yytext) < int(sizeof(yytext)) - 2);
         }
  	_last_column = ParseState.xxcolno ;
 	_last_parsed = ParseState.xxparseno ;
@@ -4980,14 +4980,14 @@ static int processLineDirective(int *type)
 }
 
 /* Get the R symbol, and set yytext at the same time */
-static SEXP install_and_save(RHOCONST char * text)
+static SEXP install_and_save(const char * text)
 {
     strcpy(yytext, text);
     return Rf_install(text);
 }
 
 /* Get an R symbol, and set different yytext.  Used for translation of -> to <-. ->> to <<- */
-static SEXP install_and_save2(RHOCONST char * text, RHOCONST char * savetext)
+static SEXP install_and_save2(const char * text, const char * savetext)
 {
     strcpy(yytext, savetext);
     return Rf_install(text);

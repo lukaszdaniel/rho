@@ -22,7 +22,7 @@
  *
  *   #include <Rmath.h>
  *
- *   double pnorm5(double x, double mu, double sigma, int lower_tail,int log_p);
+ *   double pnorm(double x, double mu, double sigma, int lower_tail,int log_p);
  *	   {pnorm (..) is synonymous and preferred inside R}
  *
  *   void   pnorm_both(double x, double *cum, double *ccum,
@@ -59,7 +59,7 @@
 
 #include "nmath.h"
 #include "dpq.h"
-double pnorm5(double x, double mu, double sigma, int lower_tail, int log_p)
+double pnorm(double x, double mu, double sigma, int lower_tail, int log_p)
 {
     double p, cp;
 

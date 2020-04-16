@@ -35,7 +35,6 @@
 #include "R_ext/Boolean.h"
 #include "rho/SEXPTYPE.hpp"
 #include "rho/GCEdge.hpp"
-#include "rho/unrho.hpp"
 
 /** @brief Namespace for the rho project.
  *

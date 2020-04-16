@@ -544,7 +544,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
  * rely on these macros to paste it in.
  */
 
-#ifndef R_NO_REMAP
+#if 0 //#ifndef R_NO_REMAP
 //# define asVecSize		Rf_asVecSize
 //# define BindDomain		Rf_BindDomain
 # define CleanEd		Rf_CleanEd

@@ -939,7 +939,7 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
 	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(rval, i, STRING_ELT(CAR(vp), 0));
 	    else
-		SET_STRING_ELT(rval, i, STRING_ELT(Rf_deparse1line(CAR(vp), RHO_FALSE), 0));
+		SET_STRING_ELT(rval, i, STRING_ELT(Rf_deparse1line(CAR(vp), FALSE), 0));
 	}
     }
     else if (type == VECSXP) {
@@ -1046,7 +1046,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 #endif
 	    else
 		SET_STRING_ELT(rval, i,
-			       STRING_ELT(Rf_deparse1line(elt, RHO_FALSE), 0));
+			       STRING_ELT(Rf_deparse1line(elt, FALSE), 0));
 	}
     }
     else if (type == LISTSXP) {
@@ -1190,7 +1190,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(ans, i, STRING_ELT(CAR(vp), 0));
 	    else
-		SET_STRING_ELT(ans, i, STRING_ELT(Rf_deparse1line(CAR(vp), RHO_FALSE), 0));
+		SET_STRING_ELT(ans, i, STRING_ELT(Rf_deparse1line(CAR(vp), FALSE), 0));
 	}
 	UNPROTECT(1);
 	break;
@@ -2565,11 +2565,11 @@ SEXP attribute_hidden do_quote(SEXP call, SEXP op, SEXP args, SEXP rho)
     return(val);
 }
 
-typedef struct {
-    RHOCONST char *s;
+struct classType {
+    const char *s;
     SEXPTYPE sexp;
     Rboolean canChange;
-} classType;
+};
 
 static classType classTable[] = {
     { "logical",	LGLSXP,	   TRUE },
@@ -2596,7 +2596,7 @@ static int class2type(const char *s)
        classes; e.g., "language" is a type but many classes correspond to objects of
        this type.
     */
-    int i; RHOCONST char *si;
+    int i; const char *si;
     for(i = 0; ; i++) {
 	si = classTable[i].s;
 	if(!si)

@@ -28,9 +28,9 @@
 
 #include <Rinternals.h> /* Arith.h, Boolean.h, Error.h, Memory.h .. */
 
-typedef enum {
+enum R_SM_ENDRULE {
     sm_NO_ENDRULE, sm_COPY_ENDRULE, sm_TUKEY_ENDRULE
-} R_SM_ENDRULE;
+};
 
 #include "localization.h"
 

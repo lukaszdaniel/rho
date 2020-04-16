@@ -33,14 +33,14 @@
 //#include <R_ext/QuartzDevice.h>
 #include "localization.h"
 
-typedef struct {
+struct QuartzPDFDevice {
     CGContextRef context;   /* drawing context */
     CFURLRef url;           /* destication URL (on NULL is connection or data is used) */
     int connection;         /* destination connection (currently unsupported) */
     int page;               /* page number (0 before first NewPage call) */
     CGRect bbox;            /* bounding box (in points) */
     CFMutableDataRef data;  /* destination data (if writing to CFMutableData) */
-} QuartzPDFDevice;
+};
 
 static QuartzFunctions_t *qf;
 

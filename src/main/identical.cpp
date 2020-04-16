@@ -37,12 +37,12 @@
 /* Implementation of identical(x, y) */
 
 /* How are  R "double"s compared : */
-typedef enum {
+enum ne_strictness_type {
     bit_NA__num_bit = 0,// S's default - look at bit pattern, also for NA/NaN's
     bit_NA__num_eq  = 1,// bitwise comparison for NA / NaN; '==' for other numbers
  single_NA__num_bit = 2,// one kind of NA or NaN; for num, use 'bit'comparison
  single_NA__num_eq  = 3,// one kind of NA or NaN; for num, use '==' : R's DEFAULT
-} ne_strictness_type;
+};
 /* NOTE:  ne_strict = NUM_EQ + (SINGLE_NA * 2)  = NUM_EQ | (SINGLE_NA << 1)   */
 
 static Rboolean neWithNaN(double x, double y, ne_strictness_type str);
@@ -101,7 +101,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
        -- such attributes are used in CR for the cache.  */
     if(TYPEOF(x) == CHARSXP) {
 	/* This matches NAs */
-	return RHOCONSTRUCT(Rboolean, Rf_Seql(x, y));
+	return Rboolean(Rf_Seql(x, y));
     }
     if (IGNORE_SRCREF && TYPEOF(x) == CLOSXP) {
 	/* Remove "srcref" attribute - and below, treat body(x), body(y) */
@@ -181,12 +181,12 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case LGLSXP:
 	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
-	return memcmp(RHO_NO_CAST(void *)LOGICAL(x), RHO_NO_CAST(void *)LOGICAL(y),
+	return memcmp(LOGICAL(x), LOGICAL(y),
 		      Rf_xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
     case INTSXP:
 	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
-	return memcmp(RHO_NO_CAST(void *)INTEGER(x), RHO_NO_CAST(void *)INTEGER(y),
+	return memcmp(INTEGER(x), INTEGER(y),
 		      Rf_xlength(x) * sizeof(int)) == 0 ? TRUE : FALSE;
     case REALSXP:
     {
@@ -196,7 +196,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    double *xp = REAL(x), *yp = REAL(y);
 	    int ne_strict = NUM_EQ | (SINGLE_NA << 1);
 	    for(R_xlen_t i = 0; i < n; i++)
-		if(neWithNaN(xp[i], yp[i], RHOCONSTRUCT(ne_strictness_type, ne_strict))) return FALSE;
+		if(neWithNaN(xp[i], yp[i], ne_strictness_type(ne_strict))) return FALSE;
 	}
 	return TRUE;
     }
@@ -208,8 +208,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    Rcomplex *xp = COMPLEX(x), *yp = COMPLEX(y);
 	    int ne_strict = NUM_EQ | (SINGLE_NA << 1);
 	    for(R_xlen_t i = 0; i < n; i++)
-		if(neWithNaN(xp[i].r, yp[i].r, RHOCONSTRUCT(ne_strictness_type, ne_strict)) ||
-		   neWithNaN(xp[i].i, yp[i].i, RHOCONSTRUCT(ne_strictness_type, ne_strict)))
+		if(neWithNaN(xp[i].r, yp[i].r, ne_strictness_type(ne_strict)) ||
+		   neWithNaN(xp[i].i, yp[i].i, ne_strictness_type(ne_strict)))
 		    return FALSE;
 	}
 	return TRUE;
@@ -220,8 +220,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	if(n != Rf_xlength(y)) return FALSE;
 	for(i = 0; i < n; i++) {
 	    /* This special-casing for NAs is not needed */
-	    Rboolean na1 = (RHOCONSTRUCT(Rboolean, STRING_ELT(x, i) == NA_STRING)),
-		na2 = (RHOCONSTRUCT(Rboolean, STRING_ELT(y, i) == NA_STRING));
+	    Rboolean na1 = (Rboolean(STRING_ELT(x, i) == NA_STRING)),
+		na2 = (Rboolean(STRING_ELT(y, i) == NA_STRING));
 	    if(na1 ^ na2) return FALSE;
 	    if(na1 && na2) continue;
 	    if (! Rf_Seql(STRING_ELT(x, i), STRING_ELT(y, i))) return FALSE;
@@ -231,7 +231,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case CHARSXP: /* Probably unreachable, but better safe than sorry... */
     {
 	/* This matches NAs */
-	return RHOCONSTRUCT(Rboolean, Rf_Seql(x, y));
+	return Rboolean(Rf_Seql(x, y));
     }
     case VECSXP:
     {
@@ -271,7 +271,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    x = CDR(x);
 	    y = CDR(y);
 	}
-	return(RHOCONSTRUCT(Rboolean, y == nullptr));
+	return(Rboolean(y == nullptr));
     }
     case CLOSXP:
     {
@@ -304,7 +304,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case RAWSXP:
 	if (Rf_xlength(x) != Rf_xlength(y)) return FALSE;
 	/* Use memcmp (which is ISO C90) to speed up the comparison */
-	return memcmp(RHO_NO_CAST(void *)RAW(x), RHO_NO_CAST(void *)RAW(y),
+	return memcmp(RAW(x), RAW(y),
 		      Rf_xlength(x) * sizeof(Rbyte)) == 0 ? TRUE : FALSE;
 
 /*  case PROMSXP: args are evaluated, so will not be seen */
@@ -363,17 +363,17 @@ static Rboolean neWithNaN(double x, double y, ne_strictness_type str)
 
     switch (str) {
     case single_NA__num_eq:
-	return(RHOCONSTRUCT(Rboolean, x != y));
+	return(Rboolean(x != y));
     case bit_NA__num_eq:
 	if(!ISNAN(x) && !ISNAN(y))
-	    return(RHOCONSTRUCT(Rboolean, x != y));
+	    return(Rboolean(x != y));
 	else /* bitwise check for NA/NaN's */
-	    return memcmp(RHO_NO_CAST(const void *) &x,
-			  RHO_NO_CAST(const void *) &y, sizeof(double)) ? TRUE : FALSE;
+	    return memcmp(&x,
+			  &y, sizeof(double)) ? TRUE : FALSE;
     case bit_NA__num_bit:
     case single_NA__num_bit:
-	return memcmp(RHO_NO_CAST(const void *) &x,
-		      RHO_NO_CAST(const void *) &y, sizeof(double)) ? TRUE : FALSE;
+	return memcmp(&x,
+		      &y, sizeof(double)) ? TRUE : FALSE;
     default: /* Wall */
 	return FALSE;
     }

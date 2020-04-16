@@ -796,7 +796,7 @@ static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
     for (a = ans; a != R_NilValue; a = next) {
 	n = TAG(a);
 	next = CDR(a);
-	if (n != R_NilValue && Rf_pmatch(R_RecursiveSymbol, n, RHO_TRUE)) {
+	if (n != R_NilValue && Rf_pmatch(R_RecursiveSymbol, n, TRUE)) {
 	    if (n_recurse++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'recursive'"));
 	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
@@ -807,7 +807,7 @@ static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
 	    else
 		SETCDR(last, next);
 	}
-	else if (n != R_NilValue && Rf_pmatch(R_UseNamesSymbol, n, RHO_TRUE)) {
+	else if (n != R_NilValue && Rf_pmatch(R_UseNamesSymbol, n, TRUE)) {
 	    if (n_usenames++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'use.names'"));
 	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {

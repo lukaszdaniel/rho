@@ -817,10 +817,10 @@ typedef enum {meMouseDown = 0,
 #define middleButton 2
 #define rightButton  4
 
-#define doKeybd			Rf_doKeybd
-#define doMouseEvent		Rf_doMouseEvent
-#define doIdle			Rf_doIdle
-#define doesIdle		Rf_doesIdle
+// #define doKeybd			Rf_doKeybd
+// #define doMouseEvent		Rf_doMouseEvent
+// #define doIdle			Rf_doIdle
+// #define doesIdle		Rf_doesIdle
 
 void doMouseEvent(pDevDesc dd, R_MouseEvent event,
                   int buttons, double x, double y);

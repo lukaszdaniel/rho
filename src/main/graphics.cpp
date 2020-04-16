@@ -50,7 +50,7 @@ static void GLPretty(double *ul, double *uh, int *n);
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
 {
 #define EPS_FAC_2 100
-    Rboolean swap = RHOCONSTRUCT(Rboolean, *min > *max);
+    Rboolean swap = Rboolean(*min > *max);
     double t_, min_o, max_o;
 
     if(swap) { /* Feature: in R, something like  xlim = c(100,0)  just works */

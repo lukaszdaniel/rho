@@ -84,7 +84,7 @@ static void try_jump_to_restart(void);
 static void NORET
 jump_to_top_ex(Rboolean, Rboolean, Rboolean, Rboolean, Rboolean);
 static void signalInterrupt(void);
-static RHOCONST char * R_ConciseTraceback(SEXP call, int skip);
+static const char * R_ConciseTraceback(SEXP call, int skip);
 
 /* Interface / Calling Hierarchy :
 
@@ -277,7 +277,7 @@ static SEXP getCurrentCall()
     /* This can be called before R_GlobalContext is defined, so... */
     /* If profiling is on, this can be a CTXT_BUILTIN */
 
-	return c ? RHO_C_CAST(Expression*, c->call()) : RHO_S_CAST(RObject*, nullptr);
+	return c ? const_cast<Expression*>(c->call()) : static_cast<RObject*>(nullptr);
 }
 
 
@@ -582,7 +582,7 @@ static SEXP GetSrcLoc(SEXP srcref)
 static char errbuf[BUFSIZE];
 
 const char *R_curErrorBuf() {
-    return RHO_NO_CAST(const char *)errbuf;
+    return errbuf;
 }
 
 /* temporary hook to allow experimenting with alternate error mechanisms */
@@ -640,8 +640,8 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 	SEXP opt = Rf_GetOption1(Rf_install("show.error.locations"));
 	if (!Rf_isNull(opt)) {
 	    if (TYPEOF(opt) == STRSXP && Rf_length(opt) == 1) {
-	    	if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("top")), opt, RHO_FALSE)) skip = 0;
-	    	else if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("bottom")), opt, RHO_FALSE)) skip = -1;
+	    	if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("top")), opt, FALSE)) skip = 0;
+	    	else if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("bottom")), opt, FALSE)) skip = -1;
 	    } else if (TYPEOF(opt) == LGLSXP)
 	    	skip = Rf_asLogical(opt) == 1 ? 0 : NA_INTEGER;
 	    else
@@ -912,7 +912,7 @@ static void jump_to_top_ex(Rboolean traceback,
     */
 }
 
-void NORET Rf_jump_to_toplevel()
+void NORET jump_to_toplevel()
 {
     /* no traceback, no user error option; for now, warnings are
        printed here and console is reset -- eventually these should be
@@ -944,7 +944,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 	     cptr != nullptr;
 	     cptr = ClosureContext::innermost(cptr->nextOut())) {
 	    /* stop() etc have internal call to .makeMessage */
-	    cfn = R_CHAR(STRING_ELT(Rf_deparse1s(CAR(RHO_C_CAST(Expression*, cptr->call()))), 0));
+	    cfn = R_CHAR(STRING_ELT(Rf_deparse1s(CAR(const_cast<Expression*>(cptr->call()))), 0));
 	    if(streql(cfn, "stop") || streql(cfn, "warning")
 	       || streql(cfn, "message")) continue;
 	    rho = cptr->workingEnvironment();
@@ -1118,7 +1118,7 @@ static SEXP findCall(void)
 {
     ClosureContext *cptr
 	= ClosureContext::innermost(ClosureContext::innermost()->nextOut());
-    return (cptr ? RHO_C_CAST(Expression*, cptr->call()) : nullptr);
+    return (cptr ? const_cast<Expression*>(cptr->call()) : nullptr);
 }
 
 SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -1212,7 +1212,7 @@ const ErrorDB[] = {
 
 static struct {
     R_WARNING code;
-    RHOCONST char* format;
+    const char* format;
 }
 WarningDB[] = {
     { WARNING_coerce_NA,	N_("NAs introduced by coercion")	},
@@ -1318,7 +1318,7 @@ SEXP R_GetTraceback(int skip)
 	if (skip > 0)
 	    skip--;
 	else {
-	    SETCAR(t, Rf_deparse1(RHO_C_CAST(Expression*, c->call()), RHO_FALSE, DEFAULTDEPARSE));
+	    SETCAR(t, Rf_deparse1(const_cast<Expression*>(c->call()), FALSE, DEFAULTDEPARSE));
 	    if (c->sourceLocation() && !Rf_isNull(c->sourceLocation())) 
 		Rf_setAttrib(CAR(t), R_SrcrefSymbol, Rf_duplicate(c->sourceLocation()));
 	    t = CDR(t);
@@ -1357,7 +1357,7 @@ namespace rho {
     }
 }
 
-static RHOCONST char * R_ConciseTraceback(SEXP call, int skip)
+static const char * R_ConciseTraceback(SEXP call, int skip)
 {
     static char buf[560];
     FunctionContext *c;
@@ -1373,7 +1373,7 @@ static RHOCONST char * R_ConciseTraceback(SEXP call, int skip)
 	if (skip > 0)
 	    skip--;
 	else {
-	    SEXP fun = CAR(RHO_C_CAST(Expression*, c->call()));
+	    SEXP fun = CAR(const_cast<Expression*>(c->call()));
 	    const char *funstr = (TYPEOF(fun) == SYMSXP) ?
 		R_CHAR(PRINTNAME(fun)) : "<Anonymous>";
 	    if(streql(funstr, "stop") ||
@@ -1385,7 +1385,7 @@ static RHOCONST char * R_ConciseTraceback(SEXP call, int skip)
 		ncalls++;
 		if(too_many) {
 		    top = funstr;
-		} else if(RHOCONSTRUCT(int, strlen(buf)) > R_NShowCalls) {
+		} else if(int(strlen(buf)) > R_NShowCalls) {
 		    memmove(buf+4, buf, strlen(buf)+1);
 		    memcpy(buf, "... ", 4);
 		    too_many = TRUE;
@@ -1827,7 +1827,7 @@ static void NORET invokeRestart(SEXP r, SEXP arglist)
 
     if (exit == R_NilValue) {
 	R_RestartStack = R_NilValue;
-	Rf_jump_to_toplevel();
+	jump_to_toplevel();
     }
     else {
 	for (; R_RestartStack != R_NilValue; pop_restart())
@@ -1946,14 +1946,14 @@ SEXP R_tryCatchError(SEXP (*body)(void *), void *bdata,
    implementation fairly simple but not fast. If performance becomes
    an issue we can look into a pure C implementation. LT */
 
-typedef struct {
+ struct tryCatchData_t {
     SEXP (*body)(void *);
     void *bdata;
     SEXP (*handler)(SEXP, void *);
     void *hdata;
     void (*finally)(void *);
     void *fdata;
-} tryCatchData_t;
+};
 
 static SEXP default_tryCatch_handler(SEXP cond, void *data)
 {

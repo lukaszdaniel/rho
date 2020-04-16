@@ -414,7 +414,7 @@ static void HashTableSetup(SEXP x, HashData *d, R_xlen_t nmax)
 	UNIMPLEMENTED_TYPE("HashTableSetup", x);
     }
 #ifdef LONG_VECTOR_SUPPORT
-    d->isLong = RHOCONSTRUCT(Rboolean, IS_LONG_VEC(x));
+    d->isLong = Rboolean(IS_LONG_VEC(x));
     if (d->isLong) {
 	d->HashTable = Rf_allocVector(REALSXP, R_xlen_t(d->M));
 	for (size_t i = 0; i < d->M; i++) REAL(d->HashTable)[i] = NIL;
@@ -1044,7 +1044,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
     dups_ok = Rf_asLogical(duplicates_ok_);
     if (dups_ok == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "duplicates.ok");
-    no_dups = RHOCONSTRUCT(Rboolean, !dups_ok);
+    no_dups = Rboolean(!dups_ok);
 
     if (!Rf_isString(input) || !Rf_isString(target))
 	Rf_error(_("argument is not of mode character"));

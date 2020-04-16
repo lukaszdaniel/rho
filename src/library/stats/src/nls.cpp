@@ -37,10 +37,8 @@
 #include <Rinternals.h>
 #include "nls.h"
 #include "localization.h"
+#include <algorithm>
 
-#ifndef MIN
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#endif
 
 /*
  * get the list element named str. names is the name attribute of list
@@ -77,7 +75,7 @@ ConvInfoMsg(char* msg, int iter, int whystop, double fac,
 
     SET_VECTOR_ELT(ans, 0, Rf_ScalarLogical(whystop == 0)); /* isConv */
     SET_VECTOR_ELT(ans, 1, Rf_ScalarInteger(iter));	 /* finIter */
-    SET_VECTOR_ELT(ans, 2, ScalarReal   (convNew));	 /* finTol */
+    SET_VECTOR_ELT(ans, 2, Rf_ScalarReal(convNew));	 /* finTol */
     SET_VECTOR_ELT(ans, 3, Rf_ScalarInteger(whystop));      /* stopCode */
     SET_VECTOR_ELT(ans, 4, Rf_mkString(msg));               /* stopMessage */
 
@@ -246,7 +244,7 @@ nls_iter(SEXP m, SEXP control, SEXP doTraceArg)
 		Rprintf(" new dev = %g\n", newDev);
 	    if(newDev <= dev) {
 		dev = newDev;
-		fac = MIN(2*fac, 1);
+		fac = std::min(2*fac, 1.0);
 		tmp = newPars;
 		newPars = pars;
 		pars = tmp;

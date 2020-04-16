@@ -391,11 +391,11 @@ Rboolean R_ToplevelExec(void (*fun)(void *), void *data)
 
   R_tryEval is in Rinternals.h (so public), but not in the API.
  */
-typedef struct {
+struct ProtectedEvalData {
     SEXP expression;
     GCStackRoot<> val;
     SEXP env;
-} ProtectedEvalData;
+};
 
 static void
 protectedEval(void *d)
@@ -437,7 +437,7 @@ R_tryEval(SEXP e, SEXP env, int *ErrorOccurred)
 SEXP R_tryEvalSilent(SEXP e, SEXP env, int *ErrorOccurred)
 {
     SEXP val;
-    Rboolean oldshow = RHOCONSTRUCT(Rboolean, R_ShowErrorMessages);
+    Rboolean oldshow = Rboolean(R_ShowErrorMessages);
     R_ShowErrorMessages = FALSE;
     val = R_tryEval(e, env, ErrorOccurred);
     R_ShowErrorMessages = oldshow;

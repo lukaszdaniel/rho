@@ -64,7 +64,7 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
     if (nfac > 0 && (nobs % nfac) != 0)
 	Rf_warning(_("data length is not a multiple of split variable"));
     nm = Rf_getAttrib(x, R_NamesSymbol);
-    have_names = RHOCONSTRUCT(Rboolean, nm != nullptr);
+    have_names = Rboolean(nm != nullptr);
 
 #ifdef LONG_VECTOR_SUPPORT
     if (IS_LONG_VEC(x))

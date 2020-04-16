@@ -22,13 +22,10 @@
 # include <config.h>
 #endif
 
+#include <algorithm>
 #include <R.h>
 #include "ts.h"
 
-#ifndef min
-#define min(a, b) ((a < b)?(a):(b))
-#define max(a, b) ((a < b)?(b):(a))
-#endif
 
 // currently ISNAN includes NAs
 #define my_isok(x) (!ISNA(x) & !ISNAN(x))
@@ -54,7 +51,7 @@ SEXP cfilter(SEXP sx, SEXP sfilter, SEXP ssides, SEXP scircular)
 		out[i] = NA_REAL;
 		continue;
 	    }
-	    for(j = max(0, nshift + i - nx); j < min(nf, i + nshift + 1) ; j++) {
+	    for(j = std::max(R_xlen_t(0), nshift + i - nx); j < std::min(nf, i + nshift + 1) ; j++) {
 		tmp = x[i + nshift - j];
 		if(my_isok(tmp)) z += filter[j] * tmp;
 		else { out[i] = NA_REAL; goto bad; }

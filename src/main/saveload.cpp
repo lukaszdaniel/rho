@@ -106,7 +106,7 @@ using namespace rho;
  OffsetToNode is called by DataLoad() and RestoreSEXP()
  which itself is only called by RestoreSEXP.
  */
-typedef struct {
+struct NodeInfo {
  int NSymbol;		/* Number of symbols */
  int NSave;		/* Number of non-symbols */
  int NTotal;		/* NSymbol + NSave */
@@ -115,7 +115,7 @@ typedef struct {
  int *OldOffset;        /* Offsets in previous incarnation */
 
  SEXP NewAddress;       /* Addresses in this incarnation */
-} NodeInfo;
+};
 
 
 #ifndef INT_32_BITS
@@ -136,7 +136,7 @@ typedef struct {
 #define SMBUF_SIZE 512
 #define SMBUF_SIZED_STRING "%511s"
 
-typedef struct {
+struct SaveLoadData {
 /* These variables are accessed in the
    InInteger, InComplex, InReal, InString
    methods for Ascii, Binary, XDR.
@@ -151,11 +151,11 @@ mean some of them wouldn't need the extra argument.
     char smbuf[SMBUF_SIZE];	/* Small buffer for temp use */
 				/* smbuf is only used by Ascii. */
     XDR xdrs;
-} SaveLoadData;
+};
 
 /* ----- I / O -- F u n c t i o n -- P o i n t e r s ----- */
 
-typedef struct {
+struct OutputRoutines {
  void	(*OutInit)(FILE*, SaveLoadData *d);
  void	(*OutInteger)(FILE*, int, SaveLoadData *);
  void	(*OutReal)(FILE*, double, SaveLoadData *);
@@ -164,16 +164,16 @@ typedef struct {
  void	(*OutSpace)(FILE*, int, SaveLoadData *);
  void	(*OutNewline)(FILE*, SaveLoadData *);
  void	(*OutTerm)(FILE*, SaveLoadData *);
-} OutputRoutines;
+};
 
-typedef struct {
+struct InputRoutines {
  void	(*InInit)(FILE*, SaveLoadData *d);
  int	(*InInteger)(FILE*, SaveLoadData *);
  double	(*InReal)(FILE*, SaveLoadData *);
  Rcomplex	(*InComplex)(FILE*, SaveLoadData *);
  char*	(*InString)(FILE*, SaveLoadData *);
  void	(*InTerm)(FILE*, SaveLoadData *d);
-} InputRoutines;
+};
 
 
 static SEXP DataLoad(FILE*, int startup, InputRoutines *m, int version, SaveLoadData *d);
@@ -505,7 +505,7 @@ static SEXPTYPE FixupType(unsigned int type, int VersionId)
     if (type == 11 || type == 12)
 	type = 13;
 
-    return RHOCONSTRUCT(SEXPTYPE, type);
+    return SEXPTYPE(type);
 }
 
 static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines *m, SaveLoadData *d)
@@ -556,14 +556,14 @@ static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines 
 	len = m->InInteger(fp, d);
 	s = Rf_allocVector(type, len);
 	/* skip over the vector content */
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    /*REAL(s)[j] = */ m->InReal(fp, d);
 	break;
     case CPLXSXP:
 	len = m->InInteger(fp, d);
 	s = Rf_allocVector(type, len);
 	/* skip over the vector content */
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    /* COMPLEX(s)[j] = */ m->InComplex(fp, d);
 	break;
     case INTSXP:
@@ -571,7 +571,7 @@ static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines 
 	len = m->InInteger(fp, d);;
 	s = Rf_allocVector(type, len);
 	/* skip over the vector content */
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    /* INTEGER(s)[j] = */ m->InInteger(fp, d);
 	break;
     case STRSXP:
@@ -580,7 +580,7 @@ static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines 
 	len = m->InInteger(fp, d);
 	s = Rf_allocVector(type, len);
 	/* skip over the vector content */
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++) {
+	for (j = 0; j < uint(len); j++) {
 	    /* VECTOR(s)[j] = */ m->InInteger(fp, d);
 	}
 	break;
@@ -630,29 +630,29 @@ static void RestoreSEXP(SEXP s, FILE *fp, InputRoutines *m, NodeInfo *node, int 
 	break;
     case REALSXP:
 	len = m->InInteger(fp, d);
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    REAL(s)[j] = m->InReal(fp, d);
 	break;
     case CPLXSXP:
 	len = m->InInteger(fp, d);
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    COMPLEX(s)[j] = m->InComplex(fp, d);
 	break;
     case INTSXP:
     case LGLSXP:
 	len = m->InInteger(fp, d);;
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    INTEGER(s)[j] = m->InInteger(fp, d);
 	break;
     case STRSXP:
 	len = m->InInteger(fp, d);
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    SET_STRING_ELT(s, j, OffsetToNode(m->InInteger(fp, d), node));
 	break;
     case VECSXP:
     case EXPRSXP:
 	len = m->InInteger(fp, d);
-	for (j = 0; j < RHOCONSTRUCT(uint, len); j++)
+	for (j = 0; j < uint(len); j++)
 	    SET_VECTOR_ELT(s, j, OffsetToNode(m->InInteger(fp, d), node));
 	break;
     default: Rf_error(_("bad SEXP type in data file"));
@@ -799,13 +799,13 @@ static int NewSaveSpecialHook (SEXP item)
 
 static SEXP NewLoadSpecialHook (SEXPTYPE type)
 {
-    switch (RHOCONSTRUCT(int, type)) {
+    switch (int(type)) {
     case -1: return R_NilValue;
     case -2: return R_GlobalEnv;
     case -3: return R_UnboundValue;
     case -4: return R_MissingArg;
     }
-    return RHO_NO_CAST(SEXP) nullptr;	/* not strictly legal... */
+    return  nullptr;	/* not strictly legal... */
 }
 
 
@@ -1233,7 +1233,7 @@ static SEXP NewReadItem (SEXP sym_table, SEXP env_table, FILE *fp,
     int pos, levs;
 
     R_assert(TYPEOF(sym_table) == VECSXP && TYPEOF(env_table) == VECSXP);
-    type = RHOCONSTRUCT(SEXPTYPE, m->InInteger(fp, d));
+    type = SEXPTYPE(m->InInteger(fp, d));
     if ((s = NewLoadSpecialHook(type)))
 	return s;
     levs = m->InInteger(fp, d);
@@ -1613,7 +1613,7 @@ static char *InStringBinary(FILE *fp, SaveLoadData *unused)
 	buf = newbuf;
 	buflen = nbytes + 1;
     }
-    if (RHOCONSTRUCT(int, fread(buf, sizeof(char), nbytes, fp)) != nbytes)
+    if (int(fread(buf, sizeof(char), nbytes, fp)) != nbytes)
 	Rf_error(_("a binary string read error occurred"));
     buf[nbytes] = '\0';
     return buf;
@@ -1704,7 +1704,7 @@ static char *InStringXdr(FILE *fp, SaveLoadData *d)
     static char *buf = nullptr;
     static int buflen = 0;
     unsigned int nbytes = InIntegerXdr(fp, d);
-    if (RHOCONSTRUCT(int, nbytes) >= buflen) {
+    if (int(nbytes) >= buflen) {
 	char *newbuf;
 	/* Protect against broken realloc */
 	if(buf) newbuf = static_cast<char *>(realloc(buf, nbytes + 1));
@@ -2227,7 +2227,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
     Rconnection con;
     struct R_outpstream_st out;
     R_pstream_format_t type;
-    RHOCONST char *magic;
+    const char *magic;
 
     if (TYPEOF(list_) != STRSXP)
 	Rf_error(_("first argument must be a character vector"));
@@ -2237,7 +2237,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 
     if (TYPEOF(ascii_) != LGLSXP)
 	Rf_error(_("'ascii' must be logical"));
-    ascii = RHOCONSTRUCT(Rboolean, INTEGER(ascii_)[0]);
+    ascii = Rboolean(INTEGER(ascii_)[0]);
 
     if (version_ == R_NilValue)
 	version = R_DefaultSaveFormatVersion;

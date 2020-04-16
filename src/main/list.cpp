@@ -47,14 +47,14 @@
 /* The following code is used to recursive traverse a block */
 /* of code and extract all the symbols present in that code. */
 
-typedef struct {
+struct NameWalkData {
  SEXP	ans;
  int	UniqueNames;
  int	IncludeFunctions;
  int	StoreValues;
  int	ItemCounts;
  int	MaxCount;
-} NameWalkData;
+};
 
 static void namewalk(SEXP s, NameWalkData *d)
 {

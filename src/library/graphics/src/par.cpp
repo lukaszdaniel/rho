@@ -49,12 +49,12 @@
 #include "graphics.h"
 #include "localization.h"
 
-typedef struct {
+struct ParTab {
     const char *name;
     int code; /* 0 normal, 1 not inline, 2 read-only
 		 -1 unknown, -2 obselete, -3 graphical args
 	       */
-} ParTab;
+};
 
 static const ParTab
 ParTable  [] = {

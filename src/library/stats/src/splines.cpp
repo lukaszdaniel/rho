@@ -441,7 +441,7 @@ spline_eval(int method, R_xlen_t nu, double *u, double *v,
 // TODO: move to ../../../main/coerce.cpp
 #include <Defn.h> /* for UNIMPLEMENTED_TYPE */
 static R_xlen_t asXlen(SEXP x) {
-    if (isVectorAtomic(x) && XLENGTH(x) >= 1) {
+    if (Rf_isVectorAtomic(x) && XLENGTH(x) >= 1) {
 	switch (TYPEOF(x)) {
 	case INTSXP:
 	    return (R_xlen_t) INTEGER(x)[0];

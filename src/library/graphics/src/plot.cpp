@@ -766,7 +766,7 @@ SEXP C_axis(SEXP args)
 	Rf_error(_("too few arguments"));
     GCheckState(dd);
 
-    PrintDefaults(); /* prepare for labelformat */
+    Rf_PrintDefaults(); /* prepare for labelformat */
 
     /* Required argument: "side" */
     /* Which side of the plot the axis is to appear on. */
@@ -3197,7 +3197,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    /* can't use warning because we want to print immediately  */
 	    /* might want to handle warn=2? */
-	    warn = Rf_asInteger(GetOption1(Rf_install("warn")));
+	    warn = Rf_asInteger(Rf_GetOption1(Rf_install("warn")));
 	    if (dmin > tol) {
 		if(warn >= 0) {
 		    REprintf(_("warning: no point within %.2f inches\n"), tol);
@@ -3259,9 +3259,9 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SETCADDR(saveans, pos);
 	    SETCADDDR(saveans, x);
 	    SETCAD4R(saveans, y);
-	    SETCAR(nthcdr(saveans,5), Offset);
-	    SETCAR(nthcdr(saveans,6), l);
-	    SETCAR(nthcdr(saveans,7), Rf_ScalarLogical(plot));
+	    SETCAR(Rf_nthcdr(saveans,5), Offset);
+	    SETCAR(Rf_nthcdr(saveans,6), l);
+	    SETCAR(Rf_nthcdr(saveans,7), Rf_ScalarLogical(plot));
 
 	    GErecordGraphicOperation(op, saveans, dd);
 	    UNPROTECT(1);

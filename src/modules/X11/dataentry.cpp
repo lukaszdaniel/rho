@@ -43,6 +43,7 @@
 #include <config.h>
 #endif
 
+#include <algorithm>
 #include <Defn.h>
 #include <stdlib.h>
 #include <Rinternals.h>
@@ -77,9 +78,9 @@
 
 #define DEEvent XEvent
 
-typedef enum { UP, DOWN, LEFT, RIGHT } DE_DIRECTION;
+enum DE_DIRECTION { UP, DOWN, LEFT, RIGHT };
 
-typedef enum {UNKNOWNN, NUMERIC, CHARACTER} CellType;
+enum CellType {UNKNOWNN, NUMERIC, CHARACTER};
 
 /* EXPORTS : */
 extern "C" {
@@ -93,7 +94,7 @@ static XContext deContext;
 static int nView = 0; /* number of open data windows */
 static int fdView = -1;
 
-typedef struct {
+typedef struct destruct {
     Window iowindow;
     GC iogc;
     XFontStruct *font_info;
@@ -143,7 +144,7 @@ static void find_coords(DEstruct, int, int, int*, int*);
 static int  findcell(DEstruct);
 static char *GetCharP(DEEvent*);
 static KeySym GetKey(DEEvent*);
-static void handlechar(DEstruct, RHOCONST char *);
+static void handlechar(DEstruct, const char *);
 static void highlightrect(DEstruct);
 static Rboolean initwin(DEstruct, const char *);
 static void jumppage(DEstruct, DE_DIRECTION);
@@ -165,7 +166,7 @@ static void copyH(DEstruct, int, int, int);
 static void copyarea(DEstruct, int, int, int, int);
 static void doConfigure(DEstruct, DEEvent *ioevent);
 static void drawrectangle(DEstruct, int, int, int, int, int, int);
-static void drawtext(DEstruct, int, int, RHOCONST char*, int);
+static void drawtext(DEstruct, int, int, const char*, int);
 static void RefreshKeyboardMapping(DEEvent *ioevent);
 static void Rsync(DEstruct);
 static int textwidth(DEstruct, const char*, int);
@@ -231,13 +232,7 @@ static XIMStyle status_styles[] = {
 };
 static XIC ioic = NULL;
 
-#ifndef max
-#define max(a, b) (((a)>(b))?(a):(b))
-#endif
-#ifndef min
-#define min(a, b) (((a)<(b))?(a):(b))
-#endif
-#define BOXW(x) (min(((x<100 && DE->nboxchars==0)?DE->boxw[x]:DE->box_w), DE->fullwindowWidth-DE->boxw[0]-2*DE->bwidth-2))
+#define BOXW(x) (std::min(((x<100 && DE->nboxchars==0)?DE->boxw[x]:DE->box_w), DE->fullwindowWidth-DE->boxw[0]-2*DE->bwidth-2))
 
 /*
   Underlying assumptions (for this version R >= 1.8.0)
@@ -276,7 +271,7 @@ static XIC ioic = NULL;
 
  */
 
-static RHOCONST char *menu_label[] =
+static const char *menu_label[] =
 {
     " Real",
     " Character",
@@ -310,7 +305,7 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXPTYPE type;
     int i, j, cnt, len, nprotect;
     char clab[25];
-    RHOCONST char *title = "R Data Editor";
+    const char *title = "R Data Editor";
     destruct DE1;
     DEstruct DE = &DE1;
 
@@ -339,7 +334,7 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
     nprotect++;
     DE->bwidth = 5;
     DE->hht = 30;
-    DE->isEditor = RHOCONSTRUCT(Rboolean, TRUE);
+    DE->isEditor = Rboolean(TRUE);
 
     /* setup work, names, lens  */
     DE->xmaxused = Rf_length(DE->work); DE->ymaxused = 0;
@@ -359,7 +354,7 @@ SEXP in_RX11_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
     for (i = 0; i < DE->xmaxused; i++) {
 	int len = LENGTH(VECTOR_ELT(DE->work, i));
 	INTEGER(DE->lens)[i] = len;
-	DE->ymaxused = max(len, DE->ymaxused);
+	DE->ymaxused = std::max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
 	if (LENGTH(colmodes) > 0 && !Rf_isNull(VECTOR_ELT(colmodes, i)))
 	    type = Rf_str2type(R_CHAR(STRING_ELT(VECTOR_ELT(colmodes, i), 0)));
@@ -485,7 +480,7 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
     DE->rowmin = 1;
     DE->bwidth = 5;
     DE->hht = 10;
-    DE->isEditor = RHOCONSTRUCT(Rboolean, FALSE);
+    DE->isEditor = Rboolean(FALSE);
 
     /* setup work, names, lens  */
     DE->xmaxused = Rf_length(DE->work); DE->ymaxused = 0;
@@ -495,7 +490,7 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
     for (i = 0; i < DE->xmaxused; i++) {
 	int len = LENGTH(VECTOR_ELT(DE->work, i));
 	INTEGER(DE->lens)[i] = len;
-	DE->ymaxused = max(len, DE->ymaxused);
+	DE->ymaxused = std::max(len, DE->ymaxused);
 	type = TYPEOF(VECTOR_ELT(DE->work, i));
 	if (type != STRSXP && type != REALSXP)
 	    Rf_errorcall(call, "invalid argument");
@@ -851,7 +846,7 @@ static void drawcol(DEstruct DE, int whichcol)
    if (DE->xmaxused >= whichcol) {
 	tmp = VECTOR_ELT(DE->work, whichcol - 1);
 	if (!Rf_isNull(tmp)) {
-	    len = min(DE->rowmax, INTEGER(DE->lens)[whichcol - 1]);
+	    len = std::min(DE->rowmax, INTEGER(DE->lens)[whichcol - 1]);
 	    for (i = (DE->rowmin - 1); i < len; i++)
 		printelt(DE, tmp, i, i - DE->rowmin + 2, col);
 	}
@@ -1006,7 +1001,7 @@ static Rboolean getccol(DEstruct DE)
     int i, len, newlen, wcol, wrow;
     SEXPTYPE type;
     char clab[25];
-    Rboolean newcol = RHOCONSTRUCT(Rboolean, FALSE);
+    Rboolean newcol = Rboolean(FALSE);
 
     wcol = DE->ccol + DE->colmin - 1;
     wrow = DE->crow + DE->rowmin - 1;
@@ -1022,9 +1017,9 @@ static Rboolean getccol(DEstruct DE)
 	DE->xmaxused = wcol;
     }
     if (Rf_isNull(VECTOR_ELT(DE->work, wcol - 1))) {
-	newcol = RHOCONSTRUCT(Rboolean, TRUE);
+	newcol = Rboolean(TRUE);
 	SET_VECTOR_ELT(DE->work, wcol - 1,
-		       ssNewVector(REALSXP, max(100, wrow)));
+		       ssNewVector(REALSXP, std::max(100, wrow)));
 	INTEGER(DE->lens)[wcol - 1] = 0;
     }
     if (!Rf_isVector(tmp = VECTOR_ELT(DE->work, wcol - 1)))
@@ -1032,7 +1027,7 @@ static Rboolean getccol(DEstruct DE)
     len = INTEGER(DE->lens)[wcol - 1];
     type = TYPEOF(tmp);
     if (len < wrow) {
-	for (newlen = max(len * 2, 10) ; newlen < wrow ; newlen *= 2)
+	for (newlen = std::max(len * 2, 10) ; newlen < wrow ; newlen *= 2)
 	    ;
 	tmp2 = ssNewVector(type, newlen);
 	for (i = 0; i < len; i++)
@@ -1129,12 +1124,12 @@ static void closerect(DEstruct DE)
 	    cvec = VECTOR_ELT(DE->work, wcol - 1);
 	    wrow0 = INTEGER(DE->lens)[wcol - 1];
 	    if (wrow > wrow0) INTEGER(DE->lens)[wcol - 1] = wrow;
-	    DE->ymaxused = max(DE->ymaxused, wrow);
+	    DE->ymaxused = std::max(DE->ymaxused, wrow);
 	    if (clength != 0) {
 		/* do it this way to ensure NA, Inf, ...  can get set */
 		char *endp;
 		double newd = R_strtod(buf, &endp);
-		Rboolean warn = RHOCONSTRUCT(Rboolean, !isBlankString(endp));
+		Rboolean warn = Rboolean(!isBlankString(endp));
 		if (TYPEOF(cvec) == STRSXP) {
 		    SEXP newval;
 		    PROTECT( newval = Rf_mkString(buf) );
@@ -1164,7 +1159,7 @@ static void closerect(DEstruct DE)
 	    if(wrow > wrow0) drawcol(DE, wcol); /* to fill in NAs */
 	}
     }
-    CellModified = RHOCONSTRUCT(Rboolean, FALSE);
+    CellModified = Rboolean(FALSE);
 
     downlightrect(DE);
 
@@ -1258,7 +1253,7 @@ static void clearrect(DEstruct DE)
 
 /* <FIXME> This is not correct for stateful MBCSs, but that's hard to
    do as we get a char at a time */
-static void handlechar(DEstruct DE, RHOCONST char *text)
+static void handlechar(DEstruct DE, const char *text)
 {
     int c = text[0], j;
     wchar_t wcs[BOOSTED_BUF_SIZE];
@@ -1266,14 +1261,14 @@ static void handlechar(DEstruct DE, RHOCONST char *text)
     memset(wcs,0,sizeof(wcs));
 
     if ( c == '\033' ) { /* ESC */
-	CellModified = RHOCONSTRUCT(Rboolean, FALSE);
+	CellModified = Rboolean(FALSE);
 	clength = 0;
 	bufp = buf;
 	drawelt(DE, DE->crow, DE->ccol);
 	cell_cursor_init(DE);
 	return;
     } else
-	CellModified = RHOCONSTRUCT(Rboolean, TRUE);
+	CellModified = Rboolean(TRUE);
 
     if (clength == 0) {
 
@@ -1303,7 +1298,7 @@ static void handlechar(DEstruct DE, RHOCONST char *text)
     }
 
     if (currentexp == 1) {	/* we are parsing a number */
-	RHOCONST char *mbs = text;
+	const char *mbs = text;
 	int i, cnt = (int)mbsrtowcs(wcs, (const char **)&mbs, (int) strlen(text)+1, NULL);
 
 	for(i = 0; i < cnt; i++) {
@@ -1333,7 +1328,7 @@ static void handlechar(DEstruct DE, RHOCONST char *text)
 	}
     }
     if (currentexp == 3) {
-	RHOCONST char *mbs = text;
+	const char *mbs = text;
 	int i, cnt = (int) mbsrtowcs(wcs, (const char **)&mbs, (int) strlen(text)+1, NULL);
 	for(i = 0; i < cnt; i++) {
 	    if (iswspace(wcs[i])) goto donehc;
@@ -1626,7 +1621,7 @@ static int doMouseDown(DEstruct DE, DEEvent * event)
 static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 {
     KeySym iokey;
-    RHOCONST char *text = "";
+    const char *text = "";
 
     iokey = GetKey(event);
     if(DE->isEditor) text = GetCharP(event);
@@ -1645,13 +1640,13 @@ static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 #ifdef XK_Page_Up
     else if (iokey == XK_Page_Up) {
 	int i = DE->rowmin - DE->nhigh + 2;
-	jumpwin(DE, DE->colmin, max(1, i));
+	jumpwin(DE, DE->colmin, std::max(1, i));
 	cell_cursor_init(DE);
     }
 #elif defined(XK_Prior)
     else if (iokey == XK_Prior) {
 	int i = DE->rowmin - DE->nhigh + 2;
-	jumpwin(DE, DE->colmin, max(1, i));
+	jumpwin(DE, DE->colmin, std::max(1, i));
 	cell_cursor_init(DE);
     }
 #endif
@@ -1661,7 +1656,7 @@ static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 	    jumpwin(DE, DE->colmin, DE->rowmax);
 	else {
 	    int i = DE->ymaxused - DE->nhigh + 2;
-            jumpwin(DE, DE->colmin, min(i, DE->rowmax));
+            jumpwin(DE, DE->colmin, std::min(i, DE->rowmax));
 	}
 	cell_cursor_init(DE);
     }
@@ -1671,7 +1666,7 @@ static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 	    jumpwin(DE, DE->colmin, DE->rowmax);
 	else {
 	    int i = DE->ymaxused - DE->nhigh + 2;
-            jumpwin(DE, DE->colmin, min(i, DE->rowmax));
+            jumpwin(DE, DE->colmin, std::min(i, DE->rowmax));
 	}
 	cell_cursor_init(DE);
     }
@@ -1683,7 +1678,7 @@ static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 	    clength -= last_w;
 	    bufp -= last_w;
 	    *bufp = '\0';
-	    CellModified = RHOCONSTRUCT(Rboolean, TRUE);
+	    CellModified = Rboolean(TRUE);
 	    printstring(DE, buf, clength, DE->crow, DE->ccol, 1);
 	} else bell();
     }
@@ -1705,7 +1700,7 @@ static void doSpreadKey(DEstruct DE, int key, DEEvent * event)
 	    w += BOXW(j);
 	    if(w > DE->fullwindowWidth) break;
 	}
-	jumpwin(DE, min(1 + max(j, 0), DE->xmaxused), max(i, 1));
+	jumpwin(DE, std::min(1 + std::max(j, 0), DE->xmaxused), std::max(i, 1));
 	downlightrect(DE);
 	DE->crow = DE->ymaxused - DE->rowmin + 1;
 	DE->ccol = DE->xmaxused - DE->colmin + 1;
@@ -1784,14 +1779,14 @@ static void doControl(DEstruct DE, DEEvent * event)
     switch (text[0]) {
 	case 'b':
 	    i = DE->rowmin - DE->nhigh + 2;
-	    jumpwin(DE, DE->colmin, max(1, i));
+	    jumpwin(DE, DE->colmin, std::max(1, i));
 	    break;
 	case 'f':
 	    jumpwin(DE, DE->colmin, DE->rowmax);
 	    break;
 	case 'l':
 	    closerect(DE);
-	    for (i = 1 ; i <= min(100, DE->xmaxused); i++)
+	    for (i = 1 ; i <= std::min(100, DE->xmaxused); i++)
 		DE->boxw[i] = get_col_width(DE, i);
 	    closerect(DE);
 	    drawwindow(DE);
@@ -1888,7 +1883,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     int ioscreen;
     unsigned long iowhite, ioblack;
     char digits[] = "123456789.0";
-    RHOCONST char             *font_name="9x15";
+    const char *font_name="9x15";
     Window root;
     XEvent ioevent;
     XSetWindowAttributes winattr;
@@ -1908,7 +1903,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     if(!iodisplay) {
 	if ((iodisplay = XOpenDisplay(NULL)) == NULL) {
 	    Rf_warning("unable to open display");
-	    return RHOCONSTRUCT(Rboolean, TRUE);
+	    return Rboolean(TRUE);
 	}
 	deContext = XUniqueContext();
 	XSetErrorHandler(R_X11Err);
@@ -1939,13 +1934,13 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	}
 	if (font_set == NULL) {
 	    Rf_warning("unable to create fontset %s", opt_fontset_name);
-	    return RHOCONSTRUCT(Rboolean, TRUE); /* ERROR */
+	    return Rboolean(TRUE); /* ERROR */
 	}
     } else {
 	DE->font_info = XLoadQueryFont(iodisplay, font_name);
 	if (DE->font_info == NULL) {
 	    Rf_warning("unable to load font %s", font_name);
-	    return RHOCONSTRUCT(Rboolean, TRUE); /* ERROR */
+	    return Rboolean(TRUE); /* ERROR */
 	}
     }
 
@@ -1973,7 +1968,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     }
     DE->windowHeight = 26 * DE->box_h + DE->hht + 2;
     /* this used to presume 4 chars sufficed for row numbering */
-    labdigs = max(3, 1+ (int) floor(log10((double)DE->ymaxused)));
+    labdigs = std::max(3, 1+ (int) floor(log10((double)DE->ymaxused)));
     sprintf(DE->labform, "%%%dd", labdigs);
     DE->boxw[0] = (int)( 0.1*labdigs*textwidth(DE, "0123456789", 10)) +
 	textwidth(DE, " ", 1) + 8;
@@ -2070,7 +2065,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	     ioblack,
 	     iowhite)) == 0) {
 	Rf_warning("unable to open window for data editor");
-	return RHOCONSTRUCT(Rboolean, TRUE);
+	return Rboolean(TRUE);
     }
 
     /*
@@ -2104,7 +2099,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	    XDestroyWindow(iodisplay, DE->iowindow);
 	    XCloseDisplay(iodisplay);
 	    Rf_warning("unable to open X Input Method");
-	    return RHOCONSTRUCT(Rboolean, TRUE);
+	    return Rboolean(TRUE);
 	}
 
 	/* search supported input style */
@@ -2139,7 +2134,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
 	    XDestroyWindow(iodisplay, DE->iowindow);
 	    XCloseDisplay(iodisplay);
 	    Rf_warning("unable to open X Input Context");
-	    return RHOCONSTRUCT(Rboolean, TRUE);
+	    return Rboolean(TRUE);
 	}
 
 	/* get XIM processes event. */
@@ -2174,7 +2169,7 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
        dimensions as above */
 
     /* font size consideration */
-    for(i = 0; i < RHOCONSTRUCT(int, (sizeof(menu_label)/sizeof(char *))); i++)
+    for(i = 0; i < int((sizeof(menu_label)/sizeof(char *))); i++)
 	twidth = (twidth<textwidth(DE, menu_label[i],(int) strlen(menu_label[i]))) ?
 	    textwidth(DE, menu_label[i],(int) strlen(menu_label[i])) : twidth;
 
@@ -2215,9 +2210,9 @@ static Rboolean initwin(DEstruct DE, const char *title) /* TRUE = Error */
     /* set the active rectangle to be the upper left one */
     DE->crow = 1;
     DE->ccol = 1;
-    CellModified = RHOCONSTRUCT(Rboolean, FALSE);
+    CellModified = Rboolean(FALSE);
     XSaveContext(iodisplay, DE->iowindow, deContext, (caddr_t) DE);
-    return RHOCONSTRUCT(Rboolean, FALSE);/* success */
+    return Rboolean(FALSE);/* success */
 }
 
 /* MAC/X11 BASICS */
@@ -2239,7 +2234,7 @@ static void clearwindow(DEstruct DE)
 
 static void copyarea(DEstruct DE, int src_x, int src_y, int dest_x, int dest_y)
 {
-    int mx = max(src_x, dest_x), my = max(src_y, dest_y);
+    int mx = std::max(src_x, dest_x), my = std::max(src_y, dest_y);
     XCopyArea(iodisplay, DE->iowindow, DE->iowindow, DE->iogc,
 	      src_x, src_y,
 	      DE->fullwindowWidth - mx, DE->fullwindowHeight - my,
@@ -2277,7 +2272,7 @@ static void drawrectangle(DEstruct DE,
 		   width, height);
 }
 
-static void drawtext(DEstruct DE, int xpos, int ypos, RHOCONST char *text, int len)
+static void drawtext(DEstruct DE, int xpos, int ypos, const char *text, int len)
 {
     if(mbcslocale)
 #ifdef HAVE_XUTF8DRAWIMAGESTRING
@@ -2543,7 +2538,7 @@ static void pastecell(DEstruct DE, int row, int col)
 	strcpy(buf, copycontents);
 	clength = (int) strlen(copycontents);
 	bufp = buf + clength;
-	CellModified = RHOCONSTRUCT(Rboolean, TRUE);
+	CellModified = Rboolean(TRUE);
     }
     closerect(DE);
     highlightrect(DE);

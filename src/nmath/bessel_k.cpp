@@ -27,12 +27,11 @@
 #include "nmath.h"
 #include "bessel.h"
 
+#include <algorithm>
 #ifndef MATHLIB_STANDALONE
 #include <R_ext/Memory.h>
 #endif
 
-#define min0(x, y) (((x) <= (y)) ? (x) : (y))
-#define max0(x, y) (((x) <= (y)) ? (y) : (x))
 
 static void K_bessel(double *x, double *alpha, int *nb,
 		     int *ize, double *bk, int *ncalc);
@@ -248,7 +247,7 @@ static void K_bessel(double *x, double *alpha, int *nb,
 
     ex = *x;
     nu = *alpha;
-    *ncalc = min0(*nb,0) - 2;
+    *ncalc = std::min(*nb,0) - 2;
     if (*nb > 0 && (0. <= nu && nu < 1.) && (1 <= *ize && *ize <= 2)) {
 	if(ex <= 0 || (*ize == 1 && ex > xmax_BESS_K)) {
 	    if(ex <= 0) {
@@ -502,7 +501,7 @@ static void K_bessel(double *x, double *alpha, int *nb,
 	if (iend == 1)
 	    return;
 
-	m = min0((int) (wminf - nu),iend);
+	m = std::min((int) (wminf - nu),iend);
 	for (i = 2; i <= m; ++i) {
 	    t1 = bk1;
 	    bk1 = bk2;
@@ -542,7 +541,7 @@ static void K_bessel(double *x, double *alpha, int *nb,
 		bk2 *= ratio;
 	    }
 	}
-	*ncalc = max0(1, mplus1 - k);
+	*ncalc = std::max(1, mplus1 - k);
 	if (*ncalc == 1)
 	    bk[0] = bk2;
 	if (*nb == 1)

@@ -431,19 +431,19 @@ double toDeviceHeight(double value, GEUnit from, pGEDevDesc dd)
  * representation
  ****************************************************************
  */
-typedef struct {
-    RHOCONST char *name;
+struct LineEND {
+    const char *name;
     R_GE_lineend end;
-} LineEND;
+};
 
 static LineEND lineend[] = {
     { "round",   GE_ROUND_CAP  },
     { "butt",	 GE_BUTT_CAP   },
     { "square",	 GE_SQUARE_CAP },
-    { nullptr,	 RHOCONSTRUCT(R_GE_lineend, 0)	     }
+    { nullptr,	 R_GE_lineend(0)	     }
 };
 
-static int nlineend = (RHOCONSTRUCT(int, sizeof(lineend)/sizeof(LineEND))-2);
+static int nlineend = (int(sizeof(lineend)/sizeof(LineEND))-2);
 
 R_GE_lineend GE_LENDpar(SEXP value, int ind)
 {
@@ -455,7 +455,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 	    if(streql(R_CHAR(STRING_ELT(value, ind)), lineend[i].name)) /*ASCII */
 		return lineend[i].end;
 	}
-	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
+	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return R_GE_lineend(0);
     }
     else if(Rf_isInteger(value)) {
 	code = INTEGER(value)[ind];
@@ -475,7 +475,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 	return lineend[code].end;
     }
     else {
-	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_lineend, 0);
+	Rf_error(_("invalid line end")); /*NOTREACHED, for -Wall : */ return R_GE_lineend(0);
     }
 }
 
@@ -496,19 +496,19 @@ SEXP GE_LENDget(R_GE_lineend lend)
     return ans;
 }
 
-typedef struct {
-    RHOCONST char *name;
+struct LineJOIN {
+    const char *name;
     R_GE_linejoin join;
-} LineJOIN;
+};
 
 static LineJOIN linejoin[] = {
     { "round",   GE_ROUND_JOIN },
     { "mitre",	 GE_MITRE_JOIN },
     { "bevel",	 GE_BEVEL_JOIN},
-    { nullptr,	 RHOCONSTRUCT(R_GE_linejoin, 0)	     }
+    { nullptr,	 R_GE_linejoin(0)	     }
 };
 
-static int nlinejoin = (RHOCONSTRUCT(int, sizeof(linejoin)/sizeof(LineJOIN))-2);
+static int nlinejoin = (int(sizeof(linejoin)/sizeof(LineJOIN))-2);
 
 R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 {
@@ -520,7 +520,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 	    if(streql(R_CHAR(STRING_ELT(value, ind)), linejoin[i].name)) /* ASCII */
 		return linejoin[i].join;
 	}
-	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
+	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return R_GE_linejoin(0);
     }
     else if(Rf_isInteger(value)) {
 	code = INTEGER(value)[ind];
@@ -540,7 +540,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 	return linejoin[code].join;
     }
     else {
-	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return RHOCONSTRUCT(R_GE_linejoin, 0);
+	Rf_error(_("invalid line join")); /*NOTREACHED, for -Wall : */ return R_GE_linejoin(0);
     }
 }
 
@@ -656,12 +656,12 @@ void GESetClip(double x1, double y1, double x2, double y2, pGEDevDesc dd)
 #define	CS_TOP		004
 #define	CS_RIGHT	010
 
-typedef struct {
+struct cliprect {
     double xl;
     double xr;
     double yb;
     double yt;
-} cliprect;
+};
 
 
 static int clipcode(double x, double y, cliprect *cr)
@@ -892,31 +892,29 @@ void GEPolyline(int n, double *x, double *y, const pGEcontext gc, pGEDevDesc dd)
  ****************************************************************
  */
 
-typedef enum {
+enum Edge {
     Left = 0,
     Right = 1,
     Bottom = 2,
     Top = 3
-} Edge;
+};
 
 /* Clipper State Variables */
-typedef struct {
+struct GClipState {
     int first;    /* true if we have seen the first point */
     double fx;    /* x coord of the first point */
     double fy;    /* y coord of the first point */
     double sx;    /* x coord of the most recent point */
     double sy;    /* y coord of the most recent point */
-}
-GClipState;
+};
 
 /* The Clipping Rectangle */
-typedef struct {
+struct GClipRect {
     double xmin;
     double xmax;
     double ymin;
     double ymax;
-}
-GClipRect;
+};
 
 static
 int inside (Edge b, double px, double py, GClipRect *clip)
@@ -990,7 +988,7 @@ void clipPoint (Edge b, double x, double y,
 	if (cross (b, x, y, cs[b].sx, cs[b].sy, clip)) {
 	    intersect (b, x, y, cs[b].sx, cs[b].sy, &ix, &iy, clip);
 	    if (b < Top)
-		clipPoint (RHOCONSTRUCT(Edge, b + 1), ix, iy, xout, yout, cnt, store,
+		clipPoint (Edge(b + 1), ix, iy, xout, yout, cnt, store,
 			   clip, cs);
 	    else {
 		if (store) {
@@ -1009,7 +1007,7 @@ void clipPoint (Edge b, double x, double y,
     /* proceed to next clip edge, if any */
     if (inside (b, x, y, clip)) {
 	if (b < Top)
-	    clipPoint (RHOCONSTRUCT(Edge, b + 1), x, y, xout, yout, cnt, store, clip, cs);
+	    clipPoint (Edge(b + 1), x, y, xout, yout, cnt, store, clip, cs);
 	else {
 	    if (store) {
 		xout[*cnt] = x;
@@ -1027,12 +1025,12 @@ void closeClip (double *xout, double *yout, int *cnt, int store,
     double ix = 0.0, iy = 0.0 /* -Wall */;
     Edge b;
 
-    for (b = Left; b <= Top; b = RHOCONSTRUCT(Edge, b + 1)) {
+    for (b = Left; b <= Top; b = Edge(b + 1)) {
 	if (cross (b, cs[b].sx, cs[b].sy, cs[b].fx, cs[b].fy, clip)) {
 	    intersect (b, cs[b].sx, cs[b].sy,
 		       cs[b].fx, cs[b].fy, &ix, &iy, clip);
 	    if (b < Top)
-		clipPoint (RHOCONSTRUCT(Edge, b + 1), ix, iy, xout, yout, cnt, store, clip, cs);
+		clipPoint (Edge(b + 1), ix, iy, xout, yout, cnt, store, clip, cs);
 	    else {
 		if (store) {
 		    xout[*cnt] = ix;
@@ -1559,11 +1557,11 @@ static void clipText(double x, double y, const char *str, cetype_t enc,
  ****************************************************************
  */
 
-typedef struct {
-    RHOCONST char *name;
+struct VFontTab {
+    const char *name;
     int minface;
     int maxface;
-} VFontTab;
+};
 
 static VFontTab
 VFontTable[] = {
@@ -2035,7 +2033,7 @@ void GESymbol(double x, double y, int pch, double size,
 	res = Rf_ucstoutf8(str, -pch); // throws error if unsuccessful 
 	str[res] = '\0';
 	GEText(x, y, str, CE_UTF8, NA_REAL, NA_REAL, 0., gc, dd);
-    } else if(' ' <= pch && pch <= RHOCONSTRUCT(int, maxchar)) {
+    } else if(' ' <= pch && pch <= int(maxchar)) {
 	if (pch == '.') {
 	    /*
 	     * NOTE:  we are *filling* a rect with the current
@@ -2069,7 +2067,7 @@ void GESymbol(double x, double y, int pch, double size,
 		   NA_REAL, NA_REAL, 0., gc, dd);
 	}
     }
-    else if(pch > RHOCONSTRUCT(int, maxchar))
+    else if(pch > int(maxchar))
 	    Rf_warning(_("pch value '%d' is invalid in this locale"), pch);
     else {
 	double GSTR_0 = fromDeviceWidth(size, GE_INCHES, dd);
@@ -2498,7 +2496,7 @@ double GEStrWidth(const char *str, cetype_t enc, const pGEcontext gc, pGEDevDesc
 		enc2 = (dd->dev->hasTextUTF8 == TRUE) ? CE_UTF8 : CE_NATIVE;
 	    else if(dd->dev->wantSymbolUTF8 == TRUE) enc2 = CE_UTF8;
 
-	    sb = sbuf = RHO_NO_CAST(char*) R_alloc(strlen(str) + 1, sizeof(char));
+	    sb = sbuf = R_alloc(strlen(str) + 1, sizeof(char));
 	    for(s = str; ; s++) {
 		if (*s == '\n' || *s == '\0') {
 		    const char *str;
@@ -2808,7 +2806,7 @@ Rboolean GEcheckState(pGEDevDesc dd)
 
 Rboolean GErecording(SEXP call, pGEDevDesc dd)
 {
-    return RHOCONSTRUCT(Rboolean, (call != nullptr && dd->recordGraphics));
+    return Rboolean((call != nullptr && dd->recordGraphics));
 }
 
 /****************************************************************
@@ -3222,10 +3220,10 @@ int GEstring_to_pch(SEXP pch)
  *					----------------------
  */
 
-typedef struct {
-    RHOCONST char *name;
+struct LineTYPE {
+    const char *name;
     int pattern;
-} LineTYPE;
+};
 
 static LineTYPE linetype[] = {
     { "blank",   LTY_BLANK   },/* -1 */
@@ -3249,7 +3247,7 @@ static unsigned int hexdigit(int digit)
     return digit; /* never occurs (-Wall) */
 }
 
-static int nlinetype = (RHOCONSTRUCT(int, sizeof(linetype)/sizeof(LineTYPE))-2);
+static int nlinetype = (int(sizeof(linetype)/sizeof(LineTYPE))-2);
 
 unsigned int GE_LTYpar(SEXP value, int ind)
 {
@@ -3308,7 +3306,7 @@ SEXP GE_LTYget(unsigned int lty)
     char cbuf[17]; /* 8 hex digits plus nul */
 
     for (i = 0; linetype[i].name; i++)
-	if(linetype[i].pattern == RHOCONSTRUCT(int, lty)) return Rf_mkString(linetype[i].name);
+	if(linetype[i].pattern == int(lty)) return Rf_mkString(linetype[i].name);
 
     l = lty; ndash = 0;
     for (i = 0; i < 8 && l & 15; i++) {

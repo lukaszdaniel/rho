@@ -107,10 +107,10 @@ double R_pretty(double *lo, double *up, int *ndiv, int min_n,
     }
 
     if(cell < 20*DBL_MIN) {
-      warning(_("Internal(pretty()): very small range.. corrected"));
+      Rf_warning(_("Internal(pretty()): very small range.. corrected"));
       cell = 20*DBL_MIN;
     } else if(cell * 10 > DBL_MAX) {
-      warning(_("Internal(pretty()): very large range.. corrected"));
+      Rf_warning(_("Internal(pretty()): very large range.. corrected"));
       cell = .1*DBL_MAX;
     }
     /* NB: the power can be negative and this relies on exact

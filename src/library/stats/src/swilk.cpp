@@ -26,10 +26,7 @@
 
 #include <math.h>
 #include <Rmath.h>
-
-#ifndef min
-# define min(a, b)		((a) > (b) ? (b) : (a))
-#endif
+#include <algorithm>
 
 static double poly(const double *, int, double);
 
@@ -121,7 +118,7 @@ swilk(double *x, int n, double *w, double *pw, int *ifault)
 	}
 	sx += xi;
 	i++;
-	if (i != j) sa += sign(i - j) * a[min(i, j)];
+	if (i != j) sa += sign(i - j) * a[std::min(i, j)];
 	xx = xi;
     }
     if (n > 5000) *ifault = 2;
@@ -133,7 +130,7 @@ swilk(double *x, int n, double *w, double *pw, int *ifault)
     sx /= n;
     ssa = ssx = sax = 0.;
     for (i = 0, j = n - 1; i < n; i++, j--) {
-	if (i != j) asa = sign(i - j) * a[1 + min(i, j)] - sa; else asa = -sa;
+	if (i != j) asa = sign(i - j) * a[1 + std::min(i, j)] - sa; else asa = -sa;
 	xsx = x[i] / range - sx;
 	ssa += asa * asa;
 	ssx += xsx * xsx;

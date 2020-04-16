@@ -68,14 +68,14 @@ static GCRoot<> EncSymbol = nullptr;
 static GCRoot<> CSingSymbol = nullptr;
 
 #include <Rdynpriv.h>
-// Odd: 'type' is really this enum
-enum {NOT_DEFINED, FILENAME, DLL_HANDLE, R_OBJECT};
-typedef struct {
+
+enum DLLType {NOT_DEFINED, FILENAME, DLL_HANDLE, R_OBJECT};
+struct DllReference {
     char DLLname[PATH_MAX];
     HINSTANCE dll;
     SEXP  obj;
-    int type;
-} DllReference;
+    DLLType type;
+};
 
 /* Maximum length of entry-point name, including nul terminator */
 #define MaxSymbolBytes 1024
@@ -338,9 +338,9 @@ checkNativeType(int targetType, int actualType)
 {
     if(targetType > 0) {
 	if(targetType == INTSXP || targetType == LGLSXP) {
-	    return(RHOCONSTRUCT(Rboolean, actualType == INTSXP || actualType == LGLSXP));
+	    return(Rboolean(actualType == INTSXP || actualType == LGLSXP));
 	}
-	return(RHOCONSTRUCT(Rboolean, targetType == actualType));
+	return(Rboolean(targetType == actualType));
     }
 
     return(TRUE);
@@ -578,10 +578,10 @@ SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 
 /*  This macro expands out to:
     case 1:
-	retval = RHO_NO_CAST(SEXP)fun(cargs[0]);
+	retval = fun(cargs[0]);
 	break;
     case 2:
-	retval = RHO_NO_CAST(SEXP)fun(cargs[0], cargs[1]);
+	retval = fun(cargs[0], cargs[1]);
 	break;
     ... on to case 65
 */
@@ -589,7 +589,7 @@ SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 #define ARGUMENT_LIST(Z, N, IGNORED) BOOST_PP_COMMA_IF(N) cargs[N]
 #define CASE_STATEMENT(Z, N, IGNORED)                                       \
     case N:                                                                 \
-	retval = RHO_NO_CAST(SEXP)fun(BOOST_PP_REPEAT(N, ARGUMENT_LIST, 0)); \
+	retval = fun(BOOST_PP_REPEAT(N, ARGUMENT_LIST, 0)); \
 	break;
 
 	BOOST_PP_REPEAT_FROM_TO(1, BOOST_PP_INC(MAX_ARGS), CASE_STATEMENT, 0);
@@ -946,11 +946,11 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		SEXP ss = Rf_allocVector(t, n);
 		memcpy(RAW(ss), RAW(s), n * sizeof(Rbyte));
 		SET_VECTOR_ELT(ans, na, ss);
-		cargs[na] = RHO_NO_CAST(void*) RAW(ss);
+		cargs[na] = RAW(ss);
 #ifdef R_MEMORY_PROFILING
 		if (RTRACE(s)) memtrace_report(s, ss);
 #endif
-	    } else cargs[na] = RHO_NO_CAST(void *) RAW(s);
+	    } else cargs[na] = RAW(s);
 	    break;
 	case LGLSXP:
 	case INTSXP:
@@ -966,16 +966,16 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    memset(ptr, FILL, n * sizeof(int) + 2 * NG);
 		    ptr += NG;
 		    memcpy(ptr, INTEGER(s), n * sizeof(int));
-		    cargs[na] = RHO_NO_CAST(void*) ptr;
+		    cargs[na] = ptr;
 		} else if (MAYBE_REFERENCED(s)) {
 		    SEXP ss = Rf_allocVector(t, n);
 		    memcpy(INTEGER(ss), INTEGER(s), n * sizeof(int));
 		    SET_VECTOR_ELT(ans, na, ss);
-		    cargs[na] = RHO_NO_CAST(void*) INTEGER(ss);
+		    cargs[na] = INTEGER(ss);
 #ifdef R_MEMORY_PROFILING
 		    if (RTRACE(s)) memtrace_report(s, ss);
 #endif
-		} else cargs[na] = RHO_NO_CAST(void*) iptr;
+		} else cargs[na] = iptr;
 	    }
 	    break;
 	case REALSXP:
@@ -989,7 +989,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		if (Rf_asLogical(Rf_getAttrib(s, CSingSymbol)) == 1) {
 		    float *sptr = static_cast<float*>(RHO_alloc(n, sizeof(float)));
 		    for (R_xlen_t i = 0 ; i < n ; i++) sptr[i] = float( REAL(s)[i]);
-		    cargs[na] = RHO_NO_CAST(void*) sptr;
+		    cargs[na] = sptr;
 #ifdef R_MEMORY_PROFILING
 		    if (RTRACE(s)) memtrace_report(s, sptr);
 #endif
@@ -998,16 +998,16 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    memset(ptr, FILL, n * sizeof(double) + 2 * NG);
 		    ptr += NG;
 		    memcpy(ptr, REAL(s), n * sizeof(double));
-		    cargs[na] = RHO_NO_CAST(void*) ptr;
+		    cargs[na] = ptr;
 		} else if (MAYBE_REFERENCED(s)) {
 		    SEXP ss  = Rf_allocVector(t, n);
 		    memcpy(REAL(ss), REAL(s), n * sizeof(double));
 		    SET_VECTOR_ELT(ans, na, ss);
-		    cargs[na] = RHO_NO_CAST(void*) REAL(ss);
+		    cargs[na] = REAL(ss);
 #ifdef R_MEMORY_PROFILING
 		    if (RTRACE(s)) memtrace_report(s, ss);
 #endif
-		} else cargs[na] = RHO_NO_CAST(void*) rptr;
+		} else cargs[na] = rptr;
 	    }
 	    break;
 	case CPLXSXP:
@@ -1023,16 +1023,16 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    memset(ptr, FILL, n * sizeof(Rcomplex) + 2 * NG);
 		    ptr += NG;
 		    memcpy(ptr, COMPLEX(s), n * sizeof(Rcomplex));
-		    cargs[na] = RHO_NO_CAST(void*) ptr;
+		    cargs[na] = ptr;
 		} else if (MAYBE_REFERENCED(s)) {
 		    SEXP ss = Rf_allocVector(t, n);
 		    memcpy(COMPLEX(ss), COMPLEX(s), n * sizeof(Rcomplex));
 		    SET_VECTOR_ELT(ans, na, ss);
-		    cargs[na] = RHO_NO_CAST(void*) COMPLEX(ss);
+		    cargs[na] = COMPLEX(ss);
 #ifdef R_MEMORY_PROFILING
 		    if (RTRACE(s)) memtrace_report(s, ss);
 #endif
-		} else cargs[na] = RHO_NO_CAST(void *) zptr;
+		} else cargs[na] = zptr;
 	    }
 	    break;
 	case STRSXP:
@@ -1043,7 +1043,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    Rf_warning(_("only first string in char vector used in .Fortran"));
 		char *fptr = static_cast<char*>(RHO_alloc(max(size_t(255), strlen(ss)) + 1, sizeof(char)));
 		strcpy(fptr, ss);
-		cargs[na] =  RHO_NO_CAST(void*) fptr;
+		cargs[na] =  fptr;
 	    } else if (copy) {
 		char **cptr = static_cast<char**>(RHO_alloc(n, sizeof(char*))),
 		    **cptr0 = static_cast<char**>(RHO_alloc(n, sizeof(char*)));
@@ -1055,8 +1055,8 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		    cptr[i] = cptr0[i] = ptr + NG;
 		    strcpy(cptr[i], ss);
 		}
-		cargs[na] = RHO_NO_CAST(void*) cptr;
-		cargs0[na] = RHO_NO_CAST(void*) cptr0;
+		cargs[na] = cptr;
+		cargs0[na] = cptr0;
 #ifdef R_MEMORY_PROFILING
 		if (RTRACE(s)) memtrace_report(s, cargs[na]);
 #endif
@@ -1075,7 +1075,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 			cptr[i] = static_cast<char*>(RHO_alloc(nn, sizeof(char)));
 			memset(cptr[i], 0, nn);
 		    }
-		    cargs[na] = RHO_NO_CAST(void*) cptr;
+		    cargs[na] = cptr;
 #ifdef R_MEMORY_PROFILING
 		    if (RTRACE(s)) memtrace_report(s, cargs[na]);
 #endif
@@ -1090,7 +1090,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		n = XLENGTH(s);
 		SEXP *lptr = static_cast<SEXP *>(RHO_alloc(n, sizeof(SEXP)));
 		for (R_xlen_t i = 0 ; i < n ; i++) lptr[i] = VECTOR_ELT(s, i);
-		cargs[na] = RHO_NO_CAST(void*) lptr;
+		cargs[na] = lptr;
 	    }
 	    break;
 	case CLOSXP:
@@ -1099,12 +1099,12 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	case ENVSXP:
 	    if (Fort) Rf_error(_("invalid mode (%s) to pass to Fortran (arg %d)"),
 			    Rf_type2char(t), na + 1);
-	    cargs[na] =  RHO_NO_CAST(void*) s;
+	    cargs[na] =  s;
 	    break;
 	case NILSXP:
 	    Rf_error(_("invalid mode (%s) to pass to C or Fortran (arg %d)"),
 		  Rf_type2char(t), na + 1);
-	    cargs[na] =  RHO_NO_CAST(void*) s;
+	    cargs[na] =  s;
 	    break;
 	default:
 	    /* Includes pairlists from R 2.15.0 */
@@ -1391,7 +1391,7 @@ static void *RObjToCPtr2(SEXP s)
 	    int *iptr = INTEGER(s);
 	    iptr = static_cast<int*>(RHO_alloc(n, sizeof(int)));
 	    for (int i = 0 ; i < n ; i++) iptr[i] = INTEGER(s)[i];
-	    return RHO_NO_CAST(void*) iptr;
+	    return iptr;
 	}
 	break;
     case REALSXP:
@@ -1400,7 +1400,7 @@ static void *RObjToCPtr2(SEXP s)
 	    double *rptr = REAL(s);
 	    rptr = static_cast<double*>(RHO_alloc(n, sizeof(double)));
 	    for (int i = 0 ; i < n ; i++) rptr[i] = REAL(s)[i];
-	    return RHO_NO_CAST(void*) rptr;
+	    return rptr;
 	}
 	break;
     case CPLXSXP:
@@ -1409,7 +1409,7 @@ static void *RObjToCPtr2(SEXP s)
 	    Rcomplex *zptr = COMPLEX(s);
 	    zptr = static_cast<Rcomplex*>(RHO_alloc(n, sizeof(Rcomplex)));
 	    for (int i = 0 ; i < n ; i++) zptr[i] = COMPLEX(s)[i];
-	    return RHO_NO_CAST(void*) zptr;
+	    return zptr;
 	}
 	break;
     case STRSXP:
@@ -1418,10 +1418,10 @@ static void *RObjToCPtr2(SEXP s)
 	    char **cptr = static_cast<char**>(RHO_alloc(n, sizeof(char*)));
 	    for (int i = 0 ; i < n ; i++) {
 		const char *ss = Rf_translateChar(STRING_ELT(s, i));
-		cptr[i] = RHO_NO_CAST(char*) R_alloc(strlen(ss) + 1, sizeof(char));
+		cptr[i] = R_alloc(strlen(ss) + 1, sizeof(char));
 		strcpy(cptr[i], ss);
 	    }
-	    return RHO_NO_CAST(void*) cptr;
+	    return cptr;
 	}
 	break;
 	/* From here down, probably not right */
@@ -1430,11 +1430,11 @@ static void *RObjToCPtr2(SEXP s)
 	    n = Rf_length(s);
 	    SEXP *lptr = static_cast<SEXP *>(RHO_alloc(n, sizeof(SEXP)));
 	    for (int i = 0 ; i < n ; i++) lptr[i] = VECTOR_ELT(s, i);
-	    return RHO_NO_CAST(void*) lptr;
+	    return lptr;
 	}
 	break;
     default:
-	return RHO_NO_CAST(void*) s;
+	return s;
     }
     return nullptr;  // -Wall
 }

@@ -44,7 +44,7 @@
 #define DOTSperIN	72.27
 #define in2dots(x) 	(DOTSperIN * x)
 
-typedef struct {
+struct picTeXDesc {
     FILE *texfp;
     char filename[128];
     int pageno;
@@ -63,7 +63,7 @@ typedef struct {
     int fontsize;
     int fontface;
     Rboolean debug;
-} picTeXDesc;
+};
 
 
 	/* Global device information */

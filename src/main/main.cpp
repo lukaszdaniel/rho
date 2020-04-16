@@ -319,13 +319,13 @@ static const char *R_PromptString(int browselevel, int type)
   In the future, we may need to make this accessible to packages
   and so put it into one of the public R header files.
  */
-typedef struct {
+struct R_ReplState {
   ParseStatus    status;
   int            prompt_type;
   int            browselevel;
   unsigned char  buf[CONSOLE_BUFFER_SIZE+1];
   unsigned char *bufp;
-} R_ReplState;
+};
 
 
 /**
@@ -656,21 +656,21 @@ static struct sigaction previous_handlers[NSIG];
 
 static void sigactionSegv(int signum, siginfo_t *ip, void *context)
 {
-    RHOCONST char *s;
+    const char *s;
 
     /* First check for stack overflow if we know the stack position.
        We assume anything within 16Mb beyond the stack end is a stack overflow.
      */
-    if(signum == SIGSEGV && (ip != RHO_NO_CAST(siginfo_t *)nullptr) &&
+    if(signum == SIGSEGV && (ip != nullptr) &&
        intptr_t(R_CStackStart) != -1) {
 	uintptr_t addr = uintptr_t( ip->si_addr);
 	intptr_t diff = (R_CStackDir > 0) ? R_CStackStart - addr:
 	    addr - R_CStackStart;
 	uintptr_t upper = 0x1000000;  /* 16Mb */
 	if(intptr_t(R_CStackLimit) != -1) upper += R_CStackLimit;
-	if(diff > 0 && diff < RHOCONSTRUCT(int, upper)) {
+	if(diff > 0 && diff < int(upper)) {
 	    REprintf(_("Error: segfault from C stack overflow\n"));
-	    Rf_jump_to_toplevel();
+	    jump_to_toplevel();
 	}
     }
 
@@ -681,7 +681,7 @@ static void sigactionSegv(int signum, siginfo_t *ip, void *context)
     REprintf("\n *** caught %s ***\n",
 	     signum == SIGILL ? "illegal operation" :
 	     signum == SIGBUS ? "bus error" : "segfault");
-    if(ip != RHO_NO_CAST(siginfo_t *)nullptr) {
+    if(ip != nullptr) {
 	if(signum == SIGILL) {
 
 	    switch(ip->si_code) {
@@ -1211,10 +1211,10 @@ static void printwhere(void)
   for (cptr = FunctionContext::innermost();
        cptr;
        cptr = FunctionContext::innermost(cptr->nextOut())) {
-      if (TYPEOF(RHO_C_CAST(Expression*, cptr->call())) == LANGSXP) {
+      if (TYPEOF(const_cast<Expression*>(cptr->call())) == LANGSXP) {
 	  Rprintf("where %d", lct++);
 	  Rf_SrcrefPrompt("", cptr->sourceLocation());
-	  Rf_PrintValue(RHO_C_CAST(Expression*, cptr->call()));
+	  Rf_PrintValue(const_cast<Expression*>(cptr->call()));
       }
   }
   Rprintf("\n");
@@ -1239,7 +1239,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	const char *expr = R_CHAR(PRINTNAME(CExpr));
 	if (streql(expr, "c") || streql(expr, "cont")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, RHO_FALSE);
+	    SET_ENV_DEBUG(rho, FALSE);
 #if 0
 	} else if (streql(expr, "f")) {
 	    rval = 1;
@@ -1249,7 +1249,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 		cntxt = cntxt->nextcontext;
 	    }
 	    cntxt->browserfinish = 1;
-	    SET_ENV_DEBUG(rho, RHO_TRUE);
+	    SET_ENV_DEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 'f';
 #endif
 	} else if (streql(expr, "help")) {
@@ -1257,22 +1257,22 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    printBrowserHelp();
 	} else if (streql(expr, "n")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, RHO_TRUE);
+	    SET_ENV_DEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 'n';
 	} else if (streql(expr, "Q")) {
 
 	    /* this is really dynamic state that should be managed as such */
-	    SET_ENV_DEBUG(rho, RHO_FALSE); /*PR#1721*/
+	    SET_ENV_DEBUG(rho, FALSE); /*PR#1721*/
 
-	    Rf_jump_to_toplevel();
+	    jump_to_toplevel();
 	} else if (streql(expr, "s")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, RHO_TRUE);
+	    SET_ENV_DEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 's';
 	} else if (streql(expr, "where")) {
 	    rval = 2;
 	    printwhere();
-	    /* SET_ENV_DEBUG(rho, RHO_TRUE); */
+	    /* SET_ENV_DEBUG(rho, TRUE); */
 	} else if (streql(expr, "r")) {
 	    SEXP hooksym = Rf_install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
@@ -1703,7 +1703,7 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
     SEXP f = static_cast<SEXP>(userData);
     SEXP e, tmp, val, cur;
     int errorOccurred;
-    Rboolean again, useData = RHOCONSTRUCT(Rboolean, LOGICAL(VECTOR_ELT(f, 2))[0]);
+    Rboolean again, useData = Rboolean(LOGICAL(VECTOR_ELT(f, 2))[0]);
 
     PROTECT(e = Rf_allocVector(LANGSXP, 5 + useData));
     SETCAR(e, VECTOR_ELT(f, 0));
@@ -1729,7 +1729,7 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
 	      /* It would be nice to identify the function. */
 	    Rf_warning(_("top-level task callback did not return a logical value"));
 	}
-	again = RHOCONSTRUCT(Rboolean, Rf_asLogical(val));
+	again = Rboolean(Rf_asLogical(val));
 	UNPROTECT(1);
     } else {
 	/* Rf_warning("error occurred in top-level task callback\n"); */

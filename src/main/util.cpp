@@ -142,7 +142,7 @@ const static char * const truenames[] = {
     "True",
     "TRUE",
     "true",
-    RHO_NO_CAST(char *) nullptr,
+    nullptr,
 };
 
 const static char * const falsenames[] = {
@@ -150,7 +150,7 @@ const static char * const falsenames[] = {
     "False",
     "FALSE",
     "false",
-    RHO_NO_CAST(char *) nullptr,
+    nullptr,
 };
 
 SEXP Rf_asChar(SEXP x)
@@ -243,7 +243,7 @@ TypeTable[] = {
     { "numeric",	REALSXP	   },
     { "name",		SYMSXP	   },
 
-    { RHO_NO_CAST(char *)nullptr,     RHOCONSTRUCT(SEXPTYPE, -1)         }
+    { nullptr,     SEXPTYPE(-1)         }
 };
 
 
@@ -365,7 +365,7 @@ void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
     int i;
 
     for (i = 0; TypeTable[i].str; i++) {
-	if (TypeTable[i].type == RHOCONSTRUCT(int, t))
+	if (TypeTable[i].type == int(t))
 	    Rf_error(_("unimplemented type '%s' in '%s'\n"), TypeTable[i].str, s);
     }
     Rf_error(_("unimplemented type (%d) in '%s'\n"), t, s);
@@ -409,11 +409,11 @@ size_t mbcsToUcs2(const char *in, ucs2_t *out, int nout, int enc)
     if (reinterpret_cast<void*>(-1) == (cd = Riconv_open(UCS2ENC, (enc == CE_UTF8) ? "UTF-8": "")))
 	return size_t(-1);
 
-    i_buf = RHO_NO_CAST(char *)in;
+    i_buf = in;
     i_len = strlen(in); /* not including terminator */
     o_buf = reinterpret_cast<char *>(out);
     o_len = (size_t(nout)) * sizeof(ucs2_t);
-    status = Riconv(cd, &i_buf, RHO_NO_CAST(size_t *)&i_len, &o_buf, RHO_NO_CAST(size_t *)&o_len);
+    status = Riconv(cd, &i_buf, &i_len, &o_buf, &o_len);
     int serrno = errno;
     Riconv_close(cd);
     if (status == size_t(-1)) {
@@ -754,7 +754,7 @@ SEXP static intern_getwd(void)
 	wchar_t wbuf[PATH_MAX+1];
 	int res = GetCurrentDirectoryW(PATH_MAX, wbuf);
 	if(res > 0) {
-	    wcstoutf8(buf, wbuf, sizeof(buf));
+	    Rf_wcstoutf8(buf, wbuf, sizeof(buf));
 	    R_UTF8fixslash(buf);
 	    return Rf_ScalarString(Rf_mkCharCE(buf, CE_UTF8));
 	}
@@ -832,7 +832,7 @@ SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 		while (p >= buf && *p == L'/') *(p--) = L'\0';
 	    }
 	    if ((p = wcsrchr(buf, L'/'))) p++; else p = buf;
-	    wcstoutf8(sp, p, sizeof(sp));
+	    Rf_wcstoutf8(sp, p, sizeof(sp));
 	    SET_STRING_ELT(ans, i, Rf_mkCharCE(sp, CE_UTF8));
 	}
     }
@@ -912,7 +912,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 			  && (p > buf+2 || *(p-1) != L':')) --p;
 		    p[1] = L'\0';
 		}
-		wcstoutf8(sp, buf, sizeof(sp));
+		Rf_wcstoutf8(sp, buf, sizeof(sp));
 	    }
 	    SET_STRING_ELT(ans, i, Rf_mkCharCE(sp, CE_UTF8));
 	}
@@ -1064,7 +1064,7 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
 	if(w != NA_INTEGER && w < 0)
 	    Rf_error(_("invalid '%s' value"), "width");
     }
-    findWidth = RHOCONSTRUCT(Rboolean, (w == NA_INTEGER));
+    findWidth = Rboolean((w == NA_INTEGER));
     s = quote_;
     if(LENGTH(s) != 1 || TYPEOF(s) != STRSXP)
 	Rf_error(_("invalid '%s' value"), "quote");
@@ -1112,7 +1112,7 @@ SEXP attribute_hidden do_encoding(/*const*/ Expression* call, const BuiltInFunct
 {
     SEXP ans, x;
     R_xlen_t i, n;
-    RHOCONST char *tmp;
+    const char *tmp;
 
     if (TYPEOF(x = x_) != STRSXP)
 	Rf_error(_("a character vector argument expected"));
@@ -1300,7 +1300,7 @@ Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 	    if (m < 0) Rf_error(_("invalid input '%s' in 'utf8towcs'"), s);
 	    if (m == 0) break;
 	    res ++;
-	    if (res >= RHOCONSTRUCT(int, n)) break;
+	    if (res >= int(n)) break;
 	    if (IS_HIGH_SURROGATE(*p)) {
 	    	*(++p) = utf8toutf16low(t);
 	    	res ++;
@@ -1329,7 +1329,7 @@ static size_t Rwcrtomb32(char *s, Rwchar_t cvalue, size_t n)
     if (!n) return 0;
     if (s) *s = 0;    /* Simplifies exit later */
     if(cvalue == 0) return 0;
-    for (i = 0; i < RHOCONSTRUCT(int, sizeof(utf8_table1)/sizeof(int)); i++)
+    for (i = 0; i < int(sizeof(utf8_table1)/sizeof(int)); i++)
 	if (static_cast<unsigned int>(cvalue) <= utf8_table1[i]) break;
     if (i >= n - 1) return 0;  /* need space for terminal null */
     if (s) {
@@ -1407,14 +1407,14 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
 attribute_hidden
 Rboolean mbcsValid(const char *str)
 {
-    return  RHOCONSTRUCT(Rboolean, (int(mbstowcs(nullptr, str, 0)) >= 0));
+    return  Rboolean((int(mbstowcs(nullptr, str, 0)) >= 0));
 }
 
 /* used in src/library/grDevices/src/cairo/cairoFns.cpp */
 #include "valid_utf8.h"
 Rboolean utf8Valid(const char *str)
 {
-    return  RHOCONSTRUCT(Rboolean, valid_utf8(str, strlen(str)) == 0);
+    return  Rboolean(valid_utf8(str, strlen(str)) == 0);
 }
 
 SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, RObject* x)
@@ -1454,13 +1454,13 @@ char *Rf_strchr(const char *s, int c)
     mbstate_t mb_st;
     size_t used;
 
-    if(!mbcslocale || utf8locale) return RHO_C_CAST(char*, strchr(s, c));
+    if(!mbcslocale || utf8locale) return const_cast<char *>(strchr(s, c));
     mbs_init(&mb_st);
     while( (used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
 	if(*p == c) return p;
 	p += used;
     }
-    return RHO_NO_CAST(char *)nullptr;
+    return nullptr;
 }
 
 char *Rf_strrchr(const char *s, int c)
@@ -1469,7 +1469,7 @@ char *Rf_strrchr(const char *s, int c)
     mbstate_t mb_st;
     size_t used;
 
-    if(!mbcslocale || utf8locale) return RHO_C_CAST(char*, strrchr(s, c));
+    if(!mbcslocale || utf8locale) return const_cast<char *>(strrchr(s, c));
     mbs_init(&mb_st);
     while( (used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st)) ) {
 	if(*p == c) plast = p;
@@ -1575,7 +1575,7 @@ char *Rf_acopy_string(const char *in)
 	out = (char *) R_alloc(1 + len, sizeof(char));
 	strcpy(out, in);
     } else
-	out = RHOCONSTRUCT(const_cast<char*>, "");
+	out = const_cast<char *>("");
     return out;
 }
 
@@ -1619,7 +1619,7 @@ static int s2u[224] = {
 
 void *Rf_AdobeSymbol2utf8(char *work, const char *c0, int nwork)
 {
-    const unsigned char *c = reinterpret_cast<RHOCONST unsigned char *>(c0);
+    const unsigned char *c = reinterpret_cast<const unsigned char *>(c0);
     unsigned char *t = reinterpret_cast<unsigned char *>(work);
     while (*c) {
 	if (*c < 32) *t++ = ' ';
@@ -1857,13 +1857,13 @@ extern "C" {
     struct UCollator;
     typedef struct UCollator UCollator;
 
-    typedef enum {
+    enum UCollationResult {
 	UCOL_EQUAL    = 0,
 	UCOL_GREATER    = 1,
 	UCOL_LESS    = -1
-    } UCollationResult ;
+    };
 
-    typedef enum {
+    enum UColAttributeValue {
 	UCOL_DEFAULT = -1,
 	UCOL_PRIMARY = 0,
 	UCOL_SECONDARY = 1,
@@ -1880,11 +1880,11 @@ extern "C" {
 	UCOL_LOWER_FIRST = 24,
 	UCOL_UPPER_FIRST = 25,
 	UCOL_ATTRIBUTE_VALUE_COUNT
-    } UColAttributeValue;
+    };
 
     typedef UColAttributeValue UCollationStrength;
 
-    typedef enum {
+    enum UColAttribute {
 	UCOL_FRENCH_COLLATION, 
 	UCOL_ALTERNATE_HANDLING, 
 	UCOL_CASE_FIRST, 
@@ -1895,7 +1895,7 @@ extern "C" {
 	UCOL_HIRAGANA_QUATERNARY_MODE,
 	UCOL_NUMERIC_COLLATION, 
 	UCOL_ATTRIBUTE_COUNT
-    } UColAttribute;
+    };
 
     /* UCharIterator struct has to be defined since we use its instances as
        local variables, but we don't actually use any of its members. */
@@ -1922,11 +1922,11 @@ extern "C" {
     void uloc_setDefault(const char* localeID, UErrorCode* status);
 }  // extern "C"
 
-typedef enum {
+enum ULocDataLocaleType {
     ULOC_ACTUAL_LOCALE = 0,
     ULOC_VALID_LOCALE = 1,
     ULOC_DATA_LOCALE_TYPE_LIMIT = 3
-} ULocDataLocaleType ;
+};
 
 
 extern "C"
@@ -2062,9 +2062,9 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    break;
 		}
 	    if (collator && at == 999 && val >= 0) {
-		ucol_setStrength(collator, RHOCONSTRUCT(UCollationStrength, val));
+		ucol_setStrength(collator, UCollationStrength(val));
 	    } else if (collator && at >= 0 && val >= 0) {
-		ucol_setAttribute(collator, RHOCONSTRUCT(UColAttribute, at), RHOCONSTRUCT(UColAttributeValue, val), &status);
+		ucol_setAttribute(collator, UColAttribute(at), UColAttributeValue(val), &status);
 		if (U_FAILURE(status))
 		    Rf_error("failed to set ICU collator attribute");
 	    }
@@ -2456,8 +2456,8 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 		const char *format, const char *flag, char **result)
 {
     int dig = abs(digits);
-    Rboolean rm_trailing_0 = RHOCONSTRUCT(Rboolean, digits >= 0);
-    Rboolean do_fg = RHOCONSTRUCT(Rboolean, streql("fg", format)); /* TRUE  iff  format == "fg" */
+    Rboolean rm_trailing_0 = Rboolean(digits >= 0);
+    Rboolean do_fg = Rboolean(streql("fg", format)); /* TRUE  iff  format == "fg" */
     double xx;
     int iex;
     size_t j, len_flag = strlen(flag);
@@ -2520,7 +2520,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 			*/
 			double xxx = fabs(xx), X;
 			iex = (int)floor(log10(xxx) + 1e-12);
-			X = Rf_fround(xxx/Rexp10((double)iex) + 1e-12,
+			X = fround(xxx/Rexp10((double)iex) + 1e-12,
 				   (double)(dig-1));
 			if(iex > 0 &&  X >= 10) {
 			    xx = X * Rexp10((double)iex);

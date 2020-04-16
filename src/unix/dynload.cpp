@@ -163,8 +163,8 @@ static int computeDLOpenFlag(int asLocal, int now)
        call time.
     */
 # define DL_WARN(i) \
-    if(Rf_asInteger(GetOption1(Rf_install("warn"))) == 1 || \
-       Rf_asInteger(GetOption1(Rf_install("verbose"))) > 0) \
+    if(Rf_asInteger(Rf_GetOption1(Rf_install("warn"))) == 1 || \
+       Rf_asInteger(Rf_GetOption1(Rf_install("verbose"))) > 0) \
 	Rf_warning(_(warningMessages[i]))
 #endif
 
@@ -241,7 +241,7 @@ static void getFullDLLPath(SEXP call, char *buf, const char *path)
 #ifdef HAVE_GETCWD
 	if(!getcwd(buf, PATH_MAX))
 #endif
-	    errorcall(call, _("cannot get working directory!"));
+	    Rf_errorcall(call, _("cannot get working directory!"));
 	strcat(buf, "/");
 	strcat(buf, path);
     }

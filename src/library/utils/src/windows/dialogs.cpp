@@ -35,13 +35,13 @@
 
 #include "Startup.h"
 
-typedef struct {
+ struct winprogressbar {
     window wprog;
     progressbar pb;
     label lab;
     int width;
     double min, max, val;
-} winprogressbar;
+};
 
 static void pbarFinalizer(SEXP ptr)
 {
@@ -75,21 +75,21 @@ SEXP winProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
     if(width == NA_INTEGER || width < 0) width = 200;
     tmp = CAR(args); args = CDR(args);
     if(!Rf_isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
-	errorcall(call, "invalid '%s' argument", "title");
+	Rf_errorcall(call, "invalid '%s' argument", "title");
     title = Rf_translateChar(STRING_ELT(tmp, 0));
     tmp = CAR(args); args = CDR(args);
     if(!Rf_isString(tmp) || length(tmp) < 1 || STRING_ELT(tmp, 0) == NA_STRING)
-	errorcall(call, "invalid '%s' argument", "Label");
+	Rf_errorcall(call, "invalid '%s' argument", "Label");
     label = Rf_translateChar(STRING_ELT(tmp, 0));
     haveLabel = strlen(label) > 0;
     d = Rf_asReal(CAR(args)); args = CDR(args);
-    if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "min");
+    if (!R_FINITE(d)) Rf_errorcall(call, "invalid '%s' argument", "min");
     pbar->min = d;
     d = Rf_asReal(CAR(args)); args = CDR(args);
-    if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "max");
+    if (!R_FINITE(d)) Rf_errorcall(call, "invalid '%s' argument", "max");
     pbar->max = d;
     d = Rf_asReal(CAR(args)); args = CDR(args);
-    if (!R_FINITE(d)) errorcall(call, "invalid '%s' argument", "initial");
+    if (!R_FINITE(d)) Rf_errorcall(call, "invalid '%s' argument", "initial");
     pbar->val = d;
 
     pbar->width = width;
@@ -138,7 +138,7 @@ SEXP setWinProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (!Rf_isNull(title)) {
 	    SEXP ctxt;
 	    if(!Rf_isString(title) || length(title) < 1)
-		errorcall(call, "invalid '%s' argument", "title");
+		Rf_errorcall(call, "invalid '%s' argument", "title");
 	    ctxt = STRING_ELT(title, 0);
 	    if (ctxt != NA_STRING)
 		settext(pbar->wprog, Rf_translateChar(ctxt));
@@ -146,7 +146,7 @@ SEXP setWinProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 	if(pbar->lab && !Rf_isNull(label)) {
 	    SEXP clab;
 	    if(!Rf_isString(label) || length(label) < 1)
-		errorcall(call, "invalid '%s' argument", "label");
+		Rf_errorcall(call, "invalid '%s' argument", "label");
 	    clab = STRING_ELT(label, 0);
 	    if (clab != NA_STRING)
 		settext(pbar->lab, Rf_translateChar(clab));
@@ -178,7 +178,7 @@ SEXP winDialog(SEXP call, SEXP op, SEXP args, SEXP env)
     } else if (streql(type, "yesnocancel")) {
 	res = askyesnocancel(Rf_translateChar(STRING_ELT(message, 0)));
     } else
-	errorcall(call, _("unknown type"));
+	Rf_errorcall(call, _("unknown type"));
     return Rf_ScalarInteger(res);
 }
 
@@ -210,7 +210,7 @@ SEXP winMenuNames(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
     if (CharacterMode != RGui)
-	errorcall(call, _("menu functions can only be used in the GUI"));
+	Rf_errorcall(call, _("menu functions can only be used in the GUI"));
 
     nmenus = numwinmenus();
 
@@ -234,7 +234,7 @@ SEXP winMenuItems(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
 
     if (CharacterMode != RGui)
-	errorcall(call, _("menu functions can only be used in the GUI"));
+	Rf_errorcall(call, _("menu functions can only be used in the GUI"));
 
     mname = CAR(args);
     if (!Rf_isString(mname) || length(mname) != 1)
@@ -245,7 +245,7 @@ SEXP winMenuItems(SEXP call, SEXP op, SEXP args, SEXP env)
 	snprintf(msgbuf, 256, _("unable to retrieve items for %s (%s)"),
 		 Rf_translateChar(STRING_ELT(mname,0)), errmsg);
 	freemenuitems(items);
-	errorcall(call, msgbuf);
+	Rf_errorcall(call, msgbuf);
     }
 
     PROTECT(ans = Rf_allocVector(STRSXP, items->numItems));
@@ -272,7 +272,7 @@ SEXP winMenuAdd(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
     if (CharacterMode != RGui)
-	errorcall(call, _("menu functions can only be used in the GUI"));
+	Rf_errorcall(call, _("menu functions can only be used in the GUI"));
     smenu = CAR(args);
     if(!Rf_isString(smenu) || length(smenu) != 1)
 	Rf_error(_("invalid '%s' argument"), "menuname");
@@ -281,7 +281,7 @@ SEXP winMenuAdd(SEXP call, SEXP op, SEXP args, SEXP env)
 	res = winaddmenu (Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to add menu (%s)"), errmsg);
-	    errorcall(call, msgbuf);
+	    Rf_errorcall(call, msgbuf);
 	}
 
     } else { /* add an item */
@@ -293,7 +293,7 @@ SEXP winMenuAdd(SEXP call, SEXP op, SEXP args, SEXP env)
 			      errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to add menu item (%s)"), errmsg);
-	    errorcall(call, msgbuf);
+	    Rf_errorcall(call, msgbuf);
 	}
     }
     return (R_NilValue);
@@ -307,7 +307,7 @@ SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
 
     args = CDR(args);
     if (CharacterMode != RGui)
-	errorcall(call, _("menu functions can only be used in the GUI"));
+	Rf_errorcall(call, _("menu functions can only be used in the GUI"));
     smenu = CAR(args);
     if(!Rf_isString(smenu) || length(smenu) != 1)
 	Rf_error(_("invalid '%s' argument"), "menuname");
@@ -315,7 +315,7 @@ SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
     if (Rf_isNull(sitem)) { /* delete a menu */
 	res = windelmenu (Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0)
-	    errorcall(call, _("menu does not exist"));
+	    Rf_errorcall(call, _("menu does not exist"));
     } else { /* delete an item */
 	if(!Rf_isString(sitem) || length(sitem) != 1)
 	    Rf_error(_("invalid '%s' argument"), "itemname");
@@ -323,7 +323,7 @@ SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
 			      Rf_translateChar(STRING_ELT(smenu, 0)), errmsg);
 	if (res > 0) {
 	    snprintf(msgbuf, 256, _("unable to delete menu item (%s)"), errmsg);
-	    errorcall(call, msgbuf);
+	    Rf_errorcall(call, msgbuf);
 	}
     }
     return (R_NilValue);

@@ -33,10 +33,10 @@
 #include "localization.h"
 
 /* R event structure */
-typedef struct {
+struct RTcl_Event {
     Tcl_EventProc *proc;
     struct Tcl_Event *nextPtr;
-} RTcl_Event;
+};
 
 
 

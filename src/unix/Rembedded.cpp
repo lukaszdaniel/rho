@@ -74,8 +74,8 @@ int Rf_initEmbeddedR(int argc, char **argv)
 void Rf_endEmbeddedR(int fatal)
 {
     R_RunExitFinalizers();
-    CleanEd();
-    if(!fatal) KillAllDevices();
+    Rf_CleanEd();
+    if(!fatal) Rf_KillAllDevices();
     R_CleanTempDir();
     if(!fatal && R_CollectWarnings)
 	Rf_PrintWarnings(NULL);	/* from device close and .Last */

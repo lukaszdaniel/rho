@@ -208,7 +208,7 @@ static SEXP splitClipboardText(const char *s, int ienc)
     for(p = s, q = line, nl = 0; *p; p++) {
 	if (*p == eol) {
 	    *q = '\0';
-	    SET_STRING_ELT(ans, nl++, mkCharCE(line, ienc));
+	    SET_STRING_ELT(ans, nl++, Rf_mkCharCE(line, ienc));
 	    q = line;
 	    *q = '\0';
 	} else if(CRLF && *p == '\r')
@@ -217,7 +217,7 @@ static SEXP splitClipboardText(const char *s, int ienc)
     }
     if (!last) {
 	*q = '\0';
-	SET_STRING_ELT(ans, nl, mkCharCE(line, ienc));
+	SET_STRING_ELT(ans, nl, Rf_mkCharCE(line, ienc));
     }
     R_chk_free(line);
     UNPROTECT(1);
@@ -250,8 +250,8 @@ SEXP readClipboard(SEXP sformat, SEXP sraw)
 		n = wcslen(wpc);
 		char text[4*n+1];  
 		R_CheckStack();
-		wcstoutf8(text, wpc, sizeof(text));
-		if(!strIsASCII(text)) ienc = CE_UTF8;
+		Rf_wcstoutf8(text, wpc, sizeof(text));
+		if(!Rf_strIsASCII(text)) ienc = CE_UTF8;
 		ans = splitClipboardText(text, ienc);
 	    } else if (format == CF_TEXT || format == CF_OEMTEXT || format == CF_DIF) {
 		/* can we get the encoding out of a CF_LOCALE entry? */

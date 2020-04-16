@@ -21,17 +21,12 @@
 # include <config.h>
 #endif
 
+#include <algorithm>
 #include <R.h>
 #include "ts.h"
 #include "localization.h"
 
 
-#ifndef max
-#define max(a,b) ((a < b)?(b):(a))
-#endif
-#ifndef min
-#define min(a,b) ((a > b)?(b):(a))
-#endif
 
 /* Code in this file based on Applied Statistics algorithms AS154/182
    (C) Royal Statistical Society 1980, 1982 */
@@ -295,7 +290,7 @@ void karma(Starma G, double *sumlog, double *ssq, int iupd, int *nit)
 		if (--indw < 0) break;
 		et -= phi[j] * w[indw];
 	    }
-	    for (j = 0; j < min(ii, q); j++)
+	    for (j = 0; j < std::min(ii, q); j++)
 		et -= theta[j] * resid[ii - j - 1];
 	    resid[ii] = et;
 	    *ssq += et * et;
@@ -341,7 +336,7 @@ forkal(Starma G, int d, int il, double *delta, double *y, double *amse,
     if (p < 0) *ifault = 1;
     if (q < 0) *ifault += 2;
     if (p * p + q * q == 0) *ifault = 4;
-    if (r != max(p, q + 1)) *ifault = 5;
+    if (r != std::max(p, q + 1)) *ifault = 5;
     if (np != r * (r + 1) / 2) *ifault = 6;
     if (d < 0) *ifault = 8;
     if (il < 1) *ifault = 11;
@@ -428,8 +423,8 @@ forkal(Starma G, int d, int il, double *delta, double *y, double *amse,
 	    for (i = 0; i < d; i++) {
 		store[i] = 0.0;
 		for (j = 0; j < d; j++) {
-		    ll = max(i, j);
-		    k = min(i, j);
+		    ll = std::max(i, j);
+		    k = std::min(i, j);
 		    jj = jkl + (ll - k) + k * (2*d + 2 - k - 1) / 2;
 		    store[i] += delta[j] * P[jj];
 		}

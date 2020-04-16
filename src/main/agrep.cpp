@@ -137,7 +137,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     n = XLENGTH(vec);
     if(!useBytes) {
-	Rboolean haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pattern, 0)));
+	Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pattern, 0)));
 	if(!haveBytes)
 	    for (i = 0; i < n; i++)
 		if(IS_BYTES(STRING_ELT(vec, i))) {
@@ -147,7 +147,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	if(haveBytes) useBytes = TRUE;
     }
     if(!useBytes) {
-	useWC = RHOCONSTRUCT(Rboolean, !IS_ASCII(STRING_ELT(pattern, 0)));
+	useWC = Rboolean(!IS_ASCII(STRING_ELT(pattern, 0)));
 	if(!useWC) {
 	    for (i = 0 ; i < n ; i++) {
 		if(STRING_ELT(vec, i) == NA_STRING) continue;
@@ -527,7 +527,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     }
 
     if(!opt_partial)
-	return(adist_full(x, y, REAL(opt_costs), RHOCONSTRUCT(Rboolean, opt_counts)));
+	return(adist_full(x, y, REAL(opt_costs), Rboolean(opt_counts)));
 
     counts = R_NilValue;	/* -Wall */
     offsets = R_NilValue;	/* -Wall */
@@ -774,7 +774,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     R_xlen_t n = XLENGTH(vec);
 
     if(!useBytes) {
-        haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pattern, 0)));
+        haveBytes = Rboolean(IS_BYTES(STRING_ELT(pattern, 0)));
 	if(!haveBytes)
 	    for(R_xlen_t i = 0; i < n; i++) {
 		if(IS_BYTES(STRING_ELT(vec, i))) {
@@ -786,7 +786,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
     }
 
     if(!useBytes) {
-        useWC = RHOCONSTRUCT(Rboolean, !IS_ASCII(STRING_ELT(pattern, 0)));
+        useWC = Rboolean(!IS_ASCII(STRING_ELT(pattern, 0)));
 	if(!useWC) {
 	    for(R_xlen_t i = 0 ; i < n ; i++) {
 		if(STRING_ELT(vec, i) == NA_STRING) continue;
@@ -873,7 +873,7 @@ SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::Bu
 	    if(rc == REG_OK) {
 		PROTECT(matchpos = Rf_allocVector(INTSXP, nmatch));
 		PROTECT(matchlen = Rf_allocVector(INTSXP, nmatch));
-		for(R_xlen_t j = 0; j < RHOCONSTRUCT(int, match.nmatch); j++) {
+		for(R_xlen_t j = 0; j < int(match.nmatch); j++) {
 		    so = match.pmatch[j].rm_so;
 		    INTEGER(matchpos)[j] = so + 1;
 		    INTEGER(matchlen)[j] = match.pmatch[j].rm_eo - so;

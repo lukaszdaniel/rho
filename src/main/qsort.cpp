@@ -66,7 +66,7 @@ SEXP attribute_hidden do_qsort(/*const*/ rho::Expression* call, const rho::Built
     indx_ret = Rf_asLogical(index_return_);
     R_xlen_t n = XLENGTH(x);
 #ifdef LONG_VECTOR_SUPPORT
-    Rboolean isLong = RHOCONSTRUCT(Rboolean, n > INT_MAX);
+    Rboolean isLong = Rboolean(n > INT_MAX);
 #endif
     if(x_int) ivx = INTEGER(sx); else vx = REAL(sx);
     if(indx_ret) {

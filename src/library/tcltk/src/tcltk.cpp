@@ -205,7 +205,7 @@ SEXP dotTcl(SEXP args)
     const char *cmd;
     Tcl_Obj *val;
     const void *vmax = vmaxget();
-    if(!isValidString(CADR(args)))
+    if(!Rf_isValidString(CADR(args)))
 	Rf_error(_("invalid argument"));
     cmd = Rf_translateChar(STRING_ELT(CADR(args), 0));
     val = tk_eval(cmd);
@@ -370,7 +370,7 @@ SEXP RTcl_ObjFromCharVector(SEXP args)
     if (count == 1 && LOGICAL(drop)[0]) {
 	Tcl_DStringInit(&s_ds);
 	s = Tcl_ExternalToUtfDString(encoding,
-				     translateCharUTF8(STRING_ELT(val, 0)), 
+				     Rf_translateCharUTF8(STRING_ELT(val, 0)), 
 				     -1, &s_ds);
 	Tcl_SetStringObj(tclobj, s, -1);
 	Tcl_DStringFree(&s_ds);
@@ -379,7 +379,7 @@ SEXP RTcl_ObjFromCharVector(SEXP args)
 	    elem = Tcl_NewObj();
 	    Tcl_DStringInit(&s_ds);
 	    s = Tcl_ExternalToUtfDString(encoding, 
-					 translateCharUTF8(STRING_ELT(val, i)),
+					 Rf_translateCharUTF8(STRING_ELT(val, i)),
 					 -1, &s_ds);
 	    Tcl_SetStringObj(elem, s, -1);
 	    Tcl_DStringFree(&s_ds);
@@ -710,7 +710,7 @@ void tcltk_init(int *TkUp)
     }
 #if !defined(Win32) && !defined(HAVE_AQUA)
     else
-	warningcall(R_NilValue, _("no DISPLAY variable so Tk is not available"));
+	Rf_warningcall(R_NilValue, _("no DISPLAY variable so Tk is not available"));
 #endif
 
     Tcl_CreateCommand(RTcl_interp,

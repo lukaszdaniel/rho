@@ -152,12 +152,12 @@ SEXP do_relop(/*const*/ Expression* call,
     if ((iS = Rf_isSymbol(x)) || TYPEOF(x) == LANGSXP) {
 	x = Rf_ScalarString(
 	    (iS) ? PRINTNAME(x) :
-	    STRING_ELT(Rf_deparse1(x, RHO_FALSE, DEFAULTDEPARSE), 0));
+	    STRING_ELT(Rf_deparse1(x, FALSE, DEFAULTDEPARSE), 0));
     }
     if ((iS = Rf_isSymbol(y)) || TYPEOF(y) == LANGSXP) {
 	y = Rf_ScalarString(
 	    (iS) ? PRINTNAME(y) :
-	    STRING_ELT(Rf_deparse1(y, RHO_FALSE, DEFAULTDEPARSE), 0));
+	    STRING_ELT(Rf_deparse1(y, FALSE, DEFAULTDEPARSE), 0));
     }
 
     if (Rf_isNull(x)) x = Rf_allocVector(INTSXP,0);

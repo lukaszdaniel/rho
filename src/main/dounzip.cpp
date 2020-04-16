@@ -222,7 +222,7 @@ zipunzip(const char *zipname, const char *dest, int nfiles, const char **files,
     if (nfiles == 0) { /* all files */
 	unz_global_info64 gi;
 	unzGetGlobalInfo64(uf, &gi);
-	for (i = 0; i < RHOCONSTRUCT(int, gi.number_entry); i++) {
+	for (i = 0; i < int(gi.number_entry); i++) {
 	    if (i > 0) if ((err = unzGoToNextFile(uf)) != UNZ_OK) break;
 	    if (*nnames+1 >= LENGTH(names)) {
 		SEXP onames = names;
@@ -278,7 +278,7 @@ static SEXP ziplist(const char *zipname)
     SET_VECTOR_ELT(ans, 1, lengths = Rf_allocVector(REALSXP, nfiles));
     SET_VECTOR_ELT(ans, 2, dates = Rf_allocVector(STRSXP, nfiles));
 
-    for (i = 0; RHOCONSTRUCT(int, i) < nfiles; i++) {
+    for (i = 0; int(i) < nfiles; i++) {
 	char filename_inzip[PATH_MAX], date[50];
 	unz_file_info64 file_info;
 
@@ -298,7 +298,7 @@ static SEXP ziplist(const char *zipname)
 		 file_info.tmu_date.tm_min);
 	SET_STRING_ELT(dates, i, Rf_mkChar(date));
 
-        if (RHOCONSTRUCT(int, i) < nfiles - 1) {
+        if (int(i) < nfiles - 1) {
 	    err = unzGoToNextFile(uf);
 	    if (err != UNZ_OK)
 		Rf_error("error %d with zipfile in unzGoToNextFile\n",err);
@@ -528,7 +528,7 @@ R_newunz(const char *description, const char *const mode)
     newconn->fflush = &null_fflush;
     newconn->read = &unz_read;
     newconn->write = &null_write;
-    newconn->connprivate = RHO_NO_CAST(void *) malloc(sizeof(struct unzconn));
+    newconn->connprivate = malloc(sizeof(struct unzconn));
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
 	Rf_error(_("allocation of 'unz' connection failed"));
@@ -1829,7 +1829,7 @@ static int unzOpenCurrentFile3 (unzFile file, int* method,
       pfile_in_zip_read_info->stream.zalloc = (alloc_func)nullptr;
       pfile_in_zip_read_info->stream.zfree = (free_func)nullptr;
       pfile_in_zip_read_info->stream.opaque = (voidpf)nullptr;
-      pfile_in_zip_read_info->stream.next_in = RHO_NO_CAST(voidpf)nullptr;
+      pfile_in_zip_read_info->stream.next_in = nullptr;
       pfile_in_zip_read_info->stream.avail_in = 0;
 
       err = BZ2_bzDecompressInit(&pfile_in_zip_read_info->bstream, 0, 0);
@@ -2177,7 +2177,7 @@ static voidpf fopen_func(const void* filename, int mode)
 	mode_fopen = "wb";
 
     if ((filename != nullptr) && (mode_fopen != nullptr))
-        file = fopen(RHO_S_CAST(const char*, filename), mode_fopen);
+        file = fopen(static_cast<const char*>(filename), mode_fopen);
     return file;
 }
 

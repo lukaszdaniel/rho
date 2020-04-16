@@ -54,7 +54,7 @@ using namespace rho;
  *
  */
 
-typedef enum {
+enum STYLE {
     STYLE_SS1 = 1,
     STYLE_SS  = 2,
     STYLE_S1  = 3,
@@ -63,9 +63,9 @@ typedef enum {
     STYLE_T   = 6,
     STYLE_D1  = 7,
     STYLE_D   = 8
-} STYLE;
+};
 
-typedef struct {
+struct mathContext {
     unsigned int BoxColor;
     double BaseCex;
     double ReferenceX;
@@ -76,19 +76,19 @@ typedef struct {
     double CosAngle;
     double SinAngle;
     STYLE CurrentStyle;
-} mathContext;
+};
 
 static GEUnit MetricUnit = GE_INCHES;
 
 /* Font Definitions */
 
-typedef enum {
+enum FontType {
     PlainFont	   = 1,
     BoldFont	   = 2,
     ItalicFont	   = 3,
     BoldItalicFont = 4,
     SymbolFont	   = 5
-} FontType;
+};
 
 /*
  *  Italic Correction Factor
@@ -236,12 +236,11 @@ static double MuSpace(pGEcontext gc, pGEDevDesc dd)
  *
  */
 
-typedef enum {
+enum TEXPAR {
     sigma2,  sigma5,  sigma6,  sigma8,	sigma9,	 sigma10, sigma11,
     sigma12, sigma13, sigma14, sigma15, sigma16, sigma17, sigma18,
     sigma19, sigma20, sigma21, sigma22, xi8, xi9, xi10, xi11, xi12, xi13
-}
-TEXPAR;
+};
 
 #define SUBS	       0.7
 
@@ -460,13 +459,13 @@ static double max(double x, double y)
 /* These including italic corrections and an */
 /* indication of whether the nucleus was simple. */
 
-typedef struct {
+struct BBOX {
     double height;
     double depth;
     double width;
     double italic;
     int simple;
-} BBOX;
+};
 
 
 #define bboxHeight(bbox) bbox.height
@@ -558,10 +557,10 @@ static double CenterShift(BBOX bbox)
 }
 
 
-typedef struct {
-    RHOCONST char *name;
+struct SymTab {
+    const char *name;
     int code;
-} SymTab;
+};
 
 /* Determine a match between symbol name and string. */
 
@@ -872,12 +871,12 @@ static int StringAtom(SEXP expr)
 
 static FontType GetFont(pGEcontext gc)
 {
-    return RHOCONSTRUCT(FontType, gc->fontface);
+    return FontType(gc->fontface);
 }
 
 static FontType SetFont(FontType font, pGEcontext gc)
 {
-    FontType prevfont = RHOCONSTRUCT(FontType, gc->fontface);
+    FontType prevfont = FontType(gc->fontface);
     gc->fontface = font;
     return prevfont;
 }
@@ -989,7 +988,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 	    while (*s) {
 		wc = 0;
 		res = mbrtowc(&wc, s, MB_LEN_MAX, &mb_st);
-		if(res == RHOCONSTRUCT(size_t, -1)) Rf_error("invalid multibyte string '%s'", s);
+		if(res == size_t(-1)) Rf_error("invalid multibyte string '%s'", s);
 		if (iswdigit(wc) && font != PlainFont) {
 		    font = PlainFont;
 		    SetFont(PlainFont, gc);
@@ -1007,7 +1006,7 @@ static BBOX RenderSymbolStr(const char *str, int draw, mathContext *mc,
 		if (draw) {
 		    memset(chr, 0, sizeof(chr));
 		    /* should not be possible, as we just converted to wc */
-		    if(wcrtomb(chr, wc, &mb_st) == RHOCONSTRUCT(size_t, -1))
+		    if(wcrtomb(chr, wc, &mb_st) == size_t(-1))
 			Rf_error("invalid multibyte string");
 		    PMoveAcross(lastItalicCorr, mc);
 		    GEText(ConvertedX(mc ,dd), ConvertedY(mc, dd), chr,
@@ -1071,7 +1070,7 @@ static BBOX RenderChar(int ascii, int draw, mathContext *mc,
 	memset(asciiStr, 0, sizeof(asciiStr));
 	if(mbcslocale) {
 	    size_t res = wcrtomb(asciiStr, ascii, nullptr);
-	    if(res == RHOCONSTRUCT(size_t, -1))
+	    if(res == size_t(-1))
 		Rf_error("invalid character in current multibyte locale");
 	} else
 	    asciiStr[0] = char( ascii);
@@ -1651,8 +1650,8 @@ static BBOX RenderBar(SEXP expr, int draw, mathContext *mc,
     return EnlargeBBox(bbox, accentGap, 0, 0);
 }
 
-static struct {
-    RHOCONST char *name;
+static struct AccentTable {
+    const char *name;
     int code;
 }
 AccentTable[] = {

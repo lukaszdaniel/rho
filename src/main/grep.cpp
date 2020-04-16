@@ -788,7 +788,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	Rf_namesgets(ans, Rf_getAttrib(x, R_NamesSymbol));
     UNPROTECT(1);
     Free(pt); Free(wpt);
-    if (tables) pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
+    if (tables) pcre_free(const_cast<unsigned char *>(tables));
     return ans;
 }
 
@@ -950,7 +950,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     }
 
     if (!useBytes) {
-	Rboolean onlyASCII = RHOCONSTRUCT(Rboolean, IS_ASCII(STRING_ELT(pat, 0)));
+	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
 		if(STRING_ELT(text, i) == NA_STRING) continue;
@@ -962,7 +962,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	useBytes = onlyASCII;
     }
     if (!useBytes) {
-	Rboolean haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pat, 0)));
+	Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
 	if (!haveBytes)
 	    for (i = 0; i < n; i++)
 		if (IS_BYTES(STRING_ELT(text, i))) {
@@ -1075,7 +1075,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    }
 
 	    if (fixed_opt)
-		LOGICAL(ind)[i] = fgrep_one(spat, s, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8, nullptr) >= 0;
+		LOGICAL(ind)[i] = fgrep_one(spat, s, Rboolean(useBytes), use_UTF8, nullptr) >= 0;
 	    else if (perl_opt) {
 		int rc =
 		    pcre_exec(re_pcre, re_pe, s, int(strlen(s)), 0, 0, ov, 0);
@@ -1105,7 +1105,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     else if (perl_opt) {
 	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
-	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
+	pcre_free(const_cast<unsigned char *>(tables));
     } else
 	tre_regfree(&reg);
 
@@ -1257,7 +1257,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	Rf_error(_("invalid '%s' argument"), "pattern");
     if (!isRaw(text))
 	Rf_error(_("invalid '%s' argument"), "text");
-    if (offset > RHO_S_CAST(R_size_t, LENGTH(text)))
+    if (offset > static_cast<R_size_t>(LENGTH(text)))
 	return Rf_allocVector(INTSXP, 0);
 
     offset--; /* reduce offset to base 0 */
@@ -1273,7 +1273,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	    R_size_t res = fgrepraw1(pat, text, offset);
 	    if (invert) {
 		Rbyte *ansp;
-		if (res == RHO_S_CAST(R_size_t, -1)) return value ? text : Rf_ScalarInteger(1);
+		if (res == static_cast<R_size_t>(-1)) return value ? text : Rf_ScalarInteger(1);
 		if (!value) return Rf_ScalarInteger(((res == 0) ? LENGTH(pat) : 0) + 1);
 		ans = Rf_allocVector(RAWSXP, LENGTH(text) - LENGTH(pat));
 		ansp = RAW(ans);
@@ -1282,11 +1282,11 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    ansp += res;
 		}
 		res += LENGTH(pat);
-		if (res < RHO_S_CAST(R_size_t, LENGTH(text)))
+		if (res < static_cast<R_size_t>(LENGTH(text)))
 		    memcpy(ansp, RAW(text) + res, LENGTH(text) - res);
 		return ans;
 	    }
-	    if (res == RHO_S_CAST(R_size_t, -1)) return Rf_allocVector(value ? RAWSXP : INTSXP, 0);
+	    if (res == static_cast<R_size_t>(-1)) return Rf_allocVector(value ? RAWSXP : INTSXP, 0);
 	    if (!value) return Rf_ScalarInteger(int(res + 1));
 	    /* value=TRUE doesn't really make sense for anything other than
 	       match/nomatch detection since we just return the pattern */
@@ -1301,9 +1301,9 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 #define MAX_MATCHES_MINIBUF 32
 	    int matches[MAX_MATCHES_MINIBUF];
 	    int n = LENGTH(text);
-	    while (RHOCONSTRUCT(int, offset) < n) {
+	    while (int(offset) < n) {
 		offset = fgrepraw1(pat, text, offset);
-		if (offset == RHO_S_CAST(R_size_t, -1))
+		if (offset == static_cast<R_size_t>(-1))
 		    break;
 		if (nmatches < MAX_MATCHES_MINIBUF)
 		    matches[nmatches] = int(offset + 1);
@@ -1315,7 +1315,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 				 is performing something like strsplit */
 		    R_size_t pos = 0;
 		    SEXP elt, mvec = nullptr;
-		    int *fmatches = RHO_NO_CAST(int*) matches; /* either the minbuffer or an allocated maxibuffer */
+		    int *fmatches = matches; /* either the minbuffer or an allocated maxibuffer */
 
 		    if (!nmatches) return text;
 
@@ -1327,9 +1327,9 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 			memcpy(fmatches, matches, sizeof(matches));
 			nmatches = MAX_MATCHES_MINIBUF;
 			offset = matches[MAX_MATCHES_MINIBUF - 1] + LENGTH(pat) - 1;
-			while (RHOCONSTRUCT(int, offset) < n) {
+			while (int(offset) < n) {
 			    offset = fgrepraw1(pat, text, offset);
-			    if (offset == RHO_S_CAST(R_size_t, -1))
+			    if (offset == static_cast<R_size_t>(-1))
 				break;
 			    INTEGER(mvec)[nmatches++] = int(offset + 1);
 			    offset += LENGTH(pat);
@@ -1339,7 +1339,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		    /* there are always nmatches + 1 pieces (unlike strsplit) */
 		    ans = PROTECT(Rf_allocVector(VECSXP, nmatches + 1));
 		    /* add all pieces before matches */
-		    for (i = 0; i < RHO_S_CAST(R_size_t, nmatches); i++) {
+		    for (i = 0; i < static_cast<R_size_t>(nmatches); i++) {
 			R_size_t elt_size = fmatches[i] - 1 - pos;
 			elt = Rf_allocVector(RAWSXP, elt_size);
 			SET_VECTOR_ELT(ans, i, elt);
@@ -1361,7 +1361,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		/* value=TRUE is pathetic for fixed=TRUE without
 		   invert as it is just rep(pat, nmatches) */
 		ans = PROTECT(Rf_allocVector(VECSXP, nmatches));
-		for (i = 0; i < RHO_S_CAST(R_size_t, nmatches); i++)
+		for (i = 0; i < static_cast<R_size_t>(nmatches); i++)
 		    SET_VECTOR_ELT(ans, i, pat);
 		UNPROTECT(1);
 		return ans;
@@ -1377,9 +1377,9 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	       where amnesia hit us */
 	    nmatches = MAX_MATCHES_MINIBUF;
 	    offset = matches[MAX_MATCHES_MINIBUF - 1] + LENGTH(pat) - 1; /* matches are 1-based, we are 0-based hence - 1 */
-	    while (RHOCONSTRUCT(int, offset) < n) {
+	    while (int(offset) < n) {
 		offset = fgrepraw1(pat, text, offset);
-		if (offset == RHO_S_CAST(R_size_t, -1))
+		if (offset == static_cast<R_size_t>(-1))
 		    break;
 		INTEGER(ans)[nmatches++] = int(offset + 1);
 		offset += LENGTH(pat);
@@ -1435,7 +1435,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	if (rc)
 	    break;
 	if (!nmatches) eflags |= REG_NOTBOL;
-	if (res_ptr >= RHO_S_CAST(R_size_t, res_alloc)) {
+	if (res_ptr >= static_cast<R_size_t>(res_alloc)) {
 	    if (res_alloc < (2^24)) res_alloc <<= 1;
 	    SETCDR(res_tail, Rf_list1(Rf_allocVector(INTSXP, res_alloc)));
 	    res_tail = CDR(res_tail);
@@ -1458,7 +1458,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 		Rf_warning(_("pattern matches an empty string infinitely, returning first match only"));
 	    break;
 	}
-	if (offset >= RHO_S_CAST(R_size_t, LENGTH(text))) break;
+	if (offset >= static_cast<R_size_t>(LENGTH(text))) break;
     }
 
     if (value) { /* for values we store in fact the absolute start offsets and length in the integer vector */
@@ -1467,7 +1467,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	R_size_t inv_start = 0; /* 0-based start position of the pieces for invert */
 	res_val = INTEGER(vec);
 	ans = PROTECT(Rf_allocVector(VECSXP, invert ? (nmatches + 1) : nmatches));
-	while (entry < RHO_S_CAST(R_size_t, nmatches)) {
+	while (entry < static_cast<R_size_t>(nmatches)) {
 	    if (invert) { /* for invert=TRUE store the current piece up to the match */
 		SEXP rvec = Rf_allocVector(RAWSXP, res_val[cptr] - 1 - inv_start);
 		SET_VECTOR_ELT(ans, entry, rvec);
@@ -1721,7 +1721,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
     }
 
     if (!useBytes) {
-	Rboolean onlyASCII = RHOCONSTRUCT(Rboolean, IS_ASCII(STRING_ELT(pat, 0)));
+	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
 		if(STRING_ELT(text, i) == NA_STRING) continue;
@@ -1733,7 +1733,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	useBytes = onlyASCII;
     }
     if (!useBytes) {
-	Rboolean haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pat, 0)));
+	Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
 	if (!haveBytes)
 	    for (i = 0; i < n; i++)
 		if (IS_BYTES(STRING_ELT(text, i))) {
@@ -1859,7 +1859,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 	if (fixed_opt) {
 	    int st, nr, slen = int(strlen(s));
 	    ns = slen;
-	    st = fgrep_one_bytes(spat, s, ns, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8);
+	    st = fgrep_one_bytes(spat, s, ns, Rboolean(useBytes), use_UTF8);
 	    if (st < 0)
 		SET_STRING_ELT(ans, i, STRING_ELT(text, i));
 	    else if (STRING_ELT(rep, 0) == NA_STRING)
@@ -1873,7 +1873,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 			nr++;
 			ss += sst+patlen;
 			slen -= int(sst+patlen);
-		    } while((sst = fgrep_one_bytes(spat, ss, slen, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8)) >= 0);
+		    } while((sst = fgrep_one_bytes(spat, ss, slen, Rboolean(useBytes), use_UTF8)) >= 0);
 		} else nr = 1;
 		cbuf = u = Calloc(ns + nr*(replen - patlen) + 1, char);
 		*u = '\0';
@@ -1885,7 +1885,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 		    slen -= int(st+patlen);
 		    strncpy(u, srep, replen);
 		    u += replen;
-		} while(global && (st = fgrep_one_bytes(spat, s, slen, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8)) >= 0);
+		} while(global && (st = fgrep_one_bytes(spat, s, slen, Rboolean(useBytes), use_UTF8)) >= 0);
 		strcpy(u, s);
 		if (useBytes)
 		    SET_STRING_ELT(ans, i, Rf_mkChar(cbuf));
@@ -2110,7 +2110,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
     else if (perl_opt) {
 	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
-	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
+	pcre_free(const_cast<unsigned char *>(tables));
     } else tre_regfree(&reg);
     SHALLOW_DUPLICATE_ATTRIB(ans, text);
     /* This copied the class, if any */
@@ -2121,7 +2121,7 @@ SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltI
 static int getNc(const char *s, int st)
 {
     R_CheckStack2(st+1);
-    char *buf = RHO_S_CAST(char*, alloca(st+1));
+    char *buf = static_cast<char *>(alloca(st+1));
     memcpy(buf, s, st);
     buf[st] = '\0';
     return int(Rf_utf8towcs(nullptr, buf, 0));
@@ -2432,7 +2432,7 @@ gregexpr_perl(const char *pattern, const char *string,
 		start = ovector[0] + 1;
 	    else
 		start = ovector[1];
-	    if (start >= slen) foundAll = RHO_TRUE;
+	    if (start >= slen) foundAll = TRUE;
 	} else {
 	    foundAll = TRUE;
 	    if (!foundAny) matchIndex = 0;
@@ -2554,7 +2554,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 
     n = XLENGTH(text);
     if (!useBytes) {
-	Rboolean onlyASCII = RHOCONSTRUCT(Rboolean, IS_ASCII(STRING_ELT(pat, 0)));
+	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
 		if(STRING_ELT(text, i) == NA_STRING) continue;
@@ -2566,7 +2566,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	useBytes = onlyASCII;
     }
     if (!useBytes) {
-	Rboolean haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pat, 0)));
+	Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
 	if (!haveBytes)
 	    for (i = 0; i < n; i++)
 		if (IS_BYTES(STRING_ELT(text, i))) {
@@ -2732,7 +2732,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 		    }
 		}
 		if (fixed_opt) {
-		    int st = fgrep_one(spat, s, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8, nullptr);
+		    int st = fgrep_one(spat, s, Rboolean(useBytes), use_UTF8, nullptr);
 		    INTEGER(ans)[i] = (st > -1)?(st+1):-1;
 		    if (!useBytes && use_UTF8) {
 			INTEGER(matchlen)[i] = INTEGER(ans)[i] >= 0 ?
@@ -2814,10 +2814,10 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 			elt = gregexpr_BadStringAns();
 		    } else {
 			if (fixed_opt)
-			    elt = gregexpr_fixed(spat, s, RHOCONSTRUCT(Rboolean, useBytes), use_UTF8);
+			    elt = gregexpr_fixed(spat, s, Rboolean(useBytes), use_UTF8);
 			else
 			    elt = gregexpr_perl(spat, s, re_pcre, re_pe,
-						RHOCONSTRUCT(Rboolean, useBytes), use_UTF8, ovector,
+						Rboolean(useBytes), use_UTF8, ovector,
 						ovector_size, capture_count,
 						capture_names, i);
 		    }
@@ -2834,7 +2834,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     else if (perl_opt) {
 	if (re_pe) pcre_free_study(re_pe);
 	pcre_free(re_pcre);
-	pcre_free(RHO_NO_CAST(void *)RHO_C_CAST(unsigned char*, tables));
+	pcre_free(const_cast<unsigned char *>(tables));
 	UNPROTECT(1);
 	free(ovector);
     } else
@@ -2902,7 +2902,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 	useBytes = onlyASCII;
     }
     if(!useBytes) {
-        Rboolean haveBytes = RHOCONSTRUCT(Rboolean, IS_BYTES(STRING_ELT(pat, 0)));
+        Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
 	if(!haveBytes)
 	    for(i = 0; i < n; i++) {
 		if(IS_BYTES(STRING_ELT(text, i))) {
@@ -2916,7 +2916,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
     }
 
     if(!useBytes) {
-        use_WC = RHOCONSTRUCT(Rboolean, !IS_ASCII(STRING_ELT(pat, 0)));
+        use_WC = Rboolean(!IS_ASCII(STRING_ELT(pat, 0)));
 	if(!use_WC) {
 	    for(i = 0 ; i < n ; i++) {
 		if(STRING_ELT(text, i) == NA_STRING) continue;
@@ -2981,7 +2981,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 	    if(rc == REG_OK) {
 		PROTECT(matchpos = Rf_allocVector(INTSXP, nmatch));
 		PROTECT(matchlen = Rf_allocVector(INTSXP, nmatch));
-		for(j = 0; j < RHOCONSTRUCT(int, nmatch); j++) {
+		for(j = 0; j < int(nmatch); j++) {
 		    so = pmatch[j].rm_so;
 		    INTEGER(matchpos)[j] = so + 1;
 		    INTEGER(matchlen)[j] = pmatch[j].rm_eo - so;

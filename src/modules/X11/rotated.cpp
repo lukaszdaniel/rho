@@ -141,7 +141,7 @@ typedef struct rotated_text_item_template {
     struct rotated_text_item_template *next;
 } RotatedTextItem;
 
-static RotatedTextItem *first_text_item=NULL;
+static RotatedTextItem *first_text_item = nullptr;
 
 
 /* ---------------------------------------------------------------------- */

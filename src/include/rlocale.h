@@ -147,7 +147,7 @@ extern int      Ri18n_iswctype(wint_t, wctype_t);
 #define IS_LOW_SURROGATE(wch) (((wch) >= LOW_SURROGATE_START) && ((wch) <= LOW_SURROGATE_END))
 #define IS_SURROGATE_PAIR(hs, ls) (IS_HIGH_SURROGATE (hs) && IS_LOW_SURROGATE (ls))
 
-# define utf8toucs32		Rf_utf8toucs32
+// # define utf8toucs32		Rf_utf8toucs32
 Rwchar_t utf8toucs32(wchar_t high, const char *s);
 
 #ifdef __cplusplus

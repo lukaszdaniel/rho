@@ -40,6 +40,7 @@
 #include <Rversion.h>
 #include <R_ext/RS.h>           /* for CallocCharBuf, Free */
 #include <errno.h>
+#include <algorithm>
 
 #include <cstdarg>
 #include <vector>
@@ -362,7 +363,7 @@ static void OutString(R_outpstream_t stream, const char *s, int length)
 	stream->OutChar(stream, '\n');
     }
     else
-	stream->OutBytes(stream, RHO_NO_CAST(void *)s, length); /* FIXME: is this case right? */
+	stream->OutBytes(stream, s, length); /* FIXME: is this case right? */
 }
 
 
@@ -691,7 +692,7 @@ static int HashGet(SEXP item, const HashTable* table)
 #define HAS_TAG_BIT_MASK (1 << 10)
 #define ENCODE_LEVELS(v) ((v) << 12)
 #define DECODE_LEVELS(v) ((v) >> 12)
-#define DECODE_TYPE(v) (RHOCONSTRUCT(SEXPTYPE, (v) & 255))
+#define DECODE_TYPE(v) (SEXPTYPE((v) & 255))
 
 static int PackFlags(int type, int levs, int isobj, int hasattr, int hastag)
 {
@@ -837,9 +838,7 @@ static void OutStringVec(R_outpstream_t stream, SEXP s, HashTable* ref_table)
 
 #include <rpc/xdr.h>
 
-#define CHUNK_SIZE 8096
-
-#define min2(a, b) ((a) < (b)) ? (a) : (b)
+constexpr R_xlen_t CHUNK_SIZE = 8096;
 
 static R_INLINE void
 OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
@@ -851,7 +850,7 @@ OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 	R_xlen_t done, thiss;
 	XDR xdrs;
 	for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(int)), XDR_ENCODE);
 	    for(int cnt = 0; cnt < thiss; cnt++)
 		if(!xdr_int(&xdrs, INTEGER(s) + done + cnt))
@@ -866,7 +865,7 @@ OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 	/* write in chunks to avoid overflowing ints */
 	R_xlen_t done, thiss;
 	for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->OutBytes(stream, INTEGER(s) + done,
 			     int(sizeof(int) * thiss));
 	}
@@ -888,7 +887,7 @@ OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 	R_xlen_t done, thiss;
 	XDR xdrs;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(double)), XDR_ENCODE);
 	    for(int cnt = 0; cnt < thiss; cnt++)
 		if(!xdr_double(&xdrs, REAL(s) + done + cnt))
@@ -902,7 +901,7 @@ OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     {
 	R_xlen_t done, thiss;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->OutBytes(stream, REAL(s) + done,
 			     int(sizeof(double) * thiss));
 	}
@@ -925,7 +924,7 @@ OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 	XDR xdrs;
 	Rcomplex *c = COMPLEX(s);
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(Rcomplex)), XDR_ENCODE);
 	    for(int cnt = 0; cnt < thiss; cnt++) {
 		if(!xdr_double(&xdrs, &(c[done+cnt].r)) ||
@@ -941,7 +940,7 @@ OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     {
 	R_xlen_t done, thiss;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->OutBytes(stream, COMPLEX(s) + done,
 			     int(sizeof(Rcomplex) * thiss));
 	}
@@ -1135,7 +1134,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	    {
 		R_xlen_t done, thiss;
 		for (done = 0; done < len; done += thiss) {
-		    thiss = min2(CHUNK_SIZE, len - done);
+		    thiss = std::min(CHUNK_SIZE, len - done);
 		    stream->OutBytes(stream, RAW(s) + done, int(thiss));
 		}
 		break;
@@ -1249,7 +1248,7 @@ InIntegerVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 	R_xlen_t done, thiss;
 	XDR xdrs;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, buf, int(sizeof(int) * thiss));
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(int)), XDR_DECODE);
 	    for(int cnt = 0; cnt < thiss; cnt++)
@@ -1263,7 +1262,7 @@ InIntegerVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     {
 	R_xlen_t done, thiss;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, INTEGER(obj) + done,
 			    int(sizeof(int) * thiss));
 	}
@@ -1285,7 +1284,7 @@ InRealVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 	R_xlen_t done, thiss;
 	XDR xdrs;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, buf, int(sizeof(double) * thiss));
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(double)), XDR_DECODE);
 	    for(R_xlen_t cnt = 0; cnt < thiss; cnt++)
@@ -1299,7 +1298,7 @@ InRealVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     {
 	R_xlen_t done, thiss;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, REAL(obj) + done,
 			    int(sizeof(double) * thiss));
 	}
@@ -1322,7 +1321,7 @@ InComplexVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 	XDR xdrs;
 	Rcomplex *output = COMPLEX(obj);
 	for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, buf, int(sizeof(Rcomplex) * thiss));
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(Rcomplex)), XDR_DECODE);
 	    for(R_xlen_t cnt = 0; cnt < thiss; cnt++) {
@@ -1338,7 +1337,7 @@ InComplexVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     {
 	R_xlen_t done, thiss;
         for (done = 0; done < length; done += thiss) {
-	    thiss = min2(CHUNK_SIZE, length - done);
+	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->InBytes(stream, COMPLEX(obj) + done,
 			    int(sizeof(Rcomplex) * thiss));
 	}
@@ -1483,7 +1482,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	    // Attributes:
 	    SET_ATTRIB(env, ReadItem(ref_table, stream));
 	    R_ReadItemDepth--;
-	    if (locked) R_LockEnvironment(env, RHOCONSTRUCT(Rboolean, FALSE));
+	    if (locked) R_LockEnvironment(env, Rboolean(FALSE));
 	    /* Convert a NULL enclosure to baseenv() */
 	    if (!env->enclosingEnvironment())
 		env->setEnclosingEnvironment(Environment::base());
@@ -1603,7 +1602,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	    break;
 	case WEAKREFSXP:
 	    PROTECT(s = R_MakeWeakRef(nullptr, nullptr, nullptr,
-				      RHOCONSTRUCT(Rboolean, FALSE)));
+				      Rboolean(FALSE)));
 	    AddReadRef(ref_table, s);
 	    break;
 	case SPECIALSXP:
@@ -1680,7 +1679,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	    {
 	        R_xlen_t done, thiss;
 		for (done = 0; done < len; done += thiss) {
-		    thiss = min2(CHUNK_SIZE, len - done);
+		    thiss = std::min(CHUNK_SIZE, len - done);
 		    stream->InBytes(stream, RAW(s) + done, int(thiss));
 		}
 	    }
@@ -1730,7 +1729,7 @@ static SEXP ReadBCLang(int type, SEXP ref_table, SEXP reps,
 	    case ATTRLANGSXP: type = LANGSXP; hasattr = TRUE; break;
 	    case ATTRLISTSXP: type = LISTSXP; hasattr = TRUE; break;
 	    }
-	    PROTECT(ans = Rf_allocSExp(RHOCONSTRUCT(SEXPTYPE, type)));
+	    PROTECT(ans = Rf_allocSExp(SEXPTYPE(type)));
 	    if (pos >= 0)
 		SET_VECTOR_ELT(reps, pos, ans);
 	    R_ReadItemDepth++;
@@ -1875,7 +1874,7 @@ void
 R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
 		      R_pstream_format_t type, int version,
 		      void (*outchar)(R_outpstream_t, int),
-		      void (*outbytes)(R_outpstream_t, RHOCONST void *, int),
+		      void (*outbytes)(R_outpstream_t, const void *, int),
 		      SEXP (*phook)(SEXP, SEXP), SEXP pdata)
 {
     stream->data = data;
@@ -1894,29 +1893,29 @@ R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
 
 static void OutCharFile(R_outpstream_t stream, int c)
 {
-    FILE *fp = RHOCONSTRUCT(static_cast<FILE*>, stream->data);
+    FILE *fp = static_cast<FILE*>(stream->data);
     fputc(c, fp);
 }
 
 
 static int InCharFile(R_inpstream_t stream)
 {
-    FILE *fp = RHOCONSTRUCT(static_cast<FILE*>, stream->data);
+    FILE *fp = static_cast<FILE*>(stream->data);
     return fgetc(fp);
 }
 
-static void OutBytesFile(R_outpstream_t stream, RHOCONST void *buf, int length)
+static void OutBytesFile(R_outpstream_t stream, const void *buf, int length)
 {
-    FILE *fp = RHOCONSTRUCT(static_cast<FILE*>, stream->data);
+    FILE *fp = static_cast<FILE*>(stream->data);
     size_t out = fwrite(buf, 1, length, fp);
-    if (RHOCONSTRUCT(int, out) != length) Rf_error(_("write failed"));
+    if (int(out) != length) Rf_error(_("write failed"));
 }
 
 static void InBytesFile(R_inpstream_t stream, void *buf, int length)
 {
-    FILE *fp = RHOCONSTRUCT(static_cast<FILE*>, stream->data);
+    FILE *fp = static_cast<FILE*>(stream->data);
     size_t in = fread(buf, 1, length, fp);
-    if (RHOCONSTRUCT(int, in) != length) Rf_error(_("read failed"));
+    if (int(in) != length) Rf_error(_("read failed"));
 }
 
 void
@@ -1924,7 +1923,7 @@ R_InitFileOutPStream(R_outpstream_t stream, FILE *fp,
 			  R_pstream_format_t type, int version,
 			  SEXP (*phook)(SEXP, SEXP), SEXP pdata)
 {
-    R_InitOutPStream(stream, RHO_NO_CAST(R_pstream_data_t) fp, type, version,
+    R_InitOutPStream(stream, fp, type, version,
 		     OutCharFile, OutBytesFile, phook, pdata);
 }
 
@@ -1933,7 +1932,7 @@ R_InitFileInPStream(R_inpstream_t stream, FILE *fp,
 			 R_pstream_format_t type,
 			 SEXP (*phook)(SEXP, SEXP), SEXP pdata)
 {
-    R_InitInPStream(stream, RHO_NO_CAST(R_pstream_data_t) fp, type,
+    R_InitInPStream(stream, fp, type,
 		    InCharFile, InBytesFile, phook, pdata);
 }
 
@@ -1966,14 +1965,14 @@ static void InBytesConn(R_inpstream_t stream, void *buf, int length)
     CheckInConn(con);
     if (con->text) {
 	int i;
-	char *p = RHOCONSTRUCT(static_cast<char*>, buf);
+	char *p = static_cast<char *>(buf);
 	for (i = 0; i < length; i++)
 	    p[i] = char( Rconn_fgetc(con));
     }
     else {
 	if (stream->type == R_pstream_ascii_format) {
 	    char linebuf[4];
-	    unsigned char *p = RHOCONSTRUCT(static_cast<unsigned char*>, buf);
+	    unsigned char *p = static_cast<unsigned char *>(buf);
 	    int i;
 	    unsigned int res;
 	    for (i = 0; i < length; i++) {
@@ -1985,7 +1984,7 @@ static void InBytesConn(R_inpstream_t stream, void *buf, int length)
 		*p++ = static_cast<unsigned char>(res);
 	    }
 	} else {
-	    if (length != RHOCONSTRUCT(int, con->read(buf, 1, length, con)))
+	    if (length != int(con->read(buf, 1, length, con)))
 		Rf_error(_("error reading from connection"));
 	}
     }
@@ -2005,18 +2004,18 @@ static int InCharConn(R_inpstream_t stream)
     }
 }
 
-static void OutBytesConn(R_outpstream_t stream, RHOCONST void *buf, int length)
+static void OutBytesConn(R_outpstream_t stream, const void *buf, int length)
 {
     Rconnection con = static_cast<Rconnection>(stream->data);
     CheckOutConn(con);
     if (con->text) {
 	int i;
-	RHOCONST char *p = RHOCONSTRUCT(static_cast<const char*>, buf);
+	const char *p = static_cast<const char*>(buf);
 	for (i = 0; i < length; i++)
 	    Rconn_printf(con, "%c", p[i]);
     }
     else {
-	if (length != RHOCONSTRUCT(int, con->write(buf, 1, length, con)))
+	if (length != int(con->write(buf, 1, length, con)))
 	    Rf_error(_("error writing to connection"));
     }
 }
@@ -2058,7 +2057,7 @@ void R_InitConnInPStream(R_inpstream_t stream,  Rconnection con,
 	else if (type != R_pstream_ascii_format)
 	    Rf_error(_("only ascii format can be read from text mode connections"));
     }
-    R_InitInPStream(stream, RHO_NO_CAST(R_pstream_data_t) con, type,
+    R_InitInPStream(stream, con, type,
 		    InCharConn, InBytesConn, phook, pdata);
 }
 
@@ -2090,7 +2089,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 
     if (TYPEOF(ascii_) != LGLSXP)
 	Rf_error(_("'ascii' must be logical"));
-    ascii = RHOCONSTRUCT(Rboolean, INTEGER(ascii_)[0]);
+    ascii = Rboolean(INTEGER(ascii_)[0]);
     if (ascii == NA_LOGICAL) type = R_pstream_asciihex_format;
     else if (ascii) type = R_pstream_ascii_format;
     else type = R_pstream_xdr_format;
@@ -2205,29 +2204,29 @@ typedef struct bconbuf_st {
 
 static void flush_bcon_buffer(bconbuf_t bb)
 {
-    if (RHOCONSTRUCT(int, R_WriteConnection(bb->con, bb->buf, bb->count)) != bb->count)
+    if (int(R_WriteConnection(bb->con, bb->buf, bb->count)) != bb->count)
 	Rf_error(_("error writing to connection"));
     bb->count = 0;
 }
 
 static void OutCharBB(R_outpstream_t stream, int c)
 {
-    bconbuf_t bb = RHOCONSTRUCT(static_cast<bconbuf_st*>, stream->data);
+    bconbuf_t bb = static_cast<bconbuf_st*>(stream->data);
     if (bb->count >= BCONBUFSIZ)
 	flush_bcon_buffer(bb);
     bb->buf[bb->count++] = char( c);
 }
 
-static void OutBytesBB(R_outpstream_t stream, RHOCONST void *buf, int length)
+static void OutBytesBB(R_outpstream_t stream, const void *buf, int length)
 {
-    bconbuf_t bb = RHOCONSTRUCT(static_cast<bconbuf_st*>, stream->data);
+    bconbuf_t bb = static_cast<bconbuf_st*>(stream->data);
     if (bb->count + length > BCONBUFSIZ)
 	flush_bcon_buffer(bb);
     if (length <= BCONBUFSIZ) {
 	memcpy(bb->buf + bb->count, buf, length);
 	bb->count += length;
     }
-    else if (RHOCONSTRUCT(int, R_WriteConnection(bb->con, buf, length)) != length)
+    else if (int(R_WriteConnection(bb->con, buf, length)) != length)
 	Rf_error(_("error writing to connection"));
 }
 
@@ -2238,7 +2237,7 @@ static void InitBConOutPStream(R_outpstream_t stream, bconbuf_t bb,
 {
     bb->count = 0;
     bb->con = con;
-    R_InitOutPStream(stream, RHO_NO_CAST(R_pstream_data_t) bb, type, version,
+    R_InitOutPStream(stream, bb, type, version,
 		     OutCharBB, OutBytesBB, phook, pdata);
 }
 
@@ -2298,7 +2297,7 @@ static void resize_buffer(membuf_t mb, R_size_t needed)
     else if(needed < INT_MAX - INCR)
 	needed = (1+needed/INCR) * INCR;
 #endif
-    unsigned char *tmp = RHO_S_CAST(unsigned char*, realloc(mb->buf, needed));
+    unsigned char *tmp = static_cast<unsigned char*>(realloc(mb->buf, needed));
     if (tmp == nullptr) {
 	free(mb->buf); mb->buf = nullptr;
 	Rf_error(_("cannot allocate buffer"));
@@ -2308,15 +2307,15 @@ static void resize_buffer(membuf_t mb, R_size_t needed)
 
 static void OutCharMem(R_outpstream_t stream, int c)
 {
-    membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
+    membuf_t mb = static_cast<membuf_st*>(stream->data);
     if (mb->count >= mb->size)
 	resize_buffer(mb, mb->count + 1);
     mb->buf[mb->count++] = char( c);
 }
 
-static void OutBytesMem(R_outpstream_t stream, RHOCONST void *buf, int length)
+static void OutBytesMem(R_outpstream_t stream, const void *buf, int length)
 {
-    membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
+    membuf_t mb = static_cast<membuf_st*>(stream->data);
     R_size_t needed = mb->count + R_size_t(length);
 #ifndef LONG_VECTOR_SUPPORT
     /* There is a potential overflow here on 32-bit systems */
@@ -2330,7 +2329,7 @@ static void OutBytesMem(R_outpstream_t stream, RHOCONST void *buf, int length)
 
 static int InCharMem(R_inpstream_t stream)
 {
-    membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
+    membuf_t mb = static_cast<membuf_st*>(stream->data);
     if (mb->count >= mb->size)
 	Rf_error(_("read error"));
     return mb->buf[mb->count++];
@@ -2338,7 +2337,7 @@ static int InCharMem(R_inpstream_t stream)
 
 static void InBytesMem(R_inpstream_t stream, void *buf, int length)
 {
-    membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
+    membuf_t mb = static_cast<membuf_st*>(stream->data);
     if (mb->count + R_size_t(length) > mb->size)
 	Rf_error(_("read error"));
     memcpy(buf, mb->buf + mb->count, length);
@@ -2351,8 +2350,8 @@ static void InitMemInPStream(R_inpstream_t stream, membuf_t mb,
 {
     mb->count = 0;
     mb->size = length;
-    mb->buf = RHOCONSTRUCT(static_cast<unsigned char*>, buf);
-    R_InitInPStream(stream, RHO_NO_CAST(R_pstream_data_t) mb, R_pstream_any_format,
+    mb->buf = static_cast<unsigned char *>(buf);
+    R_InitInPStream(stream, mb, R_pstream_any_format,
 		    InCharMem, InBytesMem, phook, pdata);
 }
 
@@ -2363,7 +2362,7 @@ static void InitMemOutPStream(R_outpstream_t stream, membuf_t mb,
     mb->count = 0;
     mb->size = 0;
     mb->buf = nullptr;
-    R_InitOutPStream(stream, RHO_NO_CAST(R_pstream_data_t) mb, type, version,
+    R_InitOutPStream(stream, mb, type, version,
 		     OutCharMem, OutBytesMem, phook, pdata);
 }
 
@@ -2379,7 +2378,7 @@ static void free_mem_buffer(membuf_t mb)
 static SEXP CloseMemOutPStream(R_outpstream_t stream)
 {
     SEXP val;
-    membuf_t mb = RHOCONSTRUCT(static_cast<membuf_st*>, stream->data);
+    membuf_t mb = static_cast<membuf_st*>(stream->data);
     /* duplicate check, for future proofing */
 #ifndef LONG_VECTOR_SUPPORT
     if(mb->count > INT_MAX)
@@ -2654,7 +2653,7 @@ static SEXP R_getVarsFromFrame(SEXP vars, SEXP env, SEXP forcesxp)
 	Rf_error(_("bad environment"));
     if (TYPEOF(vars) != STRSXP)
 	Rf_error(_("bad variable names"));
-    force = RHOCONSTRUCT(Rboolean, Rf_asLogical(forcesxp));
+    force = Rboolean(Rf_asLogical(forcesxp));
 
     len = LENGTH(vars);
     PROTECT(val = Rf_allocVector(VECSXP, len));

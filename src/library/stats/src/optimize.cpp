@@ -241,7 +241,7 @@ SEXP do_fmin(SEXP call, SEXP op, SEXP args, SEXP rho)
     struct callinfo info;
 
     args = CDR(args);
-    PrintDefaults();
+    Rf_PrintDefaults();
 
     /* the function to be minimized */
 
@@ -335,7 +335,7 @@ SEXP zeroin2(SEXP call, SEXP op, SEXP args, SEXP rho)
     struct callinfo info;
 
     args = CDR(args);
-    PrintDefaults();
+    Rf_PrintDefaults();
 
     /* the function to be minimized */
     v = CAR(args);
@@ -391,14 +391,14 @@ SEXP zeroin2(SEXP call, SEXP op, SEXP args, SEXP rho)
 #define FT_SIZE 5		/* default size of table to store computed
 				   function values */
 
-typedef struct {
+struct ftable {
   double   fval;
   double  *x;
   double  *grad;
   double  *hess;
-} ftable;
+};
 
-typedef struct {
+struct function_info {
   SEXP R_fcall;	      /* unevaluated call to R function */
   SEXP R_env;	      /* where to evaluate the calls */
   int have_gradient;
@@ -408,7 +408,7 @@ typedef struct {
 			 function values */
   int FT_last;	      /* Newest entry in the table */
   ftable *Ftable;
-} function_info;
+};
 
 /* Initialize the storage in the table of computed function values */
 
@@ -705,7 +705,7 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
     function_info *state;
 
     args = CDR(args);
-    PrintDefaults();
+    Rf_PrintDefaults();
 
     state = (function_info *) R_alloc(1, sizeof(function_info));
 

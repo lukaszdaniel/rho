@@ -180,7 +180,7 @@ Rboolean Rf_GetOptionDeviceAsk(void)
 	Rf_warning(_("invalid value for \"device.ask.default\", using FALSE"));
 	return FALSE;
     }
-    return RHOCONSTRUCT(Rboolean, ask != 0);
+    return Rboolean(ask != 0);
 }
 
 
@@ -300,7 +300,7 @@ void attribute_hidden Rf_InitOptions(void)
     v = CDR(v);
 
     p = getenv("R_KEEP_PKG_SOURCE");
-    R_KeepSource = (p && streql(p, "yes")) ? RHO_TRUE : RHO_FALSE;
+    R_KeepSource = (p && streql(p, "yes")) ? TRUE : FALSE;
 
     SET_TAG(v, Rf_install("keep.source")); /* overridden in common.R */
     SETCAR(v, Rf_ScalarLogical(R_KeepSource));
@@ -507,7 +507,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_KeepSource = RHOCONSTRUCT(Rboolean, k);
+		R_KeepSource = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "editor") && Rf_isString(argi)) {
@@ -594,7 +594,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		/* Should be quicker than checking options(echo)
 		   every time R prompts for input:
 		   */
-		R_Slave = RHOCONSTRUCT(Rboolean, !k);
+		R_Slave = Rboolean(!k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "OutDec")) {
@@ -629,7 +629,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_warn_partial_match_dollar = RHOCONSTRUCT(Rboolean, k);
+		R_warn_partial_match_dollar = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "warnPartialMatchArgs")) {
@@ -643,21 +643,21 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_warn_partial_match_attr = RHOCONSTRUCT(Rboolean, k);
+		R_warn_partial_match_attr = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "showWarnCalls")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_ShowWarnCalls = RHOCONSTRUCT(Rboolean, k);
+		R_ShowWarnCalls = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "showErrorCalls")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_ShowErrorCalls = RHOCONSTRUCT(Rboolean, k);
+		R_ShowErrorCalls = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "showNCalls")) {
@@ -676,14 +676,14 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		int k = Rf_asLogical(argi);
 		if (k == NA_LOGICAL)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
-		R_DisableNLinBrowser = RHOCONSTRUCT(Rboolean, k);
+		R_DisableNLinBrowser = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "CBoundsCheck")) {
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		R_CBoundsCheck = RHOCONSTRUCT(Rboolean, k);
+		R_CBoundsCheck = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
 	    }
 	    else if (streql(R_CHAR(namei), "matprod")) {

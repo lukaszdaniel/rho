@@ -190,7 +190,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     if (TYPEOF(CAR(args)) == BUILTINSXP || TYPEOF(CAR(args)) == SPECIALSXP) {
-	RHOCONST char *nm = PRIMNAME(CAR(args));
+	const char *nm = PRIMNAME(CAR(args));
 	SEXP env, s2;
 	PROTECT_INDEX xp;
 
@@ -443,11 +443,11 @@ static void cat_printsep(SEXP sep, int ntot)
     return;
 }
 
-typedef struct cat_info {
+struct cat_info {
     Rboolean wasopen;
     int changedcon;
     Rconnection con;
-} cat_info;
+};
 
 static void cat_cleanup(cat_info* pci)
 {
@@ -577,7 +577,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 		/* FIXME : cat(...) should handle ANYTHING */
 		size_t w = strlen(p);
 		cat_sepwidth(sepr, &sepw, ntot);
-		if ((iobj > 0) && (width + w + sepw > RHOCONSTRUCT(size_t, pwidth))) {
+		if ((iobj > 0) && (width + w + sepw > size_t(pwidth))) {
 		    cat_newline(labs, &width, lablen, nlines);
 		    nlines++;
 		}
@@ -597,7 +597,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 			cat_sepwidth(sepr, &sepw, ntot);
 			/* This is inconsistent with the version above.
 			   As from R 2.3.0, fill <= 0 is ignored. */
-			if ((width + w + sepw > RHOCONSTRUCT(size_t, pwidth)) && pwidth) {
+			if ((width + w + sepw > size_t(pwidth)) && pwidth) {
 			    cat_newline(labs, &width, lablen, nlines);
 			    nlines++;
 			}
@@ -698,7 +698,7 @@ SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFun
     s = Rf_coerceVector(mode_, STRSXP);
     if (Rf_length(s) != 1) Rf_error(_("invalid '%s' argument"), "mode");
     mode = Rf_str2type(R_CHAR(STRING_ELT(s, 0))); /* ASCII */
-    if (RHOCONSTRUCT(int, mode) == -1 && streql(R_CHAR(STRING_ELT(s, 0)), "double"))
+    if (int(mode) == -1 && streql(R_CHAR(STRING_ELT(s, 0)), "double"))
 	mode = REALSXP;
     switch (mode) {
     case LGLSXP:
@@ -954,7 +954,7 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (Rf_isString(x)) {
 	    for (y = w; y != R_NilValue; y = CDR(y)) {
 		if (TAG(y) != R_NilValue) {
-		    if (Rf_pmatch(STRING_ELT(x, 0), TAG(y), RHO_TRUE /* exact */)) {
+		    if (Rf_pmatch(STRING_ELT(x, 0), TAG(y), TRUE /* exact */)) {
 			/* Find the next non-missing argument.
 			   (If there is none, return NULL.) */
 			while (CAR(y) == R_MissingArg) {

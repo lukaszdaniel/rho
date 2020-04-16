@@ -162,9 +162,9 @@ SEXP attribute_hidden do_matrix(/*const*/ Expression* call, const BuiltInFunctio
     PROTECT(ans = Rf_allocMatrix(TYPEOF(vals), nr, nc));
     if(lendat) {
 	if (Rf_isVector(vals))
-	    Rf_copyMatrix(ans, vals, RHOCONSTRUCT(Rboolean, byrow));
+	    Rf_copyMatrix(ans, vals, Rboolean(byrow));
 	else
-	    Rf_copyListMatrix(ans, vals, RHOCONSTRUCT(Rboolean, byrow));
+	    Rf_copyListMatrix(ans, vals, Rboolean(byrow));
     } else if (Rf_isVector(vals)) { /* fill with NAs */
 	R_xlen_t N = R_xlen_t(nr) * nc, i;
 	switch(TYPEOF(vals)) {
@@ -961,7 +961,7 @@ static void ccrossprod(Rcomplex *x, int nrx, int ncx,
     }
 
 
-    RHOCONST char *transa = "T", *transb = "N";
+    const char *transa = "T", *transb = "N";
     Rcomplex one, zero;
     one.r = 1.0; one.i = zero.r = zero.i = 0.0;
 
@@ -1761,13 +1761,13 @@ SEXP attribute_hidden do_colsum(/*const*/ Expression* call, const BuiltInFunctio
     x = X_;
     R_xlen_t n = asVecSize(n_);
     R_xlen_t p = asVecSize(p_);
-    NaRm = RHOCONSTRUCT(Rboolean, Rf_asLogical(na_rm_));
+    NaRm = Rboolean(Rf_asLogical(na_rm_));
     if (n == NA_INTEGER || n < 0)
 	Rf_error(_("invalid '%s' argument"), "n");
     if (p == NA_INTEGER || p < 0)
 	Rf_error(_("invalid '%s' argument"), "p");
     if (NaRm == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "na.rm");
-    keepNA = RHOCONSTRUCT(Rboolean, !NaRm);
+    keepNA = Rboolean(!NaRm);
 
     switch (type = TYPEOF(x)) {
     case LGLSXP:

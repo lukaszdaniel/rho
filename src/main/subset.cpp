@@ -179,7 +179,7 @@ static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
 		RAW(result)[i] = Rbyte( 0);
 	    break;
 	default:
-	    Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(RHOCONSTRUCT(SEXPTYPE, mode)));
+	    Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
 	}
     }
     return result;

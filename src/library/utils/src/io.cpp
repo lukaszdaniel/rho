@@ -63,7 +63,7 @@ static unsigned char ConsoleBuf[CONSOLE_BUFFER_SIZE+1], *ConsoleBufp;
 static int  ConsoleBufCnt;
 static char ConsolePrompt[CONSOLE_PROMPT_SIZE];
 
-typedef struct {
+struct LocalData {
     SEXP NAstrings;
     int quiet;
     int sepchar; /*  = 0 */      /* This gets compared to ints */
@@ -79,7 +79,7 @@ typedef struct {
     Rboolean isUTF8; /* = FALSE */
     Rboolean skipNul;
     char convbuf[100];
-} LocalData;
+};
 
 /* If mode = 0 use for numeric fields where "" is NA
    If mode = 1 use for character fields where "" is verbatim unless
@@ -400,7 +400,7 @@ SEXP countfields(SEXP args)
 		ans = Rf_allocVector(INTSXP, blocksize);
 		UNPROTECT(1);
 		PROTECT(ans);
-		copyVector(ans, bns);
+		Rf_copyVector(ans, bns);
 	    }
 	    continue;
 	}
@@ -437,7 +437,7 @@ SEXP countfields(SEXP args)
 			    ans = Rf_allocVector(INTSXP, blocksize);
 			    UNPROTECT(1);
 			    PROTECT(ans);
-			    copyVector(ans, bns);
+			    Rf_copyVector(ans, bns);
 	    		}
 		    }
 		}
@@ -603,7 +603,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     /* save the dim/dimnames attributes */
 
     PROTECT(dims = Rf_getAttrib(cvec, R_DimSymbol));
-    if (isArray(cvec))
+    if (Rf_isArray(cvec))
 	PROTECT(names = Rf_getAttrib(cvec, R_DimNamesSymbol));
     else
 	PROTECT(names = Rf_getAttrib(cvec, R_NamesSymbol));
@@ -730,7 +730,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 
 	    Rf_sortVector(levs, FALSE);
 
-	    PROTECT(a = matchE(levs, cvec, NA_INTEGER, env));
+	    PROTECT(a = Rf_matchE(levs, cvec, NA_INTEGER, env));
 	    for (i = 0; i < len; i++)
 		INTEGER(rval)[i] = INTEGER(a)[i];
 
@@ -742,7 +742,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     }
 
     Rf_setAttrib(rval, R_DimSymbol, dims);
-    Rf_setAttrib(rval, isArray(cvec) ? R_DimNamesSymbol : R_NamesSymbol, names);
+    Rf_setAttrib(rval, Rf_isArray(cvec) ? R_DimNamesSymbol : R_NamesSymbol, names);
     UNPROTECT(2);
     return rval;
 }
@@ -1008,12 +1008,12 @@ static const char
     return EncodeElement0(x, indx, quote ? '"' : 0, dec);
 }
 
-typedef struct wt_info {
+struct wt_info {
     Rboolean wasopen;
     Rconnection con;
     R_StringBuffer *buf;
     int savedigits;
-} wt_info;
+};
 
 /* utility to cleanup e.g. after interrupts */
 static void wt_cleanup(wt_info* ld)

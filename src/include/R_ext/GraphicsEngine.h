@@ -318,14 +318,14 @@ void GEregisterSystem(GEcallback callback, int *systemRegisterIndex);
 void GEunregisterSystem(int registerIndex);
 SEXP GEhandleEvent(GEevent event, pDevDesc dev, SEXP data);
 
-#define fromDeviceX		GEfromDeviceX
-#define toDeviceX		GEtoDeviceX
-#define fromDeviceY		GEfromDeviceY
-#define toDeviceY		GEtoDeviceY
-#define fromDeviceWidth		GEfromDeviceWidth
-#define toDeviceWidth		GEtoDeviceWidth
-#define fromDeviceHeight	GEfromDeviceHeight
-#define toDeviceHeight		GEtoDeviceHeight
+// #define fromDeviceX		GEfromDeviceX
+// #define toDeviceX		GEtoDeviceX
+// #define fromDeviceY		GEfromDeviceY
+// #define toDeviceY		GEtoDeviceY
+// #define fromDeviceWidth		GEfromDeviceWidth
+// #define toDeviceWidth		GEtoDeviceWidth
+// #define fromDeviceHeight	GEfromDeviceHeight
+// #define toDeviceHeight		GEtoDeviceHeight
 
 double fromDeviceX(double value, GEUnit to, pGEDevDesc dd);
 double toDeviceX(double value, GEUnit from, pGEDevDesc dd);

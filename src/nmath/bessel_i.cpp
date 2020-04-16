@@ -25,12 +25,11 @@
  */
 #include "nmath.h"
 #include "bessel.h"
+#include <algorithm>
 
 #ifndef MATHLIB_STANDALONE
 #include <R_ext/Memory.h>
 #endif
-
-#define min0(x, y) (((x) <= (y)) ? (x) : (y))
 
 static void I_bessel(double *x, double *alpha, int *nb,
 		     int *ize, double *bi, int *ncalc);
@@ -318,7 +317,7 @@ static void I_bessel(double *x, double *alpha, int *nb,
 			p = plast * tover;
 			--n;
 			en -= 2.;
-			nend = min0(*nb,n);
+			nend = std::min(*nb,n);
 			for (l = nstart; l <= nend; ++l) {
 			    *ncalc = l;
 			    pold = psavel;
@@ -528,6 +527,6 @@ L230:
 	    }
 	}
     } else { /* argument out of range */
-	*ncalc = min0(*nb,0) - 1;
+	*ncalc = std::min(*nb,0) - 1;
     }
 }

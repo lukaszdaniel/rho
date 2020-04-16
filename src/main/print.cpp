@@ -183,7 +183,7 @@ SEXP attribute_hidden do_printfunction(/*const*/ Expression* call, const BuiltIn
     SEXP s = args[0];
     switch (TYPEOF(s)) {
     case CLOSXP:
-	PrintLanguageEtc(s, RHOCONSTRUCT(Rboolean, Rf_asLogical(args[1])), /*is closure = */ TRUE);
+	PrintLanguageEtc(s, Rboolean(Rf_asLogical(args[1])), /*is closure = */ TRUE);
 	printAttributes(s, rho, FALSE);
 	break;
     case BUILTINSXP:
@@ -668,7 +668,7 @@ static void PrintExpression(SEXP s)
     SEXP u;
     int i, n;
 
-    u = Rf_deparse1w(s, RHO_FALSE, R_print.useSource | DEFAULTDEPARSE);
+    u = Rf_deparse1w(s, FALSE, R_print.useSource | DEFAULTDEPARSE);
     n = LENGTH(u);
     for (i = 0; i < n; i++)
 	Rprintf("%s\n", R_CHAR(STRING_ELT(u, i))); /*translated */
@@ -677,7 +677,7 @@ static void PrintExpression(SEXP s)
 static void PrintSpecial(SEXP s)
 {
     /* This is OK as .Internals are not visible to be printed */
-    RHOCONST char *nm = PRIMNAME(s);
+    const char *nm = PRIMNAME(s);
     SEXP env, s2;
     PROTECT_INDEX xp;
     PROTECT_WITH_INDEX(env = Rf_findVarInFrame3(R_BaseEnv,
@@ -696,7 +696,7 @@ static void PrintSpecial(SEXP s)
     if(s2 != R_UnboundValue) {
 	SEXP t;
 	PROTECT(s2);
-	t = Rf_deparse1(s2, RHO_FALSE, DEFAULTDEPARSE);
+	t = Rf_deparse1(s2, FALSE, DEFAULTDEPARSE);
 	Rprintf("%s ", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	Rprintf(".Primitive(\"%s\")\n", PRIMNAME(s));
 	UNPROTECT(1);
@@ -743,7 +743,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	break;
     case SYMSXP: /* Use deparse here to handle backtick quotification
 		  * of "weird names" */
-	t = Rf_deparse1(s, RHO_FALSE, SIMPLEDEPARSE);
+	t = Rf_deparse1(s, FALSE, SIMPLEDEPARSE);
 	Rprintf("%s\n", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	break;
     case SPECIALSXP:
@@ -946,7 +946,7 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 		    digits = R_print.digits, gap = R_print.gap,
 		    na_width = R_print.na_width,
 		    na_width_noquote = R_print.na_width_noquote;
-		Rprt_adj right = RHOCONSTRUCT(Rprt_adj, R_print.right);
+		Rprt_adj right = Rprt_adj(R_print.right);
 
                 s = PROTECT(new Expression(Rf_install("print"),
                                            { CAR(a), Rf_ScalarInteger(digits) }));

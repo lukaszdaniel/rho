@@ -248,7 +248,7 @@ static void curlCommon(CURL *hnd, int redirect, int verify)
     if(TYPEOF(sua) != NILSXP)
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, R_CHAR(STRING_ELT(sua, 0)));
     UNPROTECT(2);
-    int timeout0 = Rf_asInteger(GetOption1(Rf_install("timeout")));
+    int timeout0 = Rf_asInteger(Rf_GetOption1(Rf_install("timeout")));
     long timeout = timeout0 = NA_INTEGER ? 0 : 1000L * timeout0;
     curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT_MS, timeout);
     curl_easy_setopt(hnd, CURLOPT_TIMEOUT_MS, timeout);
@@ -256,7 +256,7 @@ static void curlCommon(CURL *hnd, int redirect, int verify)
 	curl_easy_setopt(hnd, CURLOPT_FOLLOWLOCATION, 1L);
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 20L);
     }
-    int verbosity = Rf_asInteger(GetOption1(Rf_install("internet.info")));
+    int verbosity = Rf_asInteger(Rf_GetOption1(Rf_install("internet.info")));
     if (verbosity < 2) curl_easy_setopt(hnd, CURLOPT_VERBOSE, 1L);
 
     // enable the cookie engine, keep cookies in memory
@@ -363,13 +363,13 @@ static void putdashes(int *pold, int new_)
 
 /* We could share this window with internet.cpp, then re-positioning
    would apply to both */
-typedef struct {
+struct winprogressbar {
     window wprog;
     progressbar pb;
     label l_url;
     RCNTXT cntxt;
     int pc;
-} winprogressbar;
+};
 
 static winprogressbar pbar = {NULL, NULL, NULL};
 
@@ -695,7 +695,6 @@ in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #include <Rconnections.h>
 
-#define R_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #ifdef HAVE_LIBCURL
 typedef struct Curlconn {
@@ -736,7 +735,7 @@ static size_t rcvData(void *ptr, size_t size, size_t nitems, void *ctx)
 
 static size_t consumeData(void *ptr, size_t max, RCurlconn ctxt)
 {
-    size_t size = R_MIN(ctxt->filled, max);  // guaranteed > 0
+    size_t size = std::min(ctxt->filled, max);  // guaranteed > 0
     memcpy(ptr, ctxt->current, size);
     ctxt->current += size; ctxt->filled -= size;
     return size;

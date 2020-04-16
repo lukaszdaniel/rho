@@ -147,7 +147,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 
     /* if the vector is not shared, is growable. and has room, then
        increase its length */
-    if (RHO_FALSE && ! MAYBE_SHARED(x) &&
+    if (FALSE && ! MAYBE_SHARED(x) &&
 	//IS_GROWABLE(x) &&
 	TRUELENGTH(x) >= newlen) {
 	SETLENGTH(x, newlen);
@@ -462,7 +462,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
       }
     default:
 	Rf_error(_("incompatible types (from %s to %s) in subassignment type fix"),
-	      Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which%100)), Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which/100)));
+	      Rf_type2char(SEXPTYPE(which%100)), Rf_type2char(SEXPTYPE(which/100)));
     }
 
     return(100 * TYPEOF(*x) + TYPEOF(*y));
@@ -1102,7 +1102,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 
     PairList* subs;
     nsubs = SubAssignArgs(args, &x, &subs, &y);
-    S4 = RHOCONSTRUCT(Rboolean, IS_S4_OBJECT(x));
+    S4 = Rboolean(IS_S4_OBJECT(x));
 
     /* Handle NULL left-hand sides.  If the right-hand side */
     /* is NULL, just return the left-hand size otherwise, */
@@ -1344,7 +1344,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 
 	default:
 	    Rf_error(_("incompatible types (from %s to %s) in [[ assignment"),
-		  Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which%100)), Rf_type2char(RHOCONSTRUCT(SEXPTYPE, which/100)));
+		  Rf_type2char(SEXPTYPE(which%100)), Rf_type2char(SEXPTYPE(which/100)));
 	}
 	/* If we stretched, we may have a new name. */
 	/* In this case we must create a names attribute */
@@ -1453,7 +1453,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 
     PROTECT_WITH_INDEX(x, &pxidx);
     PROTECT_WITH_INDEX(val, &pvalidx);
-    S4 = RHOCONSTRUCT(Rboolean, IS_S4_OBJECT(x));
+    S4 = Rboolean(IS_S4_OBJECT(x));
 
     if (MAYBE_SHARED(x)) {
 	x = Rf_shallow_duplicate(x);

@@ -40,7 +40,7 @@ SEXP savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     sfile = CAR(args);
     if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
-	errorcall(call, _("invalid '%s' argument"), "file");
+	Rf_errorcall(call, _("invalid '%s' argument"), "file");
     if (CharacterMode == RGui) {
 	R_setupHistory(); /* re-read the history size */
 	wgl_savehistoryW(filenameToWchar(STRING_ELT(sfile, 0), 0), 
@@ -49,7 +49,7 @@ SEXP savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
 	R_setupHistory(); /* re-read the history size */
 	gl_savehistory(Rf_translateChar(STRING_ELT(sfile, 0)), R_HistorySize);
     } else
-	errorcall(call, _("'savehistory' can only be used in Rgui and Rterm"));
+	Rf_errorcall(call, _("'savehistory' can only be used in Rgui and Rterm"));
     return R_NilValue;
 }
 
@@ -60,13 +60,13 @@ SEXP loadhistory(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     sfile = CAR(args);
     if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
-	errorcall(call, _("invalid '%s' argument"), "file");
+	Rf_errorcall(call, _("invalid '%s' argument"), "file");
     if (CharacterMode == RGui)
 	wgl_loadhistoryW(filenameToWchar(STRING_ELT(sfile, 0), 0));
     else if (R_Interactive && CharacterMode == RTerm)
 	gl_loadhistory(Rf_translateChar(STRING_ELT(sfile, 0)));
     else
-	errorcall(call, _("'loadhistory' can only be used in Rgui and Rterm"));
+	Rf_errorcall(call, _("'loadhistory' can only be used in Rgui and Rterm"));
     return R_NilValue;
 }
 
@@ -78,7 +78,7 @@ SEXP addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     stamp = CAR(args);
     if (!Rf_isString(stamp))
-	errorcall(call, _("invalid timestamp"));
+	Rf_errorcall(call, _("invalid timestamp"));
     if (CharacterMode == RGui) {   
 	for (int i = 0; i < LENGTH(stamp); i++) 
 	    wgl_histadd(wtransChar(STRING_ELT(stamp, i)));

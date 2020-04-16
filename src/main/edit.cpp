@@ -127,7 +127,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if((fp=R_fopen(R_ExpandFileName(filename), "w")) == nullptr)
 	    Rf_errorcall(call, _("unable to open file"));
 	if (LENGTH(STRING_ELT(fn, 0)) == 0) EdFileUsed++;
-	PROTECT(src = Rf_deparse1(x, RHO_FALSE, FORSOURCING)); /* deparse for sourcing, not for display */
+	PROTECT(src = Rf_deparse1(x, FALSE, FORSOURCING)); /* deparse for sourcing, not for display */
 	for (i = 0; i < LENGTH(src); i++)
 	    fprintf(fp, "%s\n", Rf_translateChar(STRING_ELT(src, i)));
 	UNPROTECT(1); /* src */

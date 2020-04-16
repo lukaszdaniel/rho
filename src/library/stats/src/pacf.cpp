@@ -21,16 +21,11 @@
 # include <config.h>
 #endif
 
+#include <algorithm>
 #include <R.h>
 #include "ts.h"
 #include "localization.h"
 
-#ifndef max
-#define max(a,b) ((a < b)?(b):(a))
-#endif
-#ifndef min
-#define min(a,b) ((a > b)?(b):(a))
-#endif
 
 
 /* Internal */
@@ -108,9 +103,9 @@ SEXP setup_starma(SEXP na, SEXP x, SEXP pn, SEXP xreg, SEXP pm,
     G->params = Calloc(G->mp + G->mq + G->msp + G->msq + G->m, double);
     G->p = ip = G->ns*G->msp + G->mp;
     G->q = iq = G->ns*G->msq + G->mq;
-    G->r = ir = max(ip, iq + 1);
+    G->r = ir = std::max(ip, iq + 1);
     G->np = np = (ir*(ir + 1))/2;
-    G->nrbar = max(1, np*(np - 1)/2);
+    G->nrbar = std::max(1, np*(np - 1)/2);
     G->trans = Rf_asInteger(ptrans);
     G->a = Calloc(ir, double);
     G->P = Calloc(np, double);
@@ -217,9 +212,9 @@ SEXP arma0fa(SEXP pG, SEXP inparams)
 	for(i = 0; i < G->ncond; i++) G->resid[i] = 0.0;
 	for(i = G->ncond; i < G->n; i++) {
 	    tmp = G->w[i];
-	    for(j = 0; j < min(i - G->ncond, p); j++)
+	    for(j = 0; j < std::min(i - G->ncond, p); j++)
 		tmp -= G->phi[j] * G->w[i - j - 1];
-	    for(j = 0; j < min(i - G->ncond, q); j++)
+	    for(j = 0; j < std::min(i - G->ncond, q); j++)
 		tmp -= G->theta[j] * G->resid[i - j - 1];
 	    G->resid[i] = tmp;
 	    if(!ISNAN(tmp)) {
@@ -469,7 +464,7 @@ ARMAtoMA(SEXP ar, SEXP ma, SEXP lag_max)
     psi = REAL(res);
     for(i = 0; i < m; i++) {
 	tmp = (i < q) ? theta[i] : 0.0;
-	for(j = 0; j < min(i+1, p); j++)
+	for(j = 0; j < std::min(i+1, p); j++)
 	    tmp += phi[j] * ((i-j-1 >= 0) ? psi[i-j-1] : 1.0);
 	psi[i] = tmp;
     }

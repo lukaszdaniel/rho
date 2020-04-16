@@ -31,11 +31,7 @@
 #define R_STATS_PACKAGE_H
 #include <Rconfig.h>
 
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-# define attribute_hidden __attribute__ ((visibility ("hidden")))
-#else
-# define attribute_hidden
-#endif
+#include <R_ext/Visibility.h>
 
 #ifdef __cplusplus
 extern "C" {

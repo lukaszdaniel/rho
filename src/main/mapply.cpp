@@ -47,7 +47,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
 
     m = Rf_length(varyingArgs);
     SEXP vnames = PROTECT(Rf_getAttrib(varyingArgs, R_NamesSymbol));
-    Rboolean named = RHOCONSTRUCT(Rboolean, vnames != nullptr);
+    Rboolean named = Rboolean(vnames != nullptr);
 
     lengths = static_cast<R_xlen_t *>(RHO_alloc(m, sizeof(R_xlen_t)));
     for (int i = 0; i < m; i++) {
@@ -79,7 +79,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     PROTECT_INDEX fi;
     PROTECT_WITH_INDEX(fargs, &fi);
 
-    Rboolean realIndx = RHOCONSTRUCT(Rboolean, longest > INT_MAX);
+    Rboolean realIndx = Rboolean(longest > INT_MAX);
     static Symbol* Dots = Symbol::obtain("dots");
     for (int j = m - 1; j >= 0; j--) {
 	SET_VECTOR_ELT(mindex, j, Rf_ScalarInteger(j + 1));

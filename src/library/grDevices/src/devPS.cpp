@@ -60,9 +60,6 @@ extern int errno;
 
 #include "zlib.h"
 
-#ifndef max
-#define max(a,b) ((a > b) ? a : b)
-#endif
 
 /* from connections.cpp */
 extern gzFile R_gzopen (const char *path, const char *mode);
@@ -127,13 +124,13 @@ static const char *CIDBoldFontStr2 =
 #define BUFSIZE 512
 #define NA_SHORT -30000
 
-typedef struct {
+struct KP {
     unsigned char c1;
     unsigned char c2;
     short kern;
-} KP;
+};
 
-typedef struct {
+struct FontMetricInfo {
     short FontBBox[4];
     short CapHeight;
     short XHeight;
@@ -151,9 +148,9 @@ typedef struct {
     short KPend[256];
     short nKP;
     short IsFixedPitch;
-} FontMetricInfo;
+};
 
-enum {
+enum KeyWordCode {
     Empty,
     StartFontMetrics,
     Comment,
@@ -192,7 +189,7 @@ enum {
     Unknown
 };
 
-static const struct {
+static const struct KeyWordDictionary {
     const char *keyword;
     const int code;
 }
@@ -288,9 +285,9 @@ static int GetFontBBox(const char *buf, FontMetricInfo *metrics)
 /* The longest named Adobe glyph is 39 chars:
    whitediamondcontainingblacksmalldiamond
  */
-typedef struct {
+struct CNAME {
     char cname[40];
-} CNAME;
+};
 
 
 /* If reencode > 0, remap to new encoding */
@@ -399,13 +396,13 @@ static int GetKPX(char *buf, int nkp, FontMetricInfo *metrics,
 /* Statics here are OK, as all the calls are in one initialization
    so no concurrency (until threads?) */
 
-typedef struct {
+struct EncodingInputState {
   /* Probably can make buf and p0 local variables. Only p needs to be
      stored across calls. Need to investigate this more closely. */
   char buf[1000];
   char *p;
   char *p0;
-} EncodingInputState;
+};
 
 /* read in the next encoding item, separated by white space. */
 static int GetNextItem(FILE *fp, char *dest, int c, EncodingInputState *state)
@@ -753,7 +750,7 @@ static double
 	    return 0.0;
 	}
     } else
-	if(!strIsASCII((char *) str) &&
+	if(!Rf_strIsASCII((char *) str) &&
 	   /*
 	    * Every fifth font is a symbol font:
 	    * see postscriptFonts()
@@ -2184,7 +2181,7 @@ static type1fontlist addDeviceFont(type1fontfamily font,
 
 /* Part 2.  Device Driver State. */
 
-typedef struct {
+struct PostScriptDesc {
     char filename[PATH_MAX];
     int open_type;
 
@@ -2241,8 +2238,7 @@ typedef struct {
      */
     type1fontfamily defaultFont;
     cidfontfamily   defaultCIDFont;
-}
-PostScriptDesc;
+};
 
 /*  Part 3.  Graphics Support Code.  */
 
@@ -3318,7 +3314,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
     pd->paperspecial = FALSE;
     if(streql(pd->papername, "Default") ||
        streql(pd->papername, "default")) {
-	SEXP s = STRING_ELT(GetOption1(Rf_install("papersize")), 0);
+	SEXP s = STRING_ELT(Rf_GetOption1(Rf_install("papersize")), 0);
 	if(s != NA_STRING && strlen(R_CHAR(s)) > 0)
 	    strcpy(pd->papername, R_CHAR(s));
 	else strcpy(pd->papername, "a4");
@@ -4453,7 +4449,7 @@ static void PS_Text0(double x, double y, const char *str, int enc,
        It would be perverse (but possible) to write English in a
        CJK MBCS.
     */
-    if((enc == CE_UTF8 || mbcslocale) && !strIsASCII(str)) {
+    if((enc == CE_UTF8 || mbcslocale) && !Rf_strIsASCII(str)) {
 	R_CheckStack2(strlen(str)+1);
 	buff = static_cast<char *>(alloca(strlen(str)+1)); /* Output string cannot be longer */
 	mbcsToSbcs(str, buff, convname(gc->fontfamily, pd), enc);
@@ -4490,7 +4486,7 @@ static void PS_TextUTF8(double x, double y, const char *str,
 
 
 
-typedef struct {
+struct XFigDesc {
     char filename[PATH_MAX];
 
     char papername[64];	 /* paper name */
@@ -4535,7 +4531,7 @@ typedef struct {
      */
     type1fontlist fonts;
     encodinglist encodings;
-} XFigDesc;
+};
 
 static void
 XF_FileHeader(FILE *fp, const char *papername, Rboolean landscape,
@@ -4824,7 +4820,7 @@ XFigDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 
     if(streql(pd->papername, "Default") ||
        streql(pd->papername, "default")) {
-	SEXP s = STRING_ELT(GetOption1(Rf_install("papersize")), 0);
+	SEXP s = STRING_ELT(Rf_GetOption1(Rf_install("papersize")), 0);
 	if(s != NA_STRING && strlen(R_CHAR(s)) > 0)
 	    strcpy(pd->papername, R_CHAR(s));
 	else strcpy(pd->papername, "A4");
@@ -5373,16 +5369,16 @@ static void XFig_MetricInfo(int c,
 
 ************************************************************************/
 
-typedef struct {
+struct rasterImage {
     rcolorPtr raster;
     int w;
     int h;
     Rboolean interpolate;
     int nobj;     /* The object number when written out */
     int nmaskobj; /* The mask object number */
-} rasterImage;
+};
 
-typedef struct {
+struct PDFDesc {
     char filename[PATH_MAX];
     int open_type;
     char cmd[PATH_MAX];
@@ -5481,8 +5477,7 @@ typedef struct {
 
     /* Is the device "offline" (does not write out to a file) */
     Rboolean offline;
-}
-PDFDesc;
+};
 
 /* Macro for driver actions to check for "offline" device and bail out */
 
@@ -6101,7 +6096,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 
     if(streql(pd->papername, "Default") ||
        streql(pd->papername, "default")) {
-	SEXP s = STRING_ELT(GetOption1(Rf_install("papersize")), 0);
+	SEXP s = STRING_ELT(Rf_GetOption1(Rf_install("papersize")), 0);
 	if(s != NA_STRING && strlen(R_CHAR(s)) > 0)
 	    strcpy(pd->papername, R_CHAR(s));
 	else strcpy(pd->papername, "a4");
@@ -7955,7 +7950,7 @@ static void PDF_Text0(double x, double y, const char *str, int enc,
     fprintf(pd->pdffp, "/F%d 1 Tf %.2f %.2f %.2f %.2f %.2f %.2f Tm ",
 	    PDFfontNumber(gc->fontfamily, face, pd),
 	    a, b, bm, a, x, y);
-    if((enc == CE_UTF8 || mbcslocale) && !strIsASCII(str) && face < 5) {
+    if((enc == CE_UTF8 || mbcslocale) && !Rf_strIsASCII(str) && face < 5) {
 	/* face 5 handled above */
 	R_CheckStack2(strlen(str)+1);
 	buff = static_cast<char *>(alloca(strlen(str)+1)); /* Output string cannot be longer */

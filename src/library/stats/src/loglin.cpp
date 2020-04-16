@@ -15,11 +15,6 @@
 #include <R_ext/Memory.h>
 #include <R_ext/Applic.h>
 
-#undef max
-#undef min
-#undef abs
-#define	max(a, b)		((a) < (b) ? (b) : (a))
-#define	min(a, b)		((a) > (b) ? (b) : (a))
 #define	abs(x)			((x) >= 0 ? (x) : -(x))
 
 static void collap(int nvar, double *x, double *y, int locy,

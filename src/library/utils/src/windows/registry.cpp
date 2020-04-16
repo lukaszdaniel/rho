@@ -80,7 +80,7 @@ static SEXP mkCharUcs(wchar_t *name)
     char buf[N];
     R_CheckStack();
     wcstombs(buf, name, N); buf[N-1] = '\0';
-    return mkCharCE(buf, CE_UTF8);
+    return Rf_mkCharCE(buf, CE_UTF8);
 }
 
 static SEXP readRegistryKey1(HKEY hkey, const wchar_t *name)

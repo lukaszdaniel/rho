@@ -169,7 +169,7 @@ SEXP C_filledcontour(SEXP args)
 
     GCheckState(dd);
 
-    PrintDefaults(); /* prepare for labelformat */
+    Rf_PrintDefaults(); /* prepare for labelformat */
 
     args = CDR(args);
     sx = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
@@ -1871,7 +1871,7 @@ SEXP C_contour(SEXP args)
 
     args = CDR(args);
     if (Rf_length(args) < 12) Rf_error(_("too few arguments"));
-    PrintDefaults(); /* prepare for labelformat */
+    Rf_PrintDefaults(); /* prepare for labelformat */
 
     x = PROTECT(Rf_coerceVector(CAR(args), REALSXP));
     nx = LENGTH(x);

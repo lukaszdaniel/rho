@@ -61,7 +61,7 @@ static char *rmspace(char *s)
    return "" on an error condition.
  */
 
-static RHOCONST char *subterm(char *s)
+static const char *subterm(char *s)
 {
     char *p, *q;
 
@@ -79,7 +79,7 @@ static RHOCONST char *subterm(char *s)
     } else q = nullptr;
     p = getenv(s);
     if(p && strlen(p)) return p; /* variable was set and non-empty */
-    return q ? subterm(q) : RHO_NO_CAST(char *) "";
+    return q ? subterm(q) : "";
 }
 
 /* skip along until we find an unmatched right brace */
@@ -102,7 +102,7 @@ static char *findRbrace(char *s)
 }
 
 #define BUF_SIZE 10000
-static RHOCONST char *findterm(RHOCONST char *s)
+static const char *findterm(const char *s)
 {
     char *p, *q;
     const char* ss=s;
@@ -133,7 +133,7 @@ static RHOCONST char *findterm(RHOCONST char *s)
     return ans;
 }
 
-static void Putenv(char *a, RHOCONST char *b)
+static void Putenv(char *a, const char *b)
 {
     char *buf, *value, *q, quote='\0';
     const char *p;

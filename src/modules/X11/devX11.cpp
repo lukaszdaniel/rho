@@ -255,7 +255,7 @@ static void Cairo_update(pX11Desc xd)
     cairo_surface_flush(xd->xcs);
     if (xd->type == WINDOW) XDefineCursor(display, xd->window, arrow_cursor);
     XSync(display, 0);
-    xd->last = currentTime();
+    xd->last = Rf_currentTime();
 }
 
 
@@ -277,7 +277,7 @@ static void CairoHandler(void)
 {
     static int  buffer_lock = 0; /* reentrancy guard */
     if (!buffer_lock && xdl->next) {
-	double current = currentTime();
+	double current = Rf_currentTime();
 	buffer_lock = 1;
 	for(Xdl z = xdl->next; z; z = z->next) {
 	    pX11Desc xd = z->this_;
@@ -768,7 +768,7 @@ static void handleEvent(XEvent event)
 		cairo_surface_flush(xd->xcs);
 	    } else if (xd->buffered > 1)
 		/* rely on timer to repaint eventually */
-		xd->last_activity = currentTime();
+		xd->last_activity = Rf_currentTime();
 	    else
 #endif
 		GEplayDisplayList(gdd);
@@ -863,11 +863,11 @@ static unsigned int adobe_sizes = 0x0403165D;
 #define MAXFONTS 64
 #define CLRFONTS 16 /* Number to free when cache runs full */
 
-typedef struct {
+struct cacheentry {
     char family[500];
     int face, size;
     R_XFont *font;
-} cacheentry;
+};
 
 static cacheentry fontcache[MAXFONTS];
 static int nfonts = 0;
@@ -1872,7 +1872,7 @@ static void X11_MetricInfo(int c, const pGEcontext gc,
 	XRectangle ink, log;
 	char buf[16];
 
-	ucstomb(buf, (unsigned int) c);
+	Rf_ucstomb(buf, (unsigned int) c);
 #ifdef HAVE_XUTF8TEXTEXTENTS
 	if(utf8locale)
 	    Xutf8TextExtents(xd->font->fontset, buf, (int)strlen(buf), &ink, &log);
@@ -2550,7 +2550,7 @@ static Rboolean X11_Locator(double *x, double *y, pDevDesc dd)
 	    ddEvent = (pDevDesc) temp;
 	    if (ddEvent == dd) {
 		if (event.xbutton.button == Button1) {
-		    int useBeep = Rf_asLogical(GetOption1(Rf_install("locatorBell")));
+		    int useBeep = Rf_asLogical(Rf_GetOption1(Rf_install("locatorBell")));
 		    *x = event.xbutton.x;
 		    *y = event.xbutton.y;
 		       /* Make a beep! Was print "\07", but that
@@ -2669,7 +2669,7 @@ static void X11_eventHelper(pDevDesc dd, int code)
 			  &keysym, &compose);
       	    /* Rprintf("keysym=%x\n", keysym); */
       	    if ((keycode = translate_key(keysym)) > knUNKNOWN)
-      	    	Rf_doKeybd(dd, static_cast<R_KeyName>(keycode), NULL);
+      	    	doKeybd(dd, static_cast<R_KeyName>(keycode), NULL);
       	    else if (*keystart)
 	    	doKeybd(dd, knUNKNOWN, keybuffer);
 	    done = 1;
@@ -2699,7 +2699,7 @@ static void X11_Mode(int mode, pDevDesc dd)
     if(xd->holdlevel > 0) {
 #ifdef HAVE_WORKING_CAIRO
 	if(mode == 0 && xd->buffered > 1)
-	    xd->last_activity = currentTime();
+	    xd->last_activity = Rf_currentTime();
 #endif
 	return;
     }
@@ -2710,8 +2710,8 @@ static void X11_Mode(int mode, pDevDesc dd)
     if(mode == 0) {
 #ifdef HAVE_WORKING_CAIRO
 	if(xd->buffered > 1) {
-	    xd->last_activity = currentTime();
-	    if((currentTime() - xd->last) > 0.5 /* 5*xd->update_interval */)
+	    xd->last_activity = Rf_currentTime();
+	    if((Rf_currentTime() - xd->last) > 0.5 /* 5*xd->update_interval */)
 		Cairo_update(xd);
 	    return;
 	}
@@ -2809,7 +2809,7 @@ Rboolean X11DeviceDriver(pDevDesc dd,
 
 #ifdef HAVE_WORKING_CAIRO
     {
-	SEXP timeouts = GetOption1(Rf_install("X11updates"));
+	SEXP timeouts = Rf_GetOption1(Rf_install("X11updates"));
 	double tm = Rf_asReal(timeouts);
 	xd->update_interval = (ISNAN(tm) || tm < 0) ? 0.10 : tm;
     }
@@ -3029,7 +3029,7 @@ pX11Desc Rf_allocX11DeviceDesc(double ps)
 static
 Rboolean in_R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
 {
-    SEXP dev = elt(Rf_findVar(Rf_install(".Devices"), R_BaseEnv), d);
+    SEXP dev = Rf_elt(Rf_findVar(Rf_install(".Devices"), R_BaseEnv), d);
 
     if (TYPEOF(dev) != STRSXP ||
 	!(streql(R_CHAR(STRING_ELT(dev, 0)), "XImage") ||
@@ -3129,7 +3129,7 @@ Rf_addX11Device(const char *display, double width, double height, double ps,
 			     bgcolor, canvascolor, sfonts, res,
 			     xpos, ypos, title, useCairo, antialias, family)) {
 	    free(dev);
-	    errorcall(call, _("unable to start device %s"), devname);
+	    Rf_errorcall(call, _("unable to start device %s"), devname);
 	}
 	dd = GEcreateDevDesc(dev);
 	GEaddDevice2(dd, devname);
@@ -3156,13 +3156,13 @@ static SEXP in_do_X11(SEXP call, SEXP op, SEXP args, SEXP env)
     width = Rf_asReal(CAR(args));	args = CDR(args);
     height = Rf_asReal(CAR(args)); args = CDR(args);
     if (width <= 0 || height <= 0)
-	errorcall(call, _("invalid 'width' or 'height'"));
+	Rf_errorcall(call, _("invalid 'width' or 'height'"));
     ps = Rf_asReal(CAR(args)); args = CDR(args);
     gamma = Rf_asReal(CAR(args)); args = CDR(args);
     if (gamma < 0 || gamma > 100)
-	errorcall(call, _("invalid '%s' value"), "gamma");
+	Rf_errorcall(call, _("invalid '%s' value"), "gamma");
 
-    if (!isValidString(CAR(args)))
+    if (!Rf_isValidString(CAR(args)))
 	Rf_error(_("invalid colortype passed to X11 driver"));
     cname = R_CHAR(STRING_ELT(CAR(args), 0));
     if (streql(cname, "mono"))
@@ -3176,7 +3176,7 @@ static SEXP in_do_X11(SEXP call, SEXP op, SEXP args, SEXP env)
     else if (streql(cname, "true"))
 	colormodel = 4;
     else {
-	warningcall(call,
+	Rf_warningcall(call,
 		    _("unknown X11 color/colour model -- using monochrome"));
 	colormodel = 0;
     }
@@ -3187,17 +3187,17 @@ static SEXP in_do_X11(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     sc = CAR(args);
     if (!Rf_isString(sc) && !Rf_isInteger(sc) && !Rf_isLogical(sc) && !Rf_isReal(sc))
-	errorcall(call, _("invalid '%s' value"), "bg");
+	Rf_errorcall(call, _("invalid '%s' value"), "bg");
     bgcolor = RGBpar(sc, 0);
     args = CDR(args);
     sc = CAR(args);
     if (!Rf_isString(sc) && !Rf_isInteger(sc) && !Rf_isLogical(sc) && !Rf_isReal(sc))
-	errorcall(call, _("invalid '%s' value"), "canvas");
+	Rf_errorcall(call, _("invalid '%s' value"), "canvas");
     canvascolor = RGBpar(sc, 0);
     args = CDR(args);
     sfonts = CAR(args);
     if (!Rf_isString(sfonts) || LENGTH(sfonts) != 2)
-	errorcall(call, _("invalid '%s' value"), "fonts");
+	Rf_errorcall(call, _("invalid '%s' value"), "fonts");
     args = CDR(args);
     res = Rf_asInteger(CAR(args));
     args = CDR(args);
@@ -3207,20 +3207,20 @@ static SEXP in_do_X11(SEXP call, SEXP op, SEXP args, SEXP env)
     args = CDR(args);
     sc = CAR(args);
     if (!Rf_isString(sc) || LENGTH(sc) != 1)
-	errorcall(call, _("invalid '%s' value"), "title");
+	Rf_errorcall(call, _("invalid '%s' value"), "title");
     title = R_CHAR(STRING_ELT(sc, 0));
     args = CDR(args);
     useCairo = Rf_asInteger(CAR(args));
     if (useCairo == NA_INTEGER)
-	errorcall(call, _("invalid '%s' value"), "type");
+	Rf_errorcall(call, _("invalid '%s' value"), "type");
     args = CDR(args);
     antialias = Rf_asInteger(CAR(args));
     if (antialias == NA_INTEGER)
-	errorcall(call, _("invalid '%s' value"), "antialias");
+	Rf_errorcall(call, _("invalid '%s' value"), "antialias");
     args = CDR(args);
     sc = CAR(args);
     if (!Rf_isString(sc) || LENGTH(sc) != 1)
-	errorcall(call, _("invalid '%s' value"), "family");
+	Rf_errorcall(call, _("invalid '%s' value"), "family");
     family = R_CHAR(STRING_ELT(sc, 0));
 
 

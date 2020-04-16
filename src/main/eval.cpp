@@ -152,7 +152,7 @@ static int getFilenum(const char* filename) {
 
     if (fnum == R_Line_Profiling-1) {
 	size_t len = strlen(filename);
-	if (fnum >= RHOCONSTRUCT(int, R_Srcfile_bufcount)) { /* too many files */
+	if (fnum >= int(R_Srcfile_bufcount)) { /* too many files */
 	    R_Profiling_Error = 1;
 	    return 0;
 	}
@@ -1756,11 +1756,11 @@ SEXP attribute_hidden do_recall(SEXP call, SEXP op, SEXP args, SEXP rho)
        originally used to get it.
     */
     if (cptr->function() != R_NilValue)
-	PROTECT(s = RHO_C_CAST(FunctionBase*, cptr->function()));
-    else if( TYPEOF(CAR(RHO_C_CAST(Expression*, cptr->call()))) == SYMSXP)
-	PROTECT(s = Rf_findFun(CAR(RHO_C_CAST(Expression*, cptr->call())), cptr->callEnvironment()));
+	PROTECT(s = const_cast<FunctionBase*>(cptr->function()));
+    else if( TYPEOF(CAR(const_cast<Expression*>(cptr->call()))) == SYMSXP)
+	PROTECT(s = Rf_findFun(CAR(const_cast<Expression*>(cptr->call())), cptr->callEnvironment()));
     else
-	PROTECT(s = Rf_eval(CAR(RHO_C_CAST(Expression*, cptr->call())), cptr->callEnvironment()));
+	PROTECT(s = Rf_eval(CAR(const_cast<Expression*>(cptr->call())), cptr->callEnvironment()));
     if (TYPEOF(s) != CLOSXP)
 	Rf_error(_("'Recall' called from outside a closure"));
     Closure* closure = SEXP_downcast<Closure*>(s);

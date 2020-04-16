@@ -59,12 +59,12 @@ SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("argument must be a function"));
     switch(PRIMVAL(op)) {
     case 0: // debug()
-	SET_RDEBUG(CAR(args), RHO_TRUE);
+	SET_RDEBUG(CAR(args), TRUE);
 	break;
     case 1: // undebug()
 	if( RDEBUG(CAR(args)) != 1 )
 	    Rf_warning("argument is not being debugged");
-	SET_RDEBUG(CAR(args), RHO_FALSE);
+	SET_RDEBUG(CAR(args), FALSE);
 	break;
     case 2: // isdebugged()
 	ans = Rf_ScalarLogical(RDEBUG(CAR(args)));
@@ -107,7 +107,7 @@ SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFun
     Rboolean prev = Rboolean(trace ? FunctionBase::tracingEnabled()
 			     : Closure::debuggingEnabled());
     if(Rf_length(onOff) > 0) {
-	Rboolean _new = RHOCONSTRUCT(Rboolean, Rf_asLogical(onOff));
+	Rboolean _new = Rboolean(Rf_asLogical(onOff));
 	if(_new == TRUE || _new == FALSE) {
 	    if (trace)
 		FunctionBase::enableTracing(_new);
@@ -245,7 +245,7 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
 	snprintf(buffer, 21, "<%p>", (void *) object);
 	ans = Rf_mkString(buffer);
     } else {
-	R_Visible = RHO_FALSE;
+	R_Visible = FALSE;
 	ans = R_NilValue;
     }
 
@@ -261,7 +261,7 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
     }
     return ans;
 #else
-    R_Visible = RHO_FALSE; /* for consistency with other case */
+    R_Visible = FALSE; /* for consistency with other case */
     return R_NilValue;
 #endif
 }

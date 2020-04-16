@@ -125,7 +125,7 @@ using namespace rho;
 
 typedef R_StringBuffer DeparseBuffer;
 
-typedef struct {
+struct LocalParseData {
     int linenumber;
     int len; // FIXME: size_t
     int incurly;
@@ -145,7 +145,7 @@ typedef struct {
     Rboolean active;
     int isS4;
     Rboolean fnarg; /* fn argument, so parenthesize = as assignment */
-} LocalParseData;
+};
 
 static SEXP deparse1WithCutoff(SEXP call, Rboolean abbrev, int cutoff,
 			       Rboolean backtick, int opts, int nlines);
@@ -374,7 +374,7 @@ SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction*
 	Rf_error(_("'file' must be a character string or connection"));
     ifile = Rf_asInteger(file_);
 
-    wasopen = RHO_TRUE;
+    wasopen = TRUE;
     try {
 	if (ifile != 1) {
 	    con = getConnection(ifile);
@@ -394,7 +394,7 @@ SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction*
 	    else {
 		res = Rconn_printf(con, "%s\n", R_CHAR(STRING_ELT(tval, i)));
 		if(!havewarned &&
-		   res < RHOCONSTRUCT(int, strlen(R_CHAR(STRING_ELT(tval, i)))) + 1)
+		   res < int(strlen(R_CHAR(STRING_ELT(tval, i)))) + 1)
 		    Rf_warning(_("wrote too few characters"));
 	    }
 	UNPROTECT(1); /* tval */
@@ -607,7 +607,7 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 		case BuiltInFunction::PP_IF:
 		case BuiltInFunction::PP_WHILE:
 		case BuiltInFunction::PP_REPEAT:
-		    return RHOCONSTRUCT(Rboolean, left == 1);
+		    return Rboolean(left == 1);
 		    break;
 		default:
 		    return FALSE;
@@ -767,7 +767,7 @@ static Rboolean parenthesizeCaller(SEXP s)
 	 } else
 	    return TRUE;			/* something strange, like (1)(x) */
     } else
-        return RHOCONSTRUCT(Rboolean, TYPEOF(s) == CLOSXP);
+        return Rboolean(TYPEOF(s) == CLOSXP);
 }
 
 /* This is the recursive part of deparsing. */
@@ -1453,7 +1453,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	   Also, it is neat to deparse m:n in that form,
 	   so we do so as from 2.5.0.
 	 */
-	Rboolean intSeq = RHOCONSTRUCT(Rboolean, (tlen > 1));
+	Rboolean intSeq = Rboolean((tlen > 1));
 	int *tmp = INTEGER(vector);
 
 	for(i = 1; i < tlen; i++) {
@@ -1470,7 +1470,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 		strp = EncodeElement(vector, tlen - 1, '"', '.');
 		print2buff(strp, d);
 	} else {
-	    addL = RHOCONSTRUCT(Rboolean, d->opts & KEEPINTEGER && !(d->opts & S_COMPAT));
+	    addL = Rboolean(d->opts & KEEPINTEGER && !(d->opts & S_COMPAT));
 	    allNA = (d->opts & KEEPNA) || addL;
 	    for(i = 0; i < tlen; i++)
 		if(tmp[i] != NA_INTEGER) {

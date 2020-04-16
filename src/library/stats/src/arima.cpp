@@ -23,18 +23,13 @@
 
 #include <stdlib.h> // for abs
 #include <string.h>
+#include <algorithm>
 
 #include <R.h>
 #include "ts.h"
 #include "statsR.h" // for getListElement
 #include "localization.h"
 
-#ifndef max
-#define max(a,b) ((a < b)?(b):(a))
-#endif
-#ifndef min
-#define min(a,b) ((a < b)?(a):(b))
-#endif
 
 
 /* 
@@ -777,7 +772,7 @@ ARIMA_CSS(SEXP sy, SEXP sarma, SEXP sPhi, SEXP sTheta,
     for (int l = ncond; l < n; l++) {
 	tmp = w[l];
 	for (int j = 0; j < p; j++) tmp -= phi[j] * w[l - j - 1];
-	for (int j = 0; j < min(l - ncond, q); j++)
+	for (int j = 0; j < std::min(l - ncond, q); j++)
 	    tmp -= theta[j] * resid[l - j - 1];
 	resid[l] = tmp;
 	if (!ISNAN(tmp)) {
@@ -876,7 +871,7 @@ SEXP getQ0bis(SEXP sPhi, SEXP sTheta, SEXP sTol)
     int p = LENGTH(sPhi), q = LENGTH(sTheta);
     double *phi = REAL(sPhi), *theta = REAL(sTheta); // tol = REAL(sTol)[0];
 
-    int i,j, r = max(p, q + 1);
+    int i,j, r = std::max(p, q + 1);
 
     /* Final result is block product 
      *   Q0 = A1 SX A1^T + A1 SXZ A2^T + (A1 SXZ A2^T)^T + A2 A2^T ,
@@ -904,7 +899,7 @@ SEXP getQ0bis(SEXP sPhi, SEXP sTheta, SEXP sTol)
     for (i = 1; i < q + 1; ++i) ttheta[i] = theta[i - 1];
 
     if( p > 0 ) {
-	int r2 = max(p + q, p + 1);
+	int r2 = std::max(p + q, p + 1);
 	SEXP sgam = PROTECT(Rf_allocMatrix(REALSXP, r2, r2)),
 	    sg = PROTECT(Rf_allocVector(REALSXP, r2));
 	double *gam = REAL(sgam);
@@ -964,7 +959,7 @@ SEXP getQ0bis(SEXP sPhi, SEXP sTheta, SEXP sTol)
 	if(q > 0) {
 	    for (i = 0; i < q; ++i) {
 		rrz[i] = _ttheta(i);
-		for (j = max(0, i - p); j < i; ++j)
+		for (j = std::max(0, i - p); j < i; ++j)
 		    rrz[i] -= _rrz(j) * _tphi(i-j);
 	    }
 	}
@@ -1006,7 +1001,7 @@ SEXP getQ0(SEXP sPhi, SEXP sTheta)
 
     /* thetab[np], xnext[np], xrow[np].  rbar[rbar] */
     /* NB: nrbar could overflow */
-    int r = max(p, q + 1);
+    int r = std::max(p, q + 1);
     size_t np = r * (r + 1) / 2, nrbar = np * (np - 1) / 2, npr, npr1;
     size_t indi, indj, indn, i, j, ithisr, ind, ind1, ind2, im, jm;
 

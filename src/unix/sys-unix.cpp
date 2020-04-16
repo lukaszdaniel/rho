@@ -192,7 +192,7 @@ void R_setStartTime(void)
     clk_tck = (double) CLK_TCK;
 #endif
     /* printf("CLK_TCK = %d\n", CLK_TCK); */
-    StartTime = currentTime();
+    StartTime = Rf_currentTime();
 }
 
 /* NOTE
@@ -204,7 +204,7 @@ attribute_hidden
 void R_getProcTime(double *data)
 {
     /* docs say this is rounded to the nearest ms */
-    double et = currentTime() - StartTime;
+    double et = Rf_currentTime() - StartTime;
     data[2] = 1e-3 * rint(1000*et);
 #ifdef HAVE_GETRUSAGE
     /* all known current OSes */
@@ -587,12 +587,12 @@ static void warn_status(const char *cmd, int res)
 	/* on Solaris, if the command ends with non-zero status and timeout
 	   is 0, "Illegal seek" error is reported; the timeout version
 	   works this around by using close(fileno) */
-	warningcall(R_NilValue,
+	Rf_warningcall(R_NilValue,
 		    _("running command '%s' had status %d and error message '%s'"),
 		    cmd, res,
 		    strerror(errno));
     else
-	warningcall(R_NilValue,
+	Rf_warningcall(R_NilValue,
 		    _("running command '%s' had status %d"),
 		    cmd, res);
 }
@@ -604,7 +604,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     int intern = 0;
     int timeout = 0;
 
-    if (!isValidStringF(CAR(args)))
+    if (!Rf_isValidStringF(CAR(args)))
 	Rf_error(_("non-empty character argument expected"));
     intern = Rf_asLogical(CADR(args));
     if (intern == NA_INTEGER)
@@ -616,7 +616,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (timeout > 0) {
 	/* command ending with & is not supported by timeout */
 	const void *vmax = vmaxget();
-	const char *c = translateCharUTF8(STRING_ELT(CAR(args), 0));
+	const char *c = Rf_translateCharUTF8(STRING_ELT(CAR(args), 0));
 	int last_is_amp = 0;
 	int len = 0;
 	for(;*c; c += len) {
@@ -694,7 +694,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 	if (timeout && tost.timedout) {
 	    res = 124;
-	    warningcall(R_NilValue, _("command '%s' timed out after %ds"),
+	    Rf_warningcall(R_NilValue, _("command '%s' timed out after %ds"),
 	                cmd, timeout);
 	} else
 	    warn_status(cmd, res);
@@ -733,7 +733,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    res = R_system_timeout(cmd, timeout);
 	if (timeout && tost.timedout) {
 	    res = 124;
-	    warningcall(R_NilValue, _("command '%s' timed out after %ds"),
+	    Rf_warningcall(R_NilValue, _("command '%s' timed out after %ds"),
 	                cmd, timeout);
 	} 
 	INTEGER(tlist)[0] = res;

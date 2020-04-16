@@ -127,7 +127,7 @@ int R_SelectEx(int  n,  fd_set  *readfds,  fd_set  *writefds,
 	return select(n, readfds, writefds, exceptfds, timeout);
     else {
 	volatile sel_intr_handler_t myintr = intr != NULL ?
-	    intr : onintrNoResume;
+	    intr : Rf_onintrNoResume;
 	volatile int old_interrupts_suspended = R_interrupts_suspended;
 	if (SIGSETJMP(seljmpbuf, 1)) {
 	    myintr();
@@ -320,7 +320,7 @@ fd_set *R_checkActivityEx(int usec, int ignore_stdin, void (*intr)(void))
 
     if (R_interrupts_pending) {
 	if (intr != NULL) intr();
-	else onintr();
+	else Rf_onintr();
     }
 
     /* Solaris (but not POSIX) requires these times to be normalized.
@@ -682,7 +682,7 @@ static void
 handleInterrupt(void)
 {
     popReadline();
-    onintrNoResume();
+    Rf_onintrNoResume();
 }
 
 #ifdef HAVE_RL_COMPLETION_MATCHES
@@ -911,7 +911,7 @@ void set_rl_word_breaks(const char *str)
 static void
 handleInterrupt(void)
 {
-    onintrNoResume();
+    Rf_onintrNoResume();
 }
 #endif /* HAVE_LIBREADLINE */
 
@@ -1020,7 +1020,7 @@ Rstd_ReadConsole(const char *prompt, unsigned char *buf, int len,
 		    static SEXP opsym = NULL;
 		    if (! opsym)
 			opsym = Rf_install("setWidthOnResize");
-		    Rboolean setOK = Rboolean(Rf_asLogical(GetOption1(opsym)));
+		    Rboolean setOK = Rboolean(Rf_asLogical(Rf_GetOption1(opsym)));
 		    oldwidth = width;
 		    if (setOK != NA_LOGICAL && setOK)
 			R_SetOptionWidth(width);
@@ -1203,8 +1203,8 @@ void attribute_hidden NORET Rstd_CleanUp(SA_TYPE saveact, int status, int runLas
 	break;
     }
     R_RunExitFinalizers();
-    CleanEd();
-    if(saveact != SA_SUICIDE) KillAllDevices();
+    Rf_CleanEd();
+    if(saveact != SA_SUICIDE) Rf_KillAllDevices();
     R_CleanTempDir();
     if(saveact != SA_SUICIDE && R_CollectWarnings)
 	Rf_PrintWarnings(NULL);	/* from device close and (if run) .Last */
@@ -1325,18 +1325,18 @@ void attribute_hidden Rstd_loadhistory(SEXP call, SEXP op, SEXP args, SEXP env)
 
     sfile = CAR(args);
     if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
-	errorcall(call, _("invalid '%s' argument"), "file");
+	Rf_errorcall(call, _("invalid '%s' argument"), "file");
     p = R_ExpandFileName(Rf_translateChar(STRING_ELT(sfile, 0)));
     if(strlen(p) > PATH_MAX - 1)
-	errorcall(call, _("'file' argument is too long"));
+	Rf_errorcall(call, _("'file' argument is too long"));
     strcpy(file, p);
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_HISTORY_H)
     if(R_Interactive && UsingReadline) {
 	clear_history();
 	read_history(file);
-    } else errorcall(call, _("no history mechanism available"));
+    } else Rf_errorcall(call, _("no history mechanism available"));
 #else
-    errorcall(call, _("no history mechanism available"));
+    Rf_errorcall(call, _("no history mechanism available"));
 #endif
 }
 
@@ -1348,10 +1348,10 @@ void attribute_hidden Rstd_savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
 
     sfile = CAR(args);
     if (!Rf_isString(sfile) || LENGTH(sfile) < 1)
-	errorcall(call, _("invalid '%s' argument"), "file");
+	Rf_errorcall(call, _("invalid '%s' argument"), "file");
     p = R_ExpandFileName(Rf_translateChar(STRING_ELT(sfile, 0)));
     if(strlen(p) > PATH_MAX - 1)
-	errorcall(call, _("'file' argument is too long"));
+	Rf_errorcall(call, _("'file' argument is too long"));
     strcpy(file, p);
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_HISTORY_H)
     if(R_Interactive && UsingReadline) {
@@ -1365,9 +1365,9 @@ void attribute_hidden Rstd_savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
 	err = history_truncate_file(file, R_HistorySize);
 	if(err) Rf_warning(_("problem in truncating the history file"));
 #endif
-    } else errorcall(call, _("no history available to save"));
+    } else Rf_errorcall(call, _("no history available to save"));
 #else
-    errorcall(call, _("no history available to save"));
+    Rf_errorcall(call, _("no history available to save"));
 #endif
 }
 
@@ -1379,7 +1379,7 @@ void attribute_hidden Rstd_addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
     checkArity(op, args);
     stamp = CAR(args);
     if (!Rf_isString(stamp))
-	errorcall(call, _("invalid timestamp"));
+	Rf_errorcall(call, _("invalid timestamp"));
 #if defined(HAVE_LIBREADLINE) && defined(HAVE_READLINE_HISTORY_H)
     if(R_Interactive && UsingReadline)
 	for (i = 0; i < LENGTH(stamp); i++)
@@ -1388,32 +1388,31 @@ void attribute_hidden Rstd_addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
 }
 
 
-#define R_MIN(a, b) ((a) < (b) ? (a) : (b))
 
 void Rsleep(double timeint)
 {
-    double tm = timeint * 1e6, start = currentTime(), elapsed;
+    double tm = timeint * 1e6, start = Rf_currentTime(), elapsed;
     for (;;) {
 	fd_set *what;
-	tm = R_MIN(tm, 2e9); /* avoid integer overflow */
+	tm = std::min(tm, 2e9); /* avoid integer overflow */
 
 	int wt = -1;
 	if (R_wait_usec > 0) wt = R_wait_usec;
 	if (Rg_wait_usec > 0 && (wt < 0 || wt > Rg_wait_usec))
 	    wt = Rg_wait_usec;
-	int Timeout = (int) (wt > 0 ? R_MIN(tm, wt) : tm);
+	int Timeout = (int) (wt > 0 ? std::min(tm, double(wt)) : tm);
 	what = R_checkActivity(Timeout, 1);
 	/* For polling, elapsed time limit ... */
 	R_CheckUserInterrupt();
 	/* Time up? */
-	elapsed = currentTime() - start;
+	elapsed = Rf_currentTime() - start;
 	if(elapsed >= timeint) break;
 
 	/* Nope, service pending events */
 	R_runHandlers(R_InputHandlers, what);
 
 	/* Servicing events might take some time, so recheck: */
-	elapsed = currentTime() - start;
+	elapsed = Rf_currentTime() - start;
 	if(elapsed >= timeint) break;
 
 	tm = 1e6*(timeint - elapsed);

@@ -25,12 +25,11 @@
  */
 #include "nmath.h"
 #include "bessel.h"
+#include <algorithm>
 
 #ifndef MATHLIB_STANDALONE
 #include <R_ext/Memory.h>
 #endif
-
-#define min0(x, y) (((x) <= (y)) ? (x) : (y))
 
 static void Y_bessel(double *x, double *alpha, int *nb,
 		     double *by, int *ncalc);
@@ -512,7 +511,7 @@ L450:
 
     } else {
 	by[0] = 0.;
-	*ncalc = min0(*nb,0) - 1;
+	*ncalc = std::min(*nb,0) - 1;
     }
 }
 

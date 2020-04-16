@@ -259,7 +259,7 @@ void attribute_hidden R_check_locale(void)
 # endif
     }
 #endif
-    mbcslocale = RHOCONSTRUCT(Rboolean, MB_CUR_MAX > 1);
+    mbcslocale = Rboolean(MB_CUR_MAX > 1);
 #ifdef Win32
     {
 	char *ctype = setlocale(LC_CTYPE, NULL), *p;
@@ -1119,7 +1119,7 @@ list_files(const char *dnp, const char *stem, int *count, SEXP *pans,
     if ((dir = opendir(dnp)) != nullptr) {
 	while ((de = readdir(dir))) {
 	    if (allfiles || !R_HiddenFile(de->d_name)) {
-		Rboolean not_dot = RHOCONSTRUCT(Rboolean, strcmp(de->d_name, ".") && strcmp(de->d_name, ".."));
+		Rboolean not_dot = Rboolean(strcmp(de->d_name, ".") && strcmp(de->d_name, ".."));
 		if (recursive) {
 #ifdef Win32
 		    if (strlen(dnp) == 2 && dnp[1] == ':') // e.g. "C:"
@@ -1220,9 +1220,9 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
     for (int i = 0; i < LENGTH(d) ; i++) {
 	if (STRING_ELT(d, i) == NA_STRING) continue;
 	const char *dnp = R_ExpandFileName(Rf_translateChar(STRING_ELT(d, i)));
-	list_files(dnp, fullnames ? dnp : nullptr, &count, &ans, RHOCONSTRUCT(Rboolean, allfiles),
-		   RHOCONSTRUCT(Rboolean, recursive), pattern ? &reg : nullptr, &countmax, idx,
-		   RHOCONSTRUCT(Rboolean, idirs), /* allowdots = */ RHOCONSTRUCT(Rboolean, !nodots));
+	list_files(dnp, fullnames ? dnp : nullptr, &count, &ans, Rboolean(allfiles),
+		   Rboolean(recursive), pattern ? &reg : nullptr, &countmax, idx,
+		   Rboolean(idirs), /* allowdots = */ Rboolean(!nodots));
     }
     REPROTECT(ans = Rf_lengthgets(ans, count), idx);
     if (pattern) tre_regfree(&reg);
@@ -1316,7 +1316,7 @@ SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunct
     for (i = 0; i < LENGTH(d) ; i++) {
 	if (STRING_ELT(d, i) == NA_STRING) continue;
 	dnp = R_ExpandFileName(Rf_translateChar(STRING_ELT(d, i)));
-	list_dirs(dnp, "", RHOCONSTRUCT(Rboolean, fullnames), &count, &ans, &countmax, idx, RHOCONSTRUCT(Rboolean, recursive));
+	list_dirs(dnp, "", Rboolean(fullnames), &count, &ans, &countmax, idx, Rboolean(recursive));
     }
     REPROTECT(ans = Rf_lengthgets(ans, count), idx);
     StringVector* sv = static_cast<StringVector*>(ans);
@@ -1927,7 +1927,7 @@ static Rboolean R_can_use_X11(void)
 #endif
     }
 
-    return RHOCONSTRUCT(Rboolean, var_R_can_use_X11 > 0);
+    return Rboolean(var_R_can_use_X11 > 0);
 }
 #endif
 
@@ -2711,7 +2711,7 @@ SEXP attribute_hidden do_syschmod(/*const*/ Expression* call, const BuiltInFunct
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
 	mode_t mode = mode_t( modes[i % m]);
-	if (RHOCONSTRUCT(int, mode) == NA_INTEGER) mode = 0777;
+	if (int(mode) == NA_INTEGER) mode = 0777;
 #ifdef HAVE_UMASK
 	if(useUmask) mode = mode & ~um;
 #endif
@@ -2812,8 +2812,8 @@ SEXP attribute_hidden do_Cstack_info(/*const*/ Expression* call, const BuiltInFu
     PROTECT(ans = Rf_allocVector(INTSXP, 4));
     PROTECT(nms = Rf_allocVector(STRSXP, 4));
     /* FIXME: could be out of range */
-    INTEGER(ans)[0] = (R_CStackLimit == RHOCONSTRUCT(uintptr_t, -1)) ? NA_INTEGER : int(R_CStackLimit);
-    INTEGER(ans)[1] = (R_CStackLimit ==  RHOCONSTRUCT(uintptr_t, -1)) ? NA_INTEGER : int
+    INTEGER(ans)[0] = (R_CStackLimit == uintptr_t(-1)) ? NA_INTEGER : int(R_CStackLimit);
+    INTEGER(ans)[1] = (R_CStackLimit ==  uintptr_t(-1)) ? NA_INTEGER : int
 	(R_CStackDir * (R_CStackStart - uintptr_t( &ans)));
     INTEGER(ans)[2] = R_CStackDir;
     INTEGER(ans)[3] = StackChecker::depth();
@@ -2893,7 +2893,7 @@ do_setFileTime(/*const*/ Expression* call, const BuiltInFunction* op, RObject* p
 /* based on ideas in
    http://www.codeproject.com/KB/winsdk/junctionpoints.aspx
 */
-typedef struct TMN_REPARSE_DATA_BUFFER
+struct TMN_REPARSE_DATA_BUFFER
 {
     DWORD  ReparseTag;
     WORD   ReparseDataLength;
@@ -2903,7 +2903,7 @@ typedef struct TMN_REPARSE_DATA_BUFFER
     WORD   PrintNameOffset;
     WORD   PrintNameLength;
     WCHAR  PathBuffer[1024];
-} TMN_REPARSE_DATA_BUFFER;
+};
 
 SEXP attribute_hidden do_mkjunction(SEXP call, SEXP op, SEXP args, SEXP rho)
 {

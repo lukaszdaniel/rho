@@ -76,12 +76,12 @@ static unsigned char ConsoleBuf[CONSOLE_BUFFER_SIZE+1], *ConsoleBufp;
 static int  ConsoleBufCnt;
 static char ConsolePrompt[CONSOLE_PROMPT_SIZE];
 
-typedef struct {
+struct LocalData {
     SEXP NAstrings;
     int quiet;
     int sepchar; /*  = 0 */      /* This gets compared to ints */
     char decchar; /* = '.' */    /* This only gets compared to chars */
-    RHOCONST char *quoteset; /* = NULL */
+    const char *quoteset; /* = NULL */
     int comchar; /* = NO_COMCHAR */
     int ttyflag; /* = 0 */
     Rconnection con; /* = NULL */
@@ -94,7 +94,7 @@ typedef struct {
     Rboolean embedWarn;
     Rboolean skipNul;
     char convbuf[100];
-} LocalData;
+};
 
 static SEXP insertString(char *str, LocalData *l)
 {
@@ -145,7 +145,7 @@ static int ConsoleGetcharWithPushBack(Rconnection con)
     if(con->nPushBack > 0) {
 	curLine = con->PushBack[con->nPushBack-1];
 	c = curLine[con->posPushBack++];
-	if(con->posPushBack >= RHOCONSTRUCT(int, strlen(curLine))) {
+	if(con->posPushBack >= int(strlen(curLine))) {
 	    /* last character on a line, so pop the line */
 	    free(curLine);
 	    con->nPushBack--;
@@ -338,7 +338,7 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 */
     char *bufp;
     int c, quote, filled, nbuf = MAXELTSIZE, m, mm = 0;
-    Rboolean dbcslocale = RHOCONSTRUCT(Rboolean, (MB_CUR_MAX == 2));
+    Rboolean dbcslocale = Rboolean((MB_CUR_MAX == 2));
 
     m = 0;
     filled = 1;
@@ -917,7 +917,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     else if (strlen(p) == 1) data.comchar = static_cast<unsigned char>(*p);
     if(escapes == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "allowEscapes");
-    data.escapes = RHOCONSTRUCT(Rboolean, escapes != 0);
+    data.escapes = Rboolean(escapes != 0);
     if(skipNul == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "skipNul");
     data.skipNul = Rboolean(skipNul != 0);
@@ -928,7 +928,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 	data.atStart = FALSE;
 	data.ttyflag = 1;
     } else {
-	data.atStart = RHOCONSTRUCT(Rboolean, (nskip == 0));
+	data.atStart = Rboolean((nskip == 0));
 	data.ttyflag = 0;
 	data.wasopen = data.con->isopen;
 	if(!data.wasopen) {
@@ -975,7 +975,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     }
     catch (...) {
 	if(!data.ttyflag && !data.wasopen) data.con->close(data.con);
-	if (data.quoteset[0]) free(RHOCONSTRUCT(const_cast<char*>, data.quoteset));
+	if (data.quoteset[0]) free(const_cast<char *>(data.quoteset));
 	throw;
     }
 
@@ -988,7 +988,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     }
     if (!data.ttyflag && !data.wasopen)
 	data.con->close(data.con);
-    if (data.quoteset[0]) free(RHOCONSTRUCT(const_cast<char*>, data.quoteset));
+    if (data.quoteset[0]) free(const_cast<char *>(data.quoteset));
     if (!skipNul && data.embedWarn)
 	Rf_warning(_("embedded nul(s) found in input"));
     ProvenanceTracker::flagXenogenesis();

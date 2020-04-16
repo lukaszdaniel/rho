@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
+#include <algorithm>
 #include <R.h>
 
 #include "localization.h"
@@ -69,11 +70,6 @@ void F77_SUB(ehg184a)(char *s, int *nc, double *x, int *n, int *inc);
 }
 
 
-#undef min
-#undef max
-
-#define	min(x,y)  ((x) < (y) ? (x) : (y))
-#define	max(x,y)  ((x) > (y) ? (x) : (y))
 #define	GAUSSIAN	1
 #define SYMMETRIC	0
 
@@ -236,8 +232,8 @@ loess_workspace(int *d, int *n, double *span, int *degree,
 {
     int D = *d, N = *n, tau0, nvmax, nf, version = 106, i;
 
-    nvmax = max(200, N);
-    nf = min(N, (int) floor(N * (*span) + 1e-5));
+    nvmax = std::max(200, N);
+    nf = std::min(N, (int) floor(N * (*span) + 1e-5));
     if(nf <= 0) Rf_error(_("span is too small"));
     tau0 = ((*degree) > 1) ? (int)((D + 2) * (D + 1) * 0.5) : (D + 1);
     tau = tau0 - (*sum_drop_sqr);

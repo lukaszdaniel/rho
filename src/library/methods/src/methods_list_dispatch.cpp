@@ -515,7 +515,6 @@ SEXP R_standardGeneric(SEXP fname, SEXP ev, SEXP fdef)
 	    if (Rf_inherits(f, "internalDispatchMethod")) {
                 val = R_deferred_default_method();
             } else {
-                SEXP R_execMethod(SEXP, SEXP);
                 PROTECT(f); nprotect++; /* is this needed?? */
                 val = R_execMethod(f, ev);
             }
@@ -1058,7 +1057,6 @@ SEXP R_dispatchGeneric(SEXP fname, SEXP ev, SEXP fdef)
         if (Rf_inherits(f, "internalDispatchMethod")) {
             val = R_deferred_default_method();
         } else {
-            SEXP R_execMethod(SEXP, SEXP);
             if(Rf_isObject(f))
                 f = R_loadMethod(f, fname, ev);
             PROTECT(f); nprotect++; /* is this needed?? */

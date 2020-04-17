@@ -54,7 +54,7 @@
 
    DO_NOT_USE_CXX_HEADERS is legacy, left as a last resort.
 */
-#if defined(__cplusplus) && !defined(DO_NOT_USE_CXX_HEADERS)
+#if defined(__cplusplus)// && !defined(DO_NOT_USE_CXX_HEADERS)
 # include <cstdlib>
 # include <cstdio>
 # include <climits>
@@ -73,7 +73,7 @@ using namespace std;
    stddef.h (or cstddef) is included by R_ext/Memory.h
    string.h (or cstring) is included by R_ext/RS.h
 */
-#if defined(__sun)
+#ifdef __sun
 /* Solaris' stdlib.h includes a header which defines these (and more) */
 # undef CS
 # undef DO

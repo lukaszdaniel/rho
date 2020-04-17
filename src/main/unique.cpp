@@ -41,6 +41,7 @@
 #include "rho/DottedArgs.hpp"
 #include "rho/Promise.hpp"
 #include "rho/RAllocStack.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 

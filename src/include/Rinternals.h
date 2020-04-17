@@ -80,7 +80,7 @@ typedef ptrdiff_t R_xlen_t;
 namespace rho {
     class RObject;
 }
-typedef rho::RObject* SEXP;
+using SEXP = rho::RObject*;
 #else
 typedef struct SEXPREC* SEXP;
 #endif
@@ -1061,6 +1061,7 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 #define PrintValue		Rf_PrintValue
 #define protect			Rf_protect
 #define reEnc			Rf_reEnc
+#define revsort			Rf_revsort
 #define S3Class                 Rf_S3Class
 #define ScalarComplex		Rf_ScalarComplex
 #define ScalarInteger		Rf_ScalarInteger

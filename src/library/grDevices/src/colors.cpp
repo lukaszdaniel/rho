@@ -663,12 +663,11 @@ const char *DefaultPalette[] = {
 /* Note: the color "white" was moved to the top of the database 
    to avoid its being looked up by col2name as "gray100" */
 
-typedef
-struct colorDataBaseEntry {
+struct ColorDataBaseEntry {
     const char *name;	  // X11 Color Name
     const char *rgb;	  // #RRGGBB String, no longer used
     rcolor code;  // Internal R Color Code
-} ColorDataBaseEntry;
+};
 
 static ColorDataBaseEntry ColorDataBase[] = {
     /* name		rgb         code */

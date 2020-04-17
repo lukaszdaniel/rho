@@ -53,6 +53,7 @@
 #include "rho/ExpressionVector.hpp"
 #include "rho/GCStackRoot.hpp"
 #include "rho/Promise.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace std;
 using namespace rho;

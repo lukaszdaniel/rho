@@ -73,6 +73,7 @@
 #include "rho/RAllocStack.hpp"
 #include "rho/RealVector.hpp"
 #include "rho/UnaryFunction.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 using namespace VectorOps;

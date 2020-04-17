@@ -45,6 +45,7 @@
 #include "rho/GCStackRoot.hpp"
 #include "rho/RAllocStack.hpp"
 #include "rho/Subscripting.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 

@@ -127,13 +127,13 @@ R_size_t R_Decode2Long(char *p, int *ierr)
 
 /* There is no documented (or enforced) limit on 'w' here,
    so use snprintf */
-#define NB 1000 /* Same as deparse.cpp */
+constexpr size_t NB = 1000; /* Same as deparse.cpp */
 const char *EncodeLogical(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
-    else if(x) snprintf(buff, NB, "%*s", min(w, (NB-1)), "TRUE");
-    else snprintf(buff, NB, "%*s", min(w, (NB-1)), "FALSE");
+    if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+    else if(x) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "TRUE");
+    else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "FALSE");
     buff[NB-1] = '\0';
     return buff;
 }
@@ -141,8 +141,8 @@ const char *EncodeLogical(int x, int w)
 const char *EncodeInteger(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
-    else snprintf(buff, NB, "%*d", min(w, (NB-1)), x);
+    if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+    else snprintf(buff, NB, "%*d", min(w, int(NB-1)), x);
     buff[NB-1] = '\0';
     return buff;
 }
@@ -193,23 +193,23 @@ const char *EncodeReal0(double x, int w, int d, int e, const char *dec)
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
-	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
-	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
+	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
     else if (e) {
 	if(d) {
-	    sprintf(fmt,"%%#%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%#%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
 	else {
-	    sprintf(fmt,"%%%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
     }
     else { /* e = 0 */
-	sprintf(fmt,"%%%d.%df", min(w, (NB-1)), d);
+	sprintf(fmt,"%%%d.%df", min(w, int(NB-1)), d);
 	snprintf(buff, NB, fmt, x);
     }
     buff[NB-1] = '\0';
@@ -236,23 +236,23 @@ static const char
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
-	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
-	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
+	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
     else if (e) {
 	if(d) {
-	    sprintf(fmt,"%%#%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%#%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
 	else {
-	    sprintf(fmt,"%%%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
     }
     else { /* e = 0 */
-	sprintf(fmt,"%%%d.%df", min(w, (NB-1)), d);
+	sprintf(fmt,"%%%d.%df", min(w, int(NB-1)), d);
 	snprintf(buff, NB, fmt, x);
     }
     buff[NB-1] = '\0';
@@ -302,23 +302,23 @@ const char *Rf_EncodeReal2(double x, int w, int d, int e)
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
     if (!R_FINITE(x)) {
-	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, (NB-1)), "NaN");
-	else if(x > 0) snprintf(buff, NB, "%*s", min(w, (NB-1)), "Inf");
-	else snprintf(buff, NB, "%*s", min(w, (NB-1)), "-Inf");
+	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
+	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
     else if (e) {
 	if(d) {
-	    sprintf(fmt,"%%#%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%#%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
 	else {
-	    sprintf(fmt,"%%%d.%de", min(w, (NB-1)), d);
+	    sprintf(fmt,"%%%d.%de", min(w, int(NB-1)), d);
 	    snprintf(buff, NB, fmt, x);
 	}
     }
     else { /* e = 0 */
-	sprintf(fmt,"%%#%d.%df", min(w, (NB-1)), d);
+	sprintf(fmt,"%%#%d.%df", min(w, int(NB-1)), d);
 	snprintf(buff, NB, fmt, x);
     }
     buff[NB-1] = '\0';
@@ -342,7 +342,7 @@ const char
     if (ISNA(x.r) || ISNA(x.i)) {
 	snprintf(buff, NB,
 		 "%*s", /* was "%*s%*s", R_print.gap, "", */
-		 min(wr+wi+2, (NB-1)), R_CHAR(R_print.na_string));
+		 min(wr+wi+2, int(NB-1)), R_CHAR(R_print.na_string));
     } else {
 	char Re[NB];
 	const char *Im, *tmp;

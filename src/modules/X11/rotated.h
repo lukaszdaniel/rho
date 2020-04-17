@@ -36,9 +36,9 @@
 /* ---------------------------------------------------------------------- */
 
 
-typedef enum {One_Font, Font_Set} R_FontType;
+enum R_FontType {One_Font, Font_Set} ;
 
-typedef struct R_XFont
+struct R_XFont
 {
     R_FontType type;
     XFontStruct *font;
@@ -46,7 +46,7 @@ typedef struct R_XFont
     int height;
     int ascent;
     int descent;
-} R_XFont;
+};
 
 
 /* ---------------------------------------------------------------------- */

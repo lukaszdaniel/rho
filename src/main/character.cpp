@@ -89,6 +89,7 @@ abbreviate chartr make.names strtrim tolower toupper give error.
 #include <rlocale.h>
 
 #include "rho/RAllocStack.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 

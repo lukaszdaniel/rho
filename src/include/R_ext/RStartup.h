@@ -32,7 +32,7 @@
 #ifndef R_EXT_RSTARTUP_H_
 #define R_EXT_RSTARTUP_H_
 
-#if defined(__cplusplus) && !defined(DO_NOT_USE_CXX_HEADERS)
+#if defined(__cplusplus)// && !defined(DO_NOT_USE_CXX_HEADERS)
 # include <cstddef>
 # define R_SIZE_T std::size_t
 #else

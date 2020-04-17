@@ -46,10 +46,10 @@
 
 #include "contour-common.h"
 
-#define CONTOUR_LIST_STEP 100
-#define CONTOUR_LIST_LEVEL 0
-#define CONTOUR_LIST_X 1
-#define CONTOUR_LIST_Y 2
+constexpr R_xlen_t CONTOUR_LIST_STEP = 100;
+constexpr R_xlen_t CONTOUR_LIST_LEVEL = 0;
+constexpr R_xlen_t CONTOUR_LIST_X = 1;
+constexpr R_xlen_t CONTOUR_LIST_Y = 2;
 
 static SEXP growList(SEXP oldlist) {
     int i, len;
@@ -69,11 +69,11 @@ static SEXP growList(SEXP oldlist) {
 static
 int addContourLines(double *x, int nx, double *y, int ny,
 		     double *z, double zc, double atom,
-		     SEGP* segmentDB, int nlines, SEXP container)
+		     SEG** segmentDB, int nlines, SEXP container)
 {
     double xend, yend;
     int i, ii, j, jj, ns, dir, nc;
-    SEGP seglist, seg, s, start, end;
+    SEG *seglist, *seg, *s, *start, *end;
     SEXP ctr, level, xsxp, ysxp, names;
     /* Begin following contours. */
     /* 1. Grab a segment */
@@ -186,7 +186,7 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
     const void *vmax;
     int i, nlines, len;
     double atom, zmin, zmax;
-    SEGP* segmentDB;
+    SEG** segmentDB;
     SEXP container, mainlist, templist;
     /*
      * "tie-breaker" values

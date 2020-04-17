@@ -174,9 +174,9 @@ static int getFilenum(const char* filename) {
    using snprintf and such and computing needed sizes, but these
    settings are better than what we had. LT */
 
-#define PROFBUFSIZ 10500
-#define PROFITEMMAX  500
-#define PROFLINEMAX (PROFBUFSIZ - PROFITEMMAX)
+constexpr size_t PROFBUFSIZ = 10500;
+constexpr size_t PROFITEMMAX = 500;
+constexpr size_t PROFLINEMAX = (PROFBUFSIZ - PROFITEMMAX);
 
 /* It would also be better to flush the buffer when it gets full,
    even if the line isn't complete. But this isn't possible if we rely

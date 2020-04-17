@@ -56,17 +56,18 @@ extern int utf8locale;
 /* ---------------------------------------------------------------------- */
 
 /* text alignment -- only NONE is used in R */
-
-#define NONE		 0
-#define TLEFT		 1
-#define TCENTRE		 2
-#define TRIGHT		 3
-#define MLEFT		 4
-#define MCENTRE		 5
-#define MRIGHT		 6
-#define BLEFT		 7
-#define BCENTRE		 8
-#define BRIGHT		 9
+enum TextAlignment {
+    NONE = 0,
+    TLEFT = 1,
+    TCENTRE = 2,
+    TRIGHT = 3,
+    MLEFT = 4,
+    MCENTRE = 5,
+    MRIGHT = 6,
+    BLEFT = 7,
+    BCENTRE = 8,
+    BRIGHT = 9
+};
 
 /* Make sure cache size is set */
 
@@ -82,9 +83,7 @@ extern int utf8locale;
 #endif /*CACHE_BITMAPS*/
 #endif /*CACHE_XIMAGES*/
 
-#ifndef DEG2RAD
-#define DEG2RAD 0.01745329251994329576
-#endif
+constexpr double DEG2RAD = 0.01745329251994329576;
 
 /* ---------------------------------------------------------------------- */
 
@@ -106,15 +105,15 @@ static int debug=0;
 
 /* ---------------------------------------------------------------------- */
 
-static double myround(double x)
+static inline double myround(double x)
 {
-    return floor(x+0.5);
+    return std::floor(x+0.5);
 }
 
 
 /* A structure holding everything needed for a rotated string */
 
-typedef struct rotated_text_item_template {
+struct RotatedTextItem {
     Pixmap bitmap;
     XImage *ximage;
 
@@ -138,8 +137,8 @@ typedef struct rotated_text_item_template {
     long int size;
     int cached;
 
-    struct rotated_text_item_template *next;
-} RotatedTextItem;
+    RotatedTextItem *next;
+};
 
 static RotatedTextItem *first_text_item = nullptr;
 

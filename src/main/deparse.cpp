@@ -107,10 +107,10 @@
 #include <trioremap.h>
 #endif
 
-#define BUFSIZE 512
+constexpr size_t BUFSIZE = 512;
 
-#define MIN_Cutoff 20
-#define MAX_Cutoff (BUFSIZE - 12)
+constexpr size_t MIN_Cutoff = 20;
+constexpr size_t MAX_Cutoff = (BUFSIZE - 12);
 /* ----- MAX_Cutoff  <	BUFSIZE !! */
 
 #include "RBufferUtils.h"
@@ -127,7 +127,7 @@ typedef R_StringBuffer DeparseBuffer;
 
 struct LocalParseData {
     int linenumber;
-    int len; // FIXME: size_t
+    size_t len;
     int incurly;
     int inlist;
     Rboolean startline; /* = TRUE; */
@@ -136,7 +136,7 @@ struct LocalParseData {
 
     DeparseBuffer buffer;
 
-    int cutoff;
+    size_t cutoff;
     int backtick;
     int opts;
     int sourceable;
@@ -160,8 +160,8 @@ static Rboolean src2buff(SEXP, int, LocalParseData *);
 static void vec2buff(SEXP, LocalParseData *);
 static void linebreak(Rboolean *lbreak, LocalParseData *);
 static void deparse2(SEXP, SEXP, LocalParseData *);
-static int DEFAULT_Cutoff() {
-	int w;
+static size_t DEFAULT_Cutoff() {
+	size_t w;
     w = Rf_asInteger(Rf_GetOption1(Rf_install("width")));
     return (w < R_MIN_WIDTH_OPT || w > R_MAX_WIDTH_OPT) ? 80 : w;
 }
@@ -174,7 +174,7 @@ SEXP attribute_hidden do_deparse(/*const*/ Expression* call, const BuiltInFuncti
     int cut0 = DEFAULT_Cutoff();
     if(!Rf_isNull(width_cutoff_)) {
 	cut0 = Rf_asInteger(width_cutoff_);
-	if(cut0 == NA_INTEGER || cut0 < MIN_Cutoff || cut0 > MAX_Cutoff) {
+	if(cut0 == NA_INTEGER || cut0 < int(MIN_Cutoff) || cut0 > int(MAX_Cutoff)) {
 	    Rf_warning(_("invalid 'cutoff' value for 'deparse', using default"));
 	    cut0 = DEFAULT_Cutoff();
 	}
@@ -1382,7 +1382,7 @@ static void print2buff(const char *strng, LocalParseData *d)
  * are produced which are not valid complex literals.
  */
 
-#define NB 1000  /* Same as printutils.cpp */
+constexpr size_t NB = 1000;  /* Same as printutils.cpp */
 static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
 {
     int w, d, e, wi, di, ei;

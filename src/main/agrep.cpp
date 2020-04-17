@@ -35,6 +35,9 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
+#include "rho/BuiltInFunction.hpp"
+
+using namespace rho;
 
 /* This is remapped */
 #undef pmatch

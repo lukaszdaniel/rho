@@ -33,6 +33,9 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
+#include "rho/BuiltInFunction.hpp"
+
+using namespace rho;
 
 static SEXP cumsum(SEXP x, SEXP s)
 {
@@ -158,6 +161,12 @@ static SEXP icummin(SEXP x, SEXP s)
     return s;
 }
 
+/*
+op = 1 is cumsum
+op = 2 is cumprod
+op = 3 is cummax
+op = 4 is cummin
+*/
 SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP s, t, ans;

@@ -108,8 +108,7 @@ void VectorBase::setDimensionNames(unsigned int d, StringVector* names)
 {
     size_t ndims = dimensions()->size();
     if (d == 0 || d > ndims)
-	Rf_error(_("Attempt to associate dimnames"
-		   " with a non-existent dimension"));
+	Rf_error(_("Attempt to associate dimnames with a non-existent dimension"));
     ListVector* lv
 	= static_cast<ListVector*>(getAttribute(DimNamesSymbol));
     if (!lv) {

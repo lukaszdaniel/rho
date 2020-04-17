@@ -1423,7 +1423,7 @@ double distFromEdge(double *xxx, double *yyy, int iii, pGEDevDesc dd) {
 }
 
 static SEXP labelList;
-static SEGP *ctr_SegDB;
+static SEG** ctr_SegDB;
 
 static
 Rboolean useStart(double *xxx, double *yyy, int ns, pGEDevDesc dd) {
@@ -1446,7 +1446,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 
     double xend, yend;
     int i, ii, j, jj, ns, dir;
-    SEGP seglist, seg, s, start, end;
+    SEG *seglist, *seg, *s, *start, *end;
     double *xxx, *yyy;
 
     double variance, dX, dY, deltaX, deltaY;
@@ -1983,7 +1983,7 @@ SEXP C_contour(SEXP args)
     /* memory after a sequence of displaylist replays */
 
     vmax0 = vmaxget();
-    ctr_SegDB = (SEGP*)R_alloc(nx*ny, sizeof(SEGP));
+    ctr_SegDB = (SEG**)R_alloc(nx*ny, sizeof(SEG*));
 
     for (i = 0; i < nx; i++)
 	for (j = 0; j < ny; j++)

@@ -40,6 +40,7 @@
 #include "rho/Browser.hpp"
 #include "rho/ClosureContext.hpp"
 #include "rho/CommandTerminated.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace std;
 using namespace rho;

@@ -78,7 +78,7 @@ struct DllReference {
 };
 
 /* Maximum length of entry-point name, including nul terminator */
-#define MaxSymbolBytes 1024
+constexpr size_t MaxSymbolBytes = 1024;
 
 /* Maximum number of args to .C, .Fortran and .Call */
 #define MAX_ARGS 65

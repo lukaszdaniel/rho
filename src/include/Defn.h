@@ -64,7 +64,9 @@
 namespace rho {
     class BuiltInFunction;
 }
+#endif
 
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -662,10 +664,7 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 #endif /* R_NO_REMAP */
 
 /* Platform Dependent Gui Hooks */
-
-#define	R_CONSOLE	1
-#define	R_FILE		2
-#define R_TEXT		3
+//enum GUIHooks { R_CONSOLE = 1, R_FILE = 2, R_TEXT = 3 };
 
 /* The maximum length of input line which will be asked for,
    in bytes, including the terminator */
@@ -697,22 +696,23 @@ R_varloc_t R_findVarLocInFrame(SEXP, SEXP);
 Rboolean R_GetVarLocMISSING(R_varloc_t);
 
 /* deparse option bits: change do_dump if more are added */
-
-#define KEEPINTEGER 		1
-#define QUOTEEXPRESSIONS 	2
-#define SHOWATTRIBUTES 		4
-#define USESOURCE 		8
-#define WARNINCOMPLETE 		16
-#define DELAYPROMISES 		32
-#define KEEPNA			64
-#define S_COMPAT       		128
-#define HEXNUMERIC             	256
-#define DIGITS16             	512
-#define NICE_NAMES             	1024
-/* common combinations of the above */
-#define SIMPLEDEPARSE		0
-#define DEFAULTDEPARSE		65 /* KEEPINTEGER | KEEPNA, used for calls */
-#define FORSOURCING		95 /* not DELAYPROMISES, used in edit.cpp */
+enum DeparseOptionBits {
+    KEEPINTEGER = 1,
+    QUOTEEXPRESSIONS = 2,
+    SHOWATTRIBUTES = 4,
+    USESOURCE = 8,
+    WARNINCOMPLETE = 16,
+    DELAYPROMISES = 32,
+    KEEPNA = 64,
+    S_COMPAT = 128,
+    HEXNUMERIC = 256,
+    DIGITS16 = 512,
+    NICE_NAMES = 1024,
+    /* common combinations of the above */
+    SIMPLEDEPARSE = 0,
+    DEFAULTDEPARSE = 65, /* KEEPINTEGER | KEEPNA, used for calls */
+    FORSOURCING = 95 /* not DELAYPROMISES, used in edit.cpp */
+};
 
 /* Coercion functions */
 int Rf_LogicalFromString(SEXP, int*);
@@ -761,6 +761,9 @@ Rboolean inherits2(SEXP, const char *);
 
 #ifdef __cplusplus
 }  // extern "C"
+#endif
+
+#ifdef __cplusplus
 bool R_has_methods(const rho::BuiltInFunction* func);
 
 std::pair<bool, SEXP>
@@ -787,7 +790,10 @@ std::pair<bool, SEXP> Rf_usemethod(const char* generic,
 R_xlen_t dispatch_xlength(rho::RObject* object,
                           const rho::Expression* call,
                           rho::Environment* rho);
+#endif
 
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 

@@ -112,6 +112,7 @@
 #include "rho/Promise.hpp"
 #include "rho/ProvenanceTracker.hpp"
 #include "rho/StringVector.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 

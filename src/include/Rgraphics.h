@@ -27,9 +27,6 @@
 #ifndef RGRAPHICS_H_
 #define RGRAPHICS_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Internal header, not installed */
 
@@ -230,8 +227,5 @@ double yDevtoUsr(double, pGEDevDesc);
 double xNPCtoUsr(double, pGEDevDesc);
 double yNPCtoUsr(double, pGEDevDesc);
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* RGRAPHICS_H_ */

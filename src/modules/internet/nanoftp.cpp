@@ -96,9 +96,9 @@ extern int snprintf (char *s, size_t n, const char *format, ...);
 #endif
 
 
-#define xmlFree free
-#define xmlMalloc malloc
-#define xmlMemStrdup strdup
+const auto xmlFree = free;
+const auto xmlMalloc = malloc;
+const auto xmlMemStrdup = strdup;
 
 
 #ifdef Unix

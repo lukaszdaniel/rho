@@ -242,9 +242,10 @@ SEXP attribute_hidden do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
     return Rf_ScalarLogical(ans);
 }
 
-
-#define _OP_ALL 1
-#define _OP_ANY 2
+enum Operation {
+_OP_ALL = 1,
+_OP_ANY = 2
+};
 
 static Logical checkValues(int op, int na_rm, int *x, R_xlen_t n)
 {

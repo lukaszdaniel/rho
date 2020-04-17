@@ -111,7 +111,7 @@ known OS with 64-bit time_t and complete tables is Linux.
 # define HAVE_WORKING_64BIT_MKTIME 1
 #else
 
-typedef struct tm stm;
+using stm = tm;
 #define R_tzname tzname
 extern char *tzname[2];
 

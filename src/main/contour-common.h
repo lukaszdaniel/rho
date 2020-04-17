@@ -28,29 +28,30 @@
 
 	/*  C o n t o u r   P l o t t i n g  */
 
-typedef struct SEG {
+#include <utility>
+
+struct SEG {
     struct SEG *next;
     double x0;
     double y0;
     double x1;
     double y1;
-} SEG, *SEGP;
+};
 
-
-static int ctr_intersect(double z0, double z1, double zc, double *f)
+static bool ctr_intersect(double z0, double z1, double zc, double *f)
 {
 /*  Old test was  ((z0 - zc) * (z1 - zc) < 0.0), but rounding led to inconsistencies
     in PR#15454 */
     if ( (z0 < zc) != (z1 < zc) && z0 != zc && z1 != zc ) {
 	*f = (zc - z0) / (z1 -	z0);
-	return 1;
+	return true;
     }
-    return 0;
+    return false;
 }
 
-static SEGP ctr_newseg(double x0, double y0, double x1, double y1, SEGP prev)
+static SEG* ctr_newseg(double x0, double y0, double x1, double y1, SEG* prev)
 {
-    SEGP seg = (SEGP)R_alloc(1, sizeof(SEG));
+    SEG* seg = (SEG*)R_alloc(1, sizeof(SEG));
     seg->x0 = x0;
     seg->y0 = y0;
     seg->x1 = x1;
@@ -59,22 +60,17 @@ static SEGP ctr_newseg(double x0, double y0, double x1, double y1, SEGP prev)
     return seg;
 }
 
-static void ctr_swapseg(SEGP seg)
+static void ctr_swapseg(SEG* seg)
 {
-    double x, y;
-    x = seg->x0;
-    y = seg->y0;
-    seg->x0 = seg->x1;
-    seg->y0 = seg->y1;
-    seg->x1 = x;
-    seg->y1 = y;
+	std::swap(seg->x0, seg->x1);
+	std::swap(seg->y0, seg->y1);
 }
 
 	/* ctr_segdir(): Determine the entry direction to the next cell */
 	/* and update the cell indices */
 
-#define XMATCH(x0,x1) (fabs(x0-x1) == 0)
-#define YMATCH(y0,y1) (fabs(y0-y1) == 0)
+inline bool XMATCH(double x0, double x1) { return (fabs(x0-x1) == 0); };
+inline bool YMATCH(double y0, double y1) { return (fabs(y0-y1) == 0); };
 
 static int ctr_segdir(double xend, double yend, double *x, double *y,
 		      int *i, int *j, int nx, int ny)
@@ -112,8 +108,8 @@ static int ctr_segdir(double xend, double yend, double *x, double *y,
 /* is pointed to by seg and the updated segment list (with */
 /* the matched segment stripped) is returned by the funtion. */
 
-static SEGP ctr_segupdate(double xend, double yend, int dir, Rboolean tail,
-			  SEGP seglist, SEGP* seg)
+static SEG* ctr_segupdate(double xend, double yend, int dir, Rboolean tail,
+			  SEG* seglist, SEG** seg)
 {
     if (seglist == NULL) {
 	*seg = NULL;
@@ -162,13 +158,13 @@ static SEGP ctr_segupdate(double xend, double yend, int dir, Rboolean tail,
  *
  * NB this R_allocs its return value, so callers need to manage R_alloc stack.
  */
-static SEGP* contourLines(double *x, int nx, double *y, int ny,
+static SEG** contourLines(double *x, int nx, double *y, int ny,
 			 double *z, double zc, double atom)
 {
     double f, xl, xh, yl, yh, zll, zhl, zlh, zhh, xx[4], yy[4];
     int i, j, k, l, m, nacode;
-    SEGP seglist;
-    SEGP *segmentDB;
+    SEG* seglist;
+    SEG** segmentDB;
     /* Initialize the segment data base */
     /* Note we must be careful about resetting */
     /* the top of the stack, otherwise we run out of */
@@ -176,7 +172,7 @@ static SEGP* contourLines(double *x, int nx, double *y, int ny,
     /*
      * This reset is done out in GEcontourLines
      */
-    segmentDB = (SEGP*)R_alloc(nx*ny, sizeof(SEGP));
+    segmentDB = (SEG**)R_alloc(nx*ny, sizeof(SEG*));
     for (i = 0; i < nx; i++)
 	for (j = 0; j < ny; j++)
 	    segmentDB[i + j * nx] = NULL;
@@ -299,7 +295,7 @@ static SEGP* contourLines(double *x, int nx, double *y, int ny,
 	    /* We now have k(=2,4) endpoints */
 	    /* Decide which to join */
 
-	    seglist = NULL;
+	    seglist = nullptr;
 
 	    if (k > 0) {
 		if (k == 2) {

@@ -35,8 +35,8 @@
 using namespace std;
 using namespace rho;
 
-// Force generation of non-inline embodiments of functions in the C
-// interface:
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	SEXP (*protectp)(SEXP) = Rf_protect;
@@ -57,8 +57,7 @@ void ProtectStack::initialize()
 void ProtectStack::restoreSize(size_t new_size)
 {
     if (new_size > s_stack->size())
-	throw out_of_range("ProtectStack::ppsRestoreSize: requested size"
-			   " greater than current size.");
+	throw out_of_range("ProtectStack::ppsRestoreSize: requested size greater than current size.");
     s_stack->resize(new_size);
 }
 

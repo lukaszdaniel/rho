@@ -758,24 +758,24 @@ static void FT_getFont(pGEcontext gc, pDevDesc dd, double fs)
     cairo_font_face_t *cairo_face = NULL;
     const char *family;
 #ifdef Win32
-    char *times = "Times New Roman", *hv = "Arial";
+    char *times = (char *) "Times New Roman", *hv = (char *) "Arial";
 #else
-    char *times = "times", *hv = "Helvetica";
+    char *times = (char *) "times", *hv = (char *) "Helvetica";
 #endif
 
     if (face < 1 || face > 5) face = 1;
     family = gc->fontfamily;
     if (face == 5) {
 #ifdef Win32
-	if (!*family) family = "Standard Symbols L";
+	if (!*family) family = (char *) "Standard Symbols L";
 #else
-	if (!*family) family = "Symbol";
+	if (!*family) family = (char *) "Symbol";
 #endif
     } else {
 	if (!*family) family = xd->basefontfamily;
 	if (streql(family, "sans")) family = hv;
 	else if (streql(family, "serif")) family = times;
-	else if (streql(family, "mono")) family = "Courier";
+	else if (streql(family, "mono")) family = (char *) "Courier";
     }
     /* check the cache first */
     cairo_face = Rc_findFont(family, face);
@@ -802,11 +802,11 @@ static void FT_getFont(pGEcontext gc, pDevDesc dd, double fs)
 #ifdef Win32
     char *times = "Times New Roman", *hv = "Arial";
 #else
-    char *times = "times", *hv = "Helvetica";
+    char *times = (char *) "times", *hv = (char *) "Helvetica";
 #endif
 
     if (face < 1 || face > 5) face = 1;
-    if (face == 5) family = "Symbol";
+    if (face == 5) family = (char *) "Symbol";
     if (face == 2 || face == 4) wt = CAIRO_FONT_WEIGHT_BOLD;
     if (face == 3 || face == 4) slant = CAIRO_FONT_SLANT_ITALIC;
     if (face != 5) {
@@ -815,13 +815,13 @@ static void FT_getFont(pGEcontext gc, pDevDesc dd, double fs)
 	   "monospace" */
 	char *fm = gc->fontfamily;
 	if (!fm[0]) fm = xd->basefontfamily;
-	if (streql(fm, "mono")) family = "courier";
+	if (streql(fm, "mono")) family = (char *) "courier";
 	else if (streql(fm, "serif")) family = times;
 	else if (streql(fm, "sans")) family = hv;
 	else if (fm[0]) family = fm;
     }
 
-    cairo_select_font_face (xd->cc, family, slant, wt);
+    cairo_select_font_face (xd->cc, family,  cairo_font_slant_t(slant), cairo_font_weight_t(wt));
     /* FIXME: this should really use cairo_set_font_matrix
        if pixels are non-square on a screen device. */
     cairo_set_font_size (xd->cc, size);

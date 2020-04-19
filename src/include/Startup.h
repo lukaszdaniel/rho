@@ -34,7 +34,6 @@ extern UImode  CharacterMode;
 #endif
 
 
-
 /* originally from Defn.h : */
 
 void R_CleanUp(SA_TYPE, int, int);
@@ -43,6 +42,5 @@ void R_StartUp(void);
 FILE *R_OpenInitFile(void);
 FILE *R_OpenSysInitFile(void);
 FILE *R_OpenSiteFile(void);
-
 
 #endif /* STARTUP_H */

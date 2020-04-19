@@ -289,17 +289,12 @@ struct _GEDevDesc {
     Rboolean ask;
 };
 
-/* 2007/06/02 arr: Stuff previously here moved to GraphicsContext.h to avoid
- * reciprocal dependencies between this file and GraphicsDevice.h.
- */
-
 typedef GEDevDesc* pGEDevDesc;
 
 /* Mutator functions introduced in rho pending fuller refactorisation:
  */
 void setDisplayList(pGEDevDesc dev, SEXP newDisplayList);
 void saveSnapshot(pGEDevDesc dev, SEXP newSnapshot);
-
 
 /* map DevDesc to enclosing GEDevDesc */
 pGEDevDesc desc2GEDesc(pDevDesc dd);
@@ -318,14 +313,16 @@ void GEregisterSystem(GEcallback callback, int *systemRegisterIndex);
 void GEunregisterSystem(int registerIndex);
 SEXP GEhandleEvent(GEevent event, pDevDesc dev, SEXP data);
 
-// #define fromDeviceX		GEfromDeviceX
-// #define toDeviceX		GEtoDeviceX
-// #define fromDeviceY		GEfromDeviceY
-// #define toDeviceY		GEtoDeviceY
-// #define fromDeviceWidth		GEfromDeviceWidth
-// #define toDeviceWidth		GEtoDeviceWidth
-// #define fromDeviceHeight	GEfromDeviceHeight
-// #define toDeviceHeight		GEtoDeviceHeight
+#if 0
+#define fromDeviceX		GEfromDeviceX
+#define toDeviceX		GEtoDeviceX
+#define fromDeviceY		GEfromDeviceY
+#define toDeviceY		GEtoDeviceY
+#define fromDeviceWidth		GEfromDeviceWidth
+#define toDeviceWidth		GEtoDeviceWidth
+#define fromDeviceHeight	GEfromDeviceHeight
+#define toDeviceHeight		GEtoDeviceHeight
+#endif
 
 double fromDeviceX(double value, GEUnit to, pGEDevDesc dd);
 double toDeviceX(double value, GEUnit from, pGEDevDesc dd);

@@ -44,6 +44,8 @@ extern "C" {
 using namespace std;
 using namespace rho;
 
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	auto ensureReachableP = GCStackRootBase::ensureReachable;

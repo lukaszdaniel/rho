@@ -134,8 +134,7 @@ void* rho::AllocatorSuperblock::lookupBlock(uintptr_t candidate) const {
 
 void* rho::AllocatorSuperblock::allocateBlock(size_t block_size) {
   assert(block_size >= 32 && block_size <= 256
-      && "Only use allocateBlock() to allocate objects between "
-         "32 and 256 bytes.");
+      && "Only use allocateBlock() to allocate objects between 32 and 256 bytes.");
   assert((block_size & 7) == 0
       && "The size argument must be a multiple of 8 bytes");
 
@@ -184,8 +183,7 @@ void rho::AllocatorSuperblock::freeBlock(void* pointer) {
 
 void* rho::AllocatorSuperblock::allocateLarge(unsigned size_log2) {
   assert(size_log2 >= 6 && size_log2 < GCNodeAllocator::s_num_medium_pools
-      && "Can not allocate objects smaller than "
-         "64 bytes using allocateLarge()");
+      && "Can not allocate objects smaller than 64 bytes using allocateLarge()");
   unsigned size_class = sizeClassFromSizeLog2(size_log2);
   AllocatorSuperblock* superblock;
   if (GCNodeAllocator::s_superblocks[size_class]) {

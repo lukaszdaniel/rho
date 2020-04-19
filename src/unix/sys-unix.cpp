@@ -271,7 +271,7 @@ double R_getClockIncrement(void)
 
    Background jobs (ending with &) are not supported. */
 
-static struct {
+static struct timeOutSupport {
     pid_t child_pid;
     int timedout; /* set when the child has been timed out */
     sigset_t oldset;

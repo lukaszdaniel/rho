@@ -34,7 +34,7 @@
 #include <windows.h>
 
 
-const static struct {
+const static struct KeyTable {
     const char * reg;
     HKEY key;
 } 

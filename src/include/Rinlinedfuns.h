@@ -36,11 +36,13 @@
 #ifndef R_INLINES_H_
 #define R_INLINES_H_
 
-#ifndef __cplusplus
-#define RBOOL(x) x
-#else
+#ifdef __cplusplus
 #define RBOOL(x) Rboolean(x)
+#else
+#define RBOOL(x) x
+#endif
 
+#ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
@@ -48,6 +50,11 @@ extern "C" {
 #if __GNUC__ == 4 && __GNUC_MINOR__ >= 3 && defined(__GNUC_STDC_INLINE__) && !defined(C99_INLINE_SEMANTICS)
 #define C99_INLINE_SEMANTICS 1
 #endif
+
+/* Apple's gcc build >5400 (since Xcode 3.0) doesn't support GNU inline in C99 mode */
+//#if __APPLE_CC__ > 5400 && !defined(C99_INLINE_SEMANTICS) && __STDC_VERSION__ >= 199901L
+//#define C99_INLINE_SEMANTICS 1
+//#endif
 
 #ifdef COMPILING_R
 /* defined only in inlined.c: this emits standalone code there */
@@ -133,9 +140,10 @@ INLINE_FUN void R_Reprotect(SEXP s, PROTECT_INDEX i)
 */
 R_len_t Rf_length(SEXP s);
 
-R_xlen_t Rf_xlength(SEXP s);
+
 R_xlen_t Rf_envxlength(SEXP rho);
 
+R_xlen_t Rf_xlength(SEXP s);
 /* regular allocVector() as a special case of allocVector3() with no custom allocator */
 INLINE_FUN SEXP Rf_allocVector(SEXPTYPE type, R_xlen_t length)
 {
@@ -335,8 +343,7 @@ INLINE_FUN Rboolean Rf_inherits(SEXP s, const char *name)
 
 INLINE_FUN Rboolean Rf_isValidString(SEXP x)
 {
-    return RBOOL(TYPEOF(x) == STRSXP && LENGTH(x) > 0
-		 && TYPEOF(STRING_ELT(x, 0)) != NILSXP);
+    return RBOOL(TYPEOF(x) == STRSXP && LENGTH(x) > 0 && TYPEOF(STRING_ELT(x, 0)) != NILSXP);
 }
 
 /* non-empty ("") valid string :*/
@@ -418,6 +425,8 @@ INLINE_FUN Rboolean Rf_isVectorAtomic(SEXP s)
     }
 }
 
+Rboolean isVector(SEXP s);/* === isVectorList() or isVectorAtomic() */
+
 INLINE_FUN Rboolean Rf_isFrame(SEXP s)
 {
     SEXP klass;
@@ -467,6 +476,7 @@ INLINE_FUN Rboolean Rf_isTs(SEXP s)
 {
     return RBOOL(Rf_isVector(s) && Rf_getAttrib(s, R_TspSymbol) != R_NilValue);
 }
+
 
 INLINE_FUN Rboolean Rf_isInteger(SEXP s)
 {

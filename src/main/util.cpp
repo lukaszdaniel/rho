@@ -208,7 +208,7 @@ Rboolean Rf_isOrdered(SEXP s)
 }
 
 
-const static struct {
+const static struct TypeTable {
     const char * const str;
     const SEXPTYPE type;
 }
@@ -256,7 +256,7 @@ SEXPTYPE Rf_str2type(const char *s)
     return SEXPTYPE(-1);
 }
 
-static struct {
+static struct Type2Table {
     const char *cstrName;
     SEXP rcharName;
     SEXP rstrName;
@@ -555,7 +555,7 @@ SEXP Rf_nthcdr(SEXP s, int n)
 /* This is a primitive (with no arguments) */
 SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
-    ClosureContext *cptr = ClosureContext::innermost();
+    ClosureContext *cptr = R_GlobalContext();
     int nargs = NA_INTEGER;
     while (cptr && cptr->workingEnvironment() != rho)
 	cptr = ClosureContext::innermost(cptr->nextOut());
@@ -1955,7 +1955,7 @@ void attribute_hidden resetICUcollator(void)
     collationLocaleSet = 0;
 }
 
-static const struct {
+static const struct ATtable {
     const char * const str;
     int val;
 } ATtable[] = {

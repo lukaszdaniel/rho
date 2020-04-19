@@ -1716,7 +1716,7 @@ static int nextchar(int expect)
 /* Special Symbols */
 /* Syntactic Keywords + Symbolic Constants */
 
-struct {
+struct keywords {
     const char *name;
     int token;
 }

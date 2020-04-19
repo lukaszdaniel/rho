@@ -654,15 +654,13 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 		    && !R_checkConstants(FALSE))
 		constsOK = FALSE;
 	if (!constsOK) {
-	    REprintf("ERROR: detected compiler constant(s) modification after"
-		" .Call invocation of function %s from library %s (%s).\n",
+	    REprintf("ERROR: detected compiler constant(s) modification after .Call invocation of function %s from library %s (%s).\n",
 		buf,
 		symbol.dll ? symbol.dll->name : "unknown",
 		symbol.dll ? symbol.dll->path : "unknown");
 	    for(i = 0; i < nargs; i++)
 		if (!R_compute_identical(cargs[i], cargscp[i], 39))
-		    REprintf("NOTE: .Call function %s modified its argument"
-			" (number %d, type %s, length %d)\n",
+		    REprintf("NOTE: .Call function %s modified its argument (number %d, type %s, length %d)\n",
 			buf,
 			i + 1,
 			R_CHAR(Rf_type2str(TYPEOF(cargscp[i]))),
@@ -739,7 +737,7 @@ Rf_getCallingDLL(void)
        Testing shows this is the right caller, despite the .C/.Call ...
      */
     {
-	ClosureContext* cptr = ClosureContext::innermost();
+	ClosureContext* cptr = R_GlobalContext();
 	if (cptr)
 	    rho = cptr->workingEnvironment();
     }
@@ -1348,7 +1346,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 }
 
 #ifndef NO_CALL_R
-static const struct {
+static const struct typeinfo {
     const char *name;
     const SEXPTYPE type;
 }

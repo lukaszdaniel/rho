@@ -451,8 +451,7 @@ namespace rho {
 	for (PairList* pl = bindings; pl != nullptr; pl = pl->tail()) {
 	    const RObject* tag = pl->tag();
 	    const Symbol* symbol = dynamic_cast<const Symbol*>(tag);
-	    if (!symbol) Rf_error(_("list used to set frame bindings"
-				    " must have symbols as tags throughout"));
+	    if (!symbol) Rf_error(_("list used to set frame bindings must have symbols as tags throughout"));
 	    Frame::Binding* bdg = frame->obtainBinding(symbol);
 	    bdg->fromPairList(pl);
 	}

@@ -39,6 +39,8 @@
 
 using namespace rho;
 
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	R_xlen_t (*XLENGTHptr)(SEXP x) = XLENGTH;

@@ -36,6 +36,22 @@
 #include <Rinternals.h> // for R_xlen_t
 #include <R_ext/Complex.h>
 
+#if 0
+#define formatLogical      Rf_formatLogical
+#define formatInteger      Rf_formatInteger
+#define formatReal         Rf_formatReal
+#define formatComplex      Rf_formatComplex
+#define EncodeLogical      Rf_EncodeLogical
+#define EncodeInteger      Rf_EncodeInteger
+#define EncodeReal         Rf_EncodeReal
+#define EncodeReal0        Rf_EncodeReal0
+#define EncodeComplex      Rf_EncodeComplex
+#define VectorIndex        Rf_VectorIndex
+#define printIntegerVector Rf_printIntegerVector
+#define printRealVector    Rf_printRealVector
+#define printComplexVector Rf_printComplexVector
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

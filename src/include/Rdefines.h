@@ -115,7 +115,7 @@ extern "C" {
 /* Use of VECTOR_PTR will fail unless USE_RINTERNALS is in use
    This is probably unused.
 */
-#define LIST_POINTER(x)                VECTOR_PTR(x)
+#define LIST_POINTER(x)		VECTOR_PTR(x)
 #define RAW_POINTER(x)		RAW(x)
 
 /* The following are not defined in `Programming with Data' but are
@@ -136,8 +136,8 @@ extern "C" {
    VECTOR_DATA seems unused, and RECURSIVE_DATA is used only in
    the Expat part of XML.
 */
-#define RECURSIVE_DATA(x)      (VECTOR_PTR(x))
-#define VECTOR_DATA(x)         (VECTOR_PTR(x))
+#define RECURSIVE_DATA(x)	(VECTOR_PTR(x))
+#define VECTOR_DATA(x)		(VECTOR_PTR(x))
 
 #define LOGICAL_VALUE(x)	Rf_asLogical(x)
 #define INTEGER_VALUE(x)	Rf_asInteger(x)

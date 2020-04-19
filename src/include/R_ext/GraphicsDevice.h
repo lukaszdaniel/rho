@@ -36,7 +36,6 @@
 #ifndef R_GRAPHICSDEVICE_H_
 #define R_GRAPHICSDEVICE_H_
 
-/*#include <R_ext/GraphicsContext.h>*/
 
 /* ideally we would use prototypes in DevDesc.  
    Some devices have taken to passing pointers to their own structure
@@ -767,6 +766,21 @@ struct _DevDesc {
 #define R_TRANWHITE     (R_RGBA(255, 255, 255, 0))
 
 
+/* used in various devices */
+
+#if 0
+#define curDevice		Rf_curDevice
+#define killDevice		Rf_killDevice
+#define ndevNumber		Rf_ndevNumber
+#define NewFrameConfirm		Rf_NewFrameConfirm
+#define nextDevice		Rf_nextDevice
+#define NoDevices		Rf_NoDevices
+#define NumDevices		Rf_NumDevices
+#define prevDevice		Rf_prevDevice
+#define selectDevice		Rf_selectDevice
+#define AdobeSymbol2utf8	Rf_AdobeSymbol2utf8
+#endif
+
 /* Properly declared version of devNumber */
 int ndevNumber(pDevDesc );
 
@@ -817,10 +831,12 @@ typedef enum {meMouseDown = 0,
 #define middleButton 2
 #define rightButton  4
 
-// #define doKeybd			Rf_doKeybd
-// #define doMouseEvent		Rf_doMouseEvent
-// #define doIdle			Rf_doIdle
-// #define doesIdle		Rf_doesIdle
+#ifndef R_NO_REMAP
+#define doKeybd			Rf_doKeybd
+#define doMouseEvent		Rf_doMouseEvent
+#define doIdle			Rf_doIdle
+#define doesIdle		Rf_doesIdle
+#endif
 
 void doMouseEvent(pDevDesc dd, R_MouseEvent event,
                   int buttons, double x, double y);

@@ -49,6 +49,7 @@
 
 #include "rho/ArgList.hpp"
 #include "rho/BailoutContext.hpp"
+#include "rho/BuiltInFunction.hpp"
 #include "rho/Closure.hpp"
 #include "rho/ClosureContext.hpp"
 #include "rho/DottedArgs.hpp"
@@ -569,7 +570,7 @@ static void PrintCall(SEXP call, SEXP rho)
 
 void Closure::DebugScope::startDebugging() const
 {
-    const ClosureContext* ctxt = ClosureContext::innermost();
+    const ClosureContext* ctxt = R_GlobalContext();
     const Expression* call = ctxt->call();
     Environment* working_env = ctxt->workingEnvironment();
     working_env->setSingleStepping(true);
@@ -583,7 +584,7 @@ void Closure::DebugScope::startDebugging() const
 
 void Closure::DebugScope::endDebugging() const
 {
-    const ClosureContext* ctxt = ClosureContext::innermost();
+    const ClosureContext* ctxt = R_GlobalContext();
     try {
 	Rprintf("exiting from: ");
 	PrintCall(const_cast<Expression*>(ctxt->call()), nullptr);
@@ -661,7 +662,7 @@ SEXP R_execMethod(SEXP op, SEXP rho)
     const Frame* fromf = callenv->frame();
 
     /* Find the calling context. */
-    ClosureContext* cptr = ClosureContext::innermost();
+    ClosureContext* cptr = R_GlobalContext();
 
     /* The calling environment should either be the environment of the
        generic, rho, or the environment of the caller of the generic,
@@ -1646,7 +1647,7 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (frame == NA_INTEGER)
 	    Rf_error(_("invalid '%s' argument of type '%s'"),
 		  "envir", Rf_type2char(TYPEOF(env)));
-	PROTECT(env = R_sysframe(frame, ClosureContext::innermost()));
+	PROTECT(env = R_sysframe(frame, R_GlobalContext()));
 	break;
     default:
 	Rf_error(_("invalid '%s' argument of type '%s'"),
@@ -1735,7 +1736,7 @@ SEXP attribute_hidden do_recall(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *cptr;
     SEXP s, ans ;
-    cptr = ClosureContext::innermost();
+    cptr = R_GlobalContext();
     /* get the args supplied */
     while (cptr && cptr->workingEnvironment() != rho) {
 	cptr = ClosureContext::innermost(cptr->nextOut());

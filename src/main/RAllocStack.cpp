@@ -38,8 +38,8 @@
 using namespace std;
 using namespace rho;
 
-// Force generation of non-inline embodiments of functions in the C
-// interface:
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	void* (*vmaxgetp)(void) = vmaxget;
@@ -65,12 +65,10 @@ void RAllocStack::initialize()
 void RAllocStack::restoreSize(size_t new_size)
 {
     if (new_size > s_stack->size())
-	throw out_of_range("RAllocStack::restoreSize: requested size"
-			   " greater than current size.");
+	throw out_of_range("RAllocStack::restoreSize: requested size greater than current size.");
 #ifndef NDEBUG
     if (s_innermost_scope && new_size < s_innermost_scope->startSize())
-	throw out_of_range("RAllocStack::restoreSize: requested size"
-			   " too small for current scope.");
+	throw out_of_range("RAllocStack::restoreSize: requested size too small for current scope.");
 #endif
     trim(new_size);
 }

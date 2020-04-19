@@ -202,7 +202,7 @@ std::pair<bool, SEXP> Rf_usemethod(const char* generic,
     assert(generic != nullptr);
 
     // Get the ClosureContext which UseMethod was called from.
-    ClosureContext* cptr = ClosureContext::innermost();
+    ClosureContext* cptr = R_GlobalContext();
     if (!cptr || cptr->workingEnvironment() != env)
 	Rf_error(_("'UseMethod' used in an inappropriate fashion"));
 
@@ -326,7 +326,7 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
     Environment* argsenv = SEXP_downcast<Environment*>(env);
 
     // Find and check ClosureContext:
-    ClosureContext* cptr = ClosureContext::innermost();
+    ClosureContext* cptr = R_GlobalContext();
     if (!cptr || cptr->workingEnvironment() != argsenv)
 	Rf_error(_("'UseMethod' used in an inappropriate fashion"));
 
@@ -464,7 +464,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
     // Determine the ClosureContext from which NextMethod was called,
     // and the Environment of that call.  (The ClosureContext will
     // will be two out because NextMethod is an internal function.)
-    ClosureContext* cptr = ClosureContext::innermost();
+    ClosureContext* cptr = R_GlobalContext();
     Environment* nmcallenv = cptr->callEnvironment();
     cptr = ClosureContext::findClosureWithWorkingEnvironment(nmcallenv, cptr);
     if (cptr == nullptr) {
@@ -1109,7 +1109,7 @@ static SEXP dispatchNonGeneric(SEXP name, SEXP env, SEXP fdef)
     if(fun == R_UnboundValue)
 	Rf_error(_("unable to find a non-generic version of function \"%s\""),
 	      Rf_translateChar(Rf_asChar(name)));
-    cptr = ClosureContext::innermost();
+    cptr = R_GlobalContext();
     /* check this is the right context */
     while (cptr && cptr->workingEnvironment() != env)
 	cptr = ClosureContext::innermost(cptr->nextOut());
@@ -1363,7 +1363,7 @@ static SEXP get_this_generic(RObject* const* args, int num_args)
      * to force a second argument if possible) */
     if(!gen_name)
 	gen_name = Rf_install("generic");
-    cptr = ClosureContext::innermost();
+    cptr = R_GlobalContext();
     fname = Rf_translateChar(Rf_asChar(args[0]));
     n = Rf_framedepth(cptr);
     /* check for a matching "generic" slot */

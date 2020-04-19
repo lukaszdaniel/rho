@@ -2347,7 +2347,7 @@ static Rboolean clp_open(Rconnection con)
 	thisconn->last = 0;
     }
     con->text = TRUE;
-    //set_buffer(con);
+    /* Not calling set_buffer(con) as the data is already buffered */
     set_iconv(con);
     con->save = -1000;
     thisconn->warned = FALSE;

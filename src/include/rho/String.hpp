@@ -434,7 +434,7 @@ extern "C" {
      *
      * @return true iff \a x is marked as having LATIN1 encoding.
      */
-    inline Rboolean IS_LATIN1(SEXP x)
+    inline int IS_LATIN1(SEXP x)
     {
 	// Use explicit namespace qualification to prevent ambiguities:
 	const rho::String& str = *rho::SEXP_downcast<const rho::String*>(x);
@@ -447,7 +447,7 @@ extern "C" {
      *
      * @return true iff \a x is marked as having UTF8 encoding.
      */
-    inline Rboolean IS_UTF8(SEXP x)
+    inline int IS_UTF8(SEXP x)
     {
 	// Use explicit namespace qualification to prevent ambiguities:
 	const rho::String& str = *rho::SEXP_downcast<const rho::String*>(x);

@@ -34,9 +34,10 @@
 /* Public interface */
 /* SEXP R_ParseVector(SEXP, int, ParseStatus *, SEXP); in R_ext/Parse.h */
 
+/* Private interface */
+
 typedef struct SrcRefState SrcRefState;
 
-/* Private interface */
 #ifdef __cplusplus
 #include "rho/GCRoot.hpp"
 
@@ -60,7 +61,9 @@ struct SrcRefState {
     
     SrcRefState* prevState;
 };
+#endif  // __cplusplus
 
+#ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 

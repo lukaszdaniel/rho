@@ -37,17 +37,19 @@
 
 using namespace rho;
 
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	int (*ENC_KNOWNp)(const SEXP x) = ENC_KNOWN;
 	int (*IS_ASCIIp)(const SEXP x) = IS_ASCII;
 	int (*IS_BYTESp)(const SEXP x) = IS_BYTES;
-	Rboolean (*IS_LATIN1p)(const SEXP x) = IS_LATIN1;
-	Rboolean (*IS_UTF8p)(const SEXP x) = IS_UTF8;
+	int (*IS_LATIN1p)(const SEXP x) = IS_LATIN1;
+	int (*IS_UTF8p)(const SEXP x) = IS_UTF8;
 	const char* (*R_CHARp)(SEXP x) = R_CHAR;
 	SEXP (*mkCharp)(const char*) = Rf_mkChar;
 	SEXP (*mkCharCEp)(const char*, cetype_t) = Rf_mkCharCE;
-	SEXP (*mkCharLenp)(const char*, int) = Rf_mkCharLen;
+	SEXP (*mkCharLenp)(const char*, int) = Rf_mkCharLen;    
     }
 }
 std::hash<std::string> String::Hasher::s_string_hasher;

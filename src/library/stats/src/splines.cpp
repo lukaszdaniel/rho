@@ -380,7 +380,7 @@ SEXP SplineCoef(SEXP method, SEXP x, SEXP y)
     ans = PROTECT(Rf_allocVector(VECSXP, 7));
     SET_VECTOR_ELT(ans, 0, Rf_ScalarInteger(m));
     SET_VECTOR_ELT(ans, 1, (n > INT_MAX) ?
-		   Rf_ScalarReal((double)n) : Rf_ScalarInteger(n));
+		   Rf_ScalarReal((double)n) : Rf_ScalarInteger((int)n));
     SET_VECTOR_ELT(ans, 2, x);
     SET_VECTOR_ELT(ans, 3, y);
     SET_VECTOR_ELT(ans, 4, b);

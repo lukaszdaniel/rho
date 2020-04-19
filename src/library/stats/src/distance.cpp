@@ -193,7 +193,7 @@ static double R_minkowski(double *x, int nr, int nc, int i1, int i2, double p)
     return R_pow(dist, 1.0/p);
 }
 
-enum { EUCLIDEAN=1, MAXIMUM, MANHATTAN, CANBERRA, BINARY, MINKOWSKI };
+enum Distance { EUCLIDEAN=1, MAXIMUM, MANHATTAN, CANBERRA, BINARY, MINKOWSKI };
 /* == 1,2,..., defined by order in the R function dist */
 
 void R_distance(double *x, int *nr, int *nc, double *d, int *diag,

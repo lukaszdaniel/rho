@@ -47,6 +47,8 @@
 
 using namespace rho;
 
+// Force the creation of non-inline embodiments of functions callable
+// from C:
 namespace rho {
     namespace ForceNonInline {
 	const char* (*PRIMNAMEp)(SEXP x) = PRIMNAME;

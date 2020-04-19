@@ -46,10 +46,6 @@
 #define MAX_LAYOUT_CELLS 10007 /* must be less than 65535,
 				3 copies, 3bytes each */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct {
 	double ax;
 	double bx;
@@ -267,6 +263,22 @@ typedef struct {
                         /* (for fit-to-window resizing in Windows) */
 } GPar;
 
+/* always remap private functions */
+#if 0
+#define copyGPar		Rf_copyGPar
+#define FixupCol		Rf_FixupCol
+#define FixupLty		Rf_FixupLty
+#define FixupLwd		Rf_FixupLwd
+#define FixupVFont		Rf_FixupVFont
+#define GInit			Rf_GInit
+#define labelformat		Rf_labelformat
+#define ProcessInlinePars	Rf_ProcessInlinePars
+#define recordGraphicOperation	Rf_recordGraphicOperation
+#endif
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* NOTE: during replays, call == R_NilValue;
    ----  the following adds readability: */
 Rboolean GRecording(SEXP, pGEDevDesc);
@@ -300,6 +312,7 @@ SEXP labelformat(SEXP);
  */
 void gcontextFromGP(pGEcontext gc, pGEDevDesc dd);
 
+/* From base.cpp */
 GPar* gpptr(pGEDevDesc dd);
 GPar* dpptr(pGEDevDesc dd);
 

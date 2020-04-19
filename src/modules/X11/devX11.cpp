@@ -376,7 +376,7 @@ static int Cairo_holdflush(pDevDesc dd, int level)
 	/************************/
 
 /* Variables Used To Store Colormap Information */
-static struct { int red; int green; int blue; } RPalette[512];
+static struct RPalette { int red; int green; int blue; } RPalette[512];
 static XColor XPalette[512];
 static int PaletteSize;
 

@@ -58,9 +58,6 @@
 #include <R_ext/Constants.h>
 #include <R_ext/Memory.h>	/* S_alloc */
 
-#include <R_ext/RS.h>
-/* for PROBLEM ... Calloc, Realloc, Free, Memcpy, F77_xxxx */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -72,6 +69,15 @@ extern double unif_rand(void);
 extern double norm_rand(void);
 
 /* Macros for S/R Compatibility */
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
+#include <R_ext/RS.h>
+/* for PROBLEM ... Calloc, Realloc, Free, Memcpy, F77_xxxx */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* S4 uses macros equivalent to */
 #define Salloc(n,t) (t*)S_alloc(n, sizeof(t))

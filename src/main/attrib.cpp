@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1997--2016  The R Core Team
+ *  Copyright (C) 1997--2017  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -669,7 +669,7 @@ SEXP R_S4_extends(SEXP klass, SEXP useTable)
 
 
 /* pre-allocated default class attributes */
-static struct {
+static struct Type2DefaultClass {
     SEXP vector;
     SEXP matrix;
     SEXP array;
@@ -1264,7 +1264,7 @@ SEXP attribute_hidden do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP tag = R_NilValue, alist, ans, x, which, exact_;
     const char *str;
     int nargs = Rf_length(args), exact = 0;
-    enum { NONE, PARTIAL, PARTIAL2, FULL } match = NONE;
+    enum match { NONE, PARTIAL, PARTIAL2, FULL } match = NONE;
 
     /* argument matching */
     static GCRoot<ArgMatcher> matcher

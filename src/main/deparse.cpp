@@ -345,6 +345,7 @@ SEXP attribute_hidden Rf_deparse1s(SEXP call)
 
 #include "Rconnections.h"
 
+// .Internal(dput(x, file, .deparseOpts(control)))
 SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* file_, RObject* control_)
 {
     SEXP saveenv, tval;
@@ -407,6 +408,7 @@ SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction*
     return (x_);
 }
 
+// .Internal(dump(list, file, envir, opts, evaluate))
 SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* file_, RObject* envir_, RObject* opts_, RObject* evaluate_)
 {
     SEXP file, names, o, objs, tval, source, outnames;

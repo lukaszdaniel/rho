@@ -1341,7 +1341,7 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
     savestack = int(ProtectStack::size());
 
     if (!ENV_DEBUG(rho)) {
-	ClosureContext* cptr = ClosureContext::innermost();
+	ClosureContext* cptr = R_GlobalContext();
 	Rprintf("Called from: ");
 	if( cptr ) {
 	    PrintCall(const_cast<Expression*>(cptr->call()), rho);
@@ -1360,7 +1360,7 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    GCStackRoot<PairList> saved_handler_stack(R_HandlerStack);
 	    redo = false;
 	    try {
-		ClosureContext* cptr = ClosureContext::innermost();
+		ClosureContext* cptr = R_GlobalContext();
 		// rho doesn't have a top-level context.  The
 		// following test stops an error if browser() is
 		// invoked at top level, but this workaround needs to

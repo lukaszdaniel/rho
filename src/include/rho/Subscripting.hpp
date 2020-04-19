@@ -869,8 +869,7 @@ namespace rho {
 	if (rhs_size == 0)
 	    Rf_error(_("replacement has length zero"));
 	if (ni%rhs_size != 0)
-	    Rf_warning(_("number of items to replace is not"
-			 " a multiple of replacement length"));
+	    Rf_warning(_("number of items to replace is not a multiple of replacement length"));
 	// Copy elements across:
 	for (std::size_t irhs = 0; irhs < ni; ++irhs) {
 	    bool naindex = false;
@@ -1020,8 +1019,7 @@ namespace rho {
 	if (rhs_size == 0)
 	    Rf_error(_("replacement has length zero"));
 	if (ni%rhs_size != 0)
-	    Rf_warning(_("number of items to replace is not"
-			 " a multiple of replacement length"));
+	    Rf_warning(_("number of items to replace is not a multiple of replacement length"));
 	for (std::size_t i = 0; i < ni; ++i) {
 	    std::size_t index = indices[i];
 	    if (index != 0) {

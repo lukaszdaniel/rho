@@ -213,8 +213,7 @@ fexact(int *nrow, int *ncol, int *table, int *ldtabl,
 	}
     }
     if (ntot == 0) {
-	prterr(3, "All elements of TABLE are zero.\n"
-	       "PRT and PRE are set to missing values.");
+	prterr(3, "All elements of TABLE are zero.\nPRT and PRE are set to missing values.");
 	*pre = *prt = amiss;
 	return;
     }
@@ -419,8 +418,7 @@ f2xact(int nrow, int ncol, int *table, int ldtabl,
     }
 
     if (ntot == 0) {
-	prterr(3, "All elements of TABLE are zero.\n"
-	       "PRT and PRE are set to missing values.");
+	prterr(3, "All elements of TABLE are zero.\nPRT and PRE are set to missing values.");
 	*pre = *prt = amiss;
 	return;
     }
@@ -655,8 +653,7 @@ L150:
 	   "It is not possible to give the value of LDKEY required,\n"
 	   "but you could try doubling LDKEY (and possibly LDSTP).");
 	   */
-	prterr(6, "LDKEY is too small for this problem.\n"
-	       "Try increasing the size of the workspace.");
+	prterr(6, "LDKEY is too small for this problem.\nTry increasing the size of the workspace.");
     }
 
 L240:
@@ -1052,8 +1049,7 @@ LoopNode: /* Generate a node */
 	}
 
 	/* this happens less, now that we check for negative key above: */
-	prterr(30, "Stack length exceeded in f3xact.\n"
-	       "This problem should not occur.");
+	prterr(30, "Stack length exceeded in f3xact.\nThis problem should not occur.");
 
 L180: /* Push onto stack */
 	ist[ii] = key;
@@ -1399,8 +1395,7 @@ f5xact(double *pastp, const double *tol, int *kval, int *key, int *ldkey,
 	  "required,\n"
 	  "but twice the current value may be sufficient.");
 	  */
-	prterr(6, "LDKEY is too small for this problem.\n"
-	       "Try increasing the size of the workspace.");
+	prterr(6, "LDKEY is too small for this problem.\nTry increasing the size of the workspace.");
 
 
 L30: /* Update KEY */
@@ -1416,8 +1411,7 @@ L30: /* Update KEY */
 	       "required,\n"
 	       "but twice the current value may be sufficient.");
 	       */
-	    prterr(7, "LDSTP is too small for this problem.\n"
-		   "Try increasing the size of the workspace.");
+	    prterr(7, "LDSTP is too small for this problem.\nTry increasing the size of the workspace.");
 	}
 	/* Update STP, etc. */
 	npoin[*itop] = -1;
@@ -1454,8 +1448,7 @@ L40: /* Find location, if any, of pastp */
 	  "required,\n"
 	  "but twice the current value may be sufficient.");
 	  */
-	prterr(7, "LDSTP is too small for this problem.\n"
-	       "Try increasing the size of the workspace.");
+	prterr(7, "LDSTP is too small for this problem.\nTry increasing the size of the workspace.");
 	return;
     }
 

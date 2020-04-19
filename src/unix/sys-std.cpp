@@ -540,7 +540,7 @@ static R_ReadlineData *rl_top = NULL;
 
 #define MAX_READLINE_NESTING 10
 
-static struct {
+static struct ReadlineStack {
   int current;
   int max;
   rl_vcpfunc_t *fun[MAX_READLINE_NESTING];

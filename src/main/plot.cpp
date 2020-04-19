@@ -91,8 +91,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 	    }
 	    else {
 		/* can the following still happen... ? */
-		Rf_warning("CreateAtVector \"log\"(from axis()): "
-			"usr[0] = %g > %g = usr[1] !", umin, umax);
+		Rf_warning("CreateAtVector \"log\"(from axis()): usr[0] = %g > %g = usr[1] !", umin, umax);
 	    }
 	}
 	/* allow a fuzz since we will do things like 0.2*dn >= umin */
@@ -118,9 +117,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 		     nint, ne);
 #endif
 	    if (ne < 1)
-		Rf_error("log - axis(), 'at' creation, _LARGE_ range: "
-		      "ne = %d <= 0 !!\n"
-		      "\t axp[0:1]=(%g,%g) ==> i = %d;	nint = %d",
+		Rf_error("log - axis(), 'at' creation, _LARGE_ range: ne = %d <= 0 !!\n\t axp[0:1]=(%g,%g) ==> i = %d;	nint = %d",
 		      ne, axp[0],axp[1], i, nint);
 	    rng = Rexp10((double)ne); /* >= 10 */
 	    n = 0;
@@ -129,9 +126,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 		dn *= rng;
 	    }
 	    if (!n)
-		Rf_error("log - axis(), 'at' creation, _LARGE_ range: "
-		      "invalid {xy}axp or par; nint=%d\n"
-		      "	 axp[0:1]=(%g,%g), usr[0:1]=(%g,%g); i=%d, ni=%d",
+		Rf_error("log - axis(), 'at' creation, _LARGE_ range: invalid {xy}axp or par; nint=%d\n	 axp[0:1]=(%g,%g), usr[0:1]=(%g,%g); i=%d, ni=%d",
 		      nint, axp[0],axp[1], umin,umax, i,ne);
 	    at = Rf_allocVector(REALSXP, n);
 	    dn = axp[0];
@@ -153,9 +148,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 		dn *= 10;
 	    }
 	    if (!n)
-		Rf_error("log - axis(), 'at' creation, _MEDIUM_ range: "
-		      "invalid {xy}axp or par;\n"
-		      "	 axp[0]= %g, usr[0:1]=(%g,%g)",
+		Rf_error("log - axis(), 'at' creation, _MEDIUM_ range: invalid {xy}axp or par;\n	 axp[0]= %g, usr[0:1]=(%g,%g)",
 		      axp[0], umin,umax);
 
 	    at = Rf_allocVector(REALSXP, n);
@@ -190,9 +183,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 		dn *= 10;
 	    }
 	    if (!n)
-		Rf_error("log - axis(), 'at' creation, _SMALL_ range: "
-		      "invalid {xy}axp or par;\n"
-		      "	 axp[0]= %g, usr[0:1]=(%g,%g)",
+		Rf_error("log - axis(), 'at' creation, _SMALL_ range: invalid {xy}axp or par;\n	 axp[0]= %g, usr[0:1]=(%g,%g)",
 		      axp[0], umin,umax);
 	    at = Rf_allocVector(REALSXP, n);
 	    dn = axp[0];

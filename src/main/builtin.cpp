@@ -129,17 +129,17 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
 SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *ctxt;
-    SEXP code, oldcode, tmp, add;
+    SEXP code, oldcode, tmp, argList_;
     int addit = 0;
 
     checkArity(op, args);
     static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "expr", "add" });
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
-    matcher->match(arglist, { &code, &add });
+    matcher->match(arglist, { &code, &argList_ });
     if (code == R_MissingArg)
-	code = R_NilValue;
-    if (add != R_MissingArg) {
-	addit = Rf_asLogical(Rf_eval(add, rho));
+	code = nullptr;
+    if (argList_ != R_MissingArg) {
+	addit = Rf_asLogical(Rf_eval(argList_, rho));
 	if (addit == NA_INTEGER)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "add");
     }

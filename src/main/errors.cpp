@@ -47,7 +47,6 @@
 #include <Rconnections.h>
 #include <Rinterface.h>
 #include <R_ext/GraphicsEngine.h> /* for GEonExit */
-//#include <Rmath.h> /* for imax2 */
 #include <R_ext/Print.h>
 #include <cstdarg>
 
@@ -330,7 +329,7 @@ static void vwarningcall_dflt(SEXP call, const char *format, va_list ap)
     if( s != R_NilValue ) {
 	if( !Rf_isLanguage(s) &&  ! Rf_isExpression(s) )
 	    Rf_error(_("invalid option \"warning.expression\""));
-	cptr = ClosureContext::innermost();
+	cptr = R_GlobalContext();
 	s->evaluate(cptr->workingEnvironment());
 	return;
     }
@@ -1195,7 +1194,7 @@ void NORET UNIMPLEMENTED(const char *s)
 }
 
 /* ERROR_.. codes in Errormsg.h */
-static struct {
+static struct ErrorDB {
     R_ERROR code;
     const char* format;
 }
@@ -1210,7 +1209,7 @@ const ErrorDB[] = {
     { ERROR_UNKNOWN,		N_("unknown error (report this!)")	}
 };
 
-static struct {
+static struct WarningDB {
     R_WARNING code;
     const char* format;
 }
@@ -1303,7 +1302,7 @@ SEXP R_GetTraceback(int skip)
     SEXP s, t;
 
     for (c = FunctionContext::innermost(), ns = skip;
-	 c != nullptr;
+		 c != nullptr;
 	 c = FunctionContext::innermost(c->nextOut()))
 	if (ns > 0)
 	    ns--;

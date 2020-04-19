@@ -209,8 +209,7 @@ static void SetSize(R_size_t vsize)
     }
     if(vsize < Min_Vsize || vsize > Max_Vsize) {
 	snprintf(msg, 1024, 
-		 "WARNING: invalid v(ector heap)size `%lu' ignored\n"
-		 "using default = %gM\n", static_cast<unsigned long>(vsize),
+		 "WARNING: invalid v(ector heap)size `%lu' ignored\nusing default = %gM\n", static_cast<unsigned long>(vsize),
 		 R_VSIZE / Mega);
 	R_ShowMessage(msg);
 	R_VSize = R_VSIZE;

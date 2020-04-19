@@ -77,8 +77,7 @@ void CellPool::checkAllocatedCell(const void* p) const
     for (Cell* c = m_free_cells; !found && c; c = c->m_next)
 	found = (c == cp);
     if (found) {
-	cerr << "CellPool::checkCell : designated block"
-	    " is (already) free.\n";
+	cerr << "CellPool::checkCell : designated block is (already) free.\n";
 	abort();
     }
 }
@@ -95,15 +94,13 @@ void CellPool::checkCell(const void* p) const
 	    && offset < static_cast<long>(m_admin->m_superblocksize)) {
 	    found = true;
 	    if (std::size_t(offset)%m_admin->m_cellsize != 0) {
-		cerr << "CellPool::checkCell : designated block"
-		        " is misaligned\n";
+		cerr << "CellPool::checkCell : designated block is misaligned\n";
 		abort();
 	    }
 	}
     }
     if (!found) {
-	cerr << "CellPool::checkCell : "
-	    "designated block doesn't belong to this CellPool\n";
+	cerr << "CellPool::checkCell : designated block doesn't belong to this CellPool\n";
 	abort();
     }
 }

@@ -40,10 +40,6 @@
 #define ERRORMSG_H
 
 /* Used in ../main/sub*.cpp */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 #define R_MSG_subs_o_b	_("subscript out of bounds")
 #define R_MSG_ob_nonsub _("object of type '%s' is not subsettable")
 
@@ -78,9 +74,6 @@ typedef enum {
     WARNING_UNKNOWN = 9999
 } R_WARNING;
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif
 

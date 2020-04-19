@@ -33,6 +33,18 @@
 #include <R_ext/PrtUtil.h>
 #include <R_ext/Print.h>
 
+#if 0
+#define formatRaw           Rf_formatRaw
+#define formatString        Rf_formatString
+#define EncodeElement       Rf_EncodeElement
+#define EncodeElement0      Rf_EncodeElement0
+#define EncodeEnvironment   Rf_EncodeEnvironment
+#define printArray          Rf_printArray
+#define printMatrix         Rf_printMatrix
+#define printNamedVector    Rf_printNamedVector
+#define printVector         Rf_printVector
+#endif
+
 #ifdef __cplusplus
 
 extern "C" {
@@ -57,6 +69,7 @@ extern R_print_par_t R_print;
 
 /* Computation of printing formats */
 void formatRaw(Rbyte *, R_xlen_t, int *);
+//void formatString(SEXP*, R_xlen_t, int*, int);
 
 /* Formating of values */
 const char *EncodeElement0(SEXP, int, int, const char *);

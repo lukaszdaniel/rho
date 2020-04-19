@@ -1005,7 +1005,7 @@ SEXP R_ParseRd(Rconnection con, ParseStatus *status, SEXP srcfile, Rboolean frag
 /* Special Symbols */
 /* Section and R code headers */
 
-struct {
+struct keywords {
     const char *name;
     int token;
 }

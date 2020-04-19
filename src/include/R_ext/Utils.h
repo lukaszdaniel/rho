@@ -46,6 +46,19 @@
 # define R_SIZE_T size_t
 #endif
 
+#if 0
+#define revsort       Rf_revsort
+#define iPsort        Rf_iPsort
+#define rPsort        Rf_rPsort
+#define cPsort        Rf_cPsort
+#define IndexWidth    Rf_IndexWidth
+#define setIVector    Rf_setIVector
+#define setRVector    Rf_setRVector
+#define StringFalse   Rf_StringFalse
+#define StringTrue    Rf_StringTrue
+#define isBlankString Rf_isBlankString
+#endif
+
 #ifdef  __cplusplus
 extern "C" {
 #endif

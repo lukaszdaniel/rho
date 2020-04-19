@@ -884,7 +884,7 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
 
     if (TYPEOF(envir) == REALSXP || TYPEOF(envir) == INTSXP) {
 	where = Rf_asInteger(envir);
-	genv = R_sysframe(where, ClosureContext::innermost());
+	genv = R_sysframe(where, R_GlobalContext());
     }
     else {
 	genv = simple_as_environment(envir);
@@ -1565,7 +1565,7 @@ static SEXP pos2env(int pos, SEXP call)
     }
     else if (pos == -1) {
 	/* make sure the context is a funcall */
-	cptr = ClosureContext::innermost();
+	cptr = R_GlobalContext();
 	if( !cptr )
 	    Rf_errorcall(call, _("no enclosing environment"));
 
@@ -2167,8 +2167,7 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
 		/* the constants checking requires shallow comparison */
 		if (TYPEOF(rvalue) == CLOSXP &&
 			R_ClosureExpr(rvalue) == body)
-		    REprintf("S4 Method %s defined in namespace %s with "
-			"signature %s has this body.\n",
+		    REprintf("S4 Method %s defined in namespace %s with signature %s has this body.\n",
 			vname + strlen(s4prefix),
 			R_CHAR(PRINTNAME(nsname)),
 			R_CHAR(STRING_ELT(rnames, ri)));

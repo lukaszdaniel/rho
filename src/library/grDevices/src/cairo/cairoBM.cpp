@@ -506,7 +506,7 @@ BMDeviceDriver(pDevDesc dd, int kind, const char *filename,
     return Rboolean(TRUE);
 }
 
-const static struct {
+const static struct devtable {
     const char * const name;
     X_GTYPE gtype;
 } devtable[] = {

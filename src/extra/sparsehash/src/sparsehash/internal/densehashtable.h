@@ -1179,8 +1179,7 @@ class dense_hashtable {
     // realloc_or_die should only be used when using the default
     // allocator (libc_allocator_with_realloc).
     pointer realloc_or_die(pointer /*ptr*/, size_type /*n*/) {
-      fprintf(stderr, "realloc_or_die is only supported for "
-                      "libc_allocator_with_realloc\n");
+      fprintf(stderr, "realloc_or_die is only supported for libc_allocator_with_realloc\n");
       exit(1);
       return NULL;
     }
@@ -1202,8 +1201,7 @@ class dense_hashtable {
       pointer retval = this->reallocate(ptr, n);
       if (retval == NULL) {
         fprintf(stderr,
-                "sparsehash: FATAL ERROR: failed to reallocate "
-                "%lu elements for ptr %p",
+                "sparsehash: FATAL ERROR: failed to reallocate %lu elements for ptr %p",
                 static_cast<unsigned long>(n), static_cast<void*>(ptr));
         exit(1);
       }

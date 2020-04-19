@@ -341,8 +341,7 @@ namespace rho {
 	boost::iterator_range<const_iterator>
 	getExpandedArgs(Environment* env) const {
 	    if (m_first_arg_env && env != m_first_arg_env)
-		Rf_error("Internal error: first arg of ArgList"
-			 " previously evaluated in different environment");
+		Rf_error("Internal error: first arg of ArgList previously evaluated in different environment");
 	    return boost::make_iterator_range(const_iterator(m_list, env),
 					      const_iterator::end(env));
 	}

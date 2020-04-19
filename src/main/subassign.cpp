@@ -1048,8 +1048,7 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
 		    SET_XVECTOR_ELT(y, k++, XVECTOR_ELT(x, i));
 	    break;
 	default:
-	    Rf_error(_("Internal error:"
-		       " unexpected type in DeleteOneVectorListItem"));
+	    Rf_error(_("Internal error: unexpected type in DeleteOneVectorListItem"));
 	}
 	xnames = Rf_getAttrib(x, R_NamesSymbol);
 	if (xnames != R_NilValue) {

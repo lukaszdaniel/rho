@@ -101,8 +101,7 @@ bool GCNode::check() {
     // Check moribund list:
     for (const GCNode* node: *s_moribund) {
         if (!(node->m_refcount_flags & s_moribund_mask)) {
-            cerr << "GCNode::check() : "
-                "Node on moribund list without moribund bit set.\n";
+            cerr << "GCNode::check(): Node on moribund list without moribund bit set.\n";
             abort();
         }
     }

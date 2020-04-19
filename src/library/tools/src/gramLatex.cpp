@@ -2265,7 +2265,7 @@ SEXP R_ParseLatex(SEXP text, ParseStatus *status, SEXP srcfile)
 /* Special Symbols */
 /* Section and R code headers */
 
-struct {
+struct keywords {
     const char *name;
     int token;
 }

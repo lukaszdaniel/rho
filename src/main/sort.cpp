@@ -1329,7 +1329,7 @@ SEXP attribute_hidden do_rank(/*const*/ Expression* call, const BuiltInFunction*
     SEXP rank, x;
     int *ik = nullptr /* -Wall */;
     double *rk = nullptr /* -Wall */;
-    enum {AVERAGE, MAX, MIN} ties_kind = AVERAGE;
+    enum tiesKind {AVERAGE, MAX, MIN} ties_kind = AVERAGE;
     Rboolean isLong = FALSE;
 
     x = args[0];

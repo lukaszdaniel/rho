@@ -42,6 +42,7 @@
 #include <complex>
 #include "Rcomplex.h"	/* toC99 */
 
+#include "rho/BuiltInFunction.hpp"
 #include "rho/GCStackRoot.hpp"
 #include "rho/RAllocStack.hpp"
 #include "rho/Subscripting.hpp"
@@ -386,6 +387,7 @@ static R_xlen_t getElementLength(RObject* x, R_xlen_t i, Expression* call,
     return(dispatch_xlength(x_elt, call, rho));
 }
 
+#ifdef LONG_VECTOR_SUPPORT
 static SEXP do_lengths_long(SEXP x, Expression* call, Environment* rho)
 {
     SEXP ans;
@@ -400,6 +402,7 @@ static SEXP do_lengths_long(SEXP x, Expression* call, Environment* rho)
     UNPROTECT(1);
     return ans;
 }
+#endif
 
 SEXP attribute_hidden do_lengths(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {

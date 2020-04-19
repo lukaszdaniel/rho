@@ -139,7 +139,7 @@ struct FontMetricInfo {
     short StemH;
     short StemV;
     short ItalicAngle;
-    struct {
+    struct CharInfo {
 	short WX;
 	short BBox[4];
     } CharInfo[256];
@@ -191,7 +191,7 @@ enum KeyWordCode {
 
 static const struct KeyWordDictionary {
     const char *keyword;
-    const int code;
+    const KeyWordCode code;
 }
 KeyWordDictionary[] = {
     { "StartFontMetrics",    StartFontMetrics },
@@ -2214,7 +2214,7 @@ struct PostScriptDesc {
 
     /* This group of variables track the current device status.
      * They should only be set by routines that emit PostScript code. */
-    struct {
+    struct deviceStatus {
 	double lwd;		 /* line width */
 	int lty;		 /* line type */
 	R_GE_lineend lend;
@@ -5402,7 +5402,7 @@ struct PDFDesc {
 
     /* This group of variables track the current device status.
      * They should only be set by routines that emit PDF. */
-    struct {
+    struct deviceStatus {
 	double lwd;		 /* line width */
 	int lty;		 /* line type */
 	R_GE_lineend lend;

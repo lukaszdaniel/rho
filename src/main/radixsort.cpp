@@ -26,7 +26,6 @@
 #include <config.h>
 #endif
 
-#define USE_RINTERNALS
 #include "rho/StringVector.hpp"
 #include <Defn.h>
 #include <Localization.h>
@@ -1620,7 +1619,8 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     SEXP ans = PROTECT(Rf_allocVector(INTSXP, n));
     o = INTEGER(ans);
-    o[0] = -1;
+    if (n > 0)
+	o[0] = -1;
     xd = DATAPTR(x);
 
     stackgrps = Rboolean(narg > 1 || retGrp);

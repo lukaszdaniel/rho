@@ -47,7 +47,11 @@ void ClosureContext::runOnExit()
     m_onexit = nullptr;
     try {
 	DisableStackCheckingScope scope;
-	Evaluator::evaluate(onx, m_working_env);
+
+	     for (; onx != nullptr; onx = CDR(onx)) {
+		 setOnExit(CDR(onx));
+		Evaluator::evaluate(CAR(onx), m_working_env);
+	     }
     }
     // Don't allow exceptions to escape:
     catch (...) {}

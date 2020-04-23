@@ -129,7 +129,7 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
 SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *ctxt;
-    SEXP code, oldcode, tmp, argList_;
+    SEXP code, oldcode, argList_;
     int addit = 0;
 
     checkArity(op, args);
@@ -151,36 +151,30 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
        expression evaluation environment. */
     while (ctxt && ctxt->workingEnvironment() != rho)
 	ctxt = ClosureContext::innermost(ctxt->nextOut());
-    if (ctxt)
-    {
-	if (addit && (oldcode = ctxt->onExit()) != R_NilValue ) {
-	    if ( CAR(oldcode) != R_BraceSymbol )
-	    {
-                 PROTECT(tmp = new Expression(R_BraceSymbol,
-                                              { oldcode, code }));
-		ctxt->setOnExit(tmp);
-		UNPROTECT(1);
-	    }
-	    else
-	    {
-		PROTECT(tmp = Rf_allocList(1));
-		SETCAR(tmp, code);
-		ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode),tmp));
+    if (ctxt) {
+	if (code == nullptr && !addit)
+	    ctxt->setOnExit(nullptr);
+	else {
+	    PairList* codelist = PairList::cons(code, nullptr);
+	    oldcode = ctxt->onExit();
+	    if (oldcode == nullptr || !addit)
+		ctxt->setOnExit(codelist);
+	    else {
+		PROTECT(codelist);
+		ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode), codelist));
 		UNPROTECT(1);
 	    }
 	}
-	else
-	    ctxt->setOnExit(code);
     }
-    UNPROTECT(1);
-    return R_NilValue;
+//    UNPROTECT(1);
+    return nullptr;
 }
 
 SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP s;
 
-    if (TYPEOF(CAR(args)) == STRSXP && Rf_length(CAR(args))==1) {
+    if (TYPEOF(CAR(args)) == STRSXP && Rf_length(CAR(args)) == 1) {
 	PROTECT(s = Rf_installTrChar(STRING_ELT(CAR(args), 0)));
 	SETCAR(args, Rf_findFun(s, rho));
 	UNPROTECT(1);

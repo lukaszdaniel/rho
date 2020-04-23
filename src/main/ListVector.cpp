@@ -98,6 +98,6 @@ void* DATAPTR(SEXP x) {
     case VECSXP:
 	return VECTOR_PTR(x);
     default:
-	Rf_error("Unsupported type to DATAPTR()");
+	Rf_error("cannot get data pointer of '%s' objects", Rf_type2char(TYPEOF(x)));
     }
 }

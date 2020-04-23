@@ -43,9 +43,9 @@ using namespace rho;
 // from C:
 namespace rho {
     namespace ForceNonInline {
-	R_xlen_t (*XLENGTHptr)(SEXP x) = XLENGTH;
+	R_xlen_t (*STDVEC_LENGTHptr)(SEXP x) = STDVEC_LENGTH;
 	void (*SET_TRUELENGTHptr)(SEXP x, R_xlen_t v) = SET_TRUELENGTH;
-	R_xlen_t (*XTRUELENGTHptr)(SEXP x) = XTRUELENGTH;
+	R_xlen_t (*STDVEC_TRUELENGTHptr)(SEXP x) = STDVEC_TRUELENGTH;
     }
 }
 

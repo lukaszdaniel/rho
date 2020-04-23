@@ -1967,7 +1967,7 @@ static void InBytesConn(R_inpstream_t stream, void *buf, int length)
 	int i;
 	char *p = static_cast<char *>(buf);
 	for (i = 0; i < length; i++)
-	    p[i] = char( Rconn_fgetc(con));
+	    p[i] = char(Rconn_fgetc(con));
     }
     else {
 	if (stream->type == R_pstream_ascii_format) {

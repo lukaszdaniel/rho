@@ -291,8 +291,15 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	    ClosureContext* ctxt = R_GlobalContext();
 	    if (ctxt->nextOut()) {
 		Evaluator::Context* nxt = ctxt->nextOut();
-		if (nxt->type() == Evaluator::Context::CLOSURE)
-		    return static_cast<ClosureContext*>(nxt)->onExit();
+		if (nxt->type() == Evaluator::Context::CLOSURE) {
+                RObject* conexit = static_cast<ClosureContext*>(nxt)->onExit();
+                if(conexit == nullptr)
+                    return nullptr;
+                else if(CDR(conexit) == nullptr)
+                    return CAR(conexit);
+                else
+                    return new Expression(R_BraceSymbol, {conexit});
+        }
 	    }
 	    return R_NilValue;
 	}

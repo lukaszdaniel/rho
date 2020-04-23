@@ -2443,7 +2443,7 @@ static size_t clp_read(void *ptr, size_t size, size_t nitems,
     if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
     used = (request < available) ? request : available;
-    strncpy(static_cast<char *>(ptr), thisconn->buff, used);
+    strncpy(static_cast<char *>(ptr), thisconn->buff + thisconn->pos, used);
     thisconn->pos += used;
     return size_t(used)/size;
 }

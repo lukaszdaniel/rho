@@ -332,7 +332,7 @@ extern "C" {
      *         the case of certain hash tables, this means the 'capacity'
      *         of \a x , not all of which may be used.)
      */
-    inline R_xlen_t XLENGTH(SEXP x)
+    inline R_xlen_t STDVEC_LENGTH(SEXP x)
     {
 	using namespace rho;
 	if (!x)
@@ -351,7 +351,7 @@ extern "C" {
      *
      * @deprecated May be withdrawn in the future.
      */
-    inline R_xlen_t XTRUELENGTH(SEXP x)
+    inline R_xlen_t STDVEC_TRUELENGTH(SEXP x)
     {
 	using namespace rho;
 	VectorBase& vb = *SEXP_downcast<VectorBase*>(x);

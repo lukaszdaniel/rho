@@ -49,7 +49,7 @@ namespace rho {
 	const char* (*R_CHARp)(SEXP x) = R_CHAR;
 	SEXP (*mkCharp)(const char*) = Rf_mkChar;
 	SEXP (*mkCharCEp)(const char*, cetype_t) = Rf_mkCharCE;
-	SEXP (*mkCharLenp)(const char*, int) = Rf_mkCharLen;    
+	SEXP (*mkCharLenp)(const char*, int) = Rf_mkCharLen;
     }
 }
 std::hash<std::string> String::Hasher::s_string_hasher;

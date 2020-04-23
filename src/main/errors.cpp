@@ -146,13 +146,14 @@ static void onintrEx(Rboolean resumeOK)
     }
     else R_interrupts_pending = 0;
 
-    SEXP hooksym = Rf_install(".signalInterrupt");
-    if (SYMVALUE(hooksym) != R_UnboundValue) {
+    RObject* hooksym = Rf_install(".signalInterrupt");
+    if (SYMVALUE(hooksym) != Symbol::unboundValue()) {
 	int resume = FALSE;
-	SEXP cond, hcall;
+	RObject* cond;
+	Expression* hcall;
 	PROTECT(cond = getInterruptCondition());
-	PROTECT(hcall = LCONS(hooksym, LCONS(cond, R_NilValue)));
-	resume = Rf_asLogical(Rf_eval(hcall, R_GlobalEnv));
+	PROTECT(hcall = new Expression(hooksym, PairList::cons(cond, nullptr)));
+	resume = Rf_asLogical(hcall->evaluate(Environment::global()));
 	UNPROTECT(2);
 	if (resume) return;
     }
@@ -1302,7 +1303,7 @@ SEXP R_GetTraceback(int skip)
     SEXP s, t;
 
     for (c = FunctionContext::innermost(), ns = skip;
-		 c != nullptr;
+	 c != nullptr;
 	 c = FunctionContext::innermost(c->nextOut()))
 	if (ns > 0)
 	    ns--;
@@ -1719,9 +1720,9 @@ static void signalInterrupt(void)
     R_HandlerStack = oldstack;
 
     SEXP h = Rf_GetOption1(Rf_install("interrupt"));
-    if (h != R_NilValue) {
-	SEXP call = PROTECT(LCONS(h, R_NilValue));
-	Rf_eval(call, R_GlobalEnv);
+    if (h != nullptr) {
+	Expression* call = new Expression(h, { nullptr });
+	call->evaluate(Environment::global());
     }
 }
 

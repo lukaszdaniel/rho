@@ -1276,10 +1276,10 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	} else if (streql(expr, "r")) {
 	    SEXP hooksym = Rf_install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
-		SEXP hcall;
+		Expression* hcall;
 		R_Busy(1);
-		PROTECT(hcall = LCONS(hooksym, R_NilValue));
-		Rf_eval(hcall, R_GlobalEnv);
+		PROTECT(hcall = new Expression(hooksym, { nullptr }));
+		hcall->evaluate(Environment::global());
 		UNPROTECT(1);
 	    }
 	}

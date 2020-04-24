@@ -663,6 +663,7 @@ static int HashGet(SEXP item, const HashTable* table)
 #define BCREPREF          243
 #define EMPTYENV_SXP	  242
 #define BASEENV_SXP	  241
+#define ALTREP_SXP	  240
 
 /* The following are needed to preserve attribute information on
    expressions in the constant pool of byte code objects. This is
@@ -959,6 +960,24 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 
  tailcall:
     R_CheckStack();
+#if RHO_FALSE
+    if (ALTREP(s)) {
+	SEXP info = ALTREP_SERIALIZED_CLASS(s);
+	SEXP state = ALTREP_SERIALIZED_STATE(s);
+	if (info != NULL && state != NULL) {
+	    int flags = PackFlags(ALTREP_SXP, LEVELS(s), OBJECT(s), 0, 0);
+	    PROTECT(state);
+	    PROTECT(info);
+	    OutInteger(stream, flags);
+	    WriteItem(info, ref_table, stream);
+	    WriteItem(state, ref_table, stream);
+	    WriteItem(ATTRIB(s), ref_table, stream);
+	    UNPROTECT(2); /* state, info */
+	    return;
+	}
+	/* else fall through to standard processing */
+    }
+#endif
     if ((i = HashGet(s, ref_table)) != 0)
 	OutRefIndex(stream, i);
     else if ((t = GetPersistentName(stream, s)) != R_NilValue) {
@@ -1203,9 +1222,9 @@ static SEXP GetReadRef(SEXP table, int index)
 static void AddReadRef(SEXP table, SEXP value)
 {
     SEXP data = CAR(table);
-    int count = TRUELENGTH(data) + 1;
+    R_xlen_t count = TRUELENGTH(data) + 1;
     if (count >= LENGTH(data)) {
-	int i, len;
+	R_xlen_t i, len;
 	SEXP newdata;
 
 	PROTECT(value);
@@ -1411,6 +1430,19 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	UNPROTECT(1);
 	AddReadRef(ref_table, s);
 	return s;
+#if RHO_FALSE
+    case ALTREP_SXP:
+	{
+	    R_ReadItemDepth++;
+	    SEXP info = PROTECT(ReadItem(ref_table, stream));
+	    SEXP state = PROTECT(ReadItem(ref_table, stream));
+	    SEXP attr = PROTECT(ReadItem(ref_table, stream));
+	    s = ALTREP_UNSERIALIZE_EX(info, state, attr, objf, levs);
+	    UNPROTECT(3); /* info, state, attr */
+	    R_ReadItemDepth--;
+	    return s;
+	}
+#endif
     case SYMSXP:
 	R_ReadItemDepth++;
 	PROTECT(s = ReadItem(ref_table, stream)); /* print name */

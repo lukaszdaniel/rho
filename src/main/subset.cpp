@@ -49,6 +49,7 @@
 #include <stdexcept>
 #include <Defn.h>
 #include <Internal.h>
+#include "rho/BuiltInFunction.hpp"
 #include "rho/ComplexVector.hpp"
 #include "rho/ExpressionVector.hpp"
 #include "rho/GCStackRoot.hpp"
@@ -83,23 +84,24 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
     return val;
 }
 
-/* ExtractSubset does the transfer of elements from "x" to "result"
-   according to the integer/real subscripts given in "indx". */
+/* ExtractSubset allocates "result" and does the transfer of elements
+   from "x" to "result" according to the integer/real subscripts given
+   in "indx". */
 
-static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
+SEXP attribute_hidden ExtractSubset(SEXP x, SEXP indx, SEXP call)
 {
     R_xlen_t i, ii, n, nx;
-    int mode, mi;
-    SEXP tmp;
+    SEXPTYPE mode, mi;
     mode = TYPEOF(x);
     mi = TYPEOF(indx);
     n = XLENGTH(indx);
     nx = Rf_xlength(x);
-    tmp = result;
+    SEXP result;
 
     if (x == R_NilValue)
 	return x;
 
+    PROTECT(result = Rf_allocVector(mode, n));
     for (i = 0; i < n; i++) {
 	switch(mi) {
 	case REALSXP:
@@ -156,32 +158,21 @@ static SEXP ExtractSubset(SEXP x, SEXP result, SEXP indx, SEXP call)
 	    else
 		SET_XVECTOR_ELT(result, i, R_NilValue);
 	    break;
-	case LISTSXP:
-	    /* cannot happen: pairlists are coerced to lists */
-	case LANGSXP:
-#ifdef LONG_VECTOR_SUPPORT
-	    if (ii > R_SHORT_LEN_MAX)
-		Rf_error("invalid subscript for pairlist");
-#endif
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER) {
-		SEXP tmp2 = Rf_nthcdr(x, int(ii));
-		SETCAR(tmp, CAR(tmp2));
-		SET_TAG(tmp, TAG(tmp2));
-	    }
-	    else
-		SETCAR(tmp, R_NilValue);
-	    tmp = CDR(tmp);
-	    break;
 	case RAWSXP:
 	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
 		RAW(result)[i] = RAW(x)[ii];
 	    else
-		RAW(result)[i] = Rbyte( 0);
+		RAW(result)[i] = Rbyte(0);
 	    break;
+	case LISTSXP:
+	    /* cannot happen: pairlists are coerced to lists */
+	case LANGSXP:
+	    /* cannot happen: LANGSXPs are coerced to lists */
 	default:
 	    Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
 	}
     }
+    UNPROTECT(1); /* result */
     return result;
 }
 
@@ -244,22 +235,12 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     /* in the range 1:length(x). */
     R_xlen_t stretch = 1;
     GCStackRoot<> indx(Rf_makeSubscript(x, s, &stretch, call));
-    int n = LENGTH(indx);
-    const IntVector* indices = SEXP_downcast<IntVector*>(indx.get());
-    unsigned int nx = Rf_length(x);
-    GCStackRoot<> result(Rf_allocVector(LANGSXP, n));
-    SEXP tmp = result;
-    for (unsigned int i = 0; int(i) < n; ++i) {
-	int ii = (*indices)[i];
-	if (ii == NA_INTEGER || ii <= 0 || ii > int(nx))
-	    SETCAR(tmp, nullptr);
-	else {
-	    SEXP tmp2 = Rf_nthcdr(x, ii - 1);
-	    SETCAR(tmp, CAR(tmp2));
-	    SET_TAG(tmp, TAG(tmp2));
-	}
-	tmp = CDR(tmp);
-    }
+    GCStackRoot<> result(ExtractSubset(x, indx, call));
+    if (mode == VECSXP || mode == EXPRSXP)
+	/* we do not duplicate the values when extracting the subset,
+	   so to be conservative mark the result as NAMED = NAMEDMAX */
+	ENSURE_NAMEDMAX(result);
+
     // Fix attributes:
     {
 	SEXP attrib;
@@ -272,14 +253,12 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
 	     && (attrib = Rf_GetRowNames(attrib)) != R_NilValue
 	     )
 	    ) {
-	    GCStackRoot<> nattrib(Rf_allocVector(TYPEOF(attrib), n));
-	    nattrib = ExtractSubset(attrib, nattrib, indx, call);
+	    GCStackRoot<> nattrib(ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, R_NamesSymbol, nattrib);
 	}
 	if ((attrib = Rf_getAttrib(x, R_SrcrefSymbol)) != R_NilValue &&
 	    TYPEOF(attrib) == VECSXP) {
-	    GCStackRoot<> nattrib(Rf_allocVector(VECSXP, n));
-	    nattrib = ExtractSubset(attrib, nattrib, indx, call);
+	    GCStackRoot<> nattrib(ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, R_SrcrefSymbol, nattrib);
 	}
     }

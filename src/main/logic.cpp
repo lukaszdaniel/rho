@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1999--2017  The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999--2016  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -35,6 +35,7 @@
 #include <Internal.h>
 
 #include "rho/BinaryFunction.hpp"
+#include "rho/BuiltInFunction.hpp"
 #include "rho/GCStackRoot.hpp"
 #include "rho/LogicalVector.hpp"
 #include "rho/RawVector.hpp"
@@ -124,7 +125,7 @@ namespace {
 		vr = static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP));
 	    return binaryLogic(op->variant(), vl, vr);
 	} else { // nx == 0 || ny == 0
-	    GCStackRoot<> val(Rf_allocVector(LGLSXP, 0));
+	    GCStackRoot<> val(Rf_allocVector((isRaw(x) && isRaw(y)) ? RAWSXP : LGLSXP, 0));
 	    GeneralBinaryAttributeCopier::copyAttributes(
 		SEXP_downcast<VectorBase*>(val.get()),
 		static_cast<VectorBase*>(x),

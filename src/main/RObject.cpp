@@ -64,8 +64,10 @@ namespace rho {
 	SEXPTYPE (*TYPEOFptr)(SEXP e) = TYPEOF;
 	void (*UNSET_S4_OBJECTptr)(SEXP x) = UNSET_S4_OBJECT;
 	auto attributesPtr = &RObject::attributes;
-        auto LEVELSptr = &LEVELS;
-        auto SETLEVELSptr = &SETLEVELS;
+	auto LEVELSptr = &LEVELS;
+	auto SETLEVELSptr = &SETLEVELS;
+	int (*ALTREPptr)(SEXP x) = ALTREP;
+	R_xlen_t (*ALTREP_LENGTHptr)(SEXP x) = ALTREP_LENGTH;
     }
 }
 

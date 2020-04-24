@@ -501,7 +501,44 @@ DL_FUNC R_ExternalPtrAddrFn(SEXP s)
    implement the write barrier. */
 
 /* Vector Accessors */
-int (LENGTH)(SEXP x) { return LENGTH(x); }
+int (LENGTH)(SEXP x) { return LENGTH(x); } //was { return x == R_NilValue ? 0 : LENGTH(CHK2(x)); }
+#if RHO_FALSE
+R_xlen_t (XLENGTH)(SEXP x) { return XLENGTH(CHK2(x)); }
+R_xlen_t (TRUELENGTH)(SEXP x) { return TRUELENGTH(CHK2(x)); }
+void (SETLENGTH)(SEXP x, R_xlen_t v) { SET_STDVEC_LENGTH(CHK2(x), v); }
+void (SET_TRUELENGTH)(SEXP x, R_xlen_t v) { SET_TRUELENGTH(CHK2(x), v); }
+int  (IS_LONG_VEC)(SEXP x) { return IS_LONG_VEC(CHK2(x)); }
+#ifdef TESTING_WRITE_BARRIER
+R_xlen_t (STDVEC_LENGTH)(SEXP x) { return STDVEC_LENGTH(CHK2(x)); }
+R_xlen_t (STDVEC_TRUELENGTH)(SEXP x) { return STDVEC_TRUELENGTH(CHK2(x)); }
+#endif
+R_xlen_t ALTREP_LENGTH(SEXP x) { return 0; }
+R_xlen_t ALTREP_TRUELENGTH(SEXP x) { return 0; }
+SEXP ALTREP_DUPLICATE_EX(SEXP x, Rboolean deep) { return NULL; }
+SEXP ALTREP_SERIALIZED_CLASS(SEXP x) { return NULL; }
+SEXP ALTREP_SERIALIZED_STATE(SEXP x) { return NULL; }
+SEXP ALTREP_UNSERIALIZE_EX(SEXP info, SEXP state, SEXP attr, int objf, int levs)
+{
+    return NULL;
+}
+Rboolean
+ALTREP_INSPECT(SEXP x, int pre, int deep, int pvec,
+	       void (*inspect_subtree)(SEXP, int, int, int))
+{
+    return FALSE;
+}
+void *ALTVEC_DATAPTR(SEXP x, Rboolean writeable) { return NULL; }
+void *ALTVEC_DATAPTR_OR_NULL(SEXP x, Rboolean writeable) { return NULL; }
+int ALTINTEGER_ELT(SEXP x, R_xlen_t i) { return 0; }
+int ALTLOGICAL_ELT(SEXP x, R_xlen_t i) { return 0; }
+double ALTREAL_ELT(SEXP x, R_xlen_t i) { return 0.0; }
+Rcomplex ALTCOMPLEX_ELT(SEXP x, R_xlen_t i)
+{
+    Rcomplex v = {0.0, 0.0};
+    return v;
+}
+
+#endif
 
 /*******************************************/
 /* Non-sampling memory use profiler

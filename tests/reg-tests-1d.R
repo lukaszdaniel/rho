@@ -1230,11 +1230,50 @@ tools::assertError(splines::splineDesign(aKnots, x, derivs = 4), verbose = TRUE)
 ## gave seg.fault in R <= 3.4.1
 
 
+## allow on.exit handlers to be added in LIFO order
+x <- character(0)
+f <- function() {
+    on.exit(x <<- c(x, "first"))
+    on.exit(x <<- c(x, "last"), add = TRUE, after = FALSE)
+}
+f()
+stopifnot(identical(x, c("last", "first")))
+##
+x <- character(0)
+f <- function() {
+    on.exit(x <<- c(x, "last"), add = TRUE, after = FALSE)
+}
+f()
+stopifnot(identical(x, "last"))
+
+
 ## deparse(<symbol>)
 ##_reverted_for_now
 ##_ brc <- quote(`{`)
 ##_ stopifnot(identical(brc, eval(parse(text = deparse(brc, control="all")))))
 ## default was to set  backtick=FALSE  so parse() failed in R <= 3.4.x
+
+
+## sys.on.exit() is called in the correct frame
+fn <- function() {
+    on.exit("foo")
+    identity(sys.on.exit())
+}
+stopifnot(identical(fn(), "foo"))
+
+
+## rep.POSIXt(*, by="n  DSTdays") - PR#17342
+x <- seq(as.POSIXct("1982-04-15 05:00", tz="US/Central"),
+         as.POSIXct("1994-10-15",       tz="US/Central"), by="360 DSTdays")
+stopifnot(length(x) == 13, diff((as.numeric(x) - 39600)/86400) == 360)
+## length(x) was 1802 and ended in many NA's in R <= 3.4.2
+
+
+## 0-length logic with raw()
+r0 <- raw(0)
+stopifnot(identical(r0 & r0, r0),
+	  identical(r0 | r0, r0))
+## gave logical(0) in R 3.4.[012]
 
 
 

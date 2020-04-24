@@ -287,22 +287,15 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	UNPROTECT(1);
 	return rval;
     case 7: /* sys.on.exit */
-	{
-	    ClosureContext* ctxt = R_GlobalContext();
-	    if (ctxt->nextOut()) {
-		Evaluator::Context* nxt = ctxt->nextOut();
-		if (nxt->type() == Evaluator::Context::CLOSURE) {
-                RObject* conexit = static_cast<ClosureContext*>(nxt)->onExit();
-                if(conexit == nullptr)
-                    return nullptr;
-                else if(CDR(conexit) == nullptr)
-                    return CAR(conexit);
-                else
-                    return new Expression(R_BraceSymbol, {conexit});
-        }
-	    }
-	    return R_NilValue;
-	}
+    {
+	RObject* conexit = cptr ? cptr->onExit() : nullptr;
+	if (conexit == nullptr)
+	    return nullptr;
+	else if (CDR(conexit) == nullptr)
+	    return CAR(conexit);
+	else
+	    return new Expression(R_BraceSymbol, { conexit });
+    }
     case 8: /* sys.parents */
 	nframe = Rf_framedepth(cptr);
 	rval = Rf_allocVector(INTSXP, nframe);

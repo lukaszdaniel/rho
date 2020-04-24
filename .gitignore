@@ -138,7 +138,6 @@ tests/Examples/grid-Ex.Rout.prev
 tests/Examples/grid-Ex.pdf
 tests/Examples/methods-Ex.R
 tests/Examples/methods-Ex.R-cnt
-tests/Examples/methods-Ex.Rout.fail
 tests/Examples/methods-Ex.pdf
 tests/Examples/parallel-Ex.R
 tests/Examples/parallel-Ex.R-cnt
@@ -201,7 +200,6 @@ tests/lm-tests.Rout
 tests/method-dispatch.Rout
 tests/myTst2/
 tests/no-segfault.R
-tests/no-segfault.Rout.fail
 tests/ok-errors.Rout
 tests/p-qbeta-strict-tst.Rout
 tests/p-r-random-tests.Rout

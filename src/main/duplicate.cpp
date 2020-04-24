@@ -130,7 +130,7 @@ using namespace rho;
 
    I don't see how to make the wrapper go away when R_PROFILING
    is not defined, because we still need to be able to
-   optionally rename Rf_duplicate() as Rf_duplicate().
+   optionally rename duplicate() as Rf_duplicate().
 */
 
 #ifdef R_PROFILING

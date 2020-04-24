@@ -79,7 +79,7 @@ SEXP * NORET (VECTOR_PTR)(SEXP x)
 }
 
 extern "C"
-void* DATAPTR(SEXP x) {
+void* STDVEC_DATAPTR(SEXP x) {
     switch (TYPEOF(x)) {
     case CHARSXP:
 	return const_cast<char*>(SEXP_downcast<String*>(x)->c_str());

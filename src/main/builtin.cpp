@@ -129,19 +129,27 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
 SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *ctxt;
-    SEXP code, oldcode, argList_;
+    SEXP code, oldcode, argList_, after_;
     int addit = 0;
+	int after = 1;
 
     checkArity(op, args);
-    static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "expr", "add" });
+    static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "expr", "add", "after" });
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
-    matcher->match(arglist, { &code, &argList_ });
+    matcher->match(arglist, { &code, &argList_, &after_ });
     if (code == R_MissingArg)
 	code = nullptr;
+
     if (argList_ != R_MissingArg) {
 	addit = Rf_asLogical(Rf_eval(argList_, rho));
 	if (addit == NA_INTEGER)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "add");
+    }
+
+    if (after_ != R_MissingArg) {
+	after = Rf_asLogical(Rf_eval(after_, rho));
+	if (after == NA_INTEGER)
+	    Rf_errorcall(call, _("invalid '%s' argument"), "lifo");
     }
 
     ctxt = R_GlobalContext();
@@ -155,18 +163,19 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (code == nullptr && !addit)
 	    ctxt->setOnExit(nullptr);
 	else {
-	    PairList* codelist = PairList::cons(code, nullptr);
 	    oldcode = ctxt->onExit();
 	    if (oldcode == nullptr || !addit)
-		ctxt->setOnExit(codelist);
+		ctxt->setOnExit(CONS(code, R_NilValue));
 	    else {
-		PROTECT(codelist);
-		ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode), codelist));
-		UNPROTECT(1);
+		if (after) {
+		    PairList* codelist = PairList::cons(code, nullptr);
+		    ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode), codelist));
+		} else {
+		    ctxt->setOnExit(CONS(code, oldcode));
+		}
 	    }
 	}
     }
-//    UNPROTECT(1);
     return nullptr;
 }
 

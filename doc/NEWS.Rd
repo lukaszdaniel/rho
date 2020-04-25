@@ -172,7 +172,13 @@
       \item Provide \code{`[`} method for \code{"DLLInfoList"}
 
       \item \code{glm()} and \code{glm.fit} get the same
-      \code{singular.ok=TRUE} argument that \code{lm()} has had forever.
+      \code{singular.ok=TRUE} argument that \code{lm()} has had
+      forever.  As a consequence, in \code{glm(*, method = <your_own>)},
+      user specified methods need to accept a \code{singular.ok}
+      argument as well.
+
+      \item \code{aspell()} gains a filter for Markdown (\file{.md} and
+      \file{.Rmd}) files.
     }
   }
 
@@ -354,8 +360,11 @@
   }
   \subsection{BUG FIXES}{
     \itemize{
-      \item \code{raw(0) & raw(0)} now returns \code{raw} again; ditto
-      for \code{|}.
+      \item \code{raw(0) & raw(0)} again returns \code{raw(0)} (rather
+      than \code{logical(0)}; ditto for \code{|}.
+
+      \item \code{intToUtf8()} converts integers corresponding to
+      surrogate code points to \code{NA} rather than invalid UTF-8.
     }
   }
 }

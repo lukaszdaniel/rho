@@ -781,7 +781,20 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
 {
     int cond = NA_LOGICAL;
 
-    if (Rf_length(s) > 1)
+    /* handle most common special case directly */
+    if (IS_SCALAR(s, LGLSXP)) {
+	cond = SCALAR_LVAL(s);
+	if (cond != NA_LOGICAL)
+	    return Rboolean(cond);
+    }
+    else if (IS_SCALAR(s, INTSXP)) {
+	int val = SCALAR_IVAL(s);
+	if (val != NA_INTEGER)
+	    return Rboolean(val != 0);
+    }
+
+    int len = Rf_length(s);
+    if (len > 1)
     {
 	GCStackRoot<> gc_protect(s);
 	char *check = getenv("_R_CHECK_LENGTH_1_CONDITION_");
@@ -791,7 +804,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
 	    Rf_warningcall(call,
 		    _("the condition has length > 1 and only the first element will be used"));
     }
-    if (Rf_length(s) > 0) {
+    if (len> 0) {
 	/* inline common cases for efficiency */
 	switch(TYPEOF(s)) {
 	case LGLSXP:
@@ -806,7 +819,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
     }
 
     if (cond == NA_LOGICAL) {
-	char *msg = Rf_length(s) ? (Rf_isLogical(s) ?
+	char *msg = len ? (Rf_isLogical(s) ?
 				 _("missing value where TRUE/FALSE needed") :
 				 _("argument is not interpretable as logical")) :
 	    _("argument is of length zero");
@@ -979,19 +992,19 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
                 switch (val_type) {
                 case LGLSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
-                    LOGICAL(v)[0] = LOGICAL(val)[i];
+                    SET_SCALAR_LVAL(v, Rboolean(LOGICAL_ELT(val, i)));
                     break;
                 case INTSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
-                    INTEGER(v)[0] = INTEGER(val)[i];
+                    SET_SCALAR_IVAL(v, INTEGER_ELT(val, i));
                     break;
                 case REALSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
-                    REAL(v)[0] = REAL(val)[i];
+                    SET_SCALAR_DVAL(v, REAL_ELT(val, i));
                     break;
                 case CPLXSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
-                    COMPLEX(v)[0] = COMPLEX(val)[i];
+                    SET_SCALAR_CVAL(v, COMPLEX_ELT(val, i));
                     break;
                 case STRSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
@@ -999,7 +1012,7 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
                     break;
                 case RAWSXP:
                     v = ALLOC_LOOP_VAR(v, val_type);
-                    RAW(v)[0] = RAW(val)[i];
+                    SET_SCALAR_BVAL(v, RAW(val)[i]);
                     break;
                 default:
                     Rf_errorcall(call, _("invalid for() loop sequence"));

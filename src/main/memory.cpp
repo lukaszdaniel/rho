@@ -51,12 +51,14 @@
 #include "rho/MemoryBank.hpp"
 #include "rho/RealVector.hpp"
 #include "rho/RawVector.hpp"
+#include "rho/unrho.hpp"
 
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
 #include <R_ext/GraphicsEngine.h> /* GEDevDesc, GEgetDevice */
 #include <R_ext/Rdynload.h>
+#include <R_ext/Boolean.h>
 #include "Rdynpriv.h"
 
 using namespace rho;
@@ -511,33 +513,8 @@ int  (IS_LONG_VEC)(SEXP x) { return IS_LONG_VEC(CHK2(x)); }
 #ifdef TESTING_WRITE_BARRIER
 R_xlen_t (STDVEC_LENGTH)(SEXP x) { return STDVEC_LENGTH(CHK2(x)); }
 R_xlen_t (STDVEC_TRUELENGTH)(SEXP x) { return STDVEC_TRUELENGTH(CHK2(x)); }
+void (SETALTREP)(SEXP x, int v) { SETALTREP(x, v); }
 #endif
-R_xlen_t ALTREP_LENGTH(SEXP x) { return 0; }
-R_xlen_t ALTREP_TRUELENGTH(SEXP x) { return 0; }
-SEXP ALTREP_DUPLICATE_EX(SEXP x, Rboolean deep) { return NULL; }
-SEXP ALTREP_SERIALIZED_CLASS(SEXP x) { return NULL; }
-SEXP ALTREP_SERIALIZED_STATE(SEXP x) { return NULL; }
-SEXP ALTREP_UNSERIALIZE_EX(SEXP info, SEXP state, SEXP attr, int objf, int levs)
-{
-    return NULL;
-}
-Rboolean
-ALTREP_INSPECT(SEXP x, int pre, int deep, int pvec,
-	       void (*inspect_subtree)(SEXP, int, int, int))
-{
-    return FALSE;
-}
-void *ALTVEC_DATAPTR(SEXP x, Rboolean writeable) { return NULL; }
-void *ALTVEC_DATAPTR_OR_NULL(SEXP x, Rboolean writeable) { return NULL; }
-int ALTINTEGER_ELT(SEXP x, R_xlen_t i) { return 0; }
-int ALTLOGICAL_ELT(SEXP x, R_xlen_t i) { return 0; }
-double ALTREAL_ELT(SEXP x, R_xlen_t i) { return 0.0; }
-Rcomplex ALTCOMPLEX_ELT(SEXP x, R_xlen_t i)
-{
-    Rcomplex v = {0.0, 0.0};
-    return v;
-}
-
 #endif
 
 /*******************************************/
@@ -703,4 +680,52 @@ R_len_t NORET R_BadLongVector(SEXP x, const char *file, int line)
 {
     Rf_error(_("long vectors not supported yet: %s:%d"), file, line);
 }
+#endif
+
+
+#if 1//RHO_TRUE
+#define ALTREP_STUBS
+#ifdef ALTREP_STUBS
+//R_xlen_t ALTREP_LENGTH(SEXP x) { return 0; }
+//R_xlen_t ALTREP_TRUELENGTH(SEXP x) { return 0; }
+SEXP ALTREP_DUPLICATE_EX(SEXP x, Rboolean deep) { return NULL; }
+SEXP ALTREP_SERIALIZED_CLASS(SEXP x) { return NULL; }
+SEXP ALTREP_SERIALIZED_STATE(SEXP x) { return NULL; }
+SEXP ALTREP_UNSERIALIZE_EX(SEXP info, SEXP state, SEXP attr, int objf, int levs)
+{
+    return NULL;
+}
+Rboolean
+ALTREP_INSPECT(SEXP x, int pre, int deep, int pvec,
+	       void (*inspect_subtree)(SEXP, int, int, int))
+{
+    return FALSE;
+}
+void *ALTVEC_DATAPTR(SEXP x, Rboolean writeable) { return NULL; }
+void *ALTVEC_DATAPTR_OR_NULL(SEXP x, Rboolean writeable) { return NULL; }
+SEXP ALTVEC_EXTRACT_SUBSET(SEXP x, SEXP indx, SEXP call) {return NULL; }
+//int ALTINTEGER_ELT(SEXP x, R_xlen_t i) { return 0; }
+//int ALTLOGICAL_ELT(SEXP x, R_xlen_t i) { return 0; }
+//double ALTREAL_ELT(SEXP x, R_xlen_t i) { return 0.0; }
+Rcomplex ALTCOMPLEX_ELT(SEXP x, R_xlen_t i)
+{
+    Rcomplex v = {0.0, 0.0};
+    return v;
+}
+
+//move these two to StringVector.hpp
+SEXP ALTSTRING_ELT(SEXP x, R_xlen_t i) { return NULL; }
+void ALTSTRING_SET_ELT(SEXP x, R_xlen_t i, SEXP v) {}
+
+void R_reinit_altrep_classes(DllInfo *dll) {}
+
+R_xlen_t INTEGER_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, int *buf)
+{
+    return 0;
+}
+R_xlen_t REAL_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, double *buf)
+{
+    return 0;
+}
+#endif
 #endif

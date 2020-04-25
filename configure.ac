@@ -2364,6 +2364,9 @@ R_LZMA
 ## PCRE headers and libraries.
 R_PCRE
 
+## PCRE2 header and 8-bit library.
+R_PCRE2
+
 ## tre headers and libraries.
 R_TRE
 

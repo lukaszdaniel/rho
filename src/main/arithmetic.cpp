@@ -845,15 +845,19 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	    x : Rf_allocVector(INTSXP, n);
 	PROTECT(s);
 	/* Note: relying on INTEGER(.) === LOGICAL(.) : */
+	int *pa = INTEGER(s);
+	int *px = INTEGER(x);
 	for(i = 0 ; i < n ; i++) {
-	    int xi = INTEGER(x)[i];
-	    INTEGER(s)[i] = (xi == NA_INTEGER) ? xi : abs(xi);
+	    int xi = px[i];
+	    pa[i] = (xi == NA_INTEGER) ? xi : abs(xi);
 	}
     } else if (TYPEOF(x) == REALSXP) {
 	R_xlen_t i, n = XLENGTH(x);
 	PROTECT(s = NO_REFERENCES(x) ? x : Rf_allocVector(REALSXP, n));
+	double *pa = REAL(s);
+	double *px = REAL(x);
 	for(i = 0 ; i < n ; i++)
-	    REAL(s)[i] = fabs(REAL(x)[i]);
+	    pa[i] = fabs(px[i]);
     } else if (Rf_isComplex(x)) {
 	SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);

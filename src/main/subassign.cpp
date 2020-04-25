@@ -213,19 +213,19 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     case LGLSXP:
     case INTSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    INTEGER(newx)[i] = INTEGER(x)[i];
+	    INTEGER(newx)[i] = INTEGER_ELT(x, i);
 	for (R_xlen_t i = len; i < newlen; i++)
 	    INTEGER(newx)[i] = NA_INTEGER;
 	break;
     case REALSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    REAL(newx)[i] = REAL(x)[i];
+	    REAL(newx)[i] = REAL_ELT(x, i);
 	for (R_xlen_t i = len; i < newlen; i++)
 	    REAL(newx)[i] = NA_REAL;
 	break;
     case CPLXSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    COMPLEX(newx)[i] = COMPLEX(x)[i];
+	    COMPLEX(newx)[i] = COMPLEX_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++) {
 	    COMPLEX(newx)[i].r = NA_REAL;
 	    COMPLEX(newx)[i].i = NA_REAL;
@@ -490,21 +490,21 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
 static R_INLINE R_xlen_t gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
-	double d = REAL(indx)[i];
+	double d = REAL_ELT(indx, i);
 	return R_FINITE(d) ? R_xlen_t(d) : NA_INTEGER;
     } else
-	return INTEGER(indx)[i];
+	return INTEGER_ELT(indx, i);
 }
 #else
 #define R_SHORT_LEN_MAX INT_MAX
 static R_INLINE int gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
-	double d = REAL(indx)[i];
+	double d = REAL_ELT(indx, i);
 	if (!R_FINITE(d) || d < -R_SHORT_LEN_MAX || d > R_SHORT_LEN_MAX) return NA_INTEGER;
 	return int(d);
     } else
-	return INTEGER(indx)[i];
+	return INTEGER_ELT(indx, i);
 }
 #endif
 
@@ -525,7 +525,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     }
     ii = 0;
     for (i = 0; i < len; i++)
-	ii += INTEGER(include)[i];
+	ii += INTEGER_ELT(include, i);
     if (ii == len) {
 	UNPROTECT(1);
 	return x;
@@ -535,7 +535,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     switch (TYPEOF(x)) {
     case VECSXP:
 	for (i = 0; i < len; i++) {
-	    if (INTEGER(include)[i] == 1) {
+	    if (INTEGER_ELT(include, i) == 1) {
 		SET_VECTOR_ELT(xnew, ii, VECTOR_ELT(x, i));
 		ii++;
 	    }
@@ -543,7 +543,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	break;
     case EXPRSXP:
 	for (i = 0; i < len; i++) {
-	    if (INTEGER(include)[i] == 1) {
+	    if (INTEGER_ELT(include, i) == 1) {
 		SET_XVECTOR_ELT(xnew, ii, XVECTOR_ELT(x, i));
 		ii++;
 	    }
@@ -557,7 +557,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	PROTECT(xnewnames = Rf_allocVector(STRSXP, ii));
 	ii = 0;
 	for (i = 0; i < len; i++) {
-	    if (INTEGER(include)[i] == 1) {
+	    if (INTEGER_ELT(include, i) == 1) {
 		SET_STRING_ELT(xnewnames, ii, STRING_ELT(xnames, i));
 		ii++;
 	    }
@@ -821,10 +821,10 @@ static SEXP GetOneIndex(SEXP sub, int ind)
     if (Rf_length(sub) > 1) {
 	switch (TYPEOF(sub)) {
 	case INTSXP:
-	    sub = Rf_ScalarInteger(INTEGER(sub)[ind]);
+	    sub = Rf_ScalarInteger(INTEGER_ELT(sub, ind));
 	    break;
 	case REALSXP:
-	    sub = Rf_ScalarReal(REAL(sub)[ind]);
+	    sub = Rf_ScalarReal(REAL_ELT(sub, ind));
 	    break;
 	case STRSXP:
 	    sub = Rf_ScalarString(STRING_ELT(sub, ind));

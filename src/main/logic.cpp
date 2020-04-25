@@ -248,16 +248,18 @@ _OP_ALL = 1,
 _OP_ANY = 2
 };
 
-static Logical checkValues(int op, int na_rm, int *x, R_xlen_t n)
+static Logical checkValues(int op, int na_rm, SEXP x, R_xlen_t n)
 {
     R_xlen_t i;
     int has_na = 0;
+    int *px = LOGICAL(x);
     for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-        if (!na_rm && x[i] == NA_LOGICAL) has_na = 1;
-        else {
-            if (x[i] == TRUE && op == _OP_ANY) return true;
-            if (x[i] == FALSE && op == _OP_ALL) return false;
+	int xi = px[i];
+	if (!na_rm && xi == NA_LOGICAL) has_na = 1;
+	else {
+	    if (xi == TRUE && op == _OP_ANY) return true;
+	    if (xi == FALSE && op == _OP_ALL) return false;
 	}
     }
     switch (op) {
@@ -316,7 +318,7 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 			    Rf_type2char(TYPEOF(t)));
 	    t = Rf_coerceVector(t, LGLSXP);
 	}
-	val = checkValues(PRIMVAL(op), narm, LOGICAL(t), XLENGTH(t));
+	val = checkValues(PRIMVAL(op), narm, t, XLENGTH(t));
 	if (!val.isNA()) {
             if ((PRIMVAL(op) == _OP_ANY && val.isTrue())
                 || (PRIMVAL(op) == _OP_ALL && val.isFalse())) {

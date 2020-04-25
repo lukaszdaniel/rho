@@ -255,6 +255,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
     PROTECT(s1);
     PROTECT(s2);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
+    int *pa = LOGICAL(ans);
 
     switch (code) {
     case EQOP:
@@ -263,9 +264,9 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else
-		LOGICAL(ans)[i] = Rf_Seql(c1, c2) ? 1 : 0;
+		pa[i] = Rf_Seql(c1, c2) ? 1 : 0;
 	}
 	break;
     case NEOP:
@@ -274,9 +275,9 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else
-		LOGICAL(ans)[i] = Rf_Seql(c1, c2) ? 0 : 1;
+		pa[i] = Rf_Seql(c1, c2) ? 0 : 1;
 	}
 	break;
     case LTOP:
@@ -285,16 +286,16 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else if (c1 == c2)
-		LOGICAL(ans)[i] = 0;
+		pa[i] = 0;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    LOGICAL(ans)[i] = NA_LOGICAL;
+		    pa[i] = NA_LOGICAL;
 		else
-		    LOGICAL(ans)[i] = (res < 0) ? 1 : 0;
+		    pa[i] = (res < 0) ? 1 : 0;
 	    }
 	}
 	break;
@@ -304,16 +305,16 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else if (c1 == c2)
-		LOGICAL(ans)[i] = 0;
+		pa[i] = 0;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    LOGICAL(ans)[i] = NA_LOGICAL;
+		    pa[i] = NA_LOGICAL;
 		else
-		    LOGICAL(ans)[i] = (res > 0) ? 1 : 0;
+		    pa[i] = (res > 0) ? 1 : 0;
 	    }
 	}
 	break;
@@ -323,16 +324,16 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else if (c1 == c2)
-		LOGICAL(ans)[i] = 1;
+		pa[i] = 1;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    LOGICAL(ans)[i] = NA_LOGICAL;
+		    pa[i] = NA_LOGICAL;
 		else
-		    LOGICAL(ans)[i] = (res <= 0) ? 1 : 0;
+		    pa[i] = (res <= 0) ? 1 : 0;
 	    }
 	}
 	break;
@@ -342,16 +343,16 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
 	    if (c1 == NA_STRING || c2 == NA_STRING)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		pa[i] = NA_LOGICAL;
 	    else if (c1 == c2)
-		LOGICAL(ans)[i] = 1;
+		pa[i] = 1;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    LOGICAL(ans)[i] = NA_LOGICAL;
+		    pa[i] = NA_LOGICAL;
 		else
-		    LOGICAL(ans)[i] = (res >= 0) ? 1 : 0;
+		    pa[i] = (res >= 0) ? 1 : 0;
 	    }
 	}
 	break;

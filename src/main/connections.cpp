@@ -740,7 +740,13 @@ static Rboolean file_open(Rconnection con)
 #endif
     } else {  /* use file("stdin") to refer to the file and not the console */
 #ifdef HAVE_FDOPEN
-        fp = fdopen(dup(0), con->mode);
+	int dstdin = dup(0);
+# ifdef Win32
+	if (strchr(con->mode, 'b'))
+	    /* fdopen won't set dstdin to binary mode */
+	    setmode(dstdin, _O_BINARY);
+# endif
+        fp = fdopen(dstdin, con->mode);
 #else
 	Rf_warning(_("cannot open file '%s': %s"), name,
 		"fdopen is not supported on this platform");
@@ -3705,10 +3711,10 @@ attribute_hidden
 size_t Rconn_getline(Rconnection con, char *buf, size_t bufsize)
 {
     int c;
-    size_t nbuf = -1;
+    ssize_t nbuf = -1;
 
     while((c = Rconn_fgetc(con)) != R_EOF) {
-	if(nbuf+1 >= bufsize)
+	if(size_t(nbuf+1) >= bufsize)
 	    Rf_error(_("line longer than buffer size %lu"), (unsigned long) bufsize);
 	if(c != '\n'){
 	    buf[++nbuf] = char( c);
@@ -3721,11 +3727,11 @@ size_t Rconn_getline(Rconnection con, char *buf, size_t bufsize)
      *  file did not end with newline.
      */
     if(nbuf >= 0 && buf[nbuf]) {
-	if(nbuf+1 >= bufsize)
+	if(size_t(nbuf+1) >= bufsize)
 	    Rf_error(_("line longer than buffer size %lu"), (unsigned long) bufsize);
 	buf[++nbuf] = '\0';
     }
-    return(nbuf);
+    return size_t(nbuf);
 }
 
 int Rconn_printf(Rconnection con, const char *format, ...)

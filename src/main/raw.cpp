@@ -333,14 +333,19 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
     multiple = Rf_asLogical(multiple_);
     if (multiple == NA_LOGICAL)
 	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
+    /*  
+	Could handle surrogate pairs here,
+	but they should not occur in UTF-32.
+    */
     if (multiple) {
 	R_xlen_t i, nc = XLENGTH(x);
 	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
-	    if (INTEGER(x)[i] == NA_INTEGER)
-		SET_STRING_ELT(ans, i, rho::String::NA());
+	    int this_ = INTEGER(x)[i];
+	    if (this_ == NA_INTEGER || (this_ >= 0xD800 && this_ <= 0xDFFF))
+		SET_STRING_ELT(ans, i, NA_STRING);
 	    else {
-		used = inttomb(buf, INTEGER(x)[i]);
+		used = inttomb(buf, this_);
 		buf[used] = '\0';
 		SET_STRING_ELT(ans, i, Rf_mkCharCE(buf, CE_UTF8));
 	    }
@@ -351,8 +356,12 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	Rboolean haveNA = FALSE;
 	/* Note that this gives zero length for input '0', so it is omitted */
 	for (i = 0, len = 0; i < nc; i++) {
-	    if (INTEGER(x)[i] == NA_INTEGER) { haveNA = TRUE; break; }
-	    len += inttomb(nullptr, INTEGER(x)[i]);
+	    int this_ = INTEGER(x)[i];
+	    if (this_ == NA_INTEGER || (this_ >= 0xD800 && this_ <= 0xDFFF)) {
+		haveNA = TRUE;
+		break;
+	    }
+	    len += inttomb(NULL, this_);
 	}
 	if (haveNA) {
 	    UNPROTECT(1);

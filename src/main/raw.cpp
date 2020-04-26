@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2001--2015 The R Core Team
+ *  Copyright (C) 2001--2017 The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -194,6 +194,7 @@ SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::Bu
     return ans;
 }
 
+/* Simplified version for RFC3629 definition of UTF-8 */
 static int mbrtoint(int *w, const char *s)
 {
     unsigned int byte;
@@ -218,10 +219,11 @@ static int mbrtoint(int *w, const char *s)
 			| ((s[1] & 0x3F) << 6) | (s[2] & 0x3F));
 	    byte = *w;
 	    if (byte >= 0xD800 && byte <= 0xDFFF) return -1; /* surrogate */
-	    if (byte == 0xFFFE || byte == 0xFFFF) return -1;
+	    // Following Corrigendum 9, these are valid in UTF-8
+//	    if (byte == 0xFFFE || byte == 0xFFFF) return -1;
 	    return 3;
 	} else return -1;
-    } else if (byte < 0xF8) {
+    } else if (byte <= 0xF4) { // for RFC3629
 	if (!s[1] || !s[2] || !s[3]) return -2;
 	if (((s[1] & 0xC0) == 0x80)
 	    && ((s[2] & 0xC0) == 0x80)
@@ -231,39 +233,9 @@ static int mbrtoint(int *w, const char *s)
 			| ((s[2] & 0x3F) << 6)
 			| (s[3] & 0x3F));
 	    byte = *w;
-	    return 4;
+	    return (byte <= 0x10FFFF) ? 4 : -1;
 	} else return -1;
-    } else if (byte < 0xFC) {
-	if (!s[1] || !s[2] || !s[3] || !s[4]) return -2;
-	if (((s[1] & 0xC0) == 0x80)
-	    && ((s[2] & 0xC0) == 0x80)
-	    && ((s[3] & 0xC0) == 0x80)
-	    && ((s[4] & 0xC0) == 0x80)) {
-	    *w = int(((byte & 0x03) << 24)
-			| ((s[1] & 0x3F) << 18)
-			| ((s[2] & 0x3F) << 12)
-			| ((s[3] & 0x3F) << 6)
-			| (s[4] & 0x3F));
-	    byte = *w;
-	    return 5;
-	} else return -1;
-    } else {
-	if (!s[1] || !s[2] || !s[3] || !s[4] || !s[5]) return -2;
-	if (((s[1] & 0xC0) == 0x80)
-	    && ((s[2] & 0xC0) == 0x80)
-	    && ((s[3] & 0xC0) == 0x80)
-	    && ((s[4] & 0xC0) == 0x80)
-	    && ((s[5] & 0xC0) == 0x80)) {
-	    *w = int(((byte & 0x01) << 30)
-			| ((s[1] & 0x3F) << 24)
-			| ((s[2] & 0x3F) << 18)
-			| ((s[3] & 0x3F) << 12)
-			| ((s[5] & 0x3F) << 6)
-			| (s[5] & 0x3F));
-	    byte = *w;
-	    return 6;
-	} else return -1;
-    }
+    } else return -1;
     /* return -2; not reached */
 }
 
@@ -294,10 +266,9 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
     return ans;
 }
 
-/* based on pcre.c */
-static const int utf8_table1[] =
-    { 0x7f, 0x7ff, 0xffff, 0x1fffff, 0x3ffffff, 0x7fffffff};
-static const int utf8_table2[] = { 0, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc};
+/* Based on PCRE, but current Unicode only needs 4 bytes with maximum 0x10ffff */
+static const int utf8_table1[] = { 0x7f, 0x7ff, 0xffff, 0x1fffff };
+static const int utf8_table2[] = { 0, 0xc0, 0xe0, 0xf0 };
 
 static size_t inttomb(char *s, const int wc)
 {
@@ -320,10 +291,10 @@ static size_t inttomb(char *s, const int wc)
 
 #include <R_ext/RS.h>  /* for Calloc/Free */
 
-SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_)
+SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_, rho::RObject* allow_surrogate_pairs_)
 {
     SEXP ans, x;
-    int multiple;
+    int multiple, s_pair;
     size_t used, len;
     char buf[10], *tmp;
 
@@ -333,16 +304,19 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
     multiple = Rf_asLogical(multiple_);
     if (multiple == NA_LOGICAL)
 	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
-    /*  
-	Could handle surrogate pairs here,
-	but they should not occur in UTF-32.
-    */
+    s_pair = Rf_asLogical(allow_surrogate_pairs_);
+    if (s_pair == NA_LOGICAL)
+	Rf_error(_("argument 'allow_surrogate_pairs' must be TRUE or FALSE"));
     if (multiple) {
+	if (s_pair)
+	    Rf_warning("allow_surrogate_pairs = TRUE is incompatible with multiple = TRUE and will be ignored");
 	R_xlen_t i, nc = XLENGTH(x);
 	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
 	    int this_ = INTEGER(x)[i];
-	    if (this_ == NA_INTEGER || (this_ >= 0xD800 && this_ <= 0xDFFF))
+	    if (this_ == NA_INTEGER 
+		|| (this_ >= 0xD800 && this_ <= 0xDFFF) 
+		|| this_ > 0x10FFFF)
 		SET_STRING_ELT(ans, i, NA_STRING);
 	    else {
 		used = inttomb(buf, this_);
@@ -357,15 +331,25 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	/* Note that this gives zero length for input '0', so it is omitted */
 	for (i = 0, len = 0; i < nc; i++) {
 	    int this_ = INTEGER(x)[i];
-	    if (this_ == NA_INTEGER || (this_ >= 0xD800 && this_ <= 0xDFFF)) {
+	    if (this_ == NA_INTEGER 
+		|| (this_ >= 0xDC00 && this_ <= 0xDFFF)
+		|| this_ > 0x10FFFF) {
 		haveNA = TRUE;
 		break;
 	    }
-	    len += inttomb(NULL, this_);
+	    else if (this_ >=  0xD800 && this_ <= 0xDBFF) {
+		if(!s_pair || i >= nc-1) {haveNA = TRUE; break;}
+		int next = INTEGER(x)[i+1];
+		if(next >= 0xDC00 && next <= 0xDFFF) i++;
+		else {haveNA = TRUE; break;}
+		len += 4; // all points not in the basic plane have length 4
+	    } 
+	    else
+		len += inttomb(NULL, this_);
 	}
 	if (haveNA) {
 	    UNPROTECT(1);
-	    return Rf_ScalarString(rho::String::NA());
+	    return Rf_ScalarString(NA_STRING);
 	}
 	if (len >= 10000) {
 	    tmp = Calloc(len+1, char);
@@ -374,7 +358,14 @@ SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::B
 	    tmp = static_cast<char *>(alloca(len+1)); tmp[len] = '\0';
 	}
 	for (i = 0, len = 0; i < nc; i++) {
-	    used = inttomb(buf, INTEGER(x)[i]);
+	    int this_ = INTEGER(x)[i];
+	    if(s_pair && (this_ >=  0xD800 && this_ <= 0xDBFF)) {
+		// all the validity checking has already been done.
+		int next = INTEGER(x)[++i];
+		unsigned int hi = this_ - 0xD800, lo = next - 0xDC00;
+		this_ = 0x10000 + (hi << 10) + lo;
+	    }
+	    used = inttomb(buf, this_);
 	    strncpy(tmp + len, buf, used);
 	    len += used;
 	}

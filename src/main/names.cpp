@@ -446,7 +446,7 @@ new BuiltInFunction("intToBits",	do_intToBits,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0
 new BuiltInFunction("rawToBits",	do_rawToBits,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("packBits",	do_packBits,	1,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("utf8ToInt",	do_utf8ToInt,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
-new BuiltInFunction("intToUtf8",	do_intToUtf8,	1,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("intToUtf8",	do_intToUtf8,	1,	11,	3,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("validUTF8",	do_validUTF8,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("validEnc",	do_validEnc,	1,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("encodeString",do_encodeString,1,	11,	5,	{PP_FUNCALL, PREC_FN,	0}),
@@ -639,6 +639,9 @@ new BuiltInFunction("parent.env<-",do_parentenvgets, 0,	11,     2,      {PP_FUNC
 new BuiltInFunction("topenv",	do_topenv,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("l10n_info",	do_l10n_info,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("Cstack_info", do_Cstack_info,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("mmap_file",	do_mmap_file,	0,	11,	-1,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("munmap_file",	do_munmap_file,	0,	111,	1,	{PP_FUNCALL, PREC_FN,	0}),
+new BuiltInFunction("wrap_meta",	do_wrap_meta,	0,	11,	3,	{PP_FUNCALL, PREC_FN,	0}),
 
 /* Functions To Interact with the Operating System */
 
@@ -944,6 +947,9 @@ void attribute_hidden Rf_InitNames()
     String::initialize();
     Symbol::initialize();
     R_print.na_string = NA_STRING;
+#if RHO_FALSE
+    R_init_altrep();
+#endif
 }
 
 	/* Internal code for the ~ operator */

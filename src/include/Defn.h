@@ -1160,6 +1160,7 @@ Rboolean R_FileExists(const char *);
 Rboolean R_HiddenFile(const char *);
 double	R_FileMtime(const char *);
 int	R_GetFDLimit();
+int	R_EnsureFDLimit(int);
 
 /* environment cell access */
 // Used only by src/library/methods/src/methods_list_dispatch.cpp

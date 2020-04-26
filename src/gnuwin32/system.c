@@ -538,7 +538,7 @@ extern size_t Rf_utf8towcs(wchar_t *wc, const char *s, size_t n);
 int R_ShowFiles(int nfile, const char **file, const char **headers,
 		const char *wtitle, Rboolean del, const char *pager)
 {
-    int   i;
+    int   i, ll;
     char  buf[1024];
 
     if (nfile > 0) {
@@ -574,7 +574,8 @@ int R_ShowFiles(int nfile, const char **file, const char **headers,
 			snprintf(buf, 1024, "\"%s\" \"%s\"", pager, file[i]);
 		    else
 			snprintf(buf, 1024, "%s \"%s\"", pager, file[i]);
-		    runcmd(buf, CE_NATIVE, 0, 1, NULL, NULL, NULL);
+		    ll = runcmd(buf, CE_NATIVE, 0, 1, NULL, NULL, NULL);
+		    if (ll == NOLAUNCH) error(runerror());
 		}
 	    } else {
 		snprintf(buf, 1024,
@@ -605,7 +606,7 @@ int R_ShowFiles(int nfile, const char **file, const char **headers,
 int R_EditFiles(int nfile, const char **file, const char **title,
 		const char *editor)
 {
-    int   i;
+    int   i, ll;
     char  buf[1024];
 
     if (nfile > 0) {
@@ -620,7 +621,8 @@ int R_EditFiles(int nfile, const char **file, const char **title,
 		    snprintf(buf, 1024, "\"%s\" \"%s\"", editor, file[i]);
 		else
 		    snprintf(buf, 1024, "%s \"%s\"", editor, file[i]);
-		runcmd(buf, CE_UTF8, 0, 1, NULL, NULL, NULL);
+		ll = runcmd(buf, CE_UTF8, 0, 1, NULL, NULL, NULL);
+		if (ll == NOLAUNCH) error(runerror());
 	    }
 
 	}
@@ -1211,3 +1213,10 @@ int R_GetFDLimit()
     long limit = 16L*1024L*1024L;
     return (limit > INT_MAX) ? INT_MAX : limit;
 }
+
+int R_EnsureFDLimit(int desired)
+{
+    long limit = 16L*1024L*1024L;
+    return (desired <= limit) ? desired : (int)limit;
+}
+

@@ -67,7 +67,6 @@ namespace rho {
 	auto LEVELSptr = &LEVELS;
 	auto SETLEVELSptr = &SETLEVELS;
 	int (*ALTREPptr)(SEXP x) = ALTREP;
-	R_xlen_t (*ALTREP_LENGTHptr)(SEXP x) = ALTREP_LENGTH;
     }
 }
 

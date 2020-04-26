@@ -86,20 +86,49 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 
 /* ExtractSubset allocates "result" and does the transfer of elements
    from "x" to "result" according to the integer/real subscripts given
-   in "indx". */
+   in "indx".
 
-SEXP attribute_hidden ExtractSubset(SEXP x, SEXP indx, SEXP call)
+   The EXTRACT_SUBSET_LOOP macro allows the branches based on index
+   type and vector type to happen outside the loop.
+*/
+
+#define EXTRACT_SUBSET_LOOP(STDCODE, NACODE) do { \
+	if (TYPEOF(indx) == INTSXP) {		  \
+	    for (i = 0; i < n; i++) {		  \
+		ii = INTEGER_ELT(indx, i);	  \
+		if (ii == NA_INTEGER)		  \
+		    NACODE;			  \
+		else {				  \
+		    ii--;			  \
+		    if (0 <= ii && ii < nx)	  \
+			STDCODE;		  \
+		    else			  \
+			NACODE;			  \
+		}				  \
+	    }					  \
+	}					  \
+	else {					  \
+	    for (i = 0; i < n; i++) {		  \
+		double di = REAL_ELT(indx, i);	  \
+		if (!R_FINITE(di))		  \
+		    NACODE;			  \
+		else {				  \
+		    ii = (R_xlen_t) (di - 1);	  \
+		    if (0 <= ii && ii < nx)	  \
+			STDCODE;		  \
+		    else			  \
+			NACODE;			  \
+		}				  \
+	    }					  \
+	}					  \
+    } while (0)
+    
+SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
 {
-    R_xlen_t i, ii, n, nx;
-    SEXPTYPE mode, mi;
-    mode = TYPEOF(x);
-    mi = TYPEOF(indx);
-    n = XLENGTH(indx);
-    nx = Rf_xlength(x);
-    SEXP result;
-
     if (x == R_NilValue)
 	return x;
+
+    SEXP result;
 
     if (ALTREP(x)) {
 	result = ALTVEC_EXTRACT_SUBSET(x, indx, call);
@@ -107,77 +136,57 @@ SEXP attribute_hidden ExtractSubset(SEXP x, SEXP indx, SEXP call)
 	    return result;
     }
 
+    R_xlen_t i, ii, n, nx;
+    n = XLENGTH(indx);
+    nx = Rf_xlength(x);
+    SEXPTYPE mode = TYPEOF(x);
+
     /* protect allocation in case _ELT operations need to allocate */
     PROTECT(result = Rf_allocVector(mode, n));
-    for (i = 0; i < n; i++) {
-	switch(mi) {
-	case REALSXP:
-	    if(!R_FINITE(REAL_ELT(indx, i))) ii = NA_INTEGER;
-	    else ii = R_xlen_t(REAL_ELT(indx, i) - 1);
-	    break;
-	default:
-	    ii = INTEGER_ELT(indx, i);
-	    if (ii != NA_INTEGER) ii--;
+    switch(mode) {
+    case LGLSXP:
+	EXTRACT_SUBSET_LOOP(LOGICAL0(result)[i] = Rboolean(LOGICAL_ELT(x, ii)),
+			    LOGICAL0(result)[i] = Rboolean(NA_INTEGER));
+	break;
+    case INTSXP:
+	EXTRACT_SUBSET_LOOP(INTEGER0(result)[i] = INTEGER_ELT(x, ii),
+			    INTEGER0(result)[i] = NA_INTEGER);
+	break;
+    case REALSXP:
+	EXTRACT_SUBSET_LOOP(REAL0(result)[i] = REAL_ELT(x, ii),
+			    REAL0(result)[i] = NA_REAL);
+	break;
+    case CPLXSXP:
+	{
+	    Rcomplex NA_CPLX = { NA_REAL, NA_REAL };
+	    EXTRACT_SUBSET_LOOP(COMPLEX0(result)[i] = COMPLEX_ELT(x, ii),
+				COMPLEX0(result)[i] = NA_CPLX);
 	}
-	switch (mode) {
-	    /* NA_INTEGER < 0, so some of this is redundant */
-	case LGLSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		LOGICAL(result)[i] = LOGICAL_ELT(x, ii);
-	    else
-		LOGICAL(result)[i] = NA_INTEGER;
-	    break;
-	case INTSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		INTEGER(result)[i] = INTEGER_ELT(x, ii);
-	    else
-		INTEGER(result)[i] = NA_INTEGER;
-	    break;
-	case REALSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		REAL(result)[i] = REAL_ELT(x, ii);
-	    else
-		REAL(result)[i] = NA_REAL;
-	    break;
-	case CPLXSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER) {
-		COMPLEX(result)[i] = COMPLEX_ELT(x, ii);
-	    } else {
-		COMPLEX(result)[i].r = NA_REAL;
-		COMPLEX(result)[i].i = NA_REAL;
-	    }
-	    break;
-	case STRSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		SET_STRING_ELT(result, i, STRING_ELT(x, ii));
-	    else
-		SET_STRING_ELT(result, i, NA_STRING);
-	    break;
-	case VECSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		SET_VECTOR_ELT(result, i, VECTOR_ELT_FIX_NAMED(x, ii));
-	    else
-		SET_VECTOR_ELT(result, i, R_NilValue);
-	    break;
-	case EXPRSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		SET_XVECTOR_ELT(result, i, XVECTOR_ELT_FIX_NAMED(x, ii));
-	    else
-		SET_XVECTOR_ELT(result, i, R_NilValue);
-	    break;
-	case RAWSXP:
-	    if (0 <= ii && ii < nx && ii != NA_INTEGER)
-		RAW(result)[i] = RAW(x)[ii];
-	    else
-		RAW(result)[i] = Rbyte(0);
-	    break;
-	case LISTSXP:
-	    /* cannot happen: pairlists are coerced to lists */
-	case LANGSXP:
-	    /* cannot happen: LANGSXPs are coerced to lists */
-	default:
-	    Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
-	}
+	break;
+    case STRSXP:
+	EXTRACT_SUBSET_LOOP(SET_STRING_ELT(result, i, STRING_ELT(x, ii)),
+			    SET_STRING_ELT(result, i, NA_STRING));
+	break;
+    case VECSXP:
+	EXTRACT_SUBSET_LOOP(SET_VECTOR_ELT(result, i,
+					   VECTOR_ELT_FIX_NAMED(x, ii)),
+			    SET_VECTOR_ELT(result, i, R_NilValue));
+	break;
+    case EXPRSXP:
+	EXTRACT_SUBSET_LOOP(SET_XVECTOR_ELT(result, i,
+					   XVECTOR_ELT_FIX_NAMED(x, ii)),
+			    SET_XVECTOR_ELT(result, i, R_NilValue));
+	break;
+    case RAWSXP:
+	EXTRACT_SUBSET_LOOP(RAW0(result)[i] = RAW_ELT(x, ii),
+			    RAW0(result)[i] = (Rbyte) 0);
+	break;
+    case LISTSXP:
+	/* cannot happen: pairlists are coerced to lists */
+    case LANGSXP:
+	/* cannot happen: LANGSXPs are coerced to lists */
+    default:
+	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
     }
     UNPROTECT(1); /* result */
     return result;
@@ -242,7 +251,7 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     /* in the range 1:length(x). */
     R_xlen_t stretch = 1;
     GCStackRoot<> indx(Rf_makeSubscript(x, s, &stretch, call));
-    GCStackRoot<> result(ExtractSubset(x, indx, call));
+    GCStackRoot<> result(Rf_ExtractSubset(x, indx, call));
     if (mode == VECSXP || mode == EXPRSXP)
 	/* we do not duplicate the values when extracting the subset,
 	   so to be conservative mark the result as NAMED = NAMEDMAX */
@@ -260,12 +269,12 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
 	     && (attrib = Rf_GetRowNames(attrib)) != R_NilValue
 	     )
 	    ) {
-	    GCStackRoot<> nattrib(ExtractSubset(attrib, indx, call));
+	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, R_NamesSymbol, nattrib);
 	}
 	if ((attrib = Rf_getAttrib(x, R_SrcrefSymbol)) != R_NilValue &&
 	    TYPEOF(attrib) == VECSXP) {
-	    GCStackRoot<> nattrib(ExtractSubset(attrib, indx, call));
+	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, R_SrcrefSymbol, nattrib);
 	}
     }
@@ -439,7 +448,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 		break;
 	    case RAWSXP:
 		if (i >= 1 && i <= XLENGTH(x))
-		    return Rf_ScalarRaw( RAW(x)[i-1] );
+		    return Rf_ScalarRaw( RAW_ELT(x, i-1) );
 		break;
 	    default: break;
 	    }
@@ -483,7 +492,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 			break;
 		    case RAWSXP:
 			if (k < XLENGTH(x))
-			    return Rf_ScalarRaw( RAW(x)[k] );
+			    return Rf_ScalarRaw( RAW_ELT(x, k) );
 			break;
 		    default: break;
 		    }
@@ -767,7 +776,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	case STRSXP:
 	    return Rf_ScalarString(STRING_ELT(x, offset));
 	case RAWSXP:
-	    return Rf_ScalarRaw(RAW(x)[offset]);
+	    return Rf_ScalarRaw(RAW_ELT(x, offset));
 	default:
 	    UNIMPLEMENTED_TYPE("do_subset2", x);
 	}

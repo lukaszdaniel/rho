@@ -232,7 +232,7 @@ SEXP do_identical(rho::Expression* call, const rho::BuiltInFunction* op, rho::RO
 SEXP do_if(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_inherits(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* what_, rho::RObject* which_);
 SEXP do_inspect(rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...);
-SEXP do_intToUtf8(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_);
+SEXP do_intToUtf8(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_, rho::RObject* allow_surrogate_pairs_);
 SEXP do_interactive(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_internal(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_internalsID(SEXP, SEXP, SEXP, SEXP);
@@ -290,6 +290,8 @@ SEXP do_memoryprofile(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_merge(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* xinds_, rho::RObject* yinds_, rho::RObject* all_x_, rho::RObject* all_y_);
 SEXP do_mget(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* envir, rho::RObject* mode, rho::RObject* ifnotfound, rho::RObject* inherits);
 SEXP do_missing(SEXP, SEXP, SEXP, SEXP);  // Special
+SEXP do_mmap_file(SEXP, SEXP, SEXP, SEXP);
+SEXP do_munmap_file(SEXP, SEXP, SEXP, SEXP);
 SEXP do_names(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_namesgets(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* value_);
 rho::ArgumentArrayFn do_nargs;
@@ -447,6 +449,7 @@ SEXP do_warning(SEXP, SEXP, SEXP, SEXP);
 SEXP do_while(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_which(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_withVisible(SEXP, SEXP, SEXP, SEXP);  // Special
+SEXP do_wrap_meta(SEXP, SEXP, SEXP, SEXP);
 SEXP do_xtfrm(SEXP, SEXP, SEXP, SEXP);
 
 SEXP R_do_data_class(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* klass);

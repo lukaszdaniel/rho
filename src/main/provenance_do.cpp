@@ -29,6 +29,8 @@
  * @brief Provenance-related R functions
  */
 
+#define R_NO_REMAP
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -56,54 +58,55 @@ using namespace rho;
 
 SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-	int n;
-	if ((n=Rf_length(args))!=1)
-		Rf_errorcall(call,_("%d arguments passed to 'castestfun' which requires 1"),n);
+    int n;
+    if ((n = Rf_length(args)) != 1)
+	Rf_errorcall(
+	    call, _("%d arguments passed to 'castestfun' which requires 1"), n);
 
-	if (TYPEOF(CAR(args))!=SYMSXP)
-		Rf_errorcall(call,_("castestfun expects Symbol argument"));
+    if (TYPEOF(CAR(args)) != SYMSXP)
+	Rf_errorcall(call, _("castestfun expects Symbol argument"));
     /*GCStackRoot<IntVector> v(IntVector::create(3));
     (*v)[0]=1;
     (*v)[1]=2;
     (*v)[2]=3;
     return v;*/
-	/*GCStackRoot<LogicalVector> a(SEXP_downcast<LogicalVector*>(CAR(args)));
-	GCStackRoot<LogicalVector> v(LogicalVector::create(1));
-	if ((*a)[0]==true)
-		(*v)[0]=true;
-	else
-		(*v)[0]=false;
-	return v;*/
-	Symbol* sym=SEXP_downcast<Symbol*>(CAR(args));
-	Environment* env=static_cast<Environment*>(rho);
-	// Let's try to get the binding for given symbol...
-	Frame::Binding* binding = env->findBinding(sym);
-	if (binding!=nullptr)
-		printf("Binding located :-)\n");
-	GCStackRoot<IntVector> inv(IntVector::create(3));
-	(*inv)[0]=1;
-	(*inv)[1]=2;
-	(*inv)[2]=3;
-	GCStackRoot<IntVector> inv2(IntVector::create(2));
-	(*inv2)[0]=4;
-	(*inv2)[1]=5;
+    /*GCStackRoot<LogicalVector> a(SEXP_downcast<LogicalVector*>(CAR(args)));
+    GCStackRoot<LogicalVector> v(LogicalVector::create(1));
+    if ((*a)[0]==true)
+	    (*v)[0]=true;
+    else
+	    (*v)[0]=false;
+    return v;*/
+    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
+    Environment* env = static_cast<Environment*>(rho);
+    // Let's try to get the binding for given symbol...
+    Frame::Binding* binding = env->findBinding(sym);
+    if (binding != nullptr)
+	printf("Binding located :-)\n");
+    GCStackRoot<IntVector> inv(IntVector::create(3));
+    (*inv)[0] = 1;
+    (*inv)[1] = 2;
+    (*inv)[2] = 3;
+    GCStackRoot<IntVector> inv2(IntVector::create(2));
+    (*inv2)[0] = 4;
+    (*inv2)[1] = 5;
 
-	GCStackRoot<StringVector> str(StringVector::create(2));
-	(*str)[0]=const_cast<String*>(String::obtain("ivOne"));
-	(*str)[1]=const_cast<String*>(String::obtain("ivTwo"));
+    GCStackRoot<StringVector> str(StringVector::create(2));
+    (*str)[0] = const_cast<String*>(String::obtain("ivOne"));
+    (*str)[1] = const_cast<String*>(String::obtain("ivTwo"));
 
-	GCStackRoot<ListVector> rc(ListVector::create(2));
-	(*rc)[0]=inv;
-	(*rc)[1]=inv2;
+    GCStackRoot<ListVector> rc(ListVector::create(2));
+    (*rc)[0] = inv;
+    (*rc)[1] = inv2;
 
-	Rf_setAttrib(rc, R_NamesSymbol, str);
-	return rc;
+    Rf_setAttrib(rc, R_NamesSymbol, str);
+    return rc;
 }
 
 SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
-    if ((n=Rf_length(args))!=1)
+    if ((n = Rf_length(args)) != 1)
 	Rf_errorcall(call,_("%d arguments passed to 'hasProvenance' which requires 1"),n);
 
     if (TYPEOF(CAR(args))!=SYMSXP)
@@ -111,8 +114,8 @@ SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 
     GCStackRoot<LogicalVector> v(LogicalVector::create(1));
 #ifdef PROVENANCE_TRACKING
-    Symbol* sym=SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env=static_cast<Environment*>(rho);
+    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
+    Environment* env = static_cast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     (*v)[0] = (bdg->provenance() != 0);
 #else
@@ -121,48 +124,49 @@ SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
     return v;
 }
 
-SEXP attribute_hidden do_provenance (SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP attribute_hidden do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
     return nullptr;
 #else
-    const int nfields=5;
+    const int nfields = 5;
     int n;
-    if ((n=Rf_length(args))!=1)
-	Rf_errorcall(call,_("%d arguments passed to 'provenance' which requires 1"),n);
+    if ((n = Rf_length(args)) != 1)
+	Rf_errorcall(
+	    call, _("%d arguments passed to 'provenance' which requires 1"), n);
 
-    if (TYPEOF(CAR(args))!=SYMSXP)
-	Rf_errorcall(call,_("provenance expects Symbol argument"));
-    Symbol* sym=SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env=static_cast<Environment*>(rho);
+    if (TYPEOF(CAR(args)) != SYMSXP)
+	Rf_errorcall(call, _("provenance expects Symbol argument"));
+    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
+    Environment* env = static_cast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     if (!bdg)
-	Rf_errorcall(call,_("invalid Symbol passed to 'provenance'"));
-    Provenance* provenance=const_cast<Provenance*>(bdg->provenance());
+	Rf_errorcall(call, _("invalid Symbol passed to 'provenance'"));
+    Provenance* provenance = const_cast<Provenance*>(bdg->provenance());
     if (!provenance)
-	Rf_errorcall(call,_("object does not have any provenance"));
-    const Provenance::Set& children=provenance->children();
+	Rf_errorcall(call, _("object does not have any provenance"));
+    const Provenance::Set& children = provenance->children();
 
     GCStackRoot<ListVector> list(ListVector::create(nfields));
     GCStackRoot<StringVector> timestamp(StringVector::create(1));
     GCStackRoot<StringVector> names(StringVector::create(nfields));
 
-    (*timestamp)[0]=const_cast<String*>(provenance->getTime());
+    (*timestamp)[0] = const_cast<String*>(provenance->getTime());
 
-    (*names)[0]=const_cast<String*>(String::obtain("command"));
-    (*names)[1]=const_cast<String*>(String::obtain("symbol"));
-    (*names)[2]=const_cast<String*>(String::obtain("timestamp"));
-    (*names)[3]=const_cast<String*>(String::obtain("parents"));
-    (*names)[4]=const_cast<String*>(String::obtain("children"));
+    (*names)[0] = const_cast<String*>(String::obtain("command"));
+    (*names)[1] = const_cast<String*>(String::obtain("symbol"));
+    (*names)[2] = const_cast<String*>(String::obtain("timestamp"));
+    (*names)[3] = const_cast<String*>(String::obtain("parents"));
+    (*names)[4] = const_cast<String*>(String::obtain("children"));
 
     (*list)[0] = const_cast<RObject*>(provenance->command());
     (*list)[1] = const_cast<Symbol*>(provenance->symbol());
-    (*list)[2]=timestamp;
+    (*list)[2] = timestamp;
     // Handle parents:
     {
 	std::pair<CommandChronicle::ParentVector::const_iterator,
-		  CommandChronicle::ParentVector::const_iterator>
+	    CommandChronicle::ParentVector::const_iterator>
 	    pr = provenance->parents();
 	size_t sz = pr.second - pr.first;
 	StringVector* sv = StringVector::create(sz);
@@ -185,34 +189,38 @@ SEXP attribute_hidden do_provenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
 
-    Rf_setAttrib(list,R_NamesSymbol,names);
+    Rf_setAttrib(list, R_NamesSymbol, names);
 
     return list;
-#endif  // PROVENANCE_TRACKING
+#endif // PROVENANCE_TRACKING
 }
 
-SEXP attribute_hidden do_provCommand (/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* /* const* */ args, int num_args, const PairList* tags)
+SEXP attribute_hidden do_provCommand(/*const*/ Expression* call,
+    const BuiltInFunction* op, Environment* rho, RObject* /* const* */ args,
+    int num_args, const PairList* tags)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
     return nullptr;
 #else
     int n;
-    if ((n=num_args)!=1)
-	Rf_errorcall(call,_("%d arguments passed to 'provCommand' which requires 1"),n);
+    if ((n = num_args) != 1)
+	Rf_errorcall(call,
+	    _("%d arguments passed to 'provCommand' which requires 1"), n);
 
-    if (TYPEOF(args[0])!=SYMSXP)
-	Rf_errorcall(call,_("provCommand expects Symbol argument"));
+    if (TYPEOF(args[0]) != SYMSXP)
+	Rf_errorcall(call, _("provCommand expects Symbol argument"));
 
-    Symbol* sym=SEXP_downcast<Symbol*>(args[0]);
-    Environment* env=static_cast<Environment*>(rho);
+    Symbol* sym = SEXP_downcast<Symbol*>(args[0]);
+    Environment* env = static_cast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     return const_cast<RObject*>(bdg->provenance()->command());
-#endif  // PROVENANCE_TRACKING
+#endif // PROVENANCE_TRACKING
 }
 
-SEXP attribute_hidden
-do_provenance_graph(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+SEXP attribute_hidden do_provenance_graph(/*const*/ Expression* call,
+    const BuiltInFunction* op, Environment* rho, RObject* const* args,
+    int num_args, const PairList* tags)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
@@ -220,12 +228,13 @@ do_provenance_graph(/*const*/ Expression* call, const BuiltInFunction* op, Envir
 #else
     int nargs = num_args;
     if (nargs != 1)
-	Rf_error(_("%d arguments passed to 'provenance.graph' which requires 1"),
-		 nargs);
+	Rf_error(
+	    _("%d arguments passed to 'provenance.graph' which requires 1"),
+	    nargs);
     // SEXP arg1 = CAR((RObject*) args);
     const RObject* arg1 = args[0];
     if (!arg1 || arg1->sexptype() != STRSXP)
-	    Rf_error(_("invalid 'names' argument"));
+	Rf_error(_("invalid 'names' argument"));
 
     Environment* env = static_cast<Environment*>(rho);
     Provenance::Set provs;
@@ -239,17 +248,18 @@ do_provenance_graph(/*const*/ Expression* call, const BuiltInFunction* op, Envir
 	else {
 	    Provenance* prov = const_cast<Provenance*>(bdg->provenance());
 	    if (!prov)
-		Rf_warning(_("'%s' does not have provenance information"),
-			   name);
-	    else provs.insert(prov);
-	    }
+		Rf_warning(
+		    _("'%s' does not have provenance information"), name);
+	    else
+		provs.insert(prov);
 	}
+    }
 
     Provenance::Set* ancestors = Provenance::ancestors(provs);
 
     GCStackRoot<ListVector> ans(ListVector::create(7));
     std::map<const Provenance*, unsigned int> ancestor_index;
-    std::vector<std::pair<unsigned int, const RObject*> > xenogenous_bdgs;
+    std::vector<std::pair<unsigned int, const RObject*>> xenogenous_bdgs;
 
     // Assemble information on graph nodes:
     {
@@ -291,14 +301,14 @@ do_provenance_graph(/*const*/ Expression* call, const BuiltInFunction* op, Envir
 
     // Assemble information on graph edges:
     {
-	typedef std::set<std::pair<unsigned int, unsigned int> > EdgeSet;
+	typedef std::set<std::pair<unsigned int, unsigned int>> EdgeSet;
 	EdgeSet edges;
 	for (Provenance::Set::iterator it = ancestors->begin();
 	     it != ancestors->end(); ++it) {
 	    const Provenance* child = *it;
 	    unsigned int child_idx = ancestor_index[child];
 	    std::pair<CommandChronicle::ParentVector::const_iterator,
-		      CommandChronicle::ParentVector::const_iterator>
+		CommandChronicle::ParentVector::const_iterator>
 		pr = child->parents();
 	    for (CommandChronicle::ParentVector::const_iterator it = pr.first;
 		 it != pr.second; ++it) {
@@ -312,17 +322,18 @@ do_provenance_graph(/*const*/ Expression* call, const BuiltInFunction* op, Envir
 	GCStackRoot<IntVector> parents(IntVector::create(en));
 	GCStackRoot<IntVector> children(IntVector::create(en));
 	unsigned int i = 0;
-	for (EdgeSet::const_iterator it = edges.begin(); it != edges.end(); ++it) {
+	for (EdgeSet::const_iterator it = edges.begin(); it != edges.end();
+	     ++it) {
 	    const std::pair<unsigned int, unsigned int>& edge = *it;
 	    (*parents)[i] = edge.first;
 	    (*children)[i] = edge.second;
 	    ++i;
 	}
-		
+
 	(*ans)[5] = parents;
 	(*ans)[6] = children;
     }
     delete ancestors;
     return ans;
-#endif  // PROVENANCE_TRACKING
+#endif // PROVENANCE_TRACKING
 }

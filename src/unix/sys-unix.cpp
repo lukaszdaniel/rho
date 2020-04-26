@@ -755,6 +755,8 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    res = R_system(cmd);
 	else 
 	    res = R_system_timeout(cmd, timeout);
+	if (res == 127) 
+	    Rf_error(_("error in running command"));
 	if (timeout && tost.timedout) {
 	    res = 124;
 	    Rf_warningcall(R_NilValue, _("command '%s' timed out after %ds"),

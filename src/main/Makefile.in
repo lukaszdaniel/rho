@@ -57,7 +57,7 @@ SOURCES_CXX = \
 	UnaryFunction.cpp \
 	VectorBase.cpp \
 	WeakRef.cpp \
-	apply.cpp agrep.cpp arithmetic.cpp array.cpp attrib.cpp \
+	agrep.cpp altrep.cpp apply.cpp arithmetic.cpp array.cpp attrib.cpp \
 	bind.cpp builtin.cpp \
 	character.cpp coerce.cpp colors.cpp complex.cpp connections.cpp context.cpp \
 	cum.cpp \

@@ -415,52 +415,48 @@ SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction*
 // .Internal(dump(list, file, envir, opts, evaluate))
 SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* file_, RObject* envir_, RObject* opts_, RObject* evaluate_)
 {
-    SEXP file, names, o, objs, tval, source, outnames;
-    int i, j, nobjs, nout, res;
-    int opts;
-    const char *obj_name;
 
-    names = list_;
-    file = file_;
+    SEXP names = list_,
+	 file = file_;
     if(!Rf_inherits(file, "connection"))
 	Rf_error(_("'file' must be a character string or connection"));
     if(!Rf_isString(names))
 	Rf_error( _("character arguments expected"));
-    nobjs = Rf_length(names);
+    int nobjs = Rf_length(names);
     if(nobjs < 1 || Rf_length(file) < 1)
 	Rf_error(_("zero-length argument"));
-    source = envir_;
+    SEXP source = envir_;
     if (source != R_NilValue && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "envir");
-    opts = Rf_asInteger(opts_);
+    int opts = Rf_asInteger(opts_);
     /* <NOTE>: change this if extra options are added */
     if(opts == NA_INTEGER || opts < 0 || opts > 2048)
 	Rf_error(_("'opts' should be small non-negative integer"));
     // evaluate :
     if (!Rf_asLogical(evaluate_)) opts |= DELAYPROMISES;
 
-    PROTECT(o = objs = Rf_allocList(nobjs));
-
-    for (j = 0, nout = 0; j < nobjs; j++, o = CDR(o)) {
-	SET_TAG(o, Rf_installTrChar(STRING_ELT(names, j)));
+    SEXP objs, o = PROTECT(objs = Rf_allocList(nobjs));
+    int nout = 0;
+    for (int i = 0; i < nobjs; i++, o = CDR(o)) {
+	SET_TAG(o, Rf_installTrChar(STRING_ELT(names, i)));
 	SETCAR(o, Rf_findVar(TAG(o), source));
 	if (CAR(o) == R_UnboundValue)
 	    Rf_warning(_("object '%s' not found"), Rf_EncodeChar(PRINTNAME(TAG(o))));
 	else nout++;
     }
     o = objs;
-    PROTECT(outnames = Rf_allocVector(STRSXP, nout));
+    SEXP outnames = PROTECT(Rf_allocVector(STRSXP, nout)); // -> result
     if(nout > 0) {
 	if(INTEGER(file)[0] == 1) {
-	    for (i = 0, nout = 0; i < nobjs; i++) {
+	    for (int i = 0, nout = 0; i < nobjs; i++) {
 		if (CAR(o) == R_UnboundValue) continue;
-		obj_name = Rf_translateChar(STRING_ELT(names, i));
+		const char *obj_name = Rf_translateChar(STRING_ELT(names, i));
 		SET_STRING_ELT(outnames, nout++, STRING_ELT(names, i));
 		if(Rf_isValidName(obj_name)) Rprintf("%s <-\n", obj_name);
 		else if(opts & S_COMPAT) Rprintf("\"%s\" <-\n", obj_name);
 		else Rprintf("`%s` <-\n", obj_name);
-		tval = Rf_deparse1(CAR(o), FALSE, opts);
-		for (j = 0; j < LENGTH(tval); j++)
+		SEXP tval = Rf_deparse1(CAR(o), FALSE, opts);
+		for (int j = 0; j < LENGTH(tval); j++)
 		    Rprintf("%s\n", R_CHAR(STRING_ELT(tval, j)));/* translated */
 		o = CDR(o);
 	    }
@@ -478,12 +474,12 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
 	    try {
 		if(!con->canwrite) Rf_error(_("cannot write to this connection"));
 	    Rboolean havewarned = FALSE;
-		for (i = 0, nout = 0; i < nobjs; i++) {
-		    const char *s;
-		    int extra = 6;
+		for (int i = 0, nout = 0; i < nobjs; i++) {
 		    if (CAR(o) == R_UnboundValue) continue;
 		    SET_STRING_ELT(outnames, nout++, STRING_ELT(names, i));
-		    s = Rf_translateChar(STRING_ELT(names, i));
+		int res;
+		    const char *s = Rf_translateChar(STRING_ELT(names, i));
+		    int extra = 6;
 		    if(Rf_isValidName(s)) {
 			extra = 4;
 			res = Rconn_printf(con, "%s <-\n", s);
@@ -493,8 +489,8 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
 			res = Rconn_printf(con, "`%s` <-\n", s);
 		    if(!havewarned && res < int(strlen(s)) + extra)
 			Rf_warning(_("wrote too few characters"));
-		    tval = Rf_deparse1(CAR(o), FALSE, opts);
-		    for (j = 0; j < LENGTH(tval); j++) {
+		    SEXP tval = Rf_deparse1(CAR(o), FALSE, opts);
+		    for (int j = 0; j < LENGTH(tval); j++) {
 			res = Rconn_printf(con, "%s\n", R_CHAR(STRING_ELT(tval, j)));
 			if(!havewarned &&
 			   res < int(strlen(R_CHAR(STRING_ELT(tval, j)))) + 1) {

@@ -54,8 +54,8 @@ print.warnings <- function(x, tags,
                 nl <- if(nchar(tags[i], "w") + nchar(temp[1L], "w") +
                          nchar(sm[1L], "w") <= options("width")[[1]])
                     " " else "\n  "
-                paste(tags[i], gettextf("In command %s", sQuote(temp[1L]), domain = "R-base"), if(length(temp) > 1L) " ...",
-                      " :", nl, msgs[i], sep = "")
+                paste0(tags[i], gettextf("In command %s", sQuote(temp[1L]), domain = "R-base"), if(length(temp) > 1L) " ...",
+                      " :", nl, msgs[i])
             } else paste0(tags[i], msgs[i])
             do.call("cat", c(list(out), attr(x, "dots"), fill=TRUE))
         }

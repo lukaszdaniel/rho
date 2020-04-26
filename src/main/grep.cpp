@@ -2132,7 +2132,7 @@ static int getNc(const char *s, int st)
 
 static SEXP
 gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC,
-		R_xlen_t i)
+		R_xlen_t i, SEXP itype)
 {
     int matchIndex = -1, j, st, foundAll = 0, foundAny = 0, rc = 0;
     size_t len, offset = 0;
@@ -2216,6 +2216,7 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC,
     }
     Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
+	Rf_setAttrib(ans, Rf_install("index.type"), itype);
 	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(4);
@@ -2224,7 +2225,7 @@ gregexpr_Regexc(const regex_t *reg, SEXP sstr, int useBytes, int use_WC,
 
 static SEXP
 gregexpr_fixed(const char *pattern, const char *string,
-	       Rboolean useBytes, Rboolean use_UTF8)
+	       Rboolean useBytes, Rboolean use_UTF8, SEXP itype)
 {
     int patlen, matchIndex, st = 0, foundAll = 0, foundAny = 0, j,
 	ansSize, nb = 0;
@@ -2297,6 +2298,7 @@ gregexpr_fixed(const char *pattern, const char *string,
     }
     Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
+	Rf_setAttrib(ans, Rf_install("index.type"), itype);
 	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(4);
@@ -2369,7 +2371,8 @@ gregexpr_perl(const char *pattern, const char *string,
 	      pcre *re_pcre, pcre_extra *re_pe,
 	      Rboolean useBytes, Rboolean use_UTF8,
 	      int *ovector, int ovector_size,
-	      int capture_count, SEXP capture_names, R_xlen_t n)
+	      int capture_count, SEXP capture_names, R_xlen_t n,
+	      SEXP itype)
 {
     Rboolean foundAll = FALSE, foundAny = FALSE;
     int matchIndex = -1, start = 0;
@@ -2444,6 +2447,7 @@ gregexpr_perl(const char *pattern, const char *string,
     PROTECT(matchlen = Rf_allocVector(INTSXP, matchIndex + 1));
     Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
     if(useBytes) {
+	Rf_setAttrib(ans, Rf_install("index.type"), itype);
 	Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
     }
     UNPROTECT(1);
@@ -2509,7 +2513,7 @@ static SEXP gregexpr_BadStringAns(void)
 
 SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
-    SEXP pat, text, ans;
+    SEXP pat, text, ans, itype;
     regex_t reg;
     regmatch_t regmatch[10];
     R_xlen_t i, n;
@@ -2552,6 +2556,8 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 
     if (!Rf_isString(text))
 	Rf_error(_("invalid '%s' argument"), "text");
+
+    itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars"));
 
     n = XLENGTH(text);
     if (!useBytes) {
@@ -2683,6 +2689,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	PROTECT(matchlen = Rf_allocVector(INTSXP, n));
 	Rf_setAttrib(ans, Rf_install("match.length"), matchlen);
 	if(useBytes) {
+	    Rf_setAttrib(ans, Rf_install("index.type"), itype);
 	    Rf_setAttrib(ans, Rf_install("useBytes"), R_TrueValue);
 	}
 	UNPROTECT(1);
@@ -2815,16 +2822,17 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 			elt = gregexpr_BadStringAns();
 		    } else {
 			if (fixed_opt)
-			    elt = gregexpr_fixed(spat, s, Rboolean(useBytes), use_UTF8);
+			    elt = gregexpr_fixed(spat, s, Rboolean(useBytes), use_UTF8,
+				                 itype);
 			else
 			    elt = gregexpr_perl(spat, s, re_pcre, re_pe,
 						Rboolean(useBytes), use_UTF8, ovector,
 						ovector_size, capture_count,
-						capture_names, i);
+						capture_names, i, itype);
 		    }
 		} else
 		    elt = gregexpr_Regexc(&reg, STRING_ELT(text, i),
-					  useBytes, use_WC, i);
+					  useBytes, use_WC, i, itype);
 	    }
 	    SET_VECTOR_ELT(ans, i, elt);
 	    vmaxset(vmax);
@@ -2847,7 +2855,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 
 SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
-    SEXP pat, text, ans, matchpos, matchlen;
+    SEXP pat, text, ans, matchpos, matchlen, itype;
     int opt_icase, opt_fixed, useBytes;
 
     Rboolean use_WC = FALSE;
@@ -2887,6 +2895,8 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 
     if(!Rf_isString(text))
 	Rf_error(_("invalid '%s' argument"), "text");
+
+    itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars"));
 
     n = XLENGTH(text);
 
@@ -2988,7 +2998,9 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 		    INTEGER(matchlen)[j] = pmatch[j].rm_eo - so;
 		}
 		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
-		if(useBytes)
+		if(useBytes) {
+		    Rf_setAttrib(matchpos, Rf_install("index.type"), itype);
+		}
 		    Rf_setAttrib(matchpos, Rf_install("useBytes"),
 			      R_TrueValue);
 		SET_VECTOR_ELT(ans, i, matchpos);
@@ -3004,7 +3016,9 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 		PROTECT(matchpos = Rf_ScalarInteger(-1));
 		PROTECT(matchlen = Rf_ScalarInteger(-1));
 		Rf_setAttrib(matchpos, Rf_install("match.length"), matchlen);
-		if(useBytes)
+		if(useBytes) {
+		    Rf_setAttrib(matchpos, Rf_install("index.type"), itype);
+		}
 		    Rf_setAttrib(matchpos, Rf_install("useBytes"),
 			      R_TrueValue);
 		SET_VECTOR_ELT(ans, i, matchpos);

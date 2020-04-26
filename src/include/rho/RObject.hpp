@@ -677,11 +677,6 @@ extern "C" {
 
     inline int ALTREP(SEXP x) { return 0; }
     inline void SETALTREP(SEXP x, int v) {}
-    inline int ALTINTEGER_ELT(SEXP x, R_xlen_t i) { return 0; }
-    inline int ALTLOGICAL_ELT(SEXP x, R_xlen_t i) { return 0; }
-    inline double ALTREAL_ELT(SEXP x, R_xlen_t i) { return 0.0; }
-    inline R_xlen_t ALTREP_LENGTH(SEXP x) { return 0; }
-    inline R_xlen_t ALTREP_TRUELENGTH(SEXP x) { return 0; }
 
     /** @brief Replace an object's attributes.
      *

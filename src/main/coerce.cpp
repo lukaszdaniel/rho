@@ -328,12 +328,32 @@ SEXP attribute_hidden Rf_StringFromLogical(int x, int *warn)
     else return Rf_mkChar(EncodeLogical(x, w));
 }
 
+/* The conversions for small non-negative integers are saved in a chache. */
+#define SFI_CACHE_SIZE 512
+static SEXP sficache = NULL;
+
 SEXP attribute_hidden Rf_StringFromInteger(int x, int *warn)
 {
-    int w;
-    formatInteger(&x, 1, &w);
     if (x == NA_INTEGER) return NA_STRING;
-    else return Rf_mkChar(EncodeInteger(x, w));
+    else if (x >= 0 && x < SFI_CACHE_SIZE) {
+	if (sficache == NULL) {
+	    sficache = Rf_allocVector(STRSXP, SFI_CACHE_SIZE);
+	    R_PreserveObject(sficache);
+	}
+	SEXP cval = STRING_ELT(sficache, x);
+	if (cval == R_BlankString) {
+	    int w;
+	    formatInteger(&x, 1, &w);
+	    cval = Rf_mkChar(EncodeInteger(x, w));
+	    SET_STRING_ELT(sficache, x, cval);
+	}
+	return cval;
+    }
+    else {
+	int w;
+	formatInteger(&x, 1, &w);
+	return Rf_mkChar(EncodeInteger(x, w));
+    }
 }
 
 // dropTrailing0 and StringFromReal moved to printutils.cpp
@@ -456,37 +476,38 @@ static SEXP coerceToLogical(SEXP v)
     int warn = 0;
     R_xlen_t i, n;
     PROTECT(ans = Rf_allocVector(LGLSXP, n = XLENGTH(v)));
+    int *pa = LOGICAL(ans);
     ans->maybeTraceMemory(v);
     cDUPLICATE_ATTRIB(ans, v);
     switch (TYPEOF(v)) {
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = Rf_LogicalFromInteger(INTEGER(v)[i], &warn);
+	    pa[i] = Rf_LogicalFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = Rf_LogicalFromReal(REAL(v)[i], &warn);
+	    pa[i] = Rf_LogicalFromReal(REAL(v)[i], &warn);
 	}
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = Rf_LogicalFromComplex(COMPLEX(v)[i], &warn);
+	    pa[i] = Rf_LogicalFromComplex(COMPLEX(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = Rf_LogicalFromString(STRING_ELT(v, i), &warn);
+	    pa[i] = Rf_LogicalFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    LOGICAL(ans)[i] = Rf_LogicalFromInteger(int(RAW(v)[i]), &warn);
+	    pa[i] = Rf_LogicalFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:
@@ -503,37 +524,38 @@ static SEXP coerceToInteger(SEXP v)
     int warn = 0;
     R_xlen_t i, n;
     PROTECT(ans = Rf_allocVector(INTSXP, n = XLENGTH(v)));
+    int *pa = INTEGER(ans);
     ans->maybeTraceMemory(v);
     SHALLOW_DUPLICATE_ATTRIB(ans, v);
     switch (TYPEOF(v)) {
     case LGLSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    INTEGER(ans)[i] = Rf_IntegerFromLogical(LOGICAL(v)[i], &warn);
+	    pa[i] = Rf_IntegerFromLogical(LOGICAL(v)[i], &warn);
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    INTEGER(ans)[i] = Rf_IntegerFromReal(REAL(v)[i], &warn);
+	    pa[i] = Rf_IntegerFromReal(REAL(v)[i], &warn);
 	}
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    INTEGER(ans)[i] = Rf_IntegerFromComplex(COMPLEX(v)[i], &warn);
+	    pa[i] = Rf_IntegerFromComplex(COMPLEX(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    INTEGER(ans)[i] = Rf_IntegerFromString(STRING_ELT(v, i), &warn);
+	    pa[i] = Rf_IntegerFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    INTEGER(ans)[i] = int(RAW(v)[i]);
+	    pa[i]= int(RAW(v)[i]);
 	}
 	break;
     default:
@@ -550,37 +572,38 @@ static SEXP coerceToReal(SEXP v)
     int warn = 0;
     R_xlen_t i, n;
     PROTECT(ans = Rf_allocVector(REALSXP, n = XLENGTH(v)));
+    double *pa = REAL(ans);
     ans->maybeTraceMemory(v);
     cDUPLICATE_ATTRIB(ans, v);
     switch (TYPEOF(v)) {
     case LGLSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = Rf_RealFromLogical(LOGICAL(v)[i], &warn);
+	    pa[i] = Rf_RealFromLogical(LOGICAL(v)[i], &warn);
 	}
 	break;
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = Rf_RealFromInteger(INTEGER(v)[i], &warn);
+	    pa[i] = Rf_RealFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = Rf_RealFromComplex(COMPLEX(v)[i], &warn);
+	    pa[i] = Rf_RealFromComplex(COMPLEX(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = Rf_RealFromString(STRING_ELT(v, i), &warn);
+	    pa[i] = Rf_RealFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    REAL(ans)[i] = Rf_RealFromInteger(int(RAW(v)[i]), &warn);
+	    pa[i] = Rf_RealFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:
@@ -597,37 +620,38 @@ static SEXP coerceToComplex(SEXP v)
     int warn = 0;
     R_xlen_t i, n;
     PROTECT(ans = Rf_allocVector(CPLXSXP, n = XLENGTH(v)));
+    Rcomplex *pa = COMPLEX(ans);
     ans->maybeTraceMemory(v);
     cDUPLICATE_ATTRIB(ans, v);
     switch (TYPEOF(v)) {
     case LGLSXP:
 	for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = Rf_ComplexFromLogical(LOGICAL(v)[i], &warn);
+	    pa[i] = Rf_ComplexFromLogical(LOGICAL(v)[i], &warn);
 	}
 	break;
     case INTSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = Rf_ComplexFromInteger(INTEGER(v)[i], &warn);
+	    pa[i] = Rf_ComplexFromInteger(INTEGER(v)[i], &warn);
 	}
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = Rf_ComplexFromReal(REAL(v)[i], &warn);
+	    pa[i] = Rf_ComplexFromReal(REAL(v)[i], &warn);
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = Rf_ComplexFromString(STRING_ELT(v, i), &warn);
+	    pa[i] = Rf_ComplexFromString(STRING_ELT(v, i), &warn);
 	}
 	break;
     case RAWSXP:
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    COMPLEX(ans)[i] = Rf_ComplexFromInteger(int(RAW(v)[i]), &warn);
+	    pa[i] = Rf_ComplexFromInteger(int(RAW(v)[i]), &warn);
 	}
 	break;
     default:

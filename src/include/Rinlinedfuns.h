@@ -282,6 +282,12 @@ INLINE_FUN int LENGTH_EX(SEXP x, const char *file, int line)
 	CHECK_VECTOR_CPLX(ce__x__);		\
 	CHECK_BOUNDS_ELT(ce__x__, ce__i__);	\
 } while (0)
+# define CHECK_VECTOR_RAW_ELT(x, i) do {	\
+	SEXP ce__x__ = (x);			\
+	R_xlen_t ce__i__ = (i);			\
+	CHECK_VECTOR_RAW(ce__x__);		\
+	CHECK_BOUNDS_ELT(ce__x__, ce__i__);	\
+} while (0)
 #else
 # define CHECK_STDVEC_LGL(x) do { } while(0)
 # define CHECK_STDVEC_INT(x) do { } while(0)
@@ -299,6 +305,7 @@ INLINE_FUN int LENGTH_EX(SEXP x, const char *file, int line)
 # define CHECK_VECTOR_INT_ELT(x, i) do { } while(0)
 # define CHECK_VECTOR_REAL_ELT(x, i) do { } while(0)
 # define CHECK_VECTOR_CPLX_ELT(x, i) do { } while(0)
+# define CHECK_VECTOR_RAW_ELT(x, i) do { } while(0)
 #endif
 
 INLINE_FUN Rboolean *LOGICAL0(SEXP x) {
@@ -366,15 +373,17 @@ INLINE_FUN void SET_SCALAR_BVAL(SEXP x, Rbyte v) {
     RAW0(x)[0] = v;
 }
 
+INLINE_FUN SEXP ALTREP_CLASS(SEXP x) { return TAG(x); }
+
+INLINE_FUN SEXP R_altrep_data1(SEXP x) { return CAR(x); }
+INLINE_FUN SEXP R_altrep_data2(SEXP x) { return CDR(x); }
+INLINE_FUN void R_set_altrep_data1(SEXP x, SEXP v) { SETCAR(x, v); }
+INLINE_FUN void R_set_altrep_data2(SEXP x, SEXP v) { SETCDR(x, v); }
+
 INLINE_FUN int INTEGER_ELT(SEXP x, R_xlen_t i)
 {
     CHECK_VECTOR_INT_ELT(x, i);
-
-    int *px = INTEGER_OR_NULL(x, FALSE);
-    if (px != NULL)
-	return px[i];
-    else
-	return ALTINTEGER_ELT(x, i);
+    return ALTREP(x) ? ALTINTEGER_ELT(x, i) : INTEGER0(x)[i];
 }
 
 INLINE_FUN int LOGICAL_ELT(SEXP x, R_xlen_t i)
@@ -386,12 +395,7 @@ INLINE_FUN int LOGICAL_ELT(SEXP x, R_xlen_t i)
 INLINE_FUN double REAL_ELT(SEXP x, R_xlen_t i)
 {
     CHECK_VECTOR_REAL_ELT(x, i);
-
-    double *px = REAL_OR_NULL(x, FALSE);
-    if (px != NULL)
-	return px[i];
-    else
-	return ALTREAL_ELT(x, i);
+    return ALTREP(x) ? ALTREAL_ELT(x, i) : REAL0(x)[i];
 }
 
 INLINE_FUN Rcomplex COMPLEX_ELT(SEXP x, R_xlen_t i)
@@ -400,6 +404,26 @@ INLINE_FUN Rcomplex COMPLEX_ELT(SEXP x, R_xlen_t i)
     return ALTREP(x) ? ALTCOMPLEX_ELT(x, i) : COMPLEX0(x)[i];
 }
 
+INLINE_FUN Rbyte RAW_ELT(SEXP x, R_xlen_t i)
+{
+    CHECK_VECTOR_RAW_ELT(x, i);
+    return ALTREP(x) ? ALTRAW_ELT(x, i) : RAW0(x)[i];
+}
+
+#if !defined(COMPILING_RHO) && !defined(COMPILING_R) && !defined(COMPILING_MEMORY_C) &&	\
+    !defined(TESTING_WRITE_BARRIER)
+/* if not inlining use version in memory.cpp with more error checking */
+INLINE_FUN SEXP STRING_ELT(SEXP x, R_xlen_t i) {
+    if (ALTREP(x))
+	return ALTSTRING_ELT(x, i);
+    else {
+	SEXP *ps = (SEXP *) STDVEC_DATAPTR(x);
+	return ps[i];
+    }
+}
+#else
+SEXP STRING_ELT(SEXP x, R_xlen_t i);
+#endif
 
 #ifdef INLINE_PROTECT
 extern int R_PPStackSize;

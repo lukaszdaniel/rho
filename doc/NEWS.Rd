@@ -30,7 +30,7 @@
       registered as a global variable when registering a reference class
       method.
 
-      \item \code{tempdir(check = TRUE)} recreates the \code{tmpdir()} if
+      \item \code{tempdir(check = TRUE)} recreates the \code{tempdir()} if
       it is no longer valid (e.g.\sspace{}because some other process has
       cleaned up the \file{/tmp} directory).
 
@@ -91,7 +91,6 @@
 
       \item \command{system()} and \command{system2()} now allow the
       specification of a maximum elapsed time (\sQuote{timeout}).
-      (This feature is currently experimental and subject to change.)
 
       \item \code{debug()} supports debugging of methods on any object
       of S4 class \code{"genericFunction"}, including group generics.
@@ -114,7 +113,8 @@
       \code{"xngettext"} now use \code{encodeString()} which keeps,
       e.g.\sspace{}\code{"\n"}, visible.  (Wish of \PR{17298}.)
 
-      \item \code{package.skeleton()} gets optional \code{encoding} argument.
+      \item \code{package.skeleton()} gains an optional \code{encoding}
+      argument.
 
       \item \code{approx()}, \code{spline()}, \code{splinefun()} and
       \code{approxfun()} also work for long vectors.
@@ -124,12 +124,14 @@
       of its previous imperfect workaround R code).
 
       \code{dput()}, \emph{etc} now print the \code{names()} information
-      only once, using the more readable \code{(tag = value)} syntax.
+      only once, using the more readable \code{(tag = value)} syntax,
+      notably for \code{list()}s, i.e., including data frames.
 
-      These functions gain a new (partly experimental) control option
-      \emph{via} \code{.deparseOpts()}, \code{"nice_names"}, which when
-      set (e.g.\sspace{}as part of \code{"all"}) also use the \code{(tag
-      = value)} syntax for atomic vectors.
+      These functions gain a new control option \code{"niceNames"} (see
+      \code{.deparseOpts()}), which when set (as by default) also uses
+      the \code{(tag = value)} syntax for atomic vectors.  OTOH, without
+      deparse options \code{"showAttributes"} and \code{"niceNames"},
+      names are no longer shown also for lists.
 
       \code{m:n} now also deparses nicely when \eqn{m > n}.
 
@@ -186,8 +188,38 @@
       e.g.\sspace{}\emph{via} \code{dyn.load()} has been increased up to 614
       when the OS limit on the number of open files allows.
 
-      \item \code{Sys.timezone(location)} is slightly less platform
-      dependent, notably for \code{location = FALSE}.
+      \item \code{Sys.timezone()} is slightly less platform-dependent,
+      notably for \code{location = FALSE}.
+
+      \item When \code{tar()} is used with an external command which is
+      detected to be GNU \command{tar} or libarchive \command{tar} (aka
+      \command{bsdtar}), a different command-line is generated to
+      circumvent line-length limits in the shell.
+
+      \item \code{system(*, intern = FALSE)}, \code{system2()} (when not
+      capturing output), \code{file.edit()} and \code{file.show()} now
+      issue a warning when the external command cannot be executed.
+
+      \item The \dQuote{default} (\code{"lm"} etc) methods of \code{vcov()}
+      have gained new optional argument \code{complete = TRUE} which
+      makes the \code{vcov()} methods more consistent with the
+      \code{coef()} methods in the case of singular designs.  The
+      former (\dQuote{back compatible}) behavior is now achieved by
+      \code{vcov(*, complete=FALSE)}.
+
+      \item \code{coef()} methods (for \code{lm} etc) also gain a
+      \code{complete = TRUE} optional argument for consistency with
+      \code{vcov()}. \cr
+      For \code{"aov"}, both \code{coef()} and \code{vcov()} methods
+      remain back compatibly consistent, using the \emph{other} default,
+      \code{complete = FALSE}.
+
+      \item \code{attach(*, pos = 1)} is now an error instead of a
+      warning.
+
+      \item New function \code{getDefaultCluster()} in package
+      \pkg{parallel} to get the default cluster set via
+      \code{setDefaultCluster()}.
     }
   }
 
@@ -198,14 +230,15 @@
       serial installs this uses the \sQuote{timeout} argument of
       \code{system2()}: for parallel installs it requires the
       \command{timeout} utility command from GNU \pkg{coreutils}.
-      [This is currently experimental and subject to change.]
 
       \item It is now possible to set \sQuote{timeouts} (elapsed-time
       limits) for most parts of \command{R CMD check} \emph{via}
       environment variables documented in the \sQuote{R Internals}
-      manual. [This depends on the experimental \sQuote{timeout} argument
-      of \code{system2()} and hence subject to change, as are the names
-      of the environment variables.]
+      manual.
+
+      \item The \sQuote{BioC extra} repository which was dropped from
+      BioC 3.6 has been removed from \code{setRepositories()}.  This
+      changes the mapping for 6--8 used by \code{setRepositories(ind=)}.
     }
   }
 
@@ -360,11 +393,8 @@
       \item \code{seq.POSIXt(*, by = "<n> DSTdays")} now should work
       correctly in all cases and is faster.  (\PR{17342})
 
-      \item \code{.C} when returning a logical vector now maps values other
-      than FALSE and NA to TRUE, as documented.
-
-      \item \code{system}, \code{file.show}, and \code{file.edit} now even
-      on Windows report an error when external command cannot be executed.
+      \item \code{.C()} when returning a logical vector now always maps
+      values other than FALSE and NA to TRUE (as documented).
     }
   }
 }
@@ -402,8 +432,15 @@
       representations of U+FFFE and U+FFFF are now regarded as valid by
       \code{utf8ToInt()}.
 
-      \item \code{range(c(TRUE,NA), finite=TRUE)} and similar no longer
+      \item \code{range(c(TRUE, NA), finite = TRUE)} and similar no longer
       return \code{NA}. (Reported by Lukas Stadler.)
+
+      \item The self starting function \code{attr(SSlogis, "initial")}
+      now also works when the y values have exact minimum zero and is
+      slightly changed in general, behaving symmetrically in the y range.
+
+      \item The printing of named raw vectors is now formatted nicely as
+      for other such atomic vectors, thanks to Lukas Stadler.
     }
   }
 }

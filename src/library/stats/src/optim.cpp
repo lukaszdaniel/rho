@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1999-2013  The R Core Team
+ *  Copyright (C) 1999-2017  The R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,8 @@
 
 SEXP getListElement(SEXP list, const char *str)
 {
+    if (!isNewList(list))
+	error(_("invalid argument type"));
     SEXP elmt = R_NilValue, names = Rf_getAttrib(list, R_NamesSymbol);
     int i;
 

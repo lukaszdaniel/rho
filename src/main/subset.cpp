@@ -90,35 +90,34 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 
    The EXTRACT_SUBSET_LOOP macro allows the branches based on index
    type and vector type to happen outside the loop.
+
+   This could avoid using data pointers, but there is little point as
+   currently the subscript code forces allocation.
 */
 
 #define EXTRACT_SUBSET_LOOP(STDCODE, NACODE) do { \
 	if (TYPEOF(indx) == INTSXP) {		  \
+	    int *pindx = INTEGER(indx);		  \
 	    for (i = 0; i < n; i++) {		  \
-		ii = INTEGER_ELT(indx, i);	  \
-		if (ii == NA_INTEGER)		  \
-		    NACODE;			  \
-		else {				  \
+		ii = pindx[i];			  \
+		if (0 < ii && ii <= nx) {	  \
 		    ii--;			  \
-		    if (0 <= ii && ii < nx)	  \
-			STDCODE;		  \
-		    else			  \
-			NACODE;			  \
+		    STDCODE;			  \
 		}				  \
+		else /* out of bounds or NA */	  \
+		    NACODE;			  \
 	    }					  \
 	}					  \
 	else {					  \
+	    double *pindx = REAL(indx);		  \
 	    for (i = 0; i < n; i++) {		  \
-		double di = REAL_ELT(indx, i);	  \
-		if (!R_FINITE(di))		  \
+		double di = pindx[i];		  \
+		ii = (R_xlen_t) (di - 1);	  \
+		if (R_FINITE(di) &&		  \
+		    0 <= ii && ii < nx)		  \
+		    STDCODE;			  \
+		else				  \
 		    NACODE;			  \
-		else {				  \
-		    ii = (R_xlen_t) (di - 1);	  \
-		    if (0 <= ii && ii < nx)	  \
-			STDCODE;		  \
-		    else			  \
-			NACODE;			  \
-		}				  \
 	    }					  \
 	}					  \
     } while (0)
@@ -186,7 +185,7 @@ SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
     case LANGSXP:
 	/* cannot happen: LANGSXPs are coerced to lists */
     default:
-	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
+	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(SEXPTYPE(mode)));
     }
     UNPROTECT(1); /* result */
     return result;
@@ -239,7 +238,7 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     case LANGSXP:
 	break;
     default:
-	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(SEXPTYPE(mode)));
+	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(SEXPTYPE(mode)));
     }
 
     // If we get to here, this must be a LANGSXP.  In rho, this case
@@ -468,8 +467,8 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SEXP sj = CAR(cddrArgs);
 		R_xlen_t i = scalarIndex(si);
 		R_xlen_t j = scalarIndex(sj);
-		int nrow = INTEGER(dim)[0];
-		int ncol = INTEGER(dim)[1];
+		int nrow = INTEGER_ELT(dim, 0);
+		int ncol = INTEGER_ELT(dim, 1);
 		if (i > 0 && j > 0 && i <= nrow && j <= ncol) {
 		    /* indices are legal scalars */
 		    R_xlen_t k = i - 1 + nrow * (j - 1);
@@ -536,7 +535,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SET_VECTOR_ELT(ax, i++, CAR(px));
     }
     else if (!Rf_isVector(x))
-	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
+	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
 
     /* This is the actual subsetting code. */
 
@@ -620,6 +619,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 				      SEXP argsarg, SEXP rho)
 {
     GCStackRoot<> args(argsarg);
+    SEXP ans;
     int drop = 1;
     ExtractDropArg(args, &drop);
     /* Is partial matching ok?  When the exact arg is NA, a warning is
@@ -679,7 +679,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 
     /* back to the regular program */
     if (!(Rf_isVector(x) || Rf_isList(x) || Rf_isLanguage(x)))
-	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
+	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
 
     int named_x = NAMED(x);  /* x may change below; save this now.  See PR#13411 */
 
@@ -716,7 +716,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 			       Rf_isList(x) ||
 			       Rf_isLanguage(x)))
 		return nullptr;
-	    else Rf_errorcall(call, R_MSG_subs_o_b);
+	    else Rf_errorcall(call, _("subscript out of bounds"));
 	}
     } else { /* matrix indexing */
 	/* Here we use the fact that: */
@@ -727,22 +727,23 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 		    0 or nsubs, but just in case... */
 
 	GCStackRoot<> indx(Rf_allocVector(INTSXP, nsubs));
+	int *pindx = INTEGER(indx);
+	int *pdims = INTEGER(dims);
 	SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
 	ndn = Rf_length(dimnames);
 	for (int i = 0; i < nsubs; i++) {
-	    INTEGER(indx)[i] = int(
+	    pindx[i] = int(
 		Rf_get1index(CAR(subs),
 			  (i < ndn) ? VECTOR_ELT(dimnames, i) : R_NilValue,
-			  INTEGER(indx)[i], pok, -1, call));
+			  pindx[i], pok, -1, call));
 	    subs = CDR(subs);
-	    if (INTEGER(indx)[i] < 0 ||
-		INTEGER(indx)[i] >= INTEGER(dims)[i])
-		Rf_errorcall(call, R_MSG_subs_o_b);
+	    if (pindx[i] < 0 || pindx[i] >= pdims[i])
+		Rf_errorcall(call, _("subscript out of bounds"));
 	}
 	offset = 0;
 	for (int i = (nsubs - 1); i > 0; i--)
-	    offset = (offset + INTEGER(indx)[i]) * INTEGER(dims)[i - 1];
-	offset += INTEGER(indx)[0];
+	    offset = (offset + pindx[i]) * pdims[i - 1];
+	offset += pindx[0];
     }
 
     if (Rf_isPairList(x)) {
@@ -750,37 +751,42 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	if (offset > R_SHORT_LEN_MAX)
 	    Rf_error("invalid subscript for pairlist");
 #endif
-	SEXP ans = CAR(Rf_nthcdr(x, int(offset)));
+	ans = CAR(Rf_nthcdr(x, int(offset)));
 	if (named_x > NAMED(ans))
 	    SET_NAMED(ans, named_x);
-	return ans;
     } else if (Rf_isVectorList(x)) {
-	SEXP ans;
 	/* did unconditional duplication before 2.4.0 */
 	if (x->sexptype() == EXPRSXP)
 	    ans = XVECTOR_ELT(x, offset);
 	else ans = VECTOR_ELT(x, offset);
 	if (named_x > NAMED(ans))
 	    SET_NAMED(ans, named_x);
-	return ans;
     } else {
+	ans = Rf_allocVector(TYPEOF(x), 1);
 	switch (TYPEOF(x)) {
 	case LGLSXP:
-	    return Rf_ScalarLogical(LOGICAL_ELT(x, offset));
+	    LOGICAL0(ans)[0] = Rboolean(LOGICAL_ELT(x, offset));
+	    break;
 	case INTSXP:
-	    return Rf_ScalarInteger(INTEGER_ELT(x, offset));
+	    INTEGER0(ans)[0] = INTEGER_ELT(x, offset);
+	    break;
 	case REALSXP:
-	    return Rf_ScalarReal(REAL_ELT(x, offset));
+	    REAL0(ans)[0] = REAL_ELT(x, offset);
+	    break;
 	case CPLXSXP:
-	    return Rf_ScalarComplex(COMPLEX_ELT(x, offset));
+	    COMPLEX0(ans)[0] = COMPLEX_ELT(x, offset);
+	    break;
 	case STRSXP:
-	    return Rf_ScalarString(STRING_ELT(x, offset));
+	    SET_STRING_ELT(ans, 0, STRING_ELT(x, offset));
+	    break;
 	case RAWSXP:
-	    return Rf_ScalarRaw(RAW_ELT(x, offset));
+	    RAW0(ans)[0] = RAW_ELT(x, offset);
+	    break;
 	default:
 	    UNIMPLEMENTED_TYPE("do_subset2", x);
 	}
     }
+    return ans;
 }
 
 SEXP attribute_hidden dispatch_subset2(SEXP x, R_xlen_t i, SEXP call, SEXP rho)
@@ -1035,7 +1041,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	Rf_errorcall(call, "$ operator is invalid for atomic vectors");
     }
     else /* e.g. a function */
-	Rf_errorcall(call, R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
+	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
     UNPROTECT(2);
     return R_NilValue;
 }

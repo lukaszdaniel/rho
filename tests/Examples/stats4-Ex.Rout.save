@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-24 r13837d5e03) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-26 r9d68c35b7a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-09-28 r73400) -- "Frisbee Sailing"
+R Under development (unstable) (2017-11-12 r73715) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -190,7 +190,7 @@ Coefficients:
 > ###
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.915 0.009 0.924 0 0 
+Time elapsed:  0.769 0.007 0.784 0 0 
 > grDevices::dev.off()
 null device 
           1 

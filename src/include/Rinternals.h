@@ -285,12 +285,9 @@ typedef struct SEXPREC {
 
 /* The generational collector uses a reduced version of SEXPREC as a
    header in vector nodes.  The layout MUST be kept consistent with
-   the SEXPREC definition.  The standard SEXPREC takes up 7 words on
-   most hardware; this reduced version should take up only 6 words.
-   In addition to slightly reducing memory use, this can lead to more
-   favorable data alignment on 32-bit architectures like the Intel
-   Pentium III where odd word alignment of doubles is allowed but much
-   less efficient than even word alignment. */
+   the SEXPREC definition. The standard SEXPREC takes up 7 words
+   and the reduced version takes 6 words on most 64-bit systems. On most
+   32-bit systems, SEXPREC takes 8 words and the reduced version 7 words. */
 typedef struct VECTOR_SEXPREC {
     SEXPREC_HEADER;
     struct vecsxp_struct vecsxp;
@@ -1494,7 +1491,9 @@ void R_orderVector1(int *indx, int n, SEXP x,       Rboolean nalast, Rboolean de
 SEXP	 Rf_lcons(SEXP cr, SEXP tl);
 Rboolean Rf_isVector(SEXP);
 
-#if (defined(CALLED_FROM_DEFN_H) || defined(COMPILING_RHO)) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) ))
+/* Defining NO_RINLINEDFUNS disables use to simulate platforms where
+   this is not available */
+#if (defined(CALLED_FROM_DEFN_H) || defined(COMPILING_RHO)) && (defined(COMPILING_R) || ( __GNUC__ && !defined(__INTEL_COMPILER) )) && (defined(COMPILING_R) || !defined(NO_RINLINEDFUNS))
 #include "Rinlinedfuns.h"
 #else
 /* need remapped names here for use with R_NO_REMAP */
@@ -1580,6 +1579,7 @@ int (INTEGER_ELT)(SEXP x, R_xlen_t i);
 double (REAL_ELT)(SEXP x, R_xlen_t i);
 int (LOGICAL_ELT)(SEXP x, R_xlen_t i);
 Rcomplex (COMPLEX_ELT)(SEXP x, R_xlen_t i);
+Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
 SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
 double SCALAR_DVAL(SEXP x);
 int SCALAR_LVAL(SEXP x);
@@ -1597,6 +1597,8 @@ SEXP ALTREP_CLASS(SEXP x);
 int *LOGICAL0(SEXP x);
 int *INTEGER0(SEXP x);
 double *REAL0(SEXP x);
+Rcomplex *COMPLEX0(SEXP x);
+Rbyte *RAW0(SEXP x);
 void SET_LOGICAL_ELT(SEXP x, R_xlen_t i, int v);
 void SET_INTEGER_ELT(SEXP x, R_xlen_t i, int v);
 void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);

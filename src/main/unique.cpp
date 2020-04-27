@@ -70,8 +70,8 @@ struct _HashData {
     Rboolean useCache;
 };
 
-#define HTDATA_INTEGER(d) (INTEGER0((d)->HashTable))
-#define HTDATA_REAL(d) (REAL0((d)->HashTable))
+#define HTDATA_INT(d) (INTEGER0((d)->HashTable))
+#define HTDATA_DBL(d) (REAL0((d)->HashTable))
 
 
 /*
@@ -428,12 +428,12 @@ static void HashTableSetup(SEXP x, HashData *d, R_xlen_t nmax)
     d->isLong = Rboolean(IS_LONG_VEC(x));
     if (d->isLong) {
 	d->HashTable = Rf_allocVector(REALSXP, d->M);
-	for (R_xlen_t i = 0; i < d->M; i++) HTDATA_REAL(d)[i] = NIL;
+	for (R_xlen_t i = 0; i < d->M; i++) HTDATA_DBL(d)[i] = NIL;
     } else
 #endif
     {
 	d->HashTable = Rf_allocVector(INTSXP, d->M);
-	for (R_xlen_t i = 0; i < d->M; i++) HTDATA_INTEGER(d)[i] = NIL;
+	for (R_xlen_t i = 0; i < d->M; i++) HTDATA_INT(d)[i] = NIL;
     }
 }
 
@@ -445,7 +445,7 @@ static int isDuplicated(SEXP x, R_xlen_t indx, HashData *d)
 {
 #ifdef LONG_VECTOR_SUPPORT
     if (d->isLong) {
-	double *h = HTDATA_REAL(d);
+	double *h = HTDATA_DBL(d);
 	size_t i = d->hash(x, indx, d);
 	while (h[i] != NIL) {
 	    if (d->equal(x, R_xlen_t(h[i]), x, indx))
@@ -457,7 +457,7 @@ static int isDuplicated(SEXP x, R_xlen_t indx, HashData *d)
     } else 
 #endif
     {
-	int *h = HTDATA_INTEGER(d);
+	int *h = HTDATA_INT(d);
 	size_t i = d->hash(x, indx, d);
 	while (h[i] != NIL) {
 	    if (d->equal(x, h[i], x, indx))
@@ -474,7 +474,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
 {
 #ifdef LONG_VECTOR_SUPPORT
     if (d->isLong) {
-	double *h = HTDATA_REAL(d);
+	double *h = HTDATA_DBL(d);
 	size_t i = d->hash(x, indx, d);
 	while (h[i] >= 0) {
 	    if (d->equal(table, R_xlen_t(h[i]), x, indx)) {
@@ -486,7 +486,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
     } else
 #endif
     {
-	int *h = HTDATA_INTEGER(d);
+	int *h = HTDATA_INT(d);
 	size_t i = d->hash(x, indx, d);
 	while (h[i] >= 0) {
 	    if (d->equal(table, h[i], x, indx)) {
@@ -727,7 +727,8 @@ SEXP attribute_hidden do_duplicated(/*const*/ Expression* call, const BuiltInFun
     }
 
     if(Rf_length(incomp) && /* S has FALSE to mean empty */
-       !(Rf_isLogical(incomp) && Rf_length(incomp) == 1 && LOGICAL(incomp)[0] == 0)) {
+       !(Rf_isLogical(incomp) && Rf_length(incomp) == 1 &&
+	 LOGICAL_ELT(incomp, 0) == 0)) {
 	if(op->variant() == 2) {
 	    /* return R's 1-based index :*/
 	    R_xlen_t ind  = Rf_any_duplicated3(x, incomp, fL);
@@ -820,7 +821,7 @@ static void UndoHashing(SEXP x, SEXP table, HashData *d)
 
 static int Lookup(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
 {
-    int *h = HTDATA_INTEGER(d);
+    int *h = HTDATA_INT(d);
     size_t i = d->hash(x, indx, d);
     while (h[i] != NIL) {
 	if (d->equal(table, h[i], x, indx))
@@ -838,7 +839,7 @@ static SEXP HashLookup(SEXP table, SEXP x, HashData *d)
 
     n = XLENGTH(x);
     PROTECT(ans = Rf_allocVector(INTSXP, n));
-    int *pa = INTEGER(ans);
+    int *pa = INTEGER0(ans);
     for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	pa[i] = Lookup(table, x, i, d);
@@ -878,7 +879,7 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
     if (n == 0) return Rf_allocVector(INTSXP, 0);
     if (Rf_length(itable) == 0) {
 	ans = Rf_allocVector(INTSXP, n);
-	int *pa = INTEGER(ans);
+	int *pa = INTEGER0(ans);
 	for (R_xlen_t i = 0; i < n; i++) pa[i] = nmatch;
 	return ans;
     }
@@ -1024,7 +1025,8 @@ SEXP attribute_hidden do_match(/*const*/ Expression* call, const BuiltInFunction
     int nomatch = Rf_asInteger(nomatch_);
 
     if (Rf_isNull(incomparables) || /* S has FALSE to mean empty */
-	(Rf_length(incomparables) == 1 && Rf_isLogical(incomparables) && LOGICAL(incomparables)[0] == 0))
+	(Rf_length(incomparables) == 1 && Rf_isLogical(incomparables) &&
+	 LOGICAL_ELT(incomparables, 0) == 0))
 	return match5(table, x, nomatch, NULL, R_BaseEnv);
     else
 	return match5(table, x, nomatch, incomparables, R_BaseEnv);
@@ -1096,7 +1098,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
     in = static_cast<const char **>(RHO_alloc(size_t(n_input), sizeof(char *)));
     tar = static_cast<const char **>(RHO_alloc(size_t(n_target), sizeof(char *)));
     PROTECT(ans = Rf_allocVector(INTSXP, n_input));
-    ians = INTEGER(ans);
+    ians = INTEGER0(ans);
     if(useBytes) {
 	for(R_xlen_t i = 0; i < n_input; i++) {
 	    in[i] = R_CHAR(STRING_ELT(input, i));
@@ -1226,7 +1228,7 @@ SEXP attribute_hidden do_charmatch(/*const*/ Expression* call, const BuiltInFunc
     }
 
     PROTECT(ans = Rf_allocVector(INTSXP, n_input));
-    int *ians = INTEGER(ans);
+    int *ians = INTEGER0(ans);
 
     const void *vmax = vmaxget();  // prudence: .Internal does this too.
     for(R_xlen_t i = 0; i < n_input; i++) {
@@ -1482,38 +1484,41 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     PROTECT(data.HashTable);
     DoHashing(uniqueg, &data);
     PROTECT(matches = HashLookup(uniqueg, g, &data));
+    int *pmatches = INTEGER(matches);
 
     PROTECT(ans = Rf_allocMatrix(TYPEOF(x), ng, p));
 
     switch(TYPEOF(x)){
     case REALSXP:
-	Memzero(REAL(ans), ng*p);
+	Memzero(REAL0(ans), ng*p);
 	for(int i = 0; i < p; i++) {
-	    for(int j = 0; j < n; j++)
-		if(!narm || !ISNAN(REAL(x)[j + offset]))
-		    REAL(ans)[INTEGER(matches)[j] - 1 + offsetg]
-			+= REAL(x)[j + offset];
+	    double *pa = REAL0(ans);
+	    for(int j = 0; j < n; j++) {
+		double xjpo = REAL_ELT(x, j + offset);
+		if(!narm || !ISNAN(xjpo))
+		    pa[pmatches[j] - 1 + offsetg] += xjpo;
+	    }
 	    offset += n;
 	    offsetg += ng;
 	}
 	break;
     case INTSXP:
-	Memzero(INTEGER(ans), ng*p);
+	Memzero(INTEGER0(ans), ng*p);
 	for(int i = 0; i < p; i++) {
+	    int *pa = INTEGER0(ans);
 	    for(int j = 0; j < n; j++) {
-		if (INTEGER(x)[j + offset] == NA_INTEGER) {
+		int xjpo = INTEGER_ELT(x, j + offset);
+		if (xjpo == NA_INTEGER) {
 		    if(!narm)
-			INTEGER(ans)[INTEGER(matches)[j] - 1 + offsetg]
-			    = NA_INTEGER;
-		} else if (INTEGER(ans)[INTEGER(matches)[j] - 1 + offsetg]
-			   != NA_INTEGER) {
+			pa[pmatches[j] - 1 + offsetg] = NA_INTEGER;
+		} else if (pa[pmatches[j] - 1 + offsetg] != NA_INTEGER) {
 		    /* check for integer overflows */
-		    int itmp = INTEGER(ans)[INTEGER(matches)[j] - 1 + offsetg];
+		    int itmp = pa[pmatches[j] - 1 + offsetg];
 		    double dtmp = itmp;
-		    dtmp += INTEGER(x)[j + offset];
+		    dtmp += xjpo;
 		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = NA_INTEGER;
-		    else itmp += INTEGER(x)[j + offset];
-		    INTEGER(ans)[INTEGER(matches)[j] - 1 + offsetg] = itmp;
+		    else itmp += xjpo;
+		    pa[pmatches[j] - 1 + offsetg] = itmp;
 		}
 	    }
 	    offset += n;
@@ -1554,6 +1559,7 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     PROTECT(data.HashTable);
     DoHashing(uniqueg, &data);
     PROTECT(matches = HashLookup(uniqueg, g, &data));
+    int *pmatches = INTEGER(matches);
 
     PROTECT(ans = Rf_allocVector(VECSXP, p));
 
@@ -1564,27 +1570,30 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	switch(TYPEOF(xcol)){
 	case REALSXP:
 	    PROTECT(col = Rf_allocVector(REALSXP,ng));
-	    Memzero(REAL(col), ng);
-	    for(R_xlen_t j = 0; j < n; j++)
-		if(!narm || !ISNAN(REAL(xcol)[j]))
-		    REAL(col)[INTEGER(matches)[j] - 1] += REAL(xcol)[j];
+	    Memzero(REAL0(col), ng);
+	    for(R_xlen_t j = 0; j < n; j++) {
+		double xj = REAL_ELT(xcol, j);
+		if(!narm || !ISNAN(xj))
+		    REAL0(col)[pmatches[j] - 1] += xj;
+	    }
 	    SET_VECTOR_ELT(ans,i,col);
 	    UNPROTECT(1);
 	    break;
 	case INTSXP:
 	    PROTECT(col = Rf_allocVector(INTSXP, ng));
-	    Memzero(INTEGER(col), ng);
+	    Memzero(INTEGER0(col), ng);
 	    for(R_xlen_t j = 0; j < n; j++) {
-		if (INTEGER(xcol)[j] == NA_INTEGER) {
+		int xj = INTEGER_ELT(xcol, j);
+		if (xj == NA_INTEGER) {
 		    if(!narm)
-			INTEGER(col)[INTEGER(matches)[j] - 1] = NA_INTEGER;
-		} else if (INTEGER(col)[INTEGER(matches)[j] - 1] != NA_INTEGER) {
-		    int itmp = INTEGER(col)[INTEGER(matches)[j] - 1];
+			INTEGER0(col)[pmatches[j] - 1] = NA_INTEGER;
+		} else if (INTEGER0(col)[pmatches[j] - 1] != NA_INTEGER) {
+		    int itmp = INTEGER0(col)[pmatches[j] - 1];
 		    double dtmp = itmp;
-		    dtmp += INTEGER(xcol)[j];
+		    dtmp += xj;
 		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = NA_INTEGER;
-		    else itmp += INTEGER(xcol)[j];
-		    INTEGER(col)[INTEGER(matches)[j] - 1] = itmp;
+		    else itmp += xj;
+		    INTEGER0(col)[pmatches[j] - 1] = itmp;
 		}
 	    }
 	    SET_VECTOR_ELT(ans, i, col);
@@ -1619,7 +1628,7 @@ SEXP attribute_hidden do_rowsum(/*const*/ Expression* call, const BuiltInFunctio
 /* returns 1-based duplicate no */
 static int isDuplicated2(SEXP x, int indx, HashData *d)
 {
-    int *h = HTDATA_INTEGER(d);
+    int *h = HTDATA_INT(d);
     size_t i = d->hash(x, indx, d);
     while (h[i] != NIL) {
 	if (d->equal(x, h[i], x, indx))
@@ -1640,8 +1649,8 @@ static SEXP duplicated2(SEXP x, HashData *d)
     PROTECT(d->HashTable);
     PROTECT(ans = Rf_allocVector(INTSXP, n));
 
-    int *h = HTDATA_INTEGER(d);
-    int *v = INTEGER(ans);
+    int *h = HTDATA_INT(d);
+    int *v = INTEGER0(ans);
     for (R_xlen_t i = 0; i < d->M; i++) h[i] = NIL;
     for (int i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -1695,7 +1704,7 @@ SEXP attribute_hidden do_makeunique(/*const*/ Expression* call, const BuiltInFun
 	PROTECT(data.HashTable);
 	vmax = vmaxget();
 	for(i = 1; i < n; i++) { /* first cannot be a duplicate */
-	    dp = INTEGER(dup)[i]; /* 1-based number of first occurrence */
+	    dp = INTEGER_ELT(dup, i); /* 1-based number of first occurrence */
 	    if(dp == 0) continue;
 	    ss = Rf_translateChar(STRING_ELT(names, i));
 	    /* Try appending 1,2,3, ..., n-1 until it is not already in use */
@@ -1732,7 +1741,7 @@ static void HashTableSetup1(SEXP x, HashData *d)
 #endif
     MKsetup(XLENGTH(x), d, NA_INTEGER);
     d->HashTable = Rf_allocVector(INTSXP, d->M);
-    for (R_xlen_t i = 0; i < d->M; i++) HTDATA_INTEGER(d)[i] = NIL;
+    for (R_xlen_t i = 0; i < d->M; i++) HTDATA_INT(d)[i] = NIL;
 }
 
 /* used in utils */
@@ -1769,7 +1778,7 @@ SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFuncti
     GetRNGstate();
     if (dn > INT_MAX) {
 	ans = PROTECT(Rf_allocVector(REALSXP, k));
-	double *ry = REAL(ans);
+	double *ry = REAL0(ans);
 	HashTableSetup(ans, &data, NA_INTEGER);
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)
@@ -1779,7 +1788,7 @@ SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFuncti
 	    }
    } else {
 	ans = PROTECT(Rf_allocVector(INTSXP, k));
-	int *iy = INTEGER(ans);
+	int *iy = INTEGER0(ans);
 	HashTableSetup(ans, &data, NA_INTEGER);
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)

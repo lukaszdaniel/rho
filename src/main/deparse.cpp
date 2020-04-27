@@ -149,6 +149,7 @@ struct LocalParseData {
     Rboolean fnarg; /* fn argument, so parenthesize = as assignment */
 };
 
+
 static SEXP deparse1WithCutoff(SEXP call, Rboolean abbrev, int cutoff,
 			       Rboolean backtick, int opts, int nlines);
 static void args2buff(SEXP, int, int, LocalParseData *);
@@ -156,11 +157,11 @@ static void deparse2buff(SEXP, LocalParseData *);
 static void print2buff(const char *, LocalParseData *);
 static void printtab2buff(int, LocalParseData *);
 static void writeline(LocalParseData *);
+static void vec2buff   (SEXP, LocalParseData *, bool do_names);
 static void vector2buff(SEXP, LocalParseData *);
 static void src2buff1(SEXP, LocalParseData *);
-static Rboolean src2buff(SEXP, int, LocalParseData *);
-static void vec2buff(SEXP, LocalParseData *);
-static void linebreak(Rboolean *lbreak, LocalParseData *);
+static bool src2buff(SEXP, int, LocalParseData *);
+static void linebreak(Rboolean &lbreak, LocalParseData *);
 static void deparse2(SEXP, SEXP, LocalParseData *);
 static size_t DEFAULT_Cutoff() {
 	size_t w;
@@ -513,11 +514,11 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
     return outnames;
 }
 
-static void linebreak(Rboolean *lbreak, LocalParseData *d)
+static void linebreak(Rboolean &lbreak, LocalParseData *d)
 {
     if (d->len > d->cutoff) {
-	if (!*lbreak) {
-	    *lbreak = TRUE;
+	if (!lbreak) {
+	    lbreak = TRUE;
 	    d->indent++;
 	}
 	writeline(d);
@@ -587,14 +588,14 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 			if (arginfo.precedence == BuiltInFunction::PREC_SUM)   /* binary +/- precedence upgraded as unary */
 			    arginfo.precedence = BuiltInFunction::PREC_SIGN;
 		    case 2:
-                        if (mainop.precedence == BuiltInFunction::PREC_COMPARE && arginfo.precedence == BuiltInFunction::PREC_COMPARE)
+			if (mainop.precedence == BuiltInFunction::PREC_COMPARE && arginfo.precedence == BuiltInFunction::PREC_COMPARE)
 		          return TRUE;     /*   a < b < c   is not legal syntax */
 			break;
 		    default:
 			return FALSE;
 		    }
 		case BuiltInFunction::PP_SUBSET:
-                  if (mainop.kind == BuiltInFunction::PP_DOLLAR)
+		    if (mainop.kind == BuiltInFunction::PP_DOLLAR)
 		    	return FALSE;
 		    /* fall through, don't break... */
 		case BuiltInFunction::PP_ASSIGN:
@@ -616,8 +617,8 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
 		    return FALSE;
 		}
 	    } else if (Rf_isUserBinop(CAR(arg))) {
-	        if (mainop.precedence > BuiltInFunction::PREC_PERCENT
-	            || (mainop.precedence == BuiltInFunction::PREC_PERCENT && left == mainop.rightassoc)) {
+		if (mainop.precedence > BuiltInFunction::PREC_PERCENT
+		    || (mainop.precedence == BuiltInFunction::PREC_PERCENT && left == mainop.rightassoc)) {
 		    return TRUE;
 		}
 	    }
@@ -632,39 +633,82 @@ static Rboolean needsparens(PPinfo mainop, SEXP arg, unsigned int left)
     return FALSE;
 }
 
-/* check for attributes other than function source */
-static Rboolean hasAttributes(SEXP s, Rboolean except_names)
+// does the character() vector x contain `NA_character_` ?
+static bool anyNA_chr(SEXP x)
 {
-    SEXP a = ATTRIB(s);
-    if (Rf_length(a) > (except_names ? 3 : 2)) return(TRUE);
+    if(TYPEOF(x) == STRSXP) {
+	R_xlen_t i, n = Rf_xlength(x);
+	for (i = 0; i < n; i++) {
+	    if (STRING_ELT(x, i) == NA_STRING)
+		return true;
+	}
+    }
+    return false;
+}
+
+enum attr_type { SIMPLE = 0,
+	       OK_NAMES,   // no structure(*); names written as  (n1 = v1, ..)
+	       STRUC_ATTR, // use structure(*, <attr> = *, ..) for non-names only
+	       STRUC_NMS_A // use structure(*, <attr> = *, ..)  for names, too
+};
+
+
+/* Does 's' have attributes other than function source, ok-names,..
+   ==> using c(a= ., b=.) ... or structure(list(a=., ..), <no names>) or ...
+   [ Currently only called in 1 place from attr1()]
+*/
+static attr_type hasAttributes(SEXP s, Rboolean nice_names)
+{
+    SEXP a = ATTRIB(s), nm;
+/* No longer:    if (length(a) > (nice_names ? 3 : 2)) return(STRUC_ATTR);
+   as we need to distinguish STRUC_ATTR and STRUC_NMS_A
+ */
+    nm = Rf_getAttrib(s, R_NamesSymbol);
+    bool has_names = !Rf_isNull(nm), ok_names;
+    if(has_names) {
+	// ok  only if there's no  NA_character_ in names(.):
+	ok_names = nice_names && !anyNA_chr(nm);
+#ifdef DEBUG_DEPARSE
+	REprintf("has_names=TRUE, ok_names = %s", ok_names ? "TRUE" : "FALSE");
+#endif
+	if(!ok_names)
+	    return(STRUC_NMS_A);
+    }
     while(!Rf_isNull(a)) {
-	if(!((TAG(a) == R_SrcrefSymbol) ||
-	     (TAG(a) == R_NamesSymbol && except_names)))
-	    return(TRUE);
+	if(has_names && TAG(a) == R_NamesSymbol) {
+	    // also  ok_names = TRUE
+	} else if(TAG(a) != R_SrcrefSymbol) {
+	    return(STRUC_ATTR);
+ }
+	// else
 	a = CDR(a);
     }
-    return(FALSE);
+#ifdef DEBUG_DEPARSE
+    REprintf(" before return (%s)\n", has_names ? "OK_NAMES" : "SIMPLE");
+#endif
+    return has_names ? OK_NAMES : SIMPLE;
 }
 
-static Rboolean attr1(SEXP s, LocalParseData *d)
+static attr_type attr1(SEXP s, LocalParseData *d)
 {
-    Rboolean ans = hasAttributes(s, /* except_names = */ Rboolean(d->opts & NICE_NAMES));
-    if(ans)
+    attr_type attr = hasAttributes(s, /* nice_names = */ Rboolean(d->opts & NICE_NAMES));
+    if(attr >= STRUC_ATTR) {
+#ifdef DEBUG_DEPARSE
+	REprintf(" gave %s\n", (attr == STRUC_ATTR) ? "STRUC_ATTR" : "STRUC_NMS_A");
+#endif
 	print2buff("structure(", d);
-    return ans;
+    }
+    return attr;
 }
 
-static void attr2(SEXP s, LocalParseData *d)
+static void attr2(SEXP s, LocalParseData *d, bool not_names)
 {
-    int d_opts_in = d->opts,
-	nice_names = (d_opts_in & NICE_NAMES);
-
     // not needed, as attr2() must be called only if(hasAttributes(.)) :
     /* if(hasAttributes(s, nice_names)) { */
 	SEXP a = ATTRIB(s);
 	while(!Rf_isNull(a)) {
 	    if(TAG(a) != R_SrcrefSymbol &&
-	      (TAG(a) != R_NamesSymbol || !nice_names)) {
+ 	       !(TAG(a) == R_NamesSymbol && not_names)) {
 		print2buff(", ", d);
 		if(TAG(a) == R_DimSymbol) {
 		    print2buff(".Dim", d);
@@ -684,6 +728,7 @@ static void attr2(SEXP s, LocalParseData *d)
 		else {
 		    /* TAG(a) might contain spaces etc */
 		    const char *tag = R_CHAR(PRINTNAME(TAG(a)));
+		    int d_opts_in = d->opts;
 		    d->opts = SIMPLEDEPARSE; /* turn off quote()ing */
 		    if(Rf_isValidName(tag))
 			deparse2buff(TAG(a), d);
@@ -732,7 +777,8 @@ static void printcomment(SEXP s, LocalParseData *d)
     vmaxset(vmax);
 }
 
-static const char * quotify(SEXP name, int quote)
+
+static const char *quotify(SEXP name, int quote)
 {
     const char *s = R_CHAR(name);
 
@@ -755,27 +801,27 @@ static const char * quotify(SEXP name, int quote)
      (function(x) 1)(x)
      etc.
 */
-static Rboolean parenthesizeCaller(SEXP s)
+static bool parenthesizeCaller(SEXP s)
 {
     SEXP op, sym;
     if (TYPEOF(s) == LANGSXP) { /* unevaluated */
 	op = CAR(s);
 	if (TYPEOF(op) == SYMSXP) {
-	    if (Rf_isUserBinop(op)) return TRUE;   /* %foo% */
+	    if (Rf_isUserBinop(op)) return true;   /* %foo% */
 	    sym = SYMVALUE(op);
 	    if (TYPEOF(sym) == BUILTINSXP
 		|| TYPEOF(sym) == SPECIALSXP) {
-    	        if (PPINFO(sym).precedence >= BuiltInFunction::PREC_SUBSET
-    	            || PPINFO(sym).kind == BuiltInFunction::PP_FUNCALL
-    	            || PPINFO(sym).kind == BuiltInFunction::PP_PAREN
-    	            || PPINFO(sym).kind == BuiltInFunction::PP_CURLY) return FALSE; /* x$f(z) or x[n](z) or f(z) or (f) or {f} */
-		else return TRUE;		/* (f+g)(z) etc. */
+		if (PPINFO(sym).precedence >= BuiltInFunction::PREC_SUBSET
+		    || PPINFO(sym).kind == BuiltInFunction::PP_FUNCALL
+		    || PPINFO(sym).kind == BuiltInFunction::PP_PAREN
+		    || PPINFO(sym).kind == BuiltInFunction::PP_CURLY) return false; /* x$f(z) or x[n](z) or f(z) or (f) or {f} */
+		else return true;		/* (f+g)(z) etc. */
 	    }
-	    return FALSE;			/* regular function call */
+	    return false;			/* regular function call */
 	 } else
-	    return TRUE;			/* something strange, like (1)(x) */
+	    return true;			/* something strange, like (1)(x) */
     } else
-        return Rboolean(TYPEOF(s) == CLOSXP);
+	return (TYPEOF(s) == CLOSXP);
 }
 
 /* This is the recursive part of deparsing. */
@@ -783,12 +829,14 @@ static Rboolean parenthesizeCaller(SEXP s)
 #define SIMPLE_OPTS (~QUOTEEXPRESSIONS & ~SHOWATTRIBUTES & ~DELAYPROMISES)
 /* keep KEEPINTEGER | USESOURCE | KEEPNA | S_COMPAT, also
    WARNINCOMPLETE but that is not used below this point. */
+#define SHOW_ATTR_OR_NMS (SHOWATTRIBUTES | NICE_NAMES)
 
 static void deparse2buff(SEXP s, LocalParseData *d)
 {
     PPinfo fop;
     Rboolean lookahead = FALSE, lbreak = FALSE, parens, fnarg = d->fnarg,
-	outerparens, doquote, doAttr = TRUE;
+	outerparens, doquote;
+    attr_type attr = STRUC_ATTR;
     SEXP op, t;
     int d_opts_in = d->opts, i, n;
 
@@ -805,7 +853,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
     case SYMSXP:
 	doquote = Rboolean((d_opts_in & QUOTEEXPRESSIONS) && strlen(R_CHAR(PRINTNAME(s))));
 	if (doquote) {
-	    doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(s, d) : FALSE;
+	    attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : SIMPLE;
 	    print2buff("quote(", d);
 	}
 	if (d_opts_in & S_COMPAT) {
@@ -816,7 +864,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    print2buff(R_CHAR(PRINTNAME(s)), d);
 	if (doquote) {
 	    print2buff(")", d);
-	    if(doAttr) attr2(s, d);
+	    if(attr >= STRUC_ATTR) attr2(s, d, (attr == STRUC_ATTR));
 	}
 	break;
     case CHARSXP:
@@ -852,7 +900,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	}
 	break;
     case CLOSXP:
-	doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(s, d) : FALSE;
+	attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : SIMPLE;
 	if ((d->opts & USESOURCE)
 	    && !Rf_isNull(t = Rf_getAttrib(s, R_SrcrefSymbol)))
 		src2buff1(t, d);
@@ -868,41 +916,39 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    deparse2buff(BODY(s), d);
 	    d->opts = d_opts_in;
 	}
-	if(doAttr) attr2(s, d);
+	if(attr >= STRUC_ATTR) attr2(s, d, (attr == STRUC_ATTR));
 	break;
     case ENVSXP:
 	d->sourceable = FALSE;
 	print2buff("<environment>", d);
 	break;
     case VECSXP:
-	d->opts |= NICE_NAMES; // as vec2buf() already prints names nicely
-	doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(s, d) : FALSE;
+	attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : SIMPLE;
 	print2buff("list(", d);
 	d->opts = d_opts_in;// vec2buff() must use unchanged d
-	vec2buff(s, d);
+	vec2buff(s, d, attr == OK_NAMES || attr == STRUC_ATTR);
 	d->opts |= NICE_NAMES;
 	print2buff(")", d);
-	if(doAttr) attr2(s, d);
+	if(attr >= STRUC_ATTR) attr2(s, d, (attr == STRUC_ATTR));
 	d->opts = d_opts_in;
 	break;
     case EXPRSXP:
-	d->opts |= NICE_NAMES; // as vec2buf() already prints names nicely
-	doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(s, d) : FALSE;
+	attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : SIMPLE;
 	if(Rf_length(s) <= 0)
 	    print2buff("expression()", d);
 	else {
 	    int locOpts = d->opts;
 	    print2buff("expression(", d);
 	    d->opts &= SIMPLE_OPTS;
-	    vec2buff(s, d);
+	    vec2buff(s, d, attr == OK_NAMES || attr == STRUC_ATTR);
 	    d->opts = locOpts;
 	    print2buff(")", d);
 	}
-	if(doAttr) attr2(s, d);
+	if(attr >= STRUC_ATTR) attr2(s, d, (attr == STRUC_ATTR));
 	d->opts = d_opts_in;
 	break;
     case LISTSXP:
-	doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(s, d) : FALSE;
+	attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : SIMPLE;
 	print2buff("pairlist(", d);
 	d->inlist++;
 	for (t=s ; CDR(t) != R_NilValue ; t=CDR(t) ) {
@@ -924,7 +970,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	deparse2buff(CAR(t), d);
 	print2buff(")", d);
 	d->inlist--;
-	if(doAttr) attr2(s, d);
+	if(attr >= STRUC_ATTR) attr2(s, d, (attr == STRUC_ATTR));
 	break;
     case LANGSXP:
 	printcomment(s, d);
@@ -943,18 +989,21 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		s = CDR(s);
 		if (userbinop) {
 		    if (Rf_isNull(Rf_getAttrib(s, R_NamesSymbol))) {
-			fop.kind = BuiltInFunction::PP_BINARY2;    /* not quite right for spacing, but can't be unary */
+			// not quite right for spacing, but can't be unary :
+			fop.kind = BuiltInFunction::PP_BINARY2;
 			fop.precedence = BuiltInFunction::PREC_PERCENT;
 			fop.rightassoc = 0;
 		    } else
-			fop.kind = BuiltInFunction::PP_FUNCALL;  /* if args are named, deparse as function call (PR#15350) */
+			// if args are named, deparse as function call (PR#15350):
+			fop.kind = BuiltInFunction::PP_FUNCALL;
 		} else
 		    fop = PPINFO(SYMVALUE(op));
 		if (fop.kind == BuiltInFunction::PP_BINARY) {
 		    switch (Rf_length(s)) {
 		    case 1:
 			fop.kind = BuiltInFunction::PP_UNARY;
-			if (fop.precedence == BuiltInFunction::PREC_SUM)   /* binary +/- precedence upgraded as unary */
+			if (fop.precedence == BuiltInFunction::PREC_SUM)
+			    // binary +/- precedence upgraded as unary
 			    fop.precedence = BuiltInFunction::PREC_SIGN;
 			break;
 		    case 2:
@@ -1142,7 +1191,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		    print2buff(" ", d);
 		    print2buff(R_CHAR(PRINTNAME(op)), d); /* ASCII */
 		    print2buff(" ", d);
-		    linebreak(&lbreak, d);
+		    linebreak(lbreak, d);
 		    if ((parens = needsparens(fop, CADR(s), 0)))
 			print2buff("(", d);
 		    deparse2buff(CADR(s), d);
@@ -1207,14 +1256,14 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		}
 		if ( Rf_isSymbol(CAR(s))
 		     && TYPEOF(val) == CLOSXP
-		     && streql(R_CHAR(PRINTNAME(CAR(s))), "::") ){ /*  :: is special case */
+		     && streql(R_CHAR(PRINTNAME(CAR(s))), "::") ) { //  :: is special case
 		    deparse2buff(CADR(s), d);
 		    print2buff("::", d);
 		    deparse2buff(CADDR(s), d);
 		}
 		else if ( Rf_isSymbol(CAR(s))
 			  && TYPEOF(val) == CLOSXP
-			  && streql(R_CHAR(PRINTNAME(CAR(s))), ":::") ){ /*  ::: is special case */
+			  && streql(R_CHAR(PRINTNAME(CAR(s))), ":::") ) { // ::: is special case
 		    deparse2buff(CADR(s), d);
 		    print2buff(":::", d);
 		    deparse2buff(CADDR(s), d);
@@ -1261,7 +1310,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    d->opts = d_opts_in;
 	    print2buff(")", d);
 	}
-	break; // case LANGSXP
+	break; // case LANGSXP --------------------------------------------------
     case STRSXP:
     case LGLSXP:
     case INTSXP:
@@ -1326,7 +1375,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 				   R_do_slot(s, Rf_installTrChar(STRING_ELT(slotNms, i))));
 		}
 		Rf_setAttrib(slotlist, R_NamesSymbol, slotNms);
-		vec2buff(slotlist, d);
+		vec2buff(slotlist, d, true);
 		/*-----------------*/
 		UNPROTECT(2); // (slotNms, slotlist)
 	    }
@@ -1356,7 +1405,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 /* If there is a string array active point to that, and */
 /* otherwise we are counting lines so don't do anything. */
 
-static void writeline(LocalParseData *d)
+static inline void writeline(LocalParseData *d)
 {
     if (d->strvec != R_NilValue && d->linenumber < d->maxlines)
 	SET_STRING_ELT(d->strvec, d->linenumber, Rf_mkChar(d->buffer.data));
@@ -1368,7 +1417,7 @@ static void writeline(LocalParseData *d)
     d->startline = TRUE;
 }
 
-static void print2buff(const char *strng, LocalParseData *d)
+static inline void print2buff(const char *strng, LocalParseData *d)
 {
     size_t tlen, bufflen;
 
@@ -1410,7 +1459,7 @@ static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
     return buff;
 }
 
-static void deparse2buf_name(SEXP nv, int i, LocalParseData *d) {
+static inline void deparse2buf_name(SEXP nv, int i, LocalParseData *d) {
     if (!Rf_isNull(nv) && !Rf_isNull(STRING_ELT(nv, i))
 	&& *R_CHAR(STRING_ELT(nv, i))) { /* length test */
 	/* d->opts = SIMPLEDEPARSE; This seems pointless */
@@ -1438,15 +1487,8 @@ static void vector2buff(SEXP vector, LocalParseData *d)
     int i, d_opts_in = d->opts,
 	tlen = Rf_length(vector),
 	quote = Rf_isString(vector) ? '"' : 0;
-    SEXP nv = R_NilValue;
-    Rboolean nice_names = Rboolean(d_opts_in & NICE_NAMES);
-    if(nice_names) {
-	nv = Rf_getAttrib(vector, R_NamesSymbol);
-	if (Rf_length(nv) == 0) nv = R_NilValue;
-    }
     Rboolean surround = FALSE;
     bool allNA,
-	need_c = (tlen > 1 || nv != R_NilValue),
 	intSeq = false; // := TRUE iff integer sequence 'm:n' (up *or* down)
     if(TYPEOF(vector) == INTSXP) {
 	int *vec = INTEGER(vector), d_i;
@@ -1462,15 +1504,28 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	}
     }
 
-    Rboolean namesX = Rboolean(nice_names && (intSeq || tlen == 0));
-    if (namesX) // use structure(.,*) for names even if(nice_names)
+    SEXP nv = R_NilValue;
+    Rboolean do_names = Rboolean(d_opts_in & SHOW_ATTR_OR_NMS); // iff TRUE use '<tag_i> = <comp_i>'
+    if(do_names) {
+	nv = Rf_getAttrib(vector, R_NamesSymbol); // only "do names" if have names:
+	if(Rf_isNull(nv))
+	    do_names = FALSE;
+    }
+    bool
+	need_c = (tlen > 1 || !Rf_isNull(nv)), // (?) only TRUE iff SHOW_ATTR_OR_NMS
+	STR_names = do_names && (intSeq || tlen == 0);
+    if (STR_names) // use structure(.,*) for names even if(nice_names)
 	d->opts &= ~NICE_NAMES;
-    Rboolean doAttr = (d_opts_in & SHOWATTRIBUTES) ? attr1(vector, d) : FALSE;
+    attr_type attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(vector, d) : SIMPLE;
+    do_names = Rboolean(attr == OK_NAMES || attr == STRUC_ATTR);
     if (tlen == 0) {
 #ifdef DEBUG_DEPARSE
-	REprintf("vector2buff(<tlen = 0>): namesX = %s, doAttr = %s\n",
-		 namesX ? "TRUE" : "FALSE",
-		 doAttr ? "TRUE" : "FALSE");
+	REprintf("vector2buff(<tlen = 0>): (do_names, STR_names) = (%s,%s), attr = %s\n",
+		 STR_names  ? "TRUE" : "FALSE",
+		 do_names? "TRUE" : "FALSE",
+		 attr == STRUC_NMS_A ? "STRUC_NMS_A" :
+		 (attr == STRUC_ATTR ? "STRUC_ATTR" :
+		  (attr == OK_NAMES ? "OK_NAMES" : "SIMPLE")));
 #endif
 	switch(TYPEOF(vector)) {
 	case LGLSXP: print2buff("logical(0)", d); break;
@@ -1510,8 +1565,8 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    allNA = allNA && !(d->opts & S_COMPAT);
 	    if(need_c) print2buff("c(", d);
 	    for (i = 0; i < tlen; i++) {
-		deparse2buf_name(nv, i, d);
-
+		if(do_names) // put '<tag> = '
+		    deparse2buf_name(nv, i, d);
 		if(allNA && vec[i] == NA_INTEGER) {
 		    print2buff("NA_integer_", d);
 		} else {
@@ -1567,8 +1622,8 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	if(need_c) print2buff("c(", d);
 	allNA = allNA && !(d->opts & S_COMPAT);
 	for (i = 0; i < tlen; i++) {
-	    deparse2buf_name(nv, i, d);
-
+	    if(do_names) // put '<tag> = '
+		deparse2buf_name(nv, i, d);
 	    if(allNA && TYPEOF(vector) == REALSXP &&
 	       ISNA(REAL(vector)[i])) {
 		strp = "NA_real_";
@@ -1582,7 +1637,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    	    buff = static_cast<char *>(alloca(NB));
 		strp = EncodeNonFiniteComplexElement(COMPLEX(vector)[i], buff);
 	    } else if (allNA && TYPEOF(vector) == STRSXP &&
-		       STRING_ELT(vector, i) == rho::String::NA()) {
+		       STRING_ELT(vector, i) == NA_STRING) {
 		strp = "NA_character_";
 	    } else if (TYPEOF(vector) == REALSXP && (d->opts & S_COMPAT)) {
 		int w, d, e;
@@ -1639,9 +1694,10 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	if(need_c  ) print2buff(")", d);
 	if(surround) print2buff(")", d);
     }
-    if (doAttr) attr2(vector, d);
-    if (namesX) d->opts = d_opts_in;
-}
+    if(attr >= STRUC_ATTR) attr2(vector, d, (attr == STRUC_ATTR));
+    if (STR_names) d->opts = d_opts_in;
+} // vector2buff()
+
 
 /* src2buff1: Deparse one source ref to buffer */
 
@@ -1664,26 +1720,31 @@ static void src2buff1(SEXP srcref, LocalParseData *d)
 
 /* src2buff : Deparse source element k to buffer, if possible; return FALSE on failure */
 
-static Rboolean src2buff(SEXP sv, int k, LocalParseData *d)
+static bool src2buff(SEXP sv, int k, LocalParseData *d)
 {
     SEXP t;
 
     if (TYPEOF(sv) == VECSXP && Rf_length(sv) > k && !Rf_isNull(t = VECTOR_ELT(sv, k))) {
 	src2buff1(t, d);
-	return TRUE;
+	return true;
     }
-    else return FALSE;
+    else return false;
 }
 
 /* Deparse vectors of S-expressions, i.e., list() and expression() objects.
    In particular, this deparses objects of mode expression. */
-static void vec2buff(SEXP v, LocalParseData *d)
+static void vec2buff(SEXP v, LocalParseData *d,
+		     bool do_names) // iff TRUE use '<tag_i> = <comp_i>'
 {
     Rboolean lbreak = FALSE;
     const void *vmax = vmaxget();
     int n = Rf_length(v);
-    SEXP nv = Rf_getAttrib(v, R_NamesSymbol);
-    if (Rf_length(nv) == 0) nv = R_NilValue;
+    SEXP nv = nullptr;
+    if(do_names) {
+	nv = Rf_getAttrib(v, R_NamesSymbol); // only "do names" if have names:
+	if (Rf_isNull(nv))
+	    do_names = FALSE;
+    }
 
     SEXP sv; // Srcref or NULL
     if (d->opts & USESOURCE) {
@@ -1696,8 +1757,9 @@ static void vec2buff(SEXP v, LocalParseData *d)
     for(int i = 0 ; i < n ; i++) {
 	if (i > 0)
 	    print2buff(", ", d);
-	linebreak(&lbreak, d);
-	deparse2buf_name(nv, i, d);
+	linebreak(lbreak, d);
+	if(do_names) // put '<tag> = '
+	    deparse2buf_name(nv, i, d);
 	if (!src2buff(sv, i, d)) {
 	    if (v->sexptype() == EXPRSXP) {
 		ExpressionVector* ev = static_cast<ExpressionVector*>(v);
@@ -1750,7 +1812,7 @@ static void args2buff(SEXP arglist, int lineb, int formals, LocalParseData *d)
 	arglist = CDR(arglist);
 	if (arglist != R_NilValue) {
 	    print2buff(", ", d);
-	    linebreak(&lbreak, d);
+	    linebreak(lbreak, d);
 	}
     }
     if (lbreak)

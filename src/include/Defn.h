@@ -1189,7 +1189,7 @@ enum DeparseOptionBits {
     NICE_NAMES = 1024,
     /* common combinations of the above */
     SIMPLEDEPARSE = 0,
-    DEFAULTDEPARSE = 65, /* KEEPINTEGER | KEEPNA, used for calls */
+    DEFAULTDEPARSE = 1089, /* KEEPINTEGER | KEEPNA | NICE_NAMES, used for calls */
     FORSOURCING = 95 /* not DELAYPROMISES, used in edit.cpp */
 };
 

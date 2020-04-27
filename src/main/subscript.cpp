@@ -767,10 +767,6 @@ Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
 	ans = logicalSubscript(s, ns, nx, stretch, call);
 	break;
     case INTSXP:
-	s = Rf_duplicate(s);
-	if (s) {
-	    s->clearAttributes();
-	}
 	ans = integerSubscript(s, ns, nx, stretch, call);
 	break;
     case REALSXP:
@@ -778,10 +774,6 @@ Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
 	break;
     case STRSXP:
     {
-	s = Rf_duplicate(s);
-	if (s) {
-	    s->clearAttributes();
-	}
 	SEXP names = Rf_getAttrib(x, R_NamesSymbol);
 	/* *stretch = 0; */
 	ans = stringSubscript(s, ns, nx, names, stretch, call);

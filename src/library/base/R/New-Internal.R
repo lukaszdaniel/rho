@@ -96,17 +96,18 @@ rbind <- function(..., deparse.level = 1)
 
 
 # convert deparsing options to bitmapped integer
+..deparseOpts <-
+    ## the exact order of these is determined by the integer codes in
+    ## ../../../include/Defn.h
+    c("all",
+      "keepInteger", "quoteExpressions", "showAttributes", # 2,3,4
+      "useSource", "warnIncomplete", "delayPromises",      # 5,6,7
+      "keepNA", "S_compatible", "hexNumeric",              # 8,9,10
+      "digits17", "niceNames")                             # 11,12
 
 .deparseOpts <- function(control) {
     if(!length(control)) return(0) # fast exit
-    opts <- pmatch(as.character(control),
-                   ## the exact order of these is determined by the integer codes in
-                   ## ../../../include/Defn.h
-                   c("all",
-                     "keepInteger", "quoteExpressions", "showAttributes", # 2,3,4
-                     "useSource", "warnIncomplete", "delayPromises",      # 5,6,7
-                     "keepNA", "S_compatible", "hexNumeric",              # 8,9,10
-                     "digits17", "nice_names"))                           # 11,12
+    opts <- pmatch(as.character(control), ..deparseOpts)
     if (anyNA(opts))
         stop(sprintf(ngettext(as.integer(sum(is.na(opts))),
                               "deparse option %s is not recognized",
@@ -123,7 +124,7 @@ rbind <- function(..., deparse.level = 1)
 deparse <-
     function(expr, width.cutoff = 60L,
 	     backtick = mode(expr) %in% c("call", "expression", "(", "function"),
-	     control = c("keepInteger", "showAttributes", "keepNA"),
+	     control = c("keepNA", "keepInteger", "niceNames", "showAttributes"),
              nlines = -1L)
     .Internal(deparse(expr, width.cutoff, backtick,
                       .deparseOpts(control), nlines))

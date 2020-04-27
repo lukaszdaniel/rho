@@ -299,11 +299,12 @@ R_xlen_t /*attribute_hidden*/ ALTREP_TRUELENGTH(SEXP x) { return 0; }
 void /*attribute_hidden*/ *ALTVEC_DATAPTR(SEXP x, Rboolean writeable)
 {
     /**** move GC disabling into methods? */
-    // if (R_in_gc)
-	// Rf_error("cannot get ALTVEC DATAPTR during GC");
-    // int enabled = R_GCEnabled;
-    // R_GCEnabled = FALSE;
-
+#if RHO_FALSE
+    if (R_in_gc)
+	Rf_error("cannot get ALTVEC DATAPTR during GC");
+    int enabled = R_GCEnabled;
+    R_GCEnabled = FALSE;
+#endif
     void *val = ALTVEC_DISPATCH(Dataptr, x, writeable);
 
     // R_GCEnabled = enabled;
@@ -394,11 +395,12 @@ SEXP /*attribute_hidden*/ ALTSTRING_ELT(SEXP x, R_xlen_t i)
     SEXP val = NULL;
 
     /**** move GC disabling into method? */
-    // if (R_in_gc)
-	// Rf_error("cannot get ALTSTRING_ELT during GC");
-    // int enabled = R_GCEnabled;
-    // R_GCEnabled = FALSE;
-
+#if RHO_FALSE
+    if (R_in_gc)
+	Rf_error("cannot get ALTSTRING_ELT during GC");
+    int enabled = R_GCEnabled;
+    R_GCEnabled = FALSE;
+#endif
     val = ALTSTRING_DISPATCH(Elt, x, i);
 
     // R_GCEnabled = enabled;
@@ -408,11 +410,12 @@ SEXP /*attribute_hidden*/ ALTSTRING_ELT(SEXP x, R_xlen_t i)
 void attribute_hidden ALTSTRING_SET_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
     /**** move GC disabling into method? */
-    // if (R_in_gc)
-	// Rf_error("cannot get ALTSTRING_ELT during GC");
-    // int enabled = R_GCEnabled;
-    // R_GCEnabled = FALSE;
-
+#if RHO_FALSE
+    if (R_in_gc)
+	Rf_error("cannot get ALTSTRING_ELT during GC");
+    int enabled = R_GCEnabled;
+    R_GCEnabled = FALSE;
+#endif
     ALTSTRING_DISPATCH(Set_elt, x, i, v);
 
     // R_GCEnabled = enabled;

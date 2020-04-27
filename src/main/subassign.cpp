@@ -975,7 +975,19 @@ SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
     SEXP x, y;
     PairList* subs;
     size_t nsubs = SubAssignArgs(args, &x, &subs, &y);
-   
+
+    /* make sure the LHS is duplicated if it matches one of the indices */
+    /* otherwise this gets the wrong answer:
+          permute <- structure(c(3L, 1L, 2L), dim = c(3, 1))
+	  permute[permute, 1] <- 1:3
+	  as.vector(permute)
+    */
+    for (SEXP s = subs; s != R_NilValue; s = CDR(s)) {
+	SEXP idx = CAR(s);
+	if (x == idx)
+	    MARK_NOT_MUTABLE(x);
+    }
+
     /* If there are multiple references to an object we must */
     /* duplicate it so that only the local version is mutated. */
     /* This will duplicate more often than necessary, but saves */
@@ -1020,7 +1032,7 @@ SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
 	}
 	break;
     default:
-	Rf_error(R_MSG_ob_nonsub, TYPEOF(x));
+	Rf_error(_("object of type '%s' is not subsettable"), TYPEOF(x));
 	break;
     }
 
@@ -1417,7 +1429,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	}
 	UNPROTECT(1);
     }
-    else Rf_error(R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
+    else Rf_error(_("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
 
     if(recursed) {
 	if (Rf_isVectorList(xup)) {
@@ -1537,7 +1549,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 	     TYPEOF(x) == CLOSXP ||
 	     TYPEOF(x) == SPECIALSXP ||
 	     TYPEOF(x) == BUILTINSXP) {
-	Rf_error(R_MSG_ob_nonsub, Rf_type2char(TYPEOF(x)));
+	Rf_error(_("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
     }
     else {
 	R_xlen_t i, imatch, nx;

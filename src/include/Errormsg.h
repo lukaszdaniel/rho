@@ -40,8 +40,8 @@
 #define ERRORMSG_H
 
 /* Used in ../main/sub*.cpp */
-#define R_MSG_subs_o_b	_("subscript out of bounds")
-#define R_MSG_ob_nonsub _("object of type '%s' is not subsettable")
+//#define R_MSG_subs_o_b	_("subscript out of bounds")
+//#define R_MSG_ob_nonsub _("object of type '%s' is not subsettable")
 
 /*---- Packaged Error & Warning Messages ---- 
  *---- ================================= ----*/

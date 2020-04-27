@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-25 rc4b6018470) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-26 r9d68c35b7a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-10-05 r73471) -- "Frisbee Sailing"
+R Under development (unstable) (2017-11-12 r73715) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -223,6 +223,8 @@ Levels: a b <NA>
 > id_epd <- function(expr, control = c("all","digits17"), ...)
 +     eval(pd0(expr, control=control, ...))
 > dPut <- function(x, control = c("all","digits17")) dput(x, control=control)
+> ##' Does 'x' contain "real" numbers
+> ##' with > 3 digits after "." where deparse may be platform dependent?
 > hasReal <- function(x) {
 +     if(is.double(x) || is.complex(x))
 +         !all((x == round(x, 3)) | is.na(x))
@@ -240,14 +242,23 @@ Levels: a b <NA>
 +     else FALSE
 + }
 > isMissObj <- function(obj) identical(obj, alist(a=)[[1]])
+> ##' Does 'obj' contain "the missing object" ?
+> ##' @note defined recursively!
+> hasMissObj <- function(obj) {
++     if(is.recursive(obj)) {
++         if(is.function(obj) || is.language(obj))
++             FALSE
++         else # incl pairlist()s
++             any(vapply(obj, hasMissObj, NA))
++     } else isMissObj(obj)
++ }
 > check_EPD <- function(obj, show = !hasReal(obj),
 +                       eq.tol = if(.Machine$sizeof.longdouble <= 8) # no long-double
 +                                    2*.Machine$double.eps else 0) {
 +     if(show) dPut(obj)
-+     if(is.environment(obj) ||
-+        (is.pairlist(obj) && any(vapply(obj, isMissObj, NA))))
-+     {
-+         cat("__ not parse()able __\n")
++     if(is.environment(obj) || hasMissObj(obj)) {
++         cat("__ not parse()able __:",
++            if(is.environment(obj)) "environment" else "hasMissObj(.) is true", "\n")
 +         return(invisible(obj)) # cannot parse it
 +     }
 +     ob2 <- id_epd(obj)
@@ -288,6 +299,10 @@ Levels: a b <NA>
 > L4  <- list(ii = 5:2) # not named
 > L6  <- list(L = i6)
 > L6a <- list(L = structure(rev(i6), myDoc = "info"))
+> ## these must use structure() to keep NA_character_ name:
+> LNA <- setNames(as.list(c(1,2,99)), c("A", "NA", NA))
+> iNA <- unlist(LNA)
+> missL <- setNames(rep(list(alist(.=)$.), 3), c("",NA,"c"))
 > ## empty *named* atomic vectors
 > i00 <- setNames(integer(), character()); i0 <- structure(i00, foo = "bar")
 > L00 <- setNames(logical(), character()); L0 <- structure(L00, class = "Logi")
@@ -295,9 +310,42 @@ Levels: a b <NA>
 > sii <- structure(4:7, foo = list(B="bar", G="grizzly",
 +                                  vec=c(a=1L,b=2L), v2=i6, v0=L00))
 > 
-> ## Creating a collection of S4 objects, ensuring deparse <-> parse are inverses
-> library(methods)
-> example(new) # creating t1 & t2 at least
+> if(getRversion() >= "3.5.0") {
++     ## Creating a collection of S4 objects, ensuring deparse <-> parse are inverses
++ library(methods)
++ example(new) # creating t1 & t2 at least
++ if(require("Matrix")) { cat("Trying some Matrix objects, too\n")
++     D5. <- Diagonal(x = 5:1)
++     D5N <- D5.; D5N[5,5] <- NA
++     example(Matrix)
++     ## a subset from  example(sparseMatrix) :
++     i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
++     A <- sparseMatrix(i, j, x = x)
++     sA <- sparseMatrix(i, j, x = x, symmetric = TRUE)
++     tA <- sparseMatrix(i, j, x = x, triangular= TRUE)
++     ## dims can be larger than the maximum row or column indices
++     AA <- sparseMatrix(c(1,3:8), c(2,9,6:10), x = 7 * (1:7), dims = c(10,20))
++     ## i, j and x can be in an arbitrary order, as long as they are consistent
++     set.seed(1); (perm <- sample(1:7))
++     A1 <- sparseMatrix(i[perm], j[perm], x = x[perm])
++     ## the (i,j) pairs can be repeated, in which case the x's are summed
++     args <- data.frame(i = c(i, 1), j = c(j, 2), x = c(x, 2))
++     Aa <- do.call(sparseMatrix, args)
++     A. <- do.call(sparseMatrix, c(args, list(use.last.ij = TRUE)))
++     ## for a pattern matrix, of course there is no "summing":
++     nA <- do.call(sparseMatrix, args[c("i","j")])
++     dn <- list(LETTERS[1:3], letters[1:5])
++     ## pointer vectors can be used, and the (i,x) slots are sorted if necessary:
++     m <- sparseMatrix(i = c(3,1, 3:2, 2:1), p= c(0:2, 4,4,6), x = 1:6, dimnames = dn)
++     ## no 'x' --> patter*n* matrix:
++     n <- sparseMatrix(i=1:6, j=rev(2:7))
++     ## an empty sparse matrix:
++     e <- sparseMatrix(dims = c(4,6), i={}, j={})
++     ## a symmetric one:
++     sy <- sparseMatrix(i= c(2,4,3:5), j= c(4,7:5,5), x = 1:5,
++                        dims = c(7,7), symmetric=TRUE)
++ }
++ }# S4 deparse()ing only since R 3.5.0
 
 new> ## using the definition of class "track" from setClass
 new> 
@@ -351,37 +399,6 @@ new> ## End(Don't show)
 new> 
 new> 
 new> 
-> if(require("Matrix")) { cat("Trying some Matrix objects, too\n")
-+     D5. <- Diagonal(x = 5:1)
-+     D5N <- D5.; D5N[5,5] <- NA
-+     example(Matrix)
-+     ## a subset from  example(sparseMatrix) :
-+     i <- c(1,3:8); j <- c(2,9,6:10); x <- 7 * (1:7)
-+     A <- sparseMatrix(i, j, x = x)
-+     sA <- sparseMatrix(i, j, x = x, symmetric = TRUE)
-+     tA <- sparseMatrix(i, j, x = x, triangular= TRUE)
-+     ## dims can be larger than the maximum row or column indices
-+     AA <- sparseMatrix(c(1,3:8), c(2,9,6:10), x = 7 * (1:7), dims = c(10,20))
-+     ## i, j and x can be in an arbitrary order, as long as they are consistent
-+     set.seed(1); (perm <- sample(1:7))
-+     A1 <- sparseMatrix(i[perm], j[perm], x = x[perm])
-+     ## the (i,j) pairs can be repeated, in which case the x's are summed
-+     args <- data.frame(i = c(i, 1), j = c(j, 2), x = c(x, 2))
-+     Aa <- do.call(sparseMatrix, args)
-+     A. <- do.call(sparseMatrix, c(args, list(use.last.ij = TRUE)))
-+     ## for a pattern matrix, of course there is no "summing":
-+     nA <- do.call(sparseMatrix, args[c("i","j")])
-+     dn <- list(LETTERS[1:3], letters[1:5])
-+     ## pointer vectors can be used, and the (i,x) slots are sorted if necessary:
-+     m <- sparseMatrix(i = c(3,1, 3:2, 2:1), p= c(0:2, 4,4,6), x = 1:6, dimnames = dn)
-+     ## no 'x' --> patter*n* matrix:
-+     n <- sparseMatrix(i=1:6, j=rev(2:7))
-+     ## an empty sparse matrix:
-+     e <- sparseMatrix(dims = c(4,6), i={}, j={})
-+     ## a symmetric one:
-+     sy <- sparseMatrix(i= c(2,4,3:5), j= c(4,7:5,5), x = 1:5,
-+                        dims = c(7,7), symmetric=TRUE)
-+ }
 Loading required package: Matrix
 Trying some Matrix objects, too
 
@@ -519,6 +536,7 @@ Matrix> stopifnot(is(As, "symmetricMatrix"),
 Matrix+           is(Matrix(0, 3,3), "sparseMatrix"),
 Matrix+           is(Matrix(FALSE, 1,1), "sparseMatrix"))
 > 
+> ## Action!  Check deparse <--> parse  consistency for *all* objects:
 > for(nm in ls(env=.GlobalEnv)) {
 +     cat(nm,": ", sep="")
 +     ## if(!any(nm == "r1")) ## 'r1' fails
@@ -572,7 +590,7 @@ quote(match.call())
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 CO: function (..., file = NULL, append = FALSE, type = c("output", "message"), split = FALSE) 
 {
@@ -662,7 +680,7 @@ quote({
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = , file = NULL, append = FALSE, type = quote(c("output", "message")), split = FALSE)
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 D5.: new("ddiMatrix",
 diag = "N", Dim = c(5L, 5L), Dimnames = list(NULL, NULL), x = c(5, 
@@ -682,7 +700,7 @@ quote(CC(...))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 I3: new("ddiMatrix",
 diag = "U", Dim = c(3L, 3L), Dimnames = list(NULL, NULL), x = numeric(0))
@@ -707,6 +725,9 @@ L6: list(L = structure(5:6, .Names = c("e", "f")))
  --> checking list(*): Ok
 --=--=--=--=--
 L6a: list(L = structure(6:5, .Names = c("f", "e"), myDoc = "info"))
+ --> checking list(*): Ok
+--=--=--=--=--
+LNA: structure(list(1, 2, 99), .Names = c("A", "NA", NA))
  --> checking list(*): Ok
 --=--=--=--=--
 M: new("ltCMatrix",
@@ -767,8 +788,10 @@ check_EPD: function (obj, show = !hasReal(obj), eq.tol = if (.Machine$sizeof.lon
 {
     if (show) 
         dPut(obj)
-    if (is.environment(obj) || (is.pairlist(obj) && any(vapply(obj, isMissObj, NA)))) {
-        cat("__ not parse()able __\n")
+    if (is.environment(obj) || hasMissObj(obj)) {
+        cat("__ not parse()able __:", if (is.environment(obj)) 
+            "environment"
+        else "hasMissObj(.) is true", "\n")
         return(invisible(obj))
     }
     ob2 <- id_epd(obj)
@@ -799,8 +822,10 @@ checking body(.):
 quote({
     if (show) 
         dPut(obj)
-    if (is.environment(obj) || (is.pairlist(obj) && any(vapply(obj, isMissObj, NA)))) {
-        cat("__ not parse()able __\n")
+    if (is.environment(obj) || hasMissObj(obj)) {
+        cat("__ not parse()able __:", if (is.environment(obj)) 
+            "environment"
+        else "hasMissObj(.) is true", "\n")
         return(invisible(obj))
     }
     ob2 <- id_epd(obj)
@@ -830,7 +855,7 @@ quote({
 checking formals(.):
 pairlist(obj = , show = quote(!hasReal(obj)), eq.tol = quote(if (.Machine$sizeof.longdouble <= 
     8) 2 * .Machine$double.eps else 0))
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 dPut: function (x, control = c("all", "digits17")) 
 dput(x, control = control)
@@ -840,7 +865,7 @@ quote(dput(x, control = control))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(x = , control = quote(c("all", "digits17")))
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 dn: list(c("A", "B", "C"), c("a", "b", "c", "d", "e"))
  --> checking list(*): Ok
@@ -867,7 +892,7 @@ quote(substitute(list(x, ...)))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(x = , ... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 fx: structure(c(1L, 3L, 2L), .Label = c("a", "b", NA), class = "factor")
  --> checking list(*): Ok
@@ -880,7 +905,7 @@ quote(h(f(...)))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 h: function (...) 
 list(...)
@@ -890,7 +915,31 @@ quote(list(...))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
+--=--=--=--=--
+hasMissObj: function (obj) 
+{
+    if (is.recursive(obj)) {
+        if (is.function(obj) || is.language(obj)) 
+            FALSE
+        else any(vapply(obj, hasMissObj, NA))
+    }
+    else isMissObj(obj)
+}
+ --> checking list(*): Ok
+checking body(.):
+quote({
+    if (is.recursive(obj)) {
+        if (is.function(obj) || is.language(obj)) 
+            FALSE
+        else any(vapply(obj, hasMissObj, NA))
+    }
+    else isMissObj(obj)
+})
+ --> checking list(*): Ok
+checking formals(.):
+pairlist(obj = )
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 hasReal: function (x) 
 {
@@ -928,7 +977,7 @@ quote({
  --> checking list(*): Ok
 checking formals(.):
 pairlist(x = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 i: c(1, 3, 4, 5, 6, 7, 8)
  --> checking list(*): Ok
@@ -942,6 +991,9 @@ i00: structure(integer(0), .Names = character(0))
 i6: structure(5:6, .Names = c("e", "f"))
  --> checking list(*): Ok
 --=--=--=--=--
+iNA: structure(c(1, 2, 99), .Names = c("A", "NA", NA))
+ --> checking list(*): Ok
+--=--=--=--=--
 id_epd: function (expr, control = c("all", "digits17"), ...) 
 eval(pd0(expr, control = control, ...))
  --> checking list(*): Ok
@@ -950,7 +1002,7 @@ quote(eval(pd0(expr, control = control, ...)))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(expr = , control = quote(c("all", "digits17")), ... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 isMissObj: function (obj) 
 identical(obj, alist(a = )[[1]])
@@ -960,7 +1012,7 @@ quote(identical(obj, alist(a = )[[1]]))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(obj = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 j: c(2, 9, 6, 7, 8, 9, 10)
  --> checking list(*): Ok
@@ -973,7 +1025,7 @@ quote(g(...))
  --> checking list(*): Ok
 checking formals(.):
 pairlist(... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 l3: structure(c(FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, TRUE, TRUE, FALSE), .Dim = c(3L, 
 3L))
@@ -984,6 +1036,9 @@ i = c(2L, 0L, 1L, 2L, 0L, 1L), p = c(0L, 1L, 2L, 4L, 4L, 6L), Dim = c(3L,
 5L), Dimnames = list(c("A", "B", "C"), c("a", "b", "c", "d", "e")), x = c(1, 2, 4, 
 3, 6, 5), factors = list())
  --> checking list(*): Ok
+--=--=--=--=--
+missL: structure(list(, , ), .Names = c("", NA, "c"))
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 mycaller: function (x = 1, callme = pi) 
 {
@@ -1022,7 +1077,7 @@ quote(parse(text = deparse(expr, backtick = backtick, control = control, ...)))
 checking formals(.):
 pairlist(expr = , backtick = TRUE, control = quote(c("keepInteger", "showAttributes", 
     "keepNA")), ... = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 perm: c(2L, 3L, 6L, 4L, 1L, 7L, 5L)
  --> checking list(*): Ok
@@ -1109,7 +1164,7 @@ quote({
  --> checking list(*): Ok
 checking formals(.):
 pairlist(x = )
-__ not parse()able __
+__ not parse()able __: hasMissObj(.) is true 
 --=--=--=--=--
 u:  --> checking list(*): Ok
 --=--=--=--=--
@@ -1131,5 +1186,5 @@ Length  Class   Mode
 > 
 > ## at the very end
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  1.928 0.04 1.968 0 0 
+Time elapsed:  2.055 0.028 2.082 0 0 
 > 

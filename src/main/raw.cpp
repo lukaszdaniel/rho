@@ -249,7 +249,7 @@ SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::B
 	Rf_error(_("argument must be a character vector of length 1"));
     if (LENGTH(x) > 1)
 	Rf_warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
-    if (STRING_ELT(x, 0) == rho::String::NA()) return Rf_ScalarInteger(NA_INTEGER);
+    if (STRING_ELT(x, 0) == NA_STRING) return Rf_ScalarInteger(NA_INTEGER);
     const char *s = R_CHAR(STRING_ELT(x, 0));
     if (!utf8Valid(s)) return Rf_ScalarInteger(NA_INTEGER);
     nc = XLENGTH(STRING_ELT(x, 0)); /* ints will be shorter */

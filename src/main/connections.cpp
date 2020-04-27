@@ -2929,13 +2929,13 @@ typedef struct outtextconn {
 /* read a R character vector into a buffer */
 static void text_init(Rconnection con, SEXP text, int type)
 {
-    R_xlen_t i, nlines = Rf_xlength(text);  // not very plausible that this is long
+    R_xlen_t nlines = Rf_xlength(text);  // not very plausible that this is long
     size_t nchars = 0; /* -Wall */
     double dnc = 0.0;
     Rtextconn thisconn = static_cast<Rtextconn>(con->connprivate);
     const void *vmax = vmaxget();
 
-    for(i = 0; i < nlines; i++)
+    for(R_xlen_t i = 0; i < nlines; i++)
 	dnc +=
 	    double(strlen(type == 1 ? Rf_translateChar(STRING_ELT(text, i))
 			    : ((type == 3) ?Rf_translateCharUTF8(STRING_ELT(text, i))
@@ -2948,14 +2948,15 @@ static void text_init(Rconnection con, SEXP text, int type)
 	free(thisconn); free(con->description); free(con->connclass); free(con);
 	Rf_error(_("cannot allocate memory for text connection"));
     }
-    *(thisconn->data) = '\0';
-    for(i = 0; i < nlines; i++) {
-	strcat(thisconn->data,
-	       type == 1 ? Rf_translateChar(STRING_ELT(text, i))
-	       : ((type == 3) ?Rf_translateCharUTF8(STRING_ELT(text, i))
-		  : R_CHAR(STRING_ELT(text, i))) );
-	strcat(thisconn->data, "\n");
+    char *t = thisconn->data;
+    for(R_xlen_t i = 0; i < nlines; i++) {
+	const char *s = (type == 1) ? Rf_translateChar(STRING_ELT(text, i))
+	    : ((type == 3) ? Rf_translateCharUTF8(STRING_ELT(text, i))
+	       : R_CHAR(STRING_ELT(text, i)));
+	while(*s) *t++ = *s++;
+	*t++ = '\n';
     }
+    *t = '\0';
     thisconn->nchars = nchars;
     thisconn->cur = thisconn->save = 0;
     vmaxset(vmax);
@@ -4824,7 +4825,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 		memset(buf, '\0', len + slen);
 		memcpy(buf, R_CHAR(si), len);
 		if (usesep) {
-		    strcat(buf, ssep);
+		    strcpy(buf + len, ssep);
 		    len += slen;
 		}
 		if (!isRaw) {
@@ -4864,7 +4865,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 		memset(buf, '\0', lenb + slen);
 		strncpy(buf, s, lenb);
 		if (usesep) {
-		    strcat(buf, ssep);
+		    strcpy(buf + lenb, ssep);
 		    lenb += slen;
 		}
 		if (!isRaw) {

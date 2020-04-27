@@ -349,7 +349,7 @@ Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
 {
     const IntVector* dims = v->dimensions();
     if (!dims)
-	Rf_error(_ ("not a matrix/array"));
+	Rf_error(_("not a matrix/array"));
     std::size_t ndims = dims->size();
     indicesvec->resize(ndims);
     const ListVector* dimnames = v->dimensionNames();

@@ -217,7 +217,7 @@ static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
 	const char *ctmp = Rf_EncodeString(STRING_ELT(t, i),  0, 0, Rprt_adj_none);
 	Rprintf("%s\n", ctmp); /* translated */
 #else
- 	Rprintf("%s\n", R_CHAR(STRING_ELT(t, i))); /* translated */
+ 	Rprintf("%s\n", Rf_translateChar(STRING_ELT(t, i))); // translate: for srcref part (PR#16732)
 #endif
     }
     UNPROTECT(1);

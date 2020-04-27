@@ -932,7 +932,8 @@ next_char:
 const char *Rf_translateChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	Rf_error(_("'%s' must be called on a CHARSXP"), "translateChar");
+	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
+	      "translateChar", Rf_type2char(TYPEOF(x)));
     nttype_t t = needsTranslation(x);
     const char *ans = R_CHAR(x);
     assert(ans != nullptr);
@@ -953,7 +954,8 @@ const char *Rf_translateChar(SEXP x)
 SEXP Rf_installTrChar(SEXP x)
 {
     if(TYPEOF(x) != CHARSXP)
-	Rf_error(_("'%s' must be called on a CHARSXP"), "installTrChar");
+	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
+	      "installTrChar", Rf_type2char(TYPEOF(x)));
     nttype_t t = needsTranslation(x);
     if (t == NT_NONE) return Rf_installChar(x);
 
@@ -987,7 +989,8 @@ const char *Rf_translateCharUTF8(SEXP x)
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
     if(TYPEOF(x) != CHARSXP)
-	Rf_error(_("'%s' must be called on a CHARSXP"), "translateCharUTF8");
+	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
+	      "translateCharUTF8", Rf_type2char(TYPEOF(x)));
     if(x == NA_STRING) return ans;
     if(IS_UTF8(x)) return ans;
     if(IS_ASCII(x)) return ans;

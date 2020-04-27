@@ -227,6 +227,17 @@ SEXP Rf_setAttrib(SEXP vec, SEXP name, SEXP val)
 	name = Rf_installTrChar(STRING_ELT(name, 0));
     }
     if (val == R_NilValue) {
+	/* FIXME: see do_namesgets().
+	if (name == R_NamesSymbol) {
+	    if(isVector(vec) || isList(vec) || isLanguage(vec)) {
+		SEXP s = getAttrib(vec, R_DimSymbol);
+		if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
+		    UNPROTECT(2);
+		    return removeAttrib(vec, R_DimNamesSymbol);
+		}
+	    }
+	}
+	*/
 	UNPROTECT(2);
 	return removeAttrib(vec, name);
     }
@@ -828,6 +839,25 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
       PROTECT(call = new Expression(R_AsCharacterSymbol, { names }));
 	names = Rf_eval(call, R_BaseEnv);
 	UNPROTECT(1);
+    }
+    /* FIXME:
+       Need to special-case names(x) <- NULL for 1-d arrays to perform
+         setAttrib(x, R_DimNamesSymbol, R_NilValue)
+       (and remove the dimnames) here if we want 
+         setAttrib(x, R_NamesSymbol, R_NilValue)
+       to actually remove the names, as needed in subset.c.
+    */
+    if(names == R_NilValue) {
+	SEXP vec = object;
+	if(Rf_isVector(vec) || Rf_isList(vec) || Rf_isLanguage(vec)) {
+	    SEXP s = Rf_getAttrib(vec, R_DimSymbol);
+	    if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
+		Rf_setAttrib(object, R_DimNamesSymbol, names);
+		UNPROTECT(1);
+		SET_NAMED(object, 0);
+		return object;
+	    }
+	}
     }
     Rf_setAttrib(object, R_NamesSymbol, names);
     SET_NAMED(object, 0);

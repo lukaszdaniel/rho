@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995-1997, 1998  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998-2014  The R Core Team.
+ *  Copyright (C) 1998-2017  The R Core Team.
+ *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -295,7 +295,7 @@ static void printNamedIntegerVector(int * x, int n, StringVector* names)
 
 static void printNamedRealVector(double * x, int n, StringVector* names)
     PRINT_N_VECTOR(INI_F_REAL,
-		   Rprintf("%s%*s", 
+		   Rprintf("%s%*s",
 			   EncodeReal0(x[k],w,d,e, OutDec),R_print.gap,""))
 
 #undef INI_F_CPLX
@@ -342,7 +342,8 @@ static void printNamedStringVector(StringVector* sv, int n, int quote,
 
 static void printNamedRawVector(Rbyte * x, int n, StringVector* names)
     PRINT_N_VECTOR(formatRaw(x, n, &w),
-		   Rprintf("%s%*s", Rf_EncodeRaw(x[k], ""), R_print.gap,""))
+		   Rprintf("%*s%s%*s", w - 2, "",
+			   Rf_EncodeRaw(x[k], ""), R_print.gap,""))
 
 attribute_hidden
 void printNamedVector(SEXP x, SEXP names, int quote, const char *title)

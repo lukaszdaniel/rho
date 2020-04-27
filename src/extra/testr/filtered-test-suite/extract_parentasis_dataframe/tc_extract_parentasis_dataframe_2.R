@@ -166,4 +166,3 @@ argv <- structure(list(x = structure(list(Satellites = c(8L, 0L, 9L,
 "i", "j"))
 do.call('[.data.frame', argv);
 },  o = expected);
-

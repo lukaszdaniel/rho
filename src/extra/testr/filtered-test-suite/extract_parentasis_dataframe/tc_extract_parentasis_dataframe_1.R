@@ -13,4 +13,3 @@ argv <- structure(list(x = structure(list(ID = c(13, 41, 121, 202, 247,
     i = 2), .Names = c("x", "i"))
 do.call('[.data.frame', argv);
 },  o = expected);
-

@@ -5,4 +5,3 @@ argv <- structure(list(x = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
 "2"), class = "factor")), .Names = "x")
 do.call('levels', argv);
 },  o = expected);
-

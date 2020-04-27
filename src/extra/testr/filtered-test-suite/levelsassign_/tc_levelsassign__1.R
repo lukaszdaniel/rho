@@ -158,4 +158,3 @@ argv <- structure(list(structure(c(4L, 4L, 3L, 6L, 5L, 4L, 4L, 5L, 4L,
 "value"))
 do.call('levels<-', argv);
 },  o = expected);
-

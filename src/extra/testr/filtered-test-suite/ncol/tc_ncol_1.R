@@ -1,5 +1,5 @@
 expected <- 4L      
-test(id=1, code={      
+test(id=1, code={
 argv <- structure(list(x = structure(list(pop15 = c(29.35, 23.32, 23.8,       
 41.89, 42.19, 31.72, 39.74, 44.75, 46.64, 47.64, 24.42, 46.31,       
 27.84, 25.06, 23.31, 25.62, 46.05, 47.32, 34.03, 41.31, 31.16,       
@@ -32,6 +32,5 @@ argv <- structure(list(x = structure(list(pop15 = c(29.35, 23.32, 23.8,
 "South Rhodesia", "Spain", "Sweden", "Switzerland", "Turkey",       
 "Tunisia", "United Kingdom", "United States", "Venezuela", "Zambia",       
 "Jamaica", "Uruguay", "Libya", "Malaysia"))), .Names = "x")      
-do.call('ncol', argv);      
-},  o = expected);      
-      
+do.call('ncol', argv);
+},  o = expected);

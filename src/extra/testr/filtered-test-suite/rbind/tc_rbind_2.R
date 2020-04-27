@@ -104,4 +104,3 @@ argv <- list(c(0L, 1L, 0L, 0L, 0L, 1L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
 0L, 3L, 0L, 8L, 0L, 0L, 1L, 0L, 1L, 1L, 0L))
 do.call('rbind', argv);
 },  o = expected);
-

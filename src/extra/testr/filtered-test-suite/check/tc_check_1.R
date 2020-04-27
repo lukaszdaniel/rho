@@ -1,7 +1,7 @@
-expected <- eval(parse(text="NULL"));  
-test(id=0, code={  
+expected <- eval(parse(text="NULL"));
+test(id=0, code={
 check_names<-  function ()    
-  {   
+  {
       x <- array(1:24, c(4, 6))   
       nms <- list(happy = letters[1:4], sad = LETTERS[1:6])   
       dimnames(x) <- nms   
@@ -18,7 +18,6 @@ check_names<-  function ()
       tmp <- aperm(x, c(2, 1))   
       stopifnot(all.equal(names(dimnames(tmp)), c("", names(nms)[1])))   
   }   
-argv <- list();  
-do.call(`check_names`, argv);  
-}, o=expected);  
-
+argv <- list();
+do.call(`check_names`, argv);
+}, o=expected);

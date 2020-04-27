@@ -7,4 +7,3 @@ argv <- structure(list(x = structure(c(9.83610941897737, 1.76740501065812,
 "Y", "Z", "a", "b", "c"))), .Names = "x")
 do.call('as.list', argv);
 },  o = expected);
-

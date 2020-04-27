@@ -100,4 +100,3 @@ argv <- structure(list(x = structure(c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 "X5")), .Names = c("x", "value"))
 do.call('colnames<-', argv);
 },  o = expected);
-

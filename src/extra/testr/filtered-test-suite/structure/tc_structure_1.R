@@ -154,4 +154,3 @@ argv <- structure(list(.Data = structure(c(1L, 2L, 3L, 4L, 5L, 1L, 2L,
 "class"))
 do.call('structure', argv);
 },  o = expected);
-

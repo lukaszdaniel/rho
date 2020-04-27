@@ -9,4 +9,3 @@ argv <- structure(list(x = structure(c(15, 37, 30, 18, 8, 20, 42.7, 29.3
 )), .Names = c("Evaluation", "Location")))), .Names = "x")
 do.call('unique', argv);
 },  o = expected);
-

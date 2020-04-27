@@ -17,7 +17,7 @@ OrginizeTestCases <- function(root, res.dir = tempdir()){
   }
   cache <- new.env();
   for (filename in files) {
-    
+
     cat(filename, "\n")
     function.name <- ExtractFunctionName(filename)   
     function.count <- cache[[function.name]]
@@ -30,7 +30,7 @@ OrginizeTestCases <- function(root, res.dir = tempdir()){
     if (length(tests.starts) == 0) tests.starts <- head(c(1, grep("^[ ]*$", lines) + 1), -1)
     tests.ends <- grep("^[ ]*$", lines)
     if (length(tests.ends) == 0) tests.ends <- grep("^[ ]*$", lines)
-    for (i in 1:length(tests.starts)){    
+    for (i in 1:length(tests.starts)){
       function.count <- function.count + 1
       new.file.name <- sprintf("%s/%s/tc_%s_%d.R", res.dir, function.name, function.name, function.count)
       writeLines(lines[tests.starts[i]:tests.ends[i]], new.file.name)
@@ -61,15 +61,15 @@ AddTCsDB <- function(db.root, tc.root){
   } else {
     dir.create(db.root)
   }
-  
+
   tc.files <- GetAllFiles(tc.root)
   # cache for storing information about functions (code and test case count)
   function.cache <- list()
-  
+
   for (filename in tc.files) {
     function.name <- ExtractFunctionName(filename)
     function.count <- function.cache[[function.name]]
-    
+
     if (is.null(function.count)) {
       if (function.name %in% db.files) {
         function.count <- length(list.files(file.path(db.root, function.name)))
@@ -83,7 +83,7 @@ AddTCsDB <- function(db.root, tc.root){
     if (length(tests.starts) == 0) tests.starts <- head(c(1, grep("^[ ]*$", lines) + 1), -1)
     tests.ends <- grep("^[ ]*$", lines)
     if (length(tests.ends) == 0) tests.ends <- grep("^[ ]*$", lines)
-    for (i in 1:length(tests.starts)){    
+    for (i in 1:length(tests.starts)){
       function.count <- function.count + 1
       new.file.name <- sprintf("%s/%s/tc_%s_%d.R", db.root, function.name, function.name, function.count)
       writeLines(lines[tests.starts[i]:tests.ends[i]], new.file.name)

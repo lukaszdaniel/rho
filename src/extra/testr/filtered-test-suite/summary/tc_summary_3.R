@@ -71,4 +71,3 @@ argv <- structure(list(object = structure(list(Sepal.Length = c(5.1,
 -150L), class = "data.frame")), .Names = "object")
 do.call('summary', argv);
 },  o = expected);
-

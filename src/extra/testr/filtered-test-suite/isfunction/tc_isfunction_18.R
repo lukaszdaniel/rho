@@ -1,10 +1,10 @@
 expected <- TRUE               
-test(id=678, code={               
+test(id=678, code={
 argv <- list(function (x, format = "", usetz = FALSE, ...)                
-{               
+{
     if (!inherits(x, "POSIXlt"))                
         stop("wrong class")               
-    if (format == "") {               
+    if (format == "") {
         times <- unlist(unclass(x)[1L:3L])               
         secs <- x$sec               
         secs <- secs[!is.na(secs)]               
@@ -14,7 +14,7 @@ argv <- list(function (x, format = "", usetz = FALSE, ...)
         else np <- min(6L, np)               
         if (np >= 1L)                
             for (i in seq_len(np) - 1L) if (all(abs(secs - round(secs,                
-                i)) < 1e-06)) {               
+                i)) < 1e-06)) {
                 np <- i               
                 break               
             }               
@@ -28,6 +28,5 @@ argv <- list(function (x, format = "", usetz = FALSE, ...)
     names(y) <- names(x$year)               
     y               
 })               
-do.call('is.function', argv);               
-},  o = expected);               
-               
+do.call('is.function', argv);
+},  o = expected);

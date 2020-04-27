@@ -36,4 +36,3 @@ argv <- structure(list(a = structure(c(0.124248979591837, 0.266432653061224,
 ))), perm = c(2, 3, 1)), .Names = c("a", "perm"))
 do.call('aperm', argv);
 },  o = expected);
-

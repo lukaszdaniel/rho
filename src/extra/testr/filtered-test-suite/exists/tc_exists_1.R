@@ -1,6 +1,5 @@
 expected <- TRUE    
-test(id=0, code={    
+test(id=0, code={
 argv <- structure(list(x = ".Device"), .Names = "x")    
-do.call('exists', argv);    
-},  o = expected);    
-    
+do.call('exists', argv);
+},  o = expected);

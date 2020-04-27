@@ -33,4 +33,3 @@ argv <- list(structure(list(lowerNorm = c(1, 0.7074793118252, 0.703783359109958,
 ), row.names = c(NA, -19L), class = "data.frame"), 3)
 do.call('round', argv);
 },  o = expected);
-

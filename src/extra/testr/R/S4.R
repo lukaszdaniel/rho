@@ -6,12 +6,12 @@
 #' @seealso ReplaceBody
 ReplaceS4 <- function(env) {
   generics <- getGenerics(env)
-  
+
   unlist(recursive = FALSE,
          Map(generics@.Data, generics@package, USE.NAMES = FALSE,
              f = function(name, package) {
                what <- methodsPackageMetaName("T", paste(name, package, sep = ":"))
-               
+
                table <- get(what, envir = env)
                replacer <- function(x, envir) {
                  target <- get(x, envir = table)

@@ -8,4 +8,3 @@ try_eval_tracer <- function(env) {
 WriteCapInfo_cpp <- function(fname, args_env) {
     invisible(.Call('testr_WriteCapInfo_cpp', PACKAGE = 'testr', fname, args_env))
 }
-

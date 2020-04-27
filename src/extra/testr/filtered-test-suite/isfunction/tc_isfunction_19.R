@@ -1,9 +1,9 @@
 expected <- TRUE               
-test(id=864, code={               
+test(id=864, code={
 argv <- list(function (name, cond = NULL)                
-{               
+{
     i <- 1L               
-    repeat {               
+    repeat {
         r <- .Internal(.getRestart(i))               
         if (is.null(r))                
             return(NULL)               
@@ -13,6 +13,5 @@ argv <- list(function (name, cond = NULL)
         else i <- i + 1L               
     }               
 })               
-do.call('is.function', argv);               
-},  o = expected);               
-               
+do.call('is.function', argv);
+},  o = expected);

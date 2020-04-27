@@ -1,8 +1,8 @@
 expected <- TRUE           
-test(id=717, code={           
+test(id=717, code={
 argv <- list(function (..., na.rm)            
-{           
-    coerceTimeUnit <- function(x) {           
+{
+    coerceTimeUnit <- function(x) {
         as.vector(switch(attr(x, "units"), secs = x, mins = 60 *            
             x, hours = 60 * 60 * x, days = 60 * 60 * 24 * x,            
             weeks = 60 * 60 * 24 * 7 * x))           
@@ -14,21 +14,20 @@ argv <- list(function (..., na.rm)
             .Generic), domain = NA)           
     x <- list(...)           
     Nargs <- length(x)           
-    if (Nargs == 0) {           
+    if (Nargs == 0) {
         .difftime(do.call(.Generic), "secs")           
     }           
-    else {           
+    else {
         units <- sapply(x, function(x) attr(x, "units"))           
-        if (all(units == units[1L])) {           
+        if (all(units == units[1L])) {
             args <- c(lapply(x, as.vector), na.rm = na.rm)           
         }           
-        else {           
+        else {
             args <- c(lapply(x, coerceTimeUnit), na.rm = na.rm)           
             units <- "secs"           
         }           
         .difftime(do.call(.Generic, args), units[[1L]])           
     }           
 })           
-do.call('is.function', argv);           
-},  o = expected);           
-           
+do.call('is.function', argv);
+},  o = expected);

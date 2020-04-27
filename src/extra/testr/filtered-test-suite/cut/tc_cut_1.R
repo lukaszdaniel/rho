@@ -37,4 +37,3 @@ argv <- structure(list(x = c(1.0346112150611, 0.0440203704340609, -1.18549563351
 "breaks", "labels"))
 do.call('cut', argv);
 },  o = expected);
-

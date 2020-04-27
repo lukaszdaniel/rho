@@ -29,4 +29,3 @@ argv <- structure(list(x = structure(list(modelID = 0L, terms = Species ~
 ), class = "CoreModel")), .Names = "x")
 do.call('print', argv);
 },  o = expected);
-

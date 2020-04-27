@@ -10,4 +10,3 @@ argv <- structure(list(object = structure(c(4L, 4L, 4L, 4L, 4L, 3L, 4L,
 "80-119", "120+")), .Names = c("", "")), class = "table")), .Names = "object")
 do.call('summary', argv);
 },  o = expected);
-

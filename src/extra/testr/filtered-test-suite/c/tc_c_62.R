@@ -1,6 +1,5 @@
-expected <- eval(parse(text="NULL"));                  
-test(id=0, code={                  
-argv <- eval(parse(text="list(list(), list())"));                  
-do.call(`c`, argv);                  
-}, o=expected);                  
-
+expected <- eval(parse(text="NULL"));
+test(id=0, code={
+argv <- eval(parse(text="list(list(), list())"));
+do.call(`c`, argv);
+}, o=expected);

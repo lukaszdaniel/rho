@@ -1,5 +1,5 @@
 expected <- TRUE             
-test(id=594, code={             
+test(id=594, code={
 argv <- structure(list(target = c(0, 8, 8, 9, 10, 10, 10, 10, 10, 10,              
 12, 12, 12, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14,              
 14, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16,              
@@ -44,6 +44,5 @@ argv <- structure(list(target = c(0, 8, 8, 9, 10, 10, 10, 10, 10, 10,
 80L, 81L, 82L, 83L, 84L, 85L, 86L, 87L, 88L, 89L, 90L, 91L, 92L,              
 93L, 94L, 95L, 96L, 97L, 98L, 99L, 100L), tolerance = 2.22044604925031e-14), .Names = c("target",              
 "current", "tolerance"))             
-do.call('all.equal.numeric', argv);             
-},  o = expected);             
-             
+do.call('all.equal.numeric', argv);
+},  o = expected);

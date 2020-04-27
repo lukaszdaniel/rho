@@ -23,4 +23,3 @@ argv <- list(structure(c(-0.0296690260968828, 0.200337918547016, -0.389013587291
 "matrix")))
 do.call('cbind', argv);
 },  o = expected);
-

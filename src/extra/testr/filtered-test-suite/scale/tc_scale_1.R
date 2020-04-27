@@ -54,4 +54,3 @@ argv <- structure(list(x = structure(c(0.0280387932434678, 0.789736648323014,
 ), .Dim = c(10L, 9L))), .Names = "x")
 do.call('scale', argv);
 },  o = expected);
-

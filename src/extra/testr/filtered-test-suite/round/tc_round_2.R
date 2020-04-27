@@ -4,4 +4,3 @@ argv <- structure(list(c(37.9490090935718, 34.1981894015095), digits = 3), .Name
 "digits"))
 do.call('round', argv);
 },  o = expected);
-

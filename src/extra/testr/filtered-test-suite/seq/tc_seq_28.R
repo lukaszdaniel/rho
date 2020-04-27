@@ -16,4 +16,3 @@ argv <- structure(list(18000, 28000, length = 50L), .Names = c("", "",
 "length"))
 do.call('seq', argv);
 },  o = expected);
-

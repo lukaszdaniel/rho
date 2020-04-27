@@ -7,4 +7,3 @@ argv <- structure(list(x = structure(c(8092, 8092, 8048, 8093, 8066), origin = s
 "times"))), .Names = "x")
 do.call('sort', argv);
 },  o = expected);
-

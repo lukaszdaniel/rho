@@ -6,4 +6,3 @@ test(id=64, code={
 argv <- list(1:14, c(3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4))
 do.call('rep', argv);
 },  o = expected);
-

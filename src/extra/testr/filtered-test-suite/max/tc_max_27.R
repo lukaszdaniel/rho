@@ -4,4 +4,3 @@ argv <- structure(list(2, 3, NA, na.rm = TRUE), .Names = c("", "", "",
 "na.rm"))
 do.call('max', argv);
 },  o = expected);
-

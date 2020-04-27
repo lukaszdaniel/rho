@@ -11,4 +11,3 @@ argv <- structure(list(x = structure(c(25707905.8534307, -1396341.94003231,
 5L))), .Names = "x")
 do.call('diag', argv);
 },  o = expected);
-

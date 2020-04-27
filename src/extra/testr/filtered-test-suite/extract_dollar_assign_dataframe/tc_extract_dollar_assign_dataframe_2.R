@@ -125,4 +125,3 @@ max(x, na.rm = TRUE), order.groups = TRUE, class = c("nfnGroupedData",
 "value"))
 do.call('$<-.data.frame', argv);
 },  o = expected);
-

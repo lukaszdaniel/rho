@@ -1,5 +1,5 @@
 expected <- 21L     
-test(id=1, code={     
+test(id=1, code={
 argv <- structure(list(x = structure(c(0, 3313, 2963, 3175, 3339, 2762,      
 3276, 2610, 4485, 2977, 3030, 4532, 2753, 3949, 2865, 2282, 2179,      
 3000, 817, 3927, 1991, 3313, 0, 1318, 1326, 1294, 1498, 2218,      
@@ -47,6 +47,5 @@ argv <- structure(list(x = structure(c(0, 3313, 2963, 3175, 3339, 2762,
 "Cologne", "Copenhagen", "Geneva", "Gibraltar", "Hamburg", "Hook of Holland",      
 "Lisbon", "Lyons", "Madrid", "Marseilles", "Milan", "Munich",      
 "Paris", "Rome", "Stockholm", "Vienna")))), .Names = "x")     
-do.call('NROW', argv);     
-},  o = expected);     
-     
+do.call('NROW', argv);
+},  o = expected);

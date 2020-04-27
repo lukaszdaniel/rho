@@ -82,30 +82,30 @@ set.cache <- function(x, value){
 #' @export
 #' 
 testrOptions <- function(o, value) {
-  
+
   res <- getOption('testr')
-  
+
   ## just querying
   if (missing(value)) {
-    
+
     if (missing(o))
       return(res)
-    
+
     if (o %in% names(res))
       return(res[[o]])
-    
+
     stop('Wrong option queried.')
-    
+
   } else {
-    
+
     if (!o %in% names(res))
       stop(paste('Invalid option name:', o))
-    
+
     res[[o]] <- value
     options('testr' = res)
-    
+
   }
-  
+
 }
 
 #' @export

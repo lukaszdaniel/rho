@@ -1,6 +1,5 @@
 expected <- TRUE    
-test(id=0, code={    
+test(id=0, code={
 argv <- list()    
-do.call('is.R', argv);    
-},  o = expected);    
-    
+do.call('is.R', argv);
+},  o = expected);

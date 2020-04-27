@@ -53,4 +53,3 @@ argv <- structure(list(x = c(5.1, 4.9, 4.7, 4.6, 5, 5.4, 4.6, 5, 4.4,
 "f"))
 do.call('split', argv);
 },  o = expected);
-

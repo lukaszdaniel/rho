@@ -7,4 +7,3 @@ argv <- structure(list(object = structure(c(-469.098459411633, 469.356672501203,
 "gravity", "ph", "osmo", "conduct", "urea", "log(calc)"))), .Names = "object")
 do.call('labels', argv);
 },  o = expected);
-

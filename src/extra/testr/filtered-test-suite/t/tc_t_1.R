@@ -5,4 +5,3 @@ argv <- structure(list(x = c(-2.13777446721376, 1.17045456767922, 5.851801378190
 )), .Names = "x")
 do.call('t', argv);
 },  o = expected);
-

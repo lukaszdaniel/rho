@@ -39,11 +39,11 @@ FastrTranslate <- function(r.test.folder, fastr.test.folder = "tests/"){
   } else {
     dir.create(fastr.test.folder)
   }
-  
+
   r.test.files <- GetAllFiles(r.test.folder)
   # cache for storing information about functions (code and test case count)
   function.cache <- list()
-  
+
   for (filename in r.test.files) {
     function.name <- ExtractFunctionName(filename)
     function.cache.entry <- function.cache[[function.name]]
@@ -54,7 +54,7 @@ FastrTranslate <- function(r.test.folder, fastr.test.folder = "tests/"){
         fastr.test.file <- sprintf("%s/TestrGenBuiltin%s.java", fastr.test.folder, function.name)
         fastr.test.code <- readLines(fastr.test.file)
         fastr.test.code <- fastr.test.code[1:(length(fastr.test.code) - 1)]
-        
+
         function.cache.entry$number <- length(grep("@Test", fastr.test.code)) + 2
         function.cache.entry$code <- fastr.test.code
       } else {
@@ -68,7 +68,7 @@ FastrTranslate <- function(r.test.folder, fastr.test.folder = "tests/"){
       function.cache.entry <- function.cache[["operators"]]
       function.name <- "operators"
     }
-    
+
     # evaluate R test file in special environment with replaces test function
     temp.env <- new.env();
     temp.env$test <- FastrTest
@@ -100,9 +100,9 @@ FastrTagIgnored <- function(fastr.test.root, result.file) {
   for (line in lines)
     if (grepl("Micro-test failure", line))
       tests <- c(tests, gsub("Micro-test failure: (.*)\\((.*)\\)", "\\1", line))
-  
+
   trim <- function (x) gsub("^\\s+|\\s+$", "", x)
-  
+
   files <- GetAllFiles(fastr.test.root, pattern = "*.java", TRUE)
   for (tc.file in files){
     lines <- readLines(tc.file)

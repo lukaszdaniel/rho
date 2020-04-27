@@ -33,4 +33,3 @@ argv <- structure(list(x = structure(c(4L, 1L, 4L, 4L, 6L, 4L, 5L, 5L,
 "", "value"))
 do.call('[<-.factor', argv);
 },  o = expected);
-

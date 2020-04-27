@@ -10,4 +10,3 @@ argv <- list(structure(c(1, 223, 312, 712, 889, 1201, 1467), .Names = c("",
 "5th break", "6th break", "7th break")))
 do.call('cbind', argv);
 },  o = expected);
-

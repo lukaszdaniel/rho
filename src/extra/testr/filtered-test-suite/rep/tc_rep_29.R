@@ -4,4 +4,3 @@ argv <- structure(list(c("a", "b", "c"), each = 3), .Names = c("", "each"
 ))
 do.call('rep', argv);
 },  o = expected);
-

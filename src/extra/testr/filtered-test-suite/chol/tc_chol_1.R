@@ -12,4 +12,3 @@ argv <- structure(list(x = structure(c(1.66666666666667, -1.33333333333333,
 -1.33333333333333, 1.66666666666667), .Dim = c(5L, 5L))), .Names = "x")
 do.call('chol', argv);
 },  o = expected);
-

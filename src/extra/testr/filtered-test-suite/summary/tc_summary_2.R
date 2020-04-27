@@ -7,4 +7,3 @@ argv <- structure(list(object = c(5.1, 5, 5.4, 5.4, 5.8, 5.7, 5.4, 5.1,
 5.3)), .Names = "object")
 do.call('summary', argv);
 },  o = expected);
-

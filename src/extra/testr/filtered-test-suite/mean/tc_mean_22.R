@@ -6,4 +6,3 @@ argv <- structure(list(x = c(83.7010937038573, 61.9895951152624, 259.87035947113
 25.3079966732443)), .Names = "x")
 do.call('mean', argv);
 },  o = expected);
-

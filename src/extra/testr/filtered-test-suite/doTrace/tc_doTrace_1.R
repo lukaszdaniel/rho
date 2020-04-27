@@ -1,11 +1,11 @@
-expected <- eval(parse(text="NULL"));  
-test(id=0, code={  
+expected <- eval(parse(text="NULL"));
+test(id=0, code={
 .doTrace<-  function (expr, msg)    
-  {   
+  {
       on <- tracingState(FALSE)   
-      if (on) {   
+      if (on) {
           on.exit(tracingState(TRUE))   
-          if (!missing(msg)) {   
+          if (!missing(msg)) {
               call <- deparse(sys.call(sys.parent(1L)))   
               if (length(call) > 1L)    
                   call <- paste(call[[1L]], "....")   
@@ -16,7 +16,6 @@ test(id=0, code={
       }   
       NULL   
   }   
-argv <- eval(parse(text="list(c(1, 1, 2))"));  
-do.call(`.doTrace`, argv);  
-}, o=expected);  
-
+argv <- eval(parse(text="list(c(1, 1, 2))"));
+do.call(`.doTrace`, argv);
+}, o=expected);

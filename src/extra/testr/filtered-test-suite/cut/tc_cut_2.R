@@ -157,4 +157,3 @@ argv <- structure(list(x = structure(c(50, 47, 37, 71, 62, 53, 49, 56,
 ""))
 do.call('cut', argv);
 },  o = expected);
-

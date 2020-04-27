@@ -16,4 +16,3 @@ argv <- structure(list(x = structure(c(3.5, 2, 1.7, 0.40625, 0.5, 0.882,
 "centralization", "gden", "ego.gden")))), .Names = "x")
 do.call('as.data.frame', argv);
 },  o = expected);
-

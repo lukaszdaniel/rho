@@ -10,4 +10,3 @@ argv <- structure(list(data = structure(list(X = 22.1693750707316, Y = -0.652127
 })), .Names = c("data", "expr"))
 do.call('with.default', argv);
 },  o = expected);
-

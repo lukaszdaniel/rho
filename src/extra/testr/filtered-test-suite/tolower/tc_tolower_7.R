@@ -1,6 +1,5 @@
 expected <- c("na", NA, "banana")    
-test(id=0, code={    
+test(id=0, code={
 argv <- structure(list(x = c("NA", NA, "BANANA")), .Names = "x")    
-do.call('tolower', argv);    
-},  o = expected);    
-    
+do.call('tolower', argv);
+},  o = expected);

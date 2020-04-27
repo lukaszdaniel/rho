@@ -155,4 +155,3 @@ TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, TRUE, TRUE, TRUE)), .Names = c("x",
 ""))
 do.call('subset', argv);
 },  o = expected);
-

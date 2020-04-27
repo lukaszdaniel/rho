@@ -128,4 +128,3 @@ argv <- structure(list(x = c(1L, 0L, 1L, 1L, 1L, 1L, 1L, 1L, 0L, 0L,
 1L, 0L, 1L, 1L, 1L, 0L, 1L, 0L, 1L, 1L, 0L, 1L, 0L, 1L)), .Names = "x")
 do.call('factor', argv);
 },  o = expected);
-

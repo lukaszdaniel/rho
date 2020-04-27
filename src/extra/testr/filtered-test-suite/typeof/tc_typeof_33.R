@@ -88,4 +88,3 @@ argv <- structure(list(x = function (file = ifelse(onefile, "Rplots.pdf",
 }), .Names = "x")
 do.call('typeof', argv);
 },  o = expected);
-

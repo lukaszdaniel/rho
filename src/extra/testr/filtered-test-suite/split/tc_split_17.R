@@ -35,4 +35,3 @@ argv <- structure(list(x = structure(c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
 2L, 2L, 2L, 2L)), .Names = c("x", "f"))
 do.call('split', argv);
 },  o = expected);
-

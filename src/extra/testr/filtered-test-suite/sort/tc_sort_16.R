@@ -53,4 +53,3 @@ argv <- structure(list(x = c(2.14210348343477, 2.73273128271103, 2.9980687340721
 -2.87064984021708)), .Names = "x")
 do.call('sort', argv);
 },  o = expected);
-

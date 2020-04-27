@@ -79,4 +79,3 @@ argv <- structure(list(x = structure(c(111L, 88L, 93L, 74L, 138L, 103L,
 "1460359_at"), class = "factor"), 1:25), .Names = c("x", ""))
 do.call('[.factor', argv);
 },  o = expected);
-

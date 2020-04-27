@@ -72,4 +72,3 @@ argv <- structure(list(x = structure(c(0, 0, 0, 0, 0, 0, 0.215098376664487,
 0), .Dim = c(20L, 20L)), value = 1), .Names = c("x", "value"))
 do.call('diag<-', argv);
 },  o = expected);
-

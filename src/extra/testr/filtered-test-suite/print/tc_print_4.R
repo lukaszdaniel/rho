@@ -13,4 +13,3 @@ argv <- structure(list(x = c(1.12029789965078, -0.718988837588323, -0.7998207959
 2.93765523729633)), .Names = "x")
 do.call('print', argv);
 },  o = expected);
-

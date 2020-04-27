@@ -9,4 +9,3 @@ argv <- structure(list(x = structure(c(9L, 27L, 27L, 27L, 27L, 3L, 3L,
 "A:C", "A:D", "B:C", "B:D", "C:D"))), .Names = "x")
 do.call('as.matrix', argv);
 },  o = expected);
-

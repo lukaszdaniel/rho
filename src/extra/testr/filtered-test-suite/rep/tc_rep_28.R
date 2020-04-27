@@ -10,4 +10,3 @@ test(id=102, code={
 argv <- list(c("A", "B"), c(48L, 44L))
 do.call('rep', argv);
 },  o = expected);
-

@@ -10,4 +10,3 @@ argv <- structure(list(x = structure(c(15L, 37L, 30L, 18L, 12L, 30L,
 "margin"))
 do.call('prop.table', argv);
 },  o = expected);
-

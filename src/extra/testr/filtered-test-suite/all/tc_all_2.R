@@ -1,6 +1,5 @@
-expected <- eval(parse(text="FALSE"));            
-test(id=0, code={            
-argv <- eval(parse(text="list(structure(c(FALSE, FALSE), .Names = c(\"x\", \"value\")))"));            
-do.call(`all`, argv);            
-}, o=expected);            
-
+expected <- eval(parse(text="FALSE"));
+test(id=0, code={
+argv <- eval(parse(text="list(structure(c(FALSE, FALSE), .Names = c(\"x\", \"value\")))"));
+do.call(`all`, argv);
+}, o=expected);

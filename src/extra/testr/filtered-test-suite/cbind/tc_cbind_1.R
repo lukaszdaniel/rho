@@ -9,4 +9,3 @@ TRUE), c(0, 1, 0, 1), c(0, 1, 1, 1), c(0, 1, 0, 1), c(FALSE,
 FALSE, TRUE, FALSE), c(FALSE, FALSE, FALSE, TRUE))
 do.call('cbind', argv);
 },  o = expected);
-

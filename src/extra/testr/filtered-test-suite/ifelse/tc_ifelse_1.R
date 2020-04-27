@@ -4,4 +4,3 @@ argv <- structure(list(test = c(TRUE, TRUE, FALSE, TRUE, FALSE), yes = "True",
     no = "False"), .Names = c("test", "yes", "no"))
 do.call('ifelse', argv);
 },  o = expected);
-

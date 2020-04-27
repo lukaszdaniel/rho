@@ -17,4 +17,3 @@ argv <- structure(list(x = structure(list(statistic = structure(0.87901108669074
 "alternative", "method", "data.name"), class = "htest")), .Names = "x")
 do.call('print', argv);
 },  o = expected);
-

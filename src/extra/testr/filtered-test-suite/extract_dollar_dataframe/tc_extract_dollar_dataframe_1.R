@@ -60,4 +60,3 @@ max(x, na.rm = TRUE), order.groups = TRUE), name = "age"), .Names = c("x",
 "name"))
 do.call('$.data.frame', argv);
 },  o = expected);
-

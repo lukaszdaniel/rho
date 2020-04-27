@@ -1,9 +1,8 @@
 expected <- NULL     
-test(id=0, code={     
+test(id=0, code={
 argv <- structure(list(hookName = "UserHook::stats4::onUnload", value = function (pkgname,      
     ...)      
 cat("onUnload", sQuote(pkgname), "B", "\n")), .Names = c("hookName",      
 "value"))     
-do.call('setHook', argv);     
-},  o = expected);     
-     
+do.call('setHook', argv);
+},  o = expected);

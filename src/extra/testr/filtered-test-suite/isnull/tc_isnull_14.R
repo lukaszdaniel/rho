@@ -88,4 +88,3 @@ argv <- list(function (file = ifelse(onefile, "Rplots.pdf", "Rplot%03d.pdf"),
 })
 do.call('is.null', argv);
 },  o = expected);
-

@@ -166,4 +166,3 @@ argv <- list(structure(c(3L, 1L, 2L, 2L, 2L, 2L, 1L, 2L, 2L, 2L, 1L,
     "2 Quite well", "3 Not too well", "4 Not well at all"), class = "factor"))
 do.call('cbind', argv);
 },  o = expected);
-

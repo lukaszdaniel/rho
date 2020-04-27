@@ -4,4 +4,3 @@ argv <- structure(list(target = 0.261799387799149, current = 6.54498469497874), 
 "current"))
 do.call('all.equal', argv);
 },  o = expected);
-

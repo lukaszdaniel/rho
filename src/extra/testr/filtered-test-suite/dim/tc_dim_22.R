@@ -1,5 +1,5 @@
 expected <- c(149L, 5L)        
-test(id=54, code={        
+test(id=54, code={
 argv <- list(structure(list(Sepal.Length = c(5.1, 4.9, 4.7, 4.6, 5, 5.4,         
 4.6, 5, 4.4, 4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7,         
 5.1, 5.4, 5.1, 4.6, 5.1, 4.8, 5, 5, 5.2, 5.2, 4.7, 4.8, 5.4,         
@@ -73,6 +73,5 @@ argv <- list(structure(list(Sepal.Length = c(5.1, 4.9, 4.7, 4.6, 5, 5.4,
 128L, 129L, 130L, 131L, 132L, 133L, 134L, 135L, 136L, 137L, 138L,         
 139L, 140L, 141L, 142L, 144L, 145L, 146L, 147L, 148L, 149L, 150L        
 ), class = "data.frame"))        
-do.call('dim', argv);        
-},  o = expected);        
-        
+do.call('dim', argv);
+},  o = expected);

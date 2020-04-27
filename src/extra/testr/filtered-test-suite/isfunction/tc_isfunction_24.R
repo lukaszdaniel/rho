@@ -1,7 +1,7 @@
 expected <- TRUE            
-test(id=948, code={            
+test(id=948, code={
 argv <- list(function (qr, y)             
-{            
+{
     if (!is.qr(qr))             
         stop("first argument must be a QR decomposition")            
     n <- as.integer(nrow(qr$qr))            
@@ -24,13 +24,13 @@ argv <- list(function (qr, y)
     ix <- if (p > n)             
         c(seq_len(n), rep(NA, p - n))            
     else seq_len(p)            
-    if (is.complex(qr$qr)) {            
+    if (is.complex(qr$qr)) {
         coef <- matrix(NA_complex_, nrow = p, ncol = ny)            
         coef[qr$pivot, ] <- .Internal(qr_coef_cmplx(qr, y))[ix,             
             ]            
         return(if (im) coef else c(coef))            
     }            
-    if (isTRUE(attr(qr, "useLAPACK"))) {            
+    if (isTRUE(attr(qr, "useLAPACK"))) {
         coef <- matrix(NA_real_, nrow = p, ncol = ny)            
         coef[qr$pivot, ] <- .Internal(qr_coef_real(qr, y))[ix,             
             ]            
@@ -46,7 +46,7 @@ argv <- list(function (qr, y)
         NAOK = TRUE)[c("coef", "info")]            
     if (z$info)             
         stop("exact singularity in 'qr.coef'")            
-    if (k < p) {            
+    if (k < p) {
         coef <- matrix(NA_real_, nrow = p, ncol = ny)            
         coef[qr$pivot[seq_len(k)], ] <- z$coef            
     }            
@@ -61,6 +61,5 @@ argv <- list(function (qr, y)
         coef            
     else drop(coef)            
 })            
-do.call('is.function', argv);            
-},  o = expected);            
-            
+do.call('is.function', argv);
+},  o = expected);

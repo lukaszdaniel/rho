@@ -28,4 +28,3 @@ argv <- structure(list(x = structure(list(gender = structure(c(1L, 1L,
 "y", "by"))
 do.call('merge', argv);
 },  o = expected);
-

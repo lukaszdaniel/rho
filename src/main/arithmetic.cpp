@@ -881,7 +881,8 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
 {
     SEXP sy;
     R_xlen_t i, ia, ib, n, na, nb;
-    double ai, bi, *a, *b, *y;
+    double ai, bi, *y;
+    const double *a, *b;
     int naflag;
 
     if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb))
@@ -902,8 +903,8 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
     PROTECT(sa = Rf_coerceVector(sa, REALSXP));		\
     PROTECT(sb = Rf_coerceVector(sb, REALSXP));		\
     PROTECT(sy = Rf_allocVector(REALSXP, n));		\
-    a = REAL(sa);					\
-    b = REAL(sb);					\
+    a = REAL_RO(sa);					\
+    b = REAL_RO(sb);					\
     y = REAL(sy);					\
     naflag = 0
 
@@ -937,7 +938,8 @@ static SEXP math2B(SEXP sa, SEXP sb, double (*f)(double, double, double *),
 {
     SEXP sy;
     R_xlen_t i, ia, ib, n, na, nb;
-    double ai, bi, *a, *b, *y;
+    double ai, bi, *y;
+    const double *a, *b;
     int naflag;
     double amax, *work;
     size_t nw;
@@ -1220,9 +1222,9 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(sb = Rf_coerceVector(sb, REALSXP));			\
     PROTECT(sc = Rf_coerceVector(sc, REALSXP));			\
     PROTECT(sy = Rf_allocVector(REALSXP, n));			\
-    a = REAL(sa);						\
-    b = REAL(sb);						\
-    c = REAL(sc);						\
+    a = REAL_RO(sa);						\
+    b = REAL_RO(sb);						\
+    c = REAL_RO(sc);						\
     y = REAL(sy);						\
     naflag = 0
 
@@ -1241,7 +1243,8 @@ static SEXP math3B(SEXP sa, SEXP sb, SEXP sc,
 {
     SEXP sy;
     R_xlen_t i, ia, ib, ic, n, na, nb, nc;
-    double ai, bi, ci, *a, *b, *c, *y;
+    double ai, bi, ci, *y;
+    const double *a, *b, *c;
     int naflag;
     double amax, *work;
     size_t nw;

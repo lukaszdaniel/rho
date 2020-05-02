@@ -192,12 +192,13 @@ void attribute_hidden get_current_mem(size_t *smallvsize,
     return;
 }
 
-SEXP attribute_hidden do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_, RObject* reset_)
+SEXP attribute_hidden do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_, RObject* reset_, RObject* full_)
 {
     std::ostream* report_os
 	= GCManager::setReporting(Rf_asLogical(verbose_) ? &std::cerr : nullptr);
     bool reset_max = Rf_asLogical(reset_);
-    GCManager::gc();
+    bool full = Rf_asLogical(full_);
+    GCManager::gc(full);
     R_RunPendingFinalizers();
     GCManager::setReporting(report_os);
     GCStackRoot<> value(Rf_allocVector(REALSXP, 6));
@@ -518,6 +519,142 @@ void (SETALTREP)(SEXP x, int v) { SETALTREP(x, v); }
 #endif
 #endif
 
+#ifdef CATCH_ZERO_LENGTH_ACCESS
+/* Attempts to read or write elements of a zero length vector will
+   result in a segfault, rather than read and write random memory.
+   Returning NULL would be more natural, but Matrix seems to assume
+   that even zero-length vectors have non-NULL data pointers, so
+   return (void *) NULL instead. */
+# define CHKZLN(x) do {					\
+	CHK(x);						\
+	if (STDVEC_LENGTH(x) == 0) return (void *) 1;	\
+    } while (0)
+#else
+# define CHKZLN(x) do { } while (0)
+#endif
+
+#if RHO_FALSE
+void *(STDVEC_DATAPTR)(SEXP x)
+{
+    if (ALTREP(x))
+	Rf_error("cannot get STDVEC_DATAPTR from ALTREP object");
+    if (! Rf_isVector(x) && TYPEOF(x) != WEAKREFSXP)
+	Rf_error("STDVEC_DATAPTR can only be applied to a vector, not a '%s'",
+	      Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return STDVEC_DATAPTR(x);
+}
+
+int *(LOGICAL)(SEXP x) {
+    if(TYPEOF(x) != LGLSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return LOGICAL(x);
+}
+#endif
+
+const int *(LOGICAL_RO)(SEXP x) {
+    if(TYPEOF(x) != LGLSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return LOGICAL_RO(x);
+}
+
+/* Maybe this should exclude logicals, but it is widely used */
+#if RHO_FALSE
+int *(INTEGER)(SEXP x) {
+    if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return INTEGER(x);
+}
+#endif
+
+const int *(INTEGER_RO)(SEXP x) {
+    if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return INTEGER_RO(x);
+}
+
+#if RHO_FALSE
+Rbyte *(RAW)(SEXP x) {
+    if(TYPEOF(x) != RAWSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return RAW(x);
+}
+#endif
+
+const Rbyte *(RAW_RO)(SEXP x) {
+    if(TYPEOF(x) != RAWSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return RAW(x);
+}
+
+#if RHO_FALSE
+double *(REAL)(SEXP x) {
+    if(TYPEOF(x) != REALSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
+    return REAL(x);
+}
+#endif
+
+const double *(REAL_RO)(SEXP x) {
+    if(TYPEOF(x) != REALSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
+    return REAL_RO(x);
+}
+
+#if RHO_FALSE
+Rcomplex *(COMPLEX)(SEXP x) {
+    if(TYPEOF(x) != CPLXSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return COMPLEX(x);
+}
+#endif
+
+const Rcomplex *(COMPLEX_RO)(SEXP x) {
+    if(TYPEOF(x) != CPLXSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return COMPLEX_RO(x);
+}
+
+#if RHO_FALSE
+SEXP *(STRING_PTR)(SEXP x) {
+    if(TYPEOF(x) != STRSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "STRING_PTR", "character", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return STRING_PTR(x);
+}
+
+const SEXP *(STRING_PTR_RO)(SEXP x) {
+    if(TYPEOF(x) != STRSXP)
+	Rf_error("%s() can only be applied to a '%s', not a '%s'",
+	      "STRING_PTR_RO", "character", type2char(TYPEOF(x)));
+    CHKZLN(x);
+    return STRING_PTR_RO(x);
+}
+
+SEXP * NORET (VECTOR_PTR)(SEXP x)
+{
+  Rf_error(_("not safe to return vector pointer"));
+}
+#endif
 /*******************************************/
 /* Non-sampling memory use profiler
    reports all large vector heap

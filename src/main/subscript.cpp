@@ -374,7 +374,7 @@ SEXP attribute_hidden Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
     R_xlen_t NR = nrs;
     SEXP rvec;
     int ndim = LENGTH(dims);
-    int *pdims = INTEGER(dims);
+    const int *pdims = INTEGER_RO(dims);
 
     if (Rf_ncols(s) != ndim) {
 	ECALL(call, _("incorrect number of columns in matrix subscript"));
@@ -392,7 +392,7 @@ SEXP attribute_hidden Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 	if (TYPEOF(s) == REALSXP) {
 	    for (int i = 0; i < nrs; i++) {
 		R_xlen_t tdim = 1;
-		double *ps = REAL(s);
+		const double *ps = REAL_RO(s);
 		for (int j = 0; j < ndim; j++) {
 		    double k = ps[i + j * NR];
 		    if(ISNAN(k)) {rv[i] = NA_REAL; break;}
@@ -409,7 +409,7 @@ SEXP attribute_hidden Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 	    }
 	} else {
 	    s = Rf_coerceVector(s, INTSXP);
-	    int *ps = INTEGER(s);
+	    const int *ps = INTEGER_RO(s);
 	    for (int i = 0; i < nrs; i++) {
 		R_xlen_t tdim = 1;
 		for (int j = 0; j < ndim; j++) {
@@ -553,7 +553,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
     *stretch = 0;
     min = 0;
     max = 0;
-    double *ps = REAL(s);
+    const double *ps = REAL_RO(s);
     for (i = 0; i < ns; i++) {
 	ii = ps[i];
 	if (R_FINITE(ii)) {

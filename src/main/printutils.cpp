@@ -325,9 +325,10 @@ const char *Rf_EncodeReal2(double x, int w, int d, int e)
     return buff;
 }
 
-/* Use header files!  2007/06/11 arr
+/* Actual declaration is in Rcomplex.h file.
 void z_prec_r(Rcomplex *r, Rcomplex *x, double digits);
 */
+#include "Rcomplex.h"
 
 const char
 *EncodeComplex(Rcomplex x, int wr, int dr, int er, int wi, int di, int ei,
@@ -803,16 +804,16 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 
     switch(TYPEOF(x)) {
     case LGLSXP:
-	formatLogical(&LOGICAL(x)[indx], 1, &w);
-	res = EncodeLogical(LOGICAL(x)[indx], w);
+	formatLogical(&LOGICAL_RO(x)[indx], 1, &w);
+	res = EncodeLogical(LOGICAL_RO(x)[indx], w);
 	break;
     case INTSXP:
-	formatInteger(&INTEGER(x)[indx], 1, &w);
-	res = EncodeInteger(INTEGER(x)[indx], w);
+	formatInteger(&INTEGER_RO(x)[indx], 1, &w);
+	res = EncodeInteger(INTEGER_RO(x)[indx], w);
 	break;
     case REALSXP:
-	formatReal(&REAL(x)[indx], 1, &w, &d, &e, 0);
-	res = EncodeReal0(REAL(x)[indx], w, d, e, dec);
+	formatReal(&REAL_RO(x)[indx], 1, &w, &d, &e, 0);
+	res = EncodeReal0(REAL_RO(x)[indx], w, d, e, dec);
 	break;
     case STRSXP:
 	{
@@ -823,11 +824,11 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 	    break;
 	}
     case CPLXSXP:
-	formatComplex(&COMPLEX(x)[indx], 1, &w, &d, &e, &wi, &di, &ei, 0);
-	res = EncodeComplex(COMPLEX(x)[indx], w, d, e, wi, di, ei, dec);
+	formatComplex(&COMPLEX_RO(x)[indx], 1, &w, &d, &e, &wi, &di, &ei, 0);
+	res = EncodeComplex(COMPLEX_RO(x)[indx], w, d, e, wi, di, ei, dec);
 	break;
     case RAWSXP:
-	res = Rf_EncodeRaw(RAW(x)[indx], "");
+	res = Rf_EncodeRaw(RAW_RO(x)[indx], "");
 	break;
     default:
 	res = nullptr; /* -Wall */

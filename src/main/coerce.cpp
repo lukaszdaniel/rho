@@ -1,8 +1,8 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997-2017  The R Core Team
+ *  Copyright (C) 2003-2017  The R Foundation
  *  Copyright (C) 1995,1996  Robert Gentleman, Ross Ihaka
- *  Copyright (C) 1997-2015  The R Core Team
- *  Copyright (C) 2003-2015  The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -1077,7 +1077,8 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 #endif
 	    else
 		SET_STRING_ELT(rval, i,
-			       STRING_ELT(Rf_deparse1line(elt, FALSE), 0));
+			       STRING_ELT(Rf_deparse1line_(VECTOR_ELT(v, i), FALSE, NICE_NAMES),
+					  0));
 	}
     }
     else if (type == LISTSXP) {
@@ -1603,6 +1604,9 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	    ans = ansr;
 	    break;
 	}
+    case STRSXP:
+	Rf_errorcall(call, _("as.call(<character string>)  not yet implemented"));
+	break;
     default:
 	Rf_errorcall(call, _("invalid argument list"));
 	ans = R_NilValue;

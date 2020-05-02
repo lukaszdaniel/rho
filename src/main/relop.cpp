@@ -40,6 +40,7 @@
 #include "basedecl.h"
 
 #include "rho/BinaryFunction.hpp"
+#include "rho/BuiltInFunction.hpp"
 #include "rho/GCStackRoot.hpp"
 #include "rho/ComplexVector.hpp"
 #include "rho/IntVector.hpp"
@@ -364,24 +365,32 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 
 
 
-#define BIT(op, name) \
-    int np = 0; \
-    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;} \
-    if(Rf_isReal(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;} \
-    if (TYPEOF(a) != TYPEOF(b)) Rf_error(_("'a' and 'b' must have the same type"));  \
-    R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), mn = (m && n) ? std::max(m, n) : 0;  \
-    SEXP ans = Rf_allocVector(TYPEOF(a), mn); \
-    switch(TYPEOF(a)) { \
-    case INTSXP: \
+#define BIT(op, name)							\
+    SEXP ans;								\
+    int np = 0;								\
+    if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}		\
+    if(Rf_isReal(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;}		\
+    if (TYPEOF(a) != TYPEOF(b))						\
+	Rf_error(_("'a' and 'b' must have the same type"));		\
+    switch(TYPEOF(a)) {							\
+    case INTSXP:							\
+	{								\
+	    R_xlen_t i;						\
+	    R_xlen_t m = XLENGTH(a), n = XLENGTH(b),			\
+		mn = (m && n) ? std::max(m, n) : 0;			\
+	    ans = Rf_allocVector(INTSXP, mn);				\
+	    int *pans = INTEGER(ans);					\
+	    const int *pa = INTEGER_RO(a), *pb = INTEGER_RO(b);		\
 	for(i = 0; i < mn; i++) { \
-	    int aa = INTEGER(a)[i%m], bb =  INTEGER(b)[i%n]; \
-	    INTEGER(ans)[i] = (aa == NA_INTEGER || bb == NA_INTEGER) ? NA_INTEGER : aa op bb; \
+	    int aa = pa[i%m], bb =  pb[i%n]; \
+	    pans[i] = (aa == NA_INTEGER || bb == NA_INTEGER) ? NA_INTEGER : aa op bb; \
 	} \
-	break; \
-    default: \
-	UNIMPLEMENTED_TYPE(name, a); \
-    } \
-    if(np) UNPROTECT(np); \
+	}								\
+	break;								\
+    default:								\
+	UNIMPLEMENTED_TYPE(name, a);					\
+    }									\
+    if(np) UNPROTECT(np);						\
     return ans
 
 static SEXP bitwiseAnd(SEXP a, SEXP b)
@@ -401,18 +410,29 @@ static SEXP bitwiseXor(SEXP a, SEXP b)
 
 static SEXP bitwiseShiftL(SEXP a, SEXP b)
 {
+    SEXP ans;
     int np = 0;
     if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
     if(!Rf_isInteger(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;}
-    R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), 
-	mn = (m && n) ? std::max(m, n) : 0;
-    SEXP ans = Rf_allocVector(TYPEOF(a), mn);
+    if (TYPEOF(a) != TYPEOF(b))
+	Rf_error(_("'a' and 'b' must have the same type"));
+
     switch(TYPEOF(a)) {
     case INTSXP:
+	{
+	    R_xlen_t i;
+	    R_xlen_t m = XLENGTH(a), n = XLENGTH(b),
+		mn = (m && n) ? std::max(m, n) : 0;
+	    ans = Rf_allocVector(INTSXP, mn);
+	    int *pans = INTEGER(ans);
+	    const int *pa = INTEGER_RO(a), *pb = INTEGER_RO(b);
 	for(i = 0; i < mn; i++) {
-	    int aa = INTEGER(a)[i%m], bb = INTEGER(b)[i%n];
-	    INTEGER(ans)[i] = 
-		(aa == NA_INTEGER || bb == NA_INTEGER || bb < 0 || bb > 31) ? NA_INTEGER : (static_cast<unsigned int>(aa) << bb);
+	    int aa = pa[i%m], bb = pb[i%n];
+	    pans[i] = 
+			(aa == NA_INTEGER || bb == NA_INTEGER ||
+			 bb < 0 || bb > 31) ?
+			NA_INTEGER : ((unsigned int)aa << bb);
+	}
 	}
 	break;
     default:
@@ -424,18 +444,29 @@ static SEXP bitwiseShiftL(SEXP a, SEXP b)
 
 static SEXP bitwiseShiftR(SEXP a, SEXP b)
 {
+    SEXP ans;
     int np = 0;
     if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
     if(!Rf_isInteger(b)) {b = PROTECT(Rf_coerceVector(b, INTSXP)); np++;}
-    R_xlen_t i, m = XLENGTH(a), n = XLENGTH(b), 
-	mn = (m && n) ? std::max(m, n) : 0;
-    SEXP ans = Rf_allocVector(TYPEOF(a), mn);
+    if (TYPEOF(a) != TYPEOF(b))
+	Rf_error(_("'a' and 'b' must have the same type"));
+
     switch(TYPEOF(a)) {
     case INTSXP:
+	{
+	    R_xlen_t i;
+	    R_xlen_t m = XLENGTH(a), n = XLENGTH(b),
+		mn = (m && n) ? std::max(m, n) : 0;
+	    ans = Rf_allocVector(INTSXP, mn);
+	    int *pans = INTEGER(ans);
+	    const int *pa = INTEGER_RO(a), *pb = INTEGER_RO(b);
 	for(i = 0; i < mn; i++) {
-	    int aa = INTEGER(a)[i%m], bb = INTEGER(b)[i%n];
-	    INTEGER(ans)[i] = 
-		(aa == NA_INTEGER || bb == NA_INTEGER || bb < 0 || bb > 31) ? NA_INTEGER : (static_cast<unsigned int>(aa) >> bb);
+	    int aa = pa[i%m], bb = pb[i%n];
+	    pans[i] = 
+			(aa == NA_INTEGER || bb == NA_INTEGER ||
+			 bb < 0 || bb > 31) ?
+			NA_INTEGER : ((unsigned int)aa >> bb);
+	}
 	}
 	break;
     default:

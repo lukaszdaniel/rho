@@ -51,12 +51,12 @@
    As could mycpow, z_tan and some of the substitutes.
  */
 #ifdef __cplusplus
-static R_INLINE std::complex<double> toC99(Rcomplex *x) {
+static R_INLINE std::complex<double> toC99(const Rcomplex *x) {
     std::complex<double> val(x->r, x->i);
     return val;
 }
 #else
-static R_INLINE double complex toC99(Rcomplex *x)
+static R_INLINE double complex toC99(const Rcomplex *x)
 {
 #if __GNUC__
     double complex ans = (double complex) 0; /* -Wall */
@@ -68,8 +68,6 @@ static R_INLINE double complex toC99(Rcomplex *x)
 #endif
 }
 #endif
-
-#define C99_COMPLEX2(x, i) toC99(COMPLEX(x) + (i))
 
 #ifdef __cplusplus
 static R_INLINE void
@@ -93,7 +91,7 @@ SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, double complex value)
 extern "C" {
 #endif
 
-void attribute_hidden z_prec_r(Rcomplex *r, Rcomplex *x, double digits);
+void attribute_hidden z_prec_r(Rcomplex *r, const Rcomplex *x, double digits);
 
 #ifdef __cplusplus
 }

@@ -57,9 +57,12 @@
 #define NEW_CONDITION_HANDLING
 
 #ifdef __cplusplus
+#include <iostream>
 #include "rho/ArgList.hpp"
 #include "rho/Frame.hpp"
 #include "rho/ListVector.hpp"
+
+#define rhoLOG(x) std::cout << x << std::endl;
 
 namespace rho {
     class BuiltInFunction;
@@ -1224,7 +1227,8 @@ void DataFrameClass(SEXP);
 SEXP Rf_ddfindVar(SEXP, SEXP);
 SEXP Rf_deparse1(SEXP,Rboolean,int);
 SEXP Rf_deparse1w(SEXP,Rboolean,int);
-SEXP Rf_deparse1line(SEXP,Rboolean);
+SEXP Rf_deparse1line (SEXP, Rboolean);
+SEXP Rf_deparse1line_(SEXP, Rboolean, int);
 SEXP Rf_deparse1s(SEXP call);
 //int DispatchAnyOrEval(SEXP, SEXP, const char *, SEXP, SEXP, SEXP*, int, int);
 //int DispatchOrEval(SEXP, SEXP, const char *, SEXP, SEXP, SEXP*, int, int);

@@ -88,7 +88,7 @@ static void ProbSampleReplace(int n, double *p, int *perm, int nans, int *ans)
    Ripley (1987).
  */
 
-#define SMALL 10000
+constexpr int SMALL = 10000;
 static void
 walker_ProbSampleReplace(int n, double *p, int *a, int nans, int *ans)
 {

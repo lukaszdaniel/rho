@@ -97,7 +97,7 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 
 #define EXTRACT_SUBSET_LOOP(STDCODE, NACODE) do { \
 	if (TYPEOF(indx) == INTSXP) {		  \
-	    int *pindx = INTEGER(indx);		  \
+	    const int *pindx = INTEGER_RO(indx);  \
 	    for (i = 0; i < n; i++) {		  \
 		ii = pindx[i];			  \
 		if (0 < ii && ii <= nx) {	  \
@@ -109,7 +109,7 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 	    }					  \
 	}					  \
 	else {					  \
-	    double *pindx = REAL(indx);		  \
+	    const double *pindx = REAL_RO(indx);  \
 	    for (i = 0; i < n; i++) {		  \
 		double di = pindx[i];		  \
 		ii = (R_xlen_t) (di - 1);	  \
@@ -728,7 +728,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 
 	GCStackRoot<> indx(Rf_allocVector(INTSXP, nsubs));
 	int *pindx = INTEGER(indx);
-	int *pdims = INTEGER(dims);
+	const int *pdims = INTEGER_RO(dims);
 	SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
 	ndn = Rf_length(dimnames);
 	for (int i = 0; i < nsubs; i++) {

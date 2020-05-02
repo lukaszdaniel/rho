@@ -137,7 +137,7 @@ namespace rho {
 	/**
 	 * @return Pointer to the key of the WeakRef.
 	 */
-	RObject* key() const {return m_key;}
+	RObject* key() const { return m_key; }
 
 	/** @brief Run finalizers with 'finalize_on_exit' specified.
 	 *
@@ -164,7 +164,7 @@ namespace rho {
 	/**
 	 * @return Pointer to the value of the WeakRef.
 	 */
-	RObject* value() const {return m_value;}
+	RObject* value() const { return m_value; }
 
 	// Virtual functions of RObject:
 	unsigned int packGPBits() const override;
@@ -178,8 +178,7 @@ namespace rho {
 	static WRList* getFinalizationPending();
 	static WRList* getTombstone();
 
-	static int s_count;  // Count of references in existence (for
-			     // debugging)
+	static int s_count;  // Count of references in existence (for debugging)
 
 	GCEdge<> m_key;
 	GCEdge<> m_value;
@@ -206,10 +205,10 @@ namespace rho {
 	static void markThru();
 
 	// Tombstone the node:
-	void tombstone();
+	void setTombstone();
 
 	// Transfer the WeakRef from list 'from' to list 'to':
-	void transfer(WRList* from, WRList* to)
+	void transferFromTo(WRList* from, WRList* to)
 	{
 	    to->splice(to->end(), *from, m_lit);
 	}

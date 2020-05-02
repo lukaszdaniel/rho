@@ -101,7 +101,8 @@ static char *findRbrace(char *s)
     return pr;
 }
 
-#define BUF_SIZE 10000
+constexpr size_t BUF_SIZE = 10000;
+
 static const char *findterm(const char *s)
 {
     char *p, *q;
@@ -188,7 +189,8 @@ static void Putenv(char *a, const char *b)
 }
 
 
-#define MSG_SIZE 2000
+constexpr size_t MSG_SIZE = 2000;
+
 static int process_Renviron(const char *filename)
 {
     FILE *fp;

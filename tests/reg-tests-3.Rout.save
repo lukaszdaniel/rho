@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-26 r9d68c35b7a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-04-27 rd8fc157d7a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-11-12 r73715) -- "Frisbee Sailing"
+R Under development (unstable) (2017-11-30 r73800) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -41,7 +41,7 @@ Type 'q()' to quit R.
 +     detach("package:survival", unload = TRUE)
 + }
 Loading required package: survival
- Surv [1:23, 1:2]   9   13   13+  18   23   28+  31   34   45+  48  ...
+ 'Surv' num [1:23, 1:2]   9   13   13+  18   23   28+  31   34   45+  48  ...
  - attr(*, "dimnames")=List of 2
   ..$ : NULL
   ..$ : chr [1:2] "time" "status"

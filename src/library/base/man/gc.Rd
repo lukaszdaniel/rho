@@ -6,7 +6,7 @@
 \name{gc}
 \title{Garbage Collection (adapted for rho)}
 \usage{
-gc(verbose = getOption("verbose"), reset = FALSE)
+gc(verbose = getOption("verbose"), reset = FALSE, full = TRUE)
 gcinfo(verbose)
 }
 \alias{gc}
@@ -17,6 +17,8 @@ gcinfo(verbose)
     internal heap.  Currently ignored in rho.}
   \item{reset}{logical; if \code{TRUE} the values for maximum space used
     are reset to the current values.}
+  \item{full}{logical; if \code{TRUE} a full collection is performed;
+    otherwise only more recently allocated objects may be collected.}
 }
 \description{
   A call of \code{gc} causes a mark-sweep garbage collection to take place.
@@ -28,9 +30,10 @@ gcinfo(verbose)
 \details{
   A call of \code{gc} causes a mark-sweep garbage collection to take place.
   This will also take place automatically without user intervention, and the
-  primary purpose of calling \code{gc} is for the report on memory usage.
+  primary purpose of calling \code{gc} is for the report on memory
+  usage. For an accurate report \code{full = TRUE} should be used.  
 
-  However, in CR it can be useful to call \code{gc} after a large object
+  In CR it can be useful to call \code{gc} after a large object
   has been removed, as this may prompt \R to return memory to the
   operating system.  In rho this will be useful only in rare circumstances.
 

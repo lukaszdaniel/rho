@@ -178,7 +178,12 @@ wchar_t *filenameToWchar(const SEXP fn, const Rboolean expand)
 	wcscpy(filename, L"");
 	return filename;
     }
-    if(IS_LATIN1(fn)) from = "latin1";
+    if(IS_LATIN1(fn))
+#ifdef HAVE_ICONV_CP1252
+	from = "CP1252";
+#else
+	from = "latin1";
+#endif
     if(IS_UTF8(fn)) from = "UTF-8";
     if(IS_BYTES(fn)) Rf_error(_("encoding of a filename cannot be 'bytes'"));
     obj = Riconv_open("UCS-2LE", from);
@@ -804,11 +809,11 @@ int Riconv_close (void *cd)
 enum nttype_t {
     NT_NONE        = 0, /* no translation to native encoding is needed */
     NT_FROM_UTF8   = 1, /* need to translate from UTF8 */
-    NT_FROM_LATIN1 = 2, /* need to translated from latin1 */
+    NT_FROM_LATIN1 = 2, /* need to translate from latin1 */
 };
 
 /* Decides whether translation to native encoding is needed. */
-static R_INLINE nttype_t needsTranslation(SEXP x) {
+static R_INLINE nttype_t needsTranslation(rho::RObject* x) {
 
     if (IS_ASCII(x)) return NT_NONE;
     if (IS_UTF8(x)) {
@@ -836,22 +841,27 @@ static void translateToNative(const char *ans, R_StringBuffer *cbuff,
 	Rf_error(_("internal error: no translation needed"));
 
     void * obj;
-    const char *inbuf;
+    const char *inbuf, *from;
     char *outbuf;
     size_t inb, outb;
     int res;
 
     if(ttype == NT_FROM_LATIN1) {
 	if(!latin1_obj) {
-	    obj = Riconv_open("", "latin1");
+#ifdef HAVE_ICONV_CP1252
+	    from = "CP1252";
+#else
+	    from = "latin1";
+#endif
+	    obj = Riconv_open("", from);
 	    /* should never happen */
 	    if(obj == (void *)(-1))
 #ifdef Win32
 		Rf_error(_("unsupported conversion from '%s' in codepage %d"),
-		      "latin1", localeCP);
+		      from, localeCP);
 #else
 		Rf_error(_("unsupported conversion from '%s' to '%s'"),
-		      "latin1", "");
+		      from, "");
 #endif
 	    latin1_obj = obj;
 	}
@@ -908,7 +918,8 @@ next_char:
 		    snprintf(outbuf, 9, "<U+%04X>", (unsigned short) ucs);
 		    outbuf += 8; outb -= 8;
 		} else {
-		    snprintf(outbuf, 13, "<U+%08X>", ucs);
+		    // Rwchar_t is usually unsigned int, but wchar_t need not be
+		    snprintf(outbuf, 13, "<U+%08X>", (unsigned int) ucs);
 		    outbuf += 12; outb -= 12;
 		}
 	    } else {
@@ -984,7 +995,7 @@ const char *Rf_translateCharUTF8(SEXP x)
 {
     void *obj;
     const char *inbuf, *ans = R_CHAR(x);
-    char *outbuf, *p;
+    char *outbuf, *p, *from = (char *) "";
     size_t inb, outb, res;
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
@@ -997,14 +1008,20 @@ const char *Rf_translateCharUTF8(SEXP x)
     if(IS_BYTES(x))
 	Rf_error(_("translating strings with \"bytes\" encoding is not allowed"));
 
-    obj = Riconv_open("UTF-8", IS_LATIN1(x) ? "latin1" : "");
+    if (IS_LATIN1(x))
+#ifdef HAVE_ICONV_CP1252
+	from = (char *) "CP1252";
+#else
+	from = (char *) "latin1";
+#endif
+    obj = Riconv_open("UTF-8", from);
     if(obj == reinterpret_cast<void *>((-1))) 
 #ifdef Win32
 	Rf_error(_("unsupported conversion from '%s' in codepage %d"),
-	      IS_LATIN1(x) ? "latin1" : "", localeCP);
+	      from, localeCP);
 #else
 	Rf_error(_("unsupported conversion from '%s' to '%s'"),
-	      IS_LATIN1(x) ? "latin1" : "", "UTF-8");
+	      from, "UTF-8");
 #endif
     R_AllocStringBuffer(0, &cbuff);
 top_of_loop:
@@ -1060,7 +1077,7 @@ attribute_hidden /* but not hidden on Windows, where it was used in tcltk.cpp */
 const wchar_t *Rf_wtransChar(SEXP x)
 {
     void * obj;
-    const char *inbuf, *ans = R_CHAR(x);
+    const char *inbuf, *ans = R_CHAR(x), *from;
     char *outbuf;
     wchar_t *p;
     size_t inb, outb, res, top;
@@ -1075,10 +1092,15 @@ const wchar_t *Rf_wtransChar(SEXP x)
 
     if(IS_LATIN1(x)) {
 	if(!latin1_wobj) {
-	    obj = Riconv_open(TO_WCHAR, "latin1");
+#ifdef HAVE_ICONV_CP1252
+	    from = "CP1252";
+#else
+	    from = "latin1";
+#endif
+	    obj = Riconv_open(TO_WCHAR, from);
 	    if(obj == reinterpret_cast<void *>((-1)))
 		Rf_error(_("unsupported conversion from '%s' to '%s'"),
-		      "latin1", TO_WCHAR);
+		      from, TO_WCHAR);
 	    latin1_wobj = obj;
 	} else
 	    obj = latin1_wobj;
@@ -1184,7 +1206,7 @@ const char *Rf_reEnc(const char *x, cetype_t ce_in, cetype_t ce_out, int subst)
     case CE_LATIN1: fromcode = "CP1252"; break;
 #else
     case CE_NATIVE: fromcode = ""; break;
-    case CE_LATIN1: fromcode = "latin1"; break;
+    case CE_LATIN1: fromcode = "latin1"; break; /* FIXME: allow CP1252? */
 #endif
     case CE_UTF8:   fromcode = "UTF-8"; break;
     default: return x;

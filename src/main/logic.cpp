@@ -134,6 +134,7 @@ namespace {
 	}
     }
 
+	//lunary
     RObject* lnot(RObject* arg)
     {
 	if (arg && arg->sexptype() == RAWSXP) {

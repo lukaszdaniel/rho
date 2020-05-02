@@ -96,6 +96,17 @@ static SEXP row_names_gets(SEXP vec , SEXP val)
     return ans;
 }
 
+
+static Rboolean isOneDimensionalArray(SEXP vec)
+{
+    if(Rf_isVector(vec) || Rf_isList(vec) || Rf_isLanguage(vec)) {
+	SEXP s = Rf_getAttrib(vec, R_DimSymbol);
+	if(TYPEOF(s) == INTSXP && LENGTH(s) == 1)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 /* NOTE: For environments serialize.cpp calls this function to find if
    there is a class attribute in order to reconstruct the object bit
    if needed.  This means the function cannot use OBJECT(vec) == 0 to
@@ -109,14 +120,11 @@ SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
 
     if (!vec) return nullptr;
     if (name == R_NamesSymbol) {
-	if(Rf_isVector(vec) || Rf_isList(vec) || Rf_isLanguage(vec)) {
-	    s = Rf_getAttrib(vec, R_DimSymbol);
-	    if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
-		s = Rf_getAttrib(vec, R_DimNamesSymbol);
-		if(!Rf_isNull(s)) {
-		    MARK_NOT_MUTABLE(VECTOR_ELT(s, 0));
-		    return VECTOR_ELT(s, 0);
-		}
+	if(isOneDimensionalArray(vec)) {
+	    s = Rf_getAttrib(vec, R_DimNamesSymbol);
+	    if(!Rf_isNull(s)) {
+		MARK_NOT_MUTABLE(VECTOR_ELT(s, 0));
+		return VECTOR_ELT(s, 0);
 	    }
 	}
 	if (Rf_isList(vec) || Rf_isLanguage(vec)) {
@@ -228,14 +236,9 @@ SEXP Rf_setAttrib(SEXP vec, SEXP name, SEXP val)
     }
     if (val == R_NilValue) {
 	/* FIXME: see do_namesgets().
-	if (name == R_NamesSymbol) {
-	    if(isVector(vec) || isList(vec) || isLanguage(vec)) {
-		SEXP s = getAttrib(vec, R_DimSymbol);
-		if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
-		    UNPROTECT(2);
-		    return removeAttrib(vec, R_DimNamesSymbol);
-		}
-	    }
+	if (name == R_NamesSymbol && isOneDimensionalArray(vec)) {
+	    UNPROTECT(2);
+	    return removeAttrib(vec, R_DimNamesSymbol);
 	}
 	*/
 	UNPROTECT(2);
@@ -842,24 +845,16 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
     }
     /* FIXME:
        Need to special-case names(x) <- NULL for 1-d arrays to perform
-         setAttrib(x, R_DimNamesSymbol, R_NilValue)
+         Rf_setAttrib(x, R_DimNamesSymbol, R_NilValue)
        (and remove the dimnames) here if we want 
-         setAttrib(x, R_NamesSymbol, R_NilValue)
-       to actually remove the names, as needed in subset.c.
+         Rf_setAttrib(x, R_NamesSymbol, R_NilValue)
+       to actually remove the names, as needed in subset.cpp.
     */
-    if(names == R_NilValue) {
-	SEXP vec = object;
-	if(Rf_isVector(vec) || Rf_isList(vec) || Rf_isLanguage(vec)) {
-	    SEXP s = Rf_getAttrib(vec, R_DimSymbol);
-	    if(TYPEOF(s) == INTSXP && LENGTH(s) == 1) {
-		Rf_setAttrib(object, R_DimNamesSymbol, names);
-		UNPROTECT(1);
-		SET_NAMED(object, 0);
-		return object;
-	    }
-	}
-    }
-    Rf_setAttrib(object, R_NamesSymbol, names);
+    if(names == R_NilValue && isOneDimensionalArray(object))
+	Rf_setAttrib(object, R_DimNamesSymbol, names);
+    else
+	Rf_setAttrib(object, R_NamesSymbol, names);
+    UNPROTECT(1);
     SET_NAMED(object, 0);
     return object;
 }
@@ -906,15 +901,11 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
     checkNames(vec, val);
 
     /* Special treatment for one dimensional arrays */
-
-    if (Rf_isVector(vec) || Rf_isList(vec) || Rf_isLanguage(vec)) {
-	s = Rf_getAttrib(vec, R_DimSymbol);
-	if (TYPEOF(s) == INTSXP && Rf_length(s) == 1) {
-	    PROTECT(val = CONS(val, R_NilValue));
-	    Rf_setAttrib(vec, R_DimNamesSymbol, val);
-	    UNPROTECT(3);
-	    return vec;
-	}
+    if(isOneDimensionalArray(vec)) {
+	PROTECT(val = CONS(val, R_NilValue));
+	Rf_setAttrib(vec, R_DimNamesSymbol, val);
+	UNPROTECT(3);
+	return vec;
     }
 
     if (Rf_isList(vec) || Rf_isLanguage(vec)) {

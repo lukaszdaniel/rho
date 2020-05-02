@@ -60,7 +60,7 @@ using namespace rho;
 
 /* this is just for conformity with other types */
 attribute_hidden
-void formatRaw(Rbyte *x, R_xlen_t n, int *fieldwidth)
+void formatRaw(const Rbyte *x, R_xlen_t n, int *fieldwidth)
 {
     *fieldwidth = 2;
 }
@@ -84,7 +84,7 @@ unsigned int rho::stringWidthQuote(unsigned int minwidth,
     return max(minwidth, width);
 }
 
-void formatLogical(int *x, R_xlen_t n, int *fieldwidth)
+void formatLogical(const int *x, R_xlen_t n, int *fieldwidth)
 {
     *fieldwidth = 1;
     for(R_xlen_t i = 0 ; i < n; i++) {
@@ -101,7 +101,7 @@ void formatLogical(int *x, R_xlen_t n, int *fieldwidth)
     }
 }
 
-void formatInteger(int *x, R_xlen_t n, int *fieldwidth)
+void formatInteger(const int *x, R_xlen_t n, int *fieldwidth)
 {
     int xmin = INT_MAX, xmax = INT_MIN, naflag = 0;
     int l;
@@ -207,7 +207,7 @@ static const double tbl[] =
 #endif
 
 static void
-scientific(double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens)
+scientific(const double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens)
 {
     /* for a number x , determine
      *	neg    = 1_{x < 0}  {0/1}
@@ -326,7 +326,7 @@ scientific(double *x, int *neg, int *kpower, int *nsig, Rboolean *roundingwidens
    it is 0 except when called from do_format.
 */
 
-void formatReal(double *x, R_xlen_t n, int *w, int *d, int *e, int nsmall)
+void formatReal(const double *x, R_xlen_t n, int *w, int *d, int *e, int nsmall)
 {
     int left, right, sleft;
     int mnl, mxl, rgt, mxsl, mxns, wF;
@@ -414,10 +414,10 @@ void formatReal(double *x, R_xlen_t n, int *w, int *d, int *e, int nsmall)
 /* As from 2.2.0 the number of digits applies to real and imaginary parts
    together, not separately */
 /* Use header files!  2007/06/11 arr
-void z_prec_r(Rcomplex *r, Rcomplex *x, double digits);
+void z_prec_r(Rcomplex *r, const Rcomplex *x, double digits);
 */
 
-void formatComplex(Rcomplex *x, R_xlen_t n, int *wr, int *dr, int *er,
+void formatComplex(const Rcomplex *x, R_xlen_t n, int *wr, int *dr, int *er,
 		   int *wi, int *di, int *ei, int nsmall)
 {
 /* format.info() for  x[1..n] for both Re & Im */

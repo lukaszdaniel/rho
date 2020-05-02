@@ -67,7 +67,7 @@ WeakRef::WeakRef(RObject* key, RObject* value, FunctionBase* R_finalizer,
     m_lit = std::prev(getLive()->end());
 
     if (!m_key)
-	tombstone();
+	setTombstone();
     else switch (m_key->sexptype()) {
     case ENVSXP:
     case EXTPTRSXP:
@@ -92,7 +92,7 @@ WeakRef::WeakRef(RObject* key, RObject* value, R_CFinalizer_t C_finalizer,
     m_lit = std::prev(getLive()->end());
 
     if (!m_key)
-	tombstone();
+	setTombstone();
     ++s_count;
 }
 
@@ -176,7 +176,7 @@ void WeakRef::finalize()
     GCStackRoot<FunctionBase> Rfin(m_Rfinalizer);
     // Do this now to ensure that finalizer is run only once, even if
     // an error occurs:
-    tombstone();
+    setTombstone();
     if (Cfin) Cfin(key);
     else if (Rfin) {
 	GCStackRoot<PairList> tail(new PairList(key));
@@ -228,7 +228,7 @@ void WeakRef::markThru()
 		    FunctionBase* Rfinalizer = wr->m_Rfinalizer;
 		    if (Rfinalizer)
 			marker(Rfinalizer);
-		    wr->transfer(live, &newlive);
+		    wr->transferFromTo(live, &newlive);
 		}
 	    }
 	    marks_applied = marker.marksApplied();
@@ -247,10 +247,10 @@ void WeakRef::markThru()
 		marker(wr);
 		marker(wr->m_key);
 		wr->m_ready_to_finalize = true;
-		wr->transfer(live, finalization_pending);
+		wr->transferFromTo(live, finalization_pending);
 	    }
 	    else {
-		wr->tombstone();
+		wr->setTombstone();
 		// Expose to reference-counting collection:
 		wr->m_self = nullptr;
 	    }
@@ -285,7 +285,7 @@ void WeakRef::runExitFinalizers()
 	WeakRef* wr = *lit++;
 	if (wr->m_finalize_on_exit) {
 	    wr->m_ready_to_finalize = true;
-	    wr->transfer(live, finalization_pending);
+	    wr->transferFromTo(live, finalization_pending);
 	}
     }
     runFinalizers();
@@ -307,6 +307,12 @@ bool WeakRef::runFinalizers()
 
 	WRList::iterator lit = finalization_pending->begin();
 	while (lit != finalization_pending->end()) {
+        // finalization_pending lenght should decrease by
+        // 1 element with each loop, but in parallel package
+        // in RSeed.R test this length jumps from 5 to 67
+        // so we need ensure that we always start
+        // from the beginning of the list.
+	    lit = finalization_pending->begin();
 	    WeakRef* wr = *lit++;
 	    GCStackRoot<> topExp(R_CurrentExpr);
 	    size_t savestack = ProtectStack::size();
@@ -334,7 +340,7 @@ bool WeakRef::runFinalizers()
     return true;
 }
 
-void WeakRef::tombstone()
+void WeakRef::setTombstone()
 {
     WRList* oldl = wrList();
     m_key = nullptr;
@@ -342,7 +348,7 @@ void WeakRef::tombstone()
     m_Rfinalizer = nullptr;
     m_Cfinalizer = nullptr;
     m_ready_to_finalize = false;
-    transfer(oldl, getTombstone());
+    transferFromTo(oldl, getTombstone());
 }
 
 void WeakRef::unpackGPBits(unsigned int gpbits)

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 1997-2017   The R Core Team
+ *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -213,22 +213,22 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     case LGLSXP:
     case INTSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    INTEGER(newx)[i] = INTEGER_ELT(x, i);
-	for (R_xlen_t i = len; i < newlen; i++)
-	    INTEGER(newx)[i] = NA_INTEGER;
+	    INTEGER0(newx)[i] = INTEGER_ELT(x, i);
+	for (R_xlen_t i = len; i < newtruelen; i++)
+	    INTEGER0(newx)[i] = NA_INTEGER;
 	break;
     case REALSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    REAL(newx)[i] = REAL_ELT(x, i);
-	for (R_xlen_t i = len; i < newlen; i++)
-	    REAL(newx)[i] = NA_REAL;
+	    REAL0(newx)[i] = REAL_ELT(x, i);
+	for (R_xlen_t i = len; i < newtruelen; i++)
+	    REAL0(newx)[i] = NA_REAL;
 	break;
     case CPLXSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    COMPLEX(newx)[i] = COMPLEX_ELT(x, i);
+	    COMPLEX0(newx)[i] = COMPLEX_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++) {
-	    COMPLEX(newx)[i].r = NA_REAL;
-	    COMPLEX(newx)[i].i = NA_REAL;
+	    COMPLEX0(newx)[i].r = NA_REAL;
+	    COMPLEX0(newx)[i].i = NA_REAL;
 	}
 	break;
     case STRSXP:
@@ -251,9 +251,9 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 	break;
     case RAWSXP:
 	for (R_xlen_t i = 0; i < len; i++)
-	    RAW(newx)[i] = RAW(x)[i];
+	    RAW0(newx)[i] = RAW_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++)
-	    RAW(newx)[i] = Rbyte(0);
+	    RAW0(newx)[i] = Rbyte(0);
 	break;
     default:
 	UNIMPLEMENTED_TYPE("EnlargeVector", x);
@@ -516,16 +516,17 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     lenw = Rf_xlength(which);
     /* calculate the length of the result */
     PROTECT(include = Rf_allocVector(INTSXP, len));
+    int *pinclude = INTEGER0(include);
     for (i = 0; i < len; i++)
-	INTEGER(include)[i] = 1;
+	pinclude[i] = 1;
     for (i = 0; i < lenw; i++) {
 	ii = gi(which, i);
 	if (0 < ii  && ii <= len)
-	    INTEGER(include)[ii - 1] = 0;
+	    pinclude[ii - 1] = 0;
     }
     ii = 0;
     for (i = 0; i < len; i++)
-	ii += INTEGER_ELT(include, i);
+	ii += pinclude[i];
     if (ii == len) {
 	UNPROTECT(1);
 	return x;
@@ -535,7 +536,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     switch (TYPEOF(x)) {
     case VECSXP:
 	for (i = 0; i < len; i++) {
-	    if (INTEGER_ELT(include, i) == 1) {
+	    if (pinclude[i] == 1) {
 		SET_VECTOR_ELT(xnew, ii, VECTOR_ELT(x, i));
 		ii++;
 	    }
@@ -543,7 +544,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	break;
     case EXPRSXP:
 	for (i = 0; i < len; i++) {
-	    if (INTEGER_ELT(include, i) == 1) {
+	    if (pinclude[i] == 1) {
 		SET_XVECTOR_ELT(xnew, ii, XVECTOR_ELT(x, i));
 		ii++;
 	    }
@@ -557,7 +558,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 	PROTECT(xnewnames = Rf_allocVector(STRSXP, ii));
 	ii = 0;
 	for (i = 0; i < len; i++) {
-	    if (INTEGER_ELT(include, i) == 1) {
+	    if (pinclude[i] == 1) {
 		SET_STRING_ELT(xnewnames, ii, STRING_ELT(xnames, i));
 		ii++;
 	    }
@@ -615,6 +616,7 @@ static SEXP VectorAssign(SEXP call, SEXP rho, SEXP xarg, SEXP sarg, SEXP yarg)
     /* Note that we are now committed. */
     /* Since we are mutating existing objects, */
     /* any changes we make now are (likely to be) permanent.  Beware! */
+
     switch(which) {
 	/* because we have called SubassignTypeFix the commented
 	   values cannot occur (and would be unsafe) */
@@ -671,11 +673,13 @@ static SEXP VectorAssign(SEXP call, SEXP rho, SEXP xarg, SEXP sarg, SEXP yarg)
 	return Subscripting::vectorSubassign(static_cast<StringVector*>(x.get()), s,
 					     static_cast<const StringVector*>(y.get()));
     /* case 1619:  character  <- vector   */
+
     /* case 1910:  vector     <- logical    */
     /* case 1913:  vector     <- integer    */
     /* case 1914:  vector     <- real       */
     /* case 1915:  vector     <- complex    */
     /* case 1916:  vector     <- character  */
+
     case 1919:  /* vector     <- vector     */
 	return Subscripting::vectorSubassign(static_cast<ListVector*>(x.get()), s,
 					     static_cast<const ListVector*>(y.get()));
@@ -797,6 +801,7 @@ static SEXP ArrayAssign(SEXP call, SEXP rho, SEXP xarg, PairList* subscripts,
 	return Subscripting::arraySubassign(static_cast<StringVector*>(x.get()),
 					    subscripts,
 					    static_cast<StringVector*>(y.get()));
+
     case 1919: /* vector <- vector */
 	return Subscripting::arraySubassign(static_cast<ListVector*>(x.get()),
 					    subscripts,
@@ -919,7 +924,8 @@ static SEXP listRemove(SEXP x, SEXP s, int ind)
 }
 
 
-static int SubAssignArgs(PairList* args, SEXP *x, PairList** s, SEXP *y)
+// For  x[s] <- y  --- extract (x, s, y)  and return the number of indices
+static R_INLINE int SubAssignArgs(PairList* args, SEXP *x, PairList** s, SEXP *y)
 {
     if (CDR(args) == R_NilValue)
 	Rf_error(_("SubAssignArgs: invalid number of arguments"));
@@ -992,18 +998,28 @@ SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
     /* duplicate it so that only the local version is mutated. */
     /* This will duplicate more often than necessary, but saves */
     /* over always duplicating. */
+    /* Shouldn't x be protected?  It is (as args is)! */
+
     if (MAYBE_SHARED(CAR(args))) {
 	x = SETCAR(args, Rf_shallow_duplicate(CAR(args)));
     }
 
     bool S4 = IS_S4_OBJECT(x);
-    SEXPTYPE xorigtype = TYPEOF(x);
-    if (xorigtype == LISTSXP || xorigtype == LANGSXP)
-	x = Rf_PairToVectorList(x);
 
-    /* bug PR#2590 coerce only if null */
-    if (!x)
-	x = Rf_coerceVector(x, TYPEOF(y));
+    SEXPTYPE xorigtype = TYPEOF(x);
+    if (xorigtype == LISTSXP || xorigtype == LANGSXP) {
+	x = Rf_PairToVectorList(x);
+    } else if (Rf_xlength(x) == 0) {
+	if (Rf_xlength(y) == 0 && (Rf_isNull(x) || TYPEOF(x) == TYPEOF(y) ||
+				// isVectorList(y):
+				TYPEOF(y) == VECSXP || TYPEOF(y) == EXPRSXP)) {
+	    return (x);
+	} else {
+	    /* bug PR#2590 coerce only if null */
+	    if (!x)
+		x = Rf_coerceVector(x, TYPEOF(y));
+	}
+    }
 
     switch (TYPEOF(x)) {
     case LGLSXP:
@@ -1016,7 +1032,7 @@ SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
     case RAWSXP:
 	{
 	    VectorBase* xv = static_cast<VectorBase*>(x);
-	    if (xv->size() == 0 && Rf_length(y) == 0)
+	    if (xv->size() == 0 && Rf_length(y) == 0 && (Rf_isNull(x) || TYPEOF(x) == TYPEOF(y)))
 		return x;
 	    switch (nsubs) {
 	    case 0:
@@ -1099,9 +1115,9 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
 
 /* The [[<- operator; should be fast.
  *     ====
- * args[1] = object being subscripted
- * args[2] = list of subscripts
- * args[3] = replacement values */
+ * args[1] =: x    = object being subscripted
+ * args[2] =: subs = list of subscripts
+ * args[3] =: y    = replacement values */
 SEXP attribute_hidden do_subassign2(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* expression = SEXP_downcast<Expression*>(call);
@@ -1156,17 +1172,25 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	SETCAR(args, x);
     }
 
-    xtop = xup = x; /* x will be the element which is assigned to */
-
-    dims = Rf_getAttrib(x, R_DimSymbol);
-    ndims = Rf_length(dims);
-
     /* code to allow classes to extend ENVSXP */
     if(TYPEOF(x) == S4SXP) {
 	xOrig = x; /* will be an S4 object */
 	x = R_getS4DataSlot(x, ANYSXP);
 	if(TYPEOF(x) != ENVSXP)
 	  Rf_errorcall(call, _("[[<- defined for objects of type \"S4\" only for subclasses of environment"));
+    }
+
+    xtop = xup = x; /* x will be the element which is assigned to */
+
+    dims = Rf_getAttrib(x, R_DimSymbol);
+    ndims = Rf_length(dims);
+
+    int *pdims = NULL;
+    if (ndims > 0) {
+	if (TYPEOF(dims) == INTSXP)
+	    pdims = INTEGER(dims);
+	else
+	    Rf_error(_("improper dimensions"));
     }
 
     /* ENVSXP special case first */
@@ -1223,22 +1247,23 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	    if (ndims != nsubs)
 		Rf_error(_("[[ ]] improper number of subscripts"));
 	    PROTECT(indx = Rf_allocVector(INTSXP, ndims));
+	    int *pindx = INTEGER0(indx);
 	    names = Rf_getAttrib(x, R_DimNamesSymbol);
 	    for (i = 0; i < ndims; i++) {
-		INTEGER(indx)[i] = int(
+		pindx[i] = int(
 		    Rf_get1index(CAR(subs), Rf_isNull(names) ?
 			      R_NilValue : VECTOR_ELT(names, i),
-			      INTEGER(dims)[i],
+			      pdims[i],
 			      /*partial ok*/FALSE, -1, call));
 		subs = subs->tail();
-		if (INTEGER(indx)[i] < 0 ||
-		    INTEGER(indx)[i] >= INTEGER(dims)[i])
+		if (pindx[i] < 0 ||
+		    pindx[i] >= pdims[i])
 		    Rf_error(_("[[ ]] subscript out of bounds"));
 	    }
 	    offset = 0;
 	    for (i = (ndims - 1); i > 0; i--)
-		offset = (offset + INTEGER(indx)[i]) * INTEGER(dims)[i - 1];
-	    offset += INTEGER(indx)[0];
+		offset = (offset + pindx[i]) * pdims[i - 1];
+	    offset += pindx[0];
 	    UNPROTECT(1);
 	}
 
@@ -1259,16 +1284,16 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	/* case 1013:	   logical   <- integer	  */
 	case 1313:	/* integer   <- integer	  */
 
-	    INTEGER(x)[offset] = INTEGER(y)[0];
+	    INTEGER(x)[offset] = INTEGER_ELT(y, 0);
 	    break;
 
 	case 1410:	/* real	     <- logical	  */
 	case 1413:	/* real	     <- integer	  */
 
-	    if (INTEGER(y)[0] == NA_INTEGER)
+	    if (INTEGER_ELT(y, 0) == NA_INTEGER)
 		REAL(x)[offset] = NA_REAL;
 	    else
-		REAL(x)[offset] = INTEGER(y)[0];
+		REAL(x)[offset] = INTEGER_ELT(y, 0);
 	    break;
 	/* case 1014:	   logical   <- real	  */
 	/* case 1314:	   integer   <- real	  */
@@ -1280,24 +1305,24 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	case 1510:	/* complex   <- logical	  */
 	case 1513:	/* complex   <- integer	  */
 
-	    if (INTEGER(y)[0] == NA_INTEGER) {
+	    if (INTEGER_ELT(y, 0) == NA_INTEGER) {
 		COMPLEX(x)[offset].r = NA_REAL;
 		COMPLEX(x)[offset].i = NA_REAL;
 	    }
 	    else {
-		COMPLEX(x)[offset].r = INTEGER(y)[0];
+		COMPLEX(x)[offset].r = INTEGER_ELT(y, 0);
 		COMPLEX(x)[offset].i = 0.0;
 	    }
 	    break;
 
 	case 1514:	/* complex   <- real	  */
 
-	    if (ISNA(REAL(y)[0])) {
+	    if (ISNA(REAL_ELT(y, 0))) {
 		COMPLEX(x)[offset].r = NA_REAL;
 		COMPLEX(x)[offset].i = NA_REAL;
 	    }
 	    else {
-		COMPLEX(x)[offset].r = REAL(y)[0];
+		COMPLEX(x)[offset].r = REAL_ELT(y, 0);
 		COMPLEX(x)[offset].i = 0.0;
 	    }
 	    break;
@@ -1307,7 +1332,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	/* case 1415:	   real	     <- complex	  */
 	case 1515:	/* complex   <- complex	  */
 
-	    COMPLEX(x)[offset] = COMPLEX(y)[0];
+	    COMPLEX(x)[offset] = COMPLEX_ELT(y, 0);
 	    break;
 
 	case 1610:	/* character <- logical	  */
@@ -1368,8 +1393,8 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 
 	case 2424:      /* raw <- raw */
 
-	   RAW(x)[offset] = RAW(y)[0];
-	   break;
+	    RAW(x)[offset] = RAW_ELT(y, 0);
+	    break;
 
 	default:
 	    Rf_error(_("incompatible types (from %s to %s) in [[ assignment"),
@@ -1407,21 +1432,22 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	    if (ndims != nsubs)
 		Rf_error(_("[[ ]] improper number of subscripts"));
 	    PROTECT(indx = Rf_allocVector(INTSXP, ndims));
+	    int *pindx = INTEGER0(indx);
 	    names = Rf_getAttrib(x, R_DimNamesSymbol);
 	    for (i = 0; i < ndims; i++) {
-		INTEGER(indx)[i] = int(
+		pindx[i] = int(
 		    Rf_get1index(CAR(subs), VECTOR_ELT(names, i),
-			      INTEGER(dims)[i],
+			      pdims[i],
 			      /*partial ok*/FALSE, -1, call));
 		subs = subs->tail();
-		if (INTEGER(indx)[i] < 0 ||
-		    INTEGER(indx)[i] >= INTEGER(dims)[i])
+		if (pindx[i] < 0 ||
+		    pindx[i] >= pdims[i])
 		    Rf_error(_("[[ ]] subscript (%d) out of bounds"), i+1);
 	    }
 	    offset = 0;
 	    for (i = (ndims - 1); i > 0; i--)
-		offset = (offset + INTEGER(indx)[i]) * INTEGER(dims)[i - 1];
-	    offset += INTEGER(indx)[0];
+		offset = (offset + pindx[i]) * pdims[i - 1];
+	    offset += pindx[0];
 	    SEXP slot = Rf_nthcdr(x, (int) offset);
 	    SETCAR(slot, Rf_duplicate(y));
 	    /* FIXME: add name */

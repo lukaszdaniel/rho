@@ -68,7 +68,7 @@ using namespace rho;
 	width = 0
 
 static
-void printLogicalVector(int *x, R_xlen_t n, int indx)
+void printLogicalVector(const int *x, R_xlen_t n, int indx)
 {
     int w, labwidth=0, width;
 
@@ -87,7 +87,7 @@ void printLogicalVector(int *x, R_xlen_t n, int indx)
 }
 
 attribute_hidden
-void printIntegerVector(int *x, R_xlen_t n, int indx)
+void printIntegerVector(const int *x, R_xlen_t n, int indx)
 {
     int w, labwidth=0, width;
 
@@ -107,7 +107,7 @@ void printIntegerVector(int *x, R_xlen_t n, int indx)
 
 // used in uncmin.c
 attribute_hidden
-void printRealVector(double *x, R_xlen_t n, int indx)
+void printRealVector(const double *x, R_xlen_t n, int indx)
 {
     int w, d, e, labwidth=0, width;
 
@@ -126,7 +126,7 @@ void printRealVector(double *x, R_xlen_t n, int indx)
 }
 
 attribute_hidden
-void printComplexVector(Rcomplex *x, R_xlen_t n, int indx)
+void printComplexVector(const Rcomplex *x, R_xlen_t n, int indx)
 {
     int w, wr, dr, er, wi, di, ei, labwidth=0, width;
 
@@ -150,8 +150,7 @@ void printComplexVector(Rcomplex *x, R_xlen_t n, int indx)
     Rprintf("\n");
 }
 
-static void printStringVector(const StringVector* sv, R_xlen_t n, int quote,
-			      int indx)
+static void printStringVector(const StringVector* sv, R_xlen_t n, int quote, int indx)
 {
     int w, labwidth=0, width;
 
@@ -172,7 +171,7 @@ static void printStringVector(const StringVector* sv, R_xlen_t n, int quote,
 }
 
 static
-void printRawVector(Rbyte *x, R_xlen_t n, int indx)
+void printRawVector(const Rbyte *x, R_xlen_t n, int indx)
 {
     int w, labwidth=0, width;
 
@@ -200,13 +199,13 @@ void printVector(SEXP x, int indx, int quote)
 	/* '...max +1'  ==> will omit at least 2 ==> plural in msg below */
 	switch (TYPEOF(x)) {
 	case LGLSXP:
-	    printLogicalVector(LOGICAL(x), n_pr, indx);
+	    printLogicalVector(LOGICAL_RO(x), n_pr, indx);
 	    break;
 	case INTSXP:
-	    printIntegerVector(INTEGER(x), n_pr, indx);
+	    printIntegerVector(INTEGER_RO(x), n_pr, indx);
 	    break;
 	case REALSXP:
-	    printRealVector(REAL(x), n_pr, indx);
+	    printRealVector(REAL_RO(x), n_pr, indx);
 	    break;
 	case STRSXP:
 	    {
@@ -215,10 +214,10 @@ void printVector(SEXP x, int indx, int quote)
 		break;
 	    }
 	case CPLXSXP:
-	    printComplexVector(COMPLEX(x), n_pr, indx);
+	    printComplexVector(COMPLEX_RO(x), n_pr, indx);
 	    break;
 	case RAWSXP:
-	    printRawVector(RAW(x), n_pr, indx);
+	    printRawVector(RAW_RO(x), n_pr, indx);
 	    break;
 	default:  // -Wswitch
 	    break;
@@ -282,18 +281,18 @@ void printVector(SEXP x, int indx, int quote)
 }
 
 
-static void printNamedLogicalVector(int * x, int n, StringVector* names)
+static void printNamedLogicalVector(const int * x, int n, const StringVector* names)
     PRINT_N_VECTOR(formatLogical(x, n, &w),
 		   Rprintf("%s%*s", EncodeLogical(x[k],w), R_print.gap,""))
 
-static void printNamedIntegerVector(int * x, int n, StringVector* names)
+static void printNamedIntegerVector(const int * x, int n, const StringVector* names)
     PRINT_N_VECTOR(formatInteger(x, n, &w),
 		   Rprintf("%s%*s", EncodeInteger(x[k],w), R_print.gap,""))
 
 #undef INI_F_REAL
 #define INI_F_REAL	int d, e; formatReal(x, n, &w, &d, &e, 0)
 
-static void printNamedRealVector(double * x, int n, StringVector* names)
+static void printNamedRealVector(const double * x, int n, const StringVector* names)
     PRINT_N_VECTOR(INI_F_REAL,
 		   Rprintf("%s%*s",
 			   EncodeReal0(x[k],w,d,e, OutDec),R_print.gap,""))
@@ -310,7 +309,7 @@ static void printNamedRealVector(double * x, int n, StringVector* names)
 		Rprintf("+%si", "NaN");		\
 	    else
 
-static void printNamedComplexVector(Rcomplex * x, int n, StringVector* names)
+static void printNamedComplexVector(const Rcomplex * x, int n, const StringVector* names)
     PRINT_N_VECTOR(INI_F_CPLX,
 	{ /* PRINT_1 */
 	    if(j) Rprintf("%*s", R_print.gap, "");
@@ -333,14 +332,14 @@ static void printNamedComplexVector(Rcomplex * x, int n, StringVector* names)
     w = accumulate(beg, beg + n, 0,                           \
                    (quote ? stringWidthQuote : stringWidth));
 
-static void printNamedStringVector(StringVector* sv, int n, int quote,
-				   StringVector* names)
+static void printNamedStringVector(const StringVector* sv, int n, int quote,
+				   const StringVector* names)
     PRINT_N_VECTOR(INI_F_STRING,
 		   Rprintf("%s%*s",
 			   Rf_EncodeString((*sv)[k], w, quote, Rprt_adj_right),
 			   R_print.gap, ""))
 
-static void printNamedRawVector(Rbyte * x, int n, StringVector* names)
+static void printNamedRawVector(const Rbyte * x, int n, const StringVector* names)
     PRINT_N_VECTOR(formatRaw(x, n, &w),
 		   Rprintf("%*s%s%*s", w - 2, "",
 			   Rf_EncodeRaw(x[k], ""), R_print.gap,""))
@@ -359,16 +358,16 @@ void printNamedVector(SEXP x, SEXP names, int quote, const char *title)
 	/* '...max +1'  ==> will omit at least 2 ==> plural in msg below */
 	switch (TYPEOF(x)) {
 	case LGLSXP:
-	    printNamedLogicalVector(LOGICAL(x), n_pr, namesv);
+	    printNamedLogicalVector(LOGICAL_RO(x), n_pr, namesv);
 	    break;
 	case INTSXP:
-	    printNamedIntegerVector(INTEGER(x), n_pr, namesv);
+	    printNamedIntegerVector(INTEGER_RO(x), n_pr, namesv);
 	    break;
 	case REALSXP:
-	    printNamedRealVector(REAL(x), n_pr, namesv);
+	    printNamedRealVector(REAL_RO(x), n_pr, namesv);
 	    break;
 	case CPLXSXP:
-	    printNamedComplexVector(COMPLEX(x), n_pr, namesv);
+	    printNamedComplexVector(COMPLEX_RO(x), n_pr, namesv);
 	    break;
 	case STRSXP:
 	    {
@@ -378,7 +377,7 @@ void printNamedVector(SEXP x, SEXP names, int quote, const char *title)
 		break;
 	    }
 	case RAWSXP:
-	    printNamedRawVector(RAW(x), n_pr, namesv);
+	    printNamedRawVector(RAW_RO(x), n_pr, namesv);
 	    break;
 	default:  // -Wswitch
 	    break;

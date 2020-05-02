@@ -131,6 +131,56 @@ void R_warn_S3_for_S4(SEXP method) {
 }
 #endif
 
+SEXP topenv(SEXP, SEXP);	/* should be in a header file */
+
+static FunctionBase* findFunInEnvRange(Symbol* symbol, Environment* rho, Environment* target)
+{
+    FunctionBase* vl;
+    while(rho != R_EmptyEnv) {
+	vl = static_cast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
+	if (vl != R_UnboundValue) {
+	    if (TYPEOF(vl) == PROMSXP) {
+		PROTECT(vl);
+		vl = static_cast<FunctionBase*>(Rf_eval(vl, rho));
+		UNPROTECT(1);
+	    }
+	    if ((TYPEOF(vl) == CLOSXP ||
+		 TYPEOF(vl) == BUILTINSXP ||
+		 TYPEOF(vl) == SPECIALSXP))
+		return (vl);
+	}
+	if(rho == target)
+	    return static_cast<FunctionBase*>(R_UnboundValue);
+	else
+	    rho = static_cast<Environment*>(ENCLOS(rho));
+    }
+    return static_cast<FunctionBase*>(R_UnboundValue);
+}
+
+static FunctionBase* findFunWithBaseEnvAfterGlobalEnv(Symbol* symbol, Environment* rho)
+{
+    FunctionBase* vl;
+    while(rho != R_EmptyEnv) {
+	vl = static_cast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
+	if (vl != R_UnboundValue) {
+	    if (TYPEOF(vl) == PROMSXP) {
+		PROTECT(vl);
+		vl = static_cast<FunctionBase*>(Rf_eval(vl, rho));
+		UNPROTECT(1);
+	    }
+	    if ((TYPEOF(vl) == CLOSXP ||
+		 TYPEOF(vl) == BUILTINSXP ||
+		 TYPEOF(vl) == SPECIALSXP))
+		return (vl);
+	}
+	if(rho == R_GlobalEnv)
+	    rho = static_cast<Environment*>(R_BaseEnv);
+	else
+	    rho = static_cast<Environment*>(ENCLOS(rho));
+    }
+    return static_cast<FunctionBase*>(R_UnboundValue);
+}
+
 /*  Rf_usemethod  -  calling functions need to evaluate the object
  *  (== 2nd argument).	They also need to ensure that the
  *  argument list is set up in the correct manner.
@@ -149,6 +199,13 @@ void R_warn_S3_for_S4(SEXP method) {
 attribute_hidden
 SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 {
+    FunctionBase* val;
+    Environment* top = nullptr; /* -Wall */
+    static int lookup_registry_after_topenv = -1;
+    static int lookup_baseenv_after_globalenv = -1;
+    char* lookup;
+    Symbol* symbol = SEXP_downcast<Symbol*>(method);
+
     callrho = downcast_to_env(callrho);
     if (!callrho)
 	Rf_error(_("bad generic call environment"));
@@ -159,11 +216,39 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
     if (defrho == R_BaseEnv)
 	defrho = R_BaseNamespace;
 
-    Symbol* sym = SEXP_downcast<Symbol*>(method);
-    std::pair<FunctionBase*, bool>
-	pr = S3Launcher::findMethod(sym, static_cast<Environment*>(callrho),
-				    static_cast<Environment*>(defrho));
-    return (pr.first ? pr.first : R_UnboundValue);
+    if (lookup_registry_after_topenv == -1) {
+	lookup = getenv("_R_S3_METHOD_LOOKUP_REGISTRY_AFTER_TOPENV_");
+	lookup_registry_after_topenv
+	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
+    }
+    if (lookup_baseenv_after_globalenv == -1) {
+	lookup = getenv("_R_S3_METHOD_LOOKUP_BASEENV_AFTER_GLOBALENV_");
+	lookup_baseenv_after_globalenv
+	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
+    }
+
+    if (lookup_registry_after_topenv) {
+	top = static_cast<Environment*>(topenv(nullptr, callrho));
+	val = findFunInEnvRange(symbol, static_cast<Environment*>(callrho), top);
+	if (val != R_UnboundValue) {
+	    return val;
+	}
+    }
+
+    std::pair<FunctionBase*, bool> pr = S3Launcher::findMethod(symbol,
+	static_cast<Environment*>(callrho), static_cast<Environment*>(defrho));
+
+    if (pr.first)
+	return pr.first;
+
+    if (lookup_registry_after_topenv) {
+	if (lookup_baseenv_after_globalenv)
+	    val = findFunWithBaseEnvAfterGlobalEnv(symbol, static_cast<Environment*>(ENCLOS(top)));
+	else
+	    val = findFunInEnvRange(symbol, static_cast<Environment*>(ENCLOS(top)), static_cast<Environment*>(R_EmptyEnv));
+	return val;
+    }
+    return R_UnboundValue;
 }
 
 #ifdef UNUSED
@@ -857,7 +942,7 @@ Rboolean attribute_hidden inherits2(SEXP x, const char *what) {
  * @return if which is false, logical TRUE or FALSE
  *	   if which is true, integer vector of length(what) ..
  */
-static SEXP inherits3(SEXP x, SEXP what, SEXP which)
+static RObject* inherits3(RObject* x, RObject* what, RObject* which)
 {
     const void *vmax = vmaxget();
     GCStackRoot<> klass;

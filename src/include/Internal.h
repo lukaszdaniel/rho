@@ -200,7 +200,7 @@ SEXP do_formatinfo(rho::Expression* call, const rho::BuiltInFunction* op, rho::R
 SEXP do_formatPOSIXlt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* usetz_);
 SEXP do_formals(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* fun_);
 SEXP do_function(SEXP, SEXP, SEXP, SEXP);  // Special
-SEXP do_gc(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* verbose_, rho::RObject* reset_);
+SEXP do_gc(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* verbose_, rho::RObject* reset_, rho::RObject* full_);
 SEXP do_gcinfo(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* verbose_);
 SEXP do_gctime(rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...);
 SEXP do_gctorture(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* on_);

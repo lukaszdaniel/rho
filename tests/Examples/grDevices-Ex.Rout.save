@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-10 rb14da08d21) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-10 r2320feda5a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
+R Under development (unstable) (2018-01-09 r74100) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -3799,7 +3799,7 @@ $zlab
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  11.399 0.254 11.656 0 0 
+Time elapsed:  11.175 0.239 11.417 0 0 
 > grDevices::dev.off()
 null device 
           1 

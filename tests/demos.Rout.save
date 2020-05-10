@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2020-05-02 r51758ec08d) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-10 rb14da08d21) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
@@ -1516,5 +1516,5 @@ sm     3    3    3    3    4    4    4    4    2     2     2
 > par(op)
 > 
 > cat("Time elapsed: ", proc.time() - .ptime, "\n")
-Time elapsed:  1.27 0.052 1.322 0 0 
+Time elapsed:  1.44 0.02 1.46 0 0 
 > 

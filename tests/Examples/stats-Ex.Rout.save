@@ -1,5 +1,5 @@
 
-Rho Under development (unstable) (2020-05-02 r51758ec08d) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-10 rb14da08d21) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
 R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
@@ -3832,7 +3832,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7f76d20ae740>
+<environment: 0x7f5938316440>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -7409,7 +7409,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7f76d2d349b0>
+<environment: 0x7f5938e6c0a0>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -12064,12 +12064,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7f76d2368290>
+<environment: 0x7f59390834e0>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7f76d2368290>
+<environment: 0x7f59390834e0>
 
 > 
 > 
@@ -16190,7 +16190,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7f76d26edf90>
+<environment: 0x7f5937a36210>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -18515,7 +18515,7 @@ Number of Fisher Scoring iterations: 6
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  11.031 0.256 11.288 0 0 
+Time elapsed:  11.508 0.248 11.757 0 0 
 > grDevices::dev.off()
 null device 
           1 

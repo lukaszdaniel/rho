@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-27 rd8fc157d7a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-10 rb14da08d21) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-11-30 r73800) -- "Frisbee Sailing"
+R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -29,6 +29,7 @@ Type 'q()' to quit R.
 > library('splines')
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
 > cleanEx()
 > nameEx("asVector")
 > ### * asVector
@@ -586,9 +587,10 @@ attr(,"class")
 > 
 > ### * <FOOTER>
 > ###
+> cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.193 0.004 0.197 0 0 
+Time elapsed:  0.202 0.008 0.21 0 0 
 > grDevices::dev.off()
 null device 
           1 

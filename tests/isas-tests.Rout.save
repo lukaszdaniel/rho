@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-27 rd8fc157d7a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-10 rb14da08d21) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-11-30 r73800) -- "Frisbee Sailing"
+R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -2588,6 +2588,6 @@ In command 'as.dist.default(x)': non-square matrix
 > f <- try(as.ts( x ), silent = TRUE)
 >   if(!inherits(f, 'try-error')) report(identical(f, as.ts( f )))
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  0.438 0.024 0.463 0 0 
+Time elapsed:  0.458 0.02 0.478 0 0 
 > 
 > 

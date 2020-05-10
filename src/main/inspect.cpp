@@ -74,6 +74,12 @@ SEXP attribute_hidden do_address(rho::Expression* call, const rho::BuiltInFuncti
     return R_MakeExternalPtr((void *) x, R_NilValue, R_NilValue);
 }
 
+SEXP attribute_hidden do_named(SEXP call, SEXP op, SEXP args, SEXP rho)
+{
+    checkArity(op, args);
+    return Rf_ScalarInteger(NAMED(CAR(args)));
+}
+
 SEXP attribute_hidden do_refcnt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
     // return Rf_ScalarInteger(REFCNT(CAR(args)));

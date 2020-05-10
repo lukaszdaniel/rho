@@ -386,7 +386,7 @@ namespace rho {
 	    return m_memory_traced;
 	}
 
-	/** @brief Reproduce the \c gp bits field used in CR.
+	/** @brief Reproduce the \c gp (General Purpose) bits field used in CR.
 	 *
 	 * This function is used to reproduce the
 	 * <tt>sxpinfo_struct.gp</tt> field used in CR.  It should be
@@ -644,35 +644,32 @@ extern "C" {
 
     /** @brief (For use only in serialization.)
      */
-    inline int LEVELS(SEXP x) {return int(x->packGPBits());}
+	inline int LEVELS(SEXP x) { return int(x->packGPBits()); }
 
-    /** @brief Get object copying status.
-     *
-     * @param x Pointer to rho::RObject.
-     *
-     * @return Refer to 'R Internals' document.  Returns 0 if \a x is a
-     * null pointer.
-     */
-    inline int NAMED(SEXP x) {return x ? x->m_named : 0;}
+	/** @brief Get object copying status.
+	 *
+	 * @param x Pointer to rho::RObject.
+	 *
+	 * @return Refer to 'R Internals' document.  Returns 0 if \a x is a
+	 * null pointer.
+	 */
+	inline int NAMED(SEXP x) { return x ? x->m_named : 0; }
 
-    /** @brief Does an object have a class attribute?
-     *
-     * @param x Pointer to a rho::RObject.
-     *
-     * @return true iff \a x has a class attribute.  Returns false if \a x
-     * is 0.
-     */
-    inline Rboolean OBJECT(SEXP x)
-    {
-	return Rboolean(x && x->hasClass());
-    }
+	/** @brief Does an object have a class attribute?
+	 *
+	 * @param x Pointer to a rho::RObject.
+	 *
+	 * @return true iff \a x has a class attribute.  Returns false if \a x
+	 * is 0.
+	 */
+	inline Rboolean OBJECT(SEXP x) { return Rboolean(x && x->hasClass()); }
 
-    /** @brief (For use only in deserialization.)
-     */
-    inline int SETLEVELS(SEXP x, int v)
-    {
-	x->unpackGPBits(static_cast<unsigned int>(v));
-	return v;
+	/** @brief (For use only in deserialization.)
+	 */
+	inline int SETLEVELS(SEXP x, int v)
+	{
+	    x->unpackGPBits(static_cast<unsigned int>(v));
+	    return v;
     }
 
     inline int ALTREP(SEXP x) { return 0; }
@@ -728,10 +725,55 @@ extern "C" {
 	    SET_NAMED(x, NAMEDMAX);
     }
 
+    /** @brief Set object copying status to one.
+     *
+     * @param x Pointer to rho::RObject.  The function does nothing
+     *          if \a x is a null pointer.
+     *
+     * @param v Refer to 'R Internals' document.
+     *
+     * @deprecated Ought to be private.
+     */
+    inline void ENSURE_NAMED(SEXP x)
+    {
+	if (NAMED(x) == 0)
+	    SET_NAMED(x, 1);
+    }
+
+    /** @brief Set object copying status to zero.
+     *
+     * @param x Pointer to rho::RObject.  The function does nothing
+     *          if \a x is a null pointer.
+     *
+     * @param v Refer to 'R Internals' document.
+     *
+     * @deprecated Ought to be private.
+     */
+    inline void SETTER_CLEAR_NAMED(SEXP x)
+    {
+	if (NAMED(x) == 1)
+	    SET_NAMED(x, 0);
+    }
+
+    /** @brief Raise object copying status if possible.
+     *
+     * @param x Pointer to rho::RObject.  The function does nothing
+     *          if \a x is a null pointer.
+     *
+     * @param v Refer to 'R Internals' document.
+     *
+     * @deprecated Ought to be private.
+     */
+    inline void RAISE_NAMED(SEXP x, int n)
+    {
+	if (NAMED(x) < n)
+	    SET_NAMED(x, n);
+    }
+
     /**
      * @deprecated Ought to be private.
      */
-    inline void SET_S4_OBJECT(SEXP x)  {x->setS4Object(true);}
+    inline void SET_S4_OBJECT(SEXP x) { x->setS4Object(true); }
 
     /** @brief Get object's ::SEXPTYPE.
      *
@@ -739,12 +781,12 @@ extern "C" {
      *
      * @return ::SEXPTYPE of \a x, or ::NILSXP if x is a null pointer.
      */
-    inline SEXPTYPE TYPEOF(SEXP x)  {return x ? x->sexptype() : NILSXP;}
+    inline SEXPTYPE TYPEOF(SEXP x) { return x ? x->sexptype() : NILSXP; }
 
     /**
      * @deprecated Ought to be private.
      */
-    inline void UNSET_S4_OBJECT(SEXP x)  {x->setS4Object(false);}
+    inline void UNSET_S4_OBJECT(SEXP x) { x->setS4Object(false); }
 
     /** @brief Copy attributes, with some exceptions.
      *

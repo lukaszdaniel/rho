@@ -1879,7 +1879,7 @@ static int R_ReadMagic(FILE *fp)
     return d1 + 10 * d2 + 100 * d3 + 1000 * d4;
 }
 
-static int R_DefaultSaveFormatVersion = 2;
+static int R_DefaultSaveFormatVersion = 3;
 
 /* ----- E x t e r n a l -- I n t e r f a c e s ----- */
 
@@ -2304,7 +2304,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 	    type = R_pstream_xdr_format;
 	}
     /* if version is too high, R_Serialize will fail with error */
-    magic[3] = '0' + version;
+    magic[3] = (char)('0' + version);
 
 	if (con->text)
 	    Rconn_printf(con, "%s", magic);

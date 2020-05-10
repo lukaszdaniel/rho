@@ -721,10 +721,7 @@ static SEXP EnsureLocal(SEXP symbol, SEXP rho)
 	if(NAMED(vl) == 2) {
 	    vl = Rf_duplicate(vl);
 	    Rf_defineVar(symbol, vl, rho);
-	    /* set NAMED = 1 for true duplicates which have NAMED = 0;
-	       leave alone for SYMSXP and such for which duplicate()
-	       just returns its argument */
-	    if (NAMED(vl) == 0) SET_NAMED(vl, 1);
+	    INCREMENT_NAMED(vl);
 	}
 	return vl;
     }
@@ -735,10 +732,7 @@ static SEXP EnsureLocal(SEXP symbol, SEXP rho)
 
     vl = Rf_duplicate(vl);
     Rf_defineVar(symbol, vl, rho);
-    /* set NAMED = 1 for true duplicates which have NAMED = 0;
-       leave alone for SYMSXP and such for which duplicate()
-       just returns its argument */
-    if (NAMED(vl) == 0) SET_NAMED(vl, 1);
+	INCREMENT_NAMED(vl);
     return vl;
 }
 
@@ -961,8 +955,8 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     bgn = BodyHasBraces(body);
 
-    /* bump up NAMED count of sequence to avoid modification by loop code */
-    if (NAMED(val) < 2) SET_NAMED(val, NAMED(val) + 1);
+    /* bump up links count of sequence to avoid modification by loop code */
+    INCREMENT_LINKS(val);
 
     Environment* env = SEXP_downcast<Environment*>(rho);
     Environment::LoopScope loopscope(env);
@@ -1343,7 +1337,7 @@ static void SET_TEMPVARLOC_FROM_CAR(Frame::Binding* loc, PairList* lhs) {
     SEXP v = lhs->car();
     if (NAMED(v) == 2) {
 	v = Rf_duplicate(v);
-	SET_NAMED(v, 1);
+	ENSURE_NAMED(v);
 	lhs->setCar(v);
     }
     loc->assign(v);

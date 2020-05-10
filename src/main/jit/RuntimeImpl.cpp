@@ -97,9 +97,7 @@ RObject* rho_runtime_lookupSymbolInCompiledFrame(const Symbol* symbol,
 	    if (pair.second) {
 		ENSURE_NAMEDMAX(value);
 	    }
-	    else if (NAMED(value) < 1) {
-		SET_NAMED(value, 1);
-	    }
+	    else ENSURE_NAMED(value);
 	    return value;
 	}
     }
@@ -179,7 +177,7 @@ void rho_runtime_setVisibility(bool visible) {
 
 void rho_runtime_incrementNamed(RObject* object) {
     switch (NAMED(object)) {
-    case 0: SET_NAMED(object, 1); break;
+    case 0: ENSURE_NAMED(object); break;
     case 1: ENSURE_NAMEDMAX(object); break;
     }
 }

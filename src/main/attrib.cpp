@@ -250,7 +250,6 @@ SEXP Rf_setAttrib(SEXP vec, SEXP name, SEXP val)
 	Rf_error(_("attempt to set an attribute on NULL"));
 
     if (MAYBE_REFERENCED(val)) val = R_FixupRHS(vec, val);
-    //SET_NAMED(val, NAMED(val) | NAMED(vec));
     UNPROTECT(2);
 
     GCStackRoot<> valr(val);
@@ -457,7 +456,7 @@ SEXP attribute_hidden do_commentgets(/*const*/ Expression* call, const BuiltInFu
     if (MAYBE_SHARED(object)) object = Rf_duplicate(object);
     if (Rf_length(comment) == 0) comment = R_NilValue;
     Rf_setAttrib(object, R_CommentSymbol, comment);
-    SET_NAMED(object, 0);
+    SETTER_CLEAR_NAMED(object);
     return object;
 }
 
@@ -536,7 +535,7 @@ SEXP attribute_hidden do_classgets(/*const*/ Expression* call, const BuiltInFunc
     if(IS_S4_OBJECT(object))
 	UNSET_S4_OBJECT(object);
     Rf_setAttrib(object, R_ClassSymbol, new_class);
-    SET_NAMED(object, 0);
+    SETTER_CLEAR_NAMED(object);
     return object;
 }
 
@@ -855,7 +854,7 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
     else
 	Rf_setAttrib(object, R_NamesSymbol, names);
     UNPROTECT(1);
-    SET_NAMED(object, 0);
+    SETTER_CLEAR_NAMED(object);
     return object;
 }
 
@@ -947,7 +946,7 @@ SEXP attribute_hidden do_dimnamesgets(/*const*/ Expression* call, const BuiltInF
     RObject* object = x_;
     if (MAYBE_SHARED(object)) object = Rf_shallow_duplicate(object);
     Rf_setAttrib(object, R_DimNamesSymbol, names_);
-    SET_NAMED(object, 0);
+    SETTER_CLEAR_NAMED(object);
     return object;
 }
 
@@ -1070,7 +1069,7 @@ SEXP attribute_hidden do_dimgets(/*const*/ Expression* call, const BuiltInFuncti
     if (MAYBE_SHARED(x)) x = Rf_shallow_duplicate(x);
     Rf_setAttrib(x, R_DimSymbol, value_);
     Rf_setAttrib(x, R_NamesSymbol, R_NilValue);
-    SET_NAMED(x, 0);
+    SETTER_CLEAR_NAMED(x);
     return x;
 }
 
@@ -1474,7 +1473,7 @@ SEXP attribute_hidden do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
      */
     Rf_setAttrib(obj, name, value);
     UNPROTECT(1);
-    SET_NAMED(obj, 0);
+    SETTER_CLEAR_NAMED(obj);
     return obj;
 }
 
@@ -1680,7 +1679,6 @@ SEXP R_do_slot_assign(SEXP obj, SEXP name, SEXP value) {
 	   here we do *not* treat "names", "dimnames", "dim", .. specially : */
 	PROTECT(name);
 	if (MAYBE_REFERENCED(value)) value = R_FixupRHS(obj, value);
-	//SET_NAMED(value, NAMED(value) | NAMED(obj));
 	UNPROTECT(1);
 	obj->setAttribute(static_cast<Symbol*>(name), value);
 #endif

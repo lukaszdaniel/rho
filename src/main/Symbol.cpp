@@ -131,8 +131,7 @@ RObject* Symbol::evaluate(Environment* env)
 	val = Rf_eval(val, env);
 	ENSURE_NAMEDMAX(val);
     }
-    else if (NAMED(val) < 1)
-	SET_NAMED(val, 1);
+    else ENSURE_NAMED(val);
     return val;
 }
 

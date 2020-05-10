@@ -60,6 +60,10 @@ namespace rho {
 	Rboolean (*OBJECTptr)(SEXP e) = OBJECT;
 	void (*SET_NAMEDptr)(SEXP x, int v) = SET_NAMED;
 	void (*ENSURE_NAMEDMAXptr)(SEXP x) = ENSURE_NAMEDMAX;
+	void (*ENSURE_NAMEDptr)(SEXP x) = ENSURE_NAMED;
+	void (*SETTER_CLEAR_NAMEDptr)(SEXP x) = SETTER_CLEAR_NAMED;
+    void (*RAISE_NAMEDptr)(SEXP x, int n) = RAISE_NAMED;
+    //void (*DECREMENT_NAMEDptr)(SEXP x) = DECREMENT_NAMED;
 	void (*SET_S4_OBJECTptr)(SEXP x) = SET_S4_OBJECT;
 	SEXPTYPE (*TYPEOFptr)(SEXP e) = TYPEOF;
 	void (*UNSET_S4_OBJECTptr)(SEXP x) = UNSET_S4_OBJECT;

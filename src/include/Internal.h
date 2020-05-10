@@ -293,6 +293,7 @@ SEXP do_mget(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject
 SEXP do_missing(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_mmap_file(SEXP, SEXP, SEXP, SEXP);
 SEXP do_munmap_file(SEXP, SEXP, SEXP, SEXP);
+SEXP do_named(SEXP, SEXP, SEXP, SEXP);
 SEXP do_names(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_);
 SEXP do_namesgets(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* value_);
 rho::ArgumentArrayFn do_nargs;

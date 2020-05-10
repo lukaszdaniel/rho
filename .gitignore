@@ -295,4 +295,5 @@ tests/Examples/example-1_myA-noF.R
 tests/Examples/example-1_myA.R
 tests/PCRE.Rout
 tests/p-qbeta-strict-tst.pdf
+tests/timezone.Rout
 .Rproj.user

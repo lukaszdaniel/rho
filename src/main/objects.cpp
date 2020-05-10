@@ -131,8 +131,6 @@ void R_warn_S3_for_S4(SEXP method) {
 }
 #endif
 
-SEXP topenv(SEXP, SEXP);	/* should be in a header file */
-
 static FunctionBase* findFunInEnvRange(Symbol* symbol, Environment* rho, Environment* target)
 {
     FunctionBase* vl;
@@ -219,7 +217,7 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
     if (lookup_registry_after_topenv == -1) {
 	lookup = getenv("_R_S3_METHOD_LOOKUP_REGISTRY_AFTER_TOPENV_");
 	lookup_registry_after_topenv
-	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
+	    = ((lookup != nullptr) && StringFalse(lookup)) ? 0 : 1;
     }
     if (lookup_baseenv_after_globalenv == -1) {
 	lookup = getenv("_R_S3_METHOD_LOOKUP_BASEENV_AFTER_GLOBALENV_");
@@ -228,7 +226,7 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
     }
 
     if (lookup_registry_after_topenv) {
-	top = static_cast<Environment*>(topenv(nullptr, callrho));
+	top = static_cast<Environment*>(Rf_topenv(nullptr, callrho));
 	val = findFunInEnvRange(symbol, static_cast<Environment*>(callrho), top);
 	if (val != R_UnboundValue) {
 	    return val;

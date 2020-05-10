@@ -1,7 +1,7 @@
 #  File src/library/tools/R/check.R
 #  Part of the R package, https://www.R-project.org
 #
-#  Copyright (C) 1995-2017 The R Core Team
+#  Copyright (C) 1995-2018 The R Core Team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -157,9 +157,12 @@ setRlibs <-
         sug <- if(is.na(VB)) character()
         else {
             VB <- unlist(strsplit(VB, ","))
-            unique(gsub('[[:space:]]', '', VB))
+            sug <- unique(gsub('[[:space:]]', '', VB))
+            ## too many people forgot this, but it will never get fixed if made an exception.
+            ## if("knitr" %in% VB) sug <- c(sug, "rmarkdown")
+            sug
         }
-        if(tests) ## we need the test suite package available
+        if(tests) ## we need the test-suite package available
             c(sug, intersect(names(pi$Suggests), c("RUnit", "testthat")))
         else sug
     }
@@ -214,6 +217,40 @@ setRlibs <-
       if(WINDOWS) " R_ENVIRON_USER='no_such_file'" else "R_ENVIRON_USER=''",
       if(WINDOWS) " R_LIBS_USER='no_such_dir'" else "R_LIBS_USER=''",
       " R_LIBS_SITE='no_such_dir'")
+}
+
+add_dummies <- function(dir, Log)
+{
+    dir1 <- file.path(dir, "R_check_bin")
+    if (dir.exists(file.path(dir1))) {
+        messageLog(Log, "directory ", sQuote(dir1), " already exists")
+        return()
+    }
+    dir.create(dir1)
+    if (!dir.exists(dir1)) {
+        messageLog(Log, "creation of directory ", sQuote(dir1), " failed")
+        return()
+    }
+    Sys.setenv(PATH = env_path(dir1, Sys.getenv("PATH")))
+    if(.Platform$OS.type != "windows") {
+        writeLines(c('echo "\'R\' should not be used without a path -- see par. 1.6 of the manual"',
+                     'exit 1'),
+                   p1 <- file.path(dir1, "R"))
+        writeLines(c('echo "\'Rscript\' should not be used without a path -- see par. 1.6 of the manual"',
+                     'exit 1'),
+                   p2 <- file.path(dir1, "Rscript"))
+        Sys.chmod(c(p1, p2), "0755")
+    } else {
+        ## currently untested
+        writeLines(c('@ECHO OFF',
+                     'echo "\'R\' should not be used without a path -- see par. 1.6 of the manual"',
+                     'exit /b 1'),
+                   p1 <- file.path(dir1, "R.bat"))
+        writeLines(c('@ECHO OFF',
+                     'echo "\'Rscript\' should not be used without a path -- see par. 1.6 of the manual"',
+                     'exit /b 1'),
+                   p2 <- file.path(dir1, "Rscript.bat"))
+   }
 }
 
 ###- The main function for "R CMD check"
@@ -2624,7 +2661,10 @@ setRlibs <-
 
         ## Check include directives for use of R_HOME which may contain
         ## spaces for which there is no portable way to quote/escape.
-        all_files <- dir(".", pattern = "^Makefile*", recursive = TRUE)
+        all_files <-
+            dir(".",
+                pattern = "^(Makefile|Makefile.in|Makefile.win|makefile|GNUmakefile)$",
+                recursive = TRUE)
         all_files <- unique(sort(all_files))
         if(length(all_files)) {
             checkingLog(Log, "include directives in Makefiles")
@@ -2695,26 +2735,29 @@ setRlibs <-
         Check_flags <- Sys.getenv("_R_CHECK_COMPILATION_FLAGS_", "FALSE")
         if(config_val_to_logical(Check_flags)) {
             instlog <- if (startsWith(install, "check"))
-                substr(install, 7L, 1000L)
+                install_log_path
             else
                 file.path(pkgoutdir, "00install.out")
             if (file.exists(instlog) && dir.exists('src')) {
                 checkingLog(Log, "compilation flags used")
                 lines <- readLines(instlog, warn = FALSE)
                 poss <- grep(" -W", lines,  useBytes = TRUE, value = TRUE)
-                tokens <- unlist(strsplit(poss, " ", perl = TRUE,
-                                          useBytes = TRUE))
+                tokens <- unique(unlist(strsplit(poss, " ", perl = TRUE,
+                                                 useBytes = TRUE)))
                 warns <- grep("^[-]W", tokens,
                               value = TRUE, perl = TRUE, useBytes = TRUE)
                 ## Not sure -Wextra and -Weverything are portable, though
                 ## -Werror is not compiler independent
                 ##   (as what is a warning is not)
-                warns <- setdiff(unique(warns),
+                warns <- setdiff(warns,
                                  c("-Wall", "-Wextra", "-Weverything"))
                 warns <- warns[!startsWith(warns, "-Wl,")] # linker flags
                 diags <- grep(" -fno-diagnostics-show-option", tokens,
                               useBytes = TRUE, value = TRUE)
-                warns <- c(warns, diags)
+                ## next set are about unsafe optimizations
+                opts <- grep("-f(fast-math|unsafe-math-optimizations|associative-math|reciprocal-math)",
+                             tokens, useBytes = TRUE, value = TRUE)
+                warns <- c(warns, diags, opts)
                 if(any(grepl("^-Wno-", warns)) || length(diags)) {
                     warningLog(Log)
                     msg <- c("Compilation used the following non-portable flag(s):",
@@ -2750,11 +2793,23 @@ setRlibs <-
             ## will not be picking up symbols just in system libraries.
             haveObjs <- any(grepl("^ *Object", out))
             pat <- paste("possibly from",
-                         sQuote("(abort|assert|exit|_exit|_Exit)"))
-            if(haveObjs && any(grepl(pat, out)) &&
-               pkgname %notin% c("parallel", "fork")) # need _exit in forked child
+                         sQuote("(abort|assert|exit|_exit|_Exit|stop)"))
+            if(haveObjs && any(grepl(pat, out)) && pkgname %notin% "parallel")
+                ## need _exit in forked child
                 warningLog(Log)
-            else noteLog(Log)
+            else {
+                ## look for Fortran detritus
+                pat1 <- paste("possibly from", sQuote("(open|close|rewind)"))
+                pat2 <- paste("possibly from", sQuote("(read|write)"))
+                pat3 <- paste("possibly from", sQuote("close"))
+                pat4 <- paste("possibly from", sQuote("open"))
+                if(haveObjs &&
+                   (any(grepl(pat1, out)) && !any(grepl(pat2, out))) ||
+                   (any(grepl(pat3, out)) && !any(grepl(pat4, out))) ||
+                   (any(grepl(pat4, out)) && !any(grepl(pat3, out))))
+                    warningLog(Log)
+                else noteLog(Log)
+            }
             printLog0(Log, paste(c(out, ""), collapse = "\n"))
             nAPIs <- length(grep("Found non-API", out))
             nRS <- length(grep("Found no call", out))
@@ -2922,7 +2977,7 @@ setRlibs <-
             }
             if(check_S3reg) {
                 checkingLog(Log, "use of S3 registration")
-                Rcmd <- sprintf("suppressPackageStartupMessages(loadNamespace('%s', lib.loc = '%s'))",
+                Rcmd <- sprintf("suppressWarnings(suppressPackageStartupMessages(loadNamespace('%s', lib.loc = '%s')))",
                                 pkgname, libdir)
                 opts <- if(nzchar(arch)) R_opts4 else R_opts2
                 env <- Sys.getenv("_R_LOAD_CHECK_OVERWRITE_S3_METHODS_",
@@ -3713,7 +3768,7 @@ setRlibs <-
                                     Sys.getenv("_R_CHECK_ELAPSED_TIMEOUT_")))
                 t1 <- proc.time()
                 outfile <- file.path(pkgoutdir, "build_vignettes.log")
-                status <- R_runR0(Rcmd, R_opts2, jitstr,
+                status <- R_runR0(Rcmd, R_opts2, c(jitstr, elibs),
                                   stdout = outfile, stderr = outfile,
                                   timeout = tlim)
                 t2 <- proc.time()
@@ -4043,16 +4098,14 @@ setRlibs <-
                 if (startsWith(install, "check")) {
                     if (!nzchar(arg_libdir))
                         printLog(Log, "\nWarning: --install=check... specified without --library\n")
-                    thislog <- substr(install, 7L, 1000L)
-                                        #owd <- setwd(startdir)
-                    if (!file.exists(thislog)) {
+                    thislog <- install_log_path
+                    if(!nzchar(thislog)) {
                         errorLog(Log,
                                  sprintf("install log %s does not exist", sQuote(thislog)))
                         summaryLog(Log)
                         do_exit(2L)
                     }
                     file.copy(thislog, outfile)
-                                        #setwd(owd)
                     install <- "check"
                     lines <- readLines(outfile, warn = FALSE)
                     ## <NOTE>
@@ -4161,6 +4214,8 @@ setRlibs <-
                              ": warning: .* \\[-Wnonull",
                              ": warning: .* \\[-Walloc-size-larger-than=\\]",
                              ": warning: .* \\[-Wterminate\\]",
+                             ## Solaris warns on this next one. Also clang
+                             ": warning: .* \\[-Wint-conversion\\]",
                              ": warning: .* \\[-Wstringop", # mainly gcc8
                              ": warning: .* \\[-Wclass-memaccess\\]" # gcc8
                              )
@@ -4180,6 +4235,7 @@ setRlibs <-
                              ": warning: .* \\[-Wreorder\\]", # also gcc
                              ": warning: .* \\[-Wself-assign",
                              ": warning: .* \\[-Wtautological",  # also gcc
+                             ": warning: .* \\[-Wincompatible-pointer-types\\]",
                              ": warning: format string contains '[\\]0'",
                              ": warning: .* \\[-Wc[+][+]11-long-long\\]",
                              ": warning: empty macro arguments are a C99 feature",
@@ -5015,6 +5071,14 @@ setRlibs <-
         multiarch <- FALSE
     }
 
+    install_log_path <- ""
+    if(startsWith(install, "check")) {
+        ## Expand relative to absolute if possible.
+        install_log_path <-
+            tryCatch(file_path_as_absolute(substr(install, 7L, 1000L)),
+                     error = function(e) "")
+    }
+
     if (!identical(multiarch, FALSE)) {
         ## see if there are multiple installed architectures, and if they work
         if (WINDOWS) {
@@ -5167,6 +5231,8 @@ setRlibs <-
         Sys.setenv("_R_CHECK_COMPILATION_FLAGS_" = "TRUE")
         if(!nzchar(Sys.getenv("_R_CHECK_R_DEPENDS_")))
             Sys.setenv("_R_CHECK_R_DEPENDS_" = "warn")
+        ## until this is tested on Windows
+        Sys.setenv("_R_CHECK_R_ON_PATH_" = ifelse(WINDOWS, "FALSE", "TRUE"))
         R_check_vc_dirs <- TRUE
         R_check_executables_exclusions <- FALSE
         R_check_doc_sizes2 <- TRUE
@@ -5292,6 +5358,9 @@ setRlibs <-
             if (l10n_info()[["UTF-8"]]) "UTF-8" else utils::localeToCharset()
         messageLog(Log, "using session charset: ", charset)
         is_ascii <- charset == "ASCII"
+
+        if(config_val_to_logical(Sys.getenv("_R_CHECK_R_ON_PATH_", "FALSE")))
+            add_dummies(file_path_as_absolute(pkgoutdir), Log)
 
         if (istar) {
             dir <- file.path(pkgoutdir, "00_pkg_src")

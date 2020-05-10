@@ -631,6 +631,7 @@ new BuiltInFunction("retracemem",  do_retracemem,  0,      201,     -1,      {PP
 new BuiltInFunction("untracemem",  do_untracemem,  0,      101,	1,      {PP_FUNCALL, PREC_FN,	0}, "x"),
 new BuiltInFunction("inspect",	do_inspect,	0,	111,	-1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("address",     do_address,     0,       11,     1,     {PP_FUNCALL, PREC_FN, 0}),
+new BuiltInFunction("named",       do_named,       0,       11,     1,     {PP_FUNCALL, PREC_FN, 0}),
 new BuiltInFunction("refcnt",      do_refcnt,      0,       11,     1,     {PP_FUNCALL, PREC_FN, 0}),
 new BuiltInFunction("merge",	do_merge,	0,	11,	4,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("capabilities",do_capabilities,0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
@@ -931,10 +932,12 @@ SEXP attribute_hidden do_primitive(/*const*/ Expression* call, const BuiltInFunc
 #if 0
 static SEXP mkSymMarker(SEXP pname)
 {
+    PROTECT(pname);
     SEXP ans = Rf_allocSExp(SYMSXP);
     SET_SYMVALUE(ans, ans);
     SET_ATTRIB(ans, R_NilValue);
     SET_PRINTNAME(ans, pname);
+    UNPROTECT(1);
     return ans;
 }
 #endif

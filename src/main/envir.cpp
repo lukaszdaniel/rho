@@ -980,7 +980,7 @@ static SEXP gfind(const char *name, Environment* env, SEXPTYPE mode,
 
     /* We need to evaluate if it is a promise */
     if (TYPEOF(rval) == PROMSXP) rval = rval->evaluate(env);
-    if (!ISNULL(rval) && NAMED(rval) == 0) SET_NAMED(rval, 1);
+    ENSURE_NAMED(rval);
     return rval;
 }
 
@@ -1488,9 +1488,9 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     Expression* R_fcall = new Expression(FUN, { tmp, R_DotsSymbol });
 
     Rf_defineVar(Xsym, tmp2, rho);
-    SET_NAMED(tmp2, 1);
+    INCREMENT_NAMED(tmp2);
     Rf_defineVar(isym, ind, rho);
-    SET_NAMED(ind, 1);
+    INCREMENT_NAMED(ind);
 
     for(i = 0; i < k2; i++) {
 	INTEGER(ind)[0] = i+1;
@@ -2091,7 +2091,7 @@ SEXP attribute_hidden do_envprofile(/*const*/ Expression* call, const BuiltInFun
 }
 
 // topenv
-SEXP topenv(SEXP target, SEXP envir) {
+SEXP Rf_topenv(SEXP target, SEXP envir) {
     SEXP env = envir;
     while (env != R_EmptyEnv) {
 	if (env == target || env == R_GlobalEnv ||
@@ -2118,7 +2118,7 @@ SEXP attribute_hidden do_topenv(SEXP call, SEXP op, SEXP args, SEXP rho) {
     SEXP target = CADR(args); // = matchThisEnv, typically NULL (R_NilValue)
     if (TYPEOF(envir) != ENVSXP) envir = rho; // envir = parent.frame()
     if (target != R_NilValue && TYPEOF(target) != ENVSXP)  target = R_NilValue;
-    return topenv(target, envir);
+    return Rf_topenv(target, envir);
 }
 
 Rboolean attribute_hidden Rf_isUnmodifiedSpecSym(SEXP sym, SEXP rho) {

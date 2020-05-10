@@ -206,6 +206,9 @@ so_symbol_names_table <-
       "solaris, C, solcc, srand, srand",
       "solaris, C, solcc, srandom, srandom",
       "solaris, C, solcc, srand48, srand48",
+      "solaris, Fortran, solf95, open, __f90_open",
+      "solaris, Fortran, solf95, close, __f90_close",
+      "solaris, Fortran, solf95, rewind, __f90_rewind",
       "solaris, Fortran, solf95, read, __f90_eifr",
       "solaris, Fortran, solf95, read, __f90_esfr",
       "solaris, Fortran, solf95, print, __f90_eslw",
@@ -223,6 +226,9 @@ so_symbol_names_table <-
       ## only in .o, positions hard-coded in check_so_symbols
       "windows, C++, g++, std::cout, _ZSt4cout",
       "windows, C++, g++, std::cerr, _ZSt4cerr",
+      "windows, Fortran, gfortran, open, _gfortran_st_open",
+      "windows, Fortran, gfortran, close, _gfortran_st_close",
+      "windows, Fortran, gfortran, rewind, _gfortran_st_rewind",
       "windows, Fortran, gfortran, write, _gfortran_st_write",
       "windows, Fortran, gfortran, print, _gfortran_st_write",
       ## in DLL

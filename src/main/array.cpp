@@ -383,8 +383,13 @@ R_xlen_t attribute_hidden dispatch_xlength(RObject* x,
 // auxiliary for do_lengths_*(), i.e., R's lengths()
 static R_xlen_t getElementLength(RObject* x, R_xlen_t i, Expression* call,
 				 Environment* rho) {
-    SEXP x_elt = dispatch_subset2(x, i, call, rho);
-    return(dispatch_xlength(x_elt, call, rho));
+    SEXP x_elt;
+    R_xlen_t ans;
+
+    PROTECT(x_elt = dispatch_subset2(x, i, call, rho));
+    ans = dispatch_xlength(x_elt, call, rho);
+    UNPROTECT(1); /* x_elt */
+    return ans;
 }
 
 #ifdef LONG_VECTOR_SUPPORT

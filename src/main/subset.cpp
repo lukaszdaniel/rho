@@ -318,7 +318,7 @@ static SEXP ArraySubset(SEXP x, SEXP s, SEXP call, int drop)
    the argument is not found, the argument list is not modified
    and R_NilValue is returned.
  */
-static SEXP ExtractArg(SEXP args, SEXP arg_sym)
+static SEXP ExtractArg(rho::RObject* args, rho::Symbol* arg_sym)
 {
     SEXP arg, prev_arg;
     int found = 0;
@@ -339,11 +339,11 @@ static SEXP ExtractArg(SEXP args, SEXP arg_sym)
 
 /* Extracts the drop argument, if present, from the argument list.
    The object being subsetted must be the first argument. */
-static void ExtractDropArg(SEXP el, int *drop)
+static void ExtractDropArg(rho::RObject* el, int& drop)
 {
-    SEXP dropArg = ExtractArg(el, R_DropSymbol);
-    *drop = Rf_asLogical(dropArg);
-    if (*drop == NA_LOGICAL) *drop = 1;
+    SEXP dropArg = ExtractArg(el, rho::Symbol::obtain("drop"));
+    drop = Rf_asLogical(dropArg);
+    if (drop == NA_LOGICAL) drop = 1;
 }
 
 
@@ -356,7 +356,7 @@ static void ExtractDropArg(SEXP el, int *drop)
  */
 static int ExtractExactArg(SEXP args)
 {
-    SEXP argval = ExtractArg(args, R_ExactSymbol);
+    SEXP argval = ExtractArg(args, rho::Symbol::obtain("exact"));
     int exact;
     if(Rf_isNull(argval)) return 1; /* Default is true as from R 2.7.0 */
     exact = Rf_asLogical(argval);
@@ -501,7 +501,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     int drop = 1;
-    ExtractDropArg(args, &drop);
+    ExtractDropArg(args, drop);
     SEXP x = CAR(args);
 
     /* This was intended for compatibility with S, */
@@ -580,7 +580,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    Rf_setAttrib(
 		ans, R_DimNamesSymbol, Rf_getAttrib(ax, R_DimNamesSymbol));
 	    Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(ax, R_NamesSymbol));
-	    SET_NAMED(ans, NAMED(ax)); /* PR#7924 */
+	    RAISE_NAMED(ans, NAMED(ax)); /* PR#7924 */
 	}
     }
     if (ATTRIB(ans) != R_NilValue) { /* remove probably erroneous attr's */
@@ -621,7 +621,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
     GCStackRoot<> args(argsarg);
     SEXP ans;
     int drop = 1;
-    ExtractDropArg(args, &drop);
+    ExtractDropArg(args, drop);
     /* Is partial matching ok?  When the exact arg is NA, a warning is
        issued if partial matching occurs.
      */
@@ -752,15 +752,13 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	    Rf_error("invalid subscript for pairlist");
 #endif
 	ans = CAR(Rf_nthcdr(x, int(offset)));
-	if (named_x > NAMED(ans))
-	    SET_NAMED(ans, named_x);
+	RAISE_NAMED(ans, named_x);
     } else if (Rf_isVectorList(x)) {
 	/* did unconditional duplication before 2.4.0 */
 	if (x->sexptype() == EXPRSXP)
 	    ans = XVECTOR_ELT(x, offset);
 	else ans = VECTOR_ELT(x, offset);
-	if (named_x > NAMED(ans))
-	    SET_NAMED(ans, named_x);
+	RAISE_NAMED(ans, named_x);
     } else {
 	ans = Rf_allocVector(TYPEOF(x), 1);
 	switch (TYPEOF(x)) {
@@ -934,7 +932,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    switch(pstrmatch(TAG(y), input, slen)) {
 	    case EXACT_MATCH:
 		y = CAR(y);
-		if (NAMED(x) > NAMED(y)) SET_NAMED(y, NAMED(x));
+		RAISE_NAMED(y, NAMED(x));
 		return y;
 	    case PARTIAL_MATCH:
 		havematch++;
@@ -962,7 +960,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 			    Rf_translateChar(input), st);
 	    }
 	    y = CAR(xmatch);
-	    if (NAMED(x) > NAMED(y)) SET_NAMED(y, NAMED(x));
+	    RAISE_NAMED(y, NAMED(x));
 	    return y;
 	}
 	return R_NilValue;
@@ -978,8 +976,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    switch(pstrmatch(STRING_ELT(nlist, i), input, slen)) {
 	    case EXACT_MATCH:
 		y = VECTOR_ELT(x, i);
-		if (NAMED(x) > NAMED(y))
-		    SET_NAMED(y, NAMED(x));
+		RAISE_NAMED(y, NAMED(x));
 		return y;
 	    case PARTIAL_MATCH:
 		havematch++;
@@ -1015,7 +1012,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 			    Rf_translateChar(input), st);
 	    }
 	    y = VECTOR_ELT(x, imatch);
-	    if (NAMED(x) > NAMED(y)) SET_NAMED(y, NAMED(x));
+	    RAISE_NAMED(y, NAMED(x));
 	    return y;
 	}
 	return R_NilValue;
@@ -1031,8 +1028,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	if( y != R_UnboundValue ) {
 	    if (NAMED(y))
 		ENSURE_NAMEDMAX(y);
-	    else if (NAMED(x) > NAMED(y))
-		SET_NAMED(y, NAMED(x));
+	    else RAISE_NAMED(y, NAMED(x));
 	    return(y);
 	}
 	return R_NilValue;

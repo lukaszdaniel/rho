@@ -230,8 +230,7 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
 {
     if (TYPEOF(fun_) == CLOSXP) {
 	SEXP f = FORMALS(fun_);
-	if (NAMED(fun_) > NAMED(f))
-	    SET_NAMED(f, NAMED(fun_));
+	RAISE_NAMED(f, NAMED(fun_));
 	return f;
     } else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
@@ -245,8 +244,7 @@ SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction*
 {
     if (TYPEOF(fun_) == CLOSXP) {
 	SEXP b = BODY_EXPR(fun_);
-	if (NAMED(fun_) > NAMED(b))
-	    SET_NAMED(b, NAMED(fun_));
+	RAISE_NAMED(b, NAMED(fun_));
 	return b;
     } else {
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
@@ -646,7 +644,7 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SET_STRING_ELT(names, i, R_BlankString);
 	}
 	if (NAMED(CAR(args)))
-	    INCREMENT_NAMED(CAR(args));
+	    ENSURE_NAMEDMAX(CAR(args));
 	SET_VECTOR_ELT(list, i, CAR(args));
 	args = CDR(args);
     }

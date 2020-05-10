@@ -63,7 +63,7 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP ind = PROTECT(Rf_allocVector(realIndx ? REALSXP : INTSXP, 1));
     static Symbol* isym = Symbol::obtain("i");
     Rf_defineVar(isym, ind, rho);
-    SET_NAMED(ind, 1);
+    INCREMENT_NAMED(ind);
 
     Expression* item = new Expression(R_Bracket2Symbol,
 				     { X, isym });
@@ -142,7 +142,7 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	static Symbol* isym = Symbol::obtain("i");
 	PROTECT(ind = Rf_allocVector(INTSXP, 1));
 	Rf_defineVar(isym, ind, rho);
-	SET_NAMED(ind, 1);
+	INCREMENT_NAMED(ind);
 
 	Expression* item = new Expression(R_Bracket2Symbol, { X, isym });
 	Expression* R_fcall = new Expression(FUN, { item, R_DotsSymbol });

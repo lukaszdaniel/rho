@@ -235,6 +235,12 @@ int static R_strieql(const char *a, const char *b)
 # include <langinfo.h>
 #endif
 
+static char native_enc[R_CODESET_MAX + 1];
+const char attribute_hidden *R_nativeEncoding(void)
+{
+    return native_enc;
+}
+
 /* retrieves information about the current locale and
    sets the corresponding variables (known_to_be_utf8,
    known_to_be_latin1, utf8locale, latin1locale and mbcslocale) */
@@ -243,7 +249,9 @@ void attribute_hidden R_check_locale(void)
     known_to_be_utf8 = utf8locale = FALSE;
     known_to_be_latin1 = latin1locale = FALSE;
     mbcslocale = FALSE;
+    strcpy(native_enc, "ASCII");
 #ifdef HAVE_LANGINFO_CODESET
+    /* not on Windows */
     {
 	char  *p = nl_langinfo(CODESET);
 	/* more relaxed due to Darwin: CODESET is case-insensitive and
@@ -257,6 +265,14 @@ void attribute_hidden R_check_locale(void)
 	if (*p == 0 && MB_CUR_MAX == 6)
 	    known_to_be_utf8 = utf8locale = TRUE;
 # endif
+	if (utf8locale)
+	    strcpy(native_enc, "UTF-8");
+	else if (latin1locale)
+	    strcpy(native_enc, "ISO-8859-1");
+	else {
+	    strncpy(native_enc, p, R_CODESET_MAX);
+	    native_enc[R_CODESET_MAX] = 0;
+	}
     }
 #endif
     mbcslocale = Rboolean(MB_CUR_MAX > 1);
@@ -267,10 +283,16 @@ void attribute_hidden R_check_locale(void)
 	if (p && isdigit(p[1])) localeCP = atoi(p+1); else localeCP = 0;
 	/* Not 100% correct, but CP1252 is a superset */
 	known_to_be_latin1 = latin1locale = (localeCP == 1252);
+	if (localeCP) {
+	    /* CP1252 when latin1locale is true */
+	    snprintf(native_enc, R_CODESET_MAX, "CP%d", localeCP);
+	    native_enc[R_CODESET_MAX] = 0;
+	}
     }
 #endif
 #if defined(SUPPORT_UTF8_WIN32) /* never at present */
     utf8locale = mbcslocale = TRUE;
+    strcpy(native_enc, "UTF-8");
 #endif
 }
 
@@ -2783,25 +2805,22 @@ SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunct
 
 SEXP attribute_hidden do_readlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_)
 {
-    SEXP paths, ans;
-    int n;
-#ifdef HAVE_READLINK
-    char buf[PATH_MAX+1];
-    ssize_t res;
-    int i;
-#endif
-
-    paths = paths_;
+    SEXP paths = paths_;
     if(!Rf_isString(paths))
 	Rf_error(_("invalid '%s' argument"), "paths");
-    n = LENGTH(paths);
-    PROTECT(ans = Rf_allocVector(STRSXP, n));
+    int n = LENGTH(paths);
+    SEXP ans = PROTECT(Rf_allocVector(STRSXP, n));
 #ifdef HAVE_READLINK
-    for (i = 0; i < n; i++) {
+    char buf[PATH_MAX+1];
+    for (int i = 0; i < n; i++) {
 	memset(buf, 0, PATH_MAX+1);
-	res = readlink(R_ExpandFileName(Rf_translateChar(STRING_ELT(paths, i))),
-		       buf, PATH_MAX);
-	if (res >= 0) SET_STRING_ELT(ans, i, Rf_mkChar(buf));
+	ssize_t res = 
+	    readlink(R_ExpandFileName(Rf_translateChar(STRING_ELT(paths, i))),
+		     buf, PATH_MAX);
+	if (res == PATH_MAX) {
+	    SET_STRING_ELT(ans, i, Rf_mkChar(buf));
+	    Rf_warning("possible truncation of value for element %d", i + 1);
+	} else if (res >= 0) SET_STRING_ELT(ans, i, Rf_mkChar(buf));
 	else if (errno == EINVAL) SET_STRING_ELT(ans, i, Rf_mkChar(""));
 	else SET_STRING_ELT(ans, i,  NA_STRING);
     }

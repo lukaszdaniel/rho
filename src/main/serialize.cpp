@@ -38,6 +38,7 @@
 #include <Rmath.h>
 #include <Fileio.h>
 #include <Rversion.h>
+#include <R_ext/Riconv.h>
 #include <R_ext/RS.h>           /* for CallocCharBuf, Free */
 #include <errno.h>
 #include <algorithm>
@@ -180,6 +181,17 @@ using namespace rho;
    Java and other reference based languages where creation and
    initialization can be separated--we don't really have that option
    at the R level.  */
+
+/* ----- V e r s i o n -- T h r e e -- S a v e / R e s t o r e ----- */
+
+/* Experimental version. Currently extends version 2 by adding current native
+   encoding to the serialization header. This information is used
+   on de-serialization: deserialized strings without an encoding flag will be
+   converted to the current native encoding, if possible, or to (flagged)
+   UTF-8.
+
+   Version 3 also adds support for custom ALTREP serialization. Under
+   version 2 ALTREP objects are serialied like non-ALTREP ones. */
 
 /*
  * Forward Declarations
@@ -961,7 +973,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
  tailcall:
     R_CheckStack();
 #if RHO_FALSE
-    if (ALTREP(s)) {
+    if (ALTREP(s) && stream->version >= 3) {
 	SEXP info = ALTREP_SERIALIZED_CLASS(s);
 	SEXP state = ALTREP_SERIALIZED_STATE(s);
 	if (info != NULL && state != NULL) {
@@ -1185,6 +1197,17 @@ void R_Serialize(SEXP s, R_outpstream_t stream)
 	OutInteger(stream, R_VERSION);
 	OutInteger(stream, R_Version(2,3,0));
 	break;
+    case 3:
+    {
+	OutInteger(stream, version);
+	OutInteger(stream, R_VERSION);
+	OutInteger(stream, -1); /* released R versions can't read yet */
+	const char *natenc = R_nativeEncoding();
+	int nelen = (int) strlen(natenc);
+	OutInteger(stream, nelen);
+	OutString(stream, natenc, nelen);
+	break;
+    }
     default: Rf_error(_("version %d not supported"), version);
     }
 
@@ -1368,6 +1391,137 @@ InComplexVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     }
 }
 
+static int TryConvertString(void *obj, const char *inp, size_t inplen,
+                            char *buf, size_t *bufleft)
+{
+    if (int(Riconv(obj, NULL, NULL, &buf, bufleft)) == -1)
+	return -1;
+    return int(Riconv(obj, &inp, &inplen, &buf, bufleft));
+}
+
+static SEXP
+ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
+{
+    size_t buflen = inplen;
+
+    for(;;) {
+	size_t bufleft = buflen;
+	if (buflen < 1000) {
+	    char buf[buflen + 1];
+	    if (TryConvertString(obj, inp, inplen, buf, &bufleft) == -1) {
+		if (errno == E2BIG) {
+		    buflen *= 2;
+		    continue;
+		} else
+		    return R_NilValue;
+	    }
+	    return Rf_mkCharLenCE(buf, (int)(buflen - bufleft), enc);
+	} else {
+	    char *buf = CallocCharBuf(buflen);
+	    if (TryConvertString(obj, inp, inplen, buf, &bufleft) == -1) {
+		Free(buf);
+		if (errno == E2BIG) {
+		    buflen *= 2;
+		    continue;
+		} else
+		    return R_NilValue;
+	    }
+	    SEXP ans = Rf_mkCharLenCE(buf, (int)(buflen - bufleft), enc);
+	    Free(buf);
+	    return ans;
+	}
+    }
+}
+
+static char *native_fromcode(R_inpstream_t stream)
+{
+    char *from = stream->native_encoding;
+#ifdef HAVE_ICONV_CP1252
+    if (!strcmp(from, "ISO-8859-1"))
+	from = (char *) "CP1252";
+#endif
+    return from;
+}
+
+/* Read string into pre-allocated buffer, convert encoding if necessary, and
+   return a CHARSXP */
+static SEXP
+ReadChar(R_inpstream_t stream, char *buf, int length, int levs)
+{ 
+    InString(stream, buf, length);
+    buf[length] = '\0';
+    cetype_t enc = String::GPBits2Encoding(levs);
+    if (enc == CE_UTF8)
+	return Rf_mkCharLenCE(buf, length, CE_UTF8);
+    if (enc == CE_LATIN1)
+	return Rf_mkCharLenCE(buf, length, CE_LATIN1);
+    if (enc == CE_BYTES)
+	return Rf_mkCharLenCE(buf, length, CE_BYTES);
+    if (enc == CE_NATIVE)
+	return Rf_mkCharLenCE(buf, length, CE_NATIVE);
+
+    /* native encoding, not ascii */
+    if (!stream->native_encoding[0] || /* original native encoding unknown */
+        (stream->nat2nat_obj == (void *)-1 && /* translation impossible or disabled */
+         stream->nat2utf8_obj == (void *)-1))
+	return Rf_mkCharLenCE(buf, length, CE_NATIVE);
+    /* try converting to native encoding */
+    if (!stream->nat2nat_obj &&
+        !strcmp(stream->native_encoding, R_nativeEncoding())) {
+	/* No translation needed. Performance optimization but also leaves
+	   invalid strings in their encoding undetected. */
+	stream->nat2nat_obj = (void *)-1;
+	stream->nat2utf8_obj = (void *)-1;
+#ifdef WARN_DESERIALIZE_INVALID_UTF8
+	if (known_to_be_utf8 && !utf8Valid(buf))
+	    Rf_warning(_("deserializing invalid UTF-8 string '%s'"), buf);
+#endif
+    }
+    if (!stream->nat2nat_obj) {
+	char *from = native_fromcode(stream);
+	stream->nat2nat_obj = Riconv_open("", from);
+	if (stream->nat2nat_obj == (void *)-1)
+	    Rf_warning(_("unsupported conversion from '%s' to '%s'"), from, "");
+    }
+    if (stream->nat2nat_obj != (void *)-1) {
+	cetype_t enc = CE_NATIVE;
+	if (known_to_be_utf8) enc = CE_UTF8;
+	else if (known_to_be_latin1) enc = CE_LATIN1;
+	SEXP ans = ConvertChar(stream->nat2nat_obj, buf, length, enc);
+	if (ans != R_NilValue)
+	    return ans;
+	if (known_to_be_utf8) {
+	    /* nat2nat_obj is converting to UTF-8, no need to use nat2utf8_obj */
+	    stream->nat2utf8_obj = (void *)-1;
+	    char *from = native_fromcode(stream);
+	    Rf_warning(_("input string '%s' cannot be translated to UTF-8, is it valid in '%s'?"),
+	            buf, from);
+	}
+    }
+    /* try converting to UTF-8 */
+    if (!stream->nat2utf8_obj) {
+	char *from = native_fromcode(stream);
+	stream->nat2utf8_obj = Riconv_open("UTF-8", from);
+	if (stream->nat2utf8_obj == (void *)-1) {
+	    /* very unlikely */
+	    Rf_warning(_("unsupported conversion from '%s' to '%s'"),
+	            from, "UTF-8");
+	    Rf_warning(_("strings not representable in native encoding will not be translated"));
+	} else
+	    Rf_warning(_("strings not representable in native encoding will be translated to UTF-8"));	
+    }
+    if (stream->nat2utf8_obj != (void *)-1) {
+	SEXP ans = ConvertChar(stream->nat2utf8_obj, buf, length, CE_UTF8);
+	if (ans != R_NilValue)
+	    return ans;
+	char *from = native_fromcode(stream);
+	Rf_warning(_("input string '%s' cannot be translated to UTF-8, is it valid in '%s' ?"),
+	        buf, from);
+    }
+    /* no translation possible */
+    return Rf_mkCharLenCE(buf, length, CE_NATIVE); 
+}
+
 static R_xlen_t ReadLENGTH (R_inpstream_t stream)
 {
     int len = InInteger(stream);
@@ -1470,12 +1624,12 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	    return NA_STRING;
 	else {
 	    GCStackRoot<> str;
-	    cetype_t enc = String::GPBits2Encoding(levs);
+	    //cetype_t enc = String::GPBits2Encoding(levs);
 	    char* cbuf = CallocCharBuf(length);
-	    InString(stream, cbuf, length);
-	    GCStackRoot<> attributes(hasattr ? ReadItem(ref_table, stream) : nullptr);
+	    //InString(stream, cbuf, length);
 	    // levs and attributes are ignored for cached strings:
-	    str = Rf_mkCharLenCE(cbuf, length, enc);
+	    str = ReadChar(stream, cbuf, length, levs);
+		GCStackRoot<> attributes(hasattr ? ReadItem(ref_table, stream) : nullptr);
 	    Free(cbuf);
 	    return str;
 	}
@@ -1859,6 +2013,17 @@ SEXP R_Unserialize(R_inpstream_t stream)
     release_version = InInteger(stream);
     switch (version) {
     case 2: break;
+    case 3:
+    {
+	int nelen = InInteger(stream);
+	char nbuf[nelen + 1];
+	InString(stream, nbuf, nelen);
+	nbuf[nelen] = '\0';
+	nelen = nelen < (R_CODESET_MAX + 1) ? nelen : (R_CODESET_MAX + 1);
+	strncpy(stream->native_encoding, nbuf, nelen);
+	stream->native_encoding[nelen] = '\0';
+	break;
+    }
     default:
 	if (version != 2) {
 	    int vw, pw, sw;
@@ -1877,11 +2042,83 @@ SEXP R_Unserialize(R_inpstream_t stream)
     /* Read the actual object back */
     PROTECT(ref_table = MakeReadRefTable());
     obj =  ReadItem(ref_table, stream);
+
+    if (version == 3) {
+	if (stream->nat2nat_obj && stream->nat2nat_obj != (void *)-1) {
+	    Riconv_close(stream->nat2nat_obj);
+	    stream->nat2nat_obj = NULL;
+	}
+	if (stream->nat2utf8_obj && stream->nat2utf8_obj != (void *)-1) {
+	    Riconv_close(stream->nat2utf8_obj);
+	    stream->nat2utf8_obj = NULL;
+	}
+    }
     UNPROTECT(1);
 
     return obj;
 }
 
+SEXP R_SerializeInfo(R_inpstream_t stream)
+{
+    int version;
+    int writer_version, release_version, vv, vp, vs;
+    int anslen = 4;
+    SEXP ans, names;
+    char buf[128];
+
+    InFormat(stream);
+
+    /* Read the version numbers */
+    version = InInteger(stream);
+    if (version == 3)
+	anslen++;
+    writer_version = InInteger(stream);
+    release_version = InInteger(stream);
+
+    PROTECT(ans = Rf_allocVector(VECSXP, anslen));
+    PROTECT(names = Rf_allocVector(STRSXP, anslen));
+    SET_STRING_ELT(names, 0, Rf_mkChar("version"));
+    SET_VECTOR_ELT(ans, 0, Rf_ScalarInteger(version));
+    SET_STRING_ELT(names, 1, Rf_mkChar("writer_version"));
+    DecodeVersion(writer_version, &vv, &vp, &vs);
+    snprintf(buf, 128, "%d.%d.%d", vv, vp, vs); 
+    SET_VECTOR_ELT(ans, 1, Rf_mkString(buf));
+    SET_STRING_ELT(names, 2, Rf_mkChar("min_release_version"));
+    if (release_version < 0)
+	/* unreleased version of R */
+	SET_VECTOR_ELT(ans, 2, Rf_ScalarString(NA_STRING));
+    else { 
+	DecodeVersion(release_version, &vv, &vp, &vs);
+	snprintf(buf, 128, "%d.%d.%d", vv, vp, vs);
+	SET_VECTOR_ELT(ans, 2, Rf_mkString(buf));
+    }
+    SET_STRING_ELT(names, 3, Rf_mkChar("format"));
+    switch(stream->type) {
+    case R_pstream_ascii_format:
+	SET_VECTOR_ELT(ans, 3, Rf_mkString("ascii"));
+	break;
+    case R_pstream_binary_format:
+	SET_VECTOR_ELT(ans, 3, Rf_mkString("binary"));
+	break;
+    case R_pstream_xdr_format:
+	SET_VECTOR_ELT(ans, 3, Rf_mkString("xdr"));
+	break;
+    default:
+	Rf_error(_("unknown input format"));
+    }
+    if (version == 3) {
+	SET_STRING_ELT(names, 4, Rf_mkChar("native_encoding"));
+	int nelen = InInteger(stream);
+	char nbuf[nelen + 1];
+	InString(stream, nbuf, nelen);
+	nbuf[nelen] = '\0';
+	SET_VECTOR_ELT(ans, 4, Rf_mkString(nbuf));
+    }
+    Rf_setAttrib(ans, R_NamesSymbol, names);
+    UNPROTECT(2); /* ans, names */
+
+    return ans;
+}
 
 /*
  * Generic Persistent Stream Initializers
@@ -1889,10 +2126,10 @@ SEXP R_Unserialize(R_inpstream_t stream)
 
 void
 R_InitInPStream(R_inpstream_t stream, R_pstream_data_t data,
-		     R_pstream_format_t type,
-		     int (*inchar)(R_inpstream_t),
-		     void (*inbytes)(R_inpstream_t, void *, int),
-		     SEXP (*phook)(SEXP, SEXP), SEXP pdata)
+		R_pstream_format_t type,
+		int (*inchar)(R_inpstream_t),
+		void (*inbytes)(R_inpstream_t, void *, int),
+		SEXP (*phook)(SEXP, SEXP), SEXP pdata)
 {
     stream->data = data;
     stream->type = type;
@@ -1900,14 +2137,17 @@ R_InitInPStream(R_inpstream_t stream, R_pstream_data_t data,
     stream->InBytes = inbytes;
     stream->InPersistHookFunc = phook;
     stream->InPersistHookData = pdata;
+    stream->native_encoding[0] = 0;
+    stream->nat2nat_obj = NULL;
+    stream->nat2utf8_obj = NULL; 
 }
 
 void
 R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
-		      R_pstream_format_t type, int version,
-		      void (*outchar)(R_outpstream_t, int),
-		      void (*outbytes)(R_outpstream_t, const void *, int),
-		      SEXP (*phook)(SEXP, SEXP), SEXP pdata)
+		 R_pstream_format_t type, int version,
+		 void (*outchar)(R_outpstream_t, int),
+		 void (*outbytes)(R_outpstream_t, const void *, int),
+		 SEXP (*phook)(SEXP, SEXP), SEXP pdata)
 {
     stream->data = data;
     stream->type = type;
@@ -2206,6 +2446,50 @@ do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	R_InitConnInPStream(&in, con, R_pstream_any_format, hook, fun);
 	PROTECT(ans = R_Unserialize(&in)); /* paranoia about next line */
 	if(!wasopen)
+	    con->close(con);
+	UNPROTECT(1);
+    } catch (...) {
+	if (!wasopen && con->isopen)
+	    con->close(con);
+	throw;
+    }
+    return ans;
+}
+
+SEXP attribute_hidden
+do_serializeInfoFromConn(SEXP call, SEXP op, SEXP args, SEXP env)
+{
+    /* serializeInfoFromConn(conn) */
+
+    struct R_inpstream_st in;
+    Rconnection con;
+    SEXP ans;
+    Rboolean wasopen;
+
+    checkArity(op, args);
+
+    con = getConnection(Rf_asInteger(CAR(args)));
+
+    /* Now we need to do some sanity checking of the arguments.
+       A filename will already have been opened, so anything
+       not open was specified as a connection directly.
+     */
+    wasopen = con->isopen;
+    if (!wasopen) {
+	char mode[5];
+	strcpy(mode, con->mode);
+	strcpy(con->mode, "rb");
+	if (!con->open(con))
+	    Rf_error(_("cannot open the connection"));
+	strcpy(con->mode, mode);
+    }
+    try {
+	if (!con->canread)
+	    Rf_error(_("connection not open for reading"));
+
+	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, R_NilValue);
+	PROTECT(ans = R_SerializeInfo(&in)); /* paranoia about next line */
+	if (!wasopen)
 	    con->close(con);
 	UNPROTECT(1);
     } catch (...) {

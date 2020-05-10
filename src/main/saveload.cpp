@@ -79,6 +79,9 @@ using namespace rho;
  *    oldest reader R version as -1.
  */
 
+#define R_MAGIC_ASCII_V3   3001
+#define R_MAGIC_BINARY_V3  3002
+#define R_MAGIC_XDR_V3     3003
 #define R_MAGIC_ASCII_V2   2001
 #define R_MAGIC_BINARY_V2  2002
 #define R_MAGIC_XDR_V2     2003
@@ -568,7 +571,7 @@ static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines 
 	break;
     case INTSXP:
     case LGLSXP:
-	len = m->InInteger(fp, d);;
+	len = m->InInteger(fp, d);
 	s = Rf_allocVector(type, len);
 	/* skip over the vector content */
 	for (j = 0; j < uint(len); j++)
@@ -640,7 +643,7 @@ static void RestoreSEXP(SEXP s, FILE *fp, InputRoutines *m, NodeInfo *node, int 
 	break;
     case INTSXP:
     case LGLSXP:
-	len = m->InInteger(fp, d);;
+	len = m->InInteger(fp, d);
 	for (j = 0; j < uint(len); j++)
 	    INTEGER(s)[j] = m->InInteger(fp, d);
 	break;
@@ -1795,14 +1798,23 @@ static void R_WriteMagic(FILE *fp, int number)
     case R_MAGIC_XDR_V1:     /* Version 1 - R Data, XDR Binary Format */
 	strcpy(reinterpret_cast<char*>(buf), "RDX1");
 	break;
-    case R_MAGIC_ASCII_V2:   /* Version >=2 - R Data, ASCII Format */
+    case R_MAGIC_ASCII_V2:   /* Version 2 - R Data, ASCII Format */
 	strcpy(reinterpret_cast<char*>(buf), "RDA2");
 	break;
-    case R_MAGIC_BINARY_V2:  /* Version >=2 - R Data, Binary Format */
+    case R_MAGIC_BINARY_V2:  /* Version 2 - R Data, Binary Format */
 	strcpy(reinterpret_cast<char*>(buf), "RDB2");
 	break;
-    case R_MAGIC_XDR_V2:     /* Version >=2 - R Data, XDR Binary Format */
+    case R_MAGIC_XDR_V2:     /* Version 2 - R Data, XDR Binary Format */
 	strcpy(reinterpret_cast<char*>(buf), "RDX2");
+	break;
+    case R_MAGIC_ASCII_V3:   /* Version >=3 - R Data, ASCII Format */
+	strcpy(reinterpret_cast<char*>(buf), "RDA3");
+	break;
+    case R_MAGIC_BINARY_V3:  /* Version >=3 - R Data, Binary Format */
+	strcpy(reinterpret_cast<char*>(buf), "RDB3");
+	break;
+    case R_MAGIC_XDR_V3:     /* Version >=3 - R Data, XDR Binary Format */
+	strcpy(reinterpret_cast<char*>(buf), "RDX3");
 	break;
     default:
 	buf[0] = static_cast<unsigned char>((number/1000) % 10 + '0');
@@ -1847,6 +1859,15 @@ static int R_ReadMagic(FILE *fp)
     else if (streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5)) {
 	return R_MAGIC_XDR_V2;
     }
+    if (streqln(reinterpret_cast<char*>(buf), "RDA3\n", 5)) {
+	return R_MAGIC_ASCII_V3;
+    }
+    else if (streqln(reinterpret_cast<char*>(buf), "RDB3\n", 5)) {
+	return R_MAGIC_BINARY_V3;
+    }
+    else if (streqln(reinterpret_cast<char*>(buf), "RDX3\n", 5)) {
+	return R_MAGIC_XDR_V3;
+    }
     else if (streqln(reinterpret_cast<char *>(buf), "RD", 2))
 	return R_MAGIC_MAYBE_TOONEW;
 
@@ -1879,12 +1900,13 @@ void attribute_hidden R_SaveToFileV(SEXP obj, FILE *fp, int ascii, int version)
 	struct R_outpstream_st out;
 	R_pstream_format_t type;
 	int magic;
+	/* version == 0 means R_DefaultSerializeVersion, currently 3 */
 	if (ascii) {
-	    magic = R_MAGIC_ASCII_V2;
+	    magic = (version == 2) ? R_MAGIC_ASCII_V2 : R_MAGIC_ASCII_V3;
 	    type = R_pstream_ascii_format;
 	}
 	else {
-	    magic = R_MAGIC_XDR_V2;
+	    magic = (version == 2) ? R_MAGIC_XDR_V2 : R_MAGIC_XDR_V3;
 	    type = R_pstream_xdr_format;
 	}
 	R_WriteMagic(fp, magic);
@@ -1927,12 +1949,15 @@ SEXP attribute_hidden R_LoadFromFile(FILE *fp, int startup)
     case R_MAGIC_XDR_V1:
 	return_and_free(NewXdrLoad(fp, &data));
     case R_MAGIC_ASCII_V2:
+    case R_MAGIC_ASCII_V3:
 	R_InitFileInPStream(&in, fp, R_pstream_ascii_format, nullptr, nullptr);
 	return_and_free(R_Unserialize(&in));
     case R_MAGIC_BINARY_V2:
+    case R_MAGIC_BINARY_V3:
 	R_InitFileInPStream(&in, fp, R_pstream_binary_format, nullptr, nullptr);
 	return_and_free(R_Unserialize(&in));
     case R_MAGIC_XDR_V2:
+    case R_MAGIC_XDR_V3:
 	R_InitFileInPStream(&in, fp, R_pstream_xdr_format, nullptr, nullptr);
 	return_and_free(R_Unserialize(&in));
     default:
@@ -2203,7 +2228,7 @@ void R_RestoreGlobalEnvFromFile(const char *name, Rboolean quiet)
 /* Ideally it should be possible to do this entirely in R code with
    something like
 
-	magic <- if (ascii) "RDA2\n" else ...
+	magic <- if (ascii) "RDA3\n" else ...
 	writeChar(magic, con, eos = NULL)
 	val <- lapply(list, get, envir = envir)
 	names(val) <- list
@@ -2227,7 +2252,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
     Rconnection con;
     struct R_outpstream_st out;
     R_pstream_format_t type;
-    const char *magic;
+    char magic[6];
 
     if (TYPEOF(list_) != STRSXP)
 	Rf_error(_("first argument must be a character vector"));
@@ -2266,17 +2291,20 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 	if(!con->canwrite)
 	    Rf_error(_("connection not open for writing"));
 
+    strcpy(magic, "RD??\n");
 	if (ascii) {
-	    magic = "RDA2\n";
+	    magic[2] = 'A';
 	    type = (ascii == NA_LOGICAL) ?
 		R_pstream_asciihex_format : R_pstream_ascii_format;
 	}
-	else {
-	    if (con->text)
+    else {
+	if (con->text)
 		Rf_error(_("cannot save XDR format to a text-mode connection"));
-	    magic = "RDX2\n";
+	    magic[2] = 'X';
 	    type = R_pstream_xdr_format;
 	}
+    /* if version is too high, R_Serialize will fail with error */
+    magic[3] = '0' + version;
 
 	if (con->text)
 	    Rconn_printf(con, "%s", magic);
@@ -2357,7 +2385,10 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
 	if (count == 0) Rf_error(_("no input is available"));
 	if (streqln(reinterpret_cast<char*>(buf), "RDA2\n", 5) ||
 	    streqln(reinterpret_cast<char*>(buf), "RDB2\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5)) {
+	    streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDA3\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDB3\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDX3\n", 5)) {
 	    R_InitConnInPStream(&in, con, R_pstream_any_format, nullptr, nullptr);
 	    GCStackRoot<> unser(R_Unserialize(&in));
 	    R_InitReadItemDepth = R_ReadItemDepth = -Rf_asInteger(verbose_);
@@ -2374,3 +2405,57 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
     }
     return res;
 }
+
+SEXP attribute_hidden do_loadInfoFromConn2(SEXP call, SEXP op, SEXP args, SEXP env)
+{
+    /* loadInfoFromConn2(conn) */
+
+    struct R_inpstream_st in;
+    Rconnection con;
+    SEXP res = R_NilValue;
+    unsigned char buf[6];
+    size_t count;
+    Rboolean wasopen;
+
+    checkArity(op, args);
+
+    con = getConnection(Rf_asInteger(CAR(args)));
+
+    wasopen = con->isopen;
+    if(!wasopen) {
+	char mode[5];
+	strcpy(mode, con->mode);
+	strcpy(con->mode, "rb");
+	if(!con->open(con)) Rf_error(_("cannot open the connection"));
+	strcpy(con->mode, mode);
+    }
+    try {
+    if(!con->canread) Rf_error(_("connection not open for reading"));
+    if(con->text) Rf_error(_("can only load() from a binary connection"));
+
+    /* check magic */
+    memset(buf, 0, 6);
+    count = con->read(buf, sizeof(char), 5, con);
+    if (count == 0) Rf_error(_("no input is available"));
+    if (streqln(reinterpret_cast<char*>(buf), "RDA2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDB2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDA3\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDB3\n", 5) ||
+	    streqln(reinterpret_cast<char*>(buf), "RDX3\n", 5)) {
+	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, NULL);
+	/* PROTECT is paranoia: some close() method might allocate */
+	PROTECT(res = R_SerializeInfo(&in));
+	if(!wasopen) con->close(con);
+	UNPROTECT(1);
+    } else
+	Rf_error(_("the input does not start with a magic number compatible with loading from a connection"));
+    }
+    catch(...){
+	if (!wasopen && con->isopen)
+	    con->close(con);
+        throw;
+    }
+    return res;
+}
+

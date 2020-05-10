@@ -97,7 +97,8 @@ R_runR <- function(cmd = NULL, Ropts = "", env = "",
 
 setRlibs <-
     function(lib0 = "", pkgdir = ".", suggests = FALSE, libdir = NULL,
-             self = FALSE, self2 = TRUE, quote = FALSE, LinkingTo = FALSE)
+             self = FALSE, self2 = TRUE, quote = FALSE, LinkingTo = FALSE,
+             tests = FALSE)
 {
     WINDOWS <- .Platform$OS.type == "windows"
     useJunctions <- WINDOWS && !nzchar(Sys.getenv("R_WIN_NO_JUNCTIONS"))
@@ -153,11 +154,14 @@ setRlibs <-
     else {
         ## we always need to be able to recognise 'vignettes'
         VB <- unname(pi$DESCRIPTION["VignetteBuilder"])
-        if(is.na(VB)) character()
+        sug <- if(is.na(VB)) character()
         else {
             VB <- unlist(strsplit(VB, ","))
             unique(gsub('[[:space:]]', '', VB))
         }
+        if(tests) ## we need the test suite package available
+            c(sug, intersect(names(pi$Suggests), c("RUnit", "testthat")))
+        else sug
     }
     deps <- unique(c(names(pi$Depends), names(pi$Imports),
                      if(LinkingTo) names(pi$LinkingTo),
@@ -347,7 +351,7 @@ setRlibs <-
 
         if (!extra_arch) {
             if(dir.exists("build")) check_build()
-            check_meta()  # Check DESCRIPTION meta-information.
+            db <- check_meta()  # Check DESCRIPTION meta-information.
             check_top_level()
             check_detritus()
             check_indices()
@@ -382,6 +386,7 @@ setRlibs <-
 
         if (!is_base_pkg && !extra_arch) check_src_dir(desc)
 
+        check_src()
         if(do_install &&
            dir.exists("src") &&
            length(so_symbol_names_table)) # suitable OS
@@ -677,6 +682,51 @@ setRlibs <-
         } else resultLog(Log, "OK")
     }
 
+    ## Look for serialized objects, and check their version
+
+    ## These are most commonly data/*.{Rdata,rda}, R/sysdata.rda files,
+    ## and build/vignette.rds
+    ## But packages have other .rds files in many places.
+    ##
+    ## We need to so this before installation, which may create
+    ## src/symbols.rds in the sources.
+    check_serialization <- function(allfiles)
+    {
+        getVerLoad <- function(file)
+        {
+            ## This could look at the magic number, but for a short
+            ## while version 3 files were produced with a version-2
+            ## magic number.
+            con <- gzfile(file, "rb"); on.exit(close(con))
+            ## The .Internal gives an errror on version-1 files
+            tryCatch(.Internal(loadInfoFromConn2(con))$version,
+                     error = function(e) 1L)
+        }
+        getVerSer <- function(file)
+        {
+            con <- gzfile(file, "rb"); on.exit(close(con))
+            ## In case this is not a serialized object
+            tryCatch(.Internal(serializeInfoFromConn(con))$version,
+                     error = function(e) 0L)
+        }
+        checkingLog(Log, "serialized R objects in the sources")
+        loadfiles <- grep("[.](rda|RData)$", allfiles, value = TRUE)
+        serfiles <- grep("[.]rds$", allfiles, value = TRUE)
+        vers1 <- sapply(loadfiles, getVerLoad)
+        vers2 <- sapply(serfiles, getVerSer)
+        bad <- c(vers1, vers2)
+        bad <- names(bad[bad >= 3L])
+        if(length(bad)) {
+            msg <- "Found file(s) with version 3 serialization:"
+            warningLog(Log, msg)
+            printLog0(Log, paste0(.pretty_format(sort(bad)), "\n"))
+            wrapLog("Such files are only readable in R >= 3.5.0.\n",
+                    "Recreate them with R < 3.5.0 or",
+                    "save(version = 2) or saveRDS(version = 2)",
+                    "as appropriate")
+        } else resultLog(Log, "OK")
+    }
+
     check_meta <- function()
     {
         ## If we just installed the package (via R CMD INSTALL), we already
@@ -686,6 +736,15 @@ setRlibs <-
         checkingLog(Log, "DESCRIPTION meta-information")
         dfile <- if (is_base_pkg) "DESCRIPTION.in" else "DESCRIPTION"
         any <- FALSE
+
+        ## Check the encoding -- do first as it gives a WARNING
+        Rcmd <- sprintf("tools:::.check_package_description_encoding(\"%s\")", dfile)
+        out <- R_runR0(Rcmd, R_opts2, "R_DEFAULT_PACKAGES=NULL")
+        if (length(out)) {
+            warningLog(Log)
+            any <- TRUE
+            printLog0(Log, paste(out, collapse = "\n"), "\n")
+        }
 
         ## FIXME: this does not need to be run in another process
         ## but that needs conversion to format().
@@ -699,23 +758,10 @@ setRlibs <-
                 summaryLog(Log)
                 do_exit(1L)
             } else {
-                ## <FIXME>
-                ## This is not quite right: if we issue a NOTE here, we
-                ## can no longer issue a WARNING in the description
-                ## encoding check below ....
                 noteLog(Log)
                 any <- TRUE
                 printLog0(Log, paste(out, collapse = "\n"), "\n")
-                ## </FIXME>
             }
-        }
-        ## Check the encoding.
-        Rcmd <- sprintf("tools:::.check_package_description_encoding(\"%s\")", dfile)
-        out <- R_runR0(Rcmd, R_opts2, "R_DEFAULT_PACKAGES=NULL")
-        if (length(out)) {
-            warningLog(Log)
-            any <- TRUE
-            printLog0(Log, paste(out, collapse = "\n"), "\n")
         }
 
         ## Check the license.
@@ -777,6 +823,18 @@ setRlibs <-
                 yorig <- sapply(yorig, clean_up)
                 y <- sapply(y, clean_up)
                 diff <- y != yorig
+                ## <FIXME>
+                if(diff[1L]
+                   && grepl("https://orcid.org/", y[1L], fixed = TRUE)) {
+                    ## Argh.  Might be from using the new ORCID id
+                    ## mechanism but having built with R < 3.5.0.
+                    ## Let's ignore ...
+                    ## Remove eventually.
+                    aar$comment <- lapply(aar$comment, unname)
+                    y1 <- utils:::.format_authors_at_R_field_for_author(aar)
+                    diff[1L] <- clean_up(y1) != yorig[1L]
+                }
+                ## </FIXME>
                 if(any(diff)) {
                     if(!any) noteLog(Log)
                     any <- TRUE
@@ -866,7 +924,35 @@ setRlibs <-
             printLog0(Log, paste(out, collapse = "\n"), "\n")
         }
 
+        ## Dependence on say R >= 3.4.3 when 3.4 is current can
+        ## cause problems with revdeps (and did for 3.2.x).
+        ## We only check recent ones: maybe previous two
+        ## (R-release and R-old-release) while this is R-devel
+        Check_R_deps <- Sys.getenv("_R_CHECK_R_DEPENDS_", "FALSE")
+        act <- if(Check_R_deps %in% c("note", "warn")) TRUE
+               else config_val_to_logical(Check_R_deps)
+        if(act) {
+            Rver <-.split_description(db, verbose = TRUE)$Rdepends2
+            if(length(Rver) && Rver[[1L]]$op == ">=") {
+                ver <- unclass(Rver[[1L]]$version)[[1L]]
+                thisver <- unclass(getRversion())[[1L]]
+                ## needs updating if we ever go to 4.0
+                tv <- if(thisver[1L] == 3L) thisver[2L] - 2L else 4L
+                if (length(ver) == 3L && ver[3L] != 0 &&
+                    ((ver[1L] > 3L) ||
+                     (ver[1L] == 3L) && (ver[2L] >= tv) )) {
+                    ## This is not quite right: may have NOTE-d above
+                    if(Check_R_deps == "warn") warningLog(Log)
+                    else if(!any) noteLog(Log)
+                    any <- TRUE
+                    printLog0(Log,
+                              sprintf("Dependence on R version %s not with patchlevel 0\n",
+                                      sQuote(format(Rver[[1L]]$version))))
+              }
+            }
+        }
         if (!any) resultLog(Log, "OK")
+        return(db)
     }
 
     check_build <- function()
@@ -2535,6 +2621,115 @@ setRlibs <-
             }
             if (!any) resultLog(Log, "OK")
         }
+
+        ## Check include directives for use of R_HOME which may contain
+        ## spaces for which there is no portable way to quote/escape.
+        all_files <- dir(".", pattern = "^Makefile*", recursive = TRUE)
+        all_files <- unique(sort(all_files))
+        if(length(all_files)) {
+            checkingLog(Log, "include directives in Makefiles")
+            bad_lines <-
+                lapply(all_files,
+                       function(f) {
+                           s <- readLines(f, warn = FALSE)
+                           grep("^include .*R_HOME", s, value = TRUE)
+                       })
+            bad_files <- all_files[lengths(bad_lines) > 0L]
+            if(length(bad_files)) {
+                noteLog(Log,
+                        "Found the following Makefile(s) with an include directive with a pathname using R_HOME:")
+                printLog0(Log, .format_lines_with_indent(bad_files),
+                          "\n")
+                msg <-
+                    c("Even though not recommended, variable R_HOME may contain spaces.",
+                      "Makefile directives use space as a separator and there is no portable",
+                      "way to quote/escape the space in Make rules and directives.  However,",
+                      "one can and should quote pathnames when passed from Makefile to the",
+                      "shell, and this can be done specifically when invoking Make recursively.",
+                      "It is therefore recommended to use the Make '-f' option to include files",
+                      "in directories specified using R_HOME.  This option can be specified",
+                      "multiple times to include multiple Makefiles.  Note that 'Makeconf' is",
+                      "included automatically into top-level makefile of a package.",
+                      "More information can be found in 'Writing R Extensions'.")
+                printLog0(Log, paste(msg, collapse = "\n"), "\n")
+            } else resultLog(Log, "OK")
+        }
+
+    }
+
+    check_src <- function() {
+        Check_pragmas <- Sys.getenv("_R_CHECK_PRAGMAS_", "FALSE")
+        if(config_val_to_logical(Check_pragmas) &&
+           any(dir.exists(c("src", "inst/include")))) {
+            checkingLog(Log, "pragmas in C/C++ headers and code")
+            ans <- .check_pragmas('.')
+            if(length(ans)) {
+                if(length(warn <- attr(ans, "warn")))
+                    {
+                        warningLog(Log)
+                        msg <- if(length(warn) == 1L)
+                            "File which contains pragma(s) suppressing important diagnostics:"
+                        else
+                            "Files which contain pragma(s) suppressing important diagnostics:"
+                        msg <- c(msg, .pretty_format(warn))
+                        rest <- setdiff(ans, warn)
+                        if(length(rest)) {
+                            msg <- c(msg, if(length(rest) == 1L)
+                                     "File which contains pragma(s) suppressing diagnostics:"
+                            else
+                                     "Files which contain pragma(s) suppressing diagnostics:")
+                            msg <- c(msg, .pretty_format(rest))
+                        }
+                   } else {
+                        noteLog(Log)
+                        msg <- if(length(ans) == 1L)
+                            "File which contains pragma(s) suppressing diagnostics:"
+                        else
+                            "Files which contain pragma(s) suppressing diagnostics:"
+                        msg <- c(msg, .pretty_format(ans))
+                    }
+                printLog0(Log, paste(c(msg,""), collapse = "\n"))
+            } else resultLog(Log, "OK")
+        }
+
+        Check_flags <- Sys.getenv("_R_CHECK_COMPILATION_FLAGS_", "FALSE")
+        if(config_val_to_logical(Check_flags)) {
+            instlog <- if (startsWith(install, "check"))
+                substr(install, 7L, 1000L)
+            else
+                file.path(pkgoutdir, "00install.out")
+            if (file.exists(instlog) && dir.exists('src')) {
+                checkingLog(Log, "compilation flags used")
+                lines <- readLines(instlog, warn = FALSE)
+                poss <- grep(" -W", lines,  useBytes = TRUE, value = TRUE)
+                tokens <- unlist(strsplit(poss, " ", perl = TRUE,
+                                          useBytes = TRUE))
+                warns <- grep("^[-]W", tokens,
+                              value = TRUE, perl = TRUE, useBytes = TRUE)
+                ## Not sure -Wextra and -Weverything are portable, though
+                ## -Werror is not compiler independent
+                ##   (as what is a warning is not)
+                warns <- setdiff(unique(warns),
+                                 c("-Wall", "-Wextra", "-Weverything"))
+                warns <- warns[!startsWith(warns, "-Wl,")] # linker flags
+                diags <- grep(" -fno-diagnostics-show-option", tokens,
+                              useBytes = TRUE, value = TRUE)
+                warns <- c(warns, diags)
+                if(any(grepl("^-Wno-", warns)) || length(diags)) {
+                    warningLog(Log)
+                    msg <- c("Compilation used the following non-portable flag(s):",
+                             .pretty_format(sort(warns)),
+                             "including flag(s) suppressing warnings")
+                    printLog0(Log, paste(c(msg,""), collapse = "\n"))
+                } else if(length(warns)) {
+                    warningLog(Log)  # might consider NOTE instead
+                    msg <- c("Compilation used the following non-portable flag(s):",
+                             .pretty_format(sort(warns)))
+                    printLog0(Log, paste(c(msg,""), collapse = "\n"))
+                } else
+                    resultLog(Log, "OK")
+            }
+        }
     }
 
     check_sos <- function() {
@@ -2567,12 +2762,12 @@ setRlibs <-
             msg <- if (nBad) {
                 if(haveObjs)
                     c("Compiled code should not call entry points which",
-                      "might terminate R nor write to stdout/stderr instead",
-                      "of to the console, nor the system RNG.\n")
+                      "might terminate R nor write to stdout/stderr instead of",
+                      "to the console, nor use Fortran I/O nor system RNGs.\n")
                 else
                     c("Compiled code should not call entry points which",
-                      "might terminate R nor write to stdout/stderr instead",
-                      "of to the console, nor the system RNG.",
+                      "might terminate R nor write to stdout/stderr instead of",
+                      "to the console, nor use Fortran I/O nor system RNGs.",
                       "The detected symbols are linked",
                       "into the code but might come from libraries",
                       "and not actually be called.\n")
@@ -2730,12 +2925,45 @@ setRlibs <-
                 Rcmd <- sprintf("suppressPackageStartupMessages(loadNamespace('%s', lib.loc = '%s'))",
                                 pkgname, libdir)
                 opts <- if(nzchar(arch)) R_opts4 else R_opts2
-                env <- paste0("_R_LOAD_CHECK_OVERWRITE_S3_METHODS_=", pkgname)
+                env <- Sys.getenv("_R_LOAD_CHECK_OVERWRITE_S3_METHODS_",
+                                  "NA")
+                env <- paste0("_R_LOAD_CHECK_OVERWRITE_S3_METHODS_=",
+                              if(env == "all") env else pkgname)
+                ## <FIXME>
+                ## Oh dear.  R-ints says that if env var
+                ## '_R_CHECK_OVERWRITE_REGISTERED_S3_METHODS_' is set to
+                ## something true,
+                ##   report already registered S3 methods in
+                ##   base/recommended packages which are overwritten
+                ##   when this package's namespace is loaded.
+                ## As of 2017-12, to make this work as documented we
+                ## really need to load all base and recommended packages
+                ## which register S3 methods first, which takes *quite
+                ## some time*.  There really should be a better way ...
+                ## Running with
+                ##   R_DEFAULT_PACKAGES=MASS,Matrix,boot,class,cluster,grDevices,graphics,grid,lattice,mgcv,nlme,nnet,parallel,rpart,spatial,splines,stats,survival,tcltk,tools,utils
+                ## does not suppress package startup messages: so try to
+                ## load the relevant base and recommended package
+                ## namespaces quietly ...
+                Rcmd <-
+                    c(sprintf("suppressPackageStartupMessages(loadNamespace('%s', lib.loc = '%s'))",
+                              ## Perhaps provide these sorted according
+                              ## to dependency?
+                              c("MASS", "Matrix", "boot", "class",
+                                "cluster", "grDevices",  "graphics",
+                                "grid", "lattice", "mgcv", "nlme",
+                                "nnet", "parallel", "rpart", "spatial",
+                                "splines", "stats", "survival", "tcltk",
+                                "tools", "utils"),
+                              .Library),
+                      Rcmd)
+                env <- c(env, "R_DEFAULT_PACKAGES=NULL")
                 out <- R_runR0(Rcmd, opts, env, arch = arch)
+                ## </FIXME>
                 if (any(grepl("^Registered S3 method.*overwritten", out))) {
                     out <- filtergrep("^<environment: namespace:", out)
                     warningLog(Log)
-                    printLog0(Log, paste(c(out, ""), collapse = "\n"))
+                    printLog0(Log, paste(out, collapse = "\n"), "\n")
                 } else resultLog(Log, "OK")
             }
         }
@@ -2812,7 +3040,6 @@ setRlibs <-
             }
             bad_lines <- grep("^Warning.*screen devices should not be used in examples",
                               lines, useBytes = TRUE, value = TRUE)
-
             if(length(bad_lines)) {
                 if(!bad) {
                     warningLog(Log,
@@ -2834,6 +3061,26 @@ setRlibs <-
                 printLog0(Log, .format_lines_with_indent(bad_lines), "\n")
                 wrapLog("Note that CRAN packages must never use more than two",
                         "cores simultaneously during their checks.")
+            }
+            bad_lines <- grep("^Warning: working directory was changed to",
+                              lines, useBytes = TRUE, value = TRUE)
+            if(length(bad_lines)) {
+                if(!bad) {
+                    warningLog(Log,
+                               "Found the following significant warnings:")
+                    bad <- TRUE
+                }
+                printLog0(Log, .format_lines_with_indent(bad_lines), "\n")
+            }
+            bad_lines <- grep("^Warning: items .* were removed from the search path",
+                              lines, useBytes = TRUE, value = TRUE)
+            if(length(bad_lines)) {
+                if(!bad) {
+                    warningLog(Log,
+                               "Found the following significant warnings:")
+                    bad <- TRUE
+                }
+                printLog0(Log, .format_lines_with_indent(bad_lines), "\n")
             }
             any <- any || bad
 
@@ -3035,7 +3282,7 @@ setRlibs <-
                               if(nzchar(arch)) R_opts4 else R_opts2,
                               env = c("LANGUAGE=en",
                                      "_R_CHECK_INTERNALS2_=1",
-                              if(nzchar(arch)) env0, jitstr, elibs),
+                              if(nzchar(arch)) env0, jitstr, elibs_tests),
                               stdout = "", stderr = "", arch = arch,
                               timeout = tlim)
             t2 <- proc.time()
@@ -3910,7 +4157,12 @@ setRlibs <-
                              ": warning: .* \\[-Wpointer-to-int-cast\\]",
                              ": warning: .* \\[-Wsequence-point\\]",
                              ": warning: .* \\[-Wformat-overflow=\\]",
-                             ": warning: .* \\[-Wnonull"
+                             ": warning: .* \\[-Wformat-truncation=\\]",
+                             ": warning: .* \\[-Wnonull",
+                             ": warning: .* \\[-Walloc-size-larger-than=\\]",
+                             ": warning: .* \\[-Wterminate\\]",
+                             ": warning: .* \\[-Wstringop", # mainly gcc8
+                             ": warning: .* \\[-Wclass-memaccess\\]" # gcc8
                              )
 
                 ## clang warnings
@@ -3923,6 +4175,11 @@ setRlibs <-
                              ": warning: .* \\[-Wpointer-arith\\]",
                              ": warning: .* \\[-Wunsequenced\\]",
                              ": warning: .* \\[-Wvla-extension\\]",
+                             ": warning: .* \\[-Wmismatched-new-delete\\]",
+                             ": warning: .* \\[-Wabsolute-value\\]",
+                             ": warning: .* \\[-Wreorder\\]", # also gcc
+                             ": warning: .* \\[-Wself-assign",
+                             ": warning: .* \\[-Wtautological",  # also gcc
                              ": warning: format string contains '[\\]0'",
                              ": warning: .* \\[-Wc[+][+]11-long-long\\]",
                              ": warning: empty macro arguments are a C99 feature",
@@ -3934,6 +4191,10 @@ setRlibs <-
 
                 lines <- grep(warn_re, lines, value = TRUE, useBytes = TRUE)
 
+                ## gcc seems not to know the size of pointers, so skip
+                ## some from -Walloc-size-larger-than= and -Wstringop-overflow=
+                lines <- grep("exceeds maximum object size.*-W(alloc-size-larger-than|stringop-overflow)", lines,
+                              value = TRUE, useBytes = TRUE, invert = TRUE)
                 ## skip for now some c++11-long-long warnings.
                 ex_re <- "(/BH/include/boost/|/RcppParallel/include/|/usr/include/|/usr/local/include/|/opt/X11/include/|/usr/X11/include/).*\\[-Wc[+][+]11-long-long\\]"
                 lines <- filtergrep(ex_re, lines, useBytes = TRUE)
@@ -4875,6 +5136,8 @@ setRlibs <-
     R_check_vignettes_skip_run_maybe <-
         config_val_to_logical(Sys.getenv("_R_CHECK_VIGNETTES_SKIP_RUN_MAYBE_",
                                          "FALSE"))
+    R_check_serialization <-
+        config_val_to_logical(Sys.getenv("_R_CHECK_SERIALIZATION_", "FALSE"))
 
     if (!nzchar(check_subdirs)) check_subdirs <- R_check_subdirs_strict
 
@@ -4900,6 +5163,10 @@ setRlibs <-
         Sys.setenv("_R_CHECK_PACKAGES_USED_IGNORE_UNUSED_IMPORTS_" = "TRUE")
         Sys.setenv("_R_CHECK_NATIVE_ROUTINE_REGISTRATION_" = "TRUE")
         Sys.setenv("_R_CHECK_NO_STOP_ON_TEST_ERROR_" = "TRUE")
+        Sys.setenv("_R_CHECK_PRAGMAS_" = "TRUE")
+        Sys.setenv("_R_CHECK_COMPILATION_FLAGS_" = "TRUE")
+        if(!nzchar(Sys.getenv("_R_CHECK_R_DEPENDS_")))
+            Sys.setenv("_R_CHECK_R_DEPENDS_" = "warn")
         R_check_vc_dirs <- TRUE
         R_check_executables_exclusions <- FALSE
         R_check_doc_sizes2 <- TRUE
@@ -4913,6 +5180,7 @@ setRlibs <-
         do_timings <- TRUE
         R_check_toplevel_files <- TRUE
         R_check_vignettes_skip_run_maybe <- TRUE
+        R_check_serialization <- TRUE
     } else {
         ## do it this way so that INSTALL produces symbols.rds
         ## when called from check but not in general.
@@ -5207,6 +5475,16 @@ setRlibs <-
 	    setwd(pkgdir)
             allfiles <- check_file_names()
             if (R_check_permissions) check_permissions(allfiles)
+            if (!is_base_pkg && R_check_serialization) {
+                ## We should not not do this if there is a dependence
+                ## on R >= 3.5.0, and we have to check that on the sources.
+                db <- .read_description("DESCRIPTION")
+                Rver <-.split_description(db, verbose = TRUE)$Rdepends2
+                if(length(Rver) && Rver[[1L]]$op == ">="
+                   && Rver[[1L]]$version >= "3.5.0") {
+                       ## skip
+                } else check_serialization(allfiles)
+            }
 	    setwd(startdir)
 
             ## record this before installation.
@@ -5256,6 +5534,13 @@ setRlibs <-
         elibs <- if(is_base_pkg) character()
         else if(R_check_depends_only)
             setRlibs(pkgdir = pkgdir, libdir = libdir)
+        else if(R_check_suggests_only)
+            setRlibs(pkgdir = pkgdir, libdir = libdir, suggests = TRUE)
+        else character()
+
+        elibs_tests <- if(is_base_pkg) character()
+        else if(R_check_depends_only)
+            setRlibs(pkgdir = pkgdir, libdir = libdir, tests = TRUE)
         else if(R_check_suggests_only)
             setRlibs(pkgdir = pkgdir, libdir = libdir, suggests = TRUE)
         else character()

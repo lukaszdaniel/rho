@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-27 rd8fc157d7a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-02 r51758ec08d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-11-30 r73800) -- "Frisbee Sailing"
+R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -522,6 +522,16 @@ pckgDs> ##D
 pckgDs> ##D if(packageVersion("MASS") < "7.3.29")
 pckgDs> ##D   message("you need to update 'MASS'")
 pckgDs> ## End(No test)
+pckgDs> pu <- packageDate("utils")
+
+pckgDs> ## No test: 
+pckgDs> ##D str(pu)
+pckgDs> ## End(No test)
+pckgDs> stopifnot(identical(pu, packageDate(desc = packageDescription("utils"))),
+pckgDs+           identical(pu, packageDate("stats"))) # as "utils" and "stats" are
+
+pckgDs>                                    # both 'base R' and "Built" at same time
+pckgDs> 
 pckgDs> 
 pckgDs> 
 > 

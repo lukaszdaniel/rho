@@ -89,8 +89,7 @@ String* String::create(const std::string& text, cetype_t encoding, bool isAscii)
     size_t size = sizeof(String) + text.size() + 1;
     void* storage = GCNode::operator new(size);
     char* character_storage = (char*)storage + sizeof(String);
-    String* result = new(storage) String(character_storage, text, encoding,
-					 isAscii);
+    String* result = new(storage) String(character_storage, text, encoding, isAscii);
     return result;
 }
 

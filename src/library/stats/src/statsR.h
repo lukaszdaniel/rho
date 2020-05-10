@@ -17,7 +17,6 @@
  *  https://www.R-project.org/Licenses/
  */
 
-
 /* auxiliary */
 SEXP getListElement(SEXP list, const char *str);
 

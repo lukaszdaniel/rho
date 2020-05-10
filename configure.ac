@@ -1305,6 +1305,7 @@ if test "${GCC}" = yes; then
   esac
   shlib_ldflags="-shared"
 fi
+## G77 includes gfortran
 if test "${G77}" = yes; then
   case "${host_cpu}" in
     sparc*|ppc64*|powerpc64*|s390*)
@@ -1315,6 +1316,12 @@ if test "${G77}" = yes; then
       ;;
   esac
 fi
+## Assume flang is the same as clang (it is a modified front end)
+case "${F77}" in
+  *flang)
+    fpicflags=${cpicflags}
+    ;;
+esac
 if test "${GXX}" = yes; then
   case "${host_cpu}" in
     sparc*|ppc64*|powerpc64*|s390*)
@@ -1524,6 +1531,7 @@ rm -f libconftest${DYLIB_EXT} conftest.c
         if test "${GCC}" = yes; then
           cpicflags="-fPIC"
         fi  
+	## G77 includes gfortran
         if test "${G77}" = yes; then
           fpicflags="-fPIC"
         fi
@@ -1561,7 +1569,7 @@ rm -f libconftest${DYLIB_EXT} conftest.c
         fi
       fi
     fi
-    ## G77 include gfortran
+    ## G77 includes gfortran
     if test "${G77}" != yes; then
       fpicflags="-PIC"
     else
@@ -2504,7 +2512,6 @@ AC_SUBST(FCLIBS)
 ## OpenMP package stuff (needs to come *after* configuration of all
 ## compilers).
 ## We allow the users to override this for packages only (for now)
-## FIXME: what if SHLIB_OPENMP_?FLAGS is set but empty? (could use -n "${VAR+set}")
 if test "x${shlib_ld_was_given}" = xno -a \
         "${SHLIB_LD}" = "\$(CC)" -a \
         "x${ac_cv_prog_c_openmp}" != "xunsupported" -a \
@@ -2584,6 +2591,9 @@ case "${host_os}" in
       ## Portland Group
       *pgf95|*pgf90)
         fcpicflags="-fpic"
+        ;;
+      *flang)
+        fcpicflags=${cpicflags}
         ;;
     esac
     ;;

@@ -55,8 +55,7 @@ namespace rho {
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
     if (i < 0 || i >= XLENGTH(x))
-	Rf_error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"),
-	      i, XLENGTH(x));
+	Rf_error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"), i, XLENGTH(x));
 
     /*  we need to allow vector-like types here */
     if(TYPEOF(x) == VECSXP) {

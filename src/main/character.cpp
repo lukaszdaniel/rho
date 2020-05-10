@@ -268,7 +268,7 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
     int *s_ = INTEGER(s);
     for (R_xlen_t i = 0; i < len; i++) {
 	SEXP sxi = STRING_ELT(x, i);
-	char msg_i[28]; sprintf(msg_i, "element %ld", (long)i+1);
+	char msg_i[38]; sprintf(msg_i, "element %ld", (long)i+1);
 	s_[i] = R_nchar(sxi, type_, Rboolean(allowNA), Rboolean(keepNA), msg_i);
     }
     R_FreeStringBufferL(&cbuff);

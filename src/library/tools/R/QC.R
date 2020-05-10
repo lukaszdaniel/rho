@@ -4267,7 +4267,7 @@ function(package, dir, lib.loc = NULL)
                                                        FALSE)))
                 !good & (thisfile[this] %in% aliases1)
             } else FALSE
-            db[this, "bad"] <- !good & !suspect            
+            db[this, "bad"] <- !good & !suspect
         }
         else
             unknown <- c(unknown, pkg)
@@ -6867,7 +6867,7 @@ function(dir, localOnly = FALSE)
             }
         }
         ## If we can successfully read in the citation file, also check
-        ## whether we can at least format the bibentries we obtained. 
+        ## whether we can at least format the bibentries we obtained.
         cfmt <- tryCatch(format(cinfo, style = "text"),
                          warning = identity, error = identity)
         ## This only finds unbalanced braces by default, with messages
@@ -6875,7 +6875,7 @@ function(dir, localOnly = FALSE)
         ##   unexpected '}'          ... } no {
         ## One can also find 'unknown Rd macros' by setting env var
         ## _R_UTILS_FORMAT_BIBENTRY_VIA_RD_PERMISSIVE_ to something
-        ## true, and perhaps we should do this here. 
+        ## true, and perhaps we should do this here.
         if(inherits(cfmt, "condition"))
             out$citation_problem_when_formatting <-
                 conditionMessage(cfmt)
@@ -6911,6 +6911,14 @@ function(dir, localOnly = FALSE)
         }
         if(bad)
             out$authors_at_R_calls <- aar
+        else {
+            ## Catch messages about deprecated arguments in person() calls.
+            aar <- meta["Authors@R"]
+            aut <- tryCatch(.eval_with_capture(utils:::.read_authors_at_R_field(aar)),
+                            error = identity)
+            if(!inherits(aut, "error") && length(msg <- aut$message))
+                out$authors_at_R_message <- msg
+        }
     }
 
     ## Check Title field.
@@ -7364,14 +7372,15 @@ function(dir, localOnly = FALSE)
     db <- tryCatch(CRAN_package_db(), error = identity)
     if(inherits(db, "error")) return(out)
 
-    meta0 <- unlist(db[db[, "Package"] == package, ])
-
+    meta1 <- db[db[, "Package"] == package, ]
+    ## this can have multiple entries, e.g. for recommended packages.
+    meta0 <- unlist(meta1[1L, ])
     m_m <- as.vector(meta["Maintainer"]) # drop name
     m_d <- meta0["Maintainer"]
     # There may be white space differences here
     m_m_1 <- gsub("[[:space:]]+", " ", m_m)
     m_d_1 <- gsub("[[:space:]]+", " ", m_d)
-    if(!all(m_m_1== m_d_1)) {
+    if(!all(m_m_1 == m_d_1)) {
         ## strwrap is used below, so we need to worry about encodings.
         ## m_d is in UTF-8 already
         if(Encoding(m_m) == "latin1") m_m <- iconv(m_m, "latin1")
@@ -7397,7 +7406,7 @@ function(dir, localOnly = FALSE)
         a0 <- .aspell_package_description_for_CRAN(meta = meta0)
         out$spelling <- a[is.na(match(a$Original, a0$Original)), ]
     }
-       
+
     out
 }
 
@@ -7568,6 +7577,11 @@ function(x, ...)
       },
       if(length(y <- x$authors_at_R_calls)) {
           "Authors@R field should be a call to person(), or combine such calls."
+      },
+      if(length(y <- x$authors_at_R_message)) {
+          paste(c("Authors@R field gives persons with deprecated elements:",
+                  paste0("  ", y)),
+                collapse = "\n")
       },
       if(length(y <- x$vignette_sources_only_in_inst_doc)) {
           if(identical(x$have_vignettes_dir, FALSE))
@@ -8616,6 +8630,49 @@ function(x)
     out
 }
 
+
+### ** .check_pragmas
+
+.check_pragmas <- function(dir)
+{
+    ## Check a source package for disallowed pragmas in src and inst/include
+    ## Try (not very hard) to avoid ones which are commented out (RcppParallel)
+    ## One could argue for recording all uses of #pragma ... diagnostic
+    ## There are also
+    ##   #pragma warning (disable:4996)
+    ##   #pragma warning(push, 0)
+    ## which seem intended for MSVC++ and hence not relevant here.
+    found <- warn <- character()
+    od <- setwd(dir); on.exit(setwd(od))
+    ff <- dir(c('src', 'inst/include'),
+              pattern = "[.](c|cc|cpp|h|hh|hpp)$",
+              full.names = TRUE, recursive = TRUE)
+    pat <- "^\\s*#pragma (GCC|clang) diagnostic ignored"
+    ## -Wmissing-field-initializers looks important but is not part of -Wall
+    pat2 <- "^\\s*#pragma (GCC|clang) diagnostic ignored[^-]*[-]W(uninitialized|float-equal|array-bound|format)"
+    for(f in ff) {
+        if(any(grepl(pat, readLines(f, warn = FALSE),
+                     perl = TRUE, useBytes = TRUE)))
+            found <- c(found, f)
+        else next
+        if(any(grepl(pat2, readLines(f, warn = FALSE),
+                     perl = TRUE, useBytes = TRUE)))
+            warn <- c(warn, f)
+    }
+    structure(found, class = "check_pragmas", warn = warn)
+}
+
+print.check_pragmas <- function(x, ...)
+{
+    if(length(x)) {
+        if(length(x) == 1L)
+            writeLines("File which contain pragma(s) suppressing diagnostics:")
+        else
+            writeLines("Files which contain pragma(s) suppressing diagnostics:")
+        .pretty_print(x)
+    }
+    x
+}
 
 ### Local variables: ***
 ### mode: outline-minor ***

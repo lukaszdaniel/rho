@@ -239,7 +239,7 @@ namespace rho {
 	 * representing the specified text in the specified encoding.
 	 */
 	static String* obtain(const std::string& str,
-			      cetype_t encoding = CE_NATIVE);
+			      cetype_t encoding = CE_UTF8);
 
 	/** @brief The name by which this type is known in R.
 	 *
@@ -480,7 +480,7 @@ extern "C" {
      */
     inline SEXP Rf_mkChar(const char* str)
     {
-	return rho::String::obtain(str);
+	return rho::String::obtain(str, CE_NATIVE);
     }
     
     /** @brief Get a pointer to a rho::String object.

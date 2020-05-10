@@ -670,7 +670,8 @@ enum {
     CTXT_BROWSER  = 16,
     CTXT_GENERIC  = 20,
     CTXT_RESTART  = 32,
-    CTXT_BUILTIN  = 64  /* used in profiling */
+    CTXT_BUILTIN  = 64, /* used in profiling */
+    CTXT_UNWIND   = 128
 };
 
 /*
@@ -1128,6 +1129,9 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 # define usemethod		Rf_usemethod
 # define ucstomb		Rf_ucstomb
 # define ucstoutf8		Rf_ucstoutf8
+#ifdef ADJUST_ENVIR_REFCNTS
+# define unpromiseArgs		Rf_unpromiseArgs
+#endif
 # define utf8toucs		Rf_utf8toucs
 # define utf8towcs		Rf_utf8towcs
 //# define vectorIndex		Rf_vectorIndex
@@ -1334,6 +1338,7 @@ SEXP Rf_mkPROMISE(SEXP, SEXP);
 //SEXP mkQUOTE(SEXP);
 //SEXP mkSYMSXP(SEXP, SEXP);
 SEXP Rf_mkTrue(void);
+const char *R_nativeEncoding(void);
 SEXP Rf_NewEnvironment(SEXP, SEXP, SEXP);
 void Rf_onintr(void);
 void Rf_onintrNoResume(void);
@@ -1391,6 +1396,9 @@ SEXP Rf_type2symbol(SEXPTYPE);
 void Rf_unbindVar(SEXP, SEXP);
 #ifdef ALLOW_OLD_SAVE
 void unmarkPhase(void);
+#endif
+#ifdef ADJUST_ENVIR_REFCNTS
+void unpromiseArgs(SEXP);
 #endif
 SEXP R_LookupMethod(SEXP, SEXP, SEXP, SEXP);
 //int usemethod(const char *, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP*);

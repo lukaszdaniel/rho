@@ -206,6 +206,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
 	if(s2 != R_UnboundValue) {
 	    s = Rf_duplicate(s2);
+	    SET_BODY(s, R_NilValue);
 	    SET_CLOENV(s, R_GlobalEnv);
 	    UNPROTECT(2);
 	    return s;

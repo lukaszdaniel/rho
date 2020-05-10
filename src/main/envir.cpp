@@ -797,7 +797,7 @@ SEXP attribute_hidden do_list2env(/*const*/ Expression* call, const BuiltInFunct
 
 */
 
-static int RemoveVariable(SEXP name, SEXP env)
+static bool RemoveVariable(rho::Symbol* name, rho::Environment* env)
 {
     if (env == R_BaseNamespace)
 	Rf_error(_("cannot remove variables from base namespace"));
@@ -818,9 +818,12 @@ SEXP attribute_hidden do_remove(/*const*/ Expression* call, const BuiltInFunctio
 {
     /* .Internal(remove(list, envir, inherits)) */
 
-    SEXP name, envarg, tsym, tenv;
+    rho::RObject* name;
+    rho::Environment* envarg;
+    rho::Symbol* tsym;
+    rho::Environment* tenv;
     int ginherits = 0;
-    int done, i;
+    bool done;
 
     name = list_;
     if (!Rf_isString(name))
@@ -834,15 +837,15 @@ SEXP attribute_hidden do_remove(/*const*/ Expression* call, const BuiltInFunctio
     if (ginherits == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "inherits");
 
-    for (i = 0; i < LENGTH(name); i++) {
+    for (int i = 0; i < LENGTH(name); i++) {
 	done = 0;
-	tsym = Rf_install(Rf_translateChar(STRING_ELT(name, i)));
+	tsym = static_cast<rho::Symbol*>(Rf_install(Rf_translateChar(STRING_ELT(name, i))));
 	tenv = envarg;
 	while (tenv != R_EmptyEnv) {
 	    done = RemoveVariable(tsym, tenv);
 	    if (done || !ginherits)
 		break;
-	    tenv = CDR(tenv);
+	    tenv =  static_cast<rho::Environment*>(CDR(static_cast<SEXP>(tenv)));
 	}
 	if (!done)
 	    Rf_warning(_("object '%s' not found"), Rf_EncodeChar(PRINTNAME(tsym)));
@@ -1952,7 +1955,7 @@ Environment*  Environment::findNamespace(const StringVector* spec)
     return SEXP_downcast<Environment*>(ans);
 }
 
-static SEXP checkNSname(SEXP call, SEXP name)
+static rho::Symbol* checkNSname(SEXP call, SEXP name)
 {
     switch (TYPEOF(name)) {
     case SYMSXP:
@@ -1966,7 +1969,7 @@ static SEXP checkNSname(SEXP call, SEXP name)
     default:
 	Rf_errorcall(call, _("bad namespace name"));
     }
-    return name;
+    return static_cast<rho::Symbol*>(name);
 }
 
 SEXP attribute_hidden do_regNS(/*const*/ Expression* call, const BuiltInFunction* op, RObject* name_, RObject* env_)
@@ -1982,11 +1985,11 @@ SEXP attribute_hidden do_regNS(/*const*/ Expression* call, const BuiltInFunction
 
 SEXP attribute_hidden do_unregNS(/*const*/ Expression* call, const BuiltInFunction* op, RObject* nsname_)
 {
-    SEXP name;
+    rho::Symbol* name;
     name = checkNSname(call, nsname_);
     if (Rf_findVarInFrame(R_NamespaceRegistry, name) == R_UnboundValue)
 	Rf_errorcall(call, _("namespace not registered"));
-    RemoveVariable(name, R_NamespaceRegistry);
+    RemoveVariable(name, static_cast<rho::Environment*>(R_NamespaceRegistry));
     return R_NilValue;
 }
 

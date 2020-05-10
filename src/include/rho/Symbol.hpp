@@ -169,7 +169,7 @@ namespace rho {
 	 * @return Pointer to a Symbol (preexisting or newly
 	 * created) with the required name.
 	 */
-	static Symbol* obtain(const String* name);;
+	static Symbol* obtain(const String* name);
 
 	/** @brief Get a pointer to a regular Symbol object.
 	 *
@@ -177,7 +177,7 @@ namespace rho {
 	 * will be created, and a pointer to it returned.  Otherwise a
 	 * pointer to the existing Symbol will be returned.
 	 *
-	 * @param name The name of the required Symbol (CE_NATIVE
+	 * @param name The name of the required Symbol (CE_UTF8
 	 *          encoding is assumed).  At present no check is made
 	 *          that the supplied string is a valid symbol name.
 	 *
@@ -192,7 +192,7 @@ namespace rho {
 	 * will be created, and a pointer to it returned.  Otherwise a
 	 * pointer to the existing Symbol will be returned.
 	 *
-	 * @param name The name of the required Symbol (CE_NATIVE
+	 * @param name The name of the required Symbol (CE_UTF8
 	 *          encoding is assumed).  At present no check is made
 	 *          that the supplied string is a valid symbol name.
 	 *

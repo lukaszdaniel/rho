@@ -721,7 +721,10 @@ static SEXP EnsureLocal(SEXP symbol, SEXP rho)
 	if(NAMED(vl) == 2) {
 	    vl = Rf_duplicate(vl);
 	    Rf_defineVar(symbol, vl, rho);
-	    SET_NAMED(vl, 1);
+	    /* set NAMED = 1 for true duplicates which have NAMED = 0;
+	       leave alone for SYMSXP and such for which duplicate()
+	       just returns its argument */
+	    if (NAMED(vl) == 0) SET_NAMED(vl, 1);
 	}
 	return vl;
     }
@@ -732,7 +735,10 @@ static SEXP EnsureLocal(SEXP symbol, SEXP rho)
 
     vl = Rf_duplicate(vl);
     Rf_defineVar(symbol, vl, rho);
-    SET_NAMED(vl, 1);
+    /* set NAMED = 1 for true duplicates which have NAMED = 0;
+       leave alone for SYMSXP and such for which duplicate()
+       just returns its argument */
+    if (NAMED(vl) == 0) SET_NAMED(vl, 1);
     return vl;
 }
 
@@ -1634,19 +1640,19 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	env = R_getS4DataSlot(env, ANYSXP); /* usually an ENVSXP */
     switch(TYPEOF(env)) {
     case NILSXP:
-	env = encl;     /* soeval(expr, NULL, encl) works */
+	env = encl;     /* so eval(expr, NULL, encl) works */
 	/* falls through */
     case ENVSXP:
 	PROTECT(env);	/* so we can unprotect 2 at the end */
 	break;
     case LISTSXP:
 	/* This usage requires all the pairlist to be named */
-	env = Rf_NewEnvironment(R_NilValue, Rf_duplicate(CADR(args)), encl);
+	env = Rf_NewEnvironment(R_NilValue, Rf_duplicate(env), encl);
 	PROTECT(env);
 	break;
     case VECSXP:
 	/* PR#14035 */
-	x = VectorToPairListNamed(CADR(args));
+	x = VectorToPairListNamed(env);
 	for (SEXP xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
 	    ENSURE_NAMEDMAX(CAR(xptr));
 	env = Rf_NewEnvironment(R_NilValue, x, encl);
@@ -1705,7 +1711,7 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    Environment::ReturnScope returnscope(working_env);
 	    try {
 		for (i = 0 ; i < n ; i++) {
-		    R_Srcref = getSrcref(srcrefs, i); 
+		    R_Srcref = getSrcref(srcrefs, i);
 		    tmp = Rf_eval(XVECTOR_ELT(expr, i), env);
 		}
 	    }

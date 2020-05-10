@@ -604,6 +604,7 @@ double *(REAL)(SEXP x) {
     if(TYPEOF(x) != REALSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
     return REAL(x);
 }
 #endif
@@ -612,6 +613,7 @@ const double *(REAL_RO)(SEXP x) {
     if(TYPEOF(x) != REALSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
+    CHKZLN(x);
     return REAL_RO(x);
 }
 

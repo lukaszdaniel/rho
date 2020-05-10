@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-04-27 rd8fc157d7a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-02 r51758ec08d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2017-11-30 r73800) -- "Frisbee Sailing"
+R Under development (unstable) (2018-01-01 r74000) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -29,6 +29,7 @@ Type 'q()' to quit R.
 > library('stats')
 > 
 > base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
 > cleanEx()
 > nameEx("AIC")
 > ### * AIC
@@ -3831,7 +3832,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7fa8e874c6f0>
+<environment: 0x7f76d20ae740>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -7408,7 +7409,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7fa8e8cdafa0>
+<environment: 0x7f76d2d349b0>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -12063,12 +12064,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7fa8e94e7990>
+<environment: 0x7f76d2368290>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7fa8e94e7990>
+<environment: 0x7f76d2368290>
 
 > 
 > 
@@ -12218,6 +12219,37 @@ NOTE: n is number in *each* group
 NOTE: n is number in *each* group
 
 >                                                  ## => n = 10451937
+> try(
++  power.prop.test(n=30, p1=0.90, p2=NULL, power=0.8)
++ ) # a warning  (which may become an error)
+Warning in command 'power.prop.test(n = 30, p1 = 0.9, p2 = NULL, power = 0.8)':
+  No p2 in in [p1, 1] can be found to achieve the desired power
+
+     Two-sample comparison of proportions power calculation 
+
+              n = 30
+             p1 = 0.9
+             p2 = 1.030182
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+
+> ## Reason:
+> power.prop.test(      p1=0.90, p2= 1.0, power=0.8) ##-> n = 73.37
+
+     Two-sample comparison of proportions power calculation 
+
+              n = 73.37427
+             p1 = 0.9
+             p2 = 1
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+
 > 
 > 
 > 
@@ -16158,7 +16190,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7fa8e945bfc0>
+<environment: 0x7f76d26edf90>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -18480,9 +18512,10 @@ Number of Fisher Scoring iterations: 6
 > base::options(contrasts = c(unordered = "contr.treatment",ordered = "contr.poly"))
 > ### * <FOOTER>
 > ###
+> cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  11.305 0.2 11.506 0 0 
+Time elapsed:  11.031 0.256 11.288 0 0 
 > grDevices::dev.off()
 null device 
           1 

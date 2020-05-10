@@ -581,6 +581,8 @@ static SEXP GetSrcLoc(SEXP srcref)
 
 static char errbuf[BUFSIZE];
 
+#define ERRBUFCAT(txt) strncat(errbuf, txt, BUFSIZE - strlen(errbuf))
+
 const char *R_curErrorBuf() {
     return errbuf;
 }
@@ -674,18 +676,18 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
 		    *p = '\n';
 		} else msgline1 = wd(tmp);
 		if (14 + wd(dcall) + msgline1 > LONGWARN)
-			strcat(errbuf, tail);
+		    ERRBUFCAT(tail);
 	    } else {
 		size_t msgline1 = strlen(tmp);
 		char *p = strchr(tmp, '\n');
 		if (p) msgline1 = int(p - tmp);
 		if (14 + strlen(dcall) + msgline1 > LONGWARN)
-		    strcat(errbuf, tail);
+		    ERRBUFCAT(tail);
 	    }
-	    strcat(errbuf, tmp);
+	    ERRBUFCAT(tmp);
 	} else {
-		snprintf(errbuf, BUFSIZE, _("Error: "));
-		strcat(errbuf, tmp); // FIXME
+	    snprintf(errbuf, BUFSIZE, _("Error: "));
+	    ERRBUFCAT(tmp); // FIXME
 	}
 	UNPROTECT(nprotect);
     }
@@ -704,17 +706,17 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
     }
     else {
 	p = errbuf + nc - 1;
-	if(*p != '\n') strcat(errbuf, "\n");
+	if(*p != '\n') ERRBUFCAT("\n");
     }
 
     if(R_ShowErrorCalls && call != R_NilValue) {  /* assume we want to avoid deparse */
 	tr = R_ConciseTraceback(call, 0);
 	size_t nc = strlen(tr);
 	if (nc && nc + strlen(errbuf) + 8 < BUFSIZE) {
-	    strcat(errbuf, _("Calls:"));
-	    strcat(errbuf, " ");
-	    strcat(errbuf, tr);
-	    strcat(errbuf, "\n");
+	    ERRBUFCAT(_("Calls:"));
+	    ERRBUFCAT(" ");
+	    ERRBUFCAT(tr);
+	    ERRBUFCAT("\n");
 	}
     }
     if (R_ShowErrorMessages) REprintf("%s", errbuf);
@@ -1528,11 +1530,39 @@ namespace {
     }
 }
 
-#define RESULT_SIZE 3
+#define RESULT_SIZE 4
+
+static SEXP R_HandlerResultToken = NULL;
+
+void attribute_hidden R_FixupExitingHandlerResult(SEXP result)
+{
+    /* The internal error handling mechanism stores the error message
+       in 'errbuf'.  If an on.exit() action is processed while jumping
+       to an exiting handler for such an error, then endcontext()
+       calls R_FixupExitingHandlerResult to save the error message
+       currently in the buffer before processing the on.exit
+       action. This is in case an error occurs in the on.exit action
+       that over-writes the buffer. The allocation should occur in a
+       more favorable stack context than before the jump. The
+       R_HandlerResultToken is used to make sure the result being
+       modified is associated with jumping to an exiting handler. */
+    if (result != NULL &&
+	TYPEOF(result) == VECSXP &&
+	XLENGTH(result) == RESULT_SIZE &&
+	VECTOR_ELT(result, 0) == R_NilValue &&
+	VECTOR_ELT(result, RESULT_SIZE - 1) == R_HandlerResultToken) {
+	SET_VECTOR_ELT(result, 0, Rf_mkString(errbuf));
+    }
+}
 
 SEXP attribute_hidden do_addCondHands(/*const*/ Expression* call, const BuiltInFunction* op, RObject* classes, RObject* handlers, RObject* parentenv, RObject* target, RObject* calling_)
 {
     int calling = Rf_asLogical(calling_);
+
+    if (R_HandlerResultToken == NULL) {
+	R_HandlerResultToken = Rf_allocVector(VECSXP, 1);
+	R_PreserveObject(R_HandlerResultToken);
+    }
 
     if (classes == R_NilValue || handlers == R_NilValue)
 	return R_HandlerStack;
@@ -1545,6 +1575,7 @@ SEXP attribute_hidden do_addCondHands(/*const*/ Expression* call, const BuiltInF
     SEXP oldstack = R_HandlerStack;
     
     SEXP result = Rf_allocVector(VECSXP, RESULT_SIZE);
+    SET_VECTOR_ELT(result, RESULT_SIZE - 1, R_HandlerResultToken);
 
     for (int i = n - 1; i >= 0; i--) {
 	SEXP klass = STRING_ELT(classes, i);

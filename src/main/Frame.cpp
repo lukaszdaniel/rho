@@ -77,8 +77,7 @@ void Frame::Binding::fromPairList(PairList* pl)
 {
     const RObject* tag = pl->tag();
     if (tag && tag != m_symbol)
-	Rf_error(_("internal error in %s"),
-		 "Frame::Binding::fromPairList()");
+	Rf_error(_("internal error in %s"), "Frame::Binding::fromPairList()");
     Origin pl_origin = Origin(pl->m_missing);
     if (pl->m_active_binding)
 	setFunction(SEXP_downcast<FunctionBase*>(pl->car()),
@@ -92,8 +91,7 @@ void Frame::Binding::initialize(Frame* frame, const Symbol* sym)
     if (m_frame)
 	Rf_error(_("internal error: binding already initialized"));
     if (!frame || !sym)
-	Rf_error(_("internal error in %s"),
-		 "Frame::Binding::initialize()");
+	Rf_error(_("internal error in %s"), "Frame::Binding::initialize()");
     m_frame = frame;
     m_symbol = sym;
 }
@@ -115,11 +113,9 @@ void Frame::Binding::setFunction(FunctionBase* function, Origin origin)
 void Frame::Binding::handleSetValueError() const
 {
     if (isLocked())
-	Rf_error(_("cannot change value of locked binding for '%s'"),
-		 symbol()->name()->c_str());
+	Rf_error(_("cannot change value of locked binding for '%s'"), symbol()->name()->c_str());
     if (isActive())
-	Rf_error(_("internal error: use %s for active bindings"),
-		 "setFunction()");
+	Rf_error(_("internal error: use %s for active bindings"), "setFunction()");
 }
 
 Frame::Frame(size_t size, bool check_list_size)

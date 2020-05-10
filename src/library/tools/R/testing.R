@@ -78,12 +78,14 @@ massageExamples <-
 
     cat("base::assign(\".oldSearch\", base::search(), pos = 'CheckExEnv')\n", file = out)
     ## cat("assign(\".oldNS\", loadedNamespaces(), pos = 'CheckExEnv')\n", file = out)
+    cat("base::assign(\".old_wd\", base::getwd(), pos = 'CheckExEnv')\n",
+        file = out)
     for(file in files) {
         nm <- sub("\\.R$", "", basename(file))
         ## make a syntactic name out of the filename
         nm <- gsub("[^- .a-zA-Z0-9_]", ".", nm, perl = TRUE, useBytes = TRUE)
         if (pkg == "grDevices" && nm == "postscript") next
-        ## Latin-1 examples are treated separat
+        ## Latin-1 examples are treated separately
         if (pkg == "graphics" && nm == "text") next
         if(!file.exists(file))
             stop("file ", file, " cannot be opened", domain = NA)
@@ -151,11 +153,16 @@ Rdiff <- function(from, to, useDiff = FALSE, forEx = FALSE,
         if(length(top <- grep("^(Rho)", txt, perl = TRUE, useBytes = TRUE)) &&
            length(bot <- grep("quit R.$", txt, perl = TRUE, useBytes = TRUE)))
             txt <- txt[-(top[1L]:bot[1L])]
-        ## for massageExamples()
+        ## for massageExamples(), used for timings
         ll <- grep("</HEADER>", txt, fixed = TRUE, useBytes = TRUE)
         if(length(ll)) txt <- txt[-seq_len(max(ll))]
         ll <- grep("<FOOTER>", txt, fixed = TRUE, useBytes = TRUE)
         if(length(ll)) txt <- txt[seq_len(max(ll) - 1L)]
+        ## remove header change in R 3.5.0
+        if(forEx) {
+            ll <- grep('".old_wd"', txt, fixed = TRUE, useBytes = TRUE)
+            if(length(ll)) txt <- txt[-ll]
+        }
         ## remove BATCH footer
         nl <- length(txt)
         if(nl > 3L && startsWith(txt[nl-2L], "> proc.time()"))
@@ -179,8 +186,10 @@ Rdiff <- function(from, to, useDiff = FALSE, forEx = FALSE,
         txt <- .canonicalize_quotes(txt)
         if(.Platform$OS.type == "windows") {
             ## not entirely safe ...
-            txt <- gsub("(\x91|\x92)", "'", txt, perl = TRUE, useBytes = TRUE)
-            txt <- gsub("(\x93|\x94)", '"', txt, perl = TRUE, useBytes = TRUE)
+            txt <- gsub(paste0("(",rawToChar(as.raw(0x91)),"|",rawToChar(as.raw(0x92)),")"),
+                        "'", txt, perl = TRUE, useBytes = TRUE)
+            txt <- gsub(paste0("(",rawToChar(as.raw(0x93)),"|",rawToChar(as.raw(0x94)),")"),
+                        '"', txt, perl = TRUE, useBytes = TRUE)
         }
         ## massageExamples() adds options(pager = "console") only for
         ## Windows, but we should ignore a corresponding diff on all
@@ -806,7 +815,7 @@ detachPackages <- function(pkgs, verbose = TRUE)
                 R.version[["major"]], ".",  R.version[["minor"]],
                 " (r", R.version[["svn rev"]], ")\n", sep = "")
             cat("",
-                "Copyright (C) 2000-2017 The R Core Team.",
+                "Copyright (C) 2000-2018 The R Core Team.",
                 "This is free software; see the GNU General Public License version 2",
                 "or later for copying conditions.  There is NO warranty.",
                 sep = "\n")

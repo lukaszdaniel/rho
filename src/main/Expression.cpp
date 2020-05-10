@@ -197,8 +197,7 @@ RObject* Expression::evaluateNativeBuiltInCall(const BuiltInFunction* func,
 #undef CASE_STATEMENT
 
     default:
-	Rf_errorcall(const_cast<Expression*>(this),
-		  _("too many arguments, sorry"));
+	Rf_errorcall(const_cast<Expression*>(this), _("too many arguments, sorry"));
     }
 }
 
@@ -242,8 +241,7 @@ RObject* Expression::evalArgsAndEvaluateNativeBuiltInCall(
 
     BOOST_PP_REPEAT_FROM_TO(0, 20, CMD_SEQUENCE, 0);
 
-    Rf_errorcall(const_cast<Expression*>(this),
-                 _("too many arguments, sorry"));
+    Rf_errorcall(const_cast<Expression*>(this), _("too many arguments, sorry"));
 }
 #undef CMD_SEQUENCE
 #undef ARGUMENT_LIST

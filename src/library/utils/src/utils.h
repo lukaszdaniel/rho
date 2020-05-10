@@ -22,12 +22,14 @@ SEXP objectSize(SEXP s);
 SEXP unzip(SEXP args);
 SEXP Rprof(SEXP args);
 SEXP Rprofmem(SEXP args);
+
 SEXP countfields(SEXP args);
 SEXP flushconsole(void);
 SEXP menu(SEXP args);
 SEXP readtablehead(SEXP args);
 SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env);
 SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env);
+
 SEXP crc64(SEXP in);
 SEXP nsl(SEXP hostname);
 SEXP download(SEXP args);

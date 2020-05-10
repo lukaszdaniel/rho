@@ -400,10 +400,10 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 		    R_IoBufferWriteReset(&R_ConsoleIob);
 		    return 0;
 		}
-	    }
 	    /* PR#15770 We don't want to step into expressions entered at the debug prompt.
 	       The 'S' will be changed back to 's' after the next eval. */
-	    if (R_BrowserLastCommand == 's') R_BrowserLastCommand = 'S';  
+	    if (R_BrowserLastCommand == 's') R_BrowserLastCommand = 'S';
+	}
 	    R_Visible = FALSE;
 	    R_EvalDepth = 0;
 	    resetTimeLimits();
@@ -418,8 +418,8 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 		Rf_PrintWarnings(nullptr);
 	    Rf_callToplevelHandlers(thisExpr, value, TRUE, wasDisplayed);
 	    R_CurrentExpr = value; /* Necessary? Doubt it. */
-	    UNPROTECT(1);
-	    if (R_BrowserLastCommand == 'S') R_BrowserLastCommand = 's';  
+	    UNPROTECT(1); /* thisExpr */
+	    if (R_BrowserLastCommand == 'S') R_BrowserLastCommand = 's';
 	    R_IoBufferWriteReset(&R_ConsoleIob);
 	    state->prompt_type = 1;
 	    return(1);
@@ -507,7 +507,7 @@ static void check_session_exit()
             return;
 
         exiting = true;
-	printTraceback(SYMVALUE(Rf_install(".Traceback")));;
+	printTraceback(SYMVALUE(Rf_install(".Traceback")));
         REprintf(_("\nExecution halted\n"));
 
         R_CleanUp(SA_NOSAVE, 1, 0); /* quit, no save, no .Last, status=1 */
@@ -663,7 +663,7 @@ static void sigactionSegv(int signum, siginfo_t *ip, void *context)
      */
     if(signum == SIGSEGV && (ip != nullptr) &&
        intptr_t(R_CStackStart) != -1) {
-	uintptr_t addr = uintptr_t( ip->si_addr);
+	uintptr_t addr = uintptr_t(ip->si_addr);
 	intptr_t diff = (R_CStackDir > 0) ? R_CStackStart - addr:
 	    addr - R_CStackStart;
 	uintptr_t upper = 0x1000000;  /* 16Mb */
@@ -1609,7 +1609,8 @@ R_removeTaskCallback(SEXP which)
 	if (LENGTH(which) == 0)
 	    val = FALSE;
 	else
-	    val = Rf_removeTaskCallbackByName(R_CHAR(STRING_ELT(which, 0)));    } else {
+	    val = Rf_removeTaskCallbackByName(R_CHAR(STRING_ELT(which, 0)));
+    } else {
 	id = Rf_asInteger(which);
 	if (id != NA_INTEGER) val = Rf_removeTaskCallbackByIndex(id - 1);
 	else val = FALSE;

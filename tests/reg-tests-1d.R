@@ -1328,6 +1328,99 @@ stopifnot(
 )## the last gave "1" in all previous versions of R
 
 
+## as.matrix( <data.frame in d.fr.> ) -- prompted by Patrick Perry, R-devel 2017-11-30
+dm <- dd <- d1 <- data.frame(n = 1:3)
+dd[[1]] <- d1            # -> 'dd' has "n" twice
+dm[[1]] <- as.matrix(d1) #    (ditto)
+d. <- structure(list(d1), class = "data.frame", row.names = c(NA, -3L))
+d2. <- data.frame(ch = c("A","b"), m = 10:11)
+d2  <- data.frame(V = 1:2); d2$V <- d2.; d2
+d3 <- structure(list(A = 1:2, HH = cbind(c(.5, 1))),
+                class = "data.frame", row.names=c(NA,-2L))
+d3.2 <- d3; d3.2 $HH <- diag(2)
+d3.2.<- d3; d3.2.$HH <- matrix(1:4, 2,2, dimnames=list(NULL,c("x","y")))
+d0 <- as.data.frame(m0 <- matrix(,2,0))
+d3.0 <- d3; d3.0 $HH <- m0
+d3.d0<- d3; d3.d0$HH <- d0
+stopifnot(identical(unname(as.matrix(d0)), m0)
+	, identical(capture.output(dd),
+		    capture.output(d.))
+	, identical(as.matrix(d3.0 ), array(1:2, dim = 2:1, dimnames = list(NULL, "A")) -> m21)
+	, identical(as.matrix(d3.d0), m21)
+	, identical(as.matrix(dd), (cbind(n = 1:3) -> m.))
+	, identical(as.matrix(d.), m.)
+	, identical(as.matrix(d2), array(c("A", "b", "10", "11"), c(2L, 2L),
+					 dimnames = list(NULL, c("V.ch", "V.m"))))
+	, identical(as.matrix(dm), m.)
+	, identical(as.matrix(d1), m.)
+	, identical(colnames(m2 <- as.matrix(d2)), c("V.ch", "V.m"))
+	, identical(colnames(as.matrix(d3   )), colnames(d3   )) # failed a few days
+	, identical(colnames(as.matrix(d3.2 )), colnames(format(d3.2 )))
+	, identical(colnames(as.matrix(d3.2 )), c("A", paste("HH",1:2,sep=".")))
+	, identical(colnames(as.matrix(d3.2.)), colnames(format(d3.2.)))
+	, identical(colnames(as.matrix(d3.2.)), c("A", "HH.x", "HH.y"))
+)
+## the first  5  as.matrix() have failed at least since R-1.9.1, 2004
+
+
+## Impossible conditions should at least give a warning - PR#17345
+tools::assertWarning(
+           power.prop.test(n=30, p1=0.90, p2=NULL, power=0.8)
+       ) ## may give error in future
+## silently gave p2 = 1.03 > 1 in R versions v, 3.1.3 <= v <= 3.4.3
+
+
+## removeSource() [for a function w/ body containing NULL]:
+op <- options(keep.source=TRUE)
+bod <- quote( foo(x, NULL) )
+testf  <- function(x) { }; body(testf)[[2]] <- bod
+testf
+testfN <- removeSource(testf)
+stopifnot(identical(body(testf )[[2]], bod)
+        , identical(body(testfN)[[2]], bod)
+)
+options(op)
+## erronously changed  '(x, NULL)'  to  '(x)'  in R version <= 3.4.3
+
+
+## ar.yw(x) with missing values in x, PR#17366
+which(is.na(presidents)) # in 6 places
+arp <- ar(presidents, na.action = na.pass)
+## check "some" consistency with cheap imputation:
+prF <- presidents
+prF[is.na(presidents)] <- c(90, 37, 40, 32, 63, 66) # phantasy
+arF <- ar(prF)
+stopifnot(all.equal(arp[c("order", "ar", "var.pred", "x.mean")],
+                    list(order = 3, ar = c(0.6665119, 0.2800927, -0.1716641),
+                         var.pred = 96.69082, x.mean = 56.30702), tol = 7e-7)
+        , all.equal(arp$ar, arF$ar,                     tol = 0.14)
+        , all.equal(arp$var.pred, arF$var.pred,         tol = 0.005)
+        , all.equal(arp$asy.var.coef, arF$asy.var.coef, tol = 0.09)
+)
+## Multivariate
+set.seed(42)
+n <- 1e5; i <- sample(n, 12)
+u <- matrix(rnorm(2*n), n, 2)
+y <- filter(u, filter=0.8, "recursive")
+y. <- y; y.[i,] <- NA
+est <- ar(y , aic = FALSE, order.max = 2) ## Estimate VAR(2)
+es. <- ar(y., aic = FALSE, order.max = 2, na.action=na.pass)
+## checking ar.yw.default() multivariate case
+estd <- ar(unclass(y) , aic = FALSE, order.max = 2) ## Estimate VAR(2)
+es.d <- ar(unclass(y.), aic = FALSE, order.max = 2, na.action=na.pass)
+stopifnot(all.equal(est$ar[1,,], diag(0.8, 2), tol = 0.08)# seen 0.0038
+	, all.equal(est[1:6], es.[1:6], tol = 5e-3)
+	, all.equal(estd$x.mean, es.d$x.mean, tol = 0.01) # seen 0.0023
+	, all.equal(estd[c(1:3,5:6)],
+		    es.d[c(1:3,5:6)], tol = 1e-3)## seen {1,3,8}e-4
+	, all.equal(lapply(estd[1:6],unname),
+		    lapply(est [1:6],unname), tol = 4e-15)# almost identical
+	, all.equal(lapply(es.d[1:6],unname),
+		    lapply(es. [1:6],unname), tol = 4e-15)
+)
+## NA's in x gave an error, in R versions <= 3.4.3
+
+
 
 ## keep at end
 rbind(last =  proc.time() - .pt,

@@ -831,7 +831,7 @@ typedef enum {meMouseDown = 0,
 #define middleButton 2
 #define rightButton  4
 
-#ifndef R_NO_REMAP
+#if RHO_FALSE //#ifndef R_NO_REMAP
 #define doKeybd			Rf_doKeybd
 #define doMouseEvent		Rf_doMouseEvent
 #define doIdle			Rf_doIdle

@@ -263,6 +263,7 @@ SEXP do_listfiles(rho::Expression* call, const rho::BuiltInFunction* op, rho::RO
 SEXP do_list2env(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* envir_);
 SEXP do_load(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* envir_);
 SEXP do_loadFromConn2(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* con_, rho::RObject* envir_, rho::RObject* verbose_);
+SEXP do_loadInfoFromConn2(SEXP, SEXP, SEXP, SEXP);
 SEXP do_localeconv(rho::Expression* call, const rho::BuiltInFunction* op);
 SEXP do_log(SEXP, SEXP, SEXP, SEXP);  // Special
 rho::ArgumentArrayFn do_log1arg;
@@ -370,6 +371,7 @@ SEXP do_seq_len(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObj
 SEXP do_serialize(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object, rho::RObject* connection, rho::RObject* type, rho::RObject* version, rho::RObject* hook);
 SEXP do_unserialize(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object, rho::RObject* connection);
 SEXP do_serializeToConn(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object_, rho::RObject* con_, rho::RObject* ascii_, rho::RObject* version_, rho::RObject* refhook_);
+SEXP do_serializeInfoFromConn(SEXP, SEXP, SEXP, SEXP);
 SEXP do_set(SEXP, SEXP, SEXP, SEXP);  // Special
 SEXP do_setS4Object(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* object_, rho::RObject* flag_, rho::RObject* complete_);
 SEXP do_setFileTime(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_, rho::RObject* time_);

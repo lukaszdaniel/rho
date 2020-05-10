@@ -65,7 +65,7 @@ namespace rho {
      *          permitted in this context (checked).
      */
     inline StringVector* asStringVector(const std::string& str,
-					cetype_t encoding = CE_NATIVE)
+					cetype_t encoding = CE_UTF8)
     {
 	GCStackRoot<String> cs(String::obtain(str, encoding));
 	return StringVector::createScalar(cs);

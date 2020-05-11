@@ -368,6 +368,9 @@ add_dummies <- function(dir, Log)
     check_pkg <- function(pkg, pkgname, pkgoutdir, startdir, libdir, desc,
                           is_base_pkg, is_rec_pkg, subdirs, extra_arch)
     {
+        Sys.setenv("_R_CHECK_PACKAGE_NAME_" = pkgname)
+        on.exit(Sys.unsetenv("_R_CHECK_PACKAGE_NAME_"))
+
         ## pkg is the argument we received from the main loop.
         ## pkgdir is the corresponding absolute path,
 
@@ -724,6 +727,7 @@ add_dummies <- function(dir, Log)
     ## These are most commonly data/*.{Rdata,rda}, R/sysdata.rda files,
     ## and build/vignette.rds
     ## But packages have other .rds files in many places.
+    ## Despite its name, build/partial.rdb is created by saveRDS.
     ##
     ## We need to so this before installation, which may create
     ## src/symbols.rds in the sources.
@@ -748,7 +752,8 @@ add_dummies <- function(dir, Log)
         }
         checkingLog(Log, "serialized R objects in the sources")
         loadfiles <- grep("[.](rda|RData)$", allfiles, value = TRUE)
-        serfiles <- grep("[.]rds$", allfiles, value = TRUE)
+        serfiles <- c(grep("[.]rds$", allfiles, value = TRUE),
+                      grep("build/partial[.]rdb$", allfiles, value = TRUE))
         vers1 <- sapply(loadfiles, getVerLoad)
         vers2 <- sapply(serfiles, getVerSer)
         bad <- c(vers1, vers2)
@@ -2638,21 +2643,27 @@ add_dummies <- function(dir, Log)
                     lines <- unlist(lapply(split(lines, ind), paste,
                                            collapse = " "))
                 }
+                ## Truncate at first comment char
+                lines <- sub("#.*", "", lines)
                 c1 <- grepl("^[[:space:]]*PKG_LIBS", lines, useBytes = TRUE)
                 c2l <- grepl("\\$[{(]{0,1}LAPACK_LIBS", lines, useBytes = TRUE)
                 c2b <- grepl("\\$[{(]{0,1}BLAS_LIBS", lines, useBytes = TRUE)
-                c3 <- grepl("\\$[{(]{0,1}FLIBS", lines, useBytes = TRUE)
-                if (any(c1 & c2l & !c2b)) {
+                c2lb <- grepl("\\$[{(]{0,1}LAPACK_LIBS.*\\$[{(]{0,1}BLAS_LIBS",
+                              lines, useBytes = TRUE)
+                c2bf <- grepl("\\$[{(]{0,1}BLAS_LIBS.*\\$[{(]{0,1}FLIBS",
+                              lines, useBytes = TRUE)
+                if (any(c1 & c2l & !c2lb)) {
                     if (!any) warningLog(Log)
                     any <- TRUE
                     printLog(Log,
-                             "  apparently using $(LAPACK_LIBS) without $(BLAS_LIBS) in ",
+                             "  apparently using $(LAPACK_LIBS) without following $(BLAS_LIBS) in ",
                              sQuote(f), "\n")
                 }
-                if (any(c1 & (c2b | c2l) & !c3)) {
+                if (any(c1 & c2b & !c2bf)) {
                     if (!any) warningLog(Log)
                     any <- TRUE
-                    printLog(Log, "  apparently PKG_LIBS is missing $(FLIBS) in ",
+                    printLog(Log,
+                             "  apparently using $(BLAS_LIBS) without following $(FLIBS) in ",
                              sQuote(f), "\n")
                 }
             }
@@ -2749,8 +2760,10 @@ add_dummies <- function(dir, Log)
                 ## Not sure -Wextra and -Weverything are portable, though
                 ## -Werror is not compiler independent
                 ##   (as what is a warning is not)
+                except <- Sys.getenv("_R_CHECK_COMPILATION_FLAGS_KNOWN_", "")
+                except <- unlist(strsplit(except, "\\s", perl = TRUE))
                 warns <- setdiff(warns,
-                                 c("-Wall", "-Wextra", "-Weverything"))
+                                 c(except, "-Wall", "-Wextra", "-Weverything"))
                 warns <- warns[!startsWith(warns, "-Wl,")] # linker flags
                 diags <- grep(" -fno-diagnostics-show-option", tokens,
                               useBytes = TRUE, value = TRUE)
@@ -4217,8 +4230,10 @@ add_dummies <- function(dir, Log)
                              ## Solaris warns on this next one. Also clang
                              ": warning: .* \\[-Wint-conversion\\]",
                              ": warning: .* \\[-Wstringop", # mainly gcc8
-                             ": warning: .* \\[-Wclass-memaccess\\]" # gcc8
-                             )
+                             ": warning: .* \\[-Wclass-memaccess\\]", # gcc8
+                             ## Fatal on clang and Solaris ODS
+                             ": warning: .* with a value, in function returning void"
+                            )
 
                 ## clang warnings
                 warn_re <- c(warn_re,
@@ -5132,7 +5147,8 @@ add_dummies <- function(dir, Log)
         config_val_to_logical(Sys.getenv("_R_CHECK_RD_XREFS_", "TRUE"))
     R_check_use_codetools <-
         config_val_to_logical(Sys.getenv("_R_CHECK_USE_CODETOOLS_", "TRUE"))
-    ## Howver, we cannot use this if we did not install the recommended packages
+    ## However, we cannot use this if we did not install the recommended
+    ## packages.
     if(R_check_use_codetools) {
         tmp <- tryCatch(find.package('codetools'), error = identity)
         if(inherits(tmp, "error")) R_check_use_codetools <- FALSE

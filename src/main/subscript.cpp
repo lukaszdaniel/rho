@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -77,11 +77,11 @@ static R_INLINE int integerOneIndex(int i, R_xlen_t len, SEXP call)
 
 /* Utility used (only in) do_subassign2_dflt(), i.e. "[[<-" in ./subassign.cpp : */
 R_xlen_t attribute_hidden
-Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
+Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
 	 int pos, SEXP call)
 {
     SEXP names;
-    R_xlen_t i, indx, nx;
+    R_xlen_t i, indx;
     const void *vmax;
 
     if (pos < 0 && Rf_length(s) > 1) {
@@ -98,16 +98,16 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
     switch(TYPEOF(s)) {
     case LGLSXP:
     case INTSXP:
-	indx = integerOneIndex(INTEGER_ELT(s, pos), len, call);
+	indx = integerOneIndex(INTEGER_ELT(s, pos), nx, call);
 	break;
     case REALSXP:
-	indx = integerOneIndex(int(REAL_ELT(s, pos)), len, call);
+	indx = integerOneIndex(int(REAL_ELT(s, pos)), nx, call);
 	break;
     case STRSXP:
 	vmax = vmaxget();
-	nx = Rf_xlength(x);
-	names = PROTECT(Rf_getAttrib(x, R_NamesSymbol));
+	names = Rf_getAttrib(x, R_NamesSymbol);
 	if (names != R_NilValue) {
+	    PROTECT(names);
 	    /* Try for exact match */
 	    for (i = 0; i < nx; i++) {
 		const char *tmp = Rf_translateChar(STRING_ELT(names, i));
@@ -131,8 +131,8 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
 		    }
 		}
 	    }
+	    UNPROTECT(1); /* names */
 	}
-	UNPROTECT(1); /* names */
 	if (indx == -1)
 	    indx = nx;
 	*newname = STRING_ELT(s, pos);
@@ -140,7 +140,6 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t len, int partial, SEXP *newname,
 	break;
     case SYMSXP:
 	vmax = vmaxget();
-	nx = Rf_xlength(x);
 	names = Rf_getAttrib(x, R_NamesSymbol);
 	if (names != R_NilValue) {
 	    PROTECT(names);

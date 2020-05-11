@@ -968,7 +968,7 @@ SEXP Rf_installTrChar(SEXP x)
 	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
 	      "installTrChar", Rf_type2char(TYPEOF(x)));
     nttype_t t = needsTranslation(x);
-    if (t == NT_NONE) return Rf_installChar(x);
+    if (t == NT_NONE) return Rf_installNoTrChar(x);
 
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
     translateToNative(R_CHAR(x), &cbuff, t);
@@ -978,6 +978,11 @@ SEXP Rf_installTrChar(SEXP x)
     return Sans;
 }
 
+/* now translates, now same as installTrChar */
+SEXP Rf_installChar(SEXP x)
+{
+    return Rf_installTrChar(x);
+}
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */

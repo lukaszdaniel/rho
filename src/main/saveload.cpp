@@ -1879,7 +1879,22 @@ static int R_ReadMagic(FILE *fp)
     return d1 + 10 * d2 + 100 * d3 + 1000 * d4;
 }
 
-static int R_DefaultSaveFormatVersion = 3;
+static int defaultSaveVersion()
+{
+    static int dflt = -1;
+
+    if (dflt < 0) {
+	char *valstr = getenv("R_DEFAULT_SAVE_VERSION");
+	int val = -1;
+	if (valstr != NULL)
+	    val = atoi(valstr);
+	if (val == 2 || val == 3)
+	    dflt = val;
+	else
+	    dflt = 2; /* the default */
+    }
+    return dflt;
+}
 
 /* ----- E x t e r n a l -- I n t e r f a c e s ----- */
 
@@ -1917,7 +1932,7 @@ void attribute_hidden R_SaveToFileV(SEXP obj, FILE *fp, int ascii, int version)
 
 void attribute_hidden R_SaveToFile(SEXP obj, FILE *fp, int ascii)
 {
-    R_SaveToFileV(obj, fp, ascii, R_DefaultSaveFormatVersion);
+    R_SaveToFileV(obj, fp, ascii, defaultSaveVersion());
 }
 
     /* different handling of errors */
@@ -1990,7 +2005,7 @@ SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction*
     if (TYPEOF(ascii_) != LGLSXP)
 	Rf_error(_("'ascii' must be logical"));
     if (version_ == R_NilValue)
-	version = R_DefaultSaveFormatVersion;
+	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
     if (version == NA_INTEGER || version <= 0)
@@ -2265,7 +2280,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
     ascii = Rboolean(INTEGER(ascii_)[0]);
 
     if (version_ == R_NilValue)
-	version = R_DefaultSaveFormatVersion;
+	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
     if (version == NA_INTEGER || version <= 0)

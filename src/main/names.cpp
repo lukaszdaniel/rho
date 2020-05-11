@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1997--2017  The R Core Team
- *  Copyright (C) 2003--2017  The R Foundation
+ *  Copyright (C) 1997--2018  The R Core Team
+ *  Copyright (C) 2003--2018  The R Foundation
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -986,7 +986,8 @@ const char *getPRIMNAME(SEXP object)
    Like the equivalent code pattern, it discards the encoding information,
    hence in almost all cases installTrChar should be used, instead. */
 extern "C"
-SEXP Rf_installChar(SEXP charSXP)
+attribute_hidden
+SEXP Rf_installNoTrChar(SEXP charSXP)
 {
     String* name = SEXP_downcast<String*>(charSXP);
     return Symbol::obtain(name);

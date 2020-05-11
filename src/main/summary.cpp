@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2016  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -503,17 +503,6 @@ static R_INLINE SEXP complex_mean(SEXP x)
 
 SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP a, stmp = NA_STRING /* -Wall */, scum = NA_STRING;
-    double tmp = 0.0, s;
-    Rcomplex z, ztmp, zcum={0.0, 0.0} /* -Wall */;
-    int itmp = 0, icum = 0, int_a, real_a, empty, warn = 0 /* dummy */;
-    SEXPTYPE ans_type;/* only INTEGER, REAL, COMPLEX or STRSXP here */
-
-    Rboolean narm;
-    int updated;
-	/* updated := 1 , as soon as (i)tmp (do_summary),
-	   or *value ([ir]min / max) is assigned */
-
     checkArity(op, args);
     if(PRIMVAL(op) == 1) { /* mean */
 	SEXP x = CAR(args);
@@ -528,6 +517,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	}
     }
 
+    SEXP ans;
     /* match to foo(..., na.rm=FALSE) */
     PROTECT(args = fixup_NaRm(args));
     Expression* call2 = new Expression(CAR(call), SEXP_downcast<PairList*>(args));
@@ -544,10 +534,18 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     REprintf("C do_summary(op%s, *): did NOT dispatch\n", PRIMNAME(op));
 #endif
 
-    SEXP ans = Rf_matchArgExact(R_NaRmSymbol, &args);
-    narm = Rboolean(Rf_asLogical(ans));
-    updated = 0;
-    empty = 1;/*- =1: only zero-length arguments, or NA with na.rm=T */
+    ans = Rf_matchArgExact(R_NaRmSymbol, &args);
+    Rboolean int_a, real_a, complex_a,
+	narm = Rboolean(Rf_asLogical(ans)),
+	empty = TRUE,// <==> only zero-length arguments, or NA with na.rm=T
+    updated = FALSE;
+	/* updated := TRUE , as soon as (i)tmp (do_summary),
+	   or *value ([ir]min / max) is assigned */
+    SEXP a;
+    double tmp = 0.0, s;
+    Rcomplex ztmp, zcum={0.0, 0.0} /* -Wall */;
+    int itmp = 0, icum = 0, warn = 0 /* dummy */;
+    SEXPTYPE ans_type;/* only INTEGER, REAL, COMPLEX or STRSXP here */
 
     int iop = PRIMVAL(op);
     switch(iop) {
@@ -557,15 +555,31 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
        documented to be the same as integer(0).
     */
 	a = args;
-	int_a = 1;
+        complex_a = real_a = FALSE;
 	while (a != R_NilValue) {
-	    if(!Rf_isInteger(CAR(a)) &&  !Rf_isLogical(CAR(a)) && !Rf_isNull(CAR(a))) {
-		int_a = 0;
+            switch(TYPEOF(CAR(a))) {
+	    case INTSXP:
+	    case LGLSXP:
+	    case NILSXP:
 		break;
-	    }
+	    case REALSXP:
+		real_a = TRUE;
+		break;
+	    case CPLXSXP:
+		complex_a = TRUE;
+		break;
+	    default:
+		a = CAR(a); goto invalid_type;
+            }
 	    a = CDR(a);
 	}
-	ans_type = int_a ? INTSXP: REALSXP; /* try to keep if possible.. */
+        if(complex_a) {
+            ans_type = CPLXSXP;
+        } else if(real_a) {
+            ans_type = REALSXP;
+        } else {
+            ans_type = INTSXP;
+        }
 	zcum.r = zcum.i = 0.; icum = 0;
 	break;
 
@@ -596,15 +610,16 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	return R_NilValue;/*-Wall */
     }
 
+    SEXP stmp = NA_STRING,
+	 scum = PROTECT(NA_STRING);
     /*-- now loop over all arguments.  Do the 'op' switch INSIDE : */
-    PROTECT(scum);
     while (args != R_NilValue) {
 	a = CAR(args);
-	int_a = 0;/* int_a = 1	<-->	a is INTEGER */
-	real_a = 0;
+	int_a = FALSE;// int_a = TRUE  <-->  a is INTEGER
+	real_a = FALSE;
 
 	if(Rf_xlength(a) > 0) {
-	    updated = 0;/*- GLOBAL -*/
+	    updated = FALSE;/*- GLOBAL -*/
 
 	    switch(iop) {
 	    case 2:/* min */
@@ -613,12 +628,12 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		switch(TYPEOF(a)) {
 		case LGLSXP:
 		case INTSXP:
-		    int_a = 1;
+		    int_a = TRUE;
 		    if (iop == 2) updated = imin(a, &itmp, narm);
 		    else	  updated = imax(a, &itmp, narm);
 		    break;
 		case REALSXP:
-		    real_a = 1;
+		    real_a = TRUE;
 		    if(ans_type == INTSXP) {/* change to REAL */
 			ans_type = REALSXP;
 			if(!empty) zcum.r = Int2Real(icum);
@@ -686,7 +701,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    /*-- in what cases does this happen here at all?
 		      -- if there are no non-missing elements.
 		     */
-		    DbgP2(" NOT updated [!! RARE !!]: int_a=%d\n", int_a);
+		    DbgP2(" NOT updated [!! RARE !!]: int_a=%s\n", int_a ? "TRUE" : "FALSE");
 		}
 
 		break;/*--- end of  min() / max() ---*/
@@ -757,6 +772,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    ans_type = CPLXSXP;
 		    updated = cprod(a, &ztmp, narm);
 		    if(updated) {
+			Rcomplex z;
 			z.r = zcum.r;
 			z.i = zcum.i;
 			zcum.r = z.r * ztmp.r - z.i * ztmp.i;
@@ -806,9 +822,9 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		ans_type = TYPEOF(a);
 	    }
 	}
-	DbgP3(" .. upd.=%d, empty: old=%d", updated, empty);
-	if(empty && updated) empty=0;
-	DbgP2(", new=%d\n", empty);
+	DbgP3(" .. upd.=%d, empty: old=%d", updated, (int)empty);
+	if(empty && updated) empty=FALSE;
+	DbgP2(", new=%d\n", (int)empty);
 	args = CDR(args);
     } /*-- while(..) loop over args */
 

@@ -110,3 +110,12 @@ tc_unclass_23.R
 tc_unclass_31.R
 tc_xtfrm_12.R
 tc_xtfrm_13.R
+tc_setS4Object_10.R
+tc_setS4Object_11.R
+tc_setS4Object_13.R
+tc_setS4Object_14.R
+tc_setS4Object_2.R
+tc_setS4Object_4.R
+tc_setS4Object_6.R
+tc_setS4Object_7.R
+tc_setS4Object_8.R

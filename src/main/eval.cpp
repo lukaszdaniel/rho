@@ -777,7 +777,8 @@ static SEXP assignCall(SEXP op, SEXP symbol, SEXP fun,
 }
 
 
-Rboolean asLogicalNoNA(SEXP s, SEXP call)
+/* rho only needed for _R_CHECK_LENGTH_1_CONDITION_=package:name */
+Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 {
     int cond = NA_LOGICAL;
 
@@ -798,11 +799,39 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call)
     {
 	GCStackRoot<> gc_protect(s);
 	char *check = getenv("_R_CHECK_LENGTH_1_CONDITION_");
-	if((check != NULL) ? StringTrue(check) : FALSE) // warn by default
+	const void *vmax = vmaxget();
+	Rboolean err = Rboolean(check && StringTrue(check)); /* warn by default */
+	if (!err && check) {
+	    /* err when the condition is evaluated in given package */
+	    const char *pprefix  = "package:";
+	    size_t lprefix = strlen(pprefix);
+	    if (!strncmp(pprefix, check, lprefix)) {
+		/* check starts with "package:" */
+		SEXP spkg = R_NilValue;
+		for(; spkg == R_NilValue && rho != R_EmptyEnv; rho = ENCLOS(rho))
+		    if (R_IsPackageEnv(rho))
+			spkg = R_PackageEnvName(rho);
+		    else if (R_IsNamespaceEnv(rho))
+			spkg = R_NamespaceEnvSpec(rho);
+		if (spkg != R_NilValue) {
+		    const char *pkgname = Rf_translateChar(STRING_ELT(spkg, 0));
+		    if (!strcmp(check + lprefix, pkgname))
+			err = TRUE;
+		    if (!strcmp(check + lprefix, "_R_CHECK_PACKAGE_NAME_")) {
+			/* package name specified in _R_CHECK_PACKAGE_NAME */
+			const char *envpname = getenv("_R_CHECK_PACKAGE_NAME_");
+			if (envpname && !strcmp(envpname, pkgname))
+			    err = TRUE;
+		    }
+		}
+	    }
+	}
+	if (err)
 	    Rf_errorcall(call, _("the condition has length > 1"));
         else
 	    Rf_warningcall(call,
 		    _("the condition has length > 1 and only the first element will be used"));
+	vmaxset(vmax);
     }
     if (len> 0) {
 	/* inline common cases for efficiency */
@@ -872,7 +901,7 @@ SEXP attribute_hidden do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
     int vis=0;
 
     PROTECT(Cond = Rf_eval(CAR(args), rho));
-    if (asLogicalNoNA(Cond, call))
+    if (asLogicalNoNA(Cond, call, rho))
 	Stmt = CAR(CDR(args));
     else {
 	if (Rf_length(args) > 2) 
@@ -1077,7 +1106,7 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     Environment* env = SEXP_downcast<Environment*>(rho);
     Environment::LoopScope loopscope(env);
 
-    while (asLogicalNoNA(Rf_eval(CAR(args), rho), call)) {
+    while (asLogicalNoNA(Rf_eval(CAR(args), rho), call, rho)) {
 	Evaluator::maybeCheckForUserInterrupts();
 	RObject* ans;
 	DO_LOOP_RDEBUG(call, op, args, rho, bgn);

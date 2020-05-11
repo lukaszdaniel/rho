@@ -928,15 +928,18 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
     return vec;
 }
 
+#define isS4Environment(x) (TYPEOF(x) == S4SXP &&	\
+			    Rf_isEnvironment(R_getS4DataSlot(x, ENVSXP)))
+
 SEXP attribute_hidden do_names(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans;
     ans = x_;
-    if (Rf_isVector(ans) || Rf_isList(ans) || Rf_isLanguage(ans) ||
-	IS_S4_OBJECT(ans))
-	ans = Rf_getAttrib(ans, R_NamesSymbol);
-    else if (Rf_isEnvironment(ans))
+    if (Rf_isEnvironment(ans) || isS4Environment(ans))
 	ans = R_lsInternal3(ans, TRUE, FALSE);
+    else if (Rf_isVector(ans) || Rf_isList(ans) || Rf_isLanguage(ans) ||
+	     IS_S4_OBJECT(ans))
+	ans = Rf_getAttrib(ans, R_NamesSymbol);
     else ans = R_NilValue;
     return ans;
 }
@@ -1121,24 +1124,23 @@ SEXP Rf_dimgets(SEXP vec, SEXP val)
 
 SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x)
 {
-    SEXP names, namesattr, value;
-    int nvalues;
-
     if (TYPEOF(x) == ENVSXP)
 	R_CheckStack(); /* in case attributes might lead to a cycle */
 
-    namesattr = R_NilValue;
+    SEXP namesattr;
     GCStackRoot<> attrs(ATTRIB(x));
-    nvalues = Rf_length(attrs);
+    int nvalues = Rf_length(attrs);
     if (Rf_isList(x)) {
 	namesattr = Rf_getAttrib(x, R_NamesSymbol);
 	if (namesattr != R_NilValue)
 	    nvalues++;
-    }
+    } else
+	namesattr = R_NilValue;
     /* FIXME */
     if (nvalues <= 0)
 	return R_NilValue;
     /* FIXME */
+    SEXP value, names;
     PROTECT(namesattr);
     PROTECT(value = Rf_allocVector(VECSXP, nvalues));
     PROTECT(names = Rf_allocVector(STRSXP, nvalues));
@@ -1152,9 +1154,9 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
 	SEXP tag = TAG(attrs);
 	if (TYPEOF(tag) == SYMSXP) {
 	    SET_VECTOR_ELT(value, nvalues, Rf_getAttrib(x, tag));
-	    SET_STRING_ELT(names, nvalues, PRINTNAME(TAG(attrs)));
+	    SET_STRING_ELT(names, nvalues, PRINTNAME(tag));
 	}
-	else {
+	else { // empty tag, hence name = ""
 	    MARK_NOT_MUTABLE(CAR(attrs));
 	    SET_VECTOR_ELT(value, nvalues, CAR(attrs));
 	    SET_STRING_ELT(names, nvalues, R_BlankString);
@@ -1658,7 +1660,7 @@ SEXP R_do_slot_assign(SEXP obj, SEXP name, SEXP value) {
                                 /* Ensure that name is a symbol */
     if(Rf_isString(name) && LENGTH(name) == 1)
 	name = Rf_installTrChar(STRING_ELT(name, 0));
-    if(TYPEOF(name) == CHARSXP)
+    else if(TYPEOF(name) == CHARSXP)
 	name = Rf_installTrChar(name);
     if(!Rf_isSymbol(name) )
 	Rf_error(_("invalid type or length for slot name"));

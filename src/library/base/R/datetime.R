@@ -1,7 +1,7 @@
 #  File src/library/base/R/datetime.R
 #  Part of the R package, https://www.R-project.org
 #
-#  Copyright (C) 1995-2017 The R Core Team
+#  Copyright (C) 1995-2018 The R Core Team
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -332,7 +332,7 @@ as.double.POSIXlt <- function(x, ...) as.double(as.POSIXct(x))
 
 ## POSIXlt is not primarily a list, but primarily an abstract vector of
 ## time stamps:
-length.POSIXlt <- function(x) length(x[[1L]])
+length.POSIXlt <- function(x) length(unclass(x)[[1L]])
 
 format.POSIXlt <- function(x, format = "", usetz = FALSE, ...)
 {
@@ -686,8 +686,6 @@ as.data.frame.difftime <- as.data.frame.vector
 
 format.difftime <- function(x,...) paste(format(unclass(x),...), units(x))
 
-
-
 print.difftime <- function(x, digits = getOption("digits"), ...)
 {
     if(is.array(x) || length(x) > 1L) {
@@ -714,7 +712,6 @@ print.difftime <- function(x, digits = getOption("digits"), ...)
 diff.difftime <- function(x, ...)
     ## assume class is preserved (it is in diff.default):
     structure(NextMethod("diff"), units = attr(x, "units"))
-
 
 Ops.difftime <- function(e1, e2)
 {
@@ -1157,7 +1154,7 @@ function(x, units = c("secs", "mins", "hours", "days", "months", "years"))
 
 `[.POSIXlt` <- function(x, ..., drop = TRUE)
 {
-    val <- lapply(X = x, FUN = "[", ..., drop = drop)
+    val <- lapply(X = unclass(x), FUN = "[", ..., drop = drop)
     attributes(val) <- attributes(x) # need to preserve timezones
     val
 }
@@ -1191,7 +1188,7 @@ rep.POSIXct <- function(x, ...)
 
 rep.POSIXlt <- function(x, ...)
 {
-    y <- lapply(X = x, FUN = rep, ...)
+    y <- lapply(X = unclass(x), FUN = rep, ...)
     attributes(y) <- attributes(x)
     y
 }
@@ -1245,8 +1242,8 @@ xtfrm.POSIXlt <- function(x) as.double(x)  # has POSIXlt method
 xtfrm.difftime <- function(x) as.numeric(x)
 is.numeric.difftime <- function(x) FALSE
 
+## Class generators added in 2.11.0, class order changed in 2.12.0.
 
-# class generators added in 2.11.0, class order changed in 2.12.0
 .POSIXct <- function(xx, tz = NULL)
     structure(xx, class = c("POSIXct", "POSIXt"), tzone = tz)
 
@@ -1269,7 +1266,7 @@ function(x, value)
     x
 }
 
-## 3.1.0
+## Added in 3.1.0.
 
 OlsonNames <- function(tzdir = NULL)
 {
@@ -1313,4 +1310,13 @@ OlsonNames <- function(tzdir = NULL)
     ans <- grep("^[ABCDEFGHIJKLMNOPQRSTUVWXYZ]", x, value = TRUE)
     if(!is.null(ver)) attr(ans, "Version") <- ver
     ans
+}
+
+## Added in 3.5.0.
+
+`[[.POSIXlt` <- function(x, ..., drop = TRUE)
+{
+    val <- lapply(X = unclass(x), FUN = "[[", ..., drop = drop)
+    attributes(val) <- attributes(x) # need to preserve timezones
+    val
 }

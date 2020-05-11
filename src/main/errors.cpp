@@ -782,6 +782,7 @@ void NORET errorcall_cpy(SEXP call, const char *format, ...)
     Rf_errorcall(call, "%s", buf);
 }
 
+// geterrmessage(): Return (the global) 'errbuf' as R string
 SEXP attribute_hidden do_geterrmessage(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return Rf_ScalarString(Rf_mkChar(errbuf));

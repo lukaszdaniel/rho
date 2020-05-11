@@ -67,7 +67,7 @@ static void ProbSampleReplace(int n, double *p, int *perm, int nans, int *ans)
 	perm[i] = i + 1;
 
     /* sort the probabilities into descending order */
-    revsort(p, perm, n);
+    Rf_revsort(p, perm, n);
 
     /* compute cumulative probabilities */
     for (i = 1 ; i < n; i++)
@@ -155,7 +155,7 @@ static void ProbSampleNoReplace(int n, double *p, int *perm,
 
     /* Sort probabilities into descending order */
     /* Order element identities in parallel */
-    revsort(p, perm, n);
+    Rf_revsort(p, perm, n);
 
     /* Compute the sample */
     totalmass = 1;

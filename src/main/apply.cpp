@@ -390,11 +390,11 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
 	goto do_ans;
     }
     if(!recursive) {
-    for(i = 0; i < LENGTH(X); i++)
-	if(!Rf_isFactor(VECTOR_ELT(X, i))) {
-	    lans = FALSE;
-	    break;
-	}
+	for(i = 0; i < LENGTH(X); i++)
+	    if(!Rf_isFactor(VECTOR_ELT(X, i))) {
+		lans = FALSE;
+		break;
+	    }
     } else {
 	switch(TYPEOF(X)) {
 	case VECSXP:

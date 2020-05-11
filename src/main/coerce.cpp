@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1997-2017  The R Core Team
- *  Copyright (C) 2003-2017  The R Foundation
+ *  Copyright (C) 1997-2018  The R Core Team
+ *  Copyright (C) 2003-2018  The R Foundation
  *  Copyright (C) 1995,1996  Robert Gentleman, Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -1983,10 +1983,34 @@ namespace {
 	}
     }
 }
-    
+
+static R_INLINE void copyDimAndNames(SEXP x, SEXP ans)
+{
+    if (Rf_isVector(x)) {
+	/* PROTECT/UNPROTECT are probably not needed here */
+	SEXP dims, names;
+	PROTECT(dims = Rf_getAttrib(x, R_DimSymbol));
+	if (dims != R_NilValue)
+	    Rf_setAttrib(ans, R_DimSymbol, dims);
+	UNPROTECT(1);
+	if (Rf_isArray(x)) {
+	    PROTECT(names = Rf_getAttrib(x, R_DimNamesSymbol));
+	    if (names != R_NilValue)
+		Rf_setAttrib(ans, R_DimNamesSymbol, names);
+	    UNPROTECT(1);
+	}
+	else {
+	    PROTECT(names = Rf_getAttrib(x, R_NamesSymbol));
+	    if (names != R_NilValue)
+		Rf_setAttrib(ans, R_NamesSymbol, names);
+	    UNPROTECT(1);
+	}
+    }
+}
+
 SEXP attribute_hidden do_isna(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    SEXP ans, dims, names, x;
+    SEXP ans, x;
     R_xlen_t i, n;
 
 #ifdef stringent_is
@@ -1998,14 +2022,6 @@ SEXP attribute_hidden do_isna(/*const*/ Expression* call, const BuiltInFunction*
     n = Rf_xlength(x);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     int *pa = LOGICAL(ans);
-    if (Rf_isVector(x)) {
-	PROTECT(dims = Rf_getAttrib(x, R_DimSymbol));
-	if (Rf_isArray(x))
-	    PROTECT(names = Rf_getAttrib(x, R_DimNamesSymbol));
-	else
-	    PROTECT(names = Rf_getAttrib(x, R_NamesSymbol));
-    }
-    else dims = names = R_NilValue;
     switch (TYPEOF(x)) {
     case LGLSXP:
        for (i = 0; i < n; i++)
@@ -2046,24 +2062,16 @@ SEXP attribute_hidden do_isna(/*const*/ Expression* call, const BuiltInFunction*
 	for (i = 0; i < n; i++)
 	    pa[i] = 0;
 	break;
+    case NILSXP: break;
     default:
 	Rf_warningcall(call, _("%s() applied to non-(list or vector) of type '%s'"),
 		    "is.na", Rf_type2char(TYPEOF(x)));
 	for (i = 0; i < n; i++)
 	    pa[i] = 0;
     }
-    if (dims != R_NilValue)
-	Rf_setAttrib(ans, R_DimSymbol, dims);
-    if (names != R_NilValue) {
-	if (Rf_isArray(x))
-	    Rf_setAttrib(ans, R_DimNamesSymbol, names);
-	else
-	    Rf_setAttrib(ans, R_NamesSymbol, names);
-    }
-    if (Rf_isVector(x))
-	UNPROTECT(2);
-    UNPROTECT(1);
-    UNPROTECT(1); /*ans*/
+
+    copyDimAndNames(x, ans);
+    UNPROTECT(2); /* args, ans */
     return ans;
 }
 
@@ -2212,7 +2220,7 @@ SEXP attribute_hidden do_anyNA(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP attribute_hidden do_isnan(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    SEXP ans, dims, names, x;
+    SEXP ans, x;
     R_xlen_t i, n;
 
 #ifdef stringent_is
@@ -2223,14 +2231,6 @@ SEXP attribute_hidden do_isnan(/*const*/ Expression* call, const BuiltInFunction
     n = Rf_xlength(x);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     int *pa = LOGICAL(ans);
-    if (Rf_isVector(x)) {
-	PROTECT(dims = Rf_getAttrib(x, R_DimSymbol));
-	if (Rf_isArray(x))
-	    PROTECT(names = Rf_getAttrib(x, R_DimNamesSymbol));
-	else
-	    PROTECT(names = Rf_getAttrib(x, R_NamesSymbol));
-    }
-    else dims = names = R_NilValue;
     switch (TYPEOF(x)) {
     case STRSXP:
     case RAWSXP:
@@ -2254,18 +2254,8 @@ SEXP attribute_hidden do_isnan(/*const*/ Expression* call, const BuiltInFunction
 	Rf_errorcall(call, _("default method not implemented for type '%s'"),
 		     Rf_type2char(TYPEOF(x)));
     }
-    if (dims != R_NilValue)
-	Rf_setAttrib(ans, R_DimSymbol, dims);
-    if (names != R_NilValue) {
-	if (Rf_isArray(x))
-	    Rf_setAttrib(ans, R_DimNamesSymbol, names);
-	else
-	    Rf_setAttrib(ans, R_NamesSymbol, names);
-    }
-    if (Rf_isVector(x))
-	UNPROTECT(2);
-    UNPROTECT(1);
-    UNPROTECT(1); /*ans*/
+    copyDimAndNames(x, ans);
+    UNPROTECT(2); /* args, ans*/
     return ans;
 }
 

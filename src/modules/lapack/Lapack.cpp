@@ -1381,6 +1381,7 @@ static SEXP mod_do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
     {
 #if defined(HAVE_DLADDR) && defined(HAVE_REALPATH)
 	Dl_info dl_info;
+	// dladdr has first arg void * on Solaris.  This is not POSIX.
 	if (dladdr((const void *) F77_NAME(ilaver), &dl_info)) {
 	    char buf[PATH_MAX+1];
 	    char *res = realpath(dl_info.dli_fname, buf);

@@ -277,7 +277,7 @@ void rsort_with_index(double *x, int *indx, int n)
 	}
 }
 
-void revsort(double *a, int *ib, int n)
+void Rf_revsort(double *a, int *ib, int n)
 {
 /* Sort a[] into descending order by "heapsort";
  * sort ib[] alongside;

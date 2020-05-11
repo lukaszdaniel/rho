@@ -2853,6 +2853,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     return ans;
 }
 
+// .Internal(regexec(pattern, text, ignore.case, fixed, useBytes)) :
 SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
     SEXP pat, text, ans, matchpos, matchlen, itype;

@@ -68,7 +68,7 @@ void	R_isort(int*, int);
 void	R_rsort(double*, int);
 void	R_csort(Rcomplex*, int);
 void    rsort_with_index(double *, int *, int);
-void	revsort(double*, int*, int);/* reverse; sort i[] alongside */
+void	Rf_revsort(double*, int*, int);/* reverse; sort i[] alongside */
 void	iPsort(int*,    int, int);
 void	rPsort(double*, int, int);
 void	cPsort(Rcomplex*, int, int);

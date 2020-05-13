@@ -458,7 +458,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	else {
 	    dn0 = SEXP_downcast<StringVector*>(VECTOR_ELT(dimnames, 0));
 	    dn1 = VECTOR_ELT(dimnames, 1);
-	    dnn = Rf_getAttrib(dimnames, R_NamesSymbol);
+	    dnn = Rf_getAttrib(dimnames, Symbols::NamesSymbol);
 	    has_dnn = !Rf_isNull(dnn);
 	    if ( has_dnn ) {
 		rn = (char *) Rf_translateChar(STRING_ELT(dnn, 0));

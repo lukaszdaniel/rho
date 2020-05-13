@@ -105,7 +105,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
 	break;
     case STRSXP:
 	vmax = vmaxget();
-	names = Rf_getAttrib(x, R_NamesSymbol);
+	names = Rf_getAttrib(x, Symbols::NamesSymbol);
 	if (names != R_NilValue) {
 	    PROTECT(names);
 	    /* Try for exact match */
@@ -140,7 +140,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
 	break;
     case SYMSXP:
 	vmax = vmaxget();
-	names = Rf_getAttrib(x, R_NamesSymbol);
+	names = Rf_getAttrib(x, Symbols::NamesSymbol);
 	if (names != R_NilValue) {
 	    PROTECT(names);
 	    for (i = 0; i < nx; i++)
@@ -318,7 +318,7 @@ vectorIndex(SEXP x, SEXP thesub, int start, int stop, int pok, SEXP call,
 		Rf_errorcall(call, _("attempt to select more than one element in %s"), "vectorIndex");
 	}
 	PROTECT(x);
-	SEXP names = PROTECT(Rf_getAttrib(x, R_NamesSymbol));
+	SEXP names = PROTECT(Rf_getAttrib(x, Symbols::NamesSymbol));
 	offset = Rf_get1index(thesub, names,
 			   Rf_xlength(x), pok, i, call);
 	UNPROTECT(2); /* x, names */
@@ -469,7 +469,7 @@ SEXP attribute_hidden Rf_strmat2intmat(SEXP s, SEXP dnamelist, SEXP call)
     SEXP dnames, snames, si, sicol, s_elt;
     PROTECT(snames = Rf_allocVector(STRSXP, nr));
     PROTECT(si = Rf_allocVector(INTSXP, Rf_xlength(s)));
-    Rf_dimgets(si, Rf_getAttrib(s, R_DimSymbol));
+    Rf_dimgets(si, Rf_getAttrib(s, Symbols::DimSymbol));
     int *psi = INTEGER(si);
     for (i = 0; i < Rf_length(dnamelist); i++) {
 	dnames = VECTOR_ELT(dnamelist, i);
@@ -689,7 +689,7 @@ int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
 	}
     case STRSXP:
 	{
-	    SEXP dnames = Rf_getAttrib(x, R_DimNamesSymbol);
+	    SEXP dnames = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	    if (dnames == R_NilValue) {
 		ECALL(0, _("no 'dimnames' attribute for array"));
 	    }
@@ -771,7 +771,7 @@ Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
 	break;
     case STRSXP:
     {
-	SEXP names = Rf_getAttrib(x, R_NamesSymbol);
+	SEXP names = Rf_getAttrib(x, Symbols::NamesSymbol);
 	/* *stretch = 0; */
 	ans = stringSubscript(s, ns, nx, names, stretch, call);
 	break;

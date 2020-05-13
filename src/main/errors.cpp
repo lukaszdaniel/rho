@@ -235,7 +235,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr2(int dummy)
 static void setupwarnings(void)
 {
     R_Warnings = ListVector::create(R_nwarnings);
-    Rf_setAttrib(R_Warnings, R_NamesSymbol, Rf_allocVector(STRSXP, R_nwarnings));
+    Rf_setAttrib(R_Warnings, Symbols::NamesSymbol, Rf_allocVector(STRSXP, R_nwarnings));
 }
 
 /* Rvsnprintf: like vsnprintf, but guaranteed to null-terminate. */
@@ -1323,7 +1323,7 @@ SEXP R_GetTraceback(int skip)
 	else {
 	    SETCAR(t, Rf_deparse1(const_cast<Expression*>(c->call()), FALSE, DEFAULTDEPARSE));
 	    if (c->sourceLocation() && !Rf_isNull(c->sourceLocation())) 
-		Rf_setAttrib(CAR(t), R_SrcrefSymbol, Rf_duplicate(c->sourceLocation()));
+		Rf_setAttrib(CAR(t), Symbols::SrcrefSymbol, Rf_duplicate(c->sourceLocation()));
 	    t = CDR(t);
 	}
     UNPROTECT(1);
@@ -1607,9 +1607,9 @@ static void vsignalWarning(SEXP call, const char *format, va_list ap)
 
     static Symbol* hooksym = Symbol::obtain(".signalSimpleWarning");
     if (SYMVALUE(hooksym) != R_UnboundValue &&
-	SYMVALUE(R_QuoteSymbol) != R_UnboundValue)
+	SYMVALUE(Symbols::QuoteSymbol) != R_UnboundValue)
     {
-	Expression* qcall = new Expression(R_QuoteSymbol, { call });
+	Expression* qcall = new Expression(Symbols::QuoteSymbol, { call });
 	Rvsnprintf(buf, BUFSIZE - 1, format, ap);
 	Expression* hcall = new Expression(hooksym, { Rf_mkString(buf), qcall });
 	hcall->evaluate(Environment::global());
@@ -1652,7 +1652,7 @@ static void vsignalError(SEXP call, const char *format, va_list ap)
 		   stack gets unwound in case error is protect stack
 		   overflow */
 		static Symbol* hooksym = Symbol::obtain(".handleSimpleError");
-		Expression* qcall = new Expression(R_QuoteSymbol, { call });
+		Expression* qcall = new Expression(Symbols::QuoteSymbol, { call });
 		Expression* hcall = new Expression(
 		    hooksym,
 		    { ENTRY_HANDLER(entry), Rf_mkString(buf), qcall });
@@ -1666,7 +1666,7 @@ static void vsignalError(SEXP call, const char *format, va_list ap)
 
 static PairList* findConditionHandler(SEXP cond)
 {
-    SEXP classes = Rf_getAttrib(cond, R_ClassSymbol);
+    SEXP classes = Rf_getAttrib(cond, Symbols::ClassSymbol);
 
     if (TYPEOF(classes) != STRSXP)
 	return R_NilValue;
@@ -1776,7 +1776,7 @@ R_InsertRestartHandlers(ClosureContext *cptr, const char *cname)
     PROTECT(entry = Rf_allocVector(VECSXP, 2));
     SET_VECTOR_ELT(entry, 0, name);
     SET_VECTOR_ELT(entry, 1, R_MakeExternalPtr(cptr, R_NilValue, R_NilValue));
-    Rf_setAttrib(entry, R_ClassSymbol, Rf_mkString("restart"));
+    Rf_setAttrib(entry, Symbols::ClassSymbol, Rf_mkString("restart"));
     push_restart(entry);
     UNPROTECT(2);
 }
@@ -1829,7 +1829,7 @@ SEXP attribute_hidden do_getRestart(/*const*/ Expression* call, const BuiltInFun
 	GCStackRoot<> entry(Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(entry, 0, name);
 	SET_VECTOR_ELT(entry, 1, R_NilValue);
-	Rf_setAttrib(entry, R_ClassSymbol, Rf_mkString("restart"));
+	Rf_setAttrib(entry, Symbols::ClassSymbol, Rf_mkString("restart"));
 	return entry;
     }
     else return R_NilValue;
@@ -1938,7 +1938,7 @@ R_GetCurrentSrcref(int skip)
 SEXP
 R_GetSrcFilename(SEXP srcref)
 {
-    SEXP srcfile = Rf_getAttrib(srcref, R_SrcfileSymbol);
+    SEXP srcfile = Rf_getAttrib(srcref, Symbols::SrcfileSymbol);
     if (TYPEOF(srcfile) != ENVSXP)
 	return Rf_ScalarString(Rf_mkChar(""));
     srcfile = Rf_findVar(Rf_install("filename"), srcfile);

@@ -38,6 +38,7 @@
 #include <Localization.h>
 
 using namespace rho;
+using namespace Symbols;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:

@@ -154,7 +154,7 @@ static void Init_R_Machine(SEXP rho)
 
     SET_STRING_ELT(nms, 17, Rf_mkChar("sizeof.pointer"));
     SET_VECTOR_ELT(ans, 17, Rf_ScalarInteger(sizeof(SEXP)));
-    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     Rf_defineVar(Rf_install(".Machine"), ans, rho);
     UNPROTECT(2);
 }
@@ -210,7 +210,7 @@ static void Init_R_Platform(SEXP rho)
 #else
     SET_VECTOR_ELT(value, 7, Rf_mkString(""));
 #endif
-    Rf_setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, Symbols::NamesSymbol, names);
     Rf_defineVar(Rf_install(".Platform"), value, rho);
     UNPROTECT(2);
 }
@@ -1027,7 +1027,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
 	    }
 	}
     }
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     PROTECT(xxclass = Rf_mkString("octmode"));
     Rf_classgets(mode, xxclass);
     UNPROTECT(3);
@@ -1894,7 +1894,7 @@ SEXP attribute_hidden do_localeconv(/*const*/ Expression* call, const BuiltInFun
     sprintf(buff, "%d", int(lc->n_sign_posn));
     SET_STRING_ELT(ans, i, Rf_mkChar(buff));
     SET_STRING_ELT(ansnames, i++, Rf_mkChar("n_sign_posn"));
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
@@ -2124,7 +2124,7 @@ SEXP attribute_hidden do_capabilities(/*const*/ Expression* call, const BuiltInF
 #endif
 
 
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     UNPROTECT(2);
     return ans;
 }
@@ -2708,7 +2708,7 @@ SEXP attribute_hidden do_l10n_info(/*const*/ Expression* call, const BuiltInFunc
     SET_STRING_ELT(names, 3, Rf_mkChar("codepage"));
     SET_VECTOR_ELT(ans, 3, Rf_ScalarInteger(localeCP));
 #endif
-    Rf_setAttrib(ans, R_NamesSymbol, names);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return ans;
 }
@@ -2798,7 +2798,7 @@ SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunct
     R_Visible = FALSE;
 #endif
     PROTECT(ans = Rf_ScalarInteger(res));
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("octmode"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("octmode"));
     UNPROTECT(1);
     return ans;
 }
@@ -2848,7 +2848,7 @@ SEXP attribute_hidden do_Cstack_info(/*const*/ Expression* call, const BuiltInFu
     SET_STRING_ELT(nms, 3, Rf_mkChar("eval_depth"));
 
     UNPROTECT(2);
-    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     return ans;
 }
 
@@ -3030,7 +3030,7 @@ do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = PROTECT(Rf_allocVector(STRSXP, 9));
     SEXP nms = PROTECT(Rf_allocVector(STRSXP, 9));
-    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     unsigned int i = 0;
     char p[256];
     snprintf(p, 256, "%s", zlibVersion());

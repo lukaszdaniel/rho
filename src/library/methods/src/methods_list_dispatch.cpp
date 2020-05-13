@@ -683,7 +683,7 @@ SEXP R_nextMethodCall(SEXP matched_call, SEXP ev)
     prim_case = Rf_isPrimitive(op);
     if (!prim_case) {
         if (Rf_inherits(op, "internalDispatchMethod")) {
-	    SEXP generic = Rf_findVarInFrame3(ev, R_dot_Generic, TRUE);
+	    SEXP generic = Rf_findVarInFrame3(ev, rho::Symbols::DotGenericSymbol, TRUE);
 	    if(generic == R_UnboundValue)
 	        Rf_error("internal error in 'callNextMethod': '.Generic' was not assigned in the frame of the method call");
 	    op = INTERNAL(Rf_installTrChar(Rf_asChar(generic)));
@@ -738,10 +738,10 @@ static SEXP R_loadMethod(SEXP def, SEXP fname, SEXP ev)
     for(s = attrib = ATTRIB(def); s != R_NilValue; s = CDR(s)) {
 	SEXP t = TAG(s);
 	if(t == R_target) {
-	    Rf_defineVar(R_dot_target, CAR(s), ev); found++;
+	    Rf_defineVar(rho::Symbols::DottargetSymbol, CAR(s), ev); found++;
 	}
 	else if(t == R_defined) {
-	    Rf_defineVar(R_dot_defined, CAR(s), ev); found++;
+	    Rf_defineVar(rho::Symbols::DotdefinedSymbol, CAR(s), ev); found++;
 	}
 	else if(t == R_nextMethod)  {
 	    Rf_defineVar(R_dot_nextMethod, CAR(s), ev); found++;
@@ -750,7 +750,7 @@ static SEXP R_loadMethod(SEXP def, SEXP fname, SEXP ev)
 	    /* ignore */ found++;
 	}
     }
-    Rf_defineVar(R_dot_Method, def, ev);
+    Rf_defineVar(rho::Symbols::DotMethodSymbol, def, ev);
 
     if(found < Rf_length(attrib)) {
         /* this shouldn't be needed but check the generic being

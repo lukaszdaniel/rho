@@ -692,6 +692,7 @@ new BuiltInFunction("unlink",	do_unlink,	0,	111,	3,	{PP_FUNCALL, PREC_FN,	0}),
 /* Complex Valued Functions */
 new BuiltInFunction("polyroot",	do_polyroot,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 
+
 /* Objects */
 new BuiltInFunction("inherits",	do_inherits,	0,	11,	3,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("UseMethod",	do_usemethod,	0,     200,	-1,	{PP_FUNCALL, PREC_FN,	0}),
@@ -855,6 +856,7 @@ new BuiltInFunction("La_svd",	do_lapack,	400,	11,	5,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_svd_cmplx",do_lapack,	401,	11,	5,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_version",	do_lapack,	1000,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("La_library",	do_lapack,	1001,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
+
 // new BuiltInFunction("bcprofcounts",do_bcprofcounts,0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 // new BuiltInFunction("bcprofstart",	do_bcprofstart,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
 // new BuiltInFunction("bcprofstop",	do_bcprofstop,	0,	11,	0,	{PP_FUNCALL, PREC_FN,	0}),
@@ -967,8 +969,8 @@ SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP klass;
 	PROTECT(call = Rf_duplicate(call));
 	PROTECT(klass = Rf_mkString("formula"));
-	Rf_setAttrib(call, R_ClassSymbol, klass);
-	Rf_setAttrib(call, R_DotEnvSymbol, rho);
+	Rf_setAttrib(call, Symbols::ClassSymbol, klass);
+	Rf_setAttrib(call, Symbols::DotEnvSymbol, rho);
 	UNPROTECT(2);
 	return call;
     }

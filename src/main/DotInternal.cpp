@@ -67,8 +67,7 @@ SEXP do_internal(SEXP call, SEXP op, SEXP args, SEXP env)
 	Rf_errorcall(call, _("invalid .Internal() argument"));
     BuiltInFunction* func = BuiltInFunction::obtainInternal(funsym);
     if (!func)
-	Rf_errorcall(call, _("there is no .Internal function \"%s\""),
-		     funsym->name()->c_str());
+	Rf_errorcall(call, _("there is no .Internal function \"%s\""), funsym->name()->c_str());
     ArgList al(innercall->tail(), ArgList::RAW);
     return innercall->evaluateFunctionCall(func, envir, al);
 }

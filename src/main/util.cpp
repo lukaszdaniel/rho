@@ -77,8 +77,8 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar);
 attribute_hidden
 Rboolean Rf_tsConform(SEXP x, SEXP y)
 {
-    if ((x = Rf_getAttrib(x, R_TspSymbol)) != R_NilValue &&
-	(y = Rf_getAttrib(y, R_TspSymbol)) != R_NilValue) {
+    if ((x = Rf_getAttrib(x, Symbols::TspSymbol)) != R_NilValue &&
+	(y = Rf_getAttrib(y, Symbols::TspSymbol)) != R_NilValue) {
 	/* tspgets should enforce this, but prior to 2.4.0
 	   had INTEGER() here */
 	if(TYPEOF(x) == REALSXP && TYPEOF(y) == REALSXP)
@@ -94,7 +94,7 @@ int Rf_nrows(SEXP s)
 {
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
-	t = Rf_getAttrib(s, R_DimSymbol);
+	t = Rf_getAttrib(s, Symbols::DimSymbol);
 	if (t == R_NilValue) return LENGTH(s);
 	return INTEGER(t)[0];
     }
@@ -110,7 +110,7 @@ int Rf_ncols(SEXP s)
 {
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
-	t = Rf_getAttrib(s, R_DimSymbol);
+	t = Rf_getAttrib(s, Symbols::DimSymbol);
 	if (t == R_NilValue) return 1;
 	if (LENGTH(t) >= 2) return INTEGER(t)[1];
 	/* This is a 1D (or possibly 0D array) */
@@ -632,9 +632,9 @@ SEXP R_body_no_src(SEXP x) {
     SEXP b = PROTECT(Rf_duplicate(BODY_EXPR(x)));
     /* R's removeSource() works *recursively* on the body()
        in  ../library/utils/R/sourceutils.R  but that seems unneeded (?) */
-    Rf_setAttrib(b, R_SrcrefSymbol, R_NilValue);
-    Rf_setAttrib(b, R_SrcfileSymbol, R_NilValue);
-    Rf_setAttrib(b, R_WholeSrcrefSymbol, R_NilValue);
+    Rf_setAttrib(b, Symbols::SrcrefSymbol, R_NilValue);
+    Rf_setAttrib(b, Symbols::SrcfileSymbol, R_NilValue);
+    Rf_setAttrib(b, Symbols::WholeSrcrefSymbol, R_NilValue);
     UNPROTECT(1);
     return b;
 }
@@ -2353,7 +2353,7 @@ SEXP attribute_hidden do_pretty(/*const*/ Expression* call, const BuiltInFunctio
     SET_VECTOR_ELT(ans, 1, Rf_ScalarReal(u));
     SET_VECTOR_ELT(ans, 2, Rf_ScalarInteger(n));
     nm = Rf_allocVector(STRSXP, 3);
-    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
     SET_STRING_ELT(nm, 0, Rf_mkChar("l"));
     SET_STRING_ELT(nm, 1, Rf_mkChar("u"));
     SET_STRING_ELT(nm, 2, Rf_mkChar("n"));

@@ -166,6 +166,8 @@ namespace rho {
 	 */
 	RObject* value() const { return m_value; }
 
+	static void R_RunWeakRefFinalizer(RObject* x);
+
 	// Virtual functions of RObject:
 	unsigned int packGPBits() const override;
 	void unpackGPBits(unsigned int gpbits) override;

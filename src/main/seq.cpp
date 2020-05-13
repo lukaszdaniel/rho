@@ -63,8 +63,8 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
     if (Rf_length(s) != Rf_length(t))
 	Rf_errorcall(call, _("unequal factor lengths"));
     n = Rf_length(s);
-    ls = Rf_getAttrib(s, R_LevelsSymbol);
-    lt = Rf_getAttrib(t, R_LevelsSymbol);
+    ls = Rf_getAttrib(s, Symbols::LevelsSymbol);
+    lt = Rf_getAttrib(t, Symbols::LevelsSymbol);
     nls = LENGTH(ls);
     nlt = LENGTH(lt);
     PROTECT(a = Rf_allocVector(INTSXP, n));
@@ -95,11 +95,11 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 		k++;
 	    }
 	}
-	Rf_setAttrib(a, R_LevelsSymbol, la);
+	Rf_setAttrib(a, Symbols::LevelsSymbol, la);
 	UNPROTECT(1);
     }
     PROTECT(la = Rf_mkString("factor"));
-    Rf_setAttrib(a, R_ClassSymbol, la);
+    Rf_setAttrib(a, Symbols::ClassSymbol, la);
     UNPROTECT(2);
     R_FreeStringBufferL(&cbuff);
     vmaxset(vmax);
@@ -394,7 +394,7 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(s)) { /* e.g. contains = "list" */
-	Rf_setAttrib(a, R_ClassSymbol, Rf_getAttrib(s, R_ClassSymbol));
+	Rf_setAttrib(a, Symbols::ClassSymbol, Rf_getAttrib(s, Symbols::ClassSymbol));
 	SET_S4_OBJECT(a);
     }
 #endif
@@ -406,9 +406,9 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
 	    SET_STRING_ELT(tmp, 0, Rf_mkChar("ordered"));
 	    SET_STRING_ELT(tmp, 1, Rf_mkChar("factor"));
 	} else PROTECT(tmp = Rf_mkString("factor"));
-	Rf_setAttrib(a, R_ClassSymbol, tmp);
+	Rf_setAttrib(a, Symbols::ClassSymbol, tmp);
 	UNPROTECT(1);
-	Rf_setAttrib(a, R_LevelsSymbol, Rf_getAttrib(s, R_LevelsSymbol));
+	Rf_setAttrib(a, Symbols::LevelsSymbol, Rf_getAttrib(s, Symbols::LevelsSymbol));
     }
     UNPROTECT(1);
     return a;
@@ -450,7 +450,7 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(s)) { /* e.g. contains = "list" */
-	Rf_setAttrib(a, R_ClassSymbol, Rf_getAttrib(s, R_ClassSymbol));
+	Rf_setAttrib(a, Symbols::ClassSymbol, Rf_getAttrib(s, Symbols::ClassSymbol));
 	SET_S4_OBJECT(a);
     }
 #endif
@@ -462,9 +462,9 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 	    SET_STRING_ELT(tmp, 0, Rf_mkChar("ordered"));
 	    SET_STRING_ELT(tmp, 1, Rf_mkChar("factor"));
 	} else PROTECT(tmp = Rf_mkString("factor"));
-	Rf_setAttrib(a, R_ClassSymbol, tmp);
+	Rf_setAttrib(a, Symbols::ClassSymbol, tmp);
 	UNPROTECT(1);
-	Rf_setAttrib(a, R_LevelsSymbol, Rf_getAttrib(s, R_LevelsSymbol));
+	Rf_setAttrib(a, Symbols::LevelsSymbol, Rf_getAttrib(s, Symbols::LevelsSymbol));
     }
     UNPROTECT(1);
     return a;
@@ -764,15 +764,15 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if(len > 0 && each == 0)
 	Rf_errorcall(call, _("invalid '%s' argument"), "each");
-    SEXP xn = PROTECT(Rf_getAttrib(x, R_NamesSymbol));  nprotect++;
+    SEXP xn = PROTECT(Rf_getAttrib(x, Symbols::NamesSymbol));  nprotect++;
     PROTECT(ans = rep4(x, times, len, each, nt));    nprotect++;
 
     if (Rf_xlength(xn) > 0)
-	Rf_setAttrib(ans, R_NamesSymbol, rep4(xn, times, len, each, nt));
+	Rf_setAttrib(ans, Symbols::NamesSymbol, rep4(xn, times, len, each, nt));
 
 #ifdef _S4_rep_keepClass
     if(IS_S4_OBJECT(x)) { /* e.g. contains = "list" */
-	Rf_setAttrib(ans, R_ClassSymbol, Rf_getAttrib(x, R_ClassSymbol));
+	Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_getAttrib(x, Symbols::ClassSymbol));
 	SET_S4_OBJECT(ans);
     }
 #endif

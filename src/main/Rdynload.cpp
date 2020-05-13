@@ -1031,7 +1031,7 @@ Rf_MakeNativeSymbolRef(DL_FUNC f)
     PROTECT(ref = R_MakeExternalPtrFn(f, Rf_install("native symbol"),
 				      nullptr));
     PROTECT(klass = Rf_mkString("NativeSymbol"));
-    Rf_setAttrib(ref, R_ClassSymbol, klass);
+    Rf_setAttrib(ref, Symbols::ClassSymbol, klass);
     UNPROTECT(2);
     return(ref);
 }
@@ -1065,7 +1065,7 @@ Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
     R_RegisterCFinalizer(ref, freeRegisteredNativeSymbolCopy);
 
     PROTECT(klass = Rf_mkString("RegisteredNativeSymbol"));
-    Rf_setAttrib(ref, R_ClassSymbol, klass);
+    Rf_setAttrib(ref, Symbols::ClassSymbol, klass);
 
     UNPROTECT(2);
     return(ref);
@@ -1079,7 +1079,7 @@ Rf_makeDllObject(HINSTANCE inst)
 
     PROTECT(ans = R_MakeExternalPtr(inst, Rf_install("DLLHandle"),
 				    nullptr));
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLHandle"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("DLLHandle"));
     UNPROTECT(1);
 
     return(ans);
@@ -1092,7 +1092,7 @@ Rf_makeDllInfoReference(HINSTANCE inst)
 
     PROTECT(ans = R_MakeExternalPtr(inst, Rf_install("DLLInfo"),
 				    Rf_install("DLLInfo")));
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoReference"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("DLLInfoReference"));
     UNPROTECT(1);
 
     return(ans);
@@ -1131,9 +1131,9 @@ Rf_MakeDLLInfo(DllInfo *info)
     PROTECT(elNames = Rf_allocVector(STRSXP, n));
     for(i = 0; i < n; i++)
 	SET_STRING_ELT(elNames, i, Rf_mkChar(names[i]));
-    Rf_setAttrib(ref, R_NamesSymbol, elNames);
+    Rf_setAttrib(ref, Symbols::NamesSymbol, elNames);
 
-    Rf_setAttrib(ref, R_ClassSymbol, Rf_mkString("DLLInfo"));
+    Rf_setAttrib(ref, Symbols::ClassSymbol, Rf_mkString("DLLInfo"));
 
     UNPROTECT(2);
 
@@ -1200,7 +1200,7 @@ R_getDllTable()
     for(i = 0; i < CountDLL; i++) {
 	SET_VECTOR_ELT(ans, i, Rf_MakeDLLInfo(&(LoadedDLL[i])));
     }
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoList"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("DLLInfoList"));
     UNPROTECT(1);
 
     /* There is a problem here: The allocations can cause gc, and gc
@@ -1281,8 +1281,8 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
 	SET_STRING_ELT(names, 3, Rf_mkChar("numParameters"));
     }
 
-    Rf_setAttrib(sym, R_ClassSymbol, klass);
-    Rf_setAttrib(sym, R_NamesSymbol, names);
+    Rf_setAttrib(sym, Symbols::ClassSymbol, klass);
+    Rf_setAttrib(sym, Symbols::NamesSymbol, names);
 
     UNPROTECT(numProtects);
     return(sym);
@@ -1338,7 +1338,7 @@ R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 	SET_VECTOR_ELT(ans, i, createRSymbolObject(nullptr,  address, &sym, TRUE));/* XXX */
     }
 
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("NativeRoutineList"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("NativeRoutineList"));
     UNPROTECT(1);
     return(ans);
 }
@@ -1370,7 +1370,7 @@ R_getRegisteredRoutines(SEXP dll)
     PROTECT(snames = Rf_allocVector(STRSXP, 4));
     for(i = 0; i < 4; i++)
 	SET_STRING_ELT(snames, i, Rf_mkChar(names[i]));
-    Rf_setAttrib(ans, R_NamesSymbol, snames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, snames);
     UNPROTECT(2);
     return(ans);
 }
@@ -1417,7 +1417,7 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
     PROTECT(ans = Rf_allocVector(VECSXP, CountDLL));
     for(int i = 0; i < CountDLL; i++)
 	SET_VECTOR_ELT(ans, i, Rf_MakeDLLInfo(&(LoadedDLL[i])));
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("DLLInfoList"));
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("DLLInfoList"));
     UNPROTECT(1);
 
     /* There is a problem here: The allocations can cause gc, and gc
@@ -1429,7 +1429,7 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
 
     PROTECT(ans);
     PROTECT(nm = Rf_allocVector(STRSXP, CountDLL));
-    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
     for(int i = 0; i < CountDLL; i++)
 	SET_STRING_ELT(nm, i,
 		       STRING_ELT(VECTOR_ELT(VECTOR_ELT(ans, i), 0), 0));
@@ -1462,7 +1462,7 @@ do_getRegisteredRoutines(/*const*/ Expression* call, const BuiltInFunction* op, 
     PROTECT(snames = Rf_allocVector(STRSXP, 4));
     for(int i = 0; i < 4; i++)
 	SET_STRING_ELT(snames, i, Rf_mkChar(names[i]));
-    Rf_setAttrib(ans, R_NamesSymbol, snames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, snames);
     UNPROTECT(2);
     return(ans);
 }

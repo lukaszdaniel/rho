@@ -23,10 +23,10 @@
     for (R_xlen_t i = 0;  i < nlevs; i++) {
 	SET_VECTOR_ELT(vec, i, 
 		       Rf_allocVector(TYPEOF(x), (_L_int_)_L_INTEG_(counts)[i]));
-	Rf_setAttrib(VECTOR_ELT(vec, i), R_LevelsSymbol,
-		  Rf_getAttrib(x, R_LevelsSymbol));
+	Rf_setAttrib(VECTOR_ELT(vec, i), Symbols::LevelsSymbol,
+		  Rf_getAttrib(x, Symbols::LevelsSymbol));
 	if(have_names)
-	    Rf_setAttrib(VECTOR_ELT(vec, i), R_NamesSymbol,
+	    Rf_setAttrib(VECTOR_ELT(vec, i), Symbols::NamesSymbol,
 		      Rf_allocVector(STRSXP, (_L_int_)_L_INTEG_(counts)[i]));
     }
     for (int i = 0; i < nlevs; i++) _L_INTEG_(counts)[i] = 0;
@@ -58,7 +58,7 @@
 		UNIMPLEMENTED_TYPE("split", x);
 	    }
 	    if(have_names) {
-		nmj = Rf_getAttrib(VECTOR_ELT(vec, j - 1), R_NamesSymbol);
+		nmj = Rf_getAttrib(VECTOR_ELT(vec, j - 1), Symbols::NamesSymbol);
 		SET_STRING_ELT(nmj, k, STRING_ELT(nm, i));
 	    }
 	    _L_INTEG_(counts)[j - 1] += 1;

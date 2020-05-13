@@ -880,7 +880,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	    else
 		SET_STRING_ELT(names, na, PRINTNAME(TAG(pa)));
 	}
-	Rf_setAttrib(ans, R_NamesSymbol, names);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, names);
 	UNPROTECT(1);
     }
 

@@ -30,6 +30,9 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 /* It would be better to find a way to avoid abusing TRUELENGTH, but
    in the meantime replace TRUELENGTH/SET_TRUELENGTH with
@@ -1886,7 +1889,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
         PROTECT(nms = Rf_allocVector(STRSXP, 2));
         SET_STRING_ELT(nms, 0, Rf_mkChar("grouping"));
         SET_STRING_ELT(nms, 1, Rf_mkChar("integer"));
-        Rf_setAttrib(ans, R_ClassSymbol, nms);
+        Rf_setAttrib(ans, Symbols::ClassSymbol, nms);
         UNPROTECT(1);
     }
 

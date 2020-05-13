@@ -46,7 +46,7 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     R_xlen_t *lengths, *counters, longest = 0;
 
     m = Rf_length(varyingArgs);
-    SEXP vnames = PROTECT(Rf_getAttrib(varyingArgs, R_NamesSymbol));
+    SEXP vnames = PROTECT(Rf_getAttrib(varyingArgs, Symbols::NamesSymbol));
     Rboolean named = Rboolean(vnames != nullptr);
 
     lengths = static_cast<R_xlen_t *>(RHO_alloc(m, sizeof(R_xlen_t)));
@@ -84,8 +84,8 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
     for (int j = m - 1; j >= 0; j--) {
 	SET_VECTOR_ELT(mindex, j, Rf_ScalarInteger(j + 1));
 	SET_VECTOR_ELT(nindex, j, Rf_allocVector(realIndx ? REALSXP : INTSXP, 1));
-	SEXP tmp1 = PROTECT(Rf_lang3(R_Bracket2Symbol, Dots, VECTOR_ELT(mindex, j)));
-	SEXP tmp2 = PROTECT(Rf_lang3(R_Bracket2Symbol, tmp1, VECTOR_ELT(nindex, j)));
+	SEXP tmp1 = PROTECT(Rf_lang3(Symbols::Bracket2Symbol, Dots, VECTOR_ELT(mindex, j)));
+	SEXP tmp2 = PROTECT(Rf_lang3(Symbols::Bracket2Symbol, tmp1, VECTOR_ELT(nindex, j)));
 	REPROTECT(fargs = PairList::cons(tmp2, fargs), fi);
 	UNPROTECT(2);
 	if (named && R_CHAR(STRING_ELT(vnames, j))[0] != '\0')

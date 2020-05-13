@@ -2063,7 +2063,7 @@ static SEXP RestoreToEnv(SEXP ans, SEXP aenv)
     if (TYPEOF(ans) == VECSXP) {
 	int i;
 	PROTECT(ans);
-	PROTECT(names = Rf_getAttrib(ans, R_NamesSymbol)); /* PROTECT needed?? */
+	PROTECT(names = Rf_getAttrib(ans, Symbols::NamesSymbol)); /* PROTECT needed?? */
 	if (TYPEOF(names) != STRSXP || LENGTH(names) != LENGTH(ans))
 	    Rf_error(_("not a valid named list"));
 	ProvenanceTracker::flagXenogenesis();

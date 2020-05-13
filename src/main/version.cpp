@@ -34,6 +34,9 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <Rversion.h>
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 void attribute_hidden Rf_PrintGreeting(void)
 {
@@ -102,7 +105,7 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     SET_STRING_ELT(names, 14, Rf_mkChar("nickname"));
     SET_VECTOR_ELT(value, 14, Rf_mkString(R_NICK));
 
-    Rf_setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return value;
 }

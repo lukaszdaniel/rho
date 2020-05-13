@@ -32,6 +32,7 @@
 #include "rho/Symbol.hpp"
 
 using namespace rho;
+using namespace Symbols;
 using namespace VectorOps;
 
 // Implementation of operandsConformable() is in logic.cpp (for the

@@ -695,7 +695,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
 	    SET_VECTOR_ELT(ans, i, Rf_allocVector(TYPEOF(w), blksize));
 	}
     }
-    Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(what, R_NamesSymbol));
+    Rf_setAttrib(ans, Symbols::NamesSymbol, Rf_getAttrib(what, Symbols::NamesSymbol));
 
     n = 0; linesread = 0; colsread = 0; ii = 0;
     badline = 0;

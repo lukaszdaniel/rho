@@ -785,8 +785,8 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	vmaxset(vmax);
     }
 
-    if (Rf_getAttrib(x, R_NamesSymbol) != R_NilValue)
-	Rf_namesgets(ans, Rf_getAttrib(x, R_NamesSymbol));
+    if (Rf_getAttrib(x, Symbols::NamesSymbol) != R_NilValue)
+	Rf_namesgets(ans, Rf_getAttrib(x, Symbols::NamesSymbol));
     UNPROTECT(1);
     Free(pt); Free(wpt);
     if (tables) pcre_free(const_cast<unsigned char *>(tables));
@@ -937,11 +937,11 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     n = XLENGTH(text);
     if (STRING_ELT(pat, 0) == NA_STRING) {
 	if (value_opt) {
-	    SEXP nmold = Rf_getAttrib(text, R_NamesSymbol);
+	    SEXP nmold = Rf_getAttrib(text, Symbols::NamesSymbol);
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
 	    if (!Rf_isNull(nmold))
-		Rf_setAttrib(ans, R_NamesSymbol, Rf_duplicate(nmold));
+		Rf_setAttrib(ans, Symbols::NamesSymbol, Rf_duplicate(nmold));
 	    UNPROTECT(2); /* ans, nmold */
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
@@ -1116,7 +1116,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
     }
 
     if (value_opt) {
-	SEXP nmold = Rf_getAttrib(text, R_NamesSymbol), nm;
+	SEXP nmold = Rf_getAttrib(text, Symbols::NamesSymbol), nm;
 	PROTECT(ans = Rf_allocVector(STRSXP, nmatches));
 	for (i = 0, j = 0; i < n ; i++)
 	    if (invert ^ LOGICAL(ind)[i])
@@ -1127,7 +1127,7 @@ SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltI
 	    for (i = 0, j = 0; i < n ; i++)
 		if (invert ^ LOGICAL(ind)[i])
 		    SET_STRING_ELT(nm, j++, STRING_ELT(nmold, i));
-	    Rf_setAttrib(ans, R_NamesSymbol, nm);
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
 	}
 	UNPROTECT(2); /* ans, nmold */
     } else {
@@ -2465,8 +2465,8 @@ gregexpr_perl(const char *pattern, const char *string,
 	PROTECT(capturelen = Rf_allocMatrix(INTSXP, matchIndex+1, capture_count));
 	PROTECT(dmn = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dmn, 1, capture_names);
-	Rf_setAttrib(capture, R_DimNamesSymbol, dmn);
-	Rf_setAttrib(capturelen, R_DimNamesSymbol, dmn);
+	Rf_setAttrib(capture, Symbols::DimNamesSymbol, dmn);
+	Rf_setAttrib(capturelen, Symbols::DimNamesSymbol, dmn);
 	if (foundAny) {
 	    for (int j = 0; j <= matchIndex; j++)
 		for(int i = 0; i < capture_count; i++) {
@@ -2700,10 +2700,10 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	    PROTECT(dmn = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dmn, 1, capture_names);
 	    PROTECT(capture_start = Rf_allocMatrix(INTSXP, nn, capture_count));
-	    Rf_setAttrib(capture_start, R_DimNamesSymbol, dmn);
+	    Rf_setAttrib(capture_start, Symbols::DimNamesSymbol, dmn);
 	    Rf_setAttrib(ans, Rf_install("capture.start"), capture_start);
 	    PROTECT(capturelen = Rf_allocMatrix(INTSXP, nn, capture_count));
-	    Rf_setAttrib(capturelen, R_DimNamesSymbol, dmn);
+	    Rf_setAttrib(capturelen, Symbols::DimNamesSymbol, dmn);
 	    Rf_setAttrib(ans, Rf_install("capture.length"), capturelen);
 	    Rf_setAttrib(ans, Rf_install("capture.names"), capture_names);
 	    UNPROTECT(3);
@@ -3048,7 +3048,7 @@ SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP ans = PROTECT(Rf_allocVector(LGLSXP, 4));
     int *lans = LOGICAL(ans);
     SEXP nm = Rf_allocVector(STRSXP, 4);
-    Rf_setAttrib(ans, R_NamesSymbol, nm);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
     SET_STRING_ELT(nm, 0, Rf_mkChar("UTF-8"));
     pcre_config(PCRE_CONFIG_UTF8, &res); lans[0] = res;
     SET_STRING_ELT(nm, 1, Rf_mkChar("Unicode properties"));

@@ -35,6 +35,7 @@
 #include <Localization.h>
 
 using namespace rho;
+using namespace Symbols;
 
 // ***** Class Subscripting::Indices *****
 
@@ -542,7 +543,7 @@ void Subscripting::setVectorAttributes(VectorBase* subset,
 	if (sourcenames)
 	    subset->setNames(vectorSubset(sourcenames, indices));
     }
-    // R_SrcrefSymbol:
+    // Symbols::SrcrefSymbol:
     {
 	RObject* attrib = source->getAttribute(SrcrefSymbol);
 	if (attrib && attrib->sexptype() == VECSXP) {

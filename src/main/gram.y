@@ -592,8 +592,8 @@ static SEXP makeSrcref(YYLTYPE *lloc, SEXP srcfile)
     INTEGER(val)[5] = lloc->last_column;
     INTEGER(val)[6] = lloc->first_parsed;
     INTEGER(val)[7] = lloc->last_parsed;
-    Rf_setAttrib(val, R_SrcfileSymbol, srcfile);
-    Rf_setAttrib(val, R_ClassSymbol, Rf_mkString("srcref"));
+    Rf_setAttrib(val, Symbols::SrcfileSymbol, srcfile);
+    Rf_setAttrib(val, Symbols::ClassSymbol, Rf_mkString("srcref"));
     UNPROTECT(1);
     return val;
 }
@@ -605,8 +605,8 @@ static SEXP attachSrcrefs(SEXP val)
     PROTECT(val);
     PROTECT(srval = Rf_PairToVectorList(SrcRefs));
     
-    Rf_setAttrib(val, R_SrcrefSymbol, srval);
-    Rf_setAttrib(val, R_SrcfileSymbol, ParseState.SrcFile);
+    Rf_setAttrib(val, Symbols::SrcrefSymbol, srval);
+    Rf_setAttrib(val, Symbols::SrcfileSymbol, ParseState.SrcFile);
     {
 	YYLTYPE wholeFile;
 	wholeFile.first_line = 1;
@@ -617,7 +617,7 @@ static SEXP attachSrcrefs(SEXP val)
 	wholeFile.last_column = ParseState.xxcolno;
 	wholeFile.first_parsed = 1;
 	wholeFile.last_parsed = ParseState.xxparseno;
-	Rf_setAttrib(val, R_WholeSrcrefSymbol, makeSrcref(&wholeFile, ParseState.SrcFile));
+	Rf_setAttrib(val, Symbols::WholeSrcrefSymbol, makeSrcref(&wholeFile, ParseState.SrcFile));
     }
     REPROTECT(SrcRefs = R_NilValue, srindex);
     ParseState.didAttach = TRUE;
@@ -701,7 +701,7 @@ static SEXP xxexprlist0(void)
     if (GenerateCode) {
 	PROTECT(ans = NewList());
 	if (ParseState.keepSrcRefs) {
-	    Rf_setAttrib(ans, R_SrcrefSymbol, SrcRefs);
+	    Rf_setAttrib(ans, Symbols::SrcrefSymbol, SrcRefs);
 	    REPROTECT(SrcRefs = R_NilValue, srindex);
 	}
     }
@@ -716,7 +716,7 @@ static SEXP xxexprlist1(SEXP expr, YYLTYPE *lloc)
     if (GenerateCode) {
 	PROTECT(tmp = NewList());
 	if (ParseState.keepSrcRefs) {
-	    Rf_setAttrib(tmp, R_SrcrefSymbol, SrcRefs);
+	    Rf_setAttrib(tmp, Symbols::SrcrefSymbol, SrcRefs);
 	    REPROTECT(SrcRefs = Rf_list1(makeSrcref(lloc, ParseState.SrcFile)), srindex);
 	}
 	PROTECT(ans = GrowList(tmp, expr));
@@ -1036,7 +1036,7 @@ static SEXP xxexprlist(SEXP a1, YYLTYPE *lloc, SEXP a2)
 	/* SET_TYPEOF(a2, LANGSXP); -- not allowed in rho */
 	SETCAR(a2, a1);
 	if (ParseState.keepSrcRefs) {
-	    PROTECT(prevSrcrefs = Rf_getAttrib(a2, R_SrcrefSymbol));
+	    PROTECT(prevSrcrefs = Rf_getAttrib(a2, Symbols::SrcrefSymbol));
 	    REPROTECT(SrcRefs = CONS(makeSrcref(lloc, ParseState.SrcFile), SrcRefs), srindex);
 	    PROTECT(ans = attachSrcrefs(a2));
 	    REPROTECT(SrcRefs = prevSrcrefs, srindex);
@@ -1425,7 +1425,7 @@ SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 		PROTECT(class_sv = Rf_allocVector(STRSXP, 2));
 		SET_STRING_ELT(class_sv, 0, Rf_mkChar("srcfilecopy"));
 		SET_STRING_ELT(class_sv, 1, Rf_mkChar("srcfile"));
-		Rf_setAttrib(ParseState.Original, R_ClassSymbol, class_sv);
+		Rf_setAttrib(ParseState.Original, Symbols::ClassSymbol, class_sv);
 		UNPROTECT(1);
 	    }
 	}
@@ -2682,7 +2682,7 @@ static void setParseFilename(SEXP newname) {
         PROTECT(class_sv = Rf_allocVector(STRSXP, 2));
         SET_STRING_ELT(class_sv, 0, Rf_mkChar("srcfilealias"));
         SET_STRING_ELT(class_sv, 1, Rf_mkChar("srcfile"));
-	Rf_setAttrib(ParseState.SrcFile, R_ClassSymbol, class_sv);
+	Rf_setAttrib(ParseState.SrcFile, Symbols::ClassSymbol, class_sv);
 	UNPROTECT(1);
     } else {
     	REPROTECT(ParseState.SrcFile = Rf_duplicate(newname), ParseState.SrcFileProt);
@@ -3456,7 +3456,7 @@ static void finalizeData( ){
     Rf_setAttrib( newdata, Rf_install("tokens"), tokens );
     Rf_setAttrib( newdata, Rf_install("text"), newtext );
     
-    Rf_setAttrib(newdata, R_ClassSymbol, Rf_mkString("parseData"));
+    Rf_setAttrib(newdata, Symbols::ClassSymbol, Rf_mkString("parseData"));
     
     /* Put it into the srcfile environment */
     if (Rf_isEnvironment(ParseState.SrcFile)) 

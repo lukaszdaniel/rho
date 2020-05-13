@@ -377,7 +377,7 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 	"Recycling array of length 1 in array-vector arithmetic is deprecated.\n\
   Use c() or as.vector() instead.\n"));
     	    x = static_cast<VectorBase*>(Rf_duplicate(x));
-    	    Rf_setAttrib(x, R_DimSymbol, R_NilValue);
+    	    Rf_setAttrib(x, Symbols::DimSymbol, R_NilValue);
     	}
     	if (yarray && ny==1 && nx!=1) {
 	    if(nx != 0)
@@ -385,7 +385,7 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 		_("Recycling array of length 1 in vector-array arithmetic is deprecated.\n\
   Use c() or as.vector() instead.\n"));
     	    y = static_cast<VectorBase*>(Rf_duplicate(y));
-    	    Rf_setAttrib(y, R_DimSymbol, R_NilValue);
+    	    Rf_setAttrib(y, Symbols::DimSymbol, R_NilValue);
     	}
     }
 #endif
@@ -1130,7 +1130,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     else if (n == 2 &&
 	     TAG(args) == R_NilValue &&
-	     (TAG(CDR(args)) == R_NilValue || TAG(CDR(args)) == R_BaseSymbol)) {
+	     (TAG(CDR(args)) == R_NilValue || TAG(CDR(args)) == Symbols::BaseSymbol)) {
 	/* log(x, y) or log(x, base = y) are handled here */
 	SEXP x = CAR(args);
 	SEXP y = CADR(args);

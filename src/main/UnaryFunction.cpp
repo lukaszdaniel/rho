@@ -32,6 +32,7 @@
 #include "rho/Symbol.hpp"
 
 using namespace rho;
+using namespace Symbols;
 using namespace VectorOps;
 
 void CopyLayoutAttributes::copyAttributes(VectorBase* to,

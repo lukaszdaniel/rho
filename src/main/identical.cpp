@@ -32,6 +32,11 @@
 #include <Localization.h>
 #include <Internal.h>
 #include "rho/ExpressionVector.hpp"
+#include "rho/Symbol.hpp"
+
+using namespace std;
+using namespace rho;
+
 /* -> Rinternals.h which exports R_compute_identical() */
 
 /* Implementation of identical(x, y) */
@@ -106,8 +111,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     if (IGNORE_SRCREF && TYPEOF(x) == CLOSXP) {
 	/* Remove "srcref" attribute - and below, treat body(x), body(y) */
 	SEXP x_ = Rf_duplicate(x), y_ = Rf_duplicate(y);
-	Rf_setAttrib(x_, R_SrcrefSymbol, nullptr);
-	Rf_setAttrib(y_, R_SrcrefSymbol, nullptr);
+	Rf_setAttrib(x_, Symbols::SrcrefSymbol, nullptr);
+	Rf_setAttrib(y_, Symbols::SrcrefSymbol, nullptr);
 	ax = ATTRIB(x_); ay = ATTRIB(y_);
 	UNPROTECT(2);
     }
@@ -152,8 +157,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 		    if(streql(tx, R_CHAR(PRINTNAME(TAG(ely))))) {
 			/* We need to treat row.names specially here */
 			if(streql(tx, "row.names")) {
-			    PROTECT(atrx = Rf_getAttrib(x, R_RowNamesSymbol));
-			    PROTECT(atry = Rf_getAttrib(y, R_RowNamesSymbol));
+			    PROTECT(atrx = Rf_getAttrib(x, Symbols::RowNamesSymbol));
+			    PROTECT(atry = Rf_getAttrib(y, Symbols::RowNamesSymbol));
 			    if(!R_compute_identical(atrx, atry, flags)) {
 				UNPROTECT(4); /* atrx, atry, ax, ay */
 				return FALSE;

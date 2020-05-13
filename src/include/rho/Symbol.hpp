@@ -331,12 +331,13 @@ namespace rho {
 	return symbol && symbol->isDotDotSymbol();
     }
 
-    // Predefined Symbols visible in 'namespace rho':
+    // Predefined Symbols visible in 'namespace rho::Symbols':
+    namespace Symbols {
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     extern Symbol* RHO_NAME;
 #include "rho/PredefinedSymbols.hpp"
 #undef PREDEFINED_SYMBOL
-
+    }
 }  // namespace rho
 
 

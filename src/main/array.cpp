@@ -226,7 +226,7 @@ SEXP Rf_allocMatrix(SEXPTYPE mode, int nrow, int ncol)
     PROTECT(t = Rf_allocVector(INTSXP, 2));
     INTEGER(t)[0] = nrow;
     INTEGER(t)[1] = ncol;
-    Rf_setAttrib(s, R_DimSymbol, t);
+    Rf_setAttrib(s, Symbols::DimSymbol, t);
     UNPROTECT(2);
     return s;
 }
@@ -258,7 +258,7 @@ SEXP Rf_alloc3DArray(SEXPTYPE mode, int nrow, int ncol, int nface)
     INTEGER(t)[0] = nrow;
     INTEGER(t)[1] = ncol;
     INTEGER(t)[2] = nface;
-    Rf_setAttrib(s, R_DimSymbol, t);
+    Rf_setAttrib(s, Symbols::DimSymbol, t);
     UNPROTECT(2);
     return s;
 }
@@ -282,7 +282,7 @@ SEXP Rf_allocArray(SEXPTYPE mode, SEXP dims)
 
     PROTECT(dims = Rf_duplicate(dims));
     PROTECT(array = Rf_allocVector(mode, n));
-    Rf_setAttrib(array, R_DimSymbol, dims);
+    Rf_setAttrib(array, Symbols::DimSymbol, dims);
     UNPROTECT(2);
     return array;
 }
@@ -312,7 +312,7 @@ SEXP attribute_hidden do_drop(/*const*/ Expression* call, const BuiltInFunction*
     int i, n, shorten;
 
     x = x_;
-    if ((xdims = Rf_getAttrib(x, R_DimSymbol)) != R_NilValue) {
+    if ((xdims = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue) {
 	n = LENGTH(xdims);
 	shorten = 0;
 	for (i = 0; i < n; i++)
@@ -450,15 +450,15 @@ SEXP attribute_hidden do_lengths(/*const*/ Expression* call, const BuiltInFuncti
 	for (i = 0, ans_elt = INTEGER(ans); i < x_len; i++, ans_elt++)
 	    *ans_elt = 1;
     }
-    SEXP dim = Rf_getAttrib(x, R_DimSymbol);
+    SEXP dim = Rf_getAttrib(x, Symbols::DimSymbol);
     if(!Rf_isNull(dim)) {
-        Rf_setAttrib(ans, R_DimSymbol, dim);
+        Rf_setAttrib(ans, Symbols::DimSymbol, dim);
     }
     if(useNames) {
-	SEXP names = Rf_getAttrib(x, R_NamesSymbol);
-	if(!Rf_isNull(names)) Rf_setAttrib(ans, R_NamesSymbol, names);
-    SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
-    if(!Rf_isNull(dimnames)) Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);	
+	SEXP names = Rf_getAttrib(x, Symbols::NamesSymbol);
+	if(!Rf_isNull(names)) Rf_setAttrib(ans, Symbols::NamesSymbol, names);
+    SEXP dimnames = Rf_getAttrib(x, Symbols::DimNamesSymbol);
+    if(!Rf_isNull(dimnames)) Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);	
     }
     UNPROTECT(1);
     return ans;
@@ -1125,8 +1125,8 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
     if ( !(Rf_isNumeric(x) || Rf_isComplex(x)) || !(Rf_isNumeric(y) || Rf_isComplex(y)) )
 	Rf_errorcall(call, _("requires numeric/complex matrix/vector arguments"));
 
-    xdims = Rf_getAttrib(x, R_DimSymbol);
-    ydims = Rf_getAttrib(y, R_DimSymbol);
+    xdims = Rf_getAttrib(x, Symbols::DimSymbol);
+    ydims = Rf_getAttrib(y, Symbols::DimSymbol);
     ldx = Rf_length(xdims);
     ldy = Rf_length(ydims);
 
@@ -1261,8 +1261,8 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    matprod(REAL(x), nrx, ncx,
 		    REAL(y), nry, ncy, REAL(ans));
 
-	PROTECT(xdims = Rf_getAttrib(x, R_DimNamesSymbol));
-	PROTECT(ydims = Rf_getAttrib(y, R_DimNamesSymbol));
+	PROTECT(xdims = Rf_getAttrib(x, Symbols::DimNamesSymbol));
+	PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
 	if (xdims != R_NilValue || ydims != R_NilValue) {
 	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
@@ -1274,7 +1274,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (xdims != R_NilValue) {
 		if (ldx == 2 || ncx == 1) {
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 0));
-		    dnx = Rf_getAttrib(xdims, R_NamesSymbol);
+		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
 		    if(!Rf_isNull(dnx))
 			SET_STRING_ELT(dimnamesnames, 0, STRING_ELT(dnx, 0));
 		}
@@ -1284,12 +1284,12 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (ydims != R_NilValue) {					\
 		if (ldy == 2) {						\
 		    SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(ydims, 1));	\
-		    dny = Rf_getAttrib(ydims, R_NamesSymbol);		\
+		    dny = Rf_getAttrib(ydims, Symbols::NamesSymbol);		\
 		    if(!Rf_isNull(dny))					\
 			SET_STRING_ELT(dimnamesnames, 1, STRING_ELT(dny, 1)); \
 		} else if (nry == 1) {					\
 		    SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(ydims, 0));	\
-		    dny = Rf_getAttrib(ydims, R_NamesSymbol);		\
+		    dny = Rf_getAttrib(ydims, Symbols::NamesSymbol);		\
 		    if(!Rf_isNull(dny))					\
 			SET_STRING_ELT(dimnamesnames, 1, STRING_ELT(dny, 0)); \
 		}							\
@@ -1302,8 +1302,8 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (VECTOR_ELT(dimnames,0) != R_NilValue ||			\
 		VECTOR_ELT(dimnames,1) != R_NilValue) {			\
 		if (dnx != R_NilValue || dny != R_NilValue)		\
-		    Rf_setAttrib(dimnames, R_NamesSymbol, dimnamesnames);	\
-		Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);		\
+		    Rf_setAttrib(dimnames, Symbols::NamesSymbol, dimnamesnames);	\
+		Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);		\
 	    }								\
 	    UNPROTECT(2)
 
@@ -1329,11 +1329,11 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 			  REAL(y), nry, ncy, REAL(ans));
 	}
 
-	PROTECT(xdims = Rf_getAttrib(x, R_DimNamesSymbol));
+	PROTECT(xdims = Rf_getAttrib(x, Symbols::DimNamesSymbol));
 	if (sym)
 	    PROTECT(ydims = xdims);
 	else
-	    PROTECT(ydims = Rf_getAttrib(y, R_DimNamesSymbol));
+	    PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
 	if (xdims != R_NilValue || ydims != R_NilValue) {
 	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
@@ -1346,7 +1346,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (xdims != R_NilValue) {
 		if (ldx == 2) {/* not nrx==1 : .. fixed, ihaka 2003-09-30 */
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 1));
-		    dnx = Rf_getAttrib(xdims, R_NamesSymbol);
+		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
 		    if(!Rf_isNull(dnx))
 			SET_STRING_ELT(dimnamesnames, 0, STRING_ELT(dnx, 1));
 		}
@@ -1374,11 +1374,11 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 			   REAL(y), nry, ncy, REAL(ans));
 	}
 
-	PROTECT(xdims = Rf_getAttrib(x, R_DimNamesSymbol));
+	PROTECT(xdims = Rf_getAttrib(x, Symbols::DimNamesSymbol));
 	if (sym)
 	    PROTECT(ydims = xdims);
 	else
-	    PROTECT(ydims = Rf_getAttrib(y, R_DimNamesSymbol));
+	    PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
 	if (xdims != R_NilValue || ydims != R_NilValue) {
 	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
@@ -1391,7 +1391,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (xdims != R_NilValue) {
 		if (ldx == 2) {
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 0));
-		    dnx = Rf_getAttrib(xdims, R_NamesSymbol);
+		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
 		    if(!Rf_isNull(dnx))
 			SET_STRING_ELT(dimnamesnames, 0, STRING_ELT(dnx, 0));
 		}
@@ -1399,7 +1399,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (ydims != R_NilValue) {
 		if (ldy == 2) {
 		    SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(ydims, 0));
-		    dny = Rf_getAttrib(ydims, R_NamesSymbol);
+		    dny = Rf_getAttrib(ydims, Symbols::NamesSymbol);
 		    if(!Rf_isNull(dny))
 			SET_STRING_ELT(dimnamesnames, 1, STRING_ELT(dny, 0));
 		}
@@ -1407,8 +1407,8 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    if (VECTOR_ELT(dimnames,0) != R_NilValue ||
 		VECTOR_ELT(dimnames,1) != R_NilValue) {
 		if (dnx != R_NilValue || dny != R_NilValue)
-		    Rf_setAttrib(dimnames, R_NamesSymbol, dimnamesnames);
-		Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
+		    Rf_setAttrib(dimnames, Symbols::NamesSymbol, dimnamesnames);
+		Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);
 	    }
 
 	    UNPROTECT(2);
@@ -1451,7 +1451,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
     a = x_;
 
     if (Rf_isVector(a)) {
-	dims = Rf_getAttrib(a, R_DimSymbol);
+	dims = Rf_getAttrib(a, Symbols::DimSymbol);
 	ldim = Rf_length(dims);
 	rnames = R_NilValue;
 	cnames = R_NilValue;
@@ -1459,27 +1459,27 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
 	case 0:
 	    len = nrow = LENGTH(a);
 	    ncol = 1;
-	    rnames = Rf_getAttrib(a, R_NamesSymbol);
+	    rnames = Rf_getAttrib(a, Symbols::NamesSymbol);
 	    dimnames = rnames;/* for Rf_isNull() below*/
 	    break;
 	case 1:
 	    len = nrow = LENGTH(a);
 	    ncol = 1;
-	    dimnames = Rf_getAttrib(a, R_DimNamesSymbol);
+	    dimnames = Rf_getAttrib(a, Symbols::DimNamesSymbol);
 	    if (dimnames != R_NilValue) {
 		rnames = VECTOR_ELT(dimnames, 0);
-		dimnamesnames = Rf_getAttrib(dimnames, R_NamesSymbol);
+		dimnamesnames = Rf_getAttrib(dimnames, Symbols::NamesSymbol);
 	    }
 	    break;
 	case 2:
 	    ncol = Rf_ncols(a);
 	    nrow = Rf_nrows(a);
 	    len = XLENGTH(a);
-	    dimnames = Rf_getAttrib(a, R_DimNamesSymbol);
+	    dimnames = Rf_getAttrib(a, Symbols::DimNamesSymbol);
 	    if (dimnames != R_NilValue) {
 		rnames = VECTOR_ELT(dimnames, 0);
 		cnames = VECTOR_ELT(dimnames, 1);
-		dimnamesnames = Rf_getAttrib(dimnames, R_NamesSymbol);
+		dimnamesnames = Rf_getAttrib(dimnames, Symbols::NamesSymbol);
 	    }
 	    break;
 	default:
@@ -1536,7 +1536,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
     PROTECT(dims = Rf_allocVector(INTSXP, 2));
     INTEGER(dims)[0] = ncol;
     INTEGER(dims)[1] = nrow;
-    Rf_setAttrib(r, R_DimSymbol, dims);
+    Rf_setAttrib(r, Symbols::DimSymbol, dims);
     UNPROTECT(1);
     /* R <= 2.2.0: dropped list(NULL,NULL) dimnames :
      * if(rnames != R_NilValue || cnames != R_NilValue) */
@@ -1550,10 +1550,10 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
 	    SET_VECTOR_ELT(ndimnamesnames, 0,
 			   (ldim == 2) ? STRING_ELT(dimnamesnames, 1):
 			   R_BlankString);
-	    Rf_setAttrib(dimnames, R_NamesSymbol, ndimnamesnames);
+	    Rf_setAttrib(dimnames, Symbols::NamesSymbol, ndimnamesnames);
 	    UNPROTECT(1);
 	}
-	Rf_setAttrib(r, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(r, Symbols::DimNamesSymbol, dimnames);
 	UNPROTECT(1);
     }
     Rf_copyMostAttrib(a, r);
@@ -1592,7 +1592,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
     if (!Rf_isArray(a))
 	Rf_error(_("invalid first argument, must be an array"));
 
-    PROTECT(dimsa = Rf_getAttrib(a, R_DimSymbol));
+    PROTECT(dimsa = Rf_getAttrib(a, Symbols::DimSymbol));
     n = LENGTH(dimsa);
     int *isa = INTEGER(dimsa);
 
@@ -1607,10 +1607,10 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 	    Rf_error(_("'perm' is of wrong length %d (!= %d)"),
 		  LENGTH(perm), n);
 	if (Rf_isString(perm)) {
-	    SEXP dna = Rf_getAttrib(a, R_DimNamesSymbol);
+	    SEXP dna = Rf_getAttrib(a, Symbols::DimNamesSymbol);
 	    if (Rf_isNull(dna))
 		Rf_error(_("'a' does not have named dimnames"));
-	    SEXP dnna = Rf_getAttrib(dna, R_NamesSymbol);
+	    SEXP dnna = Rf_getAttrib(dna, Symbols::NamesSymbol);
 	    if (Rf_isNull(dnna))
 		Rf_error(_("'a' does not have named dimnames"));
 	    for (i = 0; i < n; i++) {
@@ -1718,43 +1718,43 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 
     /* and handle names(dim(.)) and the dimnames if any */
     if (resize) {
-	SEXP nmdm = Rf_getAttrib(dimsa, R_NamesSymbol);
+	SEXP nmdm = Rf_getAttrib(dimsa, Symbols::NamesSymbol);
 	if(nmdm != R_NilValue) { // dimsr needs correctly permuted names()
 	    PROTECT(nmdm);
 	    SEXP nm_dr = PROTECT(Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
 		SET_STRING_ELT(nm_dr, i, STRING_ELT(nmdm, pp[i]));
 	    }
-	    Rf_setAttrib(dimsr, R_NamesSymbol, nm_dr);
+	    Rf_setAttrib(dimsr, Symbols::NamesSymbol, nm_dr);
 	    UNPROTECT(2);
 	}
-	Rf_setAttrib(r, R_DimSymbol, dimsr);
+	Rf_setAttrib(r, Symbols::DimSymbol, dimsr);
 
-	PROTECT(dna = Rf_getAttrib(a, R_DimNamesSymbol));
+	PROTECT(dna = Rf_getAttrib(a, Symbols::DimNamesSymbol));
 	if (dna != R_NilValue) {
 	    SEXP dnna, dnr, dnnr;
 
 	    PROTECT(dnr  = Rf_allocVector(VECSXP, n));
-	    PROTECT(dnna = Rf_getAttrib(dna, R_NamesSymbol));
+	    PROTECT(dnna = Rf_getAttrib(dna, Symbols::NamesSymbol));
 	    if (dnna != R_NilValue) {
 		PROTECT(dnnr = Rf_allocVector(STRSXP, n));
 		for (i = 0; i < n; i++) {
 		    SET_VECTOR_ELT(dnr, i, VECTOR_ELT(dna, pp[i]));
 		    SET_STRING_ELT(dnnr, i, STRING_ELT(dnna, pp[i]));
 		}
-		Rf_setAttrib(dnr, R_NamesSymbol, dnnr);
+		Rf_setAttrib(dnr, Symbols::NamesSymbol, dnnr);
 		UNPROTECT(1);
 	    } else {
 		for (i = 0; i < n; i++)
 		    SET_VECTOR_ELT(dnr, i, VECTOR_ELT(dna, pp[i]));
 	    }
-	    Rf_setAttrib(r, R_DimNamesSymbol, dnr);
+	    Rf_setAttrib(r, Symbols::DimNamesSymbol, dnr);
 	    UNPROTECT(2);
 	}
 	UNPROTECT(1);
     }
     else // !resize
-	Rf_setAttrib(r, R_DimSymbol, dimsa);
+	Rf_setAttrib(r, Symbols::DimSymbol, dimsa);
 
     UNPROTECT(3); /* dimsa, r, dimsr */
     return r;

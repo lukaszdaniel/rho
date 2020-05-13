@@ -42,8 +42,10 @@
 #include <errno.h>
 #include <rlocale.h>
 #include <vector>
+#include "rho/Symbol.hpp"
 
 using namespace std;
+using namespace rho;
 
 /*
   See ../unix/system.txt for a description of some of these functions.
@@ -72,7 +74,7 @@ int (*ptr_CocoaSystem)(const char*);
 #endif
 
 #ifdef Win32
-Rboolean R_FileExists(const char *path)
+bool R_FileExists(const char *path)
 {
     struct _stati64 sb;
     return _stati64(R_ExpandFileName(path), &sb) == 0;
@@ -86,10 +88,10 @@ double attribute_hidden R_FileMtime(const char *path)
     return sb.st_mtime;
 }
 #else
-Rboolean R_FileExists(const char *path)
+bool R_FileExists(const char *path)
 {
     struct stat sb;
-    return Rboolean(stat(R_ExpandFileName(path), &sb) == 0);
+    return (stat(R_ExpandFileName(path), &sb) == 0);
 }
 
 double attribute_hidden R_FileMtime(const char *path)
@@ -105,10 +107,11 @@ double attribute_hidden R_FileMtime(const char *path)
      *  Unix file names which begin with "." are invisible.
      */
 
-Rboolean attribute_hidden R_HiddenFile(const char *name)
+bool attribute_hidden R_HiddenFile(const char* name)
 {
-    if (name && name[0] != '.') return FALSE;
-    else return TRUE;
+    if (name && name[0] != '.')
+		return false;
+    return true;
 }
 
 /* The MSVC runtime has a global to determine whether an unspecified
@@ -1874,8 +1877,8 @@ SEXP attribute_hidden do_proctime(/*const*/ rho::Expression* call, const rho::Bu
     SET_STRING_ELT(nm, 2, Rf_mkChar("elapsed"));
     SET_STRING_ELT(nm, 3, Rf_mkChar("user.child"));
     SET_STRING_ELT(nm, 4, Rf_mkChar("sys.child"));
-    Rf_setAttrib(ans, R_NamesSymbol, nm);
-    Rf_setAttrib(ans, R_ClassSymbol, Rf_mkString("proc_time"));
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
+    Rf_setAttrib(ans, Symbols::ClassSymbol, Rf_mkString("proc_time"));
     UNPROTECT(2);
     return ans;
 }

@@ -424,7 +424,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SET_STRING_ELT(names2, i, STRING_ELT(names, indx[i]));
 	    SET_VECTOR_ELT(value2, i, VECTOR_ELT(value, indx[i]));
 	}
-	Rf_setAttrib(value2, R_NamesSymbol, names2);
+	Rf_setAttrib(value2, Symbols::NamesSymbol, names2);
 	UNPROTECT(5);
 	R_Visible = TRUE;
 	return value2;
@@ -452,7 +452,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	break;
     case VECSXP:
 	if(n > 0) {
-	    argnames = Rf_getAttrib(args, R_NamesSymbol);
+	    argnames = Rf_getAttrib(args, Symbols::NamesSymbol);
 	    if(LENGTH(argnames) != n)
 		Rf_error(_("list argument has no valid names"));
 	}
@@ -752,7 +752,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    R_Visible = TRUE;
 	}
     } /* for() */
-    Rf_setAttrib(value, R_NamesSymbol, names);
+    Rf_setAttrib(value, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return value;
 }

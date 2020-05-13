@@ -206,7 +206,7 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     /* Check to see if we have special matrix subscripting. */
     /* If we do, make a real subscript vector and protect it. */
     {
-	SEXP attrib = Rf_getAttrib(x, R_DimSymbol);	
+	SEXP attrib = Rf_getAttrib(x, Symbols::DimSymbol);	
 	if (Rf_isMatrix(s) && Rf_isArray(x) && Rf_ncols(s) == Rf_length(attrib)) {
 	    if (Rf_isString(s)) {
 		s = Rf_strmat2intmat(s, Rf_GetArrayDimnames(x), call);
@@ -260,21 +260,21 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     {
 	SEXP attrib;
 	if (
-	    ((attrib = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue) ||
+	    ((attrib = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue) ||
 	    ( /* here we might have an array.  Use row names if 1D */
 	     Rf_isArray(x)
-	     && (attrib = Rf_getAttrib(x, R_DimNamesSymbol)) != R_NilValue
+	     && (attrib = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue
 	     && Rf_length(attrib) == 1
 	     && (attrib = Rf_GetRowNames(attrib)) != R_NilValue
 	     )
 	    ) {
 	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
-	    Rf_setAttrib(result, R_NamesSymbol, nattrib);
+	    Rf_setAttrib(result, Symbols::NamesSymbol, nattrib);
 	}
-	if ((attrib = Rf_getAttrib(x, R_SrcrefSymbol)) != R_NilValue &&
+	if ((attrib = Rf_getAttrib(x, Symbols::SrcrefSymbol)) != R_NilValue &&
 	    TYPEOF(attrib) == VECSXP) {
 	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
-	    Rf_setAttrib(result, R_SrcrefSymbol, nattrib);
+	    Rf_setAttrib(result, Symbols::SrcrefSymbol, nattrib);
 	}
     }
     return result;
@@ -458,7 +458,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	/* two indices, not named */
 	SEXP x = CAR(args);
 	SEXP attr = ATTRIB(x);
-	if (TAG(attr) == R_DimSymbol && CDR(attr) == R_NilValue) {
+	if (TAG(attr) == Symbols::DimSymbol && CDR(attr) == R_NilValue) {
 	    /* only attribute of x is 'dim' */
 	    SEXP dim = CAR(attr);
 	    if (TYPEOF(dim) == INTSXP && LENGTH(dim) == 2) {
@@ -519,16 +519,16 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     GCStackRoot<> ax(x);
     if (Rf_isPairList(x)) {
-	SEXP dim = Rf_getAttrib(x, R_DimSymbol);
+	SEXP dim = Rf_getAttrib(x, Symbols::DimSymbol);
 	int ndim = Rf_length(dim);
 	if (ndim > 1) {
 	    ax = Rf_allocArray(VECSXP, dim);
-	    Rf_setAttrib(ax, R_DimNamesSymbol, Rf_getAttrib(x, R_DimNamesSymbol));
-	    Rf_setAttrib(ax, R_NamesSymbol, Rf_getAttrib(x, R_DimNamesSymbol));
+	    Rf_setAttrib(ax, Symbols::DimNamesSymbol, Rf_getAttrib(x, Symbols::DimNamesSymbol));
+	    Rf_setAttrib(ax, Symbols::NamesSymbol, Rf_getAttrib(x, Symbols::DimNamesSymbol));
 	}
 	else {
 	    ax = Rf_allocVector(VECSXP, Rf_length(x));
-	    Rf_setAttrib(ax, R_NamesSymbol, Rf_getAttrib(x, R_NamesSymbol));
+	    Rf_setAttrib(ax, Symbols::NamesSymbol, Rf_getAttrib(x, Symbols::NamesSymbol));
 	}
 	int i = 0;
 	for (SEXP px = x; px != R_NilValue; px = CDR(px))
@@ -576,19 +576,19 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    int i = 0;
 	    for (SEXP px = ans; px != R_NilValue; px = CDR(px))
 		SETCAR(px, VECTOR_ELT(ax, i++));
-	    Rf_setAttrib(ans, R_DimSymbol, Rf_getAttrib(ax, R_DimSymbol));
+	    Rf_setAttrib(ans, Symbols::DimSymbol, Rf_getAttrib(ax, Symbols::DimSymbol));
 	    Rf_setAttrib(
-		ans, R_DimNamesSymbol, Rf_getAttrib(ax, R_DimNamesSymbol));
-	    Rf_setAttrib(ans, R_NamesSymbol, Rf_getAttrib(ax, R_NamesSymbol));
+		ans, Symbols::DimNamesSymbol, Rf_getAttrib(ax, Symbols::DimNamesSymbol));
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, Rf_getAttrib(ax, Symbols::NamesSymbol));
 	    RAISE_NAMED(ans, NAMED(ax)); /* PR#7924 */
 	}
     }
     if (ATTRIB(ans) != R_NilValue) { /* remove probably erroneous attr's */
-	Rf_setAttrib(ans, R_TspSymbol, R_NilValue);
+	Rf_setAttrib(ans, Symbols::TspSymbol, R_NilValue);
 #ifdef _S4_subsettable
 	if(!IS_S4_OBJECT(x))
 #endif
-	    Rf_setAttrib(ans, R_ClassSymbol, R_NilValue);
+	    Rf_setAttrib(ans, Symbols::ClassSymbol, R_NilValue);
     }
     return ans;
 }
@@ -646,7 +646,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
     int nsubs = Rf_length(subs);
     if (nsubs == 0)
 	Rf_errorcall(call, _("no index specified"));
-    SEXP dims = Rf_getAttrib(x, R_DimSymbol);
+    SEXP dims = Rf_getAttrib(x, Symbols::DimSymbol);
     int ndims = Rf_length(dims);
     if (nsubs > 1 && nsubs != ndims)
 	Rf_errorcall(call, _("incorrect number of subscripts"));
@@ -707,7 +707,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	    named_x = NAMED(x);
 	}
 
-	offset = Rf_get1index(thesub, Rf_getAttrib(x, R_NamesSymbol),
+	offset = Rf_get1index(thesub, Rf_getAttrib(x, Symbols::NamesSymbol),
 			   Rf_xlength(x), pok, len > 1 ? len-1 : -1, call);
 	if (offset < 0 || offset >= Rf_xlength(x)) {
 	    /* a bold attempt to get the same behaviour for $ and [[ */
@@ -729,7 +729,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	GCStackRoot<> indx(Rf_allocVector(INTSXP, nsubs));
 	int *pindx = INTEGER(indx);
 	const int *pdims = INTEGER_RO(dims);
-	SEXP dimnames = Rf_getAttrib(x, R_DimNamesSymbol);
+	SEXP dimnames = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	ndn = Rf_length(dimnames);
 	for (int i = 0; i < nsubs; i++) {
 	    pindx[i] = int(
@@ -968,7 +968,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
     else if (Rf_isVectorList(x)) {
 	R_xlen_t i, n, imatch = -1;
 	int havematch;
-	nlist = Rf_getAttrib(x, R_NamesSymbol);
+	nlist = Rf_getAttrib(x, Symbols::NamesSymbol);
 	UNPROTECT(2);
 	n = Rf_xlength(nlist);
 	havematch = 0;

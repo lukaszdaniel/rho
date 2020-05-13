@@ -146,11 +146,11 @@ void Symbol::initialize()
     }
 
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
-    C_NAME = RHO_NAME = Symbol::obtain(R_NAME);
+    C_NAME = rho::Symbols::RHO_NAME = Symbol::obtain(R_NAME);
 #include "rho/PredefinedSymbols.hpp"
 #undef PREDEFINED_SYMBOL
 
-    // DISABLE_REFCNT(R_LastvalueSymbol);
+    // DISABLE_REFCNT(Symbols::LastvalueSymbol);
 }
 
 Symbol* Symbol::missingArgument()
@@ -224,10 +224,12 @@ void Symbol::visitReferents(const_visitor* v) const
 
 // Predefined Symbols:
 namespace rho {
+    namespace Symbols {
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     Symbol* RHO_NAME = nullptr;
 #include "rho/PredefinedSymbols.hpp"
 #undef PREDEFINED_SYMBOL
+    }
 }
 
 // ***** C interface *****

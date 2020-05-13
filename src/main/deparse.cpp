@@ -563,7 +563,7 @@ static Rboolean
 curlyahead(SEXP s)
 {
     if (Rf_isList(s) || Rf_isLanguage(s))
-	if (TYPEOF(CAR(s)) == SYMSXP && CAR(s) == R_BraceSymbol)
+	if (TYPEOF(CAR(s)) == SYMSXP && CAR(s) == Symbols::BraceSymbol)
 	    return TRUE;
     return FALSE;
 }
@@ -696,7 +696,7 @@ C|  depCtrl   : what should   deparse(*, control = depCtrl)   do ?
 // is *only* called  if (d->opts & SHOW_ATTR_OR_NMS) = d->opts & (SHOW_A | NICE_N)
 static attr_type attr1(SEXP s, LocalParseData *d)
 {
-    SEXP a = ATTRIB(s), nm = Rf_getAttrib(s, R_NamesSymbol);
+    SEXP a = ATTRIB(s), nm = Rf_getAttrib(s, Symbols::NamesSymbol);
     attr_type attr = attr_type::UNKNOWN;
     Rboolean
 	nice_names = Rboolean(d->opts & NICE_NAMES),
@@ -713,9 +713,9 @@ static attr_type attr1(SEXP s, LocalParseData *d)
 		/* nice_names */  attr_type::OK_NAMES; // even when not ok
     }
     while(attr == attr_type::UNKNOWN && !Rf_isNull(a)) {
-	if(has_names && TAG(a) == R_NamesSymbol) {
+	if(has_names && TAG(a) == Symbols::NamesSymbol) {
 	    // also  ok_names = TRUE
-	} else if(show_attr && TAG(a) != R_SrcrefSymbol) {
+	} else if(show_attr && TAG(a) != Symbols::SrcrefSymbol) {
 	    attr = attr_type::STRUC_ATTR;
 	    break;
 	}
@@ -745,22 +745,22 @@ static void attr2(SEXP s, LocalParseData *d, bool not_names)
 {
     SEXP a = ATTRIB(s);
     while(!Rf_isNull(a)) {
-	if(TAG(a) != R_SrcrefSymbol &&
-	   !(TAG(a) == R_NamesSymbol && not_names)) {
+	if(TAG(a) != Symbols::SrcrefSymbol &&
+	   !(TAG(a) == Symbols::NamesSymbol && not_names)) {
 	    print2buff(", ", d);
-	    if(TAG(a) == R_DimSymbol) {
+	    if(TAG(a) == Symbols::DimSymbol) {
 		print2buff(".Dim", d);
 	    }
-	    else if(TAG(a) == R_DimNamesSymbol) {
+	    else if(TAG(a) == Symbols::DimNamesSymbol) {
 		print2buff(".Dimnames", d);
 	    }
-	    else if(TAG(a) == R_NamesSymbol) {
+	    else if(TAG(a) == Symbols::NamesSymbol) {
 		print2buff(".Names", d);
 	    }
-	    else if(TAG(a) == R_TspSymbol) {
+	    else if(TAG(a) == Symbols::TspSymbol) {
 		print2buff(".Tsp", d);
 	    }
-	    else if(TAG(a) == R_LevelsSymbol) {
+	    else if(TAG(a) == Symbols::LevelsSymbol) {
 		print2buff(".Label", d);
 	    }
 	    else {
@@ -804,7 +804,7 @@ static void printcomment(SEXP s, LocalParseData *d)
 	}
     }
     else {
-	cmt = Rf_getAttrib(s, R_CommentSymbol);
+	cmt = Rf_getAttrib(s, Symbols::CommentSymbol);
 	ncmt = Rf_length(cmt);
 	for(i = 0 ; i < ncmt ; i++) {
 	    print2buff(Rf_translateChar(STRING_ELT(cmt, i)), d);
@@ -883,7 +883,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
     if (IS_S4_OBJECT(s) || hasS4_t) {
 	d->isS4 = TRUE;
 	/* const void *vmax = vmaxget(); */
-	SEXP class_ = Rf_getAttrib(s, R_ClassSymbol),
+	SEXP class_ = Rf_getAttrib(s, Symbols::ClassSymbol),
 	    cl_def = TYPEOF(class_) == STRSXP ? STRING_ELT(class_, 0) : R_NilValue;
 	if(TYPEOF(cl_def) == CHARSXP) { // regular S4 objects
 	    print2buff("new(\"", d);
@@ -899,7 +899,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    SEXP e = PROTECT(Rf_lang2(R_getClassDef, class_));
 	    cl_def = PROTECT(Rf_eval(e, R_BaseEnv)); // correct env?
 	    slotNms = // names( cl_def@slots ) :
-		Rf_getAttrib(R_do_slot(cl_def, R_slots), R_NamesSymbol);
+		Rf_getAttrib(R_do_slot(cl_def, R_slots), Symbols::NamesSymbol);
 	    UNPROTECT(2); // (e, cl_def)
 	    int n;
 	    Rboolean has_Data = FALSE;// does it have ".Data" slot?
@@ -913,7 +913,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		    if(!hasS4_t && !has_Data)
 			has_Data = Rboolean(streql(R_CHAR(slot_i), ".Data"));
 		}
-		Rf_setAttrib(slotlist, R_NamesSymbol, slotNms);
+		Rf_setAttrib(slotlist, Symbols::NamesSymbol, slotNms);
 		vec2buff(slotlist, d, TRUE);
 		/*-----------------*/
 		UNPROTECT(2); // (slotNms, slotlist)
@@ -1002,7 +1002,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
     case CLOSXP:
 	attr = (d_opts_in & SHOW_ATTR_OR_NMS) ? attr1(s, d) : attr_type::SIMPLE;
 	if ((d->opts & USESOURCE)
-	    && !Rf_isNull(t = Rf_getAttrib(s, R_SrcrefSymbol)))
+	    && !Rf_isNull(t = Rf_getAttrib(s, Symbols::SrcrefSymbol)))
 		src2buff1(t, d);
 	else {
 	    /* We have established that we don't want to use the
@@ -1115,7 +1115,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		Rboolean parens;
 		s = CDR(s);
 		if (userbinop) {
-		    if (Rf_isNull(Rf_getAttrib(s, R_NamesSymbol))) {
+		    if (Rf_isNull(Rf_getAttrib(s, Symbols::NamesSymbol))) {
 			// not quite right for spacing, but can't be unary :
 			fop.kind = BuiltInFunction::Kind::PP_BINARY2;
 			fop.precedence = BuiltInFunction::Precedence::PREC_PERCENT;
@@ -1584,7 +1584,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
     SEXP nv = R_NilValue;
     Rboolean do_names = Rboolean(d_opts_in & SHOW_ATTR_OR_NMS); // iff TRUE use '<tag_i> = <comp_i>'
     if(do_names) {
-	nv = Rf_getAttrib(vector, R_NamesSymbol); // only "do names" if have names:
+	nv = Rf_getAttrib(vector, Symbols::NamesSymbol); // only "do names" if have names:
 	if(Rf_isNull(nv))
 	    do_names = FALSE;
     }
@@ -1784,7 +1784,7 @@ static void src2buff1(SEXP srcref, LocalParseData *d)
     const void *vmax = vmaxget();
     PROTECT(srcref);
 
-    PROTECT(srcref = Rf_lang2(R_AsCharacterSymbol, srcref));
+    PROTECT(srcref = Rf_lang2(Symbols::AsCharacterSymbol, srcref));
     PROTECT(srcref = Rf_eval(srcref, R_BaseEnv));
     n = Rf_length(srcref);
     for(i = 0 ; i < n ; i++) {
@@ -1818,14 +1818,14 @@ static void vec2buff(SEXP v, LocalParseData *d,
     int n = Rf_length(v);
     SEXP nv = nullptr;
     if(do_names) {
-	nv = Rf_getAttrib(v, R_NamesSymbol); // only "do names" if have names:
+	nv = Rf_getAttrib(v, Symbols::NamesSymbol); // only "do names" if have names:
 	if (Rf_isNull(nv))
 	    do_names = FALSE;
     }
 
     SEXP sv; // Srcref or NULL
     if (d->opts & USESOURCE) {
-	sv = Rf_getAttrib(v, R_SrcrefSymbol);
+	sv = Rf_getAttrib(v, Symbols::SrcrefSymbol);
 	if (TYPEOF(sv) != VECSXP)
 	    sv = R_NilValue;
     } else
@@ -1860,7 +1860,7 @@ static void args2buff(SEXP arglist, int lineb, int formals, LocalParseData *d)
 	if (TAG(arglist) != R_NilValue) {
 	    SEXP s = TAG(arglist);
 
-	    if( s == R_DotsSymbol )
+	    if( s == Symbols::DotsSymbol )
 		print2buff(R_CHAR(PRINTNAME(s)), d);
 	    else if(d->backtick)
 		print2buff(quotify(PRINTNAME(s), '`'), d);

@@ -897,7 +897,7 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
     }
     if (Rf_isObject(object)) {
 	object = Rf_duplicate(object);
-	Rf_setAttrib(object, R_ClassSymbol, R_NilValue);
+	Rf_setAttrib(object, Symbols::ClassSymbol, R_NilValue);
     }
     return object;
 }
@@ -1014,7 +1014,7 @@ SEXP attribute_hidden do_inherits(/*const*/ Expression* call, const BuiltInFunct
 int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 {
     int ans;
-    SEXP cl = Rf_getAttrib(x, R_ClassSymbol);
+    SEXP cl = Rf_getAttrib(x, Symbols::ClassSymbol);
     const char *class_str = R_CHAR(Rf_asChar(cl));
     for (ans = 0; ; ans++) {
 	if (!strlen(valid[ans])) // empty string
@@ -1071,11 +1071,11 @@ int R_check_class_and_super(SEXP x, const char **valid, SEXP rho)
 int R_check_class_etc(SEXP x, const char **valid)
 {
     static GCRoot<> meth_classEnv = nullptr;
-    SEXP cl = Rf_getAttrib(x, R_ClassSymbol), rho = R_GlobalEnv, pkg;
+    SEXP cl = Rf_getAttrib(x, Symbols::ClassSymbol), rho = R_GlobalEnv, pkg;
     if(!meth_classEnv)
 	meth_classEnv = Rf_install(".classEnv");
 
-    pkg = Rf_getAttrib(cl, R_PackageSymbol); /* ==R== packageSlot(class(x)) */
+    pkg = Rf_getAttrib(cl, Symbols::PackageSymbol); /* ==R== packageSlot(class(x)) */
     if(!Rf_isNull(pkg)) { /* find  rho := correct class Environment */
 	SEXP clEnvCall;
 	// FIXME: fails if 'methods' is not loaded.
@@ -1179,7 +1179,7 @@ static SEXP dispatchNonGeneric(SEXP name, SEXP env, SEXP fdef)
 	if(fun == R_UnboundValue) continue;
 	switch(TYPEOF(fun)) {
 	case CLOSXP:
-	    value = Rf_findVarInFrame3(CLOENV(fun), R_dot_Generic, TRUE);
+	    value = Rf_findVarInFrame3(CLOENV(fun), Symbols::DotGenericSymbol, TRUE);
 	    if(value == R_UnboundValue) break;
 	case BUILTINSXP:  case SPECIALSXP:
 	default:
@@ -1550,7 +1550,7 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
                 return std::pair<bool, SEXP>(false, nullptr);
 	    }
             PROTECT(suppliedvars = Rf_list1(Rf_mkString(op->name())));
-            SET_TAG(suppliedvars, R_dot_Generic);
+            SET_TAG(suppliedvars, Symbols::DotGenericSymbol);
 	    Closure* func = static_cast<Closure*>(value);
 	    /* found a method, call it with promised args */
 	    value = call->evaluateFunctionCall(func, callenv, arglist);
@@ -1628,11 +1628,11 @@ SEXP R_do_new_object(SEXP class_def)
     value = Rf_duplicate(R_do_slot(class_def, s_prototype));
     Rboolean xDataType = Rboolean(TYPEOF(value) == ENVSXP || TYPEOF(value) == SYMSXP ||
 	TYPEOF(value) == EXTPTRSXP);
-    if((TYPEOF(value) == S4SXP || Rf_getAttrib(e, R_PackageSymbol) != R_NilValue) &&
+    if((TYPEOF(value) == S4SXP || Rf_getAttrib(e, Symbols::PackageSymbol) != R_NilValue) &&
        !xDataType)
     { /* Anything but an object from a base "class" (numeric, matrix,..) */
 	GCStackRoot<> valrt(value);
-	Rf_setAttrib(value, R_ClassSymbol, e);
+	Rf_setAttrib(value, Symbols::ClassSymbol, e);
 	SET_S4_OBJECT(value);
     }
     vmaxset(vmax);
@@ -1645,9 +1645,9 @@ Rboolean attribute_hidden R_seemsOldStyleS4Object(SEXP object)
     if(!Rf_isObject(object) || IS_S4_OBJECT(object)) return FALSE;
     /* We want to know about S4SXPs with no S4 bit */
     /* if(TYPEOF(object) == S4SXP) return FALSE; */
-    klass = Rf_getAttrib(object, R_ClassSymbol);
+    klass = Rf_getAttrib(object, Symbols::ClassSymbol);
     return (klass != R_NilValue && LENGTH(klass) == 1 &&
-	    Rf_getAttrib(klass, R_PackageSymbol) != R_NilValue) ? TRUE: FALSE;
+	    Rf_getAttrib(klass, Symbols::PackageSymbol) != R_NilValue) ? TRUE: FALSE;
 }
 
 SEXP attribute_hidden do_setS4Object(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* flag_, RObject* complete_)

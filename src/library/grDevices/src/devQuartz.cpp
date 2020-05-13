@@ -1332,7 +1332,7 @@ Quartz_C(QuartzParameters_t *par, quartz_create_fn_t q_create, int *errorCode)
 	    if(streql(par->type, "") || streql(par->type, "native")
 	       || streql(par->type, "cocoa") || streql(par->type, "carbon"))
 		devname = "quartz";
-            gsetVar(R_DeviceSymbol, Rf_mkString(devname), R_BaseEnv);
+            gsetVar(rho::Symbols::DotDeviceSymbol, Rf_mkString(devname), R_BaseEnv);
             pGEDevDesc dd = GEcreateDevDesc(dev);
             GEaddDevice(dd);
             GEinitDisplayList(dd);
@@ -1484,7 +1484,7 @@ SEXP Quartz(SEXP args)
 	   || streql(type, "carbon")) devname = "quartz";
 	SEXP f = PROTECT(Rf_mkString(devname));
 	if(file) Rf_setAttrib(f, Rf_install("filepath"), Rf_mkString(file));
- 	gsetVar(R_DeviceSymbol, f, R_BaseEnv);
+ 	gsetVar(rho::Symbols::DotDeviceSymbol, f, R_BaseEnv);
 	UNPROTECT(1);
 	pGEDevDesc dd = GEcreateDevDesc(dev);
 	GEaddDevice(dd);

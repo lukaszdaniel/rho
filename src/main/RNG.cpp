@@ -35,6 +35,9 @@
 #include <Internal.h>
 #include <R_ext/Random.h>
 #include <S.h>
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 /* Normal generator is not actually set here but in ../nmath/snorm.cpp */
 #define RNG_DEFAULT MERSENNE_TWISTER
@@ -335,9 +338,9 @@ static void RNG_Init(RNGtype kind, Int32 seed)
 
 static SEXP GetSeedsFromVar(void)
 {
-    SEXP seeds = Rf_findVarInFrame(R_GlobalEnv, R_SeedsSymbol);
+    SEXP seeds = Rf_findVarInFrame(R_GlobalEnv, Symbols::SeedsSymbol);
     if (TYPEOF(seeds) == PROMSXP)
-	seeds = Rf_eval(R_SeedsSymbol, R_GlobalEnv);
+	seeds = Rf_eval(Symbols::SeedsSymbol, R_GlobalEnv);
     return seeds;
 }
 
@@ -452,7 +455,7 @@ void PutRNGstate()
 	INTEGER(seeds)[j+1] = int(RNG_Table[RNG_kind].i_seed[j]);
 					    
     /* assign only in the workspace */
-    Rf_defineVar(R_SeedsSymbol, seeds, R_GlobalEnv);
+    Rf_defineVar(Symbols::SeedsSymbol, seeds, R_GlobalEnv);
     UNPROTECT(1);
 }
 

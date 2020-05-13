@@ -62,8 +62,7 @@ namespace rho {
 	void (*ENSURE_NAMEDMAXptr)(SEXP x) = ENSURE_NAMEDMAX;
 	void (*ENSURE_NAMEDptr)(SEXP x) = ENSURE_NAMED;
 	void (*SETTER_CLEAR_NAMEDptr)(SEXP x) = SETTER_CLEAR_NAMED;
-    void (*RAISE_NAMEDptr)(SEXP x, int n) = RAISE_NAMED;
-    //void (*DECREMENT_NAMEDptr)(SEXP x) = DECREMENT_NAMED;
+	void (*RAISE_NAMEDptr)(SEXP x, int n) = RAISE_NAMED;
 	void (*SET_S4_OBJECTptr)(SEXP x) = SET_S4_OBJECT;
 	SEXPTYPE (*TYPEOFptr)(SEXP e) = TYPEOF;
 	void (*UNSET_S4_OBJECTptr)(SEXP x) = UNSET_S4_OBJECT;
@@ -71,6 +70,7 @@ namespace rho {
 	auto LEVELSptr = &LEVELS;
 	auto SETLEVELSptr = &SETLEVELS;
 	int (*ALTREPptr)(SEXP x) = ALTREP;
+	void (*SETALTREPptr)(SEXP x, int v) = SETALTREP;
     }
 }
 
@@ -84,7 +84,7 @@ const unsigned char RObject::s_S4_mask;
 const unsigned char RObject::s_class_mask;
 
 RObject::RObject(const RObject& pattern)
-    : m_type(pattern.m_type), m_named(0),
+    : m_type(pattern.m_type), m_named(0), m_altrep(0),
       m_memory_traced(pattern.m_memory_traced), m_missing(pattern.m_missing),
       m_active_binding(pattern.m_active_binding),
       m_binding_locked(pattern.m_binding_locked)
@@ -113,7 +113,7 @@ void RObject::copyAttributes(const RObject* source, Duplicate deep)
     if (attributes) {
 	attributes = deep == Duplicate::DEEP
 	    ? attributes->clone()
-	    : (PairList*)Rf_shallow_duplicate(const_cast<PairList*>(attributes));
+	    : (PairList*) Rf_shallow_duplicate(const_cast<PairList*>(attributes));
     }
     setAttributes(attributes);
     setS4Object(source->isS4Object());
@@ -148,7 +148,7 @@ void RObject::setAttribute(const Symbol* name, RObject* value)
     if (!name)
 	Rf_error(_("attributes must be named"));
     // Update 'has class' bit if necessary:
-    if (name == R_ClassSymbol) {
+    if (name == Symbols::ClassSymbol) {
 	if (value == nullptr)
 	    m_type &= static_cast<signed char>(~s_class_mask);
 	else m_type |= static_cast<signed char>(s_class_mask);
@@ -284,6 +284,7 @@ void RObject::Transmute(RObject* source,
 {
     // Store RObject properties.
     unsigned char named = source->m_named;
+    unsigned char altrep = source->m_altrep;
     bool isS4 = source->isS4Object();
 #ifdef R_MEMORY_PROFILING
     bool memory_traced = source->memoryTraced();
@@ -304,6 +305,7 @@ void RObject::Transmute(RObject* source,
     dest->setAttributes(attributes);
 
     dest->m_named = named;
+    dest->m_altrep = altrep;
     dest->setS4Object(isS4);
 #ifdef R_MEMORY_PROFILING
     dest->setMemoryTracing(memory_traced);

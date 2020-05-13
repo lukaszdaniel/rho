@@ -170,7 +170,7 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
     if (!Rf_isNull(collab) && !Rf_isString(collab))
 	Rf_error(_("invalid column labels"));
 
-    printMatrix(x, 0, Rf_getAttrib(x, R_DimSymbol), quote, R_print.right,
+    printMatrix(x, 0, Rf_getAttrib(x, Symbols::DimSymbol), quote, R_print.right,
 		rowlab, collab, rowname, colname);
     Rf_PrintDefaults(); /* reset, as na.print.etc may have been set */
     return x;
@@ -201,10 +201,10 @@ SEXP attribute_hidden do_printfunction(/*const*/ Expression* call, const BuiltIn
 static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
 {
     int i;
-    SEXP t = Rf_getAttrib(s, R_SrcrefSymbol);
+    SEXP t = Rf_getAttrib(s, Symbols::SrcrefSymbol);
     Rboolean useSrc = Rboolean(useSource && Rf_isInteger(t));
     if (useSrc) {
-	PROTECT(t = Rf_lang2(R_AsCharacterSymbol, t));
+	PROTECT(t = Rf_lang2(Symbols::AsCharacterSymbol, t));
 	t = Rf_eval(t, R_BaseEnv);
 	UNPROTECT(1);
     } else {
@@ -342,7 +342,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
     char pbuf[115], *ptag, save[TAGBUFLEN0];
 
     ns = Rf_length(s);
-    if((dims = Rf_getAttrib(s, R_DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
+    if((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = Rf_allocArray(STRSXP, dims));
@@ -450,7 +450,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 	UNPROTECT(2);
     }
     else { // no dim()
-	names = Rf_getAttrib(s, R_NamesSymbol);
+	names = Rf_getAttrib(s, Symbols::NamesSymbol);
 	taglen = int(strlen(tagbuf));
 	ptag = tagbuf + taglen;
         PROTECT(newcall = new Expression(Rf_install("print"), { nullptr }));
@@ -512,7 +512,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 	    const char *className = nullptr;
 	    SEXP klass;
 	    if(Rf_isObject(s) && isMethodsDispatchOn()) {
-		klass = Rf_getAttrib(s, R_ClassSymbol);
+		klass = Rf_getAttrib(s, Symbols::ClassSymbol);
 		if(Rf_length(klass) == 1) {
 		    /* internal version of isClass() */
 		    char str[201];
@@ -550,7 +550,7 @@ static void printList(SEXP s, SEXP env)
     char pbuf[101], *ptag;
     const char *rn, *cn;
 
-    if ((dims = Rf_getAttrib(s, R_DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
+    if ((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = Rf_allocArray(STRSXP, dims));
@@ -606,7 +606,7 @@ static void printList(SEXP s, SEXP env)
 			rn, cn);
 	}
 	else {
-	    dimnames = Rf_getAttrib(s, R_DimNamesSymbol);
+	    dimnames = Rf_getAttrib(s, Symbols::DimNamesSymbol);
 	    printArray(t, dims, 0, Rprt_adj_left, dimnames);
 	}
 	UNPROTECT(2);
@@ -714,7 +714,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
     WinCheckUTF8();
 #endif
     if(!isMethodsDispatchOn() && (IS_S4_OBJECT(s) || TYPEOF(s) == S4SXP) ) {
-	SEXP cl = Rf_getAttrib(s, R_ClassSymbol);
+	SEXP cl = Rf_getAttrib(s, Symbols::ClassSymbol);
 	if(Rf_isNull(cl)) {
 	    /* This might be a mistaken S4 bit set */
 	    if(TYPEOF(s) == S4SXP)
@@ -723,7 +723,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 		Rprintf("<Object of type '%s' with S4 bit but without a class>\n",
 			Rf_type2char(TYPEOF(s)));
 	} else {
-	    SEXP pkg = Rf_getAttrib(s, R_PackageSymbol);
+	    SEXP pkg = Rf_getAttrib(s, Symbols::PackageSymbol);
 	    if(Rf_isNull(pkg)) {
 		Rprintf("<S4 object of class \"%s\">\n",
 			R_CHAR(STRING_ELT(cl, 0)));
@@ -783,13 +783,13 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
     case STRSXP:
     case CPLXSXP:
     case RAWSXP:
-	PROTECT(t = Rf_getAttrib(s, R_DimSymbol));
+	PROTECT(t = Rf_getAttrib(s, Symbols::DimSymbol));
 	if (TYPEOF(t) == INTSXP) {
 	    if (LENGTH(t) == 1) {
 		const void *vmax = vmaxget();
-		PROTECT(t = Rf_getAttrib(s, R_DimNamesSymbol));
+		PROTECT(t = Rf_getAttrib(s, Symbols::DimNamesSymbol));
 		if (t != R_NilValue && VECTOR_ELT(t, 0) != R_NilValue) {
-		    SEXP nn = Rf_getAttrib(t, R_NamesSymbol);
+		    SEXP nn = Rf_getAttrib(t, Symbols::NamesSymbol);
 		    const char *title = nullptr;
 
 		    if (!Rf_isNull(nn))
@@ -817,7 +817,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	}
 	else {
 	    UNPROTECT(1);
-	    PROTECT(t = Rf_getAttrib(s, R_NamesSymbol));
+	    PROTECT(t = Rf_getAttrib(s, Symbols::NamesSymbol));
 	    if (t != R_NilValue)
 		printNamedVector(s, t, R_print.quote, nullptr);
 	    else
@@ -871,39 +871,39 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 	    tagbuf[0] = '\0';
 	ptag = tagbuf + strlen(tagbuf);
 	while (a != R_NilValue) {
-	    if(useSlots && TAG(a) == R_ClassSymbol)
+	    if(useSlots && TAG(a) == Symbols::ClassSymbol)
 		    goto nextattr;
 	    if(Rf_isArray(s) || Rf_isList(s)) {
-		if(TAG(a) == R_DimSymbol ||
-		   TAG(a) == R_DimNamesSymbol)
+		if(TAG(a) == Symbols::DimSymbol ||
+		   TAG(a) == Symbols::DimNamesSymbol)
 		    goto nextattr;
 	    }
 	    if(Rf_inherits(s, "factor")) {
-		if(TAG(a) == R_LevelsSymbol)
+		if(TAG(a) == Symbols::LevelsSymbol)
 		    goto nextattr;
-		if(TAG(a) == R_ClassSymbol)
+		if(TAG(a) == Symbols::ClassSymbol)
 		    goto nextattr;
 	    }
 	    if(Rf_isFrame(s)) {
-		if(TAG(a) == R_RowNamesSymbol)
+		if(TAG(a) == Symbols::RowNamesSymbol)
 		    goto nextattr;
 	    }
 	    if(!Rf_isArray(s)) {
-		if (TAG(a) == R_NamesSymbol)
+		if (TAG(a) == Symbols::NamesSymbol)
 		    goto nextattr;
 	    }
-	    if(TAG(a) == R_CommentSymbol || TAG(a) == R_SrcrefSymbol
-	       || TAG(a) == R_WholeSrcrefSymbol || TAG(a) == R_SrcfileSymbol)
+	    if(TAG(a) == Symbols::CommentSymbol || TAG(a) == Symbols::SrcrefSymbol
+	       || TAG(a) == Symbols::WholeSrcrefSymbol || TAG(a) == Symbols::SrcfileSymbol)
 		goto nextattr;
 	    if(useSlots)
 		sprintf(ptag, "Slot \"%s\":", Rf_EncodeChar(PRINTNAME(TAG(a))));
 	    else
 		sprintf(ptag, "attr(,\"%s\")", Rf_EncodeChar(PRINTNAME(TAG(a))));
 	    Rprintf("%s", tagbuf); Rprintf("\n");
-	    if (TAG(a) == R_RowNamesSymbol) {
+	    if (TAG(a) == Symbols::RowNamesSymbol) {
 		/* need special handling AND protection */
 		SEXP val;
-		PROTECT(val = Rf_getAttrib(s, R_RowNamesSymbol));
+		PROTECT(val = Rf_getAttrib(s, Symbols::RowNamesSymbol));
 		Rf_PrintValueRec(val, env);
 		UNPROTECT(1);
 		goto nextattr;

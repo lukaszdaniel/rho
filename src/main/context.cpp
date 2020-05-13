@@ -133,7 +133,7 @@ static SEXP getCallWithSrcref(ClosureContext *cptr)
 
 	    PROTECT(result = Rf_shallow_duplicate(const_cast<Expression*>(cptr->call())));
 	    if (cptr->sourceLocation())
-		Rf_setAttrib(result, R_SrcrefSymbol,
+		Rf_setAttrib(result, Symbols::SrcrefSymbol,
 			  Rf_duplicate(cptr->sourceLocation()));
 	    UNPROTECT(1);
 	    return result;
@@ -294,7 +294,7 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	else if (CDR(conexit) == nullptr)
 	    return CAR(conexit);
 	else
-	    return new Expression(R_BraceSymbol, { conexit });
+	    return new Expression(Symbols::BraceSymbol, { conexit });
     }
     case 8: /* sys.parents */
 	nframe = Rf_framedepth(cptr);

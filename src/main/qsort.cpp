@@ -41,6 +41,9 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 #ifdef LONG_VECTOR_SUPPORT
 static void R_qsort_R(double *v, double *I, size_t i, size_t j);
@@ -95,7 +98,7 @@ SEXP attribute_hidden do_qsort(/*const*/ rho::Expression* call, const rho::Built
 	SET_VECTOR_ELT(ans, 1, indx);
 	SET_STRING_ELT(ansnames, 0, Rf_mkChar("x"));
 	SET_STRING_ELT(ansnames, 1, Rf_mkChar("ix"));
-	Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
 	UNPROTECT(4);
 	return ans;
     } else {

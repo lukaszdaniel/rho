@@ -167,9 +167,9 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for(i = 0; i < n; i++)
 		SET_STRING_ELT(ans, i, NA_STRING);
-	    SEXP nms = Rf_getAttrib(vec, R_NamesSymbol);
+	    SEXP nms = Rf_getAttrib(vec, Symbols::NamesSymbol);
 	    if(!Rf_isNull(nms))
-		Rf_setAttrib(ans, R_NamesSymbol, nms);
+		Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
 	    for(i = 0; i < n; i++)
@@ -258,7 +258,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 
     if(opt_value) {
 	PROTECT(ans = Rf_allocVector(STRSXP, nmatches));
-	SEXP nmold = Rf_getAttrib(vec, R_NamesSymbol), nm;
+	SEXP nmold = Rf_getAttrib(vec, Symbols::NamesSymbol), nm;
 	for (j = i = 0 ; i < n ; i++) {
 	    if(LOGICAL(ind)[i])
 		SET_STRING_ELT(ans, j++, STRING_ELT(vec, i));
@@ -269,7 +269,7 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 	    for (i = 0, j = 0; i < n ; i++)
 		if(LOGICAL(ind)[i])
 		    SET_STRING_ELT(nm, j++, STRING_ELT(nmold, i));
-	    Rf_setAttrib(ans, R_NamesSymbol, nm);
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, nm);
 	}
     }
 #ifdef LONG_VECTOR_SUPPORT
@@ -447,13 +447,13 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 	}
     }
 
-    PROTECT(x = Rf_getAttrib(x, R_NamesSymbol));
-    PROTECT(y = Rf_getAttrib(y, R_NamesSymbol));
+    PROTECT(x = Rf_getAttrib(x, Symbols::NamesSymbol));
+    PROTECT(y = Rf_getAttrib(y, Symbols::NamesSymbol));
     if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
-	Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);
 	UNPROTECT(1); /* dimnames */
     }
 
@@ -467,14 +467,14 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	Rf_setAttrib(counts, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(counts, Symbols::DimNamesSymbol, dimnames);
 	Rf_setAttrib(ans, Rf_install("counts"), counts);
 	UNPROTECT(2); /* names, dimnames */
 	if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    SET_VECTOR_ELT(dimnames, 0, x);
 	    SET_VECTOR_ELT(dimnames, 1, y);
-	    Rf_setAttrib(trafos, R_DimNamesSymbol, dimnames);
+	    Rf_setAttrib(trafos, Symbols::DimNamesSymbol, dimnames);
 	    UNPROTECT(1); /* dimnames */
 	}
 	Rf_setAttrib(ans, Rf_install("trafos"), trafos);
@@ -696,13 +696,13 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	}
     }
 
-    PROTECT(x = Rf_getAttrib(x, R_NamesSymbol));
-    PROTECT(y = Rf_getAttrib(y, R_NamesSymbol));
+    PROTECT(x = Rf_getAttrib(x, Symbols::NamesSymbol));
+    PROTECT(y = Rf_getAttrib(y, Symbols::NamesSymbol));
     if(!Rf_isNull(x) || !Rf_isNull(y)) {
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
-	Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);
 	UNPROTECT(1); /* dimnames */
     }
     if(opt_counts) {
@@ -714,7 +714,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	Rf_setAttrib(counts, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(counts, Symbols::DimNamesSymbol, dimnames);
 	Rf_setAttrib(ans, Rf_install("counts"), counts);
 	UNPROTECT(2); /* names, dimnames */
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 3));
@@ -724,7 +724,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
 	SET_VECTOR_ELT(dimnames, 0, x);
 	SET_VECTOR_ELT(dimnames, 1, y);
 	SET_VECTOR_ELT(dimnames, 2, names);
-	Rf_setAttrib(offsets, R_DimNamesSymbol, dimnames);
+	Rf_setAttrib(offsets, Symbols::DimNamesSymbol, dimnames);
 	Rf_setAttrib(ans, Rf_install("offsets"), offsets);
 	UNPROTECT(4); /* names, dimnames, counts, offsets */
     }

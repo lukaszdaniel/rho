@@ -36,6 +36,7 @@
 #include "R_ext/Error.h"
 
 namespace rho {
+	using namespace Symbols;
     class DottedArgs;
     class Expression;
 

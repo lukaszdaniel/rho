@@ -70,7 +70,7 @@ struct BindData {
 static int HasNames(SEXP x)
 {
     if(Rf_isVector(x)) {
-	if (!Rf_isNull(Rf_getAttrib(x, R_NamesSymbol)))
+	if (!Rf_isNull(Rf_getAttrib(x, Symbols::NamesSymbol)))
 	    return 1;
     }
     else if(Rf_isList(x)) {
@@ -125,7 +125,7 @@ AnswerType(SEXP x, Rboolean recurse, Rboolean usenames, struct BindData *data, S
 	if (recurse) {
 	    R_xlen_t i, n = Rf_xlength(x);
 	    if (usenames && !data->ans_nnames &&
-		!Rf_isNull(Rf_getAttrib(x, R_NamesSymbol)))
+		!Rf_isNull(Rf_getAttrib(x, Symbols::NamesSymbol)))
 		data->ans_nnames = 1;
 	    for (i = 0; i < n; i++) {
 		if (usenames && !data->ans_nnames)
@@ -142,7 +142,7 @@ AnswerType(SEXP x, Rboolean recurse, Rboolean usenames, struct BindData *data, S
 	if (recurse) {
 	    R_xlen_t i, n = Rf_xlength(x);
 	    if (usenames && !data->ans_nnames &&
-		!Rf_isNull(Rf_getAttrib(x, R_NamesSymbol)))
+		!Rf_isNull(Rf_getAttrib(x, Symbols::NamesSymbol)))
 		data->ans_nnames = 1;
 	    for (i = 0; i < n; i++) {
 		if (usenames && !data->ans_nnames)
@@ -649,7 +649,7 @@ struct NameData {
 static void namesCount(SEXP v, int recurse, struct NameData *nameData)
 {
     R_xlen_t i, n = Rf_xlength(v);
-    SEXP names = PROTECT(Rf_getAttrib(v, R_NamesSymbol)), namei;
+    SEXP names = PROTECT(Rf_getAttrib(v, Symbols::NamesSymbol)), namei;
 
     /* The  "<= 1"  in every for() loop, i.e., for all "vector" cases,
        makes this much faster for large vector 'v'
@@ -716,7 +716,7 @@ static void NewExtractNames(SEXP v, SEXP base, const RObject* tag, int recurse,
     else saveseqno = 0;
 
     n = Rf_xlength(v);
-    PROTECT(names = Rf_getAttrib(v, R_NamesSymbol));
+    PROTECT(names = Rf_getAttrib(v, Symbols::NamesSymbol));
 
     switch(TYPEOF(v)) {
     case NILSXP:
@@ -796,7 +796,7 @@ static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
     for (a = ans; a != R_NilValue; a = next) {
 	n = TAG(a);
 	next = CDR(a);
-	if (n != R_NilValue && Rf_pmatch(R_RecursiveSymbol, n, TRUE)) {
+	if (n != R_NilValue && Rf_pmatch(Symbols::RecursiveSymbol, n, TRUE)) {
 	    if (n_recurse++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'recursive'"));
 	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
@@ -807,7 +807,7 @@ static SEXP c_Extract_opt(SEXP ans, Rboolean *recurse, Rboolean *usenames,
 	    else
 		SETCDR(last, next);
 	}
-	else if (n != R_NilValue && Rf_pmatch(R_UseNamesSymbol, n, TRUE)) {
+	else if (n != R_NilValue && Rf_pmatch(Symbols::UseNamesSymbol, n, TRUE)) {
 	    if (n_usenames++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'use.names'"));
 	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
@@ -946,7 +946,7 @@ static SEXP do_c_dflt(SEXP call, SEXP op, ArgList&& arglist, SEXP env)
 	    NewExtractNames(CAR(args), R_NilValue, TAG(args), recurse, &data, &nameData);
 	    args = CDR(args);
 	}
-	Rf_setAttrib(ans, R_NamesSymbol, data.ans_names);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, data.ans_names);
 	UNPROTECT(1);
     }
     UNPROTECT(2);
@@ -981,7 +981,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
 
     if (Rf_isNewList(args)) {
 	n = Rf_xlength(args);
-	if (usenames && Rf_getAttrib(args, R_NamesSymbol) != R_NilValue)
+	if (usenames && Rf_getAttrib(args, Symbols::NamesSymbol) != R_NilValue)
 	    data.ans_nnames = 1;
 	for (i = 0; i < n; i++) {
 	    if (usenames && !data.ans_nnames)
@@ -1055,7 +1055,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
 	PROTECT(data.ans_names = Rf_allocVector(STRSXP, data.ans_length));
 	if (!recurse) {
 	    if (TYPEOF(args) == VECSXP) {
-		SEXP names = Rf_getAttrib(args, R_NamesSymbol);
+		SEXP names = Rf_getAttrib(args, Symbols::NamesSymbol);
 		data.ans_nnames = 0;
 		nameData.seqno = 0;
 		nameData.count = 0;
@@ -1081,7 +1081,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
 	    nameData.count = 0;
 	    NewExtractNames(args, R_NilValue, R_NilValue, recurse, &data, &nameData);
 	}
-	Rf_setAttrib(ans, R_NamesSymbol, data.ans_names);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, data.ans_names);
 	UNPROTECT(1);
     }
     UNPROTECT(2);
@@ -1299,7 +1299,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     int na = 0;
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	dims = Rf_getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, Symbols::DimSymbol);
 	if (Rf_length(dims) == 2) {
 	    if (mrows == -1)
 		mrows = INTEGER(dims)[0];
@@ -1321,9 +1321,9 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     na = 0;
     for (const auto& arg : args.getArgs()) {
         u = PRVALUE(arg.car());
-	dims = Rf_getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, Symbols::DimSymbol);
 	if (Rf_length(dims) == 2) {
-	    dn = Rf_getAttrib(u, R_DimNamesSymbol);
+	    dn = Rf_getAttrib(u, Symbols::DimNamesSymbol);
 	    if (Rf_length(dn) == 2) {
 		if (VECTOR_ELT(dn, 1) != R_NilValue)
 		    have_cnames = TRUE;
@@ -1336,7 +1336,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		warned = TRUE;
 		Rf_warning("number of rows of result is not a multiple of vector length (arg %d)", na + 1);
 	    }
-	    PROTECT(dn = Rf_getAttrib(u, R_NamesSymbol));
+	    PROTECT(dn = Rf_getAttrib(u, Symbols::NamesSymbol));
 	    if (k >= lenmin && (arg.tag() != R_NilValue ||
 				(deparse_level == 2) ||
 				((deparse_level == 1) &&
@@ -1485,7 +1485,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
         for (const auto& arg : args.getArgs()) {
             u = PRVALUE(arg.car());
 	    if (Rf_isMatrix(u)) {
-		v = Rf_getAttrib(u, R_DimNamesSymbol);
+		v = Rf_getAttrib(u, Symbols::DimNamesSymbol);
 
 		if (have_rnames &&
 		    Rf_GetRowNames(dn) == R_NilValue &&
@@ -1504,7 +1504,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 			SET_STRING_ELT(nam, j++, R_BlankString);
 		}
 	    } else if (Rf_length(u) >= lenmin) {
-		u = Rf_getAttrib(u, R_NamesSymbol);
+		u = Rf_getAttrib(u, Symbols::NamesSymbol);
 
 		if (have_rnames && Rf_GetRowNames(dn) == R_NilValue
 		    && u != R_NilValue && Rf_length(u) == rows)
@@ -1527,7 +1527,7 @@ static SEXP cbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		}
 	    }
 	}
-	Rf_setAttrib(result, R_DimNamesSymbol, dn);
+	Rf_setAttrib(result, Symbols::DimNamesSymbol, dn);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
@@ -1563,7 +1563,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     int na = 0;
     for (const auto& arg : args.getArgs()) {
 	u = PRVALUE(arg.car());
-	dims = Rf_getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, Symbols::DimSymbol);
 	if (Rf_length(dims) == 2) {
 	    if (mcols == -1)
 		mcols = INTEGER(dims)[1];
@@ -1585,9 +1585,9 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
     na = 0;
     for (const auto& arg : args.getArgs()) {
 	u = PRVALUE(arg.car());
-	dims = Rf_getAttrib(u, R_DimSymbol);
+	dims = Rf_getAttrib(u, Symbols::DimSymbol);
 	if (Rf_length(dims) == 2) {
-	    dn = Rf_getAttrib(u, R_DimNamesSymbol);
+	    dn = Rf_getAttrib(u, Symbols::DimNamesSymbol);
 	    if (Rf_length(dn) == 2) {
 		if (VECTOR_ELT(dn, 0) != R_NilValue)
 		    have_rnames = TRUE;
@@ -1601,7 +1601,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		warned = TRUE;
 		Rf_warning("number of columns of result is not a multiple of vector length (arg %d)", na + 1);
 	    }
-	    PROTECT(dn = Rf_getAttrib(u, R_NamesSymbol));
+	    PROTECT(dn = Rf_getAttrib(u, Symbols::NamesSymbol));
 	    if (k >= lenmin && (arg.tag() != R_NilValue ||
 				(deparse_level == 2) ||
 				((deparse_level == 1) &&
@@ -1723,7 +1723,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 	for (const auto& arg : args.getArgs()) {
 	    u = PRVALUE(arg.car());
 	    if (Rf_isMatrix(u)) {
-		v = Rf_getAttrib(u, R_DimNamesSymbol);
+		v = Rf_getAttrib(u, Symbols::DimNamesSymbol);
 
 		if (have_cnames &&
 		    Rf_GetColNames(dn) == R_NilValue &&
@@ -1745,7 +1745,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		}
 	    }
 	    else if (Rf_length(u) >= lenmin) {
-		u = Rf_getAttrib(u, R_NamesSymbol);
+		u = Rf_getAttrib(u, Symbols::NamesSymbol);
 
 		if (have_cnames && Rf_GetColNames(dn) == R_NilValue
 		    && u != R_NilValue && Rf_length(u) == cols)
@@ -1768,7 +1768,7 @@ static SEXP rbind(SEXP call, const ArgList& args, SEXPTYPE mode, SEXP rho,
 		}
 	    }
 	}
-	Rf_setAttrib(result, R_DimNamesSymbol, dn);
+	Rf_setAttrib(result, Symbols::DimNamesSymbol, dn);
 	UNPROTECT(1);
     }
     UNPROTECT(1);

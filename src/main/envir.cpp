@@ -242,7 +242,7 @@ void Rf_InitGlobalEnv()
     GCStackRoot<> zero(Rf_ScalarInteger(0));
     R_NamespaceRegistry = R_NewHashedEnv(R_NilValue, zero);
     R_PreserveObject(R_NamespaceRegistry);
-    Rf_defineVar(R_BaseSymbol, R_BaseNamespace, R_NamespaceRegistry);
+    Rf_defineVar(Symbols::BaseSymbol, R_BaseNamespace, R_NamespaceRegistry);
 
 #ifdef PROVENANCE_TRACKING
     ProvenanceTracker::setMonitors();
@@ -530,7 +530,7 @@ SEXP ddfind(int i, SEXP rho)
     if(i <= 0)
 	Rf_error(_("indexing '...' with non-positive index %d"), i);
     /* first look for ... symbol  */
-    SEXP vl = Rf_findVar(R_DotsSymbol, rho);
+    SEXP vl = Rf_findVar(Symbols::DotsSymbol, rho);
     if (vl != R_UnboundValue) {
 	if (length_DOTS(vl) >= i) {
 	    vl = Rf_nthcdr(vl, i - 1);
@@ -564,7 +564,7 @@ SEXP attribute_hidden do_dotsElt(SEXP call, SEXP op, SEXP args, SEXP env)
 SEXP attribute_hidden do_dotsLength(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     checkArity(op, args);
-    SEXP vl = Rf_findVar(R_DotsSymbol, env);
+    SEXP vl = Rf_findVar(Symbols::DotsSymbol, env);
     if (vl == R_UnboundValue)
 	Rf_error(_("incorrect context: the current call has no '...' to look in"));
     // else
@@ -767,7 +767,7 @@ SEXP attribute_hidden do_list2env(/*const*/ Expression* call, const BuiltInFunct
 	Rf_error(_("first argument must be a named list"));
     x = x_;
     n = LENGTH(x);
-    xnms = Rf_getAttrib(x, R_NamesSymbol);
+    xnms = Rf_getAttrib(x, Symbols::NamesSymbol);
     if (n && (TYPEOF(xnms) != STRSXP || LENGTH(xnms) != n))
 	Rf_error(_("names(x) must be a character vector of the same length as x"));
     envir = envir_;
@@ -1048,7 +1048,7 @@ SEXP attribute_hidden do_mget(/*const*/ Expression* call, const BuiltInFunction*
 	SET_VECTOR_ELT(ans, i, Rf_lazy_duplicate(ans_i));
     }
 
-    Rf_setAttrib(ans, R_NamesSymbol, Rf_lazy_duplicate(x));
+    Rf_setAttrib(ans, Symbols::NamesSymbol, Rf_lazy_duplicate(x));
     UNPROTECT(2);
     return(ans);
 }
@@ -1104,7 +1104,7 @@ SEXP attribute_hidden do_missing(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (DDVAL(sym)) {
 	ddv = ddVal(sym);
-	sym = R_DotsSymbol;
+	sym = Symbols::DotsSymbol;
     }
 
     Frame::Binding* bdg = findVarLocInFrame(rho, sym, nullptr);
@@ -1271,7 +1271,7 @@ SEXP attribute_hidden do_search(/*const*/ Expression* call, const BuiltInFunctio
     SET_STRING_ELT(ans, n-1, Rf_mkChar("package:base"));
     i = 1;
     for (t = ENCLOS(R_GlobalEnv); t != R_BaseEnv ; t = ENCLOS(t)) {
-	name = Rf_getAttrib(t, R_NameSymbol);
+	name = Rf_getAttrib(t, Symbols::NameSymbol);
 	if (!Rf_isString(name) || Rf_length(name) < 1)
 	    SET_STRING_ELT(ans, i, Rf_mkChar("(unknown)"));
 	else
@@ -1436,7 +1436,7 @@ SEXP attribute_hidden do_env2list(/*const*/ Expression* call, const BuiltInFunct
 	(*result)[i] = frame->binding(symbol)->forcedValue();
     }
     if (syms.size() > 0)
-	Rf_setAttrib(result, R_NamesSymbol, names);
+	Rf_setAttrib(result, Symbols::NamesSymbol, names);
     return(result);
 }
 
@@ -1483,9 +1483,9 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     PROTECT(ind = Rf_allocVector(INTSXP, 1));
     /* tmp :=  `[`(<elist>, i) */
-    PROTECT(tmp = new Expression(R_Bracket2Symbol, { Xsym, ind }));
+    PROTECT(tmp = new Expression(Symbols::Bracket2Symbol, { Xsym, ind }));
     /* fcall :=  <FUN>(tmp, ... ) */
-    Expression* R_fcall = new Expression(FUN, { tmp, R_DotsSymbol });
+    Expression* R_fcall = new Expression(FUN, { tmp, Symbols::DotsSymbol });
 
     Rf_defineVar(Xsym, tmp2, rho);
     INCREMENT_NAMED(tmp2);
@@ -1506,7 +1506,7 @@ SEXP attribute_hidden do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 	k = 0;
 	FrameNames(framelist, all, names, &k);
 
-	Rf_setAttrib(ans, R_NamesSymbol, names);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, names);
 	UNPROTECT(1);
     }
     UNPROTECT(4);
@@ -1614,7 +1614,7 @@ static SEXP matchEnvir(SEXP call, const char *what)
     if(streql("package:base", what))
 	return R_BaseEnv;
     for (t = ENCLOS(R_GlobalEnv); t != R_EmptyEnv ; t = ENCLOS(t)) {
-	name = Rf_getAttrib(t, R_NameSymbol);
+	name = Rf_getAttrib(t, Symbols::NameSymbol);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
 	   streql(Rf_translateChar(STRING_ELT(name, 0)), what)) {
 	    vmaxset(vmax);
@@ -1836,7 +1836,7 @@ SEXP attribute_hidden do_bndIsActive(/*const*/ Expression* call, const BuiltInFu
 Rboolean R_IsPackageEnv(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
-	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
+	SEXP name = Rf_getAttrib(rho, Symbols::NameSymbol);
 	const char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
@@ -1852,7 +1852,7 @@ Rboolean R_IsPackageEnv(SEXP rho)
 SEXP R_PackageEnvName(SEXP rho)
 {
     if (TYPEOF(rho) == ENVSXP) {
-	SEXP name = Rf_getAttrib(rho, R_NameSymbol);
+	SEXP name = Rf_getAttrib(rho, Symbols::NameSymbol);
 	const char *packprefix = "package:";
 	size_t pplen = strlen(packprefix);
 	if(Rf_isString(name) && Rf_length(name) > 0 &&
@@ -2097,7 +2097,7 @@ SEXP Rf_topenv(SEXP target, SEXP envir) {
 	if (env == target || env == R_GlobalEnv ||
 	    env == R_BaseEnv || env == R_BaseNamespace ||
 	    R_IsPackageEnv(env) || R_IsNamespaceEnv(env) ||
-	    findVarLocInFrame(envir, R_dot_packageName, nullptr) != R_NilValue)
+	    findVarLocInFrame(envir, Symbols::DotPackageName, nullptr) != R_NilValue)
 	{
 	    return env;
 	} else {
@@ -2146,7 +2146,7 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
     PROTECT(elist);
     R_xlen_t n = Rf_xlength(elist);
     R_xlen_t i;
-    SEXP names = PROTECT(Rf_getAttrib(elist, R_NamesSymbol));
+    SEXP names = PROTECT(Rf_getAttrib(elist, Symbols::NamesSymbol));
     for(i = 0; i < n; i++) {
 	SEXP value = VECTOR_ELT(elist, i);
 	const char *vname = R_CHAR(STRING_ELT(names, i));
@@ -2164,7 +2164,7 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
 	    PROTECT(rlist);
 	    R_xlen_t rn = Rf_xlength(rlist);
 	    R_xlen_t ri;
-	    SEXP rnames = PROTECT(Rf_getAttrib(rlist, R_NamesSymbol));
+	    SEXP rnames = PROTECT(Rf_getAttrib(rlist, Symbols::NamesSymbol));
 	    for(ri = 0; ri < rn; ri++) {
 		SEXP rvalue = VECTOR_ELT(rlist, ri);
 		/* the constants checking requires shallow comparison */

@@ -527,6 +527,7 @@ namespace rho {
     public:
 	// To be private in future:
 	unsigned char m_named;
+	unsigned char m_altrep;
     private:
 	// The following field is used in connection with R functions
 	// such as tracemem, and has effect only if rho is built with
@@ -593,7 +594,7 @@ namespace rho {
 #include "rho/PairList.hpp"
 
 inline rho::RObject::RObject(SEXPTYPE stype)
-    : m_type(stype & s_sexptype_mask), m_named(0),
+    : m_type(stype & s_sexptype_mask), m_named(0), m_altrep(0),
       m_memory_traced(false), m_missing(0),
       m_active_binding(false), m_binding_locked(false)
 {}
@@ -672,8 +673,13 @@ extern "C" {
 	    return v;
     }
 
-    inline int ALTREP(SEXP x) { return 0; }
-    inline void SETALTREP(SEXP x, int v) {}
+    inline int ALTREP(SEXP x) { return x ? x->m_altrep : 0; }
+
+    inline void SETALTREP(SEXP x, int v)
+    {
+	if (!x) return;
+	x->m_altrep = static_cast<unsigned char>(v);
+    }
 
     /** @brief Replace an object's attributes.
      *

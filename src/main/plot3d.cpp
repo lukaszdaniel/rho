@@ -39,6 +39,9 @@
 #include <Print.h>
 #include <R_ext/Boolean.h>
 #include "basedecl.h"
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 /* filled contours and perspective plots were originally here,
    now in graphics/src/plot3d.cpp.
@@ -156,7 +159,7 @@ int addContourLines(double *x, int nx, double *y, int ny,
 		SET_STRING_ELT(names, 0, Rf_mkChar("level"));
 		SET_STRING_ELT(names, 1, Rf_mkChar("x"));
 		SET_STRING_ELT(names, 2, Rf_mkChar("y"));
-		Rf_setAttrib(ctr, R_NamesSymbol, names);
+		Rf_setAttrib(ctr, Symbols::NamesSymbol, names);
 		/*
 		 * We're about to add another line to the list ...
 		 */

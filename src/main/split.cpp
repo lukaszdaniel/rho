@@ -44,6 +44,9 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <R_ext/Itermacros.h>
+#include "rho/Symbol.hpp"
+
+using namespace rho;
 
 SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* f_)
 {
@@ -63,7 +66,7 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
 	Rf_error(_("group length is 0 but data length > 0"));
     if (nfac > 0 && (nobs % nfac) != 0)
 	Rf_warning(_("data length is not a multiple of split variable"));
-    nm = Rf_getAttrib(x, R_NamesSymbol);
+    nm = Rf_getAttrib(x, Symbols::NamesSymbol);
     have_names = Rboolean(nm != nullptr);
 
 #ifdef LONG_VECTOR_SUPPORT
@@ -88,7 +91,7 @@ SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::Built
 # undef _L_INTEG_
 # undef _L_int_
 
-    Rf_setAttrib(vec, R_NamesSymbol, Rf_getAttrib(f, R_LevelsSymbol));
+    Rf_setAttrib(vec, Symbols::NamesSymbol, Rf_getAttrib(f, Symbols::LevelsSymbol));
     UNPROTECT(2);
     return vec;
 }

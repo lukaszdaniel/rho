@@ -53,6 +53,7 @@
 #include <Rmath.h> // Rexp10
 #include <Localization.h>
 
+
 // to get tm_zone, tm_gmtoff defined in glibc.
 // some other header, e.g. math.h, might define the macro.
 #if defined HAVE_FEATURES_H
@@ -123,7 +124,9 @@ extern char *tzname[2];
 #include <Internal.h>
 
 #include <vector>
+#include "rho/Symbol.hpp"
 
+using namespace rho;
 using namespace std;
 
 /* Substitute based on glibc code. */
@@ -773,14 +776,14 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
 #endif
 	}
     }
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     PROTECT(klass = Rf_allocVector(STRSXP, 2));
     SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
     SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
     Rf_classgets(ans, klass);
     Rf_setAttrib(ans, Rf_install("tzone"), tzone);
-    SEXP nm = Rf_getAttrib(x, R_NamesSymbol);
-    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
+    SEXP nm = Rf_getAttrib(x, Symbols::NamesSymbol);
+    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
     if(settz) reset_tz(oldtz);
     UNPROTECT(6);
     return ans;
@@ -1190,7 +1193,7 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
 	}
     }
 
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     PROTECT(klass = Rf_allocVector(STRSXP, 2));
     SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
     SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
@@ -1249,15 +1252,15 @@ SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::B
 	} else valid = 0;
 	makelt(&tm, ans, i, valid, 0.0);
     }
-    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
     PROTECT(klass = Rf_allocVector(STRSXP, 2));
     SET_STRING_ELT(klass, 0, Rf_mkChar("POSIXlt"));
     SET_STRING_ELT(klass, 1, Rf_mkChar("POSIXt"));
     Rf_classgets(ans, klass);
     SEXP s_tzone = Rf_install("tzone");
     Rf_setAttrib(ans, s_tzone, Rf_mkString("UTC"));
-    SEXP nm = Rf_getAttrib(x, R_NamesSymbol);
-    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), R_NamesSymbol, nm);
+    SEXP nm = Rf_getAttrib(x, Symbols::NamesSymbol);
+    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
     UNPROTECT(4);
 
     return ans;

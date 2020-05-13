@@ -240,7 +240,7 @@ static RObject* R_ReplFile_impl(FILE *fp, SEXP rho)
 	    count++;
 	    PROTECT(R_CurrentExpr);
 	    R_CurrentExpr = Rf_eval(R_CurrentExpr, rho);
-	    SET_SYMVALUE(R_LastvalueSymbol, R_CurrentExpr);
+	    SET_SYMVALUE(Symbols::LastvalueSymbol, R_CurrentExpr);
 	    UNPROTECT(1);
 	    if (R_Visible)
 		Rf_PrintValueEnv(R_CurrentExpr, rho);
@@ -410,7 +410,7 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
 	    PROTECT(thisExpr = R_CurrentExpr);
 	    R_Busy(1);
 	    value = Rf_eval(thisExpr, rho);
-	    SET_SYMVALUE(R_LastvalueSymbol, value);
+	    SET_SYMVALUE(Symbols::LastvalueSymbol, value);
 	    wasDisplayed = R_Visible;
 	    if (R_Visible)
 		Rf_PrintValueEnv(value, rho);
@@ -567,7 +567,7 @@ int R_ReplDLLdo1(void)
 	R_Busy(1);
 	lastExpr = R_CurrentExpr;
 	R_CurrentExpr = Rf_eval(R_CurrentExpr, rho);
-	SET_SYMVALUE(R_LastvalueSymbol, R_CurrentExpr);
+	SET_SYMVALUE(Symbols::LastvalueSymbol, R_CurrentExpr);
 	wasDisplayed = R_Visible;
 	if (R_Visible)
 	    Rf_PrintValueEnv(R_CurrentExpr, rho);
@@ -1057,10 +1057,10 @@ void setup_Rmainloop(void)
     /* methods package needs to trample here */
     R_LockEnvironment(R_BaseEnv, TRUE);
 #endif
-    R_unLockBinding(R_LastvalueSymbol, R_BaseEnv);  // rho addition
+    R_unLockBinding(Symbols::LastvalueSymbol, R_BaseEnv);  // rho addition
     /* At least temporarily unlock some bindings used in graphics */
-    R_unLockBinding(R_DeviceSymbol, R_BaseEnv);
-    R_unLockBinding(R_DevicesSymbol, R_BaseEnv);
+    R_unLockBinding(Symbols::DotDeviceSymbol, R_BaseEnv);
+    R_unLockBinding(Symbols::DotDevicesSymbol, R_BaseEnv);
     R_unLockBinding(Rf_install(".Library.site"), R_BaseEnv);
 
     /* require(methods) if it is in the default packages */
@@ -1710,7 +1710,7 @@ R_taskCallbackRoutine(SEXP expr, SEXP value, Rboolean succeeded,
     SETCAR(e, VECTOR_ELT(f, 0));
     cur = CDR(e);
     SETCAR(cur, tmp = Rf_allocVector(LANGSXP, 2));
-	SETCAR(tmp, R_QuoteSymbol);
+	SETCAR(tmp, Symbols::QuoteSymbol);
 	SETCAR(CDR(tmp), expr);
     cur = CDR(cur);
     SETCAR(cur, value);
@@ -1763,10 +1763,10 @@ R_addTaskCallback(SEXP f, SEXP data, SEXP useData, SEXP name)
 
     if(Rf_length(name) == 0) {
 	PROTECT(name = Rf_mkString(el->name));
-	Rf_setAttrib(index, R_NamesSymbol, name);
+	Rf_setAttrib(index, Symbols::NamesSymbol, name);
 	UNPROTECT(1);
     } else {
-	Rf_setAttrib(index, R_NamesSymbol, name);
+	Rf_setAttrib(index, Symbols::NamesSymbol, name);
     }
 
     UNPROTECT(1);

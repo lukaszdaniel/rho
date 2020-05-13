@@ -120,12 +120,12 @@ static R_INLINE SEXP getNames(SEXP x)
 {
     /* defer to getAttrib if a 'dim' attribute is present */
     for (SEXP attr = ATTRIB(x); attr != R_NilValue; attr = CDR(attr))
-	if (TAG(attr) == R_DimSymbol)
-	    return Rf_getAttrib(x, R_NamesSymbol);
+	if (TAG(attr) == Symbols::DimSymbol)
+	    return Rf_getAttrib(x, Symbols::NamesSymbol);
 
     /* don't use getAttrib since that would mark as immutable */
     for (SEXP attr = ATTRIB(x); attr != R_NilValue; attr = CDR(attr))
-	if (TAG(attr) == R_NamesSymbol)
+	if (TAG(attr) == Symbols::NamesSymbol)
 	    return CAR(attr);
 
     return R_NilValue;
@@ -166,7 +166,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 	if (!Rf_isNull(names)) {
 	    newnames = EnlargeNames(names, len, newlen);
 	    if (names != newnames)
-		Rf_setAttrib(x, R_NamesSymbol, newnames);
+		Rf_setAttrib(x, Symbols::NamesSymbol, newnames);
 	}
 	return x;
     }
@@ -267,7 +267,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     /* Adjust the attribute list. */
     names = getNames(x);
     if (!Rf_isNull(names))
-	Rf_setAttrib(newx, R_NamesSymbol, EnlargeNames(names, len, newlen));
+	Rf_setAttrib(newx, Symbols::NamesSymbol, EnlargeNames(names, len, newlen));
     Rf_copyMostAttrib(x, newx);
     UNPROTECT(2);
     return newx;
@@ -553,7 +553,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
     default:
 	Rf_error(_("Internal error: unexpected type in DeleteListElements"));
     }
-    xnames = Rf_getAttrib(x, R_NamesSymbol);
+    xnames = Rf_getAttrib(x, Symbols::NamesSymbol);
     if (xnames != R_NilValue) {
 	PROTECT(xnewnames = Rf_allocVector(STRSXP, ii));
 	ii = 0;
@@ -563,7 +563,7 @@ static SEXP DeleteListElements(SEXP x, SEXP which)
 		ii++;
 	    }
 	}
-	Rf_setAttrib(xnew, R_NamesSymbol, xnewnames);
+	Rf_setAttrib(xnew, Symbols::NamesSymbol, xnewnames);
 	UNPROTECT(1);
     }
     Rf_copyMostAttrib(x, xnew);
@@ -586,7 +586,7 @@ static SEXP VectorAssign(SEXP call, SEXP rho, SEXP xarg, SEXP sarg, SEXP yarg)
 
     PROTECT(s);
     if (ATTRIB(s) != R_NilValue) { /* pretest to speed up simple case */
-	SEXP dim = Rf_getAttrib(x, R_DimSymbol);
+	SEXP dim = Rf_getAttrib(x, Symbols::DimSymbol);
 	if (Rf_isMatrix(s) && Rf_isArray(x) && Rf_ncols(s) == Rf_length(dim)) {
 	    if (Rf_isString(s)) {
 		s = Rf_strmat2intmat(s, Rf_GetArrayDimnames(x), call);
@@ -1095,14 +1095,14 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
 	default:
 	    Rf_error(_("Internal error: unexpected type in DeleteOneVectorListItem"));
 	}
-	xnames = Rf_getAttrib(x, R_NamesSymbol);
+	xnames = Rf_getAttrib(x, Symbols::NamesSymbol);
 	if (xnames != R_NilValue) {
 	    PROTECT(ynames = Rf_allocVector(STRSXP, n - 1));
 	    k = 0;
 	    for (i = 0 ; i < n; i++)
 		if(i != which)
 		    SET_STRING_ELT(ynames, k++, STRING_ELT(xnames, i));
-	    Rf_setAttrib(y, R_NamesSymbol, ynames);
+	    Rf_setAttrib(y, Symbols::NamesSymbol, ynames);
 	    UNPROTECT(1);
 	}
 	Rf_copyMostAttrib(x, y);
@@ -1181,7 +1181,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 
     xtop = xup = x; /* x will be the element which is assigned to */
 
-    dims = Rf_getAttrib(x, R_DimSymbol);
+    dims = Rf_getAttrib(x, Symbols::DimSymbol);
     ndims = Rf_length(dims);
 
     int *pdims = NULL;
@@ -1247,7 +1247,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 		Rf_error(_("[[ ]] improper number of subscripts"));
 	    PROTECT(indx = Rf_allocVector(INTSXP, ndims));
 	    int *pindx = INTEGER0(indx);
-	    names = Rf_getAttrib(x, R_DimNamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	    for (i = 0; i < ndims; i++) {
 		pindx[i] = int(
 		    Rf_get1index(CAR(subs), Rf_isNull(names) ?
@@ -1404,11 +1404,11 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	/* (if it doesn't already exist) and set the new */
 	/* value in the names attribute. */
 	if (stretch && newname != R_NilValue) {
-	    names = Rf_getAttrib(x, R_NamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::NamesSymbol);
 	    if (names == R_NilValue) {
 		PROTECT(names = Rf_allocVector(STRSXP, Rf_length(x)));
 		SET_STRING_ELT(names, offset, newname);
-		Rf_setAttrib(x, R_NamesSymbol, names);
+		Rf_setAttrib(x, Symbols::NamesSymbol, names);
 		UNPROTECT(1);
 	    }
 	    else
@@ -1432,7 +1432,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 		Rf_error(_("[[ ]] improper number of subscripts"));
 	    PROTECT(indx = Rf_allocVector(INTSXP, ndims));
 	    int *pindx = INTEGER0(indx);
-	    names = Rf_getAttrib(x, R_DimNamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	    for (i = 0; i < ndims; i++) {
 		pindx[i] = int(
 		    Rf_get1index(CAR(subs), VECTOR_ELT(names, i),
@@ -1587,7 +1587,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 	    Rf_warning(_("Coercing LHS to a list"));
 	    REPROTECT(x = Rf_coerceVector(x, VECSXP), pxidx);
 	}
-	names = Rf_getAttrib(x, R_NamesSymbol);
+	names = Rf_getAttrib(x, Symbols::NamesSymbol);
 	nx = Rf_xlength(x);
 	nlist = PRINTNAME(nlist);
 	if (Rf_isNull(val)) {
@@ -1614,7 +1614,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 			    SET_STRING_ELT(ansnames, ii, STRING_ELT(names, i));
 			    ii++;
 			}
-		    Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+		    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
 		    Rf_copyMostAttrib(x, ans);
 		    UNPROTECT(2);
 		    x = ans;
@@ -1659,7 +1659,7 @@ SEXP R_subassign3_dflt(SEXP call, SEXP x, SEXP nlist, SEXP val)
 		}
 		SET_VECTOR_ELT(ans, nx, val);
 		SET_STRING_ELT(ansnames, nx,  nlist);
-		Rf_setAttrib(ans, R_NamesSymbol, ansnames);
+		Rf_setAttrib(ans, Symbols::NamesSymbol, ansnames);
 		Rf_copyMostAttrib(x, ans);
 		UNPROTECT(2);
 		x = ans;

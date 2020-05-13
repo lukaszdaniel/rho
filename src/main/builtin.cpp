@@ -265,7 +265,7 @@ SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction
 	return CLOENV(fun_);
     else if (fun_ == R_NilValue)
 	return R_GlobalContext()->callEnvironment();
-    else return Rf_getAttrib(fun_, R_DotEnvSymbol);
+    else return Rf_getAttrib(fun_, Symbols::DotEnvSymbol);
 }
 
 SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* s, RObject* env)
@@ -278,7 +278,7 @@ SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunc
     } else {
 	if (env && (env = simple_as_environment(env)) == nullptr)
 	    Rf_error(_("replacement object is not an environment"));
-	Rf_setAttrib(s, R_DotEnvSymbol, env);
+	Rf_setAttrib(s, Symbols::DotEnvSymbol, env);
     }
     return s;
 }
@@ -325,7 +325,7 @@ static Rboolean R_IsImportsEnv(SEXP env)
 	return FALSE;
     if (ENCLOS(env) != R_BaseNamespace)
 	return FALSE;
-    SEXP name = Rf_getAttrib(env, R_NameSymbol);
+    SEXP name = Rf_getAttrib(env, Symbols::NameSymbol);
     if (!Rf_isString(name) || Rf_length(name) != 1)
 	return FALSE;
 
@@ -372,7 +372,7 @@ SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunc
 	    ans = Rf_ScalarString(STRING_ELT(R_PackageEnvName(env), 0));
 	else if (R_IsNamespaceEnv(env))
 	    ans = Rf_ScalarString(STRING_ELT(R_NamespaceEnvSpec(env), 0));
-	else if (!Rf_isNull(res = Rf_getAttrib(env, R_NameSymbol))) ans = res;
+	else if (!Rf_isNull(res = Rf_getAttrib(env, Symbols::NameSymbol))) ans = res;
     }
     return ans;
 }
@@ -649,7 +649,7 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 	args = CDR(args);
     }
     if (havenames) {
-	Rf_setAttrib(list, R_NamesSymbol, names);
+	Rf_setAttrib(list, Symbols::NamesSymbol, names);
     }
     UNPROTECT(2);
     return list;
@@ -682,7 +682,7 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
 		SET_STRING_ELT(nms, i, R_BlankString);
 	    a = CDR(a);
 	}
-	Rf_setAttrib(ans, R_NamesSymbol, nms);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
 	UNPROTECT(1);
     }
     UNPROTECT(1);
@@ -753,7 +753,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
     if (lenx == len)
 	return (x);
     PROTECT(rval = Rf_allocVector(TYPEOF(x), len));
-    PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol));
+    PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol));
     if (xnames != R_NilValue)
 	names = Rf_allocVector(STRSXP, len);
     else names = R_NilValue;	/*- just for -Wall --- should we do this ? */
@@ -831,7 +831,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	UNIMPLEMENTED_TYPE("length<-", x);
     }
     if (Rf_isVector(x) && xnames != R_NilValue)
-	Rf_setAttrib(rval, R_NamesSymbol, names);
+	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return rval;
 }
@@ -875,7 +875,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
     PROTECT(ans = tail = CONS(R_NilValue, R_NilValue));
 
     while (el != R_NilValue) {
-	if (CAR(el) == R_DotsSymbol) {
+	if (CAR(el) == Symbols::DotsSymbol) {
 	    SEXP h = PROTECT(Rf_findVar(CAR(el), rho));
 	    if (TYPEOF(h) == DOTSXP || h == R_NilValue) {
 		while (h != R_NilValue) {

@@ -340,7 +340,7 @@ static void PrivateCopyDevice(pDevDesc dd, pDevDesc ndd, const char *name)
     int saveDev = curDevice();
     gadesc *xd = (gadesc *) dd->deviceSpecific;
     gsetcursor(xd->gawin, WatchCursor);
-    gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
+    gsetVar(rho::Symbols::DotDeviceSymbol, Rf_mkString(name), R_BaseEnv);
     ndd->displayListOn = FALSE;
     gdd = GEcreateDevDesc(ndd);
     GEaddDevice(gdd);

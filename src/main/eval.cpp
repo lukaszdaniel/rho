@@ -191,7 +191,7 @@ static void lineprof(char* buf, SEXP srcref)
     size_t len;
     if (srcref && !Rf_isNull(srcref) && (len = strlen(buf)) < PROFLINEMAX) {
 	int fnum, line = Rf_asInteger(srcref);
-	SEXP srcfile = Rf_getAttrib(srcref, R_SrcfileSymbol);
+	SEXP srcfile = Rf_getAttrib(srcref, Symbols::SrcfileSymbol);
 	const char *filename;
 
 	if (!srcfile || TYPEOF(srcfile) != ENVSXP) return;
@@ -267,9 +267,9 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 		if (TYPEOF(fun) == SYMSXP) {
 		    snprintf(itembuf, PROFITEMMAX-1, "%s", R_CHAR(PRINTNAME(fun)));
 
-		} else if ((CAR(fun) == R_DoubleColonSymbol ||
-			    CAR(fun) == R_TripleColonSymbol ||
-			    CAR(fun) == R_DollarSymbol) &&
+		} else if ((CAR(fun) == Symbols::DoubleColonSymbol ||
+			    CAR(fun) == Symbols::TripleColonSymbol ||
+			    CAR(fun) == Symbols::DollarSymbol) &&
 			   TYPEOF(CADR(fun)) == SYMSXP &&
 			   TYPEOF(CADDR(fun)) == SYMSXP) {
 		    /* Function accessed via ::, :::, or $. Both args must be
@@ -281,7 +281,7 @@ static void doprof(int sig)  /* sig is ignored in Windows */
 			     R_CHAR(PRINTNAME(CAR(fun))),
 			     R_CHAR(PRINTNAME(CADDR(fun))));
 
-		} else if (CAR(fun) == R_Bracket2Symbol &&
+		} else if (CAR(fun) == Symbols::Bracket2Symbol &&
 			   TYPEOF(CADR(fun)) == SYMSXP &&
 			   ((TYPEOF(CADDR(fun)) == SYMSXP ||
 			     TYPEOF(CADDR(fun)) == STRSXP ||
@@ -518,7 +518,7 @@ void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
     /* If we have a valid srcref, use it */
     if (srcref && srcref != R_NilValue) {
 	if (TYPEOF(srcref) == VECSXP) srcref = VECTOR_ELT(srcref, 0);
-	SEXP srcfile = Rf_getAttrib(srcref, R_SrcfileSymbol);
+	SEXP srcfile = Rf_getAttrib(srcref, Symbols::SrcfileSymbol);
 	if (TYPEOF(srcfile) == ENVSXP) {
 	    SEXP filename = Rf_findVar(Rf_install("filename"), srcfile);
 	    if (Rf_isString(filename) && Rf_length(filename)) {
@@ -537,7 +537,7 @@ void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 
 static R_INLINE SEXP getBlockSrcrefs(SEXP call)
 {
-    SEXP srcrefs = Rf_getAttrib(call, R_SrcrefSymbol);
+    SEXP srcrefs = Rf_getAttrib(call, Symbols::SrcrefSymbol);
     if (TYPEOF(srcrefs) == VECSXP) return srcrefs;
     return R_NilValue;
 }
@@ -861,7 +861,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 namespace {
     inline int BodyHasBraces(SEXP body)
     {
-	return (Rf_isLanguage(body) && CAR(body) == R_BraceSymbol) ? 1 : 0;
+	return (Rf_isLanguage(body) && CAR(body) == Symbols::BraceSymbol) ? 1 : 0;
     }
 
     inline void DO_LOOP_RDEBUG(SEXP call, SEXP op, SEXP args, SEXP rho, int bgn)
@@ -1293,7 +1293,7 @@ SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("invalid formal argument list for 'function'"));
     rval = Rf_mkCLOSXP(formals, CADR(args), rho);
     SEXP srcref = CADDR(args);
-    if (!Rf_isNull(srcref)) Rf_setAttrib(rval, R_SrcrefSymbol, srcref);
+    if (!Rf_isNull(srcref)) Rf_setAttrib(rval, Symbols::SrcrefSymbol, srcref);
     return rval;
 }
 
@@ -1473,7 +1473,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_errorcall(call, _("cannot do complex assignments in base namespace"));
     if (rho == R_BaseEnv)
 	Rf_errorcall(call, _("cannot do complex assignments in base environment"));
-    Rf_defineVar(R_TmpvalSymbol, R_NilValue, rho);
+    Rf_defineVar(Symbols::TmpvalSymbol, R_NilValue, rho);
     Frame::Binding* tmploc
 	= SEXP_downcast<Environment*>(rho)->frame()->binding(TmpvalSymbol);
     /* Now use try-catch to remove it when we are done, even in the
@@ -1497,8 +1497,8 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 		   foo::bar(x) <- y or foo:::bar(x) <- y */
 		if (TYPEOF(functor) == LANGSXP) {
 		    SEXP funchead = CAR(functor);
-		    if ((funchead == R_DoubleColonSymbol
-			 || funchead == R_TripleColonSymbol)
+		    if ((funchead == Symbols::DoubleColonSymbol
+			 || funchead == Symbols::TripleColonSymbol)
 			&& Rf_length(functor) == 3) {
 			SEXP arg2 = CADDR(functor);
 			if (TYPEOF(arg2) == SYMSXP) {
@@ -1512,7 +1512,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    Rf_error(_("invalid function in complex assignment"));
 	    }
 	    SET_TEMPVARLOC_FROM_CAR(tmploc, lhs);
-	    rhs = replaceCall(tmp, R_TmpvalSymbol, CDDR(expr), rhsprom);
+	    rhs = replaceCall(tmp, Symbols::TmpvalSymbol, CDDR(expr), rhsprom);
 	    rhs = Rf_eval(rhs, rho);
 	    SET_PRVALUE(rhsprom, rhs);
 	    // Try doing without this in rho:
@@ -1530,8 +1530,8 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	       foo::bar(x) <- y or foo:::bar(x) <- y */
 	    if (TYPEOF(functor) == LANGSXP) {
 		SEXP funchead = CAR(functor);
-		if ((funchead == R_DoubleColonSymbol
-		     || funchead == R_TripleColonSymbol)
+		if ((funchead == Symbols::DoubleColonSymbol
+		     || funchead == Symbols::TripleColonSymbol)
 		    && Rf_length(functor) == 3) {
 		    SEXP arg2 = CADDR(functor);
 		    if (TYPEOF(arg2) == SYMSXP) {
@@ -1548,15 +1548,15 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	static std::vector<Symbol*> assignsyms = obtainAssignSyms();
 	// Second arg in the foll. changed in rho at r253 (2008-03-18):
 	expr = assignCall(assignsyms[PRIMVAL(op)], CADR(lhs),
-			  afun, R_TmpvalSymbol, CDDR(expr), rhsprom);
+			  afun, Symbols::TmpvalSymbol, CDDR(expr), rhsprom);
 	expr = Rf_eval(expr, rho);
     }
     catch (...) {
-	Rf_unbindVar(R_TmpvalSymbol, rho);
+	Rf_unbindVar(Symbols::TmpvalSymbol, rho);
 	throw;
     }
 
-    Rf_unbindVar(R_TmpvalSymbol, rho);
+    Rf_unbindVar(Symbols::TmpvalSymbol, rho);
 #ifdef CONSERVATIVE_COPYING /* not default */
     return Rf_duplicate(saverhs);
 #else
@@ -1611,7 +1611,7 @@ static SEXP VectorToPairListNamed(SEXP x)
     const void *vmax = vmaxget();
 
     PROTECT(x);
-    PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol)); /* isn't this protected via x? */
+    PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol)); /* isn't this protected via x? */
     named = (xnames != R_NilValue);
     if(named)
 	for (i = 0; i < Rf_length(x); i++)
@@ -1768,7 +1768,7 @@ SEXP attribute_hidden do_withVisible(SEXP call, SEXP op, SEXP args, SEXP rho)
     SET_STRING_ELT(nm, 1, Rf_mkChar("visible"));
     SET_VECTOR_ELT(ret, 0, x);
     SET_VECTOR_ELT(ret, 1, Rf_ScalarLogical(R_Visible));
-    Rf_setAttrib(ret, R_NamesSymbol, nm);
+    Rf_setAttrib(ret, Symbols::NamesSymbol, nm);
     UNPROTECT(3);
     return ret;
 }

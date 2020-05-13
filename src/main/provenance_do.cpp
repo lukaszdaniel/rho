@@ -99,7 +99,7 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
     (*rc)[0] = inv;
     (*rc)[1] = inv2;
 
-    Rf_setAttrib(rc, R_NamesSymbol, str);
+    Rf_setAttrib(rc, Symbols::NamesSymbol, str);
     return rc;
 }
 
@@ -189,7 +189,7 @@ SEXP attribute_hidden do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
 
-    Rf_setAttrib(list, R_NamesSymbol, names);
+    Rf_setAttrib(list, Symbols::NamesSymbol, names);
 
     return list;
 #endif // PROVENANCE_TRACKING

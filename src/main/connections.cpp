@@ -1442,7 +1442,7 @@ SEXP attribute_hidden do_fifo(/*const*/ Expression* call, const BuiltInFunction*
     SET_STRING_ELT(connclass, 0, Rf_mkChar("fifo"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 
@@ -1614,7 +1614,7 @@ SEXP attribute_hidden do_pipe(/*const*/ Expression* call, const BuiltInFunction*
 #endif
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 
@@ -2282,7 +2282,7 @@ SEXP attribute_hidden do_gzfile(/*const*/ Expression* call, const BuiltInFunctio
     }
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 
@@ -2887,7 +2887,7 @@ SEXP attribute_hidden do_rawconnection(/*const*/ Expression* call, const BuiltIn
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
     con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(2);
     return ans;
@@ -3307,7 +3307,7 @@ SEXP attribute_hidden do_textconnection(/*const*/ Expression* call, const BuiltI
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
     con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(2);
     return ans;
@@ -3385,7 +3385,7 @@ SEXP attribute_hidden do_sockconn(/*const*/ Expression* call, const BuiltInFunct
     SET_STRING_ELT(connclass, 0, Rf_mkChar("sockconn"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
     return ans;
@@ -3432,7 +3432,7 @@ SEXP attribute_hidden do_unz(/*const*/ Expression* call, const BuiltInFunction* 
     SET_STRING_ELT(connclass, 0, Rf_mkChar("unz"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 
@@ -5162,7 +5162,7 @@ do_getconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
     if (what > 2)
-	Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+	Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     UNPROTECT(2);
     return ans;
 }
@@ -5193,7 +5193,7 @@ SEXP attribute_hidden do_sumconnection(/*const*/ Expression* call, const BuiltIn
     SET_VECTOR_ELT(ans, 5, Rf_mkString(Rcon->canread? "yes":"no"));
     SET_STRING_ELT(names, 6, Rf_mkChar("can write"));
     SET_VECTOR_ELT(ans, 6, Rf_mkString(Rcon->canwrite? "yes":"no"));
-    Rf_setAttrib(ans, R_NamesSymbol, names);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return ans;
 }
@@ -5439,7 +5439,7 @@ SEXP attribute_hidden do_url(/*const*/ Expression* call, const BuiltInFunction* 
     SET_STRING_ELT(connclass, 0, Rf_mkChar(class2));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 
@@ -5817,7 +5817,7 @@ SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction
     SET_STRING_ELT(connclass, 0, Rf_mkChar("gzcon"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(newconn->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(newconn->ex_ptr));
     /* Disable, as e.g. load() leaves no reference to the new connection */
     //R_RegisterCFinalizerEx(static_cast<SEXP>(newconn->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
@@ -6391,7 +6391,7 @@ SEXP R_new_custom_connection(const char *description, const char *mode, const ch
     SET_STRING_ELT(connclass, 0, Rf_mkChar(class_name));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    Rf_setAttrib(ans, R_ConnIdSymbol, static_cast<SEXP>(newconn->ex_ptr));
+    Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(newconn->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(newconn->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(3);
 

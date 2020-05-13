@@ -291,6 +291,29 @@ void WeakRef::runExitFinalizers()
     runFinalizers();
 }
 
+void WeakRef::R_RunWeakRefFinalizer(RObject* x)
+{
+	    GCStackRoot<> topExp(R_CurrentExpr);
+	    size_t savestack = ProtectStack::size();
+	    {
+        WeakRef* wr = static_cast<WeakRef*>(x);
+		// An Evaluator is declared for the finalizer to
+		// insure that any errors that might occur do not spill into
+		// the call that triggered the collection:
+		Evaluator evalr;
+		try {
+		    wr->finalize();
+		}
+		catch (CommandTerminated) {
+		}
+		// Expose WeakRef to reference-counting collection:
+		wr->m_self = nullptr;
+	    }
+	    ProtectStack::restoreSize(savestack);
+	    R_CurrentExpr = topExp;
+}
+
+//CR's RunFinalizers()
 bool WeakRef::runFinalizers()
 {
     WRList* finalization_pending = getFinalizationPending();

@@ -849,7 +849,7 @@ static void OutStringVec(R_outpstream_t stream, SEXP s, HashTable* ref_table)
     R_assert(TYPEOF(s) == STRSXP);
 
 #ifdef WARN_ABOUT_NAMES_IN_PERSISTENT_STRINGS
-    SEXP names = Rf_getAttrib(s, R_NamesSymbol);
+    SEXP names = Rf_getAttrib(s, Symbols::NamesSymbol);
     if (names != R_NilValue)
 	Rf_warning(_("names in persistent strings are currently ignored"));
 #endif
@@ -2130,7 +2130,7 @@ SEXP R_SerializeInfo(R_inpstream_t stream)
 	nbuf[nelen] = '\0';
 	SET_VECTOR_ELT(ans, 4, Rf_mkString(nbuf));
     }
-    Rf_setAttrib(ans, R_NamesSymbol, names);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, names);
     UNPROTECT(2); /* ans, names */
 
     return ans;
@@ -3008,7 +3008,7 @@ static SEXP R_getVarsFromFrame(SEXP vars, SEXP env, SEXP forcesxp)
 	else ENSURE_NAMED(tmp); /* should not really be needed - LT */
 	SET_VECTOR_ELT(val, i, tmp);
     }
-    Rf_setAttrib(val, R_NamesSymbol, vars);
+    Rf_setAttrib(val, Symbols::NamesSymbol, vars);
     UNPROTECT(1);
 
     return val;

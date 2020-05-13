@@ -44,7 +44,9 @@
 #include <Print.h>
 #include "RBufferUtils.h"
 #include <vector>
+#include "rho/Symbol.hpp"
 
+using namespace rho;
 using namespace std;
 
 static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
@@ -117,7 +119,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = Rf_lang2(R_AsCharacterSymbol, xj));
+		PROTECT(call = Rf_lang2(Symbols::AsCharacterSymbol, xj));
 		SET_VECTOR_ELT(x, j, Rf_eval(call, env));
 		UNPROTECT(1);
 	    } else if (Rf_isSymbol(xj))
@@ -317,7 +319,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 	    /* formerly in R code: moved to C for speed */
 	    SEXP call, xj = VECTOR_ELT(x, j);
 	    if(OBJECT(xj)) { /* method dispatch */
-		PROTECT(call = Rf_lang2(R_AsCharacterSymbol, xj));
+		PROTECT(call = Rf_lang2(Symbols::AsCharacterSymbol, xj));
 		SET_VECTOR_ELT(x, j, Rf_eval(call, R_BaseEnv));
 		UNPROTECT(1);
 	    } else if (Rf_isSymbol(xj))
@@ -581,12 +583,12 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	    Rf_error(_("Impossible mode ( x )")); y = R_NilValue;/* -Wall */
 	}
     }
-    if((l = Rf_getAttrib(x, R_DimSymbol)) != R_NilValue) {
-	Rf_setAttrib(y, R_DimSymbol, l);
-	if((l = Rf_getAttrib(x, R_DimNamesSymbol)) != R_NilValue)
-	    Rf_setAttrib(y, R_DimNamesSymbol, l);
-    } else if((l = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue)
-	Rf_setAttrib(y, R_NamesSymbol, l);
+    if((l = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue) {
+	Rf_setAttrib(y, Symbols::DimSymbol, l);
+	if((l = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue)
+	    Rf_setAttrib(y, Symbols::DimNamesSymbol, l);
+    } else if((l = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+	Rf_setAttrib(y, Symbols::NamesSymbol, l);
 
     /* In case something else forgets to set Rf_PrintDefaults(), PR#14477 */
     R_print.scipen = scikeep;

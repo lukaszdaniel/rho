@@ -40,6 +40,7 @@
 
 using namespace std;
 using namespace rho;
+using namespace Symbols;
 
 // Implementation of ArgList::coerceTag() is in coerce.cpp
 
@@ -211,7 +212,7 @@ bool ArgList::has3Dots() const {
     return false;
 
   for (const ConsCell& cell : *list()) {
-    if (cell.car() == R_DotsSymbol)
+    if (cell.car() == Symbols::DotsSymbol)
       return true;
   }
   return false;

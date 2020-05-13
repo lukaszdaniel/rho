@@ -400,7 +400,7 @@ SEXP Rf_PairToVectorList(SEXP x)
 	    else
 		SET_STRING_ELT(xnames, i, PRINTNAME(TAG(xptr)));
 	}
-	Rf_setAttrib(xnew, R_NamesSymbol, xnames);
+	Rf_setAttrib(xnew, Symbols::NamesSymbol, xnames);
 	UNPROTECT(1);
     }
     Rf_copyMostAttrib(x, xnew);
@@ -416,7 +416,7 @@ SEXP Rf_VectorToPairList(SEXP x)
     len = Rf_length(x);
     PROTECT(x);
     PROTECT(xnew = Rf_allocList(len)); /* limited to int */
-    PROTECT(xnames = Rf_getAttrib(x, R_NamesSymbol));
+    PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol));
     named = (xnames != R_NilValue);
     xptr = xnew;
     for (i = 0; i < len; i++) {
@@ -888,9 +888,9 @@ static SEXP coerceToVectorList(SEXP v)
     default:
 	UNIMPLEMENTED_TYPE("coerceToVectorList", v);
     }
-    tmp = Rf_getAttrib(v, R_NamesSymbol);
+    tmp = Rf_getAttrib(v, Symbols::NamesSymbol);
     if (tmp != R_NilValue)
-	Rf_setAttrib(ans, R_NamesSymbol, tmp);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, tmp);
     UNPROTECT(1);
     return (ans);
 }
@@ -937,9 +937,9 @@ static SEXP coerceToPairList(SEXP v)
 	}
 	ansp = CDR(ansp);
     }
-    ansp = Rf_getAttrib(v, R_NamesSymbol);
+    ansp = Rf_getAttrib(v, Symbols::NamesSymbol);
     if (ansp != R_NilValue)
-	Rf_setAttrib(ans, R_NamesSymbol, ansp);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, ansp);
     UNPROTECT(1);
     return (ans);
 }
@@ -1019,7 +1019,7 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
 	for (vp = v; vp != R_NilValue; vp = CDR(vp), i++)
 	    if (TAG(vp) != R_NilValue)
 		SET_STRING_ELT(names, i, PRINTNAME(TAG(vp)));
-	Rf_setAttrib(rval, R_NamesSymbol, names);
+	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     }
     UNPROTECT(1);
     return rval;
@@ -1131,9 +1131,9 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 	      Rf_type2char(type));
 
     if (warn) Rf_CoercionWarning(warn);
-    names = Rf_getAttrib(v, R_NamesSymbol);
+    names = Rf_getAttrib(v, Symbols::NamesSymbol);
     if (names != R_NilValue)
-	Rf_setAttrib(rval, R_NamesSymbol, names);
+	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     UNPROTECT(1);
     return rval;
 }
@@ -1375,7 +1375,7 @@ SEXP Rf_asCharacterFactor(SEXP x)
 	Rf_error(_("attempting to coerce non-factor"));
 
     R_xlen_t i, n = XLENGTH(x);
-    SEXP labels = Rf_getAttrib(x, R_LevelsSymbol);
+    SEXP labels = Rf_getAttrib(x, Symbols::LevelsSymbol);
     if (TYPEOF(labels) != STRSXP)
 	Rf_error(_("malformed factor"));
     int nl = LENGTH(labels);
@@ -1527,7 +1527,7 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
     n = Rf_length(arglist);
     if (n < 1)
 	Rf_error(_("argument must have length at least 1"));
-    names = Rf_getAttrib(arglist, R_NamesSymbol);
+    names = Rf_getAttrib(arglist, Symbols::NamesSymbol);
     PROTECT(pargs = args = Rf_allocList(n - 1));
     for (i = 0; i < n - 1; i++) {
 	SETCAR(pargs, VECTOR_ELT(arglist, i));
@@ -1567,7 +1567,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	{
 	    if(0 == (n = Rf_length(args)))
 		Rf_errorcall(call, _("invalid length 0 argument"));
-	    names = Rf_getAttrib(args, R_NamesSymbol);
+	    names = Rf_getAttrib(args, Symbols::NamesSymbol);
 	    GCStackRoot<PairList> tl(PairList::make(n - 1));
 	    PROTECT(ap = ans = new CachingExpression(nullptr, tl));
 	    for (i = 0; i < n; i++) {
@@ -1583,7 +1583,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	{
 	    if(0 == (n = Rf_length(args)))
 		Rf_errorcall(call, _("invalid length 0 argument"));
-	    names = Rf_getAttrib(args, R_NamesSymbol);
+	    names = Rf_getAttrib(args, Symbols::NamesSymbol);
 	    GCStackRoot<PairList> tl(PairList::make(n - 1));
 	    PROTECT(ap = ans = new CachingExpression(nullptr, tl));
 	    for (i = 0; i < n; i++) {
@@ -1945,7 +1945,7 @@ SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunct
     if (LOGICAL0(ans)[0] && ATTRIB(x_) != R_NilValue) {
 	a = ATTRIB(x_);
 	while(a != R_NilValue) {
-	    if (TAG(a) != R_NamesSymbol) {
+	    if (TAG(a) != Symbols::NamesSymbol) {
 		LOGICAL0(ans)[0] = Rboolean(0);
 		break;
 	    }
@@ -1989,20 +1989,20 @@ static R_INLINE void copyDimAndNames(SEXP x, SEXP ans)
     if (Rf_isVector(x)) {
 	/* PROTECT/UNPROTECT are probably not needed here */
 	SEXP dims, names;
-	PROTECT(dims = Rf_getAttrib(x, R_DimSymbol));
+	PROTECT(dims = Rf_getAttrib(x, Symbols::DimSymbol));
 	if (dims != R_NilValue)
-	    Rf_setAttrib(ans, R_DimSymbol, dims);
+	    Rf_setAttrib(ans, Symbols::DimSymbol, dims);
 	UNPROTECT(1);
 	if (Rf_isArray(x)) {
-	    PROTECT(names = Rf_getAttrib(x, R_DimNamesSymbol));
+	    PROTECT(names = Rf_getAttrib(x, Symbols::DimNamesSymbol));
 	    if (names != R_NilValue)
-		Rf_setAttrib(ans, R_DimNamesSymbol, names);
+		Rf_setAttrib(ans, Symbols::DimNamesSymbol, names);
 	    UNPROTECT(1);
 	}
 	else {
-	    PROTECT(names = Rf_getAttrib(x, R_NamesSymbol));
+	    PROTECT(names = Rf_getAttrib(x, Symbols::NamesSymbol));
 	    if (names != R_NilValue)
-		Rf_setAttrib(ans, R_NamesSymbol, names);
+		Rf_setAttrib(ans, Symbols::NamesSymbol, names);
 	    UNPROTECT(1);
 	}
     }
@@ -2273,11 +2273,11 @@ SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunct
     ans = Rf_allocVector(LGLSXP, n);
     int *pa = LOGICAL(ans);
     if (Rf_isVector(x)) {
-	dims = Rf_getAttrib(x, R_DimSymbol);
+	dims = Rf_getAttrib(x, Symbols::DimSymbol);
 	if (Rf_isArray(x))
-	    names = Rf_getAttrib(x, R_DimNamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	else
-	    names = Rf_getAttrib(x, R_NamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::NamesSymbol);
     }
     else dims = names = R_NilValue;
     switch (TYPEOF(x)) {
@@ -2307,12 +2307,12 @@ SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunct
 		     Rf_type2char(TYPEOF(x)));
     }
     if (dims != R_NilValue)
-	Rf_setAttrib(ans, R_DimSymbol, dims);
+	Rf_setAttrib(ans, Symbols::DimSymbol, dims);
     if (names != R_NilValue) {
 	if (Rf_isArray(x))
-	    Rf_setAttrib(ans, R_DimNamesSymbol, names);
+	    Rf_setAttrib(ans, Symbols::DimNamesSymbol, names);
 	else
-	    Rf_setAttrib(ans, R_NamesSymbol, names);
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, names);
     }
     return ans;
 }
@@ -2332,11 +2332,11 @@ SEXP attribute_hidden do_isinfinite(/*const*/ Expression* call, const BuiltInFun
     ans = Rf_allocVector(LGLSXP, n);
     int *pa = LOGICAL(ans);
     if (Rf_isVector(x)) {
-	dims = Rf_getAttrib(x, R_DimSymbol);
+	dims = Rf_getAttrib(x, Symbols::DimSymbol);
 	if (Rf_isArray(x))
-	    names = Rf_getAttrib(x, R_DimNamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::DimNamesSymbol);
 	else
-	    names = Rf_getAttrib(x, R_NamesSymbol);
+	    names = Rf_getAttrib(x, Symbols::NamesSymbol);
     }
     else	dims = names = R_NilValue;
     switch (TYPEOF(x)) {
@@ -2373,12 +2373,12 @@ SEXP attribute_hidden do_isinfinite(/*const*/ Expression* call, const BuiltInFun
 		     Rf_type2char(TYPEOF(x)));
     }
     if (!Rf_isNull(dims))
-	Rf_setAttrib(ans, R_DimSymbol, dims);
+	Rf_setAttrib(ans, Symbols::DimSymbol, dims);
     if (!Rf_isNull(names)) {
 	if (Rf_isArray(x))
-	    Rf_setAttrib(ans, R_DimNamesSymbol, names);
+	    Rf_setAttrib(ans, Symbols::DimNamesSymbol, names);
 	else
-	    Rf_setAttrib(ans, R_NamesSymbol, names);
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, names);
     }
     return ans;
 }
@@ -2436,7 +2436,7 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
 	Rf_error(_("'envir' must be an environment"));
 
     n = Rf_length(args);
-    names = Rf_getAttrib(args, R_NamesSymbol);
+    names = Rf_getAttrib(args, Symbols::NamesSymbol);
 
     GCStackRoot<PairList> tl(PairList::make(n));
     PROTECT(c = call = new Expression(nullptr, tl));
@@ -2526,13 +2526,13 @@ SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 	   p is the current last element
 	   h is the element currently being processed
 	 */
-	if (CAR(el) == R_DotsSymbol) {
+	if (CAR(el) == Symbols::DotsSymbol) {
 	    if (rho == R_NilValue)
 		h = R_UnboundValue;	/* so there is no substitution below */
 	    else
 		h = Rf_findVarInFrame3(rho, CAR(el), TRUE);
 	    if (h == R_UnboundValue)
-		h = CONS(R_DotsSymbol, R_NilValue);
+		h = CONS(Symbols::DotsSymbol, R_NilValue);
 	    else if (h == R_NilValue  || h == R_MissingArg)
 		h = R_NilValue;
 	    else if (TYPEOF(h) == DOTSXP)
@@ -2668,7 +2668,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
     int nProtect = 0;
     // use of zero-length vector used to be documented.
     if(!Rf_length(value)) { // usually NULL
-	Rf_setAttrib(obj, R_ClassSymbol, value);
+	Rf_setAttrib(obj, Symbols::ClassSymbol, value);
 	if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	  do_unsetS4(obj, value);
 	return obj;
@@ -2681,7 +2681,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	nProtect += 2;
     }
     if(Rf_length(value) > 1) {
-	Rf_setAttrib(obj, R_ClassSymbol, value);
+	Rf_setAttrib(obj, Symbols::ClassSymbol, value);
 	if(IS_S4_OBJECT(obj)) /*  multiple strings only valid for S3 objects */
 	  do_unsetS4(obj, value);
     }
@@ -2701,7 +2701,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	/*  assigning type as a class deletes an explicit class attribute. */
 	if(valueType != (SEXPTYPE)-1) {
             SEXPTYPE valueType = classTable[whichType].sexp;
-	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      do_unsetS4(obj, value);
 	    if(classTable[whichType].canChange) {
@@ -2714,7 +2714,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	    /* else, leave alone */
 	}
 	else if(streql("numeric", valueString)) {
-	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      do_unsetS4(obj, value);
 	    switch(TYPEOF(obj)) {
@@ -2726,23 +2726,23 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	/* the next 2 special cases mirror the special code in
 	 * R_data_class */
 	else if(streql("matrix", valueString)) {
-	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) != 2)
+	    if(Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)) != 2)
 		Rf_error(_("invalid to set the class to matrix unless the dimension attribute is of length 2 (was %d)"),
-		 Rf_length(Rf_getAttrib(obj, R_DimSymbol)));
-	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
+		 Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)));
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj))
 	      do_unsetS4(obj, value);
 	}
 	else if(streql("array", valueString)) {
-	    if(Rf_length(Rf_getAttrib(obj, R_DimSymbol)) <= 0)
+	    if(Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)) <= 0)
 		Rf_error(_("cannot set class to \"array\" unless the dimension attribute has length > 0"));
-	    Rf_setAttrib(obj, R_ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      UNSET_S4_OBJECT(obj);
 	}
 	else { /* set the class but don't do the coercion; that's
 		  supposed to be done by an as() method */
-	    Rf_setAttrib(obj, R_ClassSymbol, value);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, value);
 	}
     }
     UNPROTECT(nProtect);

@@ -170,7 +170,7 @@ void ArgMatcher::matchWithCache(const ArgList& supplied,
 	    // This assumes that random access in an ArgList is O(1).
 	    callback->matchedArgument(fdata, sindex, supplied.get(sindex));
 	}
-	else if (fdata.symbol != R_DotsSymbol) {
+	else if (fdata.symbol != Symbols::DotsSymbol) {
 	    callback->defaultValue(fdata);
 	}
 	else {

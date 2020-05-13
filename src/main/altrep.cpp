@@ -28,6 +28,7 @@
 #include <float.h> /* for DBL_DIG */
 #include <Print.h> /* for R_print */
 #include <R_ext/Itermacros.h>
+#include "rho/WeakRef.hpp"
 
 
 /**
@@ -677,7 +678,7 @@ static altstring_methods_t altstring_default_methods = {
     } while (FALSE)
 
 #define MAKE_CLASS(var, type) do {				\
-	var = Rf_allocVector(RAWSXP,sizeof(type##_methods_t));	\
+	var = Rf_allocVector(RAWSXP, sizeof(type##_methods_t));	\
 	R_PreserveObject(var);					\
 	INIT_CLASS(var, type);					\
     } while (FALSE)
@@ -706,7 +707,7 @@ make_altrep_class(int type, const char *cname, const char *pname, DllInfo *dll)
 /*  Using macros like this makes it easier to add new methods, but
     makes searching for source harder. Probably a good idea on
     balance though. */
-#define DEFINE_CLASS_CONSTRUCTOR(cls, type) \
+#define DEFINE_CLASS_CONSTRUCTOR(cls, type)			\
     R_altrep_class_t R_make_##cls##_class(const char *cname,	\
 					  const char *pname,	\
 					  DllInfo *dll)		\
@@ -902,7 +903,7 @@ static R_INLINE R_xlen_t compact_intseq_Length(SEXP x)
 static void *compact_intseq_Dataptr(SEXP x, Rboolean writeable)
 {
     if (COMPACT_SEQ_EXPANDED(x) == R_NilValue) {
-	/* no need to re-run if expended data exists */
+	/* no need to re-run if expanded data exists */
 	PROTECT(x);
 	SEXP info = COMPACT_SEQ_INFO(x);
 	int n = COMPACT_INTSEQ_INFO_LENGTH(info);
@@ -1282,7 +1283,7 @@ static SEXP new_compact_realseq(R_xlen_t n, double n1, double inc)
 
 SEXP attribute_hidden R_compact_intrange(R_xlen_t n1, R_xlen_t n2)
 {
-    R_xlen_t n = n1 <= n2 ? n2 - n1 + 1 : n1 - n2 + 1;
+    R_xlen_t n = std::abs(n2 - n1) + 1;
 
     if (n1 <= INT_MIN || n1 > INT_MAX || n2 <= INT_MIN || n2 > INT_MAX)
 	return new_compact_realseq(n, n1, n1 <= n2 ? 1 : -1);
@@ -1735,7 +1736,7 @@ static void finalize_mmap_objects()
 
 static SEXP mmap_Serialized_state(SEXP x)
 {
-    /* If serOK is false then serialize as a regular typed vector. If
+    /* If serOK is FALSE then serialize as a regular typed vector. If
        serOK is true, then serialize information to allow the mmap to
        be reconstructed. The original file name is serialized; it will
        be expanded again when unserializing, in a context where the
@@ -2006,10 +2007,9 @@ SEXP attribute_hidden do_mmap_file(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXPTYPE type = REALSXP;
     if (stype != R_NilValue) {
 	const char *typestr = R_CHAR(Rf_asChar(stype));
-	if (strcmp(typestr, "double") == 0)
+	if (streql(typestr, "double"))
 	    type = REALSXP;
-	else if (strcmp(typestr, "integer") == 0 ||
-		 strcmp(typestr, "int") == 0)
+	else if (streql(typestr, "integer") || streql(typestr, "int"))
 	    type = INTSXP;
 	else
 	    Rf_error("type '%s' is not supported", typestr);
@@ -2043,7 +2043,7 @@ SEXP attribute_hidden do_munmap_file(SEXP call, SEXP op, SEXP args, SEXP env)
     /* using the finalizer is a cheat to avoid yet another #ifdef Windows */
     SEXP eptr = MMAP_EPTR(x);
     errno = 0;
-    R_RunWeakRefFinalizer(R_ExternalPtrTag(eptr));
+    rho::WeakRef::R_RunWeakRefFinalizer(R_ExternalPtrTag(eptr));
     if (errno)
 	Rf_error("munmap: %s", strerror(errno));
     return R_NilValue;
@@ -2065,7 +2065,7 @@ static R_altrep_class_t wrap_real_class;
 static R_altrep_class_t wrap_string_class;
 
 /* Wrapper objects are ALTREP objects designed to hold the attributes
-   of a potentially larte object and/or meta data for the object. */
+   of a potentially large object and/or meta data for the object. */
 
 #define WRAPPER_WRAPPED(x) R_altrep_data1(x)
 #define WRAPPER_SET_WRAPPED(x, v) R_set_altrep_data1(x, v)
@@ -2096,8 +2096,8 @@ static SEXP wrapper_Duplicate(SEXP x, Rboolean deep)
 {
     SEXP data = WRAPPER_WRAPPED(x);
 
-    /* For a deel copy, duplicate the data. */
-    /* For a shallow copy, mark as immutable in teh NAMED word; with
+    /* For a deep copy, duplicate the data. */
+    /* For a shallow copy, mark as immutable in the NAMED world; with
        reference counting the reference count will be incremented when
        the data is installed in the new wrapper object. */
     if (deep)
@@ -2150,7 +2150,7 @@ static void *wrapper_Dataptr(SEXP x, Rboolean writeable)
     SEXP data = WRAPPER_WRAPPED(x);
 
     /* If the data might be shared and a writeable pointer is
-       requested, then the data needst o be duplicated now. */
+       requested, then the data needs to be duplicated now. */
     if (writeable && MAYBE_SHARED(data)) {
 	PROTECT(x);
 	WRAPPER_SET_WRAPPED(x, Rf_shallow_duplicate(data));

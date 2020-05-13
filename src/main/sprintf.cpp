@@ -39,6 +39,10 @@
 #ifdef Win32
 #include <trioremap.h>
 #endif
+#include "rho/Symbol.hpp"
+
+using namespace rho;
+
 
 #define MAXLINE MAXELTSIZE
 #define MAXNARGS 100
@@ -341,7 +345,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
 				    size_t nc = strlen(outputString);
 				    char *z = Calloc(nc+1, char);
 				    strcpy(z, outputString);
-				    PROTECT(tmp = Rf_lang2(R_AsCharacterSymbol, _this));
+				    PROTECT(tmp = Rf_lang2(Symbols::AsCharacterSymbol, _this));
 
 				    COERCE_THIS_TO_A
 				    strcpy(outputString, z);

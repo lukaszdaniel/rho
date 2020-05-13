@@ -289,8 +289,8 @@ int selectDevice(int devNum)
 	R_CurrentDevice = devNum;
 
 	/* maintain .Device */
-	Rf_gsetVar(R_DeviceSymbol,
-		Rf_elt(getSymbolValue(R_DevicesSymbol), devNum),
+	Rf_gsetVar(Symbols::DotDeviceSymbol,
+		Rf_elt(getSymbolValue(Symbols::DotDevicesSymbol), devNum),
 		R_BaseEnv);
 
 	gdd = GEcurrentDevice(); /* will start a device if current is null */
@@ -322,7 +322,7 @@ void removeDevice(int devNum, Rboolean findNext)
 
 	if(findNext) {
 	    /* maintain .Devices */
-	    PROTECT(s = getSymbolValue(R_DevicesSymbol));
+	    PROTECT(s = getSymbolValue(Symbols::DotDevicesSymbol));
 	    for (i = 0; i < devNum; i++) s = CDR(s);
 	    SETCAR(s, Rf_mkString(""));
 	    UNPROTECT(1);
@@ -331,8 +331,8 @@ void removeDevice(int devNum, Rboolean findNext)
 	    if (devNum == R_CurrentDevice) {
 		R_CurrentDevice = nextDevice(R_CurrentDevice);
 		/* maintain .Device */
-		Rf_gsetVar(R_DeviceSymbol,
-			Rf_elt(getSymbolValue(R_DevicesSymbol), R_CurrentDevice),
+		Rf_gsetVar(Symbols::DotDeviceSymbol,
+			Rf_elt(getSymbolValue(Symbols::DotDevicesSymbol), R_CurrentDevice),
 			R_BaseEnv);
 
 		/* activate new current device */
@@ -422,7 +422,7 @@ void GEaddDevice(pGEDevDesc gdd)
     SEXP s, t;
     pGEDevDesc oldd;
 
-    PROTECT(s = getSymbolValue(R_DevicesSymbol));
+    PROTECT(s = getSymbolValue(Symbols::DotDevicesSymbol));
 
     if (!NoDevices())  {
 	oldd = GEcurrentDevice();
@@ -454,7 +454,7 @@ void GEaddDevice(pGEDevDesc gdd)
     if(gdd->dev->activate) gdd->dev->activate(gdd->dev);
 
     /* maintain .Devices (.Device has already been set) */
-    t = PROTECT(Rf_duplicate(getSymbolValue(R_DeviceSymbol)));
+    t = PROTECT(Rf_duplicate(getSymbolValue(Symbols::DotDeviceSymbol)));
     if (appnd)
 	SETCDR(s, CONS(t, R_NilValue));
     else
@@ -476,7 +476,7 @@ void GEaddDevice(pGEDevDesc gdd)
 /* convenience wrappers */
 void GEaddDevice2(pGEDevDesc gdd, const char *name)
 {
-    Rf_gsetVar(R_DeviceSymbol, Rf_mkString(name), R_BaseEnv);
+    Rf_gsetVar(Symbols::DotDeviceSymbol, Rf_mkString(name), R_BaseEnv);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
 }
@@ -488,7 +488,7 @@ void GEaddDevice2f(pGEDevDesc gdd, const char *name, const char *file)
       SEXP s_filepath = Rf_install("filepath");
       Rf_setAttrib(f, s_filepath, Rf_mkString(file));
     }
-    Rf_gsetVar(R_DeviceSymbol, f, R_BaseEnv);
+    Rf_gsetVar(Symbols::DotDeviceSymbol, f, R_BaseEnv);
     UNPROTECT(1);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
@@ -537,9 +537,9 @@ void attribute_hidden Rf_InitGraphics(void)
 
     /* init .Device and .Devices */
     SEXP s = PROTECT(Rf_mkString("null device"));
-    Rf_gsetVar(R_DeviceSymbol, s, R_BaseEnv);
+    Rf_gsetVar(Symbols::DotDeviceSymbol, s, R_BaseEnv);
     s = PROTECT(Rf_mkString("null device"));
-    Rf_gsetVar(R_DevicesSymbol, CONS(s, R_NilValue), R_BaseEnv);
+    Rf_gsetVar(Symbols::DotDevicesSymbol, CONS(s, R_NilValue), R_BaseEnv);
     UNPROTECT(2);
 }
 

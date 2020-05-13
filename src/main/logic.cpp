@@ -298,7 +298,7 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 	return(dispatched.second);
     }
 
-    ans = Rf_matchArgExact(R_NaRmSymbol, &args);
+    ans = Rf_matchArgExact(Symbols::NaRmSymbol, &args);
     narm = Rf_asLogical(ans);
 
     for (s = args; s != R_NilValue; s = CDR(s)) {

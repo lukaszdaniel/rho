@@ -1164,8 +1164,10 @@ int	R_ShowFiles(int, const char **, const char **, const char *,
 int     R_EditFiles(int, const char **, const char **, const char *);
 int	R_ChooseFile(int, char *, int);
 char	*R_HomeDir(void);
-Rboolean R_FileExists(const char *);
-Rboolean R_HiddenFile(const char *);
+#ifdef __cplusplus
+bool R_FileExists(const char *);
+bool R_HiddenFile(const char *);
+#endif
 double	R_FileMtime(const char *);
 int	R_GetFDLimit();
 int	R_EnsureFDLimit(int);

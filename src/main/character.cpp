@@ -272,12 +272,12 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
 	s_[i] = R_nchar(sxi, type_, Rboolean(allowNA), Rboolean(keepNA), msg_i);
     }
     R_FreeStringBufferL(&cbuff);
-    if ((d = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue)
-	Rf_setAttrib(s, R_NamesSymbol, d);
-    if ((d = Rf_getAttrib(x, R_DimSymbol)) != R_NilValue)
-	Rf_setAttrib(s, R_DimSymbol, d);
-    if ((d = Rf_getAttrib(x, R_DimNamesSymbol)) != R_NilValue)
-	Rf_setAttrib(s, R_DimNamesSymbol, d);
+    if ((d = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+	Rf_setAttrib(s, Symbols::NamesSymbol, d);
+    if ((d = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue)
+	Rf_setAttrib(s, Symbols::DimSymbol, d);
+    if ((d = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue)
+	Rf_setAttrib(s, Symbols::DimNamesSymbol, d);
     UNPROTECT(2);
     return s;
 }
@@ -1694,8 +1694,8 @@ SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, ROb
     }
     /* Copy names if not recycled. */
     if((ns == nx) &&
-       (d = Rf_getAttrib(x, R_NamesSymbol)) != R_NilValue)
-	Rf_setAttrib(s, R_NamesSymbol, d);
+       (d = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+	Rf_setAttrib(s, Symbols::NamesSymbol, d);
     UNPROTECT(1);
     return s;
 }

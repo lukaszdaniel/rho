@@ -400,7 +400,7 @@ SEXP fixup_NaRm(SEXP args)
     /* Need to make sure na.rm is last and exists */
     GCStackRoot<> na_value(Rf_ScalarLogical(FALSE));
     for(SEXP a = args, prev = R_NilValue; a != R_NilValue; a = CDR(a)) {
-	if(TAG(a) == R_NaRmSymbol) {
+	if(TAG(a) == Symbols::NaRmSymbol) {
 	    if(CDR(a) == R_NilValue) return args;
 	    na_value = CAR(a);
 	    if(prev == R_NilValue) args = CDR(a);
@@ -411,7 +411,7 @@ SEXP fixup_NaRm(SEXP args)
 
     t = CONS(na_value, R_NilValue);
     PROTECT(t);
-    SET_TAG(t, R_NaRmSymbol);
+    SET_TAG(t, Symbols::NaRmSymbol);
     if (args == R_NilValue)
 	args = t;
     else {
@@ -534,7 +534,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     REprintf("C do_summary(op%s, *): did NOT dispatch\n", PRIMNAME(op));
 #endif
 
-    ans = Rf_matchArgExact(R_NaRmSymbol, &args);
+    ans = Rf_matchArgExact(Symbols::NaRmSymbol, &args);
     Rboolean int_a, real_a, complex_a,
 	narm = Rboolean(Rf_asLogical(ans)),
 	empty = TRUE,// <==> only zero-length arguments, or NA with na.rm=T
@@ -973,11 +973,11 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 	    REAL(ans)[0] = (double)indx + 1;
 	else
 	    INTEGER(ans)[0] = (int)indx + 1;
-	if (Rf_getAttrib(sx, R_NamesSymbol) != R_NilValue) { /* preserve names */
+	if (Rf_getAttrib(sx, Symbols::NamesSymbol) != R_NilValue) { /* preserve names */
 	    SEXP ansnam;
 	    PROTECT(ansnam =
-		    Rf_ScalarString(STRING_ELT(Rf_getAttrib(sx, R_NamesSymbol), indx)));
-	    Rf_setAttrib(ans, R_NamesSymbol, ansnam);
+		    Rf_ScalarString(STRING_ELT(Rf_getAttrib(sx, Symbols::NamesSymbol), indx)));
+	    Rf_setAttrib(ans, Symbols::NamesSymbol, ansnam);
 	    UNPROTECT(1);
 	}
     }
@@ -1008,13 +1008,13 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     PROTECT(ans = Rf_allocVector(INTSXP, len));
     if(len) memcpy(INTEGER(ans), buf, sizeof(int) * len);
 
-    if ((v_nms = Rf_getAttrib(v, R_NamesSymbol)) != R_NilValue) {
+    if ((v_nms = Rf_getAttrib(v, Symbols::NamesSymbol)) != R_NilValue) {
 	PROTECT(ans_nms = Rf_allocVector(STRSXP, len));
 	int *pa = INTEGER(ans);
 	for (i = 0; i < len; i++) {
 	    SET_STRING_ELT(ans_nms, i, STRING_ELT(v_nms, pa[i] - 1));
 	}
-	Rf_setAttrib(ans, R_NamesSymbol, ans_nms);
+	Rf_setAttrib(ans, Symbols::NamesSymbol, ans_nms);
 	UNPROTECT(1);
     }
     UNPROTECT(1);

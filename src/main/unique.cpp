@@ -883,7 +883,7 @@ static SEXP match_transform(SEXP s, SEXP env)
 	else if(Rf_inherits(s, "POSIXlt")) { /* and maybe more classes in the future:
 					   * Call R's (generic)	 as.character(s) : */
 	    SEXP call, r;
-	    PROTECT(call = Rf_lang2(R_AsCharacterSymbol, s));
+	    PROTECT(call = Rf_lang2(Symbols::AsCharacterSymbol, s));
 	    r = Rf_eval(call, env);
 	    UNPROTECT(1);
 	    return r;
@@ -1314,7 +1314,7 @@ static SEXP StripUnmatched(SEXP s)
     if (CAR(s) == R_MissingArg) {
 	return StripUnmatched(CDR(s));
     }
-    else if (CAR(s) == R_DotsSymbol ) {
+    else if (CAR(s) == Symbols::DotsSymbol ) {
 	return StripUnmatched(CDR(s));
     }
     else {
@@ -1353,7 +1353,7 @@ static SEXP subDots(SEXP rho)
     SEXP rval, dots, a, b, t;
     int len,i;
 
-    dots = Rf_findVar(R_DotsSymbol, rho);
+    dots = Rf_findVar(Symbols::DotsSymbol, rho);
 
     if (dots == R_UnboundValue)
 	Rf_error(_("... used in a situation where it does not exist"));
@@ -1420,21 +1420,21 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 
     t2 = R_MissingArg;
     for (t1=actuals ; t1!=R_NilValue ; t1 = CDR(t1) ) {
-	if (CAR(t1) == R_DotsSymbol) {
+	if (CAR(t1) == Symbols::DotsSymbol) {
 	    t2 = subDots(sysp);
 	    break;
 	}
     }
     /* now to splice t2 into the correct spot in actuals */
     if (t2 != R_MissingArg ) {	/* so we did something above */
-	if( CAR(actuals) == R_DotsSymbol ) {
+	if( CAR(actuals) == Symbols::DotsSymbol ) {
 	    UNPROTECT(1);
 	    actuals = Rf_listAppend(t2, CDR(actuals));
 	    PROTECT(actuals);
 	}
 	else {
 	    for(t1=actuals; t1!=R_NilValue; t1=CDR(t1)) {
-		if( CADR(t1) == R_DotsSymbol ) {
+		if( CADR(t1) == Symbols::DotsSymbol ) {
 		    tail = CDDR(t1);
 		    SETCDR(t1, t2);
 		    Rf_listAppend(actuals,tail);
@@ -1443,14 +1443,14 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 	    }
 	}
     } else { /* get rid of it */
-	if( CAR(actuals) == R_DotsSymbol ) {
+	if( CAR(actuals) == Symbols::DotsSymbol ) {
 	    UNPROTECT(1);
 	    actuals = CDR(actuals);
 	    PROTECT(actuals);
 	}
 	else {
 	    for(t1=actuals; t1!=R_NilValue; t1=CDR(t1)) {
-		if( CADR(t1) == R_DotsSymbol ) {
+		if( CADR(t1) == Symbols::DotsSymbol ) {
 		    tail = CDDR(t1);
 		    SETCDR(t1, tail);
 		    break;
@@ -1559,9 +1559,9 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 
     if (TYPEOF(rn) != STRSXP) Rf_error("row names are not character");
     SEXP dn = Rf_allocVector(VECSXP, 2), dn2, dn3;
-    Rf_setAttrib(ans, R_DimNamesSymbol, dn);
+    Rf_setAttrib(ans, Symbols::DimNamesSymbol, dn);
     SET_VECTOR_ELT(dn, 0, rn);
-    dn2 = Rf_getAttrib(x, R_DimNamesSymbol);
+    dn2 = Rf_getAttrib(x, Symbols::DimNamesSymbol);
     if(Rf_length(dn2) >= 2 &&
        !Rf_isNull(dn3 = VECTOR_ELT(dn2, 1))) SET_VECTOR_ELT(dn, 1, dn3);
 
@@ -1632,10 +1632,10 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    Rf_error(_("this cannot happen"));
 	}
     }
-    Rf_namesgets(ans, Rf_getAttrib(x, R_NamesSymbol));
+    Rf_namesgets(ans, Rf_getAttrib(x, Symbols::NamesSymbol));
 
     if (TYPEOF(rn) != STRSXP) Rf_error("row names are not character");
-    Rf_setAttrib(ans, R_RowNamesSymbol, rn);
+    Rf_setAttrib(ans, Symbols::RowNamesSymbol, rn);
     Rf_classgets(ans, Rf_mkString("data.frame"));
 
     UNPROTECT(3); /* HashTable, matches, ans */

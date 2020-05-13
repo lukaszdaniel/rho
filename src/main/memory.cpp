@@ -434,7 +434,7 @@ SEXP attribute_hidden do_memoryprofile(/*const*/ Expression* call, const BuiltIn
 	INTEGER(ans)[i] = 0;
 	SET_STRING_ELT(nms, i, Rf_type2str(SEXPTYPE(i > LGLSXP? i+2 : i)));
     }
-    Rf_setAttrib(ans, R_NamesSymbol, nms);
+    Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     // Just return a vector of zeroes in rho.
     UNPROTECT(2);
     return ans;

@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.4.1.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2019 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -48,7 +48,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.4.1"
+#define YYBISON_VERSION "3.5.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -69,12 +69,12 @@
 #define yyerror         gram_error
 #define yydebug         gram_debug
 #define yynerrs         gram_nerrs
-
 #define yylval          gram_lval
 #define yychar          gram_char
 #define yylloc          gram_lloc
 
 /* First part of user prologue.  */
+#line 1 "./gram.y"
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -390,7 +390,17 @@ static int	xxvalue(SEXP, int, YYLTYPE *);
 #define YYSTYPE		SEXP
 
 
+#line 394 "y.tab.c"
 
+# ifndef YY_CAST
+#  ifdef __cplusplus
+#   define YY_CAST(Type, Val) static_cast<Type> (Val)
+#   define YY_REINTERPRET_CAST(Type, Val) reinterpret_cast<Type> (Val)
+#  else
+#   define YY_CAST(Type, Val) ((Type) (Val))
+#   define YY_REINTERPRET_CAST(Type, Val) ((Type) (Val))
+#  endif
+# endif
 # ifndef YY_NULLPTR
 #  if defined __cplusplus
 #   if 201103L <= __cplusplus
@@ -561,28 +571,75 @@ int gram_parse (void);
 # undef short
 #endif
 
-#ifdef YYTYPE_UINT8
-typedef YYTYPE_UINT8 yytype_uint8;
-#else
-typedef unsigned char yytype_uint8;
+/* On compilers that do not define __PTRDIFF_MAX__ etc., make sure
+   <limits.h> and (if available) <stdint.h> are included
+   so that the code can choose integer types of a good width.  */
+
+#ifndef __PTRDIFF_MAX__
+# include <limits.h> /* INFRINGES ON USER NAME SPACE */
+# if defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#  include <stdint.h> /* INFRINGES ON USER NAME SPACE */
+#  define YY_STDINT_H
+# endif
 #endif
 
-#ifdef YYTYPE_INT8
-typedef YYTYPE_INT8 yytype_int8;
+/* Narrow types that promote to a signed type and that can represent a
+   signed or unsigned integer of at least N bits.  In tables they can
+   save space and decrease cache pressure.  Promoting to a signed type
+   helps avoid bugs in integer arithmetic.  */
+
+#ifdef __INT_LEAST8_MAX__
+typedef __INT_LEAST8_TYPE__ yytype_int8;
+#elif defined YY_STDINT_H
+typedef int_least8_t yytype_int8;
 #else
 typedef signed char yytype_int8;
 #endif
 
-#ifdef YYTYPE_UINT16
-typedef YYTYPE_UINT16 yytype_uint16;
-#else
-typedef unsigned short yytype_uint16;
-#endif
-
-#ifdef YYTYPE_INT16
-typedef YYTYPE_INT16 yytype_int16;
+#ifdef __INT_LEAST16_MAX__
+typedef __INT_LEAST16_TYPE__ yytype_int16;
+#elif defined YY_STDINT_H
+typedef int_least16_t yytype_int16;
 #else
 typedef short yytype_int16;
+#endif
+
+#if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST8_TYPE__ yytype_uint8;
+#elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST8_MAX <= INT_MAX)
+typedef uint_least8_t yytype_uint8;
+#elif !defined __UINT_LEAST8_MAX__ && UCHAR_MAX <= INT_MAX
+typedef unsigned char yytype_uint8;
+#else
+typedef short yytype_uint8;
+#endif
+
+#if defined __UINT_LEAST16_MAX__ && __UINT_LEAST16_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST16_TYPE__ yytype_uint16;
+#elif (!defined __UINT_LEAST16_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST16_MAX <= INT_MAX)
+typedef uint_least16_t yytype_uint16;
+#elif !defined __UINT_LEAST16_MAX__ && USHRT_MAX <= INT_MAX
+typedef unsigned short yytype_uint16;
+#else
+typedef int yytype_uint16;
+#endif
+
+#ifndef YYPTRDIFF_T
+# if defined __PTRDIFF_TYPE__ && defined __PTRDIFF_MAX__
+#  define YYPTRDIFF_T __PTRDIFF_TYPE__
+#  define YYPTRDIFF_MAXIMUM __PTRDIFF_MAX__
+# elif defined PTRDIFF_MAX
+#  ifndef ptrdiff_t
+#   include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  endif
+#  define YYPTRDIFF_T ptrdiff_t
+#  define YYPTRDIFF_MAXIMUM PTRDIFF_MAX
+# else
+#  define YYPTRDIFF_T long
+#  define YYPTRDIFF_MAXIMUM LONG_MAX
+# endif
 #endif
 
 #ifndef YYSIZE_T
@@ -590,7 +647,7 @@ typedef short yytype_int16;
 #  define YYSIZE_T __SIZE_TYPE__
 # elif defined size_t
 #  define YYSIZE_T size_t
-# elif ! defined YYSIZE_T
+# elif defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
@@ -598,7 +655,19 @@ typedef short yytype_int16;
 # endif
 #endif
 
-#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
+#define YYSIZE_MAXIMUM                                  \
+  YY_CAST (YYPTRDIFF_T,                                 \
+           (YYPTRDIFF_MAXIMUM < YY_CAST (YYSIZE_T, -1)  \
+            ? YYPTRDIFF_MAXIMUM                         \
+            : YY_CAST (YYSIZE_T, -1)))
+
+#define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
+
+/* Stored state numbers (used for stacks). */
+typedef yytype_uint8 yy_state_t;
+
+/* State numbers in computations.  */
+typedef int yy_state_fast_t;
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -612,22 +681,20 @@ typedef short yytype_int16;
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE
-# if (defined __GNUC__                                               \
-      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
-     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
-#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+#ifndef YY_ATTRIBUTE_PURE
+# if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_PURE __attribute__ ((__pure__))
 # else
-#  define YY_ATTRIBUTE(Spec) /* empty */
+#  define YY_ATTRIBUTE_PURE
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE_PURE
-# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
-#endif
-
 #ifndef YY_ATTRIBUTE_UNUSED
-# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
+# if defined __GNUC__ && 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+# else
+#  define YY_ATTRIBUTE_UNUSED
+# endif
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
@@ -639,11 +706,11 @@ typedef short yytype_int16;
 
 #if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
-    _Pragma ("GCC diagnostic push") \
-    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")\
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END \
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
 # define YY_INITIAL_VALUE(Value) Value
@@ -654,6 +721,18 @@ typedef short yytype_int16;
 #endif
 #ifndef YY_INITIAL_VALUE
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
+#endif
+
+#if defined __cplusplus && defined __GNUC__ && ! defined __ICC && 6 <= __GNUC__
+# define YY_IGNORE_USELESS_CAST_BEGIN                          \
+    _Pragma ("GCC diagnostic push")                            \
+    _Pragma ("GCC diagnostic ignored \"-Wuseless-cast\"")
+# define YY_IGNORE_USELESS_CAST_END            \
+    _Pragma ("GCC diagnostic pop")
+#endif
+#ifndef YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_END
 #endif
 
 
@@ -735,18 +814,19 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss_alloc;
+  yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
   YYLTYPE yyls_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
-# define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
+# define YYSTACK_GAP_MAXIMUM (YYSIZEOF (union yyalloc) - 1)
 
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE) + sizeof (YYLTYPE)) \
+     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE) \
+             + YYSIZEOF (YYLTYPE)) \
       + 2 * YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
@@ -759,11 +839,11 @@ union yyalloc
 # define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
     do                                                                  \
       {                                                                 \
-        YYSIZE_T yynewbytes;                                            \
+        YYPTRDIFF_T yynewbytes;                                         \
         YYCOPY (&yyptr->Stack_alloc, Stack, yysize);                    \
         Stack = &yyptr->Stack_alloc;                                    \
-        yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-        yyptr += yynewbytes / sizeof (*yyptr);                          \
+        yynewbytes = yystacksize * YYSIZEOF (*Stack) + YYSTACK_GAP_MAXIMUM; \
+        yyptr += yynewbytes / YYSIZEOF (*yyptr);                        \
       }                                                                 \
     while (0)
 
@@ -775,12 +855,12 @@ union yyalloc
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
 #   define YYCOPY(Dst, Src, Count) \
-      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
+      __builtin_memcpy (Dst, Src, YY_CAST (YYSIZE_T, (Count)) * sizeof (*(Src)))
 #  else
 #   define YYCOPY(Dst, Src, Count)              \
       do                                        \
         {                                       \
-          YYSIZE_T yyi;                         \
+          YYPTRDIFF_T yyi;                      \
           for (yyi = 0; yyi < (Count); yyi++)   \
             (Dst)[yyi] = (Src)[yyi];            \
         }                                       \
@@ -806,14 +886,15 @@ union yyalloc
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   306
 
+
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex, with out-of-bounds checking.  */
 #define YYTRANSLATE(YYX)                                                \
-  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex.  */
-static const yytype_uint8 yytranslate[] =
+static const yytype_int8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
       64,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -850,7 +931,7 @@ static const yytype_uint8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint16 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
        0,   360,   360,   361,   362,   363,   364,   367,   368,   371,
      374,   375,   376,   377,   379,   380,   382,   383,   384,   385,
@@ -888,7 +969,7 @@ static const char *const yytname[] =
 # ifdef YYPRINT
 /* YYTOKNUM[NUM] -- (External) token number corresponding to the
    (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_uint16 yytoknum[] =
+static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
@@ -901,15 +982,15 @@ static const yytype_uint16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF -64
+#define YYPACT_NINF (-64)
 
-#define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-64)))
+#define yypact_value_is_default(Yyn) \
+  ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF -1
+#define YYTABLE_NINF (-1)
 
-#define yytable_value_is_error(Yytable_value) \
-  (!!((Yytable_value) == (-1)))
+#define yytable_value_is_error(Yyn) \
+  ((Yyn) == YYTABLE_NINF)
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
      STATE-NUM.  */
@@ -937,7 +1018,7 @@ static const yytype_int16 yypact[] =
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
      Performed when YYTABLE does not specify something else to do.  Zero
      means the default is an error.  */
-static const yytype_uint8 yydefact[] =
+static const yytype_int8 yydefact[] =
 {
        0,     6,     2,    11,    10,    12,    13,     0,     0,     0,
        0,    64,    65,     0,     0,     0,     0,     0,     0,     3,
@@ -1141,7 +1222,7 @@ static const yytype_int16 yycheck[] =
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
-static const yytype_uint8 yystos[] =
+static const yytype_int8 yystos[] =
 {
        0,     1,     3,     5,     6,     7,     8,     9,    15,    17,
       19,    20,    21,    22,    45,    47,    51,    52,    62,    64,
@@ -1163,7 +1244,7 @@ static const yytype_uint8 yystos[] =
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const yytype_uint8 yyr1[] =
+static const yytype_int8 yyr1[] =
 {
        0,    73,    74,    74,    74,    74,    74,    75,    75,    76,
       77,    77,    77,    77,    77,    77,    77,    77,    77,    77,
@@ -1178,7 +1259,7 @@ static const yytype_uint8 yyr1[] =
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
-static const yytype_uint8 yyr2[] =
+static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     1,     2,     2,     1,     1,     1,     3,
        1,     1,     1,     1,     3,     3,     2,     2,     2,     2,
@@ -1341,7 +1422,9 @@ yy_symbol_value_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, YY
   if (yytype < YYNTOKENS)
     YYPRINT (yyo, yytoknum[yytype], *yyvaluep);
 # endif
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   YYUSE (yytype);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
 
@@ -1367,7 +1450,7 @@ yy_symbol_print (FILE *yyo, int yytype, YYSTYPE const * const yyvaluep, YYLTYPE 
 `------------------------------------------------------------------*/
 
 static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
+yy_stack_print (yy_state_t *yybottom, yy_state_t *yytop)
 {
   YYFPRINTF (stderr, "Stack now");
   for (; yybottom <= yytop; yybottom++)
@@ -1390,19 +1473,19 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp, int yyrule)
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp, int yyrule)
 {
-  unsigned long yylno = yyrline[yyrule];
+  int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
+  YYFPRINTF (stderr, "Reducing stack by rule %d (line %d):\n",
              yyrule - 1, yylno);
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
+                       yystos[+yyssp[yyi + 1 - yynrhs]],
                        &yyvsp[(yyi + 1) - (yynrhs)]
                        , &(yylsp[(yyi + 1) - (yynrhs)])                       );
       YYFPRINTF (stderr, "\n");
@@ -1447,13 +1530,13 @@ int yydebug;
 
 # ifndef yystrlen
 #  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen strlen
+#   define yystrlen(S) (YY_CAST (YYPTRDIFF_T, strlen (S)))
 #  else
 /* Return the length of YYSTR.  */
-static YYSIZE_T
+static YYPTRDIFF_T
 yystrlen (const char *yystr)
 {
-  YYSIZE_T yylen;
+  YYPTRDIFF_T yylen;
   for (yylen = 0; yystr[yylen]; yylen++)
     continue;
   return yylen;
@@ -1489,12 +1572,12 @@ yystpcpy (char *yydest, const char *yysrc)
    backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
    null, do not copy; instead, return the length of what the result
    would have been.  */
-static YYSIZE_T
+static YYPTRDIFF_T
 yytnamerr (char *yyres, const char *yystr)
 {
   if (*yystr == '"')
     {
-      YYSIZE_T yyn = 0;
+      YYPTRDIFF_T yyn = 0;
       char const *yyp = yystr;
 
       for (;;)
@@ -1525,10 +1608,10 @@ yytnamerr (char *yyres, const char *yystr)
     do_not_strip_quotes: ;
     }
 
-  if (! yyres)
+  if (yyres)
+    return yystpcpy (yyres, yystr) - yyres;
+  else
     return yystrlen (yystr);
-
-  return (YYSIZE_T) (yystpcpy (yyres, yystr) - yyres);
 }
 # endif
 
@@ -1541,19 +1624,19 @@ yytnamerr (char *yyres, const char *yystr)
    *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
    required number of bytes is too large to store.  */
 static int
-yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
-                yytype_int16 *yyssp, int yytoken)
+yysyntax_error (YYPTRDIFF_T *yymsg_alloc, char **yymsg,
+                yy_state_t *yyssp, int yytoken)
 {
-  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-  YYSIZE_T yysize = yysize0;
   enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
   /* Internationalized format string. */
   const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat. */
+  /* Arguments of yyformat: reported tokens (one for the "unexpected",
+     one per "expected"). */
   char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Number of reported tokens (one for the "unexpected", one per
-     "expected"). */
+  /* Actual size of YYARG. */
   int yycount = 0;
+  /* Cumulated lengths of YYARG.  */
+  YYPTRDIFF_T yysize = 0;
 
   /* There are many possibilities here to consider:
      - If this state is a consistent state with a default action, then
@@ -1580,7 +1663,9 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
   */
   if (yytoken != YYEMPTY)
     {
-      int yyn = yypact[*yyssp];
+      int yyn = yypact[+*yyssp];
+      YYPTRDIFF_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
+      yysize = yysize0;
       yyarg[yycount++] = yytname[yytoken];
       if (!yypact_value_is_default (yyn))
         {
@@ -1605,7 +1690,8 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                   }
                 yyarg[yycount++] = yytname[yyx];
                 {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
+                  YYPTRDIFF_T yysize1
+                    = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
                   if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
                     yysize = yysize1;
                   else
@@ -1632,7 +1718,9 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
     }
 
   {
-    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
+    /* Don't count the "%s"s in the final size, but reserve room for
+       the terminator.  */
+    YYPTRDIFF_T yysize1 = yysize + (yystrlen (yyformat) - 2 * yycount) + 1;
     if (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM)
       yysize = yysize1;
     else
@@ -1662,8 +1750,8 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
         }
       else
         {
-          yyp++;
-          yyformat++;
+          ++yyp;
+          ++yyformat;
         }
   }
   return 0;
@@ -1713,7 +1801,7 @@ int yynerrs;
 int
 yyparse (void)
 {
-    int yystate;
+    yy_state_fast_t yystate;
     /* Number of tokens to shift before error messages enabled.  */
     int yyerrstatus;
 
@@ -1726,9 +1814,9 @@ yyparse (void)
        to reallocate them elsewhere.  */
 
     /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
+    yy_state_t yyssa[YYINITDEPTH];
+    yy_state_t *yyss;
+    yy_state_t *yyssp;
 
     /* The semantic value stack.  */
     YYSTYPE yyvsa[YYINITDEPTH];
@@ -1743,7 +1831,7 @@ yyparse (void)
     /* The locations where the error started and ended.  */
     YYLTYPE yyerror_range[3];
 
-    YYSIZE_T yystacksize;
+    YYPTRDIFF_T yystacksize;
 
   int yyn;
   int yyresult;
@@ -1758,7 +1846,7 @@ yyparse (void)
   /* Buffer for error messages, and its allocated size.  */
   char yymsgbuf[128];
   char *yymsg = yymsgbuf;
-  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
+  YYPTRDIFF_T yymsg_alloc = sizeof yymsgbuf;
 #endif
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N), yylsp -= (N))
@@ -1792,12 +1880,14 @@ yynewstate:
 
 
 /*--------------------------------------------------------------------.
-| yynewstate -- set current state (the top of the stack) to yystate.  |
+| yysetstate -- set current state (the top of the stack) to yystate.  |
 `--------------------------------------------------------------------*/
 yysetstate:
   YYDPRINTF ((stderr, "Entering state %d\n", yystate));
   YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
-  *yyssp = (yytype_int16) yystate;
+  YY_IGNORE_USELESS_CAST_BEGIN
+  *yyssp = YY_CAST (yy_state_t, yystate);
+  YY_IGNORE_USELESS_CAST_END
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
@@ -1805,15 +1895,15 @@ yysetstate:
 #else
     {
       /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = (YYSIZE_T) (yyssp - yyss + 1);
+      YYPTRDIFF_T yysize = yyssp - yyss + 1;
 
 # if defined yyoverflow
       {
         /* Give user a chance to reallocate the stack.  Use copies of
            these so that the &'s don't force the real ones into
            memory.  */
+        yy_state_t *yyss1 = yyss;
         YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;
         YYLTYPE *yyls1 = yyls;
 
         /* Each stack pointer address is followed by the size of the
@@ -1821,9 +1911,9 @@ yysetstate:
            conditional around just the two extra args, but that might
            be undefined if yyoverflow is a macro.  */
         yyoverflow (YY_("memory exhausted"),
-                    &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),
-                    &yyls1, yysize * sizeof (*yylsp),
+                    &yyss1, yysize * YYSIZEOF (*yyssp),
+                    &yyvs1, yysize * YYSIZEOF (*yyvsp),
+                    &yyls1, yysize * YYSIZEOF (*yylsp),
                     &yystacksize);
         yyss = yyss1;
         yyvs = yyvs1;
@@ -1838,9 +1928,10 @@ yysetstate:
         yystacksize = YYMAXDEPTH;
 
       {
-        yytype_int16 *yyss1 = yyss;
+        yy_state_t *yyss1 = yyss;
         union yyalloc *yyptr =
-          (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
+          YY_CAST (union yyalloc *,
+                   YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
           goto yyexhaustedlab;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
@@ -1856,8 +1947,10 @@ yysetstate:
       yyvsp = yyvs + yysize - 1;
       yylsp = yyls + yysize - 1;
 
-      YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long) yystacksize));
+      YY_IGNORE_USELESS_CAST_BEGIN
+      YYDPRINTF ((stderr, "Stack size increased to %ld\n",
+                  YY_CAST (long, yystacksize)));
+      YY_IGNORE_USELESS_CAST_END
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
@@ -1923,15 +2016,14 @@ yybackup:
 
   /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
-
   yystate = yyn;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
   *++yylsp = yylloc;
+
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
   goto yynewstate;
 
 
@@ -1969,362 +2061,541 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-    { YYACCEPT; }
+#line 360 "./gram.y"
+                                                { YYACCEPT; }
+#line 2067 "y.tab.c"
     break;
 
   case 3:
-    { yyresult = xxvalue(NULL,2,NULL);	goto yyreturn; }
+#line 361 "./gram.y"
+                                                { yyresult = xxvalue(NULL,2,NULL);	goto yyreturn; }
+#line 2073 "y.tab.c"
     break;
 
   case 4:
-    { yyresult = xxvalue(yyvsp[-1],3,&(yylsp[-1]));	goto yyreturn; }
+#line 362 "./gram.y"
+                                                        { yyresult = xxvalue(yyvsp[-1],3,&(yylsp[-1]));	goto yyreturn; }
+#line 2079 "y.tab.c"
     break;
 
   case 5:
-    { yyresult = xxvalue(yyvsp[-1],4,&(yylsp[-1]));	goto yyreturn; }
+#line 363 "./gram.y"
+                                                        { yyresult = xxvalue(yyvsp[-1],4,&(yylsp[-1]));	goto yyreturn; }
+#line 2085 "y.tab.c"
     break;
 
   case 6:
-    { YYABORT; }
+#line 364 "./gram.y"
+                                                { YYABORT; }
+#line 2091 "y.tab.c"
     break;
 
   case 7:
-    { yyval = yyvsp[0]; }
+#line 367 "./gram.y"
+                                                { yyval = yyvsp[0]; }
+#line 2097 "y.tab.c"
     break;
 
   case 8:
-    { yyval = yyvsp[0]; }
+#line 368 "./gram.y"
+                                                { yyval = yyvsp[0]; }
+#line 2103 "y.tab.c"
     break;
 
   case 9:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]); }
+#line 371 "./gram.y"
+                                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]); }
+#line 2109 "y.tab.c"
     break;
 
   case 10:
-    { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 374 "./gram.y"
+                                                { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 2115 "y.tab.c"
     break;
 
   case 11:
-    { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 375 "./gram.y"
+                                                { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 2121 "y.tab.c"
     break;
 
   case 12:
-    { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 376 "./gram.y"
+                                                { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 2127 "y.tab.c"
     break;
 
   case 13:
-    { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 377 "./gram.y"
+                                                { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
+#line 2133 "y.tab.c"
     break;
 
   case 14:
-    { yyval = xxexprlist(yyvsp[-2],&(yylsp[-2]),yyvsp[-1]); setId( yyval, (yyloc)); }
+#line 379 "./gram.y"
+                                                { yyval = xxexprlist(yyvsp[-2],&(yylsp[-2]),yyvsp[-1]); setId( yyval, (yyloc)); }
+#line 2139 "y.tab.c"
     break;
 
   case 15:
-    { yyval = xxparen(yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 380 "./gram.y"
+                                                { yyval = xxparen(yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 2145 "y.tab.c"
     break;
 
   case 16:
-    { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 382 "./gram.y"
+                                                { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2151 "y.tab.c"
     break;
 
   case 17:
-    { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 383 "./gram.y"
+                                                { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2157 "y.tab.c"
     break;
 
   case 18:
-    { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 384 "./gram.y"
+                                                { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2163 "y.tab.c"
     break;
 
   case 19:
-    { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 385 "./gram.y"
+                                                { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2169 "y.tab.c"
     break;
 
   case 20:
-    { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 386 "./gram.y"
+                                                { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2175 "y.tab.c"
     break;
 
   case 21:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 388 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2181 "y.tab.c"
     break;
 
   case 22:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 389 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2187 "y.tab.c"
     break;
 
   case 23:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 390 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2193 "y.tab.c"
     break;
 
   case 24:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 391 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2199 "y.tab.c"
     break;
 
   case 25:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 392 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2205 "y.tab.c"
     break;
 
   case 26:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 393 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2211 "y.tab.c"
     break;
 
   case 27:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 394 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2217 "y.tab.c"
     break;
 
   case 28:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 395 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2223 "y.tab.c"
     break;
 
   case 29:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 396 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2229 "y.tab.c"
     break;
 
   case 30:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 397 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2235 "y.tab.c"
     break;
 
   case 31:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 398 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2241 "y.tab.c"
     break;
 
   case 32:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 399 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2247 "y.tab.c"
     break;
 
   case 33:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 400 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2253 "y.tab.c"
     break;
 
   case 34:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 401 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2259 "y.tab.c"
     break;
 
   case 35:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 402 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2265 "y.tab.c"
     break;
 
   case 36:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 403 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2271 "y.tab.c"
     break;
 
   case 37:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 404 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2277 "y.tab.c"
     break;
 
   case 38:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 405 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2283 "y.tab.c"
     break;
 
   case 39:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 406 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2289 "y.tab.c"
     break;
 
   case 40:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 407 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2295 "y.tab.c"
     break;
 
   case 41:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 409 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2301 "y.tab.c"
     break;
 
   case 42:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[0],yyvsp[-2]);	setId( yyval, (yyloc)); }
+#line 410 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[0],yyvsp[-2]);	setId( yyval, (yyloc)); }
+#line 2307 "y.tab.c"
     break;
 
   case 43:
-    { yyval = xxdefun(yyvsp[-5],yyvsp[-3],yyvsp[0],&(yyloc)); 	setId( yyval, (yyloc)); }
+#line 412 "./gram.y"
+                                                { yyval = xxdefun(yyvsp[-5],yyvsp[-3],yyvsp[0],&(yyloc)); 	setId( yyval, (yyloc)); }
+#line 2313 "y.tab.c"
     break;
 
   case 44:
-    { yyval = xxfuncall(yyvsp[-3],yyvsp[-1]);  setId( yyval, (yyloc)); modif_token( &(yylsp[-3]), SYMBOL_FUNCTION_CALL ) ; }
+#line 413 "./gram.y"
+                                                { yyval = xxfuncall(yyvsp[-3],yyvsp[-1]);  setId( yyval, (yyloc)); modif_token( &(yylsp[-3]), SYMBOL_FUNCTION_CALL ) ; }
+#line 2319 "y.tab.c"
     break;
 
   case 45:
-    { yyval = xxif(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 414 "./gram.y"
+                                                { yyval = xxif(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2325 "y.tab.c"
     break;
 
   case 46:
-    { yyval = xxifelse(yyvsp[-4],yyvsp[-3],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 415 "./gram.y"
+                                                                { yyval = xxifelse(yyvsp[-4],yyvsp[-3],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2331 "y.tab.c"
     break;
 
   case 47:
-    { yyval = xxfor(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 416 "./gram.y"
+                                                        { yyval = xxfor(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2337 "y.tab.c"
     break;
 
   case 48:
-    { yyval = xxwhile(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 417 "./gram.y"
+                                                { yyval = xxwhile(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2343 "y.tab.c"
     break;
 
   case 49:
-    { yyval = xxrepeat(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 418 "./gram.y"
+                                                        { yyval = xxrepeat(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2349 "y.tab.c"
     break;
 
   case 50:
-    { yyval = xxsubscript(yyvsp[-4],yyvsp[-3],yyvsp[-2]);	setId( yyval, (yyloc)); }
+#line 419 "./gram.y"
+                                                { yyval = xxsubscript(yyvsp[-4],yyvsp[-3],yyvsp[-2]);	setId( yyval, (yyloc)); }
+#line 2355 "y.tab.c"
     break;
 
   case 51:
-    { yyval = xxsubscript(yyvsp[-3],yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 420 "./gram.y"
+                                                { yyval = xxsubscript(yyvsp[-3],yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 2361 "y.tab.c"
     break;
 
   case 52:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
+#line 421 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
+#line 2367 "y.tab.c"
     break;
 
   case 53:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
+#line 422 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
+#line 2373 "y.tab.c"
     break;
 
   case 54:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 423 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2379 "y.tab.c"
     break;
 
   case 55:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 424 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2385 "y.tab.c"
     break;
 
   case 56:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
+#line 425 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
+#line 2391 "y.tab.c"
     break;
 
   case 57:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
+#line 426 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
+#line 2397 "y.tab.c"
     break;
 
   case 58:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 427 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2403 "y.tab.c"
     break;
 
   case 59:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 428 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2409 "y.tab.c"
     break;
 
   case 60:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 429 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2415 "y.tab.c"
     break;
 
   case 61:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 430 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2421 "y.tab.c"
     break;
 
   case 62:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[0]), SLOT ) ; }
+#line 431 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[0]), SLOT ) ; }
+#line 2427 "y.tab.c"
     break;
 
   case 63:
-    { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 432 "./gram.y"
+                                                { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2433 "y.tab.c"
     break;
 
   case 64:
-    { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 433 "./gram.y"
+                                                { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2439 "y.tab.c"
     break;
 
   case 65:
-    { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 434 "./gram.y"
+                                                { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
+#line 2445 "y.tab.c"
     break;
 
   case 66:
-    { yyval = xxcond(yyvsp[-1]);   }
+#line 438 "./gram.y"
+                                                { yyval = xxcond(yyvsp[-1]);   }
+#line 2451 "y.tab.c"
     break;
 
   case 67:
-    { yyval = xxifcond(yyvsp[-1]); }
+#line 441 "./gram.y"
+                                                { yyval = xxifcond(yyvsp[-1]); }
+#line 2457 "y.tab.c"
     break;
 
   case 68:
-    { yyval = xxforcond(yyvsp[-3],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 444 "./gram.y"
+                                                { yyval = xxforcond(yyvsp[-3],yyvsp[-1]);	setId( yyval, (yyloc)); }
+#line 2463 "y.tab.c"
     break;
 
   case 69:
-    { yyval = xxexprlist0();	setId( yyval, (yyloc)); }
+#line 448 "./gram.y"
+                                                { yyval = xxexprlist0();	setId( yyval, (yyloc)); }
+#line 2469 "y.tab.c"
     break;
 
   case 70:
-    { yyval = xxexprlist1(yyvsp[0], &(yylsp[0])); }
+#line 449 "./gram.y"
+                                                { yyval = xxexprlist1(yyvsp[0], &(yylsp[0])); }
+#line 2475 "y.tab.c"
     break;
 
   case 71:
-    { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
+#line 450 "./gram.y"
+                                                { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
+#line 2481 "y.tab.c"
     break;
 
   case 72:
-    { yyval = yyvsp[-1];		setId( yyval, (yyloc)); }
+#line 451 "./gram.y"
+                                                { yyval = yyvsp[-1];		setId( yyval, (yyloc)); }
+#line 2487 "y.tab.c"
     break;
 
   case 73:
-    { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
+#line 452 "./gram.y"
+                                                { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
+#line 2493 "y.tab.c"
     break;
 
   case 74:
-    { yyval = yyvsp[-1];}
+#line 453 "./gram.y"
+                                                { yyval = yyvsp[-1];}
+#line 2499 "y.tab.c"
     break;
 
   case 75:
-    { yyval = xxsublist1(yyvsp[0]);	  }
+#line 456 "./gram.y"
+                                                { yyval = xxsublist1(yyvsp[0]);	  }
+#line 2505 "y.tab.c"
     break;
 
   case 76:
-    { yyval = xxsublist2(yyvsp[-3],yyvsp[0]); }
+#line 457 "./gram.y"
+                                                { yyval = xxsublist2(yyvsp[-3],yyvsp[0]); }
+#line 2511 "y.tab.c"
     break;
 
   case 77:
-    { yyval = xxsub0();	 }
+#line 460 "./gram.y"
+                                                { yyval = xxsub0();	 }
+#line 2517 "y.tab.c"
     break;
 
   case 78:
-    { yyval = xxsub1(yyvsp[0], &(yylsp[0]));  }
+#line 461 "./gram.y"
+                                                { yyval = xxsub1(yyvsp[0], &(yylsp[0]));  }
+#line 2523 "y.tab.c"
     break;
 
   case 79:
-    { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; modif_token( &(yylsp[-1]), SYMBOL_SUB ) ; }
+#line 462 "./gram.y"
+                                                { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; modif_token( &(yylsp[-1]), SYMBOL_SUB ) ; }
+#line 2529 "y.tab.c"
     break;
 
   case 80:
-    { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; modif_token( &(yylsp[-2]), SYMBOL_SUB ) ; }
+#line 463 "./gram.y"
+                                                { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; modif_token( &(yylsp[-2]), SYMBOL_SUB ) ; }
+#line 2535 "y.tab.c"
     break;
 
   case 81:
-    { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
+#line 464 "./gram.y"
+                                                { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
+#line 2541 "y.tab.c"
     break;
 
   case 82:
-    { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
+#line 465 "./gram.y"
+                                                { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
+#line 2547 "y.tab.c"
     break;
 
   case 83:
-    { yyval = xxnullsub0(&(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
+#line 466 "./gram.y"
+                                                { yyval = xxnullsub0(&(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
+#line 2553 "y.tab.c"
     break;
 
   case 84:
-    { yyval = xxnullsub1(yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
+#line 467 "./gram.y"
+                                                { yyval = xxnullsub1(yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
+#line 2559 "y.tab.c"
     break;
 
   case 85:
-    { yyval = xxnullformal(); }
+#line 470 "./gram.y"
+                                                { yyval = xxnullformal(); }
+#line 2565 "y.tab.c"
     break;
 
   case 86:
-    { yyval = xxfirstformal0(yyvsp[0]); 	modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
+#line 471 "./gram.y"
+                                                { yyval = xxfirstformal0(yyvsp[0]); 	modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
+#line 2571 "y.tab.c"
     break;
 
   case 87:
-    { yyval = xxfirstformal1(yyvsp[-2],yyvsp[0]); 	modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ; }
+#line 472 "./gram.y"
+                                                { yyval = xxfirstformal1(yyvsp[-2],yyvsp[0]); 	modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ; }
+#line 2577 "y.tab.c"
     break;
 
   case 88:
-    { yyval = xxaddformal0(yyvsp[-2],yyvsp[0], &(yylsp[0]));   modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
+#line 473 "./gram.y"
+                                                { yyval = xxaddformal0(yyvsp[-2],yyvsp[0], &(yylsp[0]));   modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
+#line 2583 "y.tab.c"
     break;
 
   case 89:
-    { yyval = xxaddformal1(yyvsp[-4],yyvsp[-2],yyvsp[0],&(yylsp[-2])); modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ;}
+#line 475 "./gram.y"
+                                                { yyval = xxaddformal1(yyvsp[-4],yyvsp[-2],yyvsp[0],&(yylsp[-2])); modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ;}
+#line 2589 "y.tab.c"
     break;
 
   case 90:
-    { EatLines = 1; }
+#line 478 "./gram.y"
+                                                { EatLines = 1; }
+#line 2595 "y.tab.c"
     break;
 
 
+#line 2599 "y.tab.c"
 
       default: break;
     }
@@ -2389,7 +2660,7 @@ yyerrlab:
           {
             if (yymsg != yymsgbuf)
               YYSTACK_FREE (yymsg);
-            yymsg = (char *) YYSTACK_ALLOC (yymsg_alloc);
+            yymsg = YY_CAST (char *, YYSTACK_ALLOC (YY_CAST (YYSIZE_T, yymsg_alloc)));
             if (!yymsg)
               {
                 yymsg = yymsgbuf;
@@ -2549,7 +2820,7 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp, yylsp);
+                  yystos[+*yyssp], yyvsp, yylsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -2562,6 +2833,7 @@ yyreturn:
 #endif
   return yyresult;
 }
+#line 480 "./gram.y"
 
 
 
@@ -2677,8 +2949,8 @@ static SEXP makeSrcref(YYLTYPE *lloc, SEXP srcfile)
     INTEGER(val)[5] = lloc->last_column;
     INTEGER(val)[6] = lloc->first_parsed;
     INTEGER(val)[7] = lloc->last_parsed;
-    Rf_setAttrib(val, R_SrcfileSymbol, srcfile);
-    Rf_setAttrib(val, R_ClassSymbol, Rf_mkString("srcref"));
+    Rf_setAttrib(val, Symbols::SrcfileSymbol, srcfile);
+    Rf_setAttrib(val, Symbols::ClassSymbol, Rf_mkString("srcref"));
     UNPROTECT(1);
     return val;
 }
@@ -2690,8 +2962,8 @@ static SEXP attachSrcrefs(SEXP val)
     PROTECT(val);
     PROTECT(srval = Rf_PairToVectorList(SrcRefs));
     
-    Rf_setAttrib(val, R_SrcrefSymbol, srval);
-    Rf_setAttrib(val, R_SrcfileSymbol, ParseState.SrcFile);
+    Rf_setAttrib(val, Symbols::SrcrefSymbol, srval);
+    Rf_setAttrib(val, Symbols::SrcfileSymbol, ParseState.SrcFile);
     {
 	YYLTYPE wholeFile;
 	wholeFile.first_line = 1;
@@ -2702,7 +2974,7 @@ static SEXP attachSrcrefs(SEXP val)
 	wholeFile.last_column = ParseState.xxcolno;
 	wholeFile.first_parsed = 1;
 	wholeFile.last_parsed = ParseState.xxparseno;
-	Rf_setAttrib(val, R_WholeSrcrefSymbol, makeSrcref(&wholeFile, ParseState.SrcFile));
+	Rf_setAttrib(val, Symbols::WholeSrcrefSymbol, makeSrcref(&wholeFile, ParseState.SrcFile));
     }
     REPROTECT(SrcRefs = R_NilValue, srindex);
     ParseState.didAttach = TRUE;
@@ -2786,7 +3058,7 @@ static SEXP xxexprlist0(void)
     if (GenerateCode) {
 	PROTECT(ans = NewList());
 	if (ParseState.keepSrcRefs) {
-	    Rf_setAttrib(ans, R_SrcrefSymbol, SrcRefs);
+	    Rf_setAttrib(ans, Symbols::SrcrefSymbol, SrcRefs);
 	    REPROTECT(SrcRefs = R_NilValue, srindex);
 	}
     }
@@ -2801,7 +3073,7 @@ static SEXP xxexprlist1(SEXP expr, YYLTYPE *lloc)
     if (GenerateCode) {
 	PROTECT(tmp = NewList());
 	if (ParseState.keepSrcRefs) {
-	    Rf_setAttrib(tmp, R_SrcrefSymbol, SrcRefs);
+	    Rf_setAttrib(tmp, Symbols::SrcrefSymbol, SrcRefs);
 	    REPROTECT(SrcRefs = Rf_list1(makeSrcref(lloc, ParseState.SrcFile)), srindex);
 	}
 	PROTECT(ans = GrowList(tmp, expr));
@@ -3121,7 +3393,7 @@ static SEXP xxexprlist(SEXP a1, YYLTYPE *lloc, SEXP a2)
 	/* SET_TYPEOF(a2, LANGSXP); -- not allowed in rho */
 	SETCAR(a2, a1);
 	if (ParseState.keepSrcRefs) {
-	    PROTECT(prevSrcrefs = Rf_getAttrib(a2, R_SrcrefSymbol));
+	    PROTECT(prevSrcrefs = Rf_getAttrib(a2, Symbols::SrcrefSymbol));
 	    REPROTECT(SrcRefs = CONS(makeSrcref(lloc, ParseState.SrcFile), SrcRefs), srindex);
 	    PROTECT(ans = attachSrcrefs(a2));
 	    REPROTECT(SrcRefs = prevSrcrefs, srindex);
@@ -3510,7 +3782,7 @@ SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 		PROTECT(class_sv = Rf_allocVector(STRSXP, 2));
 		SET_STRING_ELT(class_sv, 0, Rf_mkChar("srcfilecopy"));
 		SET_STRING_ELT(class_sv, 1, Rf_mkChar("srcfile"));
-		Rf_setAttrib(ParseState.Original, R_ClassSymbol, class_sv);
+		Rf_setAttrib(ParseState.Original, Symbols::ClassSymbol, class_sv);
 		UNPROTECT(1);
 	    }
 	}
@@ -4767,7 +5039,7 @@ static void setParseFilename(SEXP newname) {
         PROTECT(class_sv = Rf_allocVector(STRSXP, 2));
         SET_STRING_ELT(class_sv, 0, Rf_mkChar("srcfilealias"));
         SET_STRING_ELT(class_sv, 1, Rf_mkChar("srcfile"));
-	Rf_setAttrib(ParseState.SrcFile, R_ClassSymbol, class_sv);
+	Rf_setAttrib(ParseState.SrcFile, Symbols::ClassSymbol, class_sv);
 	UNPROTECT(1);
     } else {
     	REPROTECT(ParseState.SrcFile = Rf_duplicate(newname), ParseState.SrcFileProt);
@@ -5541,7 +5813,7 @@ static void finalizeData( ){
     Rf_setAttrib( newdata, Rf_install("tokens"), tokens );
     Rf_setAttrib( newdata, Rf_install("text"), newtext );
     
-    Rf_setAttrib(newdata, R_ClassSymbol, Rf_mkString("parseData"));
+    Rf_setAttrib(newdata, Symbols::ClassSymbol, Rf_mkString("parseData"));
     
     /* Put it into the srcfile environment */
     if (Rf_isEnvironment(ParseState.SrcFile)) 

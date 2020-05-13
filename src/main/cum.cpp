@@ -175,7 +175,7 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	t = x_;
 	n = XLENGTH(t);
 	PROTECT(s = Rf_allocVector(CPLXSXP, n));
-	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
+	Rf_setAttrib(s, Symbols::NamesSymbol, Rf_getAttrib(t, Symbols::NamesSymbol));
 	UNPROTECT(1);
 	if(n == 0) return s;
 	/* no need to initialize s, ccum* set all elements */
@@ -200,7 +200,7 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	PROTECT(t = Rf_coerceVector(x_, INTSXP));
 	n = XLENGTH(t);
 	PROTECT(s = Rf_allocVector(INTSXP, n));
-	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
+	Rf_setAttrib(s, Symbols::NamesSymbol, Rf_getAttrib(t, Symbols::NamesSymbol));
 	if(n == 0) {
 	    UNPROTECT(2); /* t, s */
 	    return s;
@@ -226,7 +226,7 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	PROTECT(t = Rf_coerceVector(x_, REALSXP));
 	n = XLENGTH(t);
 	PROTECT(s = Rf_allocVector(REALSXP, n));
-	Rf_setAttrib(s, R_NamesSymbol, Rf_getAttrib(t, R_NamesSymbol));
+	Rf_setAttrib(s, Symbols::NamesSymbol, Rf_getAttrib(t, Symbols::NamesSymbol));
 	UNPROTECT(2);
 	if(n == 0) return s;
 	/* no need to initialize s, cum* set all elements */

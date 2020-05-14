@@ -673,7 +673,7 @@ extern "C" {
 	    return v;
     }
 
-    inline int ALTREP(SEXP x) { return x ? x->m_altrep : 0; }
+    inline int ALTREP(SEXP x) { return false /*for now*/ && x ? x->m_altrep : 0; }
 
     inline void SETALTREP(SEXP x, int v)
     {

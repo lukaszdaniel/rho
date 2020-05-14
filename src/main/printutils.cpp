@@ -330,11 +330,12 @@ void z_prec_r(Rcomplex *r, Rcomplex *x, double digits);
 */
 #include "Rcomplex.h"
 
+constexpr size_t NB3 = NB + 3;
 const char
 *EncodeComplex(Rcomplex x, int wr, int dr, int er, int wi, int di, int ei,
 	       const char *dec)
 {
-    static char buff[NB+2];
+    static char buff[NB3];
 
     /* IEEE allows signed zeros; strip these here */
     if (x.r == 0.0) x.r = 0.0;
@@ -360,9 +361,9 @@ const char
 	strcpy(Re, tmp);
 	if ( (flagNegIm = (x.i < 0)) ) x.i = -x.i;
 	Im = EncodeReal0(y.i == 0. ? y.i : x.i, wi, di, ei, dec);
-	snprintf(buff, NB+2, "%s%s%si", Re, flagNegIm ? "-" : "+", Im);
+	snprintf(buff, NB3, "%s%s%si", Re, flagNegIm ? "-" : "+", Im);
     }
-    buff[NB+2-1] = '\0';
+    buff[NB3-1] = '\0';
     return buff;
 }
 

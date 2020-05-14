@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-10 r2320feda5a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-11 r4394d41b2b) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-01-09 r74100) -- "Frisbee Sailing"
+R Under development (unstable) (2018-02-03 r74200) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -52,4 +52,4 @@ In command 'bw.bcv(precip)': minimum occurred at one end of the range
 > 
 > proc.time()
    user  system elapsed 
-  0.158   0.013   0.163 
+  0.164   0.024   0.180 

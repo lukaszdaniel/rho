@@ -165,7 +165,7 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	else {
 	    oldcode = ctxt->onExit();
 	    if (oldcode == nullptr || !addit)
-		ctxt->setOnExit(CONS(code, R_NilValue));
+		ctxt->setOnExit(PairList::cons(code, nullptr));
 	    else {
 		if (after) {
 		    PairList* codelist = PairList::cons(code, nullptr);
@@ -872,7 +872,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
     SEXP ans, tail;
 
     PROTECT(el); /* in do_switch, this is already protected */
-    PROTECT(ans = tail = CONS(R_NilValue, R_NilValue));
+    PROTECT(ans = tail = PairList::cons(nullptr, nullptr));
 
     while (el != R_NilValue) {
 	if (CAR(el) == Symbols::DotsSymbol) {
@@ -880,9 +880,9 @@ static SEXP expandDots(SEXP el, SEXP rho)
 	    if (TYPEOF(h) == DOTSXP || h == R_NilValue) {
 		while (h != R_NilValue) {
 		    if (TYPEOF(CAR(h)) == PROMSXP || CAR(h) == R_MissingArg)
-		      SETCDR(tail, CONS(CAR(h), R_NilValue));
+		      SETCDR(tail, PairList::cons(CAR(h), nullptr));
                     else
-		      SETCDR(tail, CONS(Rf_mkPROMISE(CAR(h), rho), R_NilValue));
+		      SETCDR(tail, PairList::cons(Rf_mkPROMISE(CAR(h), rho), nullptr));
 		    tail = CDR(tail);
 		    if(TAG(h) != R_NilValue) SET_TAG(tail, TAG(h));
 		    h = CDR(h);
@@ -891,7 +891,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
 		Rf_error(_("'...' used in an incorrect context"));
 	    UNPROTECT(1); /* h */
 	} else {
-	    SETCDR(tail, CONS(CAR(el), R_NilValue));
+	    SETCDR(tail, PairList::cons(CAR(el), nullptr));
 	    tail = CDR(tail);
 	    if(TAG(el) != R_NilValue) SET_TAG(tail, TAG(el));
 	}

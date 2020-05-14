@@ -1245,7 +1245,7 @@ static SEXP MakeReadRefTable(void)
 {
     SEXP data = Rf_allocVector(VECSXP, INITIAL_REFREAD_TABLE_SIZE);
     SET_TRUELENGTH(data, 0);
-    return CONS(data, R_NilValue);
+    return PairList::cons(data, nullptr);
 }
 
 static SEXP GetReadRef(SEXP table, int index)

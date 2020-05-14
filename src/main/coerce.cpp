@@ -54,6 +54,7 @@
 #include "rho/GCStackRoot.hpp"
 #include "rho/Promise.hpp"
 #include "rho/BuiltInFunction.hpp"
+#include "rho/unrho.hpp"
 
 using namespace std;
 using namespace rho;
@@ -1162,6 +1163,12 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 
     if (TYPEOF(v) == type)
 	return v;
+
+    if (ALTREP(v)) {
+	ans = ALTREP_COERCE(v, type);
+	if (ans) return ans;
+    }
+
     /* code to allow classes to extend ENVSXP, SYMSXP, etc */
     if(IS_S4_OBJECT(v) && TYPEOF(v) == S4SXP) {
 	SEXP vv = R_getS4DataSlot(v, ANYSXP);
@@ -1257,6 +1264,14 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	case RAWSXP:
 	    ans = coerceToRaw(v);	    break;
 	case STRSXP:
+	    if (RHO_FALSE && ATTRIB(v) == R_NilValue)
+		switch(TYPEOF(v)) {
+		case INTSXP:
+		case REALSXP:
+		    return R_deferred_coerceToString(v, NULL);
+		default:
+		break;
+		}
 	    ans = coerceToString(v);	    break;
 	case EXPRSXP:
 	    ans = coerceToExpression(v);    break;
@@ -2075,6 +2090,8 @@ SEXP attribute_hidden do_isna(/*const*/ Expression* call, const BuiltInFunction*
     return ans;
 }
 
+#include <R_ext/Itermacros.h>
+
 // Check if x has missing values; the anyNA.default() method
 static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
                       SEXP x, bool recursive, Environment* env)
@@ -2100,30 +2117,38 @@ static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
     switch (xT) {
     case REALSXP:
     {
-	double *xD = REAL(x);
-	for (i = 0; i < n; i++)
-	    if (ISNAN(xD[i])) return TRUE;
+	if(REAL_NO_NA(x))
+	    return FALSE;
+	ITERATE_BY_REGION(x, xD, i, nbatch, double, REAL, {
+		for (int k = 0; k < nbatch; k++)
+		    if (ISNAN(xD[k]))
+			return TRUE;
+	    });
 	break;
     }
     case INTSXP:
     {
-	int *xI = INTEGER(x);
-	for (i = 0; i < n; i++)
-	    if (xI[i] == NA_INTEGER) return TRUE;
+	if(INTEGER_NO_NA(x))
+	    return FALSE;
+	ITERATE_BY_REGION(x, xI, i, nbatch, int, INTEGER, {
+		for (int k = 0; k < nbatch; k++)
+		    if (xI[k] == NA_INTEGER)
+			return TRUE;
+	    });
 	break;
     }
     case LGLSXP:
     {
-	int *xI = LOGICAL(x);
 	for (i = 0; i < n; i++)
-	    if (xI[i] == NA_LOGICAL) return TRUE;
+	    if (LOGICAL_ELT(x, i) == NA_LOGICAL) return TRUE;
 	break;
     }
     case CPLXSXP:
     {
-	Rcomplex *xC = COMPLEX(x);
-	for (i = 0; i < n; i++)
-	    if (ISNAN(xC[i].r) || ISNAN(xC[i].i)) return TRUE;
+	for (i = 0; i < n; i++) {
+	    Rcomplex v = COMPLEX_ELT(x, i);
+	    if (ISNAN(v.r) || ISNAN(v.i)) return TRUE;
+	}
 	break;
     }
     case STRSXP:
@@ -2532,7 +2557,7 @@ SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 	    else
 		h = Rf_findVarInFrame3(rho, CAR(el), TRUE);
 	    if (h == R_UnboundValue)
-		h = CONS(Symbols::DotsSymbol, R_NilValue);
+		h = PairList::cons(Symbols::DotsSymbol, nullptr);
 	    else if (h == R_NilValue  || h == R_MissingArg)
 		h = R_NilValue;
 	    else if (TYPEOF(h) == DOTSXP)
@@ -2544,7 +2569,7 @@ SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 	    if (Rf_isLanguage(el))
 		h = new Expression(h, {});
 	    else
-		h = CONS(h, R_NilValue);
+		h = PairList::cons(h, nullptr);
 	    SET_TAG(h, TAG(el));
 	}
 	if (h != R_NilValue) {
@@ -2587,7 +2612,7 @@ SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (env != R_NilValue && TYPEOF(env) != ENVSXP)
 	Rf_errorcall(call, _("invalid environment specified"));
 
-    SEXP t = CONS(Rf_duplicate(expr), R_NilValue);
+    SEXP t = PairList::cons(Rf_duplicate(expr), nullptr);
     SEXP s = Rf_substituteList(t, env);
     return CAR(s);
 }

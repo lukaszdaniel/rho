@@ -127,9 +127,7 @@ void R_CheckUserInterrupt(void)
        concurrency support. LT */
 
     R_ProcessEvents(); /* Also processes timing limits */
-#ifndef Win32
     if (R_interrupts_pending) Rf_onintr();
-#endif
 
     /* finalizers are run here since this should only be called at
        points where running random code should be sate */
@@ -2033,12 +2031,14 @@ SEXP R_tryCatch(SEXP (*body)(void *), void *bdata,
 	.fdata = fdata
     };
 
+    if (conds == NULL) conds = Rf_allocVector(STRSXP, 0);
+    PROTECT(conds);
     SEXP fin = finally != NULL ? R_TrueValue : R_FalseValue;
     SEXP tcdptr = R_MakeExternalPtr(&tcd, R_NilValue, R_NilValue);
     SEXP expr = Rf_lang4(trycatch_callback, tcdptr, conds, fin);
-	PROTECT(expr);
+    PROTECT(expr);
     SEXP val = Rf_eval(expr, R_GlobalEnv);
-    UNPROTECT(1); /* expr */
+    UNPROTECT(2); /* conds, expr */
     return val;
 }
 

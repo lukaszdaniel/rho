@@ -2820,10 +2820,10 @@ void GErecordGraphicOperation(SEXP op, SEXP args, pGEDevDesc dd)
     if (dd->displayListOn) {
 	SEXP newOperation = Rf_list2(op, args);
 	if (lastOperation == R_NilValue) {
-	    setDisplayList(dd, CONS(newOperation, R_NilValue));
+	    setDisplayList(dd, PairList::cons(newOperation, nullptr));
 	    dd->DLlastElt = dd->displayList;
 	} else {
-	    SETCDR(lastOperation, CONS(newOperation, R_NilValue));
+	    SETCDR(lastOperation, PairList::cons(newOperation, nullptr));
 	    dd->DLlastElt = CDR(lastOperation);
 	}
     }

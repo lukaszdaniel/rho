@@ -1517,6 +1517,7 @@ static inline void print2buff(const char *strng, LocalParseData *d)
  */
 
 constexpr size_t NB = 1000;  /* Same as printutils.cpp */
+#define NB2 2*NB+25
 static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
 {
     int w, d, e, wi, di, ei;
@@ -1530,9 +1531,8 @@ static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
     strcpy(Re, EncodeReal0(x.r, w, d, e, "."));
     strcpy(Im, EncodeReal0(x.i, wi, di, ei, "."));
 
-    // This may intentionally truncate, and gcc 8 warns
-    snprintf(buff, 2*NB+25, "complex(real=%s, imaginary=%s)", Re, Im);
-    buff[2*NB+25-1] = '\0';
+    snprintf(buff, NB2, "complex(real=%s, imaginary=%s)", Re, Im);
+    buff[NB2-1] = '\0';
     return buff;
 }
 
@@ -1711,7 +1711,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    } else if(TYPEOF(vector) == CPLXSXP &&
 		      (ISNAN(COMPLEX(vector)[i].r) || !R_FINITE(COMPLEX(vector)[i].i)) ) {
 		if (!buff)
-	    	    buff = static_cast<char *>(alloca(NB));
+	    	    buff = static_cast<char *>(alloca(NB2));
 		strp = EncodeNonFiniteComplexElement(COMPLEX(vector)[i], buff);
 	    } else if (allNA && TYPEOF(vector) == STRSXP &&
 		       STRING_ELT(vector, i) == NA_STRING) {

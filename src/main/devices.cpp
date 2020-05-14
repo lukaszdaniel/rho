@@ -456,7 +456,7 @@ void GEaddDevice(pGEDevDesc gdd)
     /* maintain .Devices (.Device has already been set) */
     t = PROTECT(Rf_duplicate(getSymbolValue(Symbols::DotDeviceSymbol)));
     if (appnd)
-	SETCDR(s, CONS(t, R_NilValue));
+	SETCDR(s, PairList::cons(t, nullptr));
     else
 	SETCAR(s, t);
 
@@ -539,7 +539,7 @@ void attribute_hidden Rf_InitGraphics(void)
     SEXP s = PROTECT(Rf_mkString("null device"));
     Rf_gsetVar(Symbols::DotDeviceSymbol, s, R_BaseEnv);
     s = PROTECT(Rf_mkString("null device"));
-    Rf_gsetVar(Symbols::DotDevicesSymbol, CONS(s, R_NilValue), R_BaseEnv);
+    Rf_gsetVar(Symbols::DotDevicesSymbol, PairList::cons(s, nullptr), R_BaseEnv);
     UNPROTECT(2);
 }
 

@@ -180,11 +180,14 @@ SEXP Rf_getAttrib(SEXP vec, SEXP name)
     if (name == Symbols::RowNamesSymbol) {
 	SEXP s = getAttrib0(vec, Symbols::RowNamesSymbol);
 	if(Rf_isInteger(s) && LENGTH(s) == 2 && INTEGER(s)[0] == NA_INTEGER) {
-	    int i, n = abs(INTEGER(s)[1]);
-	    PROTECT(s = Rf_allocVector(INTSXP, n));
-	    for(i = 0; i < n; i++)
+	    int n = abs(INTEGER(s)[1]);
+	    if (n > 0) {
+		//  s = R_compact_intrange(1, n);
+		s = Rf_allocVector(INTSXP, n);
+		for(int i = 0; i < n; i++)
 		INTEGER(s)[i] = i+1;
-	    UNPROTECT(1);
+	    } else
+		s = Rf_allocVector(INTSXP, 0);
 	}
 	return s;
     } else
@@ -900,7 +903,7 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
 
     /* Special treatment for one dimensional arrays */
     if(isOneDimensionalArray(vec)) {
-	PROTECT(val = CONS(val, R_NilValue));
+	PROTECT(val = PairList::cons(val, nullptr));
 	Rf_setAttrib(vec, Symbols::DimNamesSymbol, val);
 	UNPROTECT(3);
 	return vec;

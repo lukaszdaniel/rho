@@ -45,6 +45,7 @@
 #include "rho/ArgMatcher.hpp"
 #include "rho/ExpressionVector.hpp"
 #include "rho/GCStackRoot.hpp"
+#include "rho/unrho.hpp"
 
 using namespace rho;
 
@@ -115,6 +116,9 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
     if(r >= R_XLEN_T_MAX)
 	Rf_errorcall(call, _("result would be too long a vector"));
 
+    if (RHO_FALSE && n1 == (R_xlen_t) n1 && n2 == (R_xlen_t) n2)
+	return R_compact_intrange((R_xlen_t) n1, (R_xlen_t) n2);
+
     SEXP ans;
     R_xlen_t n = (R_xlen_t)(r + 1 + FLT_EPSILON);
 
@@ -133,11 +137,13 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
 	int in1 = (int)(n1);
 	ans = Rf_allocVector(INTSXP, n);
 	if (n1 <= n2)
+	    //ans = R_compact_intrange((R_xlen_t) n1, (R_xlen_t)(n1 + n - 1));
 	    for (int i = 0; i < n; i++) {
 //		if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 		INTEGER(ans)[i] = in1 + i;
 	    }
 	else
+	    //ans = R_compact_intrange((R_xlen_t) n1, (R_xlen_t)(n1 - n + 1));
 	    for (int i = 0; i < n; i++) {
 //		if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 		INTEGER(ans)[i] = in1 - i;

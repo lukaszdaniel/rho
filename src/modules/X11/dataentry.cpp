@@ -116,7 +116,7 @@ typedef struct destruct {
     int text_offset;
     int nboxchars;
     int xmaxused, ymaxused;
-    char labform[14];
+    char labform[15];  // increased from 6 to pacify gcc 8
     Rboolean isEditor;
     Atom prot;
 } destruct, *DEstruct;

@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-10 rea37db530d) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-13 r786f6c45c6) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-01-09 r74100) -- "Frisbee Sailing"
+R Under development (unstable) (2018-02-05 r74209) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -121,8 +121,8 @@ List of 2
 +     "\n\t starting with 'is.' :\t  ",
 +     sum(grepl("^is\\.", ls.base[base.is.f])), "\n", sep = "")
 
-Number of base objects:		1332
-Number of functions in base:	1287
+Number of base objects:		1334
+Number of functions in base:	1289
 	 starting with 'is.' :	  50
 
 > ## 0.14  : 31
@@ -1516,5 +1516,5 @@ sm     3    3    3    3    4    4    4    4    2     2     2
 > par(op)
 > 
 > cat("Time elapsed: ", proc.time() - .ptime, "\n")
-Time elapsed:  1.489 0.04 1.529 0 0 
+Time elapsed:  1.382 0.016 1.399 0 0 
 > 

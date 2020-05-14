@@ -1088,7 +1088,7 @@ static SEXP TagArg(SEXP arg, SEXP tag, YYLTYPE *lloc)
 
 static SEXP NewList(void)
 {
-    SEXP s = CONS(R_NilValue, R_NilValue);
+    SEXP s = PairList::cons(nullptr, nullptr);
     SETCAR(s, s);
     return s;
 }
@@ -1099,7 +1099,7 @@ static SEXP GrowList(SEXP l, SEXP s)
 {
     SEXP tmp;
     PROTECT(s);
-    tmp = CONS(s, R_NilValue);
+    tmp = PairList::cons(s, nullptr);
     UNPROTECT(1);
     SETCDR(CAR(l), tmp);
     SETCAR(l, tmp);

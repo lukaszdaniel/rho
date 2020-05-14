@@ -1529,7 +1529,7 @@ SEXP palette2(SEXP val)
     int n = Rf_length(val), *ians = INTEGER(ans); 
     for (int i = 0; i < PaletteSize; i++) ians[i] = (int)Palette[i];
     if (n) {
-	if (TYPEOF(val) != INTSXP) Rf_error("requires INTSXP argment");
+	if (TYPEOF(val) != INTSXP) Rf_error("requires INTSXP argument");
 	if (n > MAX_PALETTE_SIZE)
 	    Rf_error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
 	for (int i = 0; i < n; i++) Palette[i] = (rcolor)INTEGER(val)[i];

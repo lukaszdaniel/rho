@@ -2,7 +2,7 @@
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2002-2017  The R Foundation
- *  Copyright (C) 1999-2017  The R Core Team.
+ *  Copyright (C) 1999-2018  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -199,7 +199,6 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 {
     FunctionBase* val;
     Environment* top = nullptr; /* -Wall */
-    static int lookup_registry_after_topenv = -1;
     static int lookup_baseenv_after_globalenv = -1;
     char* lookup;
     Symbol* symbol = SEXP_downcast<Symbol*>(method);
@@ -214,39 +213,31 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
     if (defrho == R_BaseEnv)
 	defrho = R_BaseNamespace;
 
-    if (lookup_registry_after_topenv == -1) {
-	lookup = getenv("_R_S3_METHOD_LOOKUP_REGISTRY_AFTER_TOPENV_");
-	lookup_registry_after_topenv
-	    = ((lookup != nullptr) && StringFalse(lookup)) ? 0 : 1;
-    }
     if (lookup_baseenv_after_globalenv == -1) {
 	lookup = getenv("_R_S3_METHOD_LOOKUP_BASEENV_AFTER_GLOBALENV_");
 	lookup_baseenv_after_globalenv
 	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
     }
 
-    if (lookup_registry_after_topenv) {
 	top = static_cast<Environment*>(Rf_topenv(nullptr, callrho));
 	val = findFunInEnvRange(symbol, static_cast<Environment*>(callrho), top);
 	if (val != R_UnboundValue) {
 	    return val;
 	}
-    }
 
     std::pair<FunctionBase*, bool> pr = S3Launcher::findMethod(symbol,
 	static_cast<Environment*>(callrho), static_cast<Environment*>(defrho));
 
-    if (pr.first)
+    if (pr.first) {
 	return pr.first;
+    }
 
-    if (lookup_registry_after_topenv) {
 	if (lookup_baseenv_after_globalenv)
 	    val = findFunWithBaseEnvAfterGlobalEnv(symbol, static_cast<Environment*>(ENCLOS(top)));
 	else
 	    val = findFunInEnvRange(symbol, static_cast<Environment*>(ENCLOS(top)), static_cast<Environment*>(R_EmptyEnv));
+
 	return val;
-    }
-    return R_UnboundValue;
 }
 
 #ifdef UNUSED
@@ -571,7 +562,8 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
     Closure* genclos = nullptr;  // -Wall
     {
 	RObject* callcar = cptr->call()->car();
-	if (callcar->sexptype() == LANGSXP)
+	/* eg get("print.ts")(1) or do.call() */
+	if (callcar->sexptype()  != SYMSXP)
 	    Rf_error(_("'NextMethod' called from an anonymous function"));
 	else if (callcar->sexptype() == CLOSXP)
 	    // e.g., in do.call(function(x) NextMethod('foo'),list())

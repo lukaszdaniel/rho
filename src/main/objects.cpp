@@ -232,12 +232,17 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 	return pr.first;
     }
 
-	if (lookup_baseenv_after_globalenv)
-	    val = findFunWithBaseEnvAfterGlobalEnv(symbol, static_cast<Environment*>(ENCLOS(top)));
+    if(lookup_baseenv_after_globalenv) {
+	if (top == R_GlobalEnv)
+	    top = static_cast<Environment*>(R_BaseEnv);
 	else
-	    val = findFunInEnvRange(symbol, static_cast<Environment*>(ENCLOS(top)), static_cast<Environment*>(R_EmptyEnv));
+	    top = static_cast<Environment*>(ENCLOS(top));
+	val = findFunWithBaseEnvAfterGlobalEnv(symbol, static_cast<Environment*>(top));
+    }
+    else
+	val = findFunInEnvRange(symbol, static_cast<Environment*>(ENCLOS(top)), static_cast<Environment*>(R_EmptyEnv));
 
-	return val;
+    return val;
 }
 
 #ifdef UNUSED

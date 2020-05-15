@@ -2653,12 +2653,13 @@ SEXP attribute_hidden do_filecopy(/*const*/ Expression* call, const BuiltInFunct
 	dates = Rf_asLogical(copy_date_);
 	if (dates == NA_LOGICAL)
 	    Rf_error(_("invalid '%s' argument"), "copy.dates");
-	strncpy(dir,
-		R_ExpandFileName(Rf_translateChar(STRING_ELT(to, 0))),
-		PATH_MAX);
+	const char* q = R_ExpandFileName(Rf_translateChar(STRING_ELT(to, 0)));
+	if(strlen(q) > PATH_MAX - 2) // allow for '/' and terminator
+	    Rf_error(_("invalid '%s' argument"), "to");
+	strncpy(dir, q, PATH_MAX);
 	dir[PATH_MAX - 1] = '\0';
 	if (*(dir + (strlen(dir) - 1)) !=  '/')
-	    strncat(dir, "/", PATH_MAX);
+	    strcat(dir, "/");
 	for (i = 0; i < nfiles; i++) {
 	    if (STRING_ELT(fn, i) != NA_STRING) {
 		strncpy(from,

@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1999--2017  The R Core Team.
+ *  Copyright (C) 1999--2018  The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -346,8 +346,7 @@ namespace rho {
 		&& !Rf_conformable(vlnc, vrnc))
 		Rf_error(_("non-conformable arrays"));
 	    if (Rf_isTs(vlnc)) {
-		if (Rf_isTs(vrnc) && !Rf_tsConform(vlnc, vrnc))
-		    Rf_error(_("non-conformable time-series"));
+	    /* could check ts conformance here */
 		if (vr->size() > vl->size())
 		    Rf_error(_("time-series/vector length mismatch"));
 	    } else if (Rf_isTs(vrnc) && vl->size() > vr->size())

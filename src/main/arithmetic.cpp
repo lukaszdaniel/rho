@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995--1997 Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2016 The R Core Team.
+ *  Copyright (C) 1998--2018 The R Core Team.
  *  Copyright (C) 2003--2016 The R Foundation
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -227,9 +227,10 @@ double R_pow(double x, double y) /* = x ^ y */
 	   gcc 4.3.0 -g -O2 mis-compiled it.  Showed up with
 	   100^0.5 as 3.162278, example(pbirthday) failed. */
 #ifdef USE_POWL_IN_R_POW
-    return powl(x, y);
+	// this is used only on 64-bit Windows (so has powl).
+	return powl(x, y);
 #else
-    return pow(x, y);
+	return pow(x, y);
 #endif
     }
     if (ISNAN(x) || ISNAN(y))

@@ -215,9 +215,8 @@ Error in assertWarning(ff()) :
 Computing_. R Foundation for Statistical Computing, Vienna, Austria.
 <URL: https://www.R-project.org>.
 
-[2] Box GEP and Cox DR (1964). "An Analysis of Transformations."
-_Journal of the Royal Statistical Society, Series B_, *26*, pp.
-211-252.
+[2] Box GEP, Cox DR (1964). "An Analysis of Transformations." _Journal
+of the Royal Statistical Society, Series B_, *26*, 211-252.
 > 
 > 
 > 

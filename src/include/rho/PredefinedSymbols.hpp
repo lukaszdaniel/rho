@@ -113,4 +113,3 @@ PREDEFINED_SYMBOL2(S3MethodsTableSymbol, ".__S3MethodsTable__.");
 PREDEFINED_SYMBOL2(valueSym, "value");
 
 #undef PREDEFINED_SYMBOL2
-

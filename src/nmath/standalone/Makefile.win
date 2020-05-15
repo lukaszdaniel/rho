@@ -69,7 +69,7 @@ SOURCES_NMATH = \
 	fmax2.cpp fmin2.cpp fprec.cpp fround.cpp ftrunc.cpp \
 	sign.cpp fsign.cpp \
 	imax2.cpp imin2.cpp \
-	chebyshev.cpp log1p.cpp expm1.cpp lgammacor.cpp gammalims.cpp stirlerr.cpp bd0.cpp \
+	chebyshev.cpp log1p.cpp lgammacor.cpp gammalims.cpp stirlerr.cpp bd0.cpp \
 	gamma.cpp lgamma.cpp gamma_cody.cpp beta.cpp lbeta.cpp polygamma.cpp cospi.cpp \
 	bessel_i.cpp bessel_j.cpp bessel_k.cpp bessel_y.cpp \
 	choose.cpp \

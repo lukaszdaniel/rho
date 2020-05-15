@@ -58,9 +58,6 @@ namespace rho {
 	 * <li>Both operands are arrays, but with different
 	 * dimensions.</li>
 	 *
-	 * <li>Both operands are time series, but they are not
-	 * conformable (i.e. they do not have the same start time, end
-	 * time and frequency).</li>
 	 *
 	 * <li>Just one operand is a time series, and the
 	 * non-time-series operand is longer than the time-series

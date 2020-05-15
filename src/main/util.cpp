@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -73,22 +73,6 @@ void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar);
 #include <rlocale.h>
 
 /* Many small functions are included from ../include/Rinlinedfuns.h */
-
-attribute_hidden
-Rboolean Rf_tsConform(SEXP x, SEXP y)
-{
-    if ((x = Rf_getAttrib(x, Symbols::TspSymbol)) != R_NilValue &&
-	(y = Rf_getAttrib(y, Symbols::TspSymbol)) != R_NilValue) {
-	/* tspgets should enforce this, but prior to 2.4.0
-	   had INTEGER() here */
-	if(TYPEOF(x) == REALSXP && TYPEOF(y) == REALSXP)
-            return Rboolean(REAL(x)[0] == REAL(x)[0] &&
-		REAL(x)[1] == REAL(x)[1] &&
-                REAL(x)[2] == REAL(x)[2]);
-	/* else fall through */
-    }
-    return FALSE;
-}
 
 int Rf_nrows(SEXP s)
 {

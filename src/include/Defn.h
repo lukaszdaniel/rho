@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1998--2017  The R Core Team.
+ *  Copyright (C) 1998--2018  The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -1123,7 +1123,6 @@ extern attribute_hidden int R_PCRE_limit_recursion;
 # define strmat2intmat		Rf_strmat2intmat
 # define substituteList		Rf_substituteList
 //# define TimeToSeed		Rf_TimeToSeed
-# define tsConform		Rf_tsConform
 # define tspgets		Rf_tspgets
 # define type2symbol		Rf_type2symbol
 # define unbindVar		Rf_unbindVar
@@ -1394,7 +1393,6 @@ void Rf_ssort(rho::StringVector*,int);
 SEXP Rf_strmat2intmat(SEXP, SEXP, SEXP);
 SEXP Rf_substituteList(SEXP, SEXP);
 unsigned int TimeToSeed(void);
-Rboolean Rf_tsConform(SEXP,SEXP);
 SEXP Rf_tspgets(SEXP, SEXP);
 SEXP Rf_type2symbol(SEXPTYPE);
 void Rf_unbindVar(SEXP, SEXP);

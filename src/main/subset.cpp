@@ -819,6 +819,7 @@ enum pmatch
 pstrmatch(SEXP target, SEXP input, size_t slen)
 {
     const char *st = "";
+    const char *si = "";
     const void *vmax = vmaxget();
 
     if(target == R_NilValue)
@@ -834,7 +835,8 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
     default:  // -Wswitch
 	break;
     }
-    if(streqln(st, Rf_translateChar(input), slen)) {
+    si = Rf_translateChar(input);
+    if(si[0] != '\0' && streqln(st, si, slen)) {
 	vmaxset(vmax);
 	return (strlen(st) == slen) ?  EXACT_MATCH : PARTIAL_MATCH;
     } else {

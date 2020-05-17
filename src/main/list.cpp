@@ -81,7 +81,7 @@ static void namewalk(SEXP s, NameWalkData *d)
 	break;
     case LANGSXP:
 	if(!d->IncludeFunctions) s = CDR(s);
-	while(s != R_NilValue) {
+	while(s != nullptr) {
 	    namewalk(CAR(s), d);
 	    s = CDR(s);
 	}

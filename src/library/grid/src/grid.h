@@ -630,4 +630,4 @@ SEXP validUnits(SEXP units);
 /* From gpar.cpp */
 SEXP L_getGPar(void);
 SEXP L_setGPar(SEXP gpars);
-    
+

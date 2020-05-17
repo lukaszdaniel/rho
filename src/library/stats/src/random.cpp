@@ -107,7 +107,7 @@ static R_INLINE SEXP random1(SEXP sn, SEXP sa, ran1 fn, SEXPTYPE type)
 	if (type == INTSXP) {
 	    double rx;
 	    int *ix = INTEGER(x);
-	    
+
 	    for (R_xlen_t i = 0; i < n; i++) {
 //		if ((i+1) % NINTERRUPT) R_CheckUserInterrupt();
 		rx = fn(ra[i % na]);
@@ -323,7 +323,7 @@ SEXP do_rmultinom(SEXP sn, SEXP ssize, SEXP prob)
 {
     SEXP ans, nms;
     int n, size, k, i, ik;
-    
+
     n	 = Rf_asInteger(sn);/* n= #{samples} */
     size = Rf_asInteger(ssize);/* X ~ Multi(size, prob) */
     if (n == NA_INTEGER || n < 0)

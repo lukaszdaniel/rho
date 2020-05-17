@@ -433,7 +433,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
     UNPROTECT(2);
     return result;
 }
-			   
+
 /*
 find.viewport <- function(name, pvp) {
   found <- FALSE
@@ -591,7 +591,7 @@ static SEXP findvppathInChildren(SEXP path, SEXP name,
     UNPROTECT(2);
     return result;
 }
-			   
+
 static SEXP findvppath(SEXP path, SEXP name, SEXP strict, 
 		       SEXP pathsofar, SEXP vp, int depth) 
 {
@@ -607,7 +607,7 @@ static SEXP findvppath(SEXP path, SEXP name, SEXP strict,
     if (noChildren(viewportChildren(vp))) {
 	SET_VECTOR_ELT(result, 0, zeroDepth);
 	SET_VECTOR_ELT(result, 1, R_NilValue);
-	
+
     } 
     /* 
      * Check for the viewport name AND whether the rest
@@ -3018,7 +3018,7 @@ SEXP L_cap()
      * AND the raster is BY ROW so need to rearrange it
      * to be BY COLUMN (though the dimensions are correct) */
     SEXP image, idim;
-    
+
     PROTECT(raster = GECap(dd));
     /* Non-complying devices will return NULL */
     if (Rf_isNull(raster)) {
@@ -3027,7 +3027,7 @@ SEXP L_cap()
         size = LENGTH(raster);
         nrow = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[0];
         ncol = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[1];
-        
+
         PROTECT(image = Rf_allocVector(STRSXP, size));
         rint = INTEGER(raster);
         for (i=0; i<size; i++) {
@@ -3036,12 +3036,12 @@ SEXP L_cap()
             SET_STRING_ELT(image, (col - 1)*nrow + row - 1, 
                            Rf_mkChar(col2name(rint[i])));
         }
-        
+
         PROTECT(idim = Rf_allocVector(INTSXP, 2));
         INTEGER(idim)[0] = nrow;
         INTEGER(idim)[1] = ncol;
         Rf_setAttrib(image, R_DimSymbol, idim);
-        
+
         UNPROTECT(2);
     }
     UNPROTECT(1);

@@ -550,7 +550,7 @@ namespace rho {
 	// 'Scratchpad' field used in handling argument lists,
 	// formerly hosted in the 'gp' field of sxpinfo_struct.
 	unsigned m_missing     : 2;
-	
+
 	// Similarly the following obsolescent fields squeezed
 	// in here are used only in connection with objects of class
 	// PairList (and only rarely then), so they would more

@@ -313,6 +313,7 @@ SEXP do_parentframe(rho::Expression* call, const rho::BuiltInFunction* op, rho::
 SEXP do_parse(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* n_, rho::RObject* text_, rho::RObject* prompt_, rho::RObject* srcfile_, rho::RObject* encoding_);
 rho::ArgumentArrayFn do_paste;
 SEXP do_pathexpand(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_);
+SEXP do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_, rho::RObject* winslash_, rho::RObject* mustWork_);
 SEXP do_pcre_config(SEXP, SEXP, SEXP, SEXP);
 SEXP do_pmatch(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* table_, rho::RObject* nomatch_, rho::RObject* duplicates_ok_);
 rho::ArgumentArrayFn do_pmin;
@@ -541,7 +542,6 @@ SEXP do_edit(SEXP, SEXP, SEXP, SEXP);
 SEXP do_filechoose(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEvent(SEXP, SEXP, SEXP, SEXP);
 SEXP do_getGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);
-SEXP do_normalizepath(SEXP, SEXP, SEXP, SEXP);
 SEXP do_polyroot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_saveplot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_setGraphicsEventEnv(SEXP, SEXP, SEXP, SEXP);
@@ -550,5 +550,9 @@ SEXP do_system(SEXP, SEXP, SEXP, SEXP);
 SEXP do_syssleep(SEXP,SEXP,SEXP,SEXP);
 SEXP do_getSnapshot(SEXP, SEXP, SEXP, SEXP);
 SEXP do_playSnapshot(SEXP, SEXP, SEXP, SEXP);
+
+/* ALTREP-related */
+
+SEXP do_sorted_fpass(SEXP, SEXP, SEXP, SEXP);
 
 #endif /* not R_INTERNAL_H */

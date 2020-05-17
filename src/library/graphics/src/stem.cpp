@@ -75,7 +75,7 @@ stem_leaf(double *x, int n, double scale, int width, double atom)
 	r = atom + fabs(x[0])/scale;
 	c = R_pow_di(10.0, (int)(1.0 - floor(log10(r))));
     }
-    
+
     /* Find the print width of the stem. */
 
     lo = floor(x[0]*c/mu)*mu;

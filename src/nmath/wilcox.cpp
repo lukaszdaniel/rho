@@ -141,7 +141,7 @@ cwilcox(int k, int m, int n)
        if there were just k y's. 
     */
     if (j > 0 && k < j) return cwilcox(k, i, k);    
-    
+
     if (w[i][j] == 0) {
 	w[i][j] = (double *) calloc((size_t) c + 1, sizeof(double));
 #ifdef MATHLIB_STANDALONE

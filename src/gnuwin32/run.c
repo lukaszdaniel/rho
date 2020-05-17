@@ -420,7 +420,7 @@ int runcmd_timeout(const char *cmd, cetype_t enc, int wait, int visible,
                    int timeout, int *timedout)
 {
     if (!wait && timeout)
-	error("Timeout with background running processes is not supported.");
+	Rf_error("Timeout with background running processes is not supported.");
     
     HANDLE hIN = getInputHandle(fin), hOUT, hERR;
     int ret = 0;
@@ -672,7 +672,7 @@ static Rboolean Wpipe_open(Rconnection con)
     if(io) visible = 1; /* Somewhere to put the output */
     rp = rpipeOpen(con->description, con->enc, visible, NULL, io, NULL, NULL, 0);
     if(!rp) {
-	warning("cannot open cmd `%s'", con->description);
+	Rf_warning("cannot open cmd `%s'", con->description);
 	return FALSE;
     }
     ((RWpipeconn)(con->connprivate))->rp = rp;
@@ -709,13 +709,13 @@ static int Wpipe_fgetc(Rconnection con)
 
 static double null_seek(Rconnection con, double where, int origin, int rw)
 {
-    error(_("seek not enabled for this connection"));
+    Rf_error(_("seek not enabled for this connection"));
     return 0; /* -Wall */
 }
 
 static void null_truncate(Rconnection con)
 {
-    error(_("truncate not enabled for this connection"));
+    Rf_error(_("truncate not enabled for this connection"));
 }
 
 static int Wpipe_fflush(Rconnection con)
@@ -758,7 +758,7 @@ static size_t Wpipe_write(const void *ptr, size_t size, size_t nitems,
     GetExitCodeProcess(rp->pi.hProcess, &ret);
     if(ret != STILL_ACTIVE) {
 	rp->active = 0;
-	warning("broken Windows pipe");
+	Rf_warning("broken Windows pipe");
 	return 0;
     }
     if (WriteFile(rp->write, ptr, towrite, &write, NULL) != 0)
@@ -776,7 +776,7 @@ static int Wpipe_vfprintf(Rconnection con, const char *format, va_list ap)
     res = vsnprintf(b, BUFSIZE, format, ap);
     if(res < 0) { /* a failure indication, so try again */
 	b[BUFSIZE -1] = '\0';
-	warning("printing of extremely long output is truncated");
+	Rf_warning("printing of extremely long output is truncated");
 	res = BUFSIZE;
     }
     return Wpipe_write(buf, res, 1, con);
@@ -790,11 +790,11 @@ Rconnection newWpipe(const char *description, int ienc, const char *mode)
     int len;
 
     new_ = (Rconnection) malloc(sizeof(struct Rconn));
-    if(!new_) error(_("allocation of pipe connection failed"));
+    if(!new_) Rf_error(_("allocation of pipe connection failed"));
     new_->connclass = (char *) malloc(strlen("pipe") + 1);
     if(!new_->connclass) {
 	free(new_);
-	error(_("allocation of pipe connection failed"));
+	Rf_error(_("allocation of pipe connection failed"));
     }
     strcpy(new_->connclass, "pipe");
 
@@ -807,7 +807,7 @@ Rconnection newWpipe(const char *description, int ienc, const char *mode)
 
     if(!new_->description) {
 	free(command); free(new_->connclass); free(new_);
-	error(_("allocation of pipe connection failed"));
+	Rf_error(_("allocation of pipe connection failed"));
     }
 
     /* We always use COMSPEC here, not R_SHELL or SHELL,
@@ -835,7 +835,7 @@ Rconnection newWpipe(const char *description, int ienc, const char *mode)
     new_->connprivate = (void *) malloc(sizeof(struct Wpipeconn));
     if(!new_->connprivate) {
 	free(new_->description); free(new_->connclass); free(new_);
-	error(_("allocation of pipe connection failed"));
+	Rf_error(_("allocation of pipe connection failed"));
     }
     return new_;
 }
@@ -847,21 +847,21 @@ SEXP do_syswhich(SEXP call, SEXP op, SEXP args, SEXP env)
     int i, n;
 
     nm = CAR(args);
-    if(!isString(nm))
-	error(_("'names' is not a character vector"));
+    if(!Rf_isString(nm))
+	Rf_error(_("'names' is not a character vector"));
     n = LENGTH(nm);
-    PROTECT(ans = allocVector(STRSXP, n));
+    PROTECT(ans = Rf_allocVector(STRSXP, n));
     for(i = 0; i < n; i++) {
 	if (STRING_ELT(nm, i) == NA_STRING) {
 	    SET_STRING_ELT(ans, i, NA_STRING);
 	} else {
-	    const char *this = CHAR(STRING_ELT(nm, i));
+	    const char *this = R_CHAR(STRING_ELT(nm, i));
 	    char *that = expandcmd(this, 1);
-	    SET_STRING_ELT(ans, i, mkChar(that ? that : ""));
+	    SET_STRING_ELT(ans, i, Rf_mkChar(that ? that : ""));
 	    free(that);
 	}
     }
-    setAttrib(ans, R_NamesSymbol, nm);
+    Rf_setAttrib(ans, R_NamesSymbol, nm);
     UNPROTECT(1);
     return ans;
 }

@@ -57,7 +57,7 @@ void ClosureContext::runOnExit()
     catch (...) {}
     R_Visible = savevis;
 }
-    
+
 ClosureContext* ClosureContext::innermost(Evaluator::Context* start)
 {
     while (start && start->type() != CLOSURE)

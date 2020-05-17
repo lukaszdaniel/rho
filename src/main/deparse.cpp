@@ -260,13 +260,13 @@ static SEXP deparse1WithCutoff(SEXP call, Rboolean abbrev, int cutoff,
     localData.cutoff = cutoff;
     localData.backtick = backtick;
     localData.opts = opts;
-    localData.strvec = R_NilValue;
+    localData.strvec = nullptr;
 
     Rf_PrintDefaults(); /* from global options() */
     savedigits = R_print.digits;
     R_print.digits = DBL_DIG;/* MAX precision */
 
-    svec = R_NilValue;
+    svec = nullptr;
     if (nlines > 0) {
 	localData.linenumber = localData.maxlines = nlines;
     } else {
@@ -380,7 +380,7 @@ SEXP attribute_hidden do_dput(/*const*/ Expression* call, const BuiltInFunction*
 {
 
     SEXP tval = x_,
-	saveenv = R_NilValue; // -Wall
+	saveenv = nullptr; // -Wall
 	Rboolean wasopen = FALSE;
 	Rconnection con = Rconnection(1);
     if (TYPEOF(tval) == CLOSXP) {
@@ -448,7 +448,7 @@ SEXP attribute_hidden do_dump(/*const*/ Expression* call, const BuiltInFunction*
     if(nobjs < 1 || Rf_length(file) < 1)
 	Rf_error(_("zero-length argument"));
     SEXP source = envir_;
-    if (source != R_NilValue && TYPEOF(source) != ENVSXP)
+    if (source != nullptr && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "envir");
     int opts = Rf_asInteger(opts_);
     /* <NOTE>: change this if extra options are added */
@@ -585,7 +585,7 @@ static PPinfo PPINFO(SEXP s)
     PPinfo ans = {bif->kind(), bif->precedence(), bif->rightAssociative()};
     return ans;
 }
-    
+
 /* needsparens looks at an arg to a unary or binary operator to
    determine if it needs to be parenthesized when deparsed
    mainop is a unary or binary operator,
@@ -798,7 +798,7 @@ static void printcomment(SEXP s, LocalParseData *d)
     /* look for old-style comments first */
 
     if(Rf_isList(TAG(s)) && !Rf_isNull(TAG(s))) {
-	for (s = TAG(s); s != R_NilValue; s = CDR(s)) {
+	for (s = TAG(s); s != nullptr; s = CDR(s)) {
 	    print2buff(Rf_translateChar(STRING_ELT(CAR(s), 0)), d);
 	    writeline(d);
 	}
@@ -884,7 +884,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	d->isS4 = TRUE;
 	/* const void *vmax = vmaxget(); */
 	SEXP class_ = Rf_getAttrib(s, Symbols::ClassSymbol),
-	    cl_def = TYPEOF(class_) == STRSXP ? STRING_ELT(class_, 0) : R_NilValue;
+	    cl_def = TYPEOF(class_) == STRSXP ? STRING_ELT(class_, 0) : nullptr;
 	if(TYPEOF(cl_def) == CHARSXP) { // regular S4 objects
 	    print2buff("new(\"", d);
 	    print2buff(Rf_translateChar(cl_def), d);
@@ -1052,7 +1052,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	/* pairlist(x=) cannot be evaluated, hence with missings we use
 	   as.pairlist(alist(...)) to allow evaluation of deparsed formals */
 	Rboolean missing = FALSE;
-	for(t=s; t != R_NilValue; t=CDR(t))
+	for(t=s; t != nullptr; t=CDR(t))
 	    if (CAR(t) == R_MissingArg) {
 		missing = TRUE;
 		break;
@@ -1062,8 +1062,8 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	else
 	    print2buff("pairlist(", d);
 	d->inlist++;
-	for (t=s ; CDR(t) != R_NilValue ; t=CDR(t) ) {
-	    if( TAG(t) != R_NilValue ) {
+	for (t=s ; CDR(t) != nullptr ; t=CDR(t) ) {
+	    if( TAG(t) != nullptr ) {
 		d->opts = SIMPLEDEPARSE; /* turn off quote()ing */
 		deparse2buff(TAG(t), d);
 		d->opts = d_opts_in;
@@ -1072,7 +1072,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 	    deparse2buff(CAR(t), d);
 	    print2buff(", ", d);
 	}
-	if( TAG(t) != R_NilValue ) {
+	if( TAG(t) != nullptr ) {
 	    d->opts = SIMPLEDEPARSE; /* turn off quote()ing */
 	    deparse2buff(TAG(t), d);
 	    d->opts = d_opts_in;
@@ -1201,7 +1201,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		    d->incurly += 1;
 		    d->indent++;
 		    writeline(d);
-		    while (s != R_NilValue) {
+		    while (s != nullptr) {
 			deparse2buff(CAR(s), d);
 			writeline(d);
 			s = CDR(s);
@@ -1377,7 +1377,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 		}
 	    }
 	    else {
-		SEXP val = R_NilValue; /* -Wall */
+		SEXP val = nullptr; /* -Wall */
 		if (Rf_isSymbol(CAR(s))) {
 		    val = SYMVALUE(CAR(s));
 		    if (TYPEOF(val) == PROMSXP)
@@ -1483,7 +1483,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 
 static inline void writeline(LocalParseData *d)
 {
-    if (d->strvec != R_NilValue && d->linenumber < d->maxlines)
+    if (d->strvec != nullptr && d->linenumber < d->maxlines)
 	SET_STRING_ELT(d->strvec, d->linenumber, Rf_mkCharCE(d->buffer.data, CE_UTF8));
     d->linenumber++;
     if (d->linenumber >= d->maxlines) d->active = FALSE;
@@ -1581,7 +1581,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	}
     }
 
-    SEXP nv = R_NilValue;
+    SEXP nv = nullptr;
     Rboolean do_names = Rboolean(d_opts_in & SHOW_ATTR_OR_NMS); // iff TRUE use '<tag_i> = <comp_i>'
     if(do_names) {
 	nv = Rf_getAttrib(vector, Symbols::NamesSymbol); // only "do names" if have names:
@@ -1827,9 +1827,9 @@ static void vec2buff(SEXP v, LocalParseData *d,
     if (d->opts & USESOURCE) {
 	sv = Rf_getAttrib(v, Symbols::SrcrefSymbol);
 	if (TYPEOF(sv) != VECSXP)
-	    sv = R_NilValue;
+	    sv = nullptr;
     } else
-	sv = R_NilValue;
+	sv = nullptr;
 
     for(int i = 0 ; i < n ; i++) {
 	if (i > 0)
@@ -1854,10 +1854,10 @@ static void args2buff(SEXP arglist, int lineb, int formals, LocalParseData *d)
 {
     Rboolean lbreak = FALSE;
 
-    while (arglist != R_NilValue) {
+    while (arglist != nullptr) {
 	if (TYPEOF(arglist) != LISTSXP && TYPEOF(arglist) != LANGSXP)
 	    Rf_error(_("badly formed function expression"));
-	if (TAG(arglist) != R_NilValue) {
+	if (TAG(arglist) != nullptr) {
 	    SEXP s = TAG(arglist);
 
 	    if( s == Symbols::DotsSymbol )
@@ -1887,7 +1887,7 @@ static void args2buff(SEXP arglist, int lineb, int formals, LocalParseData *d)
 	  deparse2buff(CAR(arglist), d);
 	}
 	arglist = CDR(arglist);
-	if (arglist != R_NilValue) {
+	if (arglist != nullptr) {
 	    print2buff(", ", d);
 	    linebreak(lbreak, d);
 	}

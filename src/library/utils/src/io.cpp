@@ -1166,7 +1166,7 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 	    /* quick integrity check */
 	    if(XLENGTH(x) != (R_len_t)nr * nc)
 		Rf_error(_("corrupt matrix -- dims not not match length"));
-	    
+
 	    for(int i = 0; i < nr; i++) {
 		if(i % 1000 == 999) R_CheckUserInterrupt();
 		if(!Rf_isNull(rnames))

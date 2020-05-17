@@ -1043,7 +1043,7 @@ static void RQuartz_Raster(unsigned int *raster, int w, int h,
     CGDataProviderRef dp;
     CGColorSpaceRef cs;
     CGImageRef img;
-    
+
     /* Create a "data provider" containing the raster data */
     dp = CGDataProviderCreateWithData(NULL, (void *) raster, 4*w*h, NULL);
 
@@ -1548,11 +1548,11 @@ static int has_wss() {
 	    mach_msg_type_number_t  serverNameCount;
 	    bool_array_t            active;
 	    mach_msg_type_number_t  activeCount;
-	    
+
 	    serviceNames  = NULL;
 	    serverNames   = NULL;
 	    active        = NULL;
-	    
+
 	    kr = bootstrap_info(bport, 
 				&serviceNames, &serviceNameCount, 
 				&serverNames, &serverNameCount, 

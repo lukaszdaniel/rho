@@ -1122,10 +1122,10 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return R_NilValue/* -Wall */;
     }
     /* should really only do this if specifying new pars ?  yes! [MM] */
-    
+
     if (new_spec && GRecording(call, dd))
 	GErecordGraphicOperation(op, originalArgs, dd);
-    
+
     UNPROTECT(2);
     return value;
 }

@@ -783,7 +783,7 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
     Rf_classgets(ans, klass);
     Rf_setAttrib(ans, Rf_install("tzone"), tzone);
     SEXP nm = Rf_getAttrib(x, Symbols::NamesSymbol);
-    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
+    if(nm != nullptr) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
     if(settz) reset_tz(oldtz);
     UNPROTECT(6);
     return ans;
@@ -1060,7 +1060,7 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 // .Internal(strptime(as.character(x), format, tz))
 SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* tz_)
 {
-    SEXP x, sformat, ans, ansnames, klass, stz, tzone = R_NilValue;
+    SEXP x, sformat, ans, ansnames, klass, stz, tzone = nullptr;
     int invalid, isgmt = 0, settz = 0, offset;
     stm tm, tm2, *ptm = &tm;
     const char *tz = NULL;
@@ -1260,7 +1260,7 @@ SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::B
     SEXP s_tzone = Rf_install("tzone");
     Rf_setAttrib(ans, s_tzone, Rf_mkString("UTC"));
     SEXP nm = Rf_getAttrib(x, Symbols::NamesSymbol);
-    if(nm != R_NilValue) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
+    if(nm != nullptr) Rf_setAttrib(VECTOR_ELT(ans, 5), Symbols::NamesSymbol, nm);
     UNPROTECT(4);
 
     return ans;

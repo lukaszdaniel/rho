@@ -212,13 +212,13 @@ typedef R_GE_gcontext* pGEcontext;
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-    
+
 #include <R_ext/GraphicsDevice.h> /* needed for DevDesc */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 typedef struct _GEDevDesc GEDevDesc;
 
 typedef SEXP (* GEcallback)(GEevent, GEDevDesc *, SEXP);

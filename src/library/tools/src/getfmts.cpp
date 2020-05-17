@@ -49,15 +49,15 @@ SEXP getfmts(SEXP format)
     int nthis, nstar;
     Rboolean use_UTF8;
     const void *vmax = vmaxget();
-    
+
     SEXP res = PROTECT(Rf_allocVector(STRSXP, MAXNARGS));
-    
+
 #define SET_RESULT(n, s) {						\
      if (n >= MAXNARGS) Rf_error(_("only %d arguments are allowed"), MAXNARGS); \
 	maxlen = (n) < maxlen ? maxlen : (n) + 1;			\
 	SET_STRING_ELT(res, (n), Rf_mkChar(s));				\
     }
-    
+
     if (!Rf_isString(format)) Rf_error(_("'fmt' is not a character vector"));
     nfmt = LENGTH(format);
     if (nfmt != 1) 
@@ -83,7 +83,7 @@ SEXP getfmts(SEXP format)
 		/* recognise selected types from Table B-1 of K&R */
 		/* NB: we deal with "%%" in branch above. */
 		/* This is MBCS-OK, as we are in a format spec */
-		    
+
 		/*  Include formats c, u, p and n as well as the R formats; this needs to match */
 		/*  C code as well */
 		chunk = strcspn(curFormat + 1, "diosfeEgGxXaAcupn") + 2;

@@ -59,7 +59,7 @@ do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
 	return (*ptr->do_lapack)(call, op, args, env);
     else {
 	Rf_error(_("LAPACK routines cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 

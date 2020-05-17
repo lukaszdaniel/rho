@@ -100,7 +100,7 @@ SEXP do_setGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
 
     dd->eventEnv = eventEnv;
 
-    return(R_NilValue);
+    return(nullptr);
 }
 
 SEXP do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -144,7 +144,7 @@ Rboolean haveListeningDev()
 
 SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP result = R_NilValue, prompt;
+    SEXP result = nullptr, prompt;
     pDevDesc dd;
     pGEDevDesc gd;
     int i, count=0, devNum;
@@ -162,10 +162,10 @@ SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 	    if ((gd = GEgetDevice(devNum)) && (dd = gd->dev)) {
 		if (dd->gettingEvent)
 		    Rf_error(_("recursive use of 'getGraphicsEvent' not supported"));
-		if (dd->eventEnv != R_NilValue) {
+		if (dd->eventEnv != nullptr) {
 		    if (dd->eventHelper) dd->eventHelper(dd, 1);
 		    dd->gettingEvent = TRUE;
-		    Rf_defineVar(Rf_install("result"), R_NilValue, dd->eventEnv);
+		    Rf_defineVar(Rf_install("result"), nullptr, dd->eventEnv);
 		    count++;
 		}
 	    }
@@ -178,10 +178,10 @@ SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 	R_FlushConsole();
 
 	/* Poll them */
-	while (result == R_NilValue) {
+	while (result == nullptr) {
 	    /* make sure we still have at least one device listening for events, and throw an error if not*/
 	    if(!haveListeningDev())
-		return R_NilValue;
+		return nullptr;
 #ifdef Win32
 	    R_WaitEvent();
 #endif
@@ -191,10 +191,10 @@ SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 	    devNum = curDevice();
 	    while (i++ < NumDevices()) {
 		if ((gd = GEgetDevice(devNum)) && (dd = gd->dev)) {
-		    if (dd->eventEnv != R_NilValue) {
+		    if (dd->eventEnv != nullptr) {
 			if (dd->eventHelper) dd->eventHelper(dd, 2);
 			result = Rf_findVar(Rf_install("result"), dd->eventEnv);
-			if (result != R_NilValue && result != R_UnboundValue) {
+			if (result != nullptr && result != R_UnboundValue) {
 			    break;
 			}
 		    }
@@ -207,7 +207,7 @@ SEXP do_getGraphicsEvent(SEXP call, SEXP op, SEXP args, SEXP env)
 	devNum = curDevice();
 	while (i++ < NumDevices()) {
 	    if ((gd = GEgetDevice(devNum)) && (dd = gd->dev)) {
-		if (dd->eventEnv != R_NilValue) {
+		if (dd->eventEnv != nullptr) {
 		    if (dd->eventHelper) dd->eventHelper(dd, 0);
 		    dd->gettingEvent = FALSE;
 		}
@@ -332,5 +332,5 @@ void doIdle(pDevDesc dd)
 Rboolean doesIdle(pDevDesc dd) {
     SEXP handler = Rf_findVar(Rf_install(idleHandler), dd->eventEnv);
     return Rboolean((handler != R_UnboundValue) &&
-        (handler != R_NilValue));
+        (handler != nullptr));
 }

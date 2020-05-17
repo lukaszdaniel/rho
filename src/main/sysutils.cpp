@@ -498,7 +498,7 @@ SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::Buil
     return ans;
 #else
     Rf_error(_("'Sys.setenv' is not available on this system"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -1744,7 +1744,7 @@ void R_reInitTempDir(int die_on_fail)
     if(die_on_fail)				\
 	R_Suicide(MSG_);			\
     else					\
-	Rf_errorcall(R_NilValue, MSG_)
+	Rf_errorcall(nullptr, MSG_)
 
     if(R_TempDir) return; /* someone else set it */
     tmp = nullptr; /* getenv("R_SESSION_TMPDIR");   no longer set in R.sh */
@@ -1781,7 +1781,7 @@ void R_reInitTempDir(int die_on_fail)
 #ifndef Win32
 # ifdef HAVE_SETENV
 	if(setenv("R_SESSION_TMPDIR", tmp, 1))
-	    Rf_errorcall(R_NilValue, _("unable to set R_SESSION_TMPDIR"));
+	    Rf_errorcall(nullptr, _("unable to set R_SESSION_TMPDIR"));
 # elif defined(HAVE_PUTENV)
 	{
 	    size_t len = strlen(tmp) + 20;
@@ -1789,10 +1789,10 @@ void R_reInitTempDir(int die_on_fail)
 	    if(buf) {
 		snprintf(buf, len, "R_SESSION_TMPDIR=%s", tmp);
 		if(putenv(buf))
-		    Rf_errorcall(R_NilValue, _("unable to set R_SESSION_TMPDIR"));
+		    Rf_errorcall(nullptr, _("unable to set R_SESSION_TMPDIR"));
 		/* no free here: storage remains in use */
 	    } else
-		Rf_errorcall(R_NilValue, _("unable to set R_SESSION_TMPDIR"));
+		Rf_errorcall(nullptr, _("unable to set R_SESSION_TMPDIR"));
 	}
 # endif
 #endif
@@ -1925,7 +1925,7 @@ do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op,
 	elapsedLimitValue = old_elapsed;
     }
 
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden
@@ -1948,7 +1948,7 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     if (R_FINITE(elapsed) && elapsed > 0) elapsedLimit2 = elapsed + data[2];
     else elapsedLimit2 = -1;
 
-    return R_NilValue;
+    return nullptr;
 }
 
 /* moved from character.cpp in 2.10.0: configure requires this */

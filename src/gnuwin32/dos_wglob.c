@@ -124,7 +124,7 @@ typedef struct _stat Stat_t;
 typedef struct _wdirent Direntry_t;
 
 
-#define	CHAR(c)		((wchar_t)((c) & M_ASCII))
+#define	R_CHAR(c)		((wchar_t)((c) & M_ASCII))
 #define	META(c)		((wchar_t)((c) | M_QUOTE))
 #define	M_ALL		META(L'*')
 #define	M_END		META(L']')
@@ -473,11 +473,11 @@ glob0(const wchar_t *pattern, wglob_t *pglob)
 		*bufnext++ = M_NOT;
 	    c = *qpatnext++;
 	    do {
-		*bufnext++ = CHAR(c);
+		*bufnext++ = R_CHAR(c);
 		if (*qpatnext == BG_RANGE &&
 		    (c = qpatnext[1]) != BG_RBRACKET) {
 		    *bufnext++ = M_RNG;
-		    *bufnext++ = CHAR(c);
+		    *bufnext++ = R_CHAR(c);
 		    qpatnext += 2;
 		}
 	    } while ((c = *qpatnext++) != BG_RBRACKET);
@@ -497,7 +497,7 @@ glob0(const wchar_t *pattern, wglob_t *pglob)
 		*bufnext++ = M_ALL;
 	    break;
 	default:
-	    *bufnext++ = CHAR(c);
+	    *bufnext++ = R_CHAR(c);
 	    break;
 	}
     }
@@ -737,7 +737,7 @@ globextend(const wchar_t *path, wglob_t *pglob, size_t *limitp)
 #ifdef GLOB_DEBUG
     Rprintf("Adding ");
     for (p = path; *p; p++)
-	(void)Rprintf("%c", CHAR(*p));
+	(void)Rprintf("%c", R_CHAR(*p));
     Rprintf("\n");
 #endif /* GLOB_DEBUG */
 
@@ -907,7 +907,7 @@ qprintf(const char *str, wchar_t *s)
 
     (void)Rprintf("%s:\n", str);
     for (p = s; *p; p++)
-	(void)Rprintf("%lc", CHAR(*p));
+	(void)Rprintf("%lc", R_CHAR(*p));
     (void)Rprintf("\n");
 #if 0
     for (p = s; *p; p++)

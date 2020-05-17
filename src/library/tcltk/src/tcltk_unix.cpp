@@ -81,7 +81,7 @@ static void addTcl(void)
 /* Note that although this cleans up R's event loop, it does not attempt
    to clean up Tcl's, to which Tcl_unix_setup added an event source.
    We could call Tcl_DeleteEventSource.
-   
+
    But for now un/re-loading the interpreter seems to cause crashes.
 */
 void delTcl(void)

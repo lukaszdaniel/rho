@@ -62,6 +62,3 @@ int main() {
     cout << "Cells allocated: " << pool.cellsAllocated() << endl;
     return 0;
 }
-
-
-    

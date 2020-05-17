@@ -50,7 +50,7 @@ enum ne_strictness_type {
 };
 /* NOTE:  ne_strict = NUM_EQ + (SINGLE_NA * 2)  = NUM_EQ | (SINGLE_NA << 1)   */
 
-static Rboolean neWithNaN(double x, double y, ne_strictness_type str);
+static bool neWithNaN(double x, double y, ne_strictness_type str);
 
 
 /* .Internal(identical(..)) */
@@ -135,8 +135,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
        common (and they are used for S4 slots) we should store them in
        a hash table.
     */
-    else if(ax != R_NilValue || ay != R_NilValue) {
-	if(ax == R_NilValue || ay == R_NilValue)
+    else if(ax != nullptr || ay != nullptr) {
+	if(ax == nullptr || ay == nullptr)
 	    return FALSE;
 	if(TYPEOF(ax) != LISTSXP || TYPEOF(ay) != LISTSXP) {
 	    Rf_warning(_("ignoring non-pairlist attributes"));
@@ -151,9 +151,9 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	       R_compute_identical in the loop. */
 	    PROTECT(ax);
 	    PROTECT(ay);
-	    for(elx = ax; elx != R_NilValue; elx = CDR(elx)) {
+	    for(elx = ax; elx != nullptr; elx = CDR(elx)) {
 		const char *tx = R_CHAR(PRINTNAME(TAG(elx)));
-		for(ely = ay; ely != R_NilValue; ely = CDR(ely))
+		for(ely = ay; ely != nullptr; ely = CDR(ely))
 		    if(streql(tx, R_CHAR(PRINTNAME(TAG(ely))))) {
 			/* We need to treat row.names specially here */
 			if(streql(tx, "row.names")) {
@@ -172,7 +172,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 			    }
 			break;
 		    }
-		if(ely == R_NilValue) {
+		if(ely == nullptr) {
 		    UNPROTECT(2); /* ax, ay */
 		    return FALSE;
 		}
@@ -259,8 +259,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
     case LANGSXP:
     case LISTSXP:
     {
-	while (x != R_NilValue) {
-	    if(y == R_NilValue)
+	while (x != nullptr) {
+	    if(y == nullptr)
 		return FALSE;
 	    if(!R_compute_identical(CAR(x), CAR(y), flags))
 		return FALSE;
@@ -349,17 +349,17 @@ R_compute_identical(SEXP x, SEXP y, int flags)
  *
  * @return FALSE or TRUE indicating if x or y differ
  */
-static Rboolean neWithNaN(double x, double y, ne_strictness_type str)
+static bool neWithNaN(double x, double y, ne_strictness_type str)
 {
     switch (str) {
     case single_NA__num_eq:
     case single_NA__num_bit:
 	if(R_IsNA(x))
-	    return(R_IsNA(y) ? FALSE : TRUE);
+	    return(R_IsNA(y) ? false : true);
 	if(R_IsNA(y))
-	    return(R_IsNA(x) ? FALSE : TRUE);
+	    return(R_IsNA(x) ? false : true);
 	if(ISNAN(x))
-	    return(ISNAN(y) ? FALSE : TRUE);
+	    return(ISNAN(y) ? false : true);
 
     case bit_NA__num_eq:
     case bit_NA__num_bit:
@@ -368,18 +368,18 @@ static Rboolean neWithNaN(double x, double y, ne_strictness_type str)
 
     switch (str) {
     case single_NA__num_eq:
-	return(Rboolean(x != y));
+	return (x != y);
     case bit_NA__num_eq:
 	if(!ISNAN(x) && !ISNAN(y))
-	    return(Rboolean(x != y));
+	    return (x != y);
 	else /* bitwise check for NA/NaN's */
 	    return memcmp(&x,
-			  &y, sizeof(double)) ? TRUE : FALSE;
+			  &y, sizeof(double)) ? true : false;
     case bit_NA__num_bit:
     case single_NA__num_bit:
 	return memcmp(&x,
-		      &y, sizeof(double)) ? TRUE : FALSE;
+		      &y, sizeof(double)) ? true : false;
     default: /* Wall */
-	return FALSE;
+	return false;
     }
 }

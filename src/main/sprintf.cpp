@@ -98,7 +98,7 @@ SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::Bui
     const char *formatString;
     size_t n, cur, chunk;
 
-    SEXP format, _this, a[MAXNARGS], ans /* -Wall */ = R_NilValue;
+    SEXP format, _this, a[MAXNARGS], ans /* -Wall */ = nullptr;
     int ns, maxlen, lens[MAXNARGS], nthis, nstar, star_arg = 0;
     static R_StringBuffer outbuff = {nullptr, 0, MAXELTSIZE};
     Rboolean has_star, use_UTF8;

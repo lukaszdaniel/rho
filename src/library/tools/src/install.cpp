@@ -152,7 +152,7 @@ SEXP codeFilesAppend(SEXP f1, SEXP f2)
 	if (fwrite(buf, 1, nchar, fp1) != nchar) goto append_error;
 	if (!nchar || buf[nchar - 1] != '\n')
 	    if (fwrite("\n", 1, 1, fp1) != 1) goto append_error;
-	
+
 	status = 1;
     append_error:
 	if (status == 0) Rf_warning(_("write error during file append"));

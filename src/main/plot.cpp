@@ -55,7 +55,7 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
 
  *	The resulting REAL vector must have length >= 1, ideally >= 2
  */
-    SEXP at = R_NilValue;/* -Wall*/
+    SEXP at = nullptr;/* -Wall*/
     double umin, umax, dn, rng, small;
     int i, n, ne;
     if (!logflag || axp[2] < 0) { /* --- linear axis --- Only use axp[] arg. */

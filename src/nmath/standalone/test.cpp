@@ -42,6 +42,6 @@ int main(int argc, char** argv)
     set_seed(123, 456);
     N01_kind = BOX_MULLER;
     printf("normal via BM %f\n", norm_rand());
-    
+
     return 0;
 }

@@ -482,7 +482,7 @@ extern "C" {
     {
 	return rho::String::obtain(str, CE_NATIVE);
     }
-    
+
     /** @brief Get a pointer to a rho::String object.
      *
      * If no rho::String with the specified text and encoding

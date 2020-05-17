@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-14 r463ef7011c) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-01 r74320) -- "Frisbee Sailing"
+R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -1277,5 +1277,5 @@ Summary of (a total of 9) warning messages:
 > 
 > ## at the very end
 > cat('Time elapsed: ', proc.time() - .proctime00,'\n')
-Time elapsed:  2.609 0.036 2.647 0 0 
+Time elapsed:  2.265 0.036 2.303 0 0 
 > 

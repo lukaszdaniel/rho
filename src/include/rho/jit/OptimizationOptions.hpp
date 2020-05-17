@@ -31,7 +31,7 @@ struct OptimizationOptions {
     OptimizationOptions()
 	: AssumeSaneControlFlowOperators(true),
 	  AssumeSaneAssignmentOperators(true) { }
-    
+
     /*
      * These options affect the semantics of R.
      */

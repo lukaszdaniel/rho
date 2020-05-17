@@ -80,7 +80,7 @@ static GESystemDesc* registeredSystems[MAX_GRAPHICS_SYSTEMS];
 
 static void unregisterOne(pGEDevDesc dd, int systemNumber) {
     if (dd->gesd[systemNumber] != nullptr) {
-	(dd->gesd[systemNumber]->callback)(GE_FinaliseState, dd, R_NilValue);
+	(dd->gesd[systemNumber]->callback)(GE_FinaliseState, dd, nullptr);
 	free(dd->gesd[systemNumber]);
 	dd->gesd[systemNumber] = nullptr;
     }
@@ -126,7 +126,7 @@ static void registerOne(pGEDevDesc dd, int systemNumber, GEcallback cb) {
 	static_cast<GESystemDesc*>(calloc(1, sizeof(GESystemDesc)));
     if (dd->gesd[systemNumber] == nullptr)
 	Rf_error(_("unable to allocate memory (in GEregister)"));
-    result = cb(GE_InitState, dd, R_NilValue);
+    result = cb(GE_InitState, dd, nullptr);
     if (Rf_isNull(result)) {
         /* tidy up */
         free(dd->gesd[systemNumber]);
@@ -262,7 +262,7 @@ SEXP GEhandleEvent(GEevent event, pDevDesc dev, SEXP data)
     for (i = 0; i < MAX_GRAPHICS_SYSTEMS; i++)
 	if (registeredSystems[i] != nullptr)
 	    (registeredSystems[i]->callback)(event, gdd, data);
-    return R_NilValue;
+    return nullptr;
 }
 
 /****************************************************************
@@ -481,7 +481,7 @@ R_GE_lineend GE_LENDpar(SEXP value, int ind)
 
 SEXP GE_LENDget(R_GE_lineend lend)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     int i;
 
     for (i = 0; lineend[i].name; i++) {
@@ -546,7 +546,7 @@ R_GE_linejoin GE_LJOINpar(SEXP value, int ind)
 
 SEXP GE_LJOINget(R_GE_linejoin ljoin)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     int i;
 
     for (i = 0; linejoin[i].name; i++) {
@@ -1460,7 +1460,7 @@ SEXP GECap(pGEDevDesc dd)
     /* safety check: this will be NULL if the device did not set it. */
     if (!dd->dev->cap) {
 	Rf_warning(_("raster capture is not available for this device"));
-	return R_NilValue;
+	return nullptr;
     }
     return dd->dev->cap(dd->dev);
 }
@@ -1939,7 +1939,7 @@ SEXP GEXspline(int n, double *x, double *y, double *s, Rboolean open,
      * Use xspline.cpp code to generate points to draw
      * Draw polygon or polyline from points
      */
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     int i;
     double *ipr = dd->dev->ipr, asp = ipr[0]/ipr[1], *ys;
     /*
@@ -2060,7 +2060,7 @@ void GESymbol(double x, double y, int pch, double size,
 	    GERect(x-xc, y-yc, x+xc, y+yc, gc, dd);
 	} else {
 	    char str[2];
-	    str[0] = char( pch);
+	    str[0] = char(pch);
 	    str[1] = '\0';
 	    GEText(x, y, str,
 		   (gc->fontface == 5) ? CE_SYMBOL : CE_NATIVE,
@@ -2794,7 +2794,7 @@ Rboolean GEcheckState(pGEDevDesc dd)
     for (i=0; i < MAX_GRAPHICS_SYSTEMS; i++)
 	if (dd->gesd[i] != nullptr)
 	    if (!LOGICAL((dd->gesd[i]->callback)(GE_CheckPlot, dd,
-						 R_NilValue))[0])
+						 nullptr))[0])
 		result = FALSE;
     return result;
 }
@@ -2819,7 +2819,7 @@ void GErecordGraphicOperation(SEXP op, SEXP args, pGEDevDesc dd)
     SEXP lastOperation = dd->DLlastElt;
     if (dd->displayListOn) {
 	SEXP newOperation = Rf_list2(op, args);
-	if (lastOperation == R_NilValue) {
+	if (lastOperation == nullptr) {
 	    setDisplayList(dd, PairList::cons(newOperation, nullptr));
 	    dd->DLlastElt = dd->displayList;
 	} else {
@@ -2846,8 +2846,8 @@ void GEinitDisplayList(pGEDevDesc dd)
      */
     for (i = 0; i < MAX_GRAPHICS_SYSTEMS; i++)
 	if (dd->gesd[i] != nullptr)
-	    (dd->gesd[i]->callback)(GE_SaveState, dd, R_NilValue);
-    dd->DLlastElt = R_NilValue;
+	    (dd->gesd[i]->callback)(GE_SaveState, dd, nullptr);
+    dd->DLlastElt = nullptr;
     setDisplayList(dd, nullptr);
 }
 
@@ -2875,7 +2875,7 @@ void GEplayDisplayList(pGEDevDesc dd)
     devnum = GEdeviceNumber(dd);
     if (devnum == 0) return;
     theList = dd->displayList;
-    if (theList == R_NilValue) return;
+    if (theList == nullptr) return;
 
     /* Get each graphics system to restore state required for
      * replaying the display list
@@ -2887,11 +2887,11 @@ void GEplayDisplayList(pGEDevDesc dd)
      */
     PROTECT(theList);
     plotok = 1;
-    if (theList != R_NilValue) {
+    if (theList != nullptr) {
 	savePalette(TRUE);
 	savedDevice = curDevice();
 	selectDevice(devnum);
-	while (theList != R_NilValue && plotok) {
+	while (theList != nullptr && plotok) {
             Expression* theOperation
                 = dynamic_cast<Expression*>(CAR(theList));
             // We can't call the_expression->evaluate() here, because the
@@ -2943,7 +2943,7 @@ void GEcopyDisplayList(int fromDevice)
      */
     for (i=0; i < MAX_GRAPHICS_SYSTEMS; i++)
 	if (dd->gesd[i] != nullptr)
-	    (dd->gesd[i]->callback)(GE_CopyState, gd, R_NilValue);
+	    (dd->gesd[i]->callback)(GE_CopyState, gd, nullptr);
     GEplayDisplayList(dd);
     if (!dd->displayListOn) GEinitDisplayList(dd);
 }
@@ -3057,7 +3057,7 @@ SEXP do_getSnapshot(SEXP call, SEXP op, SEXP args, SEXP env)
 SEXP do_playSnapshot(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     GEplaySnapshot(CAR(args), GEcurrentDevice());
-    return R_NilValue;
+    return nullptr;
 }
 
 /****************************************************************
@@ -3077,17 +3077,17 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
      * This function can be run under three conditions:
      *
      *   (i) a top-level call to do_recordGraphics.
-     *       In this case, call != R_NilValue and
+     *       In this case, call != nullptr and
      *       dd->recordGraphics = TRUE
      *       [so GErecording() returns TRUE]
      *
      *   (ii) a nested call to do_recordGraphics.
-     *        In this case, call != R_NilValue but
+     *        In this case, call != nullptr but
      *        dd->recordGraphics = FALSE
      *        [so GErecording() returns FALSE]
      *
      *   (iii) a replay of the display list
-     *         In this case, call == R_NilValue and
+     *         In this case, call == nullptr and
      *         dd->recordGraphics = FALSE
      *         [so GErecording() returns FALSE]
      */
@@ -3109,7 +3109,7 @@ SEXP attribute_hidden do_recordGraphics(SEXP call, SEXP op, SEXP args, SEXP env)
      * This conversion of list to env taken from do_eval
      */
     PROTECT(x = Rf_VectorToPairList(list));
-    for (SEXP xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
+    for (SEXP xptr = x ; xptr != nullptr ; xptr = CDR(xptr))
 	ENSURE_NAMEDMAX(CAR(xptr));
     /*
      * The environment passed in as the third arg is used as
@@ -3554,7 +3554,7 @@ void R_GE_rasterResizeForRotation(unsigned int *sraster,
  * Code based on rotateAMColorLow() from leptonica library
 
  * draster must be pre-allocated.
- 
+
  * smoothAlpha allows alpha channel to vary smoothly based on 
  * interpolation.  If this is FALSE, then alpha values are 
  * taken from MAX(alpha) of relevant pixels.  This means that

@@ -109,7 +109,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     x = CAR(args); args = CDR(args);
     if (TYPEOF(x) == CLOSXP) envir = CLOENV(x);
-    else envir = R_NilValue;
+    else envir = nullptr;
     PROTECT(envir);
 
     fn = CAR(args); args = CDR(args);
@@ -123,7 +123,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     else filename = DefaultFileName;
 
-    if (x != R_NilValue) {
+    if (x != nullptr) {
 	if((fp=R_fopen(R_ExpandFileName(filename), "w")) == nullptr)
 	    Rf_errorcall(call, _("unable to open file"));
 	if (LENGTH(STRING_ELT(fn, 0)) == 0) EdFileUsed++;
@@ -187,7 +187,7 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	srcfile = Rf_eval(srcfile, R_BaseEnv);
 	UNPROTECT(5);
     } else
-	srcfile = R_NilValue;
+	srcfile = nullptr;
     PROTECT(srcfile);
 
     /* <FIXME> setup a context to close the file, and parse and eval
@@ -204,14 +204,14 @@ SEXP do_edit(SEXP call, SEXP op, SEXP args, SEXP rho)
     R_ResetConsole();
     {   /* can't just Rf_eval(x) here */
 	int j, n;
-	SEXP tmp = R_NilValue;
+	SEXP tmp = nullptr;
 
 	n = LENGTH(x);
 	for (j = 0 ; j < n ; j++)
 	    tmp = Rf_eval(XVECTOR_ELT(x, j), R_GlobalEnv);
 	x = tmp;
     }
-    if (TYPEOF(x) == CLOSXP && envir != R_NilValue)
+    if (TYPEOF(x) == CLOSXP && envir != nullptr)
 	SET_CLOENV(x, envir);
     UNPROTECT(3);
     vmaxset(vmaxsave);

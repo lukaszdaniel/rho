@@ -152,7 +152,7 @@ int attribute_hidden R_IoBufferPutc(int c, IoBuffer *iob)
 {
     if (iob->write_offset == IOBSIZE)
 	NextWriteBufferListItem(iob);
-    *(iob->write_ptr)++ = char( c);
+    *(iob->write_ptr)++ = char(c);
     iob->write_offset++;
     return 0;/*not used*/
 }
@@ -194,7 +194,7 @@ int attribute_hidden R_IoBufferReadOffset(IoBuffer *iob)
     }
     return result;
 }
-    
+
 /* Initialization code for text buffers */
 
 static void transferChars(unsigned char *p, const char *q)
@@ -213,7 +213,7 @@ int attribute_hidden R_TextBufferInit(TextBuffer *txtb, SEXP text)
 	n = Rf_length(text);
 	l = 0;
 	for (i = 0; i < n; i++) {
-	    if (STRING_ELT(text, i) != R_NilValue) {
+	    if (STRING_ELT(text, i) != nullptr) {
 		k = int(strlen(Rf_translateChar(STRING_ELT(text, i))));
 		if (k > l)
 		    l = k;
@@ -235,7 +235,7 @@ int attribute_hidden R_TextBufferInit(TextBuffer *txtb, SEXP text)
 	txtb->vmax = vmaxget();
 	txtb->buf = nullptr;
 	txtb->bufp = nullptr;
-	txtb->text = R_NilValue;
+	txtb->text = nullptr;
 	txtb->ntext = 0;
 	txtb->offset = 1;
 	return 0;

@@ -15,7 +15,7 @@
 
 /* the location of the header defining hash functions */
 #define HASH_FUN_H  <hash_map>
- 
+
 #endif
 
 /* the namespace of the hash<> function */

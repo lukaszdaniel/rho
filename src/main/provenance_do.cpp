@@ -78,7 +78,7 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    (*v)[0]=false;
     return v;*/
     Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = static_cast<Environment*>(rho);
+    Environment* env = SEXP_downcast<Environment*>(rho);
     // Let's try to get the binding for given symbol...
     Frame::Binding* binding = env->findBinding(sym);
     if (binding != nullptr)
@@ -115,7 +115,7 @@ SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<LogicalVector> v(LogicalVector::create(1));
 #ifdef PROVENANCE_TRACKING
     Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = static_cast<Environment*>(rho);
+    Environment* env = SEXP_downcast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     (*v)[0] = (bdg->provenance() != 0);
 #else
@@ -139,7 +139,7 @@ SEXP attribute_hidden do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(CAR(args)) != SYMSXP)
 	Rf_errorcall(call, _("provenance expects Symbol argument"));
     Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = static_cast<Environment*>(rho);
+    Environment* env = SEXP_downcast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     if (!bdg)
 	Rf_errorcall(call, _("invalid Symbol passed to 'provenance'"));
@@ -212,7 +212,7 @@ SEXP attribute_hidden do_provCommand(/*const*/ Expression* call,
 	Rf_errorcall(call, _("provCommand expects Symbol argument"));
 
     Symbol* sym = SEXP_downcast<Symbol*>(args[0]);
-    Environment* env = static_cast<Environment*>(rho);
+    Environment* env = SEXP_downcast<Environment*>(rho);
     Frame::Binding* bdg = env->findBinding(sym);
     return const_cast<RObject*>(bdg->provenance()->command());
 #endif // PROVENANCE_TRACKING
@@ -236,7 +236,7 @@ SEXP attribute_hidden do_provenance_graph(/*const*/ Expression* call,
     if (!arg1 || arg1->sexptype() != STRSXP)
 	Rf_error(_("invalid 'names' argument"));
 
-    Environment* env = static_cast<Environment*>(rho);
+    Environment* env = SEXP_downcast<Environment*>(rho);
     Provenance::Set provs;
     const StringVector* sv = static_cast<const StringVector*>(arg1);
     for (size_t i = 0; i < sv->size(); i++) {

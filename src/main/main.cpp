@@ -249,7 +249,7 @@ static RObject* R_ReplFile_impl(FILE *fp, SEXP rho)
 	    break;
 	case PARSE_ERROR:
 	    R_FinalizeSrcRefState();
-	    parseError(R_NilValue, R_ParseError);
+	    parseError(nullptr, R_ParseError);
 	    break;
 	case PARSE_EOF:
 	    R_FinalizeSrcRefState();
@@ -428,7 +428,7 @@ Rf_ReplIteration(SEXP rho, unsigned int savestack, R_ReplState *state)
     case PARSE_ERROR:
 
 	state->prompt_type = 1;
-	parseError(R_NilValue, 0);
+	parseError(nullptr, 0);
 	R_IoBufferWriteReset(&R_ConsoleIob);
 	return(1);
 
@@ -478,10 +478,10 @@ static void R_ReplConsole(SEXP rho, int savestack)
 /* A simple customized print of the traceback */
 static void printTraceback(SEXP trace) {
     int line = 1;
-    if(trace != R_NilValue) {
+    if(trace != nullptr) {
 	PROTECT(trace);
 	REprintf("\nTraceback:\n");
-	for(SEXP p = trace; p != R_NilValue; p = CDR(p), line++) {
+	for(SEXP p = trace; p != nullptr; p = CDR(p), line++) {
 	    SEXP q = CAR(p); /* a character vector */
 	    REprintf("%2d: ", line);
 	    for(int i = 0; i < LENGTH(q); i++)
@@ -503,7 +503,7 @@ static void check_session_exit()
 	static bool exiting = false;
 	if (exiting)
 	    R_Suicide(_("error during cleanup\n"));
-        if (Rf_GetOption1(Rf_install("error")) != R_NilValue)
+        if (Rf_GetOption1(Rf_install("error")) != nullptr)
             return;
 
         exiting = true;
@@ -580,7 +580,7 @@ int R_ReplDLLdo1(void)
 	prompt_type = 1;
 	break;
     case PARSE_ERROR:
-	parseError(R_NilValue, 0);
+	parseError(nullptr, 0);
 	R_IoBufferWriteReset(&R_ConsoleIob);
 	prompt_type = 1;
 	break;
@@ -1012,7 +1012,7 @@ void setup_Rmainloop(void)
     R_Is_Running = 1;
     R_check_locale();
 
-    R_Warnings = R_NilValue;
+    R_Warnings = nullptr;
 
     /* This is the same as R_BaseEnv, but this marks the environment
        of functions as the namespace and not the package. */
@@ -1321,7 +1321,7 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (text == R_MissingArg)
 	text = Rf_mkString("");
     if(condition == R_MissingArg)
-	condition = R_NilValue;
+	condition = nullptr;
     if(expr == R_MissingArg)
 	expr = Rf_ScalarLogical(1);
     if(skipcalls == R_MissingArg)
@@ -1329,7 +1329,7 @@ SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* return if 'expr' is not TRUE */
     if( !Rf_asLogical(expr) ) {
-	return R_NilValue;
+	return nullptr;
     }
 
     // TODO: skipcalls isn't being used here.
@@ -1426,7 +1426,7 @@ SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction*
     /* if there are any browser contexts active don't quit */
     if(Browser::numberActive() > 0) {
 	Rf_warning(_("cannot quit from browser"));
-	return R_NilValue;
+	return nullptr;
     }
     if( !Rf_isString(save_) )
 	Rf_error(_("one of \"yes\", \"no\", \"ask\" or \"default\" expected."));

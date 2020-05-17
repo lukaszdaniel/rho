@@ -167,7 +167,7 @@ void attribute_hidden PrintVersion_part_1(char *s, size_t len)
     Rf_PrintRhoVersionString(s, len);
     strcat(s, " -- \"R(C) -> Rho(C++)\"\n");
     strcat(s, "Rho Copyright (C) 2008-2014 Andrew R. Runnalls\n\n");
-    
+
     Rf_PrintVersionString(tmp, len);
     if(strlen(R_NICK) != 0) {
 	char nick[128];

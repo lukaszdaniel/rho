@@ -199,7 +199,7 @@ int PRSEEN(SEXP x) {
     Promise* prom = SEXP_downcast<Promise*>(x);
     return prom->m_data.m_under_evaluation
 	|| prom->m_data.m_interrupted
-	|| prom->m_data.m_environment == R_NilValue;
+	|| prom->m_data.m_environment == nullptr;
 }
 
 SEXP PRENV(SEXP x) {

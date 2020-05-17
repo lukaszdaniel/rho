@@ -446,7 +446,7 @@ namespace rho {
 	 * @return The environment that was detached.
 	 */
 	static Environment* detachFromSearchPath(int pos);
-	    
+
 	/** @brief The name by which this type is known in R.
 	 *
 	 * @return The name by which this type is known in R.

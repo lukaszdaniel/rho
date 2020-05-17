@@ -211,7 +211,7 @@ SEXP chooseFiles(SEXP def, SEXP caption, SEXP smulti, SEXP filters, SEXP sindex)
     	count = countFilenamesW(res);
     else
     	count = wcslen(res) ? 1 : 0;
-    	
+
     SEXP ans;
     if (count < 2) PROTECT(ans = Rf_allocVector(STRSXP, count));
     else PROTECT(ans = Rf_allocVector(STRSXP, count-1));

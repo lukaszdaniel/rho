@@ -69,16 +69,16 @@ void StackChecker::handleStackSpaceExceeded()
     // We'll need to use the remaining stack space for error recovery,
     // so temporarily disable stack checking.
     DisableStackCheckingScope no_stack_checking;
-    
+
     // Do not translate this, to save stack space.
-    Rf_errorcall(R_NilValue, "C stack usage is too close to the limit");
+    Rf_errorcall(nullptr, "C stack usage is too close to the limit");
 }
 
 DisableStackCheckingScope::DisableStackCheckingScope()
 {
     m_previous_limit = StackChecker::depthLimit();
     StackChecker::setDepthLimit(R_MAX_EXPRESSIONS_OPT);
-    
+
     m_previous_stack_limit = R_CStackLimit;
     R_CStackLimit = -1;
 }

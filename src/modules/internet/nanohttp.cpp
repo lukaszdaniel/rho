@@ -1214,7 +1214,7 @@ RxmlNanoHTTPRead(void *ctx, void *dest, int len)
 #ifdef HAVE_ZLIB_H
     if (ctxt->usesGzip == 1) {
         if (ctxt->strm == NULL) return(0);
- 
+
         ctxt->strm->next_out = dest;
         ctxt->strm->avail_out = len;
 

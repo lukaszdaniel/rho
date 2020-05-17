@@ -361,7 +361,7 @@ namespace rho {
 	{
 	    return m_list;
 	}
-	
+
 	/** @brief Merge in new argument values..
 	 *
 	 * This function is used in implementing NextMethod.  If any

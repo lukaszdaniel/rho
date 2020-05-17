@@ -28,7 +28,7 @@
  */
 
 #ifndef GCEDGE_HPP
-#define GCEDGE_HPP 1
+#define GCEDGE_HPP
 
 #include "rho/GCNode.hpp"
 #include "rho/ElementTraits.hpp"
@@ -195,7 +195,7 @@ namespace rho {
 
         template<typename T>
 	struct IsGCEdge<GCEdge<T>> : public std::true_type {};
-    
+
     }  // namespace ElementTraits
 } // namespace rho
 

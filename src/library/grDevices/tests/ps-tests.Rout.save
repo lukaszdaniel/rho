@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-11 r4394d41b2b) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-02-03 r74200) -- "Frisbee Sailing"
+R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -101,4 +101,4 @@ null device
 > 
 > proc.time()
    user  system elapsed 
-  0.431   0.009   0.431 
+  0.422   0.024   0.448 

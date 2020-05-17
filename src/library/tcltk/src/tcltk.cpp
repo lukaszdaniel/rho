@@ -129,7 +129,7 @@ static int R_call(ClientData clientData,
     R_Busy(1);
     PROTECT(ans = Rf_eval(expr, R_GlobalEnv));
     R_Busy(0);
-	
+
     /* If return value is of class tclObj, use as Tcl result */
     if (Rf_inherits(ans, "tclObj"))
 	Tcl_SetObjResult(interp, (Tcl_Obj*) R_ExternalPtrAddr(ans));
@@ -749,16 +749,16 @@ void tcltk_init(int *TkUp)
 SEXP RTcl_ServiceMode(SEXP args)
 {
     int value;
-    
+
     if (!Rf_isLogical(CADR(args)) || Rf_length(CADR(args)) > 1)
     	Rf_error(_("invalid argument"));
-    
+
     if (Rf_length(CADR(args))) 
 	value = Tcl_SetServiceMode(LOGICAL(CADR(args))[0] ? 
 				   TCL_SERVICE_ALL : TCL_SERVICE_NONE);
     else
     	value = Tcl_GetServiceMode();
-    
+
     return Rf_ScalarLogical(value == TCL_SERVICE_ALL);
 }
-    
+

@@ -244,7 +244,7 @@ extern "C" {
      * preferable.
      */
     void Rf_ppsRestoreSize(size_t new_size);
-    
+
     /** @brief Current size of C pointer protection stack.
      *
      * @return the current size of the C pointer protection stack.

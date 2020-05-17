@@ -56,7 +56,7 @@ struct SingleTest {
 	expression_(expression), expected_result_(expected_result),
      	expected_error_message_(nullptr),
 	expected_warnings_(expected_warnings.expected_warning_messages_) { }
-	
+
     SingleTest(const char* expression, Error expected_error,
 	       Warning expected_warnings = Warning()) :
 	expression_(expression), expected_result_(nullptr),

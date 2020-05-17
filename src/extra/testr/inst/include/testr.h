@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 
 typedef SEXP (*CCODE)(SEXP, SEXP, SEXP, SEXP);
- 
+
 /* Information for Deparsing Expressions */
 typedef enum {
     PP_INVALID  =  0,
@@ -26,7 +26,7 @@ typedef enum {
     PP_FOREIGN 	= 19,
     PP_REPEAT 	= 20
 } PPkind;
- 
+
 typedef enum {
     PREC_FN	 = 0,
     PREC_LEFT    = 1,
@@ -47,13 +47,13 @@ typedef enum {
     PREC_NS	 = 16,
     PREC_SUBSET	 = 17
 } PPprec;
- 
+
 typedef struct {
 	PPkind kind; 	 /* deparse kind */
 	PPprec precedence; /* operator precedence */
 	unsigned int rightassoc;  /* right associative? */
 } PPinfo;
- 
+
 typedef struct {
     char   *name;    /* print name */
     CCODE  cfun;     /* c-code address */
@@ -62,9 +62,9 @@ typedef struct {
     int	   arity;    /* function arity */
     PPinfo gram;     /* pretty-print info */
 } FUNTAB;
- 
+
 extern FUNTAB	R_FunTab[];	    /* Built in functions */ 
- 
+
 CCODE get_internal(std::string);
 SEXP search();
 bool contains(Rcpp::CharacterVector, std::string);

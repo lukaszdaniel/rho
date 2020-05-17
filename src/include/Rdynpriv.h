@@ -30,7 +30,7 @@
  These are internal routines and definitions subject
  to unannounced changes. Do not use for packages, etc.
  (The header is not installed.)
- 
+
  There is a great deal of repetition in the definitions 
  of the user-level method definitions and in the internal
  definition structures. This is done to ensure that we

@@ -545,7 +545,7 @@ int dummy_fgetc(Rconnection con)
 	    for(i = con->inavail; i < 25; i++) {
 		c = buff_fgetc(con);
 		if(c == R_EOF){ con->EOF_signalled = TRUE; break; }
-		*p++ = char( c);
+		*p++ = char(c);
 		con->inavail++;
 		inew++;
 	    }
@@ -1426,7 +1426,7 @@ SEXP attribute_hidden do_fifo(/*const*/ Expression* call, const BuiltInFunction*
     con->blocking = Rboolean(block);
     strncpy(con->encname, R_CHAR(STRING_ELT(enc, 0)), 100); /* ASCII */
     con->encname[100 - 1] = '\0';
-    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue));
+    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr));
 
     /* open it if desired */
     if(strlen(open)) {
@@ -1449,7 +1449,7 @@ SEXP attribute_hidden do_fifo(/*const*/ Expression* call, const BuiltInFunction*
     return ans;
 #else
     Rf_error(_("fifo connections are not available on this system"));
-    return R_NilValue;		/* -Wall */
+    return nullptr;		/* -Wall */
 #endif
 }
 
@@ -1594,7 +1594,7 @@ SEXP attribute_hidden do_pipe(/*const*/ Expression* call, const BuiltInFunction*
     Connections[ncon] = con;
     strncpy(con->encname, R_CHAR(STRING_ELT(enc, 0)), 100); /* ASCII */
     con->encname[100 - 1] = '\0';
-    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue));
+    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr));
 
     /* open it if desired */
     if(strlen(open)) {
@@ -2886,7 +2886,7 @@ SEXP attribute_hidden do_rawconnection(/*const*/ Expression* call, const BuiltIn
     SET_STRING_ELT(connclass, 0, Rf_mkChar("rawConnection"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue);
+    con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr);
     Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(2);
@@ -3072,7 +3072,7 @@ static void outtext_destroy(Rconnection con)
        we are writing it and hence the character vector is protected.
        However, this could be quite expensive.
     */
-    SET_VECTOR_ELT(OutTextData, idx, R_NilValue);
+    SET_VECTOR_ELT(OutTextData, idx, nullptr);
     if(!thisconn->namesymbol) R_ReleaseObject(thisconn->data);
     free(thisconn->lastline); free(thisconn);
 }
@@ -3173,7 +3173,7 @@ static void outtext_init(Rconnection con, SEXP stext, const char *mode, int idx)
     Routtextconn thisconn = static_cast<Routtextconn>(con->connprivate);
     SEXP val;
 
-    if(stext == R_NilValue) {
+    if(stext == nullptr) {
 	thisconn->namesymbol = nullptr;
 	    /* create variable pointed to by con->description */
 	val = Rf_allocVector(STRSXP, 0);
@@ -3288,7 +3288,7 @@ SEXP attribute_hidden do_textconnection(/*const*/ Expression* call, const BuiltI
 	    R_PreserveObject(OutTextData);
 	}
 	SET_VECTOR_ELT(OutTextData, ncon, venv);
-	if(stext == R_NilValue)
+	if(stext == nullptr)
 	    con = Connections[ncon] = newouttext("NULL", stext, open, ncon);
 	else if(Rf_isString(stext) && Rf_length(stext) == 1)
 	    con = Connections[ncon] =
@@ -3306,7 +3306,7 @@ SEXP attribute_hidden do_textconnection(/*const*/ Expression* call, const BuiltI
     SET_STRING_ELT(connclass, 0, Rf_mkChar("textConnection"));
     SET_STRING_ELT(connclass, 1, Rf_mkChar("connection"));
     Rf_classgets(ans, connclass);
-    con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue);
+    con->ex_ptr = R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr);
     Rf_setAttrib(ans, Symbols::ConnIdSymbol, static_cast<SEXP>(con->ex_ptr));
     R_RegisterCFinalizerEx(static_cast<SEXP>(con->ex_ptr), conFinalizer, FALSE);
     UNPROTECT(2);
@@ -3369,7 +3369,7 @@ SEXP attribute_hidden do_sockconn(/*const*/ Expression* call, const BuiltInFunct
     con->blocking = Rboolean(blocking);
     strncpy(con->encname, R_CHAR(STRING_ELT(enc, 0)), 100); /* ASCII */
     con->encname[100 - 1] = '\0';
-    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue));
+    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr));
 
     /* open it if desired */
     if(strlen(open)) {
@@ -3416,7 +3416,7 @@ SEXP attribute_hidden do_unz(/*const*/ Expression* call, const BuiltInFunction* 
     con = Connections[ncon] = R_newunz(file, strlen(open) ? open : const_cast<char *>("r"));
     strncpy(con->encname, R_CHAR(STRING_ELT(enc, 0)), 100); /* ASCII */
     con->encname[100 - 1] = '\0';
-    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), R_NilValue));
+    con->ex_ptr = PROTECT(R_MakeExternalPtr(con->id, Rf_install("connection"), nullptr));
 
     /* open it if desired */
     if(strlen(open)) {
@@ -3456,7 +3456,7 @@ SEXP attribute_hidden do_open(/*const*/ Expression* call, const BuiltInFunction*
     if(i < 3) Rf_error(_("cannot open standard connections"));
     if(con->isopen) {
 	Rf_warning(_("connection is already open"));
-	return R_NilValue;
+	return nullptr;
     }
     sopen = open_;
     if(!Rf_isString(sopen) || Rf_length(sopen) != 1)
@@ -3472,7 +3472,7 @@ SEXP attribute_hidden do_open(/*const*/ Expression* call, const BuiltInFunction*
 	/* con_destroy(i); user might have a reference */
 	Rf_error(_("cannot open the connection"));
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_isopen(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* rw_)
@@ -3601,7 +3601,7 @@ SEXP attribute_hidden do_close(/*const*/ Expression* call, const BuiltInFunction
     int status = con_close1(con);
     free(Connections[i]);
     Connections[i] = nullptr;
-    return (status != NA_INTEGER) ? Rf_ScalarInteger(status) : R_NilValue;
+    return (status != NA_INTEGER) ? Rf_ScalarInteger(status) : nullptr;
 }
 
 static double Rconn_seek(Rconnection con, double where, int origin, int rw) {
@@ -3643,7 +3643,7 @@ SEXP attribute_hidden do_truncate(/*const*/ Expression* call, const BuiltInFunct
 	Rf_error(_("'con' is not a connection"));
     con = getConnection(Rf_asInteger(con_));
     con->truncate(con);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_flush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
@@ -3654,7 +3654,7 @@ SEXP attribute_hidden do_flush(/*const*/ Expression* call, const BuiltInFunction
 	Rf_error(_("'con' is not a connection"));
     con = getConnection(Rf_asInteger(con_));
     if(con->canwrite) con->fflush(con);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* ------------------- read, write  text --------------------- */
@@ -3718,7 +3718,7 @@ size_t Rconn_getline(Rconnection con, char *buf, size_t bufsize)
 	if(size_t(nbuf+1) >= bufsize)
 	    Rf_error(_("line longer than buffer size %lu"), (unsigned long) bufsize);
 	if(c != '\n'){
-	    buf[++nbuf] = char( c);
+	    buf[++nbuf] = char(c);
 	} else {
 	    buf[++nbuf] = '\0';
 	    break;
@@ -3758,7 +3758,7 @@ int Rconn_printf(Rconnection con, const char *format, ...)
 #define BUF_SIZE 1000
 SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* n_, RObject* ok_, RObject* warn_, RObject* encoding_, RObject* skipNul_)
 {
-    SEXP ans = R_NilValue, ans2;
+    SEXP ans = nullptr, ans2;
     int ok, warn, skipNul, c;
     size_t nbuf, buf_size = BUF_SIZE;
     cetype_t oenc = CE_NATIVE;
@@ -3839,7 +3839,7 @@ SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunc
 		    } else buf = tmp;
 		}
 		if(skipNul && c == '\0') continue;
-		if(c != '\n') buf[nbuf++] = char( c); else break;
+		if(c != '\n') buf[nbuf++] = char(c); else break;
 	    }
 	    buf[nbuf] = '\0';
 	    /* Remove UTF-8 BOM */
@@ -3959,7 +3959,7 @@ SEXP attribute_hidden do_writelines(/*const*/ Expression* call, const BuiltInFun
     if(!wasopen) {
     	checkClose(con);
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* ------------------- read, write  binary --------------------- */
@@ -3989,7 +3989,7 @@ static SEXP readOneString(Rconnection con)
 	if(!m) {
 	    if(pos > 0)
 		Rf_warning(_("incomplete string at end of file has been discarded"));
-	    return R_NilValue;
+	    return nullptr;
 	}
 	if(*p == '\0') break;
     }
@@ -4041,7 +4041,7 @@ static SEXP rawOneString(Rbyte *bytes, R_xlen_t nbytes, R_xlen_t *np)
 #define BLOCK 8096
 SEXP attribute_hidden do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* what_, RObject* n_, RObject* size_, RObject* signed_, RObject* endian_)
 {
-    SEXP ans = R_NilValue, swhat;
+    SEXP ans = nullptr, swhat;
     int size, signd, swap, sizedef= 4, mode = 1;
     const char *what;
     void *p = nullptr;
@@ -4094,7 +4094,7 @@ SEXP attribute_hidden do_readbin(/*const*/ Expression* call, const BuiltInFuncti
 	    for(i = 0, m = 0; i < n; i++) {
 		onechar = isRaw ? rawOneString(bytes, nbytes, &np)
 		    : readOneString(con);
-		if(onechar != R_NilValue) {
+		if(onechar != nullptr) {
 		    SET_STRING_ELT(ans, i, onechar);
 		    m++;
 		} else break;
@@ -4307,7 +4307,7 @@ SEXP attribute_hidden do_readbin(/*const*/ Expression* call, const BuiltInFuncti
 /* writeBin(object, con, size, swap, useBytes) */
 SEXP attribute_hidden do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* size_, RObject* endian_, RObject* useBytes_)
 {
-    SEXP object, ans = R_NilValue;
+    SEXP object, ans = nullptr;
     int i, j, size, swap, len, useBytes;
     const char *s;
     char *buf;
@@ -4336,7 +4336,7 @@ SEXP attribute_hidden do_writebin(/*const*/ Expression* call, const BuiltInFunct
 	Rf_error(_("invalid '%s' argument"), "useBytes");
     len = LENGTH(object);
     if(len == 0) {
-	if(isRaw) return Rf_allocVector(RAWSXP, 0); else return R_NilValue;
+	if(isRaw) return Rf_allocVector(RAWSXP, 0); else return nullptr;
     }
     /* RAW vectors are limited to 2^31 - 1 bytes */
     if(static_cast<double>(len) *size > INT_MAX) {
@@ -4584,7 +4584,7 @@ readFixedString(Rconnection con, int len, int useBytes)
 	for(i = 0; i < len; i++) {
 	    q = p;
 	    m = int(con->read(p, sizeof(char), 1, con));
-	    if(!m) { if(i == 0) return R_NilValue; else break;}
+	    if(!m) { if(i == 0) return nullptr; else break;}
 	    clen = utf8clen(*p++);
 	    if(clen > 1) {
 		m = int(con->read(p, sizeof(char), clen - 1, con));
@@ -4599,7 +4599,7 @@ readFixedString(Rconnection con, int len, int useBytes)
 	buf = static_cast<char *>(R_alloc(len+1, sizeof(char)));
 	memset(buf, 0, len+1);
 	m = int(con->read(buf, sizeof(char), len, con));
-	if(len && !m) return R_NilValue;
+	if(len && !m) return nullptr;
     }
     /* String may contain nuls which we now (R >= 2.8.0) assume to be
        padding and ignore silently */
@@ -4617,7 +4617,7 @@ rawFixedString(Rbyte *bytes, int len, int nbytes, int *np, int useBytes)
 
     if(*np + len > nbytes) {
 	len = nbytes - *np;
-	if (!len) return(R_NilValue);
+	if (!len) return(nullptr);
     }
 
     if(utf8locale && !useBytes) {
@@ -4654,7 +4654,7 @@ rawFixedString(Rbyte *bytes, int len, int nbytes, int *np, int useBytes)
 /* readChar(con, nchars) */
 SEXP attribute_hidden do_readchar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* nchars_, RObject* useBytes_)
 {
-    SEXP ans = R_NilValue, onechar, nchars;
+    SEXP ans = nullptr, onechar, nchars;
     R_xlen_t i, n, m = 0;
     int nbytes = 0, np = 0, useBytes;
     Rboolean wasopen = TRUE, isRaw = FALSE;
@@ -4702,7 +4702,7 @@ SEXP attribute_hidden do_readchar(/*const*/ Expression* call, const BuiltInFunct
 		Rf_error(_("invalid '%s' argument"), "nchar");
 	    onechar = isRaw ? rawFixedString(bytes, len, nbytes, &np, useBytes)
 		: readFixedString(con, len, useBytes);
-	    if(onechar != R_NilValue) {
+	    if(onechar != nullptr) {
 		SET_STRING_ELT(ans, i, onechar);
 		m++;
 	    } else break;
@@ -4725,7 +4725,7 @@ SEXP attribute_hidden do_readchar(/*const*/ Expression* call, const BuiltInFunct
 /* writeChar(object, con, nchars, sep, useBytes) */
 SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* nchars_, RObject* eos_, RObject* useBytes_)
 {
-    SEXP object, nchars, sep, ans = R_NilValue, si;
+    SEXP object, nchars, sep, ans = nullptr, si;
     R_xlen_t i, n, len;
     int useBytes;
     size_t slen, tlen, lenb, lenc;
@@ -4771,7 +4771,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
     if(XLENGTH(object) < n)
 	Rf_error(_("'object' is too short"));
     if(n == 0) {
-	if(isRaw) return Rf_allocVector(RAWSXP, 0); else return R_NilValue;
+	if(isRaw) return Rf_allocVector(RAWSXP, 0); else return nullptr;
     }
 
     len = 0;
@@ -4891,7 +4891,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 	R_Visible = TRUE;
 	UNPROTECT(1);
     } else {
-	ans = R_NilValue;
+	ans = nullptr;
 	R_Visible = FALSE;
     }
     return ans;
@@ -4968,7 +4968,7 @@ SEXP attribute_hidden do_pushback(/*const*/ Expression* call, const BuiltInFunct
 	con->posPushBack = 0;
 	con->nPushBack += n;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_pushbacklength(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection_)
@@ -4991,7 +4991,7 @@ SEXP attribute_hidden do_clearpushback(/*const*/ Expression* call, const BuiltIn
 	free(con->PushBack);
 	con->nPushBack = 0;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* ------------------- sink functions  --------------------- */
@@ -5089,7 +5089,7 @@ SEXP attribute_hidden do_sink(/*const*/ Expression* call, const BuiltInFunction*
 	}
     }
 
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_sinknumber(/*const*/ Expression* call, const BuiltInFunction* op, RObject* type_)
@@ -5809,7 +5809,7 @@ SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction
     strncpy(newconn->encname, incon->encname, 100);
     newconn->encname[100 - 1] = '\0';
     newconn->ex_ptr = PROTECT(R_MakeExternalPtr((void *)newconn->id, Rf_install("connection"),
-					    R_NilValue));
+					    nullptr));
     if(incon->isopen) newconn->open(newconn);
 
     PROTECT(ans = Rf_ScalarInteger(icon));
@@ -5888,7 +5888,7 @@ SEXP R_decompress1(SEXP in, Rboolean *err)
     if(res != Z_OK) {
 	Rf_warning("internal error %d in R_decompress1", res);
 	*err = TRUE;
-	return R_NilValue;
+	return nullptr;
     }
     ans = Rf_allocVector(RAWSXP, outlen);
     memcpy(RAW(ans), buf, outlen);
@@ -5949,7 +5949,7 @@ SEXP R_decompress2(SEXP in, Rboolean *err)
 	if(res != BZ_OK) {
 	    Rf_warning("internal error %d in R_decompress2", res);
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
     } else if (type == '1') {
 	uLong outl;
@@ -5958,14 +5958,14 @@ SEXP R_decompress2(SEXP in, Rboolean *err)
 	if(res != Z_OK) {
 	    Rf_warning("internal error %d in R_decompress1");
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
     } else if (type == '0') {
 	buf = p + 5;
     } else {
 	Rf_warning("unknown type in R_decompress2");
 	*err = TRUE;
-	return R_NilValue;
+	return nullptr;
     }
     ans = Rf_allocVector(RAWSXP, outlen);
     memcpy(RAW(ans), buf, outlen);
@@ -6100,7 +6100,7 @@ SEXP R_decompress3(SEXP in, Rboolean *err)
 	if (ret != LZMA_OK) {
 	    Rf_warning("internal error %d in R_decompress3", ret);
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
 	strm.next_in = p + 5;
 	strm.avail_in = inlen - 5;
@@ -6111,7 +6111,7 @@ SEXP R_decompress3(SEXP in, Rboolean *err)
 	    Rf_warning("internal error %d in R_decompress3 %d",
 		    ret, strm.avail_in);
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
 	lzma_end(&strm);
     } else if (type == '2') {
@@ -6121,7 +6121,7 @@ SEXP R_decompress3(SEXP in, Rboolean *err)
 	if(res != BZ_OK) {
 	    Rf_warning("internal error %d in R_decompress2", res);
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
     } else if (type == '1') {
 	uLong outl; int res;
@@ -6129,14 +6129,14 @@ SEXP R_decompress3(SEXP in, Rboolean *err)
 	if(res != Z_OK) {
 	    Rf_warning("internal error %d in R_decompress1");
 	    *err = TRUE;
-	    return R_NilValue;
+	    return nullptr;
 	}
     } else if (type == '0') {
 	buf = p + 5;
     } else {
 	Rf_warning("unknown type in R_decompress3");
 	*err = TRUE;
-	return R_NilValue;
+	return nullptr;
     }
     ans = Rf_allocVector(RAWSXP, outlen);
     memcpy(RAW(ans), buf, outlen);

@@ -101,35 +101,35 @@ namespace {
 	R_xlen_t nx = Rf_xlength(x), ny = Rf_xlength(y);
 
 	checkOperandsConformable(
-	    static_cast<VectorBase*>(x), static_cast<VectorBase*>(y));
+	    SEXP_downcast<VectorBase*>(x), SEXP_downcast<VectorBase*>(y));
 
 	if (nx > 0 && ny > 0) {
 	    /* logical binary : "&" or "|" */
 	    if (x && x->sexptype() == RAWSXP && y && y->sexptype() == RAWSXP) {
 		// Bitwise operations:
-		RawVector* vl = static_cast<RawVector*>(x);
-		RawVector* vr = static_cast<RawVector*>(y);
+		RawVector* vl = SEXP_downcast<RawVector*>(x);
+		RawVector* vr = SEXP_downcast<RawVector*>(y);
 		return bitwiseBinary(op->variant(), vl, vr);
 	    }
 	    GCStackRoot<LogicalVector> vl;
 	    GCStackRoot<LogicalVector> vr;
 	    if (Rf_isNull(x))
-		vl = static_cast<LogicalVector*>(
+		vl = SEXP_downcast<LogicalVector*>(
 		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
 	    else // Rf_isNumeric(x)
-		vl = static_cast<LogicalVector*>(Rf_coerceVector(x, LGLSXP));
+		vl = SEXP_downcast<LogicalVector*>(Rf_coerceVector(x, LGLSXP));
 	    if (Rf_isNull(y))
-		vr = static_cast<LogicalVector*>(
+		vr = SEXP_downcast<LogicalVector*>(
 		    Rf_allocVector(SEXPTYPE::LGLSXP, 0));
 	    else // Rf_isNumeric(x)
-		vr = static_cast<LogicalVector*>(Rf_coerceVector(y, LGLSXP));
+		vr = SEXP_downcast<LogicalVector*>(Rf_coerceVector(y, LGLSXP));
 	    return binaryLogic(op->variant(), vl, vr);
 	} else { // nx == 0 || ny == 0
 	    GCStackRoot<> val(Rf_allocVector((isRaw(x) && isRaw(y)) ? RAWSXP : LGLSXP, 0));
 	    GeneralBinaryAttributeCopier::copyAttributes(
 		SEXP_downcast<VectorBase*>(val.get()),
-		static_cast<VectorBase*>(x),
-		static_cast<VectorBase*>(y));
+		SEXP_downcast<VectorBase*>(x),
+		SEXP_downcast<VectorBase*>(y));
 	    return val;
 	}
     }
@@ -155,7 +155,7 @@ namespace {
 	} else {
 	    // Logical negation:
 	    GCStackRoot<LogicalVector>
-		lv(static_cast<LogicalVector*>(Rf_coerceVector(arg, LGLSXP)));
+		lv(SEXP_downcast<LogicalVector*>(Rf_coerceVector(arg, LGLSXP)));
 	    return applyUnaryOperator(
 		[](Logical x) { return !x; },
                 // Note: in other cases all attributes are copied.
@@ -301,7 +301,7 @@ SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
     ans = Rf_matchArgExact(Symbols::NaRmSymbol, &args);
     narm = Rf_asLogical(ans);
 
-    for (s = args; s != R_NilValue; s = CDR(s)) {
+    for (s = args; s != nullptr; s = CDR(s)) {
 	t = CAR(s);
 	/* Avoid memory waste from coercing empty inputs, and also
 	   avoid warnings with empty lists coming from sapply */

@@ -67,7 +67,7 @@ SEXP Rf_GetRowNames(SEXP dimnames)
     if (TYPEOF(dimnames) == VECSXP)
 	return VECTOR_ELT(dimnames, 0);
     else
-	return R_NilValue;
+	return nullptr;
 }
 
 SEXP Rf_GetColNames(SEXP dimnames)
@@ -75,7 +75,7 @@ SEXP Rf_GetColNames(SEXP dimnames)
     if (TYPEOF(dimnames) == VECSXP)
 	return VECTOR_ELT(dimnames, 1);
     else
-	return R_NilValue;
+	return nullptr;
 }
 
 SEXP attribute_hidden do_matrix(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vals, RObject* nrow, RObject* ncol, RObject* byrow_, RObject* dimnames, RObject* miss_nr_, RObject* miss_nc_)
@@ -300,7 +300,7 @@ SEXP Rf_DropDims(SEXP x)
     // its 'dims' and/or 'dimnames' attributes, if present, are
     // configured in the standard way, Subscripting::dropDimensions()
     // should behave correctly.
-    VectorBase* vb = static_cast<VectorBase*>(x);
+    VectorBase* vb = SEXP_downcast<VectorBase*>(x);
     Subscripting::dropDimensions(vb);
     return vb;
 }
@@ -312,7 +312,7 @@ SEXP attribute_hidden do_drop(/*const*/ Expression* call, const BuiltInFunction*
     int i, n, shorten;
 
     x = x_;
-    if ((xdims = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue) {
+    if ((xdims = Rf_getAttrib(x, Symbols::DimSymbol)) != nullptr) {
 	n = LENGTH(xdims);
 	shorten = 0;
 	for (i = 0; i < n; i++)
@@ -393,9 +393,9 @@ static R_xlen_t getElementLength(RObject* x, R_xlen_t i, Expression* call,
 }
 
 #ifdef LONG_VECTOR_SUPPORT
-static SEXP do_lengths_long(SEXP x, Expression* call, Environment* rho)
+static RObject* do_lengths_long(RObject* x, Expression* call, Environment* rho)
 {
-    SEXP ans;
+    RObject* ans;
     R_xlen_t x_len, i;
     double *ans_elt;
 
@@ -508,10 +508,10 @@ SEXP attribute_hidden do_rowscols(/*const*/ Expression* call, const BuiltInFunct
 
  The present version is imprecise, but faster.
 */
-static Rboolean mayHaveNaNOrInf(double *x, R_xlen_t n)
+static bool mayHaveNaNOrInf(double *x, R_xlen_t n)
 {
     if ((n&1) != 0 && !R_FINITE(x[0]))
-	return TRUE;
+	return true;
     for (R_xlen_t i = n&1; i < n; i += 2)
 	/* A precise version could use this condition:
 	 *
@@ -525,8 +525,8 @@ static Rboolean mayHaveNaNOrInf(double *x, R_xlen_t n)
 	 * large finite values (e.g. 1e308) may be infinite.
 	 */
 	if (!R_FINITE(x[i]+x[i+1]))
-	    return TRUE;
-    return FALSE;
+	    return true;
+    return false;
 }
 
 /*
@@ -551,17 +551,17 @@ static Rboolean mayHaveNaNOrInf_simd(double *x, R_xlen_t n)
     return Rboolean(!R_FINITE(s));
 }
 
-static Rboolean cmayHaveNaNOrInf(Rcomplex *x, R_xlen_t n)
+static bool cmayHaveNaNOrInf(Rcomplex *x, R_xlen_t n)
 {
     /* With HAVE_FORTRAN_DOUBLE_COMPLEX set, it should be clear that
        Rcomplex has no padding, so we could probably use mayHaveNaNOrInf,
        but better safe than sorry... */
     if ((n&1) != 0 && (!R_FINITE(x[0].r) || !R_FINITE(x[0].i)))
-	return TRUE;
+	return true;
     for (R_xlen_t i = n&1; i < n; i += 2)
 	if (!R_FINITE(x[i].r+x[i].i+x[i+1].r+x[i+1].i))
-	    return TRUE;
-    return FALSE;
+	    return true;
+    return false;
 }
 
 /* experimental version for SIMD hardware (see also mayHaveNaNOrInf_simd) */
@@ -1264,14 +1264,14 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	PROTECT(xdims = Rf_getAttrib(x, Symbols::DimNamesSymbol));
 	PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
-	if (xdims != R_NilValue || ydims != R_NilValue) {
-	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
+	if (xdims != nullptr || ydims != nullptr) {
+	    SEXP dimnames, dimnamesnames, dnx=nullptr, dny=nullptr;
 
 	    /* allocate dimnames and dimnamesnames */
 
 	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    PROTECT(dimnamesnames = Rf_allocVector(STRSXP, 2));
-	    if (xdims != R_NilValue) {
+	    if (xdims != nullptr) {
 		if (ldx == 2 || ncx == 1) {
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 0));
 		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
@@ -1281,7 +1281,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	    }
 
 #define YDIMS_ET_CETERA							\
-	    if (ydims != R_NilValue) {					\
+	    if (ydims != nullptr) {					\
 		if (ldy == 2) {						\
 		    SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(ydims, 1));	\
 		    dny = Rf_getAttrib(ydims, Symbols::NamesSymbol);		\
@@ -1299,9 +1299,9 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	     * whose elements are all NULL ...				\
 	     * This is ugly but causes no real damage.			\
 	     * Now (2.1.0 ff), we don't anymore: */			\
-	    if (VECTOR_ELT(dimnames,0) != R_NilValue ||			\
-		VECTOR_ELT(dimnames,1) != R_NilValue) {			\
-		if (dnx != R_NilValue || dny != R_NilValue)		\
+	    if (VECTOR_ELT(dimnames,0) != nullptr ||			\
+		VECTOR_ELT(dimnames,1) != nullptr) {			\
+		if (dnx != nullptr || dny != nullptr)		\
 		    Rf_setAttrib(dimnames, Symbols::NamesSymbol, dimnamesnames);	\
 		Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);		\
 	    }								\
@@ -1335,15 +1335,15 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	else
 	    PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
-	if (xdims != R_NilValue || ydims != R_NilValue) {
-	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
+	if (xdims != nullptr || ydims != nullptr) {
+	    SEXP dimnames, dimnamesnames, dnx=nullptr, dny=nullptr;
 
 	    /* allocate dimnames and dimnamesnames */
 
 	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    PROTECT(dimnamesnames = Rf_allocVector(STRSXP, 2));
 
-	    if (xdims != R_NilValue) {
+	    if (xdims != nullptr) {
 		if (ldx == 2) {/* not nrx==1 : .. fixed, ihaka 2003-09-30 */
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 1));
 		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
@@ -1380,15 +1380,15 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 	else
 	    PROTECT(ydims = Rf_getAttrib(y, Symbols::DimNamesSymbol));
 
-	if (xdims != R_NilValue || ydims != R_NilValue) {
-	    SEXP dimnames, dimnamesnames, dnx=R_NilValue, dny=R_NilValue;
+	if (xdims != nullptr || ydims != nullptr) {
+	    SEXP dimnames, dimnamesnames, dnx=nullptr, dny=nullptr;
 
 	    /* allocate dimnames and dimnamesnames */
 
 	    PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	    PROTECT(dimnamesnames = Rf_allocVector(STRSXP, 2));
 
-	    if (xdims != R_NilValue) {
+	    if (xdims != nullptr) {
 		if (ldx == 2) {
 		    SET_VECTOR_ELT(dimnames, 0, VECTOR_ELT(xdims, 0));
 		    dnx = Rf_getAttrib(xdims, Symbols::NamesSymbol);
@@ -1396,7 +1396,7 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 			SET_STRING_ELT(dimnamesnames, 0, STRING_ELT(dnx, 0));
 		}
 	    }
-	    if (ydims != R_NilValue) {
+	    if (ydims != nullptr) {
 		if (ldy == 2) {
 		    SET_VECTOR_ELT(dimnames, 1, VECTOR_ELT(ydims, 0));
 		    dny = Rf_getAttrib(ydims, Symbols::NamesSymbol);
@@ -1404,9 +1404,9 @@ SEXP do_crossprod(Expression* call, const BuiltInFunction* op, RObject* x, RObje
 			SET_STRING_ELT(dimnamesnames, 1, STRING_ELT(dny, 0));
 		}
 	    }
-	    if (VECTOR_ELT(dimnames,0) != R_NilValue ||
-		VECTOR_ELT(dimnames,1) != R_NilValue) {
-		if (dnx != R_NilValue || dny != R_NilValue)
+	    if (VECTOR_ELT(dimnames,0) != nullptr ||
+		VECTOR_ELT(dimnames,1) != nullptr) {
+		if (dnx != nullptr || dny != nullptr)
 		    Rf_setAttrib(dimnames, Symbols::NamesSymbol, dimnamesnames);
 		Rf_setAttrib(ans, Symbols::DimNamesSymbol, dimnames);
 	    }
@@ -1427,7 +1427,7 @@ SEXP attribute_hidden do_matprod(SEXP call, SEXP op, SEXP args, SEXP rho)
 	&& R_has_methods(SEXP_downcast<BuiltInFunction*>(op))) {
 	SEXP s;
 	/* Remove argument names to ensure positional matching */
-	for(s = args; s != R_NilValue; s = CDR(s)) SET_TAG(s, R_NilValue);
+	for(s = args; s != nullptr; s = CDR(s)) SET_TAG(s, nullptr);
 
 	ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
 	std::pair<bool, SEXP> pr
@@ -1443,7 +1443,7 @@ SEXP attribute_hidden do_matprod(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    SEXP a, r, dims, dimnames, dimnamesnames = R_NilValue,
+    SEXP a, r, dims, dimnames, dimnamesnames = nullptr,
 	ndimnamesnames, rnames, cnames;
     int ldim, ncol = 0, nrow = 0;
     R_xlen_t len = 0;
@@ -1453,8 +1453,8 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
     if (Rf_isVector(a)) {
 	dims = Rf_getAttrib(a, Symbols::DimSymbol);
 	ldim = Rf_length(dims);
-	rnames = R_NilValue;
-	cnames = R_NilValue;
+	rnames = nullptr;
+	cnames = nullptr;
 	switch(ldim) {
 	case 0:
 	    len = nrow = LENGTH(a);
@@ -1466,7 +1466,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
 	    len = nrow = LENGTH(a);
 	    ncol = 1;
 	    dimnames = Rf_getAttrib(a, Symbols::DimNamesSymbol);
-	    if (dimnames != R_NilValue) {
+	    if (dimnames != nullptr) {
 		rnames = VECTOR_ELT(dimnames, 0);
 		dimnamesnames = Rf_getAttrib(dimnames, Symbols::NamesSymbol);
 	    }
@@ -1476,7 +1476,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
 	    nrow = Rf_nrows(a);
 	    len = XLENGTH(a);
 	    dimnames = Rf_getAttrib(a, Symbols::DimNamesSymbol);
-	    if (dimnames != R_NilValue) {
+	    if (dimnames != nullptr) {
 		rnames = VECTOR_ELT(dimnames, 0);
 		cnames = VECTOR_ELT(dimnames, 1);
 		dimnamesnames = Rf_getAttrib(dimnames, Symbols::NamesSymbol);
@@ -1539,7 +1539,7 @@ SEXP attribute_hidden do_transpose(/*const*/ Expression* call, const BuiltInFunc
     Rf_setAttrib(r, Symbols::DimSymbol, dims);
     UNPROTECT(1);
     /* R <= 2.2.0: dropped list(NULL,NULL) dimnames :
-     * if(rnames != R_NilValue || cnames != R_NilValue) */
+     * if(rnames != nullptr || cnames != nullptr) */
     if(!Rf_isNull(dimnames)) {
 	PROTECT(dimnames = Rf_allocVector(VECSXP, 2));
 	SET_VECTOR_ELT(dimnames, 0, cnames);
@@ -1719,7 +1719,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
     /* and handle names(dim(.)) and the dimnames if any */
     if (resize) {
 	SEXP nmdm = Rf_getAttrib(dimsa, Symbols::NamesSymbol);
-	if(nmdm != R_NilValue) { // dimsr needs correctly permuted names()
+	if(nmdm != nullptr) { // dimsr needs correctly permuted names()
 	    PROTECT(nmdm);
 	    SEXP nm_dr = PROTECT(Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
@@ -1731,12 +1731,12 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 	Rf_setAttrib(r, Symbols::DimSymbol, dimsr);
 
 	PROTECT(dna = Rf_getAttrib(a, Symbols::DimNamesSymbol));
-	if (dna != R_NilValue) {
+	if (dna != nullptr) {
 	    SEXP dnna, dnr, dnnr;
 
 	    PROTECT(dnr  = Rf_allocVector(VECSXP, n));
 	    PROTECT(dnna = Rf_getAttrib(dna, Symbols::NamesSymbol));
-	    if (dnna != R_NilValue) {
+	    if (dnna != nullptr) {
 		PROTECT(dnnr = Rf_allocVector(STRSXP, n));
 		for (i = 0; i < n; i++) {
 		    SET_VECTOR_ELT(dnr, i, VECTOR_ELT(dna, pp[i]));
@@ -1763,7 +1763,7 @@ SEXP attribute_hidden do_aperm(/*const*/ Expression* call, const BuiltInFunction
 /* colSums(x, n, p, na.rm) and friends */
 SEXP attribute_hidden do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, RObject* X_, RObject* n_, RObject* p_, RObject* na_rm_)
 {
-    SEXP x, ans = R_NilValue;
+    SEXP x, ans = nullptr;
     int type;
     Rboolean NaRm, keepNA;
 
@@ -1971,27 +1971,27 @@ SEXP attribute_hidden do_array(/*const*/ Expression* call, const BuiltInFunction
     switch(TYPEOF(vals)) {
     case LGLSXP:
 	if (nans && lendat)
-	    xcopyLogicalWithRecycle(LOGICAL(ans), LOGICAL(vals), 0, nans,
+	    xcopyWithRecycle(LOGICAL(ans), LOGICAL(vals), 0, nans,
 				    lendat);
 	else
 	    for (i = 0; i < nans; i++) LOGICAL(ans)[i] = NA_LOGICAL;
 	break;
     case INTSXP:
 	if (nans && lendat)
-	    xcopyIntegerWithRecycle(INTEGER(ans), INTEGER(vals), 0, nans,
+	    xcopyWithRecycle(INTEGER(ans), INTEGER(vals), 0, nans,
 				    lendat);
 	else
 	    for (i = 0; i < nans; i++) INTEGER(ans)[i] = NA_INTEGER;
 	break;
     case REALSXP:
 	if (nans && lendat)
-	    xcopyRealWithRecycle(REAL(ans), REAL(vals), 0, nans, lendat);
+	    xcopyWithRecycle(REAL(ans), REAL(vals), 0, nans, lendat);
 	else
 	    for (i = 0; i < nans; i++) REAL(ans)[i] = NA_REAL;
 	break;
     case CPLXSXP:
 	if (nans && lendat)
-	    xcopyComplexWithRecycle(COMPLEX(ans), COMPLEX(vals), 0, nans,
+	    xcopyWithRecycle(COMPLEX(ans), COMPLEX(vals), 0, nans,
 				    lendat);
 	else {
 	    Rcomplex na_cmplx;
@@ -2002,7 +2002,7 @@ SEXP attribute_hidden do_array(/*const*/ Expression* call, const BuiltInFunction
 	break;
     case RAWSXP:
 	if (nans && lendat)
-	    xcopyRawWithRecycle(RAW(ans), RAW(vals), 0, nans, lendat);
+	    xcopyWithRecycle(RAW(ans), RAW(vals), 0, nans, lendat);
 	else
 	    for (i = 0; i < nans; i++) RAW(ans)[i] = 0;
 	break;

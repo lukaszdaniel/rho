@@ -48,6 +48,7 @@
 #include "rho/Promise.hpp"
 #include "rho/ReturnBailout.hpp"
 #include "rho/S3Launcher.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 
@@ -62,12 +63,12 @@ static RObject* GetObject(ClosureContext *cptr)
 	RObject* op(funcall->car());
 	RObject* func;
 	if (op->sexptype() == SYMSXP)
-	    func = findFunction(static_cast<Symbol*>(op), callenv);
+	    func = findFunction(SEXP_downcast<Symbol*>(op), callenv);
 	else
 	    func = Evaluator::evaluate(op, callenv);
 	if (func->sexptype() != CLOSXP)
 	    Rf_error(_("generic 'function' is not a function"));
-	closure = static_cast<Closure*>(func);
+	closure = SEXP_downcast<Closure*>(func);
     }
 
     // Get name of first formal argument:
@@ -93,7 +94,7 @@ static RObject* GetObject(ClosureContext *cptr)
     {
 	const ArgList& args = cptr->promiseArgs();
 	if (args.size() == 0)
-	    return R_NilValue;
+	    return nullptr;
 	return forceIfPromise(args.get(0));
     }
 }
@@ -135,11 +136,11 @@ static FunctionBase* findFunInEnvRange(Symbol* symbol, Environment* rho, Environ
 {
     FunctionBase* vl;
     while(rho != R_EmptyEnv) {
-	vl = static_cast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
+	vl = SEXP_downcast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
 	if (vl != R_UnboundValue) {
 	    if (TYPEOF(vl) == PROMSXP) {
 		PROTECT(vl);
-		vl = static_cast<FunctionBase*>(Rf_eval(vl, rho));
+		vl = SEXP_downcast<FunctionBase*>(Rf_eval(vl, rho));
 		UNPROTECT(1);
 	    }
 	    if ((TYPEOF(vl) == CLOSXP ||
@@ -148,22 +149,22 @@ static FunctionBase* findFunInEnvRange(Symbol* symbol, Environment* rho, Environ
 		return (vl);
 	}
 	if(rho == target)
-	    return static_cast<FunctionBase*>(R_UnboundValue);
+	    return SEXP_downcast<FunctionBase*>(R_UnboundValue);
 	else
-	    rho = static_cast<Environment*>(ENCLOS(rho));
+	    rho = SEXP_downcast<Environment*>(ENCLOS(rho));
     }
-    return static_cast<FunctionBase*>(R_UnboundValue);
+    return SEXP_downcast<FunctionBase*>(R_UnboundValue);
 }
 
 static FunctionBase* findFunWithBaseEnvAfterGlobalEnv(Symbol* symbol, Environment* rho)
 {
     FunctionBase* vl;
     while(rho != R_EmptyEnv) {
-	vl = static_cast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
+	vl = SEXP_downcast<FunctionBase*>(Rf_findVarInFrame3(rho, symbol, TRUE));
 	if (vl != R_UnboundValue) {
 	    if (TYPEOF(vl) == PROMSXP) {
 		PROTECT(vl);
-		vl = static_cast<FunctionBase*>(Rf_eval(vl, rho));
+		vl = SEXP_downcast<FunctionBase*>(Rf_eval(vl, rho));
 		UNPROTECT(1);
 	    }
 	    if ((TYPEOF(vl) == CLOSXP ||
@@ -172,11 +173,11 @@ static FunctionBase* findFunWithBaseEnvAfterGlobalEnv(Symbol* symbol, Environmen
 		return (vl);
 	}
 	if(rho == R_GlobalEnv)
-	    rho = static_cast<Environment*>(R_BaseEnv);
+	    rho = SEXP_downcast<Environment*>(R_BaseEnv);
 	else
-	    rho = static_cast<Environment*>(ENCLOS(rho));
+	    rho = SEXP_downcast<Environment*>(ENCLOS(rho));
     }
-    return static_cast<FunctionBase*>(R_UnboundValue);
+    return SEXP_downcast<FunctionBase*>(R_UnboundValue);
 }
 
 /*  Rf_usemethod  -  calling functions need to evaluate the object
@@ -219,14 +220,14 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
     }
 
-	top = static_cast<Environment*>(Rf_topenv(nullptr, callrho));
-	val = findFunInEnvRange(symbol, static_cast<Environment*>(callrho), top);
+	top = SEXP_downcast<Environment*>(Rf_topenv(nullptr, callrho));
+	val = findFunInEnvRange(symbol, SEXP_downcast<Environment*>(callrho), top);
 	if (val != R_UnboundValue) {
 	    return val;
 	}
 
     std::pair<FunctionBase*, bool> pr = S3Launcher::findMethod(symbol,
-	static_cast<Environment*>(callrho), static_cast<Environment*>(defrho));
+	SEXP_downcast<Environment*>(callrho), SEXP_downcast<Environment*>(defrho));
 
     if (pr.first) {
 	return pr.first;
@@ -234,13 +235,13 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 
     if(lookup_baseenv_after_globalenv) {
 	if (top == R_GlobalEnv)
-	    top = static_cast<Environment*>(R_BaseEnv);
+	    top = SEXP_downcast<Environment*>(R_BaseEnv);
 	else
-	    top = static_cast<Environment*>(ENCLOS(top));
-	val = findFunWithBaseEnvAfterGlobalEnv(symbol, static_cast<Environment*>(top));
+	    top = SEXP_downcast<Environment*>(ENCLOS(top));
+	val = findFunWithBaseEnvAfterGlobalEnv(symbol, SEXP_downcast<Environment*>(top));
     }
     else
-	val = findFunInEnvRange(symbol, static_cast<Environment*>(ENCLOS(top)), static_cast<Environment*>(R_EmptyEnv));
+	val = findFunInEnvRange(symbol, SEXP_downcast<Environment*>(ENCLOS(top)), SEXP_downcast<Environment*>(R_EmptyEnv));
 
     return val;
 }
@@ -290,13 +291,13 @@ std::pair<bool, SEXP> Rf_usemethod(const char* generic,
     {
 	RObject* opcar = cptr->call()->car();
 	if (opcar->sexptype() == PROMSXP) {
-	    opcar = static_cast<Promise*>(opcar)->force();
+	    opcar = SEXP_downcast<Promise*>(opcar)->force();
 	}
 	if (opcar->sexptype() == LANGSXP)
 	    opcar = Evaluator::evaluate(opcar, cptr->callEnvironment());
 	switch (opcar->sexptype()) {
 	case SYMSXP: {
-	    const Symbol* symbol = static_cast<Symbol*>(opcar);
+	    const Symbol* symbol = SEXP_downcast<Symbol*>(opcar);
 	    FunctionBase* fun = findFunction(symbol, cptr->callEnvironment());
 	    if (!fun)
 		Rf_error(_("could not find function '%s'"),
@@ -307,7 +308,7 @@ std::pair<bool, SEXP> Rf_usemethod(const char* generic,
 	case CLOSXP:
 	case BUILTINSXP:
 	case SPECIALSXP:
-	    op = static_cast<FunctionBase*>(opcar);
+	    op = SEXP_downcast<FunctionBase*>(opcar);
 	    break;
 	default:
 	    Rf_error(_("Invalid generic function in 'usemethod'"));
@@ -319,7 +320,7 @@ std::pair<bool, SEXP> Rf_usemethod(const char* generic,
     // generic in it:
     GCStackRoot<Frame> method_bindings;
     if (op->sexptype() == CLOSXP) {
-	Closure* clos = static_cast<Closure*>(op);
+	Closure* clos = SEXP_downcast<Closure*>(op);
 	const Environment* generic_wk_env = cptr->workingEnvironment();
 	method_bindings = generic_wk_env->frame()->clone();
 	clos->stripFormals(method_bindings);
@@ -360,7 +361,7 @@ static void matchArgsForUseMethod(SEXP call, SEXP args, Environment* argsenv,
 	if (genval == Symbol::missingArgument())
 	    Rf_errorcall(call, _("there must be a 'generic' argument"));
 	if (genval->sexptype() == STRSXP)
-	    *generic = static_cast<StringVector*>(genval);
+	    *generic = SEXP_downcast<StringVector*>(genval);
 	if (!(*generic) || (*generic)->size() != 1)
 	    Rf_errorcall(call,
 			 _("'generic' argument must be a character string"));
@@ -380,7 +381,7 @@ static void matchArgsForUseMethod(SEXP call, SEXP args, Environment* argsenv,
 static std::string classTypeAsString(RObject* obj) {
     std::string cl;
     GCStackRoot<StringVector>
-	klass(static_cast<StringVector*>(R_data_class2(obj)));
+	klass(SEXP_downcast<StringVector*>(R_data_class2(obj)));
     int nclass = klass->size();
     if (nclass == 1)
 	cl = Rf_translateChar((*klass)[0]);
@@ -436,7 +437,7 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	    = findFunction(Symbol::obtain(generic_name),
 			   argsenv->enclosingEnvironment());
 	if (func && func->sexptype() == CLOSXP)
-	    defenv = static_cast<Closure*>(func)->environment();
+	    defenv = SEXP_downcast<Closure*>(func)->environment();
     }
 
     // Try invoking method:
@@ -447,7 +448,7 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	// Failed, so prepare error message:
 	std::string cl;
 	GCStackRoot<StringVector>
-	    klass(static_cast<StringVector*>(R_data_class2(obj)));
+	    klass(SEXP_downcast<StringVector*>(R_data_class2(obj)));
 	size_t nclass = klass->size();
 	if (nclass == 1)
 	    cl = Rf_translateChar((*klass)[0]);
@@ -485,9 +486,9 @@ static SEXP fixcall(Expression* call, const ArgList& args)
     int found;
 
     for(auto& arg : args.getArgs()) {
-        if(arg.tag() != R_NilValue) {
+        if(arg.tag() != nullptr) {
 		found = 0;
-		for(s = call; CDR(s) != R_NilValue; s = CDR(s))
+		for(s = call; CDR(s) != nullptr; s = CDR(s))
                     if(TAG(CDR(s)) == arg.tag()) found = 1;
 		if( !found ) {
 			SETCDR(s, Rf_allocList(1));
@@ -516,7 +517,7 @@ static FunctionBase* getPrimitive(Symbol* symbol)
  {
      Frame::Binding* binding = Environment::base()->frame()->binding(symbol);
      if (!binding)
-	 return R_NilValue;
+	 return nullptr;
      RObject* value = binding->forcedValue();
      if (TYPEOF(value) == BUILTINSXP || TYPEOF(value) == SPECIALSXP)
          return SEXP_downcast<BuiltInFunction*>(value);
@@ -527,7 +528,7 @@ static FunctionBase* getPrimitive(Symbol* symbol)
  	   primitives */
 	 return BuiltInFunction::obtainPrimitive(symbol);
      } else
-	 return R_NilValue;
+	 return nullptr;
  }
 
 /* If NextMethod has any arguments the first must be the generic */
@@ -572,7 +573,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	    Rf_error(_("'NextMethod' called from an anonymous function"));
 	else if (callcar->sexptype() == CLOSXP)
 	    // e.g., in do.call(function(x) NextMethod('foo'),list())
-	    genclos = static_cast<Closure*>(callcar);
+	    genclos = SEXP_downcast<Closure*>(callcar);
 	else {
 	    Symbol* gensym = SEXP_downcast<Symbol*>(callcar);
 	    FunctionBase* func
@@ -581,7 +582,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 		Rf_error(_("no calling generic was found: was a method called directly?"));
 	    if (func->sexptype() != CLOSXP)
 		Rf_errorcall(nullptr, _("'function' is not a function, but of type %d"), func->sexptype());
-	    genclos = static_cast<Closure*>(func);
+	    genclos = SEXP_downcast<Closure*>(func);
 	}
     }
 
@@ -612,7 +613,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 		RObject* scar = s->car();
 		if (scar && scar->sexptype() == DOTSXP) {
 		    int i = 1;
-		    for (ConsCell* a = static_cast<ConsCell*>(scar);
+		    for (ConsCell* a = SEXP_downcast<ConsCell*>(scar);
 			 a; a = a->tail()) {
 			Symbol* ddsym = Symbol::obtainDotDotSymbol(i);
 			m->setTail(PairList::cons(a->car(), nullptr, ddsym));
@@ -699,7 +700,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (!genval)
 	    Rf_error(_("generic function not specified"));
 	if (genval->sexptype() == STRSXP)
-	    dotgeneric = static_cast<StringVector*>(genval);
+	    dotgeneric = SEXP_downcast<StringVector*>(genval);
 	if (!dotgeneric || dotgeneric->size() != 1)
 	    Rf_error(_("invalid generic argument to NextMethod"));
 	genericname = Rf_translateChar((*dotgeneric)[0]);
@@ -715,7 +716,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (bdg) {
 	    RObject* grpval = bdg->forcedValue();
 	    if (grpval->sexptype() == STRSXP)
-		dotgroup = static_cast<StringVector*>(grpval);
+		dotgroup = SEXP_downcast<StringVector*>(grpval);
 	    if (!dotgroup || dotgroup->size() != 1)
 		Rf_error(_("invalid .Group found in NextMethod"));
 	    groupname = Rf_translateChar((*dotgroup)[0]);
@@ -734,7 +735,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	    RObject* methval = bdg->forcedValue();
 	    if (!methval || methval->sexptype() != STRSXP)
 		Rf_error(_("wrong value for .Method"));
-	    dotmethod = static_cast<StringVector*>(methval);
+	    dotmethod = SEXP_downcast<StringVector*>(methval);
 	    unsigned int i;
 	    for (i = 0; currentmethodname.empty() && i < dotmethod->size(); ++i)
 		currentmethodname = Rf_translateChar((*dotmethod)[i]);
@@ -839,7 +840,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 	    GCStackRoot<PairList> newargs(ConsCell::convert<PairList>(dots));
 	    newarglist.merge(newargs);
 	    newcall
-		= static_cast<Expression*>(fixcall(newcall, newarglist));
+		= SEXP_downcast<Expression*>(fixcall(newcall, newarglist));
 	}
     }
 
@@ -894,7 +895,7 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
     }
     if (Rf_isObject(object)) {
 	object = Rf_duplicate(object);
-	Rf_setAttrib(object, Symbols::ClassSymbol, R_NilValue);
+	Rf_setAttrib(object, Symbols::ClassSymbol, nullptr);
     }
     return object;
 }
@@ -1091,7 +1092,6 @@ int R_check_class_etc(SEXP x, const char **valid)
 */
 static R_stdGen_ptr_t R_standardGeneric_ptr = nullptr;
 static SEXP dispatchNonGeneric(SEXP name, SEXP env, SEXP fdef);
-#define NOT_METHODS_DISPATCH_PTR(ptr) (ptr == 0 || ptr == dispatchNonGeneric)
 
 static
 R_stdGen_ptr_t R_get_standardGeneric_ptr(void)
@@ -1116,7 +1116,7 @@ R_stdGen_ptr_t R_set_standardGeneric_ptr(R_stdGen_ptr_t val, SEXP envir)
 static SEXP R_isMethodsDispatchOn(SEXP onOff)
 {
     R_stdGen_ptr_t old = R_get_standardGeneric_ptr();
-    int ival =  !NOT_METHODS_DISPATCH_PTR(old);
+    int ival = !(old == nullptr || old == dispatchNonGeneric);
     if(Rf_length(onOff) > 0) {
 	Rboolean onOffValue = Rboolean(Rf_asLogical(onOff));
 	if(onOffValue == NA_INTEGER)
@@ -1124,7 +1124,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 	else if(onOffValue == FALSE)
 	    R_set_standardGeneric_ptr(nullptr, R_GlobalEnv);
 	// TRUE is not currently used
-	else if(NOT_METHODS_DISPATCH_PTR(old)) {
+	else if(old == nullptr || old == dispatchNonGeneric) {
 	    // so not already on
 	    // This may not work correctly: the default arg is incorrect.
 	    Rf_warning("R_isMethodsDispatchOn(TRUE) called -- may not work correctly");
@@ -1142,7 +1142,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 attribute_hidden
 Rboolean isMethodsDispatchOn(void)
 {
-    return Rboolean(!NOT_METHODS_DISPATCH_PTR(R_standardGeneric_ptr));
+    return Rboolean(!(R_standardGeneric_ptr == nullptr || R_standardGeneric_ptr == dispatchNonGeneric));
 }
 
 
@@ -1204,7 +1204,7 @@ static SEXP dispatchNonGeneric(SEXP name, SEXP env, SEXP fdef)
 }
 
 
-static SEXP get_this_generic(RObject* const* args, int num_args);
+static RObject* get_this_generic(RObject* const* args, int num_args);
 
 
 
@@ -1257,7 +1257,7 @@ SEXP R_set_prim_method(SEXP fname, SEXP op, SEXP code_vec, SEXP fundef,
     code_string = Rf_translateChar(Rf_asChar(code_vec));
     /* with a NULL op, turns all primitive matching off or on (used to avoid possible infinite
      recursion in methods computations*/
-    if(op == R_NilValue) {
+    if(op == nullptr) {
 	SEXP value;
 	value = allowPrimitiveMethods ? Rf_mkTrue() : Rf_mkFalse();
 	switch(code_string[0]) {
@@ -1273,7 +1273,7 @@ SEXP R_set_prim_method(SEXP fname, SEXP op, SEXP code_vec, SEXP fundef,
     if (!Rf_isPrimitive(op)) {
         SEXP internal = R_do_slot(op, Rf_install("internal"));
         op = INTERNAL(Rf_installTrChar(Rf_asChar(internal)));
-        if (op == R_NilValue) {
+        if (op == nullptr) {
 	    Rf_error("'internal' slot does not name an internal function: %s",
 		     R_CHAR(Rf_asChar(internal)));
         }
@@ -1288,21 +1288,21 @@ SEXP R_primitive_methods(SEXP op)
 {
     int offset = PRIMOFFSET(op);
     if(offset < 0 || offset > curMaxOffset)
-	return R_NilValue;
+	return nullptr;
     else {
 	SEXP value = prim_mlist[offset];
-	return value ? value : R_NilValue;
+	return value ? value : nullptr;
     }
 }
 
 SEXP R_primitive_generic(SEXP op)
 {
-    int offset = PRIMOFFSET(op);
+    int offset = SEXP_downcast<BuiltInFunction*>(op)->offset();
     if(offset < 0 || offset > curMaxOffset)
-	return R_NilValue;
+	return nullptr;
     else {
 	SEXP value = prim_generics[offset];
-	return value ? value : R_NilValue;
+	return value ? value : nullptr;
     }
 }
 
@@ -1310,6 +1310,7 @@ SEXP R_primitive_generic(SEXP op)
 SEXP do_set_prim_method(SEXP op, const char *code_string, SEXP fundef,
 			SEXP mlist)
 {
+	BuiltInFunction* oper = SEXP_downcast<BuiltInFunction*>(op);
     int offset = 0;
     prim_methods_t code = NO_METHODS; /* -Wall */
     SEXP value;
@@ -1331,11 +1332,11 @@ SEXP do_set_prim_method(SEXP op, const char *code_string, SEXP fundef,
     }
     if(errorcase) {
 	Rf_error(_("invalid primitive methods code (\"%s\"): should be \"clear\", \"reset\", \"set\", or \"suppress\""), code_string);
-	return R_NilValue;
+	return nullptr;
     }
-    switch(TYPEOF(op)) {
+    switch(oper->sexptype()) {
     case BUILTINSXP: case SPECIALSXP:
-	offset = PRIMOFFSET(op);
+	offset = oper->offset();
 	break;
     default:
 	Rf_error(_("invalid object: must be a primitive function"));
@@ -1406,7 +1407,7 @@ SEXP do_set_prim_method(SEXP op, const char *code_string, SEXP fundef,
     return value;
 }
 
-static SEXP get_primitive_methods(const BuiltInFunction* op, SEXP rho)
+static RObject* get_primitive_methods(const BuiltInFunction* op, Environment* rho)
 {
     SEXP f, e, val;
     int nprotect = 0;
@@ -1427,10 +1428,10 @@ static SEXP get_primitive_methods(const BuiltInFunction* op, SEXP rho)
 the call to standardGeneric(), or for primitives, passed as the second
 argument to standardGeneric.
 */
-static SEXP get_this_generic(RObject* const* args, int num_args)
+static RObject* get_this_generic(RObject* const* args, int num_args)
 {
     const void *vmax = vmaxget();
-    SEXP value = R_NilValue; static GCRoot<> gen_name;
+    RObject* value = nullptr; static GCRoot<> gen_name;
     int i, n;
     ClosureContext *cptr;
     const char *fname;
@@ -1448,9 +1449,9 @@ static SEXP get_this_generic(RObject* const* args, int num_args)
     n = Rf_framedepth(cptr);
     /* check for a matching "generic" slot */
     for(i=0;  i<n; i++) {
-	SEXP rval = R_sysfunction(i, cptr);
+	RObject* rval = R_sysfunction(i, cptr);
 	if(Rf_isObject(rval)) {
-	    SEXP generic = Rf_getAttrib(rval, gen_name);
+	    RObject* generic = Rf_getAttrib(rval, gen_name);
 	    if(TYPEOF(generic) == STRSXP &&
 	       streql(Rf_translateChar(Rf_asChar(generic)), fname)) {
 	      value = rval;
@@ -1470,7 +1471,7 @@ attribute_hidden
 bool R_has_methods(const BuiltInFunction* op)
 {
     R_stdGen_ptr_t ptr = R_get_standardGeneric_ptr(); int offset;
-    if(NOT_METHODS_DISPATCH_PTR(ptr))
+    if(ptr == nullptr || ptr == dispatchNonGeneric)
 	return(FALSE);
     if(!op || op->sexptype() == CLOSXP) /* except for primitives, just test for the package */
 	return(TRUE);
@@ -1528,10 +1529,10 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
 	// R_preserveobject, so later we can just grab mlist from
 	// prim_mlist 
         do_set_prim_method(const_cast<BuiltInFunction*>(op), "suppressed",
-                           R_NilValue, mlist);
+                           nullptr, mlist);
 	mlist = get_primitive_methods(op, callenv);
 	do_set_prim_method(const_cast<BuiltInFunction*>(op), "set",
-                           R_NilValue, mlist);
+                           nullptr, mlist);
 	current = prim_methods[offset]; // as revised by do_set_prim_method
     }
     mlist = prim_mlist[offset];
@@ -1548,7 +1549,7 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
 	    }
             PROTECT(suppliedvars = Rf_list1(Rf_mkString(op->name())));
             SET_TAG(suppliedvars, Symbols::DotGenericSymbol);
-	    Closure* func = static_cast<Closure*>(value);
+	    Closure* func = SEXP_downcast<Closure*>(value);
 	    /* found a method, call it with promised args */
 	    value = call->evaluateFunctionCall(func, callenv, arglist);
 	    return std::make_pair(true, value);
@@ -1559,7 +1560,7 @@ R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
     if(!fundef || TYPEOF(fundef) != CLOSXP)
 	Rf_error(_("primitive function \"%s\" has been set for methods but no generic function supplied"),
                  op->name());
-    Closure* func = static_cast<Closure*>(fundef);
+    Closure* func = SEXP_downcast<Closure*>(fundef);
     // To do:  arrange for the setting to be restored in case of an
     // error in method search
     value = call->evaluateFunctionCall(func, callenv, arglist);
@@ -1625,7 +1626,7 @@ SEXP R_do_new_object(SEXP class_def)
     value = Rf_duplicate(R_do_slot(class_def, s_prototype));
     Rboolean xDataType = Rboolean(TYPEOF(value) == ENVSXP || TYPEOF(value) == SYMSXP ||
 	TYPEOF(value) == EXTPTRSXP);
-    if((TYPEOF(value) == S4SXP || Rf_getAttrib(e, Symbols::PackageSymbol) != R_NilValue) &&
+    if((TYPEOF(value) == S4SXP || Rf_getAttrib(e, Symbols::PackageSymbol) != nullptr) &&
        !xDataType)
     { /* Anything but an object from a base "class" (numeric, matrix,..) */
 	GCStackRoot<> valrt(value);
@@ -1643,8 +1644,8 @@ Rboolean attribute_hidden R_seemsOldStyleS4Object(SEXP object)
     /* We want to know about S4SXPs with no S4 bit */
     /* if(TYPEOF(object) == S4SXP) return FALSE; */
     klass = Rf_getAttrib(object, Symbols::ClassSymbol);
-    return (klass != R_NilValue && LENGTH(klass) == 1 &&
-	    Rf_getAttrib(klass, Symbols::PackageSymbol) != R_NilValue) ? TRUE: FALSE;
+    return (klass != nullptr && LENGTH(klass) == 1 &&
+	    Rf_getAttrib(klass, Symbols::PackageSymbol) != nullptr) ? TRUE: FALSE;
 }
 
 SEXP attribute_hidden do_setS4Object(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* flag_, RObject* complete_)
@@ -1691,7 +1692,7 @@ SEXP Rf_asS4(SEXP s, Rboolean flag, int complete)
 	    SEXP value;
 	    /* TENTATIVE:  how much does this change? */
 	    if((value = R_getS4DataSlot(s, ANYSXP))
-	       != R_NilValue && !IS_S4_OBJECT(value))
+	       != nullptr && !IS_S4_OBJECT(value))
 	      return value;
 	    /* else no plausible S3 object*/
 	    else if(complete == 1) /* ordinary case (2, for conditional) */
@@ -1711,7 +1712,7 @@ S3Launcher::create(const RObject* object, std::string generic, std::string group
 {
     GCStackRoot<S3Launcher>
 	ans(new S3Launcher(generic, group, call_env, table_env));
-    ans->m_classes = static_cast<StringVector*>(R_data_class2(
+    ans->m_classes = SEXP_downcast<StringVector*>(R_data_class2(
         const_cast<RObject*>(object)));
 
     // Look for pukka method.  Need to interleave looking for generic
@@ -1731,7 +1732,7 @@ S3Launcher::create(const RObject* object, std::string generic, std::string group
 		if (ans->m_function->sexptype() == CLOSXP
 		    && ans->m_symbol == sort_list) {
 		    const Closure* closure
-			= static_cast<Closure*>(ans->m_function.get());
+			= SEXP_downcast<Closure*>(ans->m_function.get());
 		    if (closure->environment() == Environment::baseNamespace())
 			continue;
 		}

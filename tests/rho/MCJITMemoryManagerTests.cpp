@@ -52,7 +52,7 @@ protected:
 TEST_F(MCJITMemoryManagerTest, FindSymbol) {
     Symbol* test_symbol = Symbol::obtain("mcjit_mm_test_symbol");
     ASSERT_TRUE(test_symbol != nullptr);
-    
+
     GlobalVariable* global = m_manager->getSymbol(test_symbol);
     ASSERT_TRUE(global != nullptr);
 
@@ -63,7 +63,7 @@ TEST_F(MCJITMemoryManagerTest, FindSymbol) {
 TEST_F(MCJITMemoryManagerTest, DuplicateSymbol) {
     Symbol* test_symbol = Symbol::obtain("mcjit_mm_test_symbol");
     ASSERT_TRUE(test_symbol != nullptr);
-    
+
     GlobalVariable* global = m_manager->getSymbol(test_symbol);
     ASSERT_TRUE(global != nullptr);
     GlobalVariable* global2 = m_manager->getSymbol(test_symbol);
@@ -76,7 +76,7 @@ TEST_F(MCJITMemoryManagerTest, DuplicateSymbol) {
 TEST_F(MCJITMemoryManagerTest, FindBuiltInInternal) {
     BuiltInFunction* function = BuiltInFunction::obtainInternal("all.names");
     ASSERT_TRUE(function != nullptr);
-    
+
     GlobalVariable* global = m_manager->getBuiltIn(function);
     ASSERT_TRUE(global != nullptr);
 
@@ -87,7 +87,7 @@ TEST_F(MCJITMemoryManagerTest, FindBuiltInInternal) {
 TEST_F(MCJITMemoryManagerTest, FindBuiltInPrimitive) {
     BuiltInFunction* function = BuiltInFunction::obtainPrimitive("if");
     ASSERT_TRUE(function != nullptr);
-    
+
     GlobalVariable* global = m_manager->getBuiltIn(function);
     ASSERT_TRUE(global != nullptr);
 

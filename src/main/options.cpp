@@ -87,7 +87,7 @@ using namespace rho;
  *	"matprod"
  *  "PCRE_study"
  *  "PCRE_use_JIT"
- 
+
  *
  * S additionally/instead has (and one might think about some)
  * "free",	"keep"
@@ -107,11 +107,11 @@ static SEXP Options(void)
 
 static SEXP FindTaggedItem(SEXP lst, SEXP tag)
 {
-    for ( ; lst != R_NilValue ; lst = CDR(lst)) {
+    for ( ; lst != nullptr ; lst = CDR(lst)) {
 	if (TAG(lst) == tag)
 	    return lst;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 static SEXP makeErrorCall(SEXP fun)
@@ -185,7 +185,7 @@ Rboolean Rf_GetOptionDeviceAsk(void)
 
 
 /* Change the value of an option or add a new option or, */
-/* if called with value R_NilValue, remove that option. */
+/* if called with value nullptr, remove that option. */
 
 static SEXP SetOption(SEXP tag, SEXP value)
 {
@@ -197,8 +197,8 @@ static SEXP SetOption(SEXP tag, SEXP value)
     opt = FindTaggedItem(opt, tag);
 
     /* The option is being removed. */
-    if (value == R_NilValue) {
-	for ( ; t != R_NilValue ; t = CDR(t))
+    if (value == nullptr) {
+	for ( ; t != nullptr ; t = CDR(t))
 	    if (TAG(CDR(t)) == tag) {
 		old = CAR(CDR(t));
 		SETCDR(t, CDDR(t));
@@ -206,12 +206,12 @@ static SEXP SetOption(SEXP tag, SEXP value)
 		return old;
 	    }
 	UNPROTECT(1); /* value */
-	return R_NilValue;
+	return nullptr;
     }
     /* If the option is new, a new slot */
     /* is added to the end of .Options */
-    if (opt == R_NilValue) {
-	while (CDR(t) != R_NilValue)
+    if (opt == nullptr) {
+	while (CDR(t) != nullptr)
 	    t = CDR(t);
 	SETCDR(t, Rf_allocList(1));
 	opt = CDR(t);
@@ -402,7 +402,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
     */
 
     checkArity(op, args);
-    if (args == R_NilValue) {
+    if (args == nullptr) {
 	/* This is the zero argument case.
 	   We alloc up a vector list and write the system values into it.
 	*/
@@ -417,7 +417,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP sind = PROTECT(Rf_allocVector(INTSXP, n));
 	int *indx = INTEGER(sind);
 	for (int i = 0; i < n; i++) indx[i] = i;
-	orderVector1(indx, n, names, TRUE, FALSE, R_NilValue);
+	orderVector1(indx, n, names, TRUE, FALSE, nullptr);
 	SEXP value2 = PROTECT(Rf_allocVector(VECSXP, n));
 	SEXP names2 = PROTECT(Rf_allocVector(STRSXP, n));
 	for(int i = 0; i < n; i++) {
@@ -438,14 +438,14 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     int n = Rf_length(args);
     if (n == 1 && (Rf_isPairList(CAR(args)) || Rf_isVectorList(CAR(args)))
-	&& TAG(args) == R_NilValue ) {
+	&& TAG(args) == nullptr ) {
 	args = CAR(args);
 	n = Rf_length(args);
     }
     PROTECT(value = Rf_allocVector(VECSXP, n));
     PROTECT(names = Rf_allocVector(STRSXP, n));
 
-    SEXP argnames = R_NilValue;
+    SEXP argnames = nullptr;
     switch (TYPEOF(args)) {
     case NILSXP:
     case LISTSXP:
@@ -463,7 +463,7 @@ SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     R_Visible = FALSE;
     for (int i = 0 ; i < n ; i++) { /* i-th argument */
-	SEXP argi = R_NilValue, namei = R_NilValue;
+	SEXP argi = nullptr, namei = nullptr;
 	switch (TYPEOF(args)) {
 	case LISTSXP:
 	    argi = CAR(args);

@@ -453,7 +453,7 @@ void PutRNGstate()
     INTEGER(seeds)[0] = RNG_kind + 100 * N01_kind;
     for(j = 0; j < len_seed; j++)
 	INTEGER(seeds)[j+1] = int(RNG_Table[RNG_kind].i_seed[j]);
-					    
+
     /* assign only in the workspace */
     Rf_defineVar(Symbols::SeedsSymbol, seeds, R_GlobalEnv);
     UNPROTECT(1);
@@ -521,7 +521,7 @@ SEXP attribute_hidden do_RNGkind (/*const*/ rho::Expression* call, const rho::Bu
     INTEGER(ans)[1] = N01_kind;
     rng = kind_;
     norm = normal_kind_;
-    GetRNGkind(R_NilValue); /* pull from .Random.seed if present */
+    GetRNGkind(nullptr); /* pull from .Random.seed if present */
     if(!Rf_isNull(rng)) { /* set a new RNG kind */
 	RNGkind(RNGtype( Rf_asInteger(rng)));
     }
@@ -545,13 +545,13 @@ SEXP attribute_hidden do_setseed (/*const*/ rho::Expression* call, const rho::Bu
     } else seed = int(TimeToSeed());
     skind = kind_;
     nkind = normal_kind_;
-    GetRNGkind(R_NilValue); /* pull RNG_kind, N01_kind from
+    GetRNGkind(nullptr); /* pull RNG_kind, N01_kind from
 			       .Random.seed if present */
     if (!Rf_isNull(skind)) RNGkind(RNGtype(Rf_asInteger(skind)));
     if (!Rf_isNull(nkind)) Norm_kind(N01type(Rf_asInteger(nkind)));
     RNG_Init(RNG_kind, Int32(seed)); /* zaps BM history */
     PutRNGstate();
-    return R_NilValue;
+    return nullptr;
 }
 
 

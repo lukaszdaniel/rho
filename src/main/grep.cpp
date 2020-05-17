@@ -785,7 +785,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	vmaxset(vmax);
     }
 
-    if (Rf_getAttrib(x, Symbols::NamesSymbol) != R_NilValue)
+    if (Rf_getAttrib(x, Symbols::NamesSymbol) != nullptr)
 	Rf_namesgets(ans, Rf_getAttrib(x, Symbols::NamesSymbol));
     UNPROTECT(1);
     Free(pt); Free(wpt);
@@ -1464,7 +1464,7 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 
     if (value) { /* for values we store in fact the absolute start offsets and length in the integer vector */
 	SEXP vec = CAR(res_head);
-	R_size_t entry = 0, cptr = 0, clen = (CDR(res_head) == R_NilValue) ? res_ptr : LENGTH(vec);
+	R_size_t entry = 0, cptr = 0, clen = (CDR(res_head) == nullptr) ? res_ptr : LENGTH(vec);
 	R_size_t inv_start = 0; /* 0-based start position of the pieces for invert */
 	res_val = INTEGER(vec);
 	ans = PROTECT(Rf_allocVector(VECSXP, invert ? (nmatches + 1) : nmatches));
@@ -1487,11 +1487,11 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	    cptr += 2;
 	    if (cptr >= clen) {
 		res_head = CDR(res_head);
-		if (res_head == R_NilValue) break;
+		if (res_head == nullptr) break;
 		vec = CAR(res_head);
 		res_val = INTEGER(vec);
 		cptr = 0;
-		clen = (CDR(res_head) == R_NilValue) ? res_ptr : LENGTH(vec);
+		clen = (CDR(res_head) == nullptr) ? res_ptr : LENGTH(vec);
 	    }
 	}
 	if (invert) { /* add the last piece after the last match */
@@ -1504,9 +1504,9 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
     } else { /* if values are not needed, we just collect all the start offsets */
 	ans = Rf_allocVector(INTSXP, nmatches);
 	res_val = INTEGER(ans);
-	while (res_head != R_NilValue) {
+	while (res_head != nullptr) {
 	    SEXP vec = CAR(res_head);
-	    R_size_t len = (CDR(res_head) == R_NilValue) ? res_ptr : LENGTH(vec);
+	    R_size_t len = (CDR(res_head) == nullptr) ? res_ptr : LENGTH(vec);
 	    if (len) memcpy(res_val, INTEGER(vec), len * sizeof(int));
 	    res_val += len;
 	    res_head = CDR(res_head);
@@ -1597,7 +1597,7 @@ char *pcre_string_adj(char *target, const char *orig, const char *repl,
 		} else
 		    for (i = ovec[2*k] ; i < ovec[2*k+1] ; i++) {
 			c = orig[i];
-			*t++ = char( (upper ? toupper(c) : (lower ? tolower(c) : c)));
+			*t++ = char((upper ? toupper(c) : (lower ? tolower(c) : c)));
 		    }
 		p += 2;
 	    } else if (p[1] == 'U') {
@@ -2528,7 +2528,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     int capture_count, *ovector = nullptr, ovector_size = 0, /* -Wall */
 	name_count, name_entry_size, info_code;
     char *name_table;
-    SEXP capture_names = R_NilValue;
+    SEXP capture_names = nullptr;
     int nwarn = 0;
 
     pat = pattern_;

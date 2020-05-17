@@ -45,6 +45,7 @@
 #include "RBufferUtils.h"
 #include <vector>
 #include "rho/Symbol.hpp"
+#include "rho/BuiltInFunction.hpp"
 
 using namespace rho;
 using namespace std;
@@ -100,7 +101,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 	sepBytes = IS_BYTES(sep);
 	collapse = args[2];
     } else { /* paste0(..., .) */
-	u_sepw = sepw = 0; sep = R_NilValue;/* -Wall */
+	u_sepw = sepw = 0; sep = nullptr;/* -Wall */
 	collapse = args[1];
     }
     if (!Rf_isNull(collapse))
@@ -226,7 +227,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
 
     /* Now collapse, if required. */
 
-    if(collapse != R_NilValue && (nx = XLENGTH(ans)) > 0) {
+    if(collapse != nullptr && (nx = XLENGTH(ans)) > 0) {
 	sep = STRING_ELT(collapse, 0);
 	use_UTF8 = IS_UTF8(sep);
 	use_Bytes = IS_BYTES(sep);
@@ -580,14 +581,14 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
 	PROTECT(y);
 	break;
 	default:
-	    Rf_error(_("Impossible mode ( x )")); y = R_NilValue;/* -Wall */
+	    Rf_error(_("Impossible mode ( x )")); y = nullptr;/* -Wall */
 	}
     }
-    if((l = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue) {
+    if((l = Rf_getAttrib(x, Symbols::DimSymbol)) != nullptr) {
 	Rf_setAttrib(y, Symbols::DimSymbol, l);
-	if((l = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue)
+	if((l = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != nullptr)
 	    Rf_setAttrib(y, Symbols::DimNamesSymbol, l);
-    } else if((l = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+    } else if((l = Rf_getAttrib(x, Symbols::NamesSymbol)) != nullptr)
 	Rf_setAttrib(y, Symbols::NamesSymbol, l);
 
     /* In case something else forgets to set Rf_PrintDefaults(), PR#14477 */

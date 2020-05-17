@@ -20,7 +20,7 @@
    fork.cpp
    interface to system-level tools for spawning copies of the current
    process and IPC
-   
+
    Derived from multicore version 0.1-8 by Simon Urbanek
 */
 //#define MC_DEBUG
@@ -1086,7 +1086,7 @@ SEXP NORET mc_exit(SEXP sRes)
 	while (!child_can_exit) sleep(1);
 	    /* SIGUSR1 will terminate the sleep */
     }
-		
+
 #ifdef MC_DEBUG
     Dprintf("child %d: exiting\n", getpid());
 #endif

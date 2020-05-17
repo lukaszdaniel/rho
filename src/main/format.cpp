@@ -164,7 +164,7 @@ LDOUBLE private_nearbyintl(LDOUBLE x)
 # endif
 #endif
 
-#define NB 1000
+constexpr size_t NB = 1000;
 static void format_via_sprintf(double r, int d, int *kpower, int *nsig)
 {
     static char buff[NB];
@@ -186,7 +186,7 @@ static const long double tbl[] =
     1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
     1e20, 1e21, 1e22, 1e23, 1e24, 1e25, 1e26, 1e27
 };
-#define KP_MAX 27
+constexpr int KP_MAX = 27;
 #else
 static const double tbl[] =
 {
@@ -195,7 +195,7 @@ static const double tbl[] =
     1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19,
     1e20, 1e21, 1e22
 };
-#define KP_MAX 22
+constexpr int KP_MAX = 22;
 #endif
 
 static void

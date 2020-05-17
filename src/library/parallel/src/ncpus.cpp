@@ -42,7 +42,7 @@ static DWORD CountSetBits(ULONG_PTR bitMask)
     DWORD bitSetCount = 0;
     ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;    
     DWORD i;
-    
+
     for (i = 0; i <= LSHIFT; ++i) {
         bitSetCount += ((bitMask & bitTest)?1:0);
         bitTest/=2;
@@ -120,6 +120,6 @@ SEXP ncpus(SEXP virtual)
     ians[1] = logicalProcessorCount;
     free(buffer);
     UNPROTECT(1);
-    
+
     return ans;
 }

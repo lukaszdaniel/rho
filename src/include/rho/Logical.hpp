@@ -50,7 +50,7 @@ namespace rho {
 	}
 
 	/*implicit*/ Logical(bool b) : m_value(b ? 1 : 0) {}
-	
+
 	explicit operator int() const { return m_value; }
 	explicit operator double() const { return isNA() ? NA_REAL : m_value; }
 
@@ -75,7 +75,7 @@ namespace rho {
 	 */ 
 	bool identical(Logical other) const {
 	    return m_value == other.m_value; }
-	
+
 	// NB: operator==() is intentionally not defined.
 	// Use either 'equals' or 'identical' instead.
 

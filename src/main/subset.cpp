@@ -121,10 +121,10 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 	    }					  \
 	}					  \
     } while (0)
-    
+
 SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
 {
-    if (x == R_NilValue)
+    if (x == nullptr)
 	return x;
 
     SEXP result;
@@ -169,12 +169,12 @@ SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
     case VECSXP:
 	EXTRACT_SUBSET_LOOP(SET_VECTOR_ELT(result, i,
 					   VECTOR_ELT_FIX_NAMED(x, ii)),
-			    SET_VECTOR_ELT(result, i, R_NilValue));
+			    SET_VECTOR_ELT(result, i, nullptr));
 	break;
     case EXPRSXP:
 	EXTRACT_SUBSET_LOOP(SET_XVECTOR_ELT(result, i,
 					   XVECTOR_ELT_FIX_NAMED(x, ii)),
-			    SET_XVECTOR_ELT(result, i, R_NilValue));
+			    SET_XVECTOR_ELT(result, i, nullptr));
 	break;
     case RAWSXP:
 	EXTRACT_SUBSET_LOOP(RAW0(result)[i] = RAW_ELT(x, ii),
@@ -220,21 +220,21 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     SEXPTYPE mode = TYPEOF(x);
     switch (mode) {
     case LGLSXP:
-	return Subscripting::vectorSubset(static_cast<LogicalVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<LogicalVector*>(x), s);
     case INTSXP:
-	return Subscripting::vectorSubset(static_cast<IntVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<IntVector*>(x), s);
     case REALSXP:
-	return Subscripting::vectorSubset(static_cast<RealVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<RealVector*>(x), s);
     case CPLXSXP:
-	return Subscripting::vectorSubset(static_cast<ComplexVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<ComplexVector*>(x), s);
     case RAWSXP:
-	return Subscripting::vectorSubset(static_cast<RawVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<RawVector*>(x), s);
     case STRSXP:
-	return Subscripting::vectorSubset(static_cast<StringVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<StringVector*>(x), s);
     case VECSXP:
-	return Subscripting::vectorSubset(static_cast<ListVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<ListVector*>(x), s);
     case EXPRSXP:
-	return Subscripting::vectorSubset(static_cast<ExpressionVector*>(x), s);
+	return Subscripting::vectorSubset(SEXP_downcast<ExpressionVector*>(x), s);
     case LANGSXP:
 	break;
     default:
@@ -260,18 +260,18 @@ static SEXP VectorSubset(SEXP x, SEXP sarg, SEXP call)
     {
 	SEXP attrib;
 	if (
-	    ((attrib = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue) ||
+	    ((attrib = Rf_getAttrib(x, Symbols::NamesSymbol)) != nullptr) ||
 	    ( /* here we might have an array.  Use row names if 1D */
 	     Rf_isArray(x)
-	     && (attrib = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue
+	     && (attrib = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != nullptr
 	     && Rf_length(attrib) == 1
-	     && (attrib = Rf_GetRowNames(attrib)) != R_NilValue
+	     && (attrib = Rf_GetRowNames(attrib)) != nullptr
 	     )
 	    ) {
 	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, Symbols::NamesSymbol, nattrib);
 	}
-	if ((attrib = Rf_getAttrib(x, Symbols::SrcrefSymbol)) != R_NilValue &&
+	if ((attrib = Rf_getAttrib(x, Symbols::SrcrefSymbol)) != nullptr &&
 	    TYPEOF(attrib) == VECSXP) {
 	    GCStackRoot<> nattrib(Rf_ExtractSubset(attrib, indx, call));
 	    Rf_setAttrib(result, Symbols::SrcrefSymbol, nattrib);
@@ -286,25 +286,25 @@ static SEXP ArraySubset(SEXP x, SEXP s, SEXP call, int drop)
     const PairList* subs = SEXP_downcast<PairList*>(s);
     switch (x->sexptype()) {
     case LGLSXP:
-	return Subscripting::arraySubset(static_cast<LogicalVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<LogicalVector*>(x),
 					 subs, drop);
     case INTSXP:
-	return Subscripting::arraySubset(static_cast<IntVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<IntVector*>(x),
 					 subs, drop);
     case REALSXP:
-	return Subscripting::arraySubset(static_cast<RealVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<RealVector*>(x),
 					 subs, drop);
     case CPLXSXP:
-	return Subscripting::arraySubset(static_cast<ComplexVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<ComplexVector*>(x),
 					 subs, drop);
     case STRSXP:
-	return Subscripting::arraySubset(static_cast<StringVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<StringVector*>(x),
 					 subs, drop);
     case VECSXP:
-	return Subscripting::arraySubset(static_cast<ListVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<ListVector*>(x),
 					 subs, drop);
     case RAWSXP:
-	return Subscripting::arraySubset(static_cast<RawVector*>(x),
+	return Subscripting::arraySubset(SEXP_downcast<RawVector*>(x),
 					 subs, drop);
     default:
 	Rf_errorcall(call, _("array subscripting not handled for this type"));
@@ -316,14 +316,14 @@ static SEXP ArraySubset(SEXP x, SEXP s, SEXP call, int drop)
 /* Returns and removes a named argument from argument list args.
    The search ends as soon as a matching argument is found.  If
    the argument is not found, the argument list is not modified
-   and R_NilValue is returned.
+   and nullptr is returned.
  */
 static SEXP ExtractArg(rho::RObject* args, rho::Symbol* arg_sym)
 {
     SEXP arg, prev_arg;
     int found = 0;
 
-    for (arg = prev_arg = args; arg != R_NilValue; arg = CDR(arg)) {
+    for (arg = prev_arg = args; arg != nullptr; arg = CDR(arg)) {
 	if(TAG(arg) == arg_sym) {
 	    if (arg == prev_arg) /* found at head of args */
 		args = CDR(args);
@@ -334,7 +334,7 @@ static SEXP ExtractArg(rho::RObject* args, rho::Symbol* arg_sym)
 	}
 	else  prev_arg = arg;
     }
-    return found ? CAR(arg) : R_NilValue;
+    return found ? CAR(arg) : nullptr;
 }
 
 /* Extracts the drop argument, if present, from the argument list.
@@ -388,7 +388,7 @@ SEXP attribute_hidden do_subset(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 static R_INLINE R_xlen_t scalarIndex(SEXP s)
 {
-    if (ATTRIB(s) == R_NilValue)
+    if (ATTRIB(s) == nullptr)
 	switch (TYPEOF(s)) {
 	case INTSXP:
 	{
@@ -420,11 +420,11 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
        or matrix directly to improve speed for these simple cases. */
     SEXP cdrArgs = CDR(args);
     SEXP cddrArgs = CDR(cdrArgs);
-    if (cdrArgs != R_NilValue && cddrArgs == R_NilValue &&
-	TAG(cdrArgs) == R_NilValue) {
+    if (cdrArgs != nullptr && cddrArgs == nullptr &&
+	TAG(cdrArgs) == nullptr) {
 	/* one index, not named */
 	SEXP x = CAR(args);
-	if (ATTRIB(x) == R_NilValue) {
+	if (ATTRIB(x) == nullptr) {
 	    SEXP s = CAR(cdrArgs);
 	    R_xlen_t i = scalarIndex(s);
 	    switch (TYPEOF(x)) {
@@ -453,12 +453,12 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	}
     }
-    else if (cddrArgs != R_NilValue && CDR(cddrArgs) == R_NilValue &&
-	     TAG(cdrArgs) == R_NilValue && TAG(cddrArgs) == R_NilValue) {
+    else if (cddrArgs != nullptr && CDR(cddrArgs) == nullptr &&
+	     TAG(cdrArgs) == nullptr && TAG(cddrArgs) == nullptr) {
 	/* two indices, not named */
 	SEXP x = CAR(args);
 	SEXP attr = ATTRIB(x);
-	if (TAG(attr) == Symbols::DimSymbol && CDR(attr) == R_NilValue) {
+	if (TAG(attr) == Symbols::DimSymbol && CDR(attr) == nullptr) {
 	    /* only attribute of x is 'dim' */
 	    SEXP dim = CAR(attr);
 	    if (TYPEOF(dim) == INTSXP && LENGTH(dim) == 2) {
@@ -508,7 +508,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* but in fact S does not do this. */
     /* FIXME: replace the test by isNull ... ? */
 
-    if (x == R_NilValue) {
+    if (x == nullptr) {
 	return x;
     }
     SEXP subs = CDR(args);
@@ -531,7 +531,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    Rf_setAttrib(ax, Symbols::NamesSymbol, Rf_getAttrib(x, Symbols::NamesSymbol));
 	}
 	int i = 0;
-	for (SEXP px = x; px != R_NilValue; px = CDR(px))
+	for (SEXP px = x; px != nullptr; px = CDR(px))
 	    SET_VECTOR_ELT(ax, i++, CAR(px));
     }
     else if (!Rf_isVector(x))
@@ -543,10 +543,10 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP sub1 = CAR(subs);  // null if nsubs == 0
     if (nsubs == 1 && sub1 == R_MissingArg) { // Handle x[] correctly.
 	nsubs = 0;
-	sub1 = R_NilValue;
+	sub1 = nullptr;
     }
 
-    const IntVector* dims = static_cast<VectorBase*>(ax.get())->dimensions();
+    const IntVector* dims = SEXP_downcast<VectorBase*>(ax.get())->dimensions();
     if (dims) {
 	size_t ndim = dims->size();
 	// Check for single matrix subscript:
@@ -574,7 +574,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    ans = new CachingExpression(nullptr, tl);
 
 	    int i = 0;
-	    for (SEXP px = ans; px != R_NilValue; px = CDR(px))
+	    for (SEXP px = ans; px != nullptr; px = CDR(px))
 		SETCAR(px, VECTOR_ELT(ax, i++));
 	    Rf_setAttrib(ans, Symbols::DimSymbol, Rf_getAttrib(ax, Symbols::DimSymbol));
 	    Rf_setAttrib(
@@ -583,12 +583,12 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    RAISE_NAMED(ans, NAMED(ax)); /* PR#7924 */
 	}
     }
-    if (ATTRIB(ans) != R_NilValue) { /* remove probably erroneous attr's */
-	Rf_setAttrib(ans, Symbols::TspSymbol, R_NilValue);
+    if (ATTRIB(ans) != nullptr) { /* remove probably erroneous attr's */
+	Rf_setAttrib(ans, Symbols::TspSymbol, nullptr);
 #ifdef _S4_subsettable
 	if(!IS_S4_OBJECT(x))
 #endif
-	    Rf_setAttrib(ans, Symbols::ClassSymbol, R_NilValue);
+	    Rf_setAttrib(ans, Symbols::ClassSymbol, nullptr);
     }
     return ans;
 }
@@ -654,7 +654,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
     /* code to allow classes to extend environment */
     if (TYPEOF(x) == S4SXP) {
 	x = R_getS4DataSlot(x, ANYSXP);
-	if (x == R_NilValue)
+	if (x == nullptr)
 	  Rf_errorcall(call, _("this S4 class is not subsettable"));
     }
 
@@ -671,7 +671,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	else ENSURE_NAMEDMAX(ans);
 
 	if (ans == R_UnboundValue )
-	    return(R_NilValue);
+	    return(nullptr);
 	if (NAMED(ans))
 	    ENSURE_NAMEDMAX(ans);
 	return ans;
@@ -720,8 +720,8 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	}
     } else { /* matrix indexing */
 	/* Here we use the fact that: */
-	/* CAR(R_NilValue) = R_NilValue */
-	/* CDR(R_NilValue) = R_NilValue */
+	/* CAR(nullptr) = nullptr */
+	/* CDR(nullptr) = nullptr */
 
 	int ndn; /* Number of dimnames. Unlikely to be anything but
 		    0 or nsubs, but just in case... */
@@ -734,7 +734,7 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
 	for (int i = 0; i < nsubs; i++) {
 	    pindx[i] = int(
 		Rf_get1index(CAR(subs),
-			  (i < ndn) ? VECTOR_ELT(dimnames, i) : R_NilValue,
+			  (i < ndn) ? VECTOR_ELT(dimnames, i) : nullptr,
 			  pindx[i], pok, -1, call));
 	    subs = CDR(subs);
 	    if (pindx[i] < 0 || pindx[i] >= pdims[i])
@@ -822,7 +822,7 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
     const char *si = "";
     const void *vmax = vmaxget();
 
-    if(target == R_NilValue)
+    if(target == nullptr)
 	return NO_MATCH;
 
     switch (TYPEOF(target)) {
@@ -866,7 +866,7 @@ Rf_fixSubset3Args(SEXP call, SEXP args, SEXP env, SEXP* syminp)
     else {
 	Rf_errorcall(call,_("invalid subscript type '%s'"),
 		  Rf_type2char(TYPEOF(nlist)));
-	return R_NilValue; /*-Wall*/
+	return nullptr; /*-Wall*/
     }
 
     /* replace the second argument with a string */
@@ -919,18 +919,18 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
      /* The mechanism to allow a class extending "environment" */
     if( IS_S4_OBJECT(x) && TYPEOF(x) == S4SXP ){
 	x = R_getS4DataSlot(x, ANYSXP);
-	if(x == R_NilValue)
+	if(x == nullptr)
 	    Rf_errorcall(call, "$ operator not defined for this S4 class");
     }
 
     /* If this is not a list object we return NULL. */
 
     if (Rf_isPairList(x)) {
-	SEXP xmatch = R_NilValue;
+	SEXP xmatch = nullptr;
 	int havematch;
 	UNPROTECT(2);
 	havematch = 0;
-	for (y = x ; y != R_NilValue ; y = CDR(y)) {
+	for (y = x ; y != nullptr ; y = CDR(y)) {
 	    switch(pstrmatch(TAG(y), input, slen)) {
 	    case EXACT_MATCH:
 		y = CAR(y);
@@ -965,7 +965,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    RAISE_NAMED(y, NAMED(x));
 	    return y;
 	}
-	return R_NilValue;
+	return nullptr;
     }
     else if (Rf_isVectorList(x)) {
 	R_xlen_t i, n, imatch = -1;
@@ -1017,7 +1017,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    RAISE_NAMED(y, NAMED(x));
 	    return y;
 	}
-	return R_NilValue;
+	return nullptr;
     }
     else if( Rf_isEnvironment(x) ){
 	y = Rf_findVarInFrame(x, Rf_installTrChar(input));
@@ -1033,7 +1033,7 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 	    else RAISE_NAMED(y, NAMED(x));
 	    return(y);
 	}
-	return R_NilValue;
+	return nullptr;
     }
     else if( Rf_isVectorAtomic(x) ){
 	Rf_errorcall(call, "$ operator is invalid for atomic vectors");
@@ -1041,5 +1041,5 @@ SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
     else /* e.g. a function */
 	Rf_errorcall(call, _("object of type '%s' is not subsettable"), Rf_type2char(TYPEOF(x)));
     UNPROTECT(2);
-    return R_NilValue;
+    return nullptr;
 }

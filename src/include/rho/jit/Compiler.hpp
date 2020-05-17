@@ -71,7 +71,7 @@ private:
 
     llvm::Value* emitFunctionLookup(const Symbol* symbol,
 				    FunctionBase** likely_function);
-    
+
     // Code generation functions.
     // These generate optimized code.
     llvm::Value* emitEvalInternal(const RObject* object);

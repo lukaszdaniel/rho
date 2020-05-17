@@ -294,7 +294,7 @@ static char *AsciiInString(FILE *fp, SaveLoadData *d)
 	    default:  break;
 	    }
 	}
-	*bufp++ = char( c);
+	*bufp++ = char(c);
     }
     *bufp = '\0';
     return d->buffer.data;
@@ -422,7 +422,7 @@ static char *BinaryInString(FILE *fp, SaveLoadData *d)
 {
     char *bufp = d->buffer.data;
     do {
-	*bufp = char( R_fgetc(fp));
+	*bufp = char(R_fgetc(fp));
     }
     while (*bufp++);
     return d->buffer.data;
@@ -458,7 +458,7 @@ static SEXP OffsetToNode(int offset, NodeInfo *node)
 {
     int l, m, r;
 
-    if (offset == -1) return R_NilValue;
+    if (offset == -1) return nullptr;
     if (offset == -2) return R_GlobalEnv;
     if (offset == -3) return R_UnboundValue;
     if (offset == -4) return R_MissingArg;
@@ -479,7 +479,7 @@ static SEXP OffsetToNode(int offset, NodeInfo *node)
 
     /* Not supposed to happen: */
     Rf_warning(_("unresolved node during restore"));
-    return R_NilValue;
+    return nullptr;
 }
 
 static SEXPTYPE FixupType(unsigned int type, int VersionId)
@@ -516,7 +516,7 @@ static void RemakeNextSEXP(FILE *fp, NodeInfo *node, int version, InputRoutines 
     unsigned int j, idx;
     SEXPTYPE type;
     int len;
-    SEXP s = R_NilValue;	/* -Wall */
+    SEXP s = nullptr;	/* -Wall */
 
     idx = m->InInteger(fp, d);
     type = FixupType(m->InInteger(fp, d), version);
@@ -697,7 +697,7 @@ static SEXP DataLoad(FILE *fp, int startup, InputRoutines *m,
     PROTECT(node.NewAddress = Rf_allocVector(VECSXP, node.NSymbol + node.NSave));
     for (i = 0 ; i < node.NTotal ; i++) {
 	node.OldOffset[i] = 0;
-	SET_VECTOR_ELT(node.NewAddress, i, R_NilValue);
+	SET_VECTOR_ELT(node.NewAddress, i, nullptr);
     }
 
     /* read in the required symbols */
@@ -787,13 +787,13 @@ static SEXP NewReadItem (SEXP sym_table, SEXP env_table, FILE *fp, InputRoutines
 
 
 /*  We use special (negative) type codes to indicate the special
- *  values: R_NilValue, R_GlobalEnv, R_UnboundValue, R_MissingArg.
+ *  values: nullptr, R_GlobalEnv, R_UnboundValue, R_MissingArg.
  *  The following routines handle these conversions (both
  *  directions). */
 
 static int NewSaveSpecialHook (SEXP item)
 {
-    if (item == R_NilValue)     return -1;
+    if (item == nullptr)     return -1;
     if (item == R_GlobalEnv)    return -2;
     if (item == R_UnboundValue) return -3;
     if (item == R_MissingArg)   return -4;
@@ -803,7 +803,7 @@ static int NewSaveSpecialHook (SEXP item)
 static SEXP NewLoadSpecialHook (SEXPTYPE type)
 {
     switch (int(type)) {
-    case -1: return R_NilValue;
+    case -1: return nullptr;
     case -2: return R_GlobalEnv;
     case -3: return R_UnboundValue;
     case -4: return R_MissingArg;
@@ -851,7 +851,7 @@ static SEXP NewLoadSpecialHook (SEXPTYPE type)
 
 static SEXP MakeHashTable(void)
 {
-    SEXP val = CONS(R_NilValue, Rf_allocVector(VECSXP, HASHSIZE));
+    SEXP val = CONS(nullptr, Rf_allocVector(VECSXP, HASHSIZE));
     SET_HASH_TABLE_COUNT(val, 0);
     return val;
 }
@@ -861,7 +861,7 @@ static void FixHashEntries(SEXP ht)
     SEXP cell;
     int count;
     for (cell = HASH_TABLE_KEYS_LIST(ht), count = 1;
-	 cell != R_NilValue;
+	 cell != nullptr;
 	 cell = CDR(cell), count++)
 	INTEGER(TAG(cell))[0] = count;
 }
@@ -884,7 +884,7 @@ static int HashGet(SEXP item, SEXP ht)
 {
     R_size_t pos = PTRHASH(item) % HASH_TABLE_SIZE(ht);
     SEXP cell;
-    for (cell = HASH_BUCKET(ht, pos); cell != R_NilValue; cell = CDR(cell))
+    for (cell = HASH_BUCKET(ht, pos); cell != nullptr; cell = CDR(cell))
 	if (item == TAG(cell))
 	    return INTEGER(CAR(cell))[0];
     return 0;
@@ -1308,7 +1308,7 @@ static SEXP NewReadItem (SEXP sym_table, SEXP env_table, FILE *fp,
     case BUILTINSXP:
 	R_AllocStringBuffer(MAXELTSIZE - 1, &(d->buffer));
 	PROTECT(s = BuiltInFunction::obtainPrimitive(m->InString(fp, d)));
-	if (s == R_NilValue) {
+	if (s == nullptr) {
 	    Rf_warning(_("unrecognized internal function name \"%s\""), d->buffer.data);
 	}
 	break;
@@ -1364,7 +1364,7 @@ static SEXP NewDataLoad (FILE *fp, InputRoutines *m, SaveLoadData *d)
 	/* Now fill them in  */
 	for (count = 0; count < env_count; ++count) {
 	    Environment* env
-		= static_cast<Environment*>(VECTOR_ELT(env_table, count));
+		= SEXP_downcast<Environment*>(VECTOR_ELT(env_table, count));
 	    Environment* enc
 		= SEXP_downcast<Environment*>(NewReadItem(sym_table, env_table,
 							  fp, m, d));
@@ -1501,13 +1501,13 @@ static char *InStringAscii(FILE *fp, SaveLoadData *unused)
 		    c = fgetc(fp);
 		    j++;
 		}
-		buf[i] = char( d);
+		buf[i] = char(d);
 		ungetc(c, fp);
 		break;
-	    default  : buf[i] = char( c);
+	    default  : buf[i] = char(c);
 	    }
 	}
-	else buf[i] = char( c);
+	else buf[i] = char(c);
     }
     buf[i] = '\0';
     return buf;
@@ -1985,7 +1985,7 @@ SEXP attribute_hidden R_LoadFromFile(FILE *fp, int startup)
 	default:
 	    Rf_error(_("bad restore file magic number (file may be corrupted) -- no data loaded"));
 	}
-	return(R_NilValue);/* for -Wall */
+	return(nullptr);/* for -Wall */
     }
 }
 
@@ -2004,14 +2004,14 @@ SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction*
 	Rf_error(_("'file' must be non-empty string"));
     if (TYPEOF(ascii_) != LGLSXP)
 	Rf_error(_("'ascii' must be logical"));
-    if (version_ == R_NilValue)
+    if (version_ == nullptr)
 	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
     if (version == NA_INTEGER || version <= 0)
 	Rf_error(_("invalid '%s' argument"), "version");
     source = envir_;
-    if (source != R_NilValue && TYPEOF(source) != ENVSXP)
+    if (source != nullptr && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "environment");
     ep = Rf_asLogical(eval_promises_);
     if (ep == NA_LOGICAL)
@@ -2047,7 +2047,7 @@ SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction*
     }
 
     fclose(fp);
-    return R_NilValue;
+    return nullptr;
 }
 
 static SEXP RestoreToEnv(SEXP ans, SEXP aenv)
@@ -2072,7 +2072,7 @@ static SEXP RestoreToEnv(SEXP ans, SEXP aenv)
 	    obj = VECTOR_ELT(ans, i);
 	    Rf_defineVar(sym, obj, aenv);
 	    if(R_seemsOldStyleS4Object(obj))
-		Rf_warningcall(R_NilValue,
+		Rf_warningcall(nullptr,
 			    _("'%s' looks like a pre-2.4.0 S4 object: please recreate it"),
 			    R_CHAR(STRING_ELT(names, i)));
 	}
@@ -2085,16 +2085,16 @@ static SEXP RestoreToEnv(SEXP ans, SEXP aenv)
 
     PROTECT(ans);
     a = ans;
-    while (a != R_NilValue) {a = CDR(a); cnt++;}
+    while (a != nullptr) {a = CDR(a); cnt++;}
     PROTECT(names = Rf_allocVector(STRSXP, cnt));
     cnt = 0;
     a = ans;
     ProvenanceTracker::flagXenogenesis();
-    while (a != R_NilValue) {
+    while (a != nullptr) {
 	SET_STRING_ELT(names, cnt++, PRINTNAME(TAG(a)));
 	Rf_defineVar(TAG(a), CAR(a), aenv);
 	if(R_seemsOldStyleS4Object(CAR(a)))
-	    Rf_warningcall(R_NilValue,
+	    Rf_warningcall(nullptr,
 			_("'%s' looks like a pre-2.4.0 S4 object: please recreate it"),
 			R_CHAR(PRINTNAME(TAG(a))));
 	a = CDR(a);
@@ -2279,7 +2279,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 	Rf_error(_("'ascii' must be logical"));
     ascii = Rboolean(INTEGER(ascii_)[0]);
 
-    if (version_ == R_NilValue)
+    if (version_ == nullptr)
 	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
@@ -2288,7 +2288,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
     if (version < 2)
 	Rf_error(_("cannot save to connections in version %d format"), version);
     source = envir_;
-    if (source != R_NilValue && TYPEOF(source) != ENVSXP)
+    if (source != nullptr && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "environment");
     ep = Rf_asLogical(eval_promises_);
     if (ep == NA_LOGICAL)
@@ -2357,7 +2357,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 	    con->close(con);
 	throw;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Read and checks the magic number, open the connection if needed */
@@ -2427,7 +2427,7 @@ SEXP attribute_hidden do_loadInfoFromConn2(SEXP call, SEXP op, SEXP args, SEXP e
 
     struct R_inpstream_st in;
     Rconnection con;
-    SEXP res = R_NilValue;
+    SEXP res = nullptr;
     unsigned char buf[6];
     size_t count;
     Rboolean wasopen;

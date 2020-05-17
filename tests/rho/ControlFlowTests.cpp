@@ -92,7 +92,7 @@ TEST_P(ControlFlowTest, If)
 	{ "if (FALSE) 1", "NULL" },
 	{ "if (TRUE) 1 else 2", "1" },
 	{ "if (FALSE) 1 else 2", "2" },
-	
+
 	// if() with a scalar numeric.
 	{ "if (0.0) 1", "NULL" },
 	{ "if (1.1) 1", "1" },
@@ -100,7 +100,7 @@ TEST_P(ControlFlowTest, If)
 	{ "if (0.0) 1 else 2", "2" },
 	{ "if (1.1) 1 else 2", "1" },
 	{ "if (2.1) 1 else 2", "1" },
-	
+
 	// if() with a scalar integer.
 	{ "if (1L) 1", "1" },
 	{ "if (2L) 1", "1" },

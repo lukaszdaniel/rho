@@ -158,10 +158,10 @@ struct _DevDesc {
     Rboolean canGenMouseUp;   /* can the device generate mouseup events */
     Rboolean canGenKeybd;     /* can the device generate keyboard events */
     Rboolean canGenIdle;      /* can the device generate idle events */
- 
+
     Rboolean gettingEvent;    /* This is set while getGraphicsEvent
 				 is actively looking for events */
-    
+
     /********************************************************
      * Device procedures.
      ********************************************************/
@@ -640,7 +640,7 @@ struct _DevDesc {
     /* --------- Post-2.7.0 features --------- */
 
     /* Added in 2.12.0:  Changed graphics event handling. */
-    
+
     SEXP eventEnv;   /* This is an environment holding event handlers. */
     /*
      * eventHelper(dd, 1) is called by do_getGraphicsEvent before looking for a 
@@ -859,7 +859,7 @@ Rboolean doesIdle(pDevDesc dd);
     if (R_interrupts_pending && ! R_interrupts_suspended) \
         Rf_onintr(); \
 } while(0)
-    
+
 #include <R_ext/libextern.h>
 LibExtern Rboolean R_interrupts_suspended;    
 LibExtern int R_interrupts_pending;

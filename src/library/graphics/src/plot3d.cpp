@@ -710,7 +710,7 @@ static void PerspBox(int front, double *x, double *y, double *z,
     double d[3], e[3];
     int f, i, p0, p1, p2, p3, nearby;
     int ltysave = gpptr(dd)->lty;
-    
+
     gpptr(dd)->lty = front ? LTY_DOTTED : LTY_SOLID;
 
     for (f = 0; f < 6; f++) {

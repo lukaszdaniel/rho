@@ -207,7 +207,7 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
 	    Rf_warning(_("all z values are equal"));
 	else
 	    Rf_warning(_("all z values are NA"));
-	return R_NilValue;
+	return nullptr;
     }
     /* change to 1e-3, reconsidered because of PR#897
      * but 1e-7, and even  2*DBL_EPSILON do not prevent inf.loop in contour().

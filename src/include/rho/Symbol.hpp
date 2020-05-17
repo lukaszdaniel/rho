@@ -418,6 +418,13 @@ extern "C" {
      * @return Pointer to a rho::String representing \a x's name.
      */
     SEXP PRINTNAME(SEXP x);
+
+    /* This function is equivalent to Rf_install(R_CHAR(charSXP)), but faster.
+       Like the equivalent code pattern, it discards the encoding information,
+       hence in almost all cases installTrChar should be used, instead. */
+    SEXP Rf_installNoTrChar(SEXP charSXP);
+
+    SEXP Rf_installS3Signature(const char* methodName, const char* className);
 }
 
 #endif /* RSYMBOL_H */

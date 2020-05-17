@@ -37,7 +37,7 @@ inline std::ostream& operator<<(std::ostream& os, const RObject* object) {
     Rf_PrintValue(const_cast<rho::RObject*>(object));
     return os;
 }
-  
+
 // This class exists purely to provide access to private members of the GCNode  
 // class for testing purposes.
 class GCTestHelper {

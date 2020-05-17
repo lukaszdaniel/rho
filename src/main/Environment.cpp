@@ -388,17 +388,17 @@ namespace rho {
 
 SEXP HASHTAB(SEXP x) {
     Rf_error("HASHTAB is not supported in rho.");
-    return R_NilValue;
+    return nullptr;
 }
 
 void SET_HASHTAB(SEXP x, SEXP table) {
-    if (table != R_NilValue) {
+    if (table != nullptr) {
 	Rf_error("SET_HASHTAB is not supported in rho.");
     }
 }
 
 void SET_FRAME(SEXP x, SEXP frame) {
-    if (frame != R_NilValue) {
+    if (frame != nullptr) {
 	Rf_error("SET_FRAME is not supported in rho.");
     }
 }

@@ -425,11 +425,11 @@ SEXP fixup_NaRm(SEXP args)
 
     /* Need to make sure na.rm is last and exists */
     GCStackRoot<> na_value(Rf_ScalarLogical(FALSE));
-    for(SEXP a = args, prev = R_NilValue; a != R_NilValue; a = CDR(a)) {
+    for(SEXP a = args, prev = nullptr; a != nullptr; a = CDR(a)) {
 	if(TAG(a) == Symbols::NaRmSymbol) {
-	    if(CDR(a) == R_NilValue) return args;
+	    if(CDR(a) == nullptr) return args;
 	    na_value = CAR(a);
-	    if(prev == R_NilValue) args = CDR(a);
+	    if(prev == nullptr) args = CDR(a);
 	    else SETCDR(prev, CDR(a));
 	}
 	prev = a;
@@ -438,11 +438,11 @@ SEXP fixup_NaRm(SEXP args)
     t = PairList::cons(na_value, nullptr);
     PROTECT(t);
     SET_TAG(t, Symbols::NaRmSymbol);
-    if (args == R_NilValue)
+    if (args == nullptr)
 	args = t;
     else {
 	SEXP r = args;
-	while (CDR(r) != R_NilValue) r = CDR(r);
+	while (CDR(r) != nullptr) r = CDR(r);
 	SETCDR(r, t);
     }
     UNPROTECT(1);
@@ -539,7 +539,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	case CPLXSXP: return complex_mean(x);
 	default:
 	    Rf_error(R_MSG_type, Rf_type2char(TYPEOF(x)));
-	    return R_NilValue; // -Wall on clang 4.2
+	    return nullptr; // -Wall on clang 4.2
 	}
     }
 
@@ -563,8 +563,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     ans = Rf_matchArgExact(Symbols::NaRmSymbol, &args);
     Rboolean narm = Rboolean(Rf_asLogical(ans));
 
-    if (ALTREP(CAR(args)) && CDDR(args) == R_NilValue &&
-	(CDR(args) == R_NilValue || TAG(CDR(args)) == R_NaRmSymbol)) {
+    if (ALTREP(CAR(args)) && CDDR(args) == nullptr &&
+	(CDR(args) == nullptr || TAG(CDR(args)) == R_NaRmSymbol)) {
 	SEXP toret = NULL;
 	SEXP vec = CAR(args);
 	switch(PRIMVAL(op)) {
@@ -618,7 +618,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
     */
 	a = args;
         complex_a = real_a = FALSE;
-	while (a != R_NilValue) {
+	while (a != nullptr) {
             switch(TYPEOF(CAR(a))) {
 	    case INTSXP:
 	    case LGLSXP:
@@ -671,13 +671,13 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	Rf_errorcall(call,
 		  _("internal error ('op = %d' in do_summary).\t Call a Guru"),
 		  iop);
-	return R_NilValue;/*-Wall */
+	return nullptr;/*-Wall */
     }
 
     SEXP stmp = NA_STRING,
 	 scum = PROTECT(NA_STRING);
     /*-- now loop over all arguments.  Do the 'op' switch INSIDE : */
-    while (args != R_NilValue) {
+    while (args != nullptr) {
 	a = CAR(args);
 	int_a = FALSE;// int_a = TRUE  <-->  a is INTEGER
 	real_a = FALSE;
@@ -973,7 +973,7 @@ na_answer: /* only sum(INTSXP, ...) case currently used */
 
 invalid_type:
     Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
-    return R_NilValue;
+    return nullptr;
 }/* do_summary */
 
 
@@ -1082,7 +1082,7 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 	    REAL(ans)[0] = (double)indx + 1;
 	else
 	    INTEGER(ans)[0] = (int)indx + 1;
-	if (Rf_getAttrib(sx, Symbols::NamesSymbol) != R_NilValue) { /* preserve names */
+	if (Rf_getAttrib(sx, Symbols::NamesSymbol) != nullptr) { /* preserve names */
 	    SEXP ansnam;
 	    PROTECT(ansnam =
 		    Rf_ScalarString(STRING_ELT(Rf_getAttrib(sx, Symbols::NamesSymbol), indx)));
@@ -1096,7 +1096,7 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 /* which(x) : indices of non-NA TRUE values in x */
 SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
-    SEXP v, v_nms, ans, ans_nms = R_NilValue;
+    SEXP v, v_nms, ans, ans_nms = nullptr;
     int i, j = 0, len, *buf;
 
     v = x_;
@@ -1117,7 +1117,7 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
     PROTECT(ans = Rf_allocVector(INTSXP, len));
     if(len) memcpy(INTEGER(ans), buf, sizeof(int) * len);
 
-    if ((v_nms = Rf_getAttrib(v, Symbols::NamesSymbol)) != R_NilValue) {
+    if ((v_nms = Rf_getAttrib(v, Symbols::NamesSymbol)) != nullptr) {
 	PROTECT(ans_nms = Rf_allocVector(STRSXP, len));
 	int *pa = INTEGER(ans);
 	for (i = 0; i < len; i++) {
@@ -1198,7 +1198,7 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	PROTECT(x = Rf_coerceVector(args[0], anstype));
 	r = INTEGER(x);
 	n = XLENGTH(x);
-	xcopyIntegerWithRecycle(ra, r, 0, len, n);
+	xcopyWithRecycle(ra, r, 0, len, n);
 	UNPROTECT(1);
 	for (int arg = 1; arg < num_args; arg++) {
 	    x = args[arg];
@@ -1231,7 +1231,7 @@ SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction*
 	PROTECT(x = Rf_coerceVector(args[0], anstype));
 	r = REAL(x);
 	n = XLENGTH(x);
-	xcopyRealWithRecycle(ra, r, 0, len, n);
+	xcopyWithRecycle(ra, r, 0, len, n);
 	UNPROTECT(1);
 	for (int arg = 1; arg < num_args; arg++) {
 	    x = args[arg];

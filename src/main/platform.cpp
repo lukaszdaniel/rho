@@ -380,7 +380,7 @@ SEXP attribute_hidden do_fileshow(/*const*/ Expression* call, const BuiltInFunct
     } else
 	pager = "";
     R_ShowFiles(n, f, h, t, dl, pager);
-    return R_NilValue;
+    return nullptr;
 }
 
 /*  file.append
@@ -464,8 +464,8 @@ SEXP attribute_hidden do_fileappend(/*const*/ Expression* call, const BuiltInFun
 	fclose(fp1);
     } else {
 	for (int i = 0; i < n; i++) {
-	    if (STRING_ELT(f1, i%n1) == R_NilValue ||
-		STRING_ELT(f2, i%n2) == R_NilValue)
+	    if (STRING_ELT(f1, i%n1) == nullptr ||
+		STRING_ELT(f2, i%n2) == nullptr)
 		LOGICAL(ans)[i] = 0;
 	    else
 		LOGICAL(ans)[i] =
@@ -818,11 +818,11 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
     SEXP fn, ans, ansnames, fsize, mtime, ctime, atime, isdir,
 	mode, xxclass;
 #ifdef UNIX_EXTRAS
-    SEXP uid = R_NilValue, gid = R_NilValue,
-	uname = R_NilValue, grname = R_NilValue; // silence -Wall
+    SEXP uid = nullptr, gid = nullptr,
+	uname = nullptr, grname = nullptr; // silence -Wall
 #endif
 #ifdef Win32
-    SEXP exe = R_NilValue;
+    SEXP exe = nullptr;
     struct _stati64 sb;
 #else
     struct stat sb;
@@ -1248,7 +1248,7 @@ SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunc
     }
     REPROTECT(ans = Rf_lengthgets(ans, count), idx);
     if (pattern) tre_regfree(&reg);
-    StringVector* sv = static_cast<StringVector*>(ans);
+    StringVector* sv = SEXP_downcast<StringVector*>(ans);
     Rf_ssort(sv, count);
     UNPROTECT(1);
     return ans;
@@ -1341,7 +1341,7 @@ SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunct
 	list_dirs(dnp, "", Rboolean(fullnames), &count, &ans, &countmax, idx, Rboolean(recursive));
     }
     REPROTECT(ans = Rf_lengthgets(ans, count), idx);
-    StringVector* sv = static_cast<StringVector*>(ans);
+    StringVector* sv = SEXP_downcast<StringVector*>(ans);
     Rf_ssort(sv, count);
     UNPROTECT(1);
     return ans;
@@ -3160,7 +3160,7 @@ SEXP attribute_hidden do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (ISNAN(time) || time < 0.)
 	Rf_error(_("invalid '%s' value"), "time");
     Rsleep(time);
-    return R_NilValue;
+    return nullptr;
 }
 
 

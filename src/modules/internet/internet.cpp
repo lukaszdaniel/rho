@@ -700,7 +700,7 @@ static SEXP in_do_download(SEXP args)
 		setprogressbar(pbar.pb, 0);
 		settext(pbar.wprog, "Download progress");
 		show(pbar.wprog);
-		
+
 		/* set up a context which will close progressbar on error. */
 		begincontext(&(pbar.cntxt), Context::CCODE, R_NilValue, R_NilValue,
 			     R_NilValue, R_NilValue, R_NilValue);

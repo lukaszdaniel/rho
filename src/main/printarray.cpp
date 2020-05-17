@@ -371,9 +371,9 @@ void printMatrix(SEXP x, int offset, SEXP dim, int quote, int right,
     int r = pdim[0];
     int c = pdim[1], r_pr;
     /* PR#850 */
-    if ((rl != R_NilValue) && (r > Rf_length(rl)))
+    if ((rl != nullptr) && (r > Rf_length(rl)))
 	Rf_error(_("too few row labels"));
-    if ((cl != R_NilValue) && (c > Rf_length(cl)))
+    if ((cl != nullptr) && (c > Rf_length(cl)))
 	Rf_error(_("too few column labels"));
     if (r == 0 && c == 0) { // FIXME?  names(dimnames(.)) :
 	Rprintf("<0 x 0 matrix>\n");
@@ -447,13 +447,13 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 	int i, j, nb, nb_pr, nr_last,
 	    nr = dims[0], nc = dims[1],
 	    b = nr * nc;
-	bool max_reached, has_dimnames = (dimnames != R_NilValue),
+	bool max_reached, has_dimnames = (dimnames != nullptr),
 	    has_dnn = has_dimnames;
 
 	if (!has_dimnames) {
-	    dn0 = R_NilValue;
-	    dn1 = R_NilValue;
-	    dnn = R_NilValue; /* -Wall */
+	    dn0 = nullptr;
+	    dn1 = nullptr;
+	    dnn = nullptr; /* -Wall */
 	}
 	else {
 	    dn0 = SEXP_downcast<StringVector*>(VECTOR_ELT(dimnames, 0));
@@ -492,7 +492,7 @@ void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 		for (j = 2 ; j < ndim; j++) {
 		    int l = (i / k) % dims[j] + 1;
 		    if (has_dimnames &&
-			((dn = VECTOR_ELT(dimnames, j)) != R_NilValue)) {
+			((dn = VECTOR_ELT(dimnames, j)) != nullptr)) {
 			if ( has_dnn )
 			    Rprintf(", %s = %s",
 				    Rf_translateChar(STRING_ELT(dnn, j)),

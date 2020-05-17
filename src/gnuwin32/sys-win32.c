@@ -196,29 +196,29 @@ SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     int timeout = 0, timedout = 0;
 
     cmd = CAR(args);
-    if (!isString(cmd) || LENGTH(cmd) != 1)
-	errorcall(call, _("character string expected as first argument"));
+    if (!Rf_isString(cmd) || LENGTH(cmd) != 1)
+	Rf_errorcall(call, _("character string expected as first argument"));
     args = CDR(args);
-    flag = asInteger(CAR(args)); args = CDR(args);
+    flag = Rf_asInteger(CAR(args)); args = CDR(args);
     if (flag >= 20) {vis = -1; flag -= 20;}
     else if (flag >= 10) {vis = 0; flag -= 10;}
     else vis = 1;
 
     fin = CAR(args);
-    if (!isString(fin))
-	errorcall(call, _("character string expected as third argument"));
+    if (!Rf_isString(fin))
+	Rf_errorcall(call, _("character string expected as third argument"));
     args = CDR(args);
     Stdout = CAR(args);
     args = CDR(args);
     Stderr = CAR(args);
     args = CDR(args);
-    timeout = asInteger(CAR(args));
+    timeout = Rf_asInteger(CAR(args));
     if (timeout == NA_INTEGER || timeout < 0 || timeout > 2000000)
 	/* the limit could be increased, but not much as in milliseconds it
 	   has to fit into a 32-bit unsigned integer */
-	errorcall(call, _("invalid '%s' argument"), "timeout");
+	Rf_errorcall(call, _("invalid '%s' argument"), "timeout");
     if (timeout && !flag)
-	errorcall(call, "Timeout with background running processes is not supported.");
+	Rf_errorcall(call, "Timeout with background running processes is not supported.");
 
     if (CharacterMode == RGui) {
 	/* This is a rather conservative approach: if
@@ -228,35 +228,35 @@ SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SetStdHandle(STD_INPUT_HANDLE, INVALID_HANDLE_VALUE);
 	SetStdHandle(STD_OUTPUT_HANDLE, INVALID_HANDLE_VALUE);
 	SetStdHandle(STD_ERROR_HANDLE, INVALID_HANDLE_VALUE);
-	if (TYPEOF(Stdout) == STRSXP) fout = CHAR(STRING_ELT(Stdout, 0));
-	if (TYPEOF(Stderr) == STRSXP) ferr = CHAR(STRING_ELT(Stderr, 0));
+	if (TYPEOF(Stdout) == STRSXP) fout = R_CHAR(STRING_ELT(Stdout, 0));
+	if (TYPEOF(Stderr) == STRSXP) ferr = R_CHAR(STRING_ELT(Stderr, 0));
     } else {
 	if (flag == 2) flag = 1; /* ignore std.output.on.console */
-	if (TYPEOF(Stdout) == STRSXP) fout = CHAR(STRING_ELT(Stdout, 0));
-	else if (asLogical(Stdout) == 0) fout = NULL;
-	if (TYPEOF(Stderr) == STRSXP) ferr = CHAR(STRING_ELT(Stderr, 0));
-	else if (asLogical(Stderr) == 0) ferr = NULL;
+	if (TYPEOF(Stdout) == STRSXP) fout = R_CHAR(STRING_ELT(Stdout, 0));
+	else if (Rf_asLogical(Stdout) == 0) fout = NULL;
+	if (TYPEOF(Stderr) == STRSXP) ferr = R_CHAR(STRING_ELT(Stderr, 0));
+	else if (Rf_asLogical(Stderr) == 0) ferr = NULL;
     }
 
     if (flag < 2) { /* Neither intern = TRUE nor
 		       show.output.on.console for Rgui */
-	ll = runcmd_timeout(CHAR(STRING_ELT(cmd, 0)),
-		    getCharCE(STRING_ELT(cmd, 0)),
-		    flag, vis, CHAR(STRING_ELT(fin, 0)), fout, ferr,
+	ll = runcmd_timeout(R_CHAR(STRING_ELT(cmd, 0)),
+		    Rf_getCharCE(STRING_ELT(cmd, 0)),
+		    flag, vis, R_CHAR(STRING_ELT(fin, 0)), fout, ferr,
 		    timeout, &timedout);
-	if (ll == NOLAUNCH) warning(runerror());
+	if (ll == NOLAUNCH) Rf_warning(runerror());
     } else {
 	/* read stdout +/- stderr from pipe */
 	int m = 0;
 	if(flag == 2 /* show on console */ || CharacterMode == RGui) m = 3;
 	if(TYPEOF(Stderr) == LGLSXP)
-	    m = asLogical(Stderr) ? 2 : 0;
-	if(m  && TYPEOF(Stdout) == LGLSXP && asLogical(Stdout)) m = 3;
-	fp = rpipeOpen(CHAR(STRING_ELT(cmd, 0)), getCharCE(STRING_ELT(cmd, 0)),
-		       vis, CHAR(STRING_ELT(fin, 0)), m, fout, ferr, timeout);
+	    m = Rf_asLogical(Stderr) ? 2 : 0;
+	if(m  && TYPEOF(Stdout) == LGLSXP && Rf_asLogical(Stdout)) m = 3;
+	fp = rpipeOpen(R_CHAR(STRING_ELT(cmd, 0)), Rf_getCharCE(STRING_ELT(cmd, 0)),
+		       vis, R_CHAR(STRING_ELT(fin, 0)), m, fout, ferr, timeout);
 	if (!fp) {
 	    /* If intern = TRUE generate an error */
-	    if (flag == 3) error(runerror());
+	    if (flag == 3) Rf_error(runerror());
 	    ll = NOLAUNCH;
 	} else {
 	    /* FIXME: use REPROTECT */
@@ -264,11 +264,11 @@ SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 		PROTECT(tlist);
 		/* honour intern = FALSE, ignore.stdout = TRUE */
 		if (m > 0 ||
-		    (!(TYPEOF(Stdout) == LGLSXP && !asLogical(Stdout))))
+		    (!(TYPEOF(Stdout) == LGLSXP && !Rf_asLogical(Stdout))))
 		    for (i = 0; rpipeGets(fp, buf, INTERN_BUFSIZE); i++) {
 			ll = strlen(buf) - 1;
 			if ((ll >= 0) && (buf[ll] == '\n')) buf[ll] = '\0';
-			tchar = mkChar(buf);
+			tchar = Rf_mkChar(buf);
 			UNPROTECT(1); /* tlist */
 			PROTECT(tlist = CONS(tchar, tlist));
 		    }
@@ -282,26 +282,26 @@ SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     if (timedout) {
 	ll = 124;
-	warning(_("command '%s' timed out after %ds"),
-	        CHAR(STRING_ELT(cmd, 0)), timeout);
+	Rf_warning(_("command '%s' timed out after %ds"),
+	        R_CHAR(STRING_ELT(cmd, 0)), timeout);
     } else if (flag == 3 && ll) {
-	warning(_("running command '%s' had status %d"), 
-	        CHAR(STRING_ELT(cmd, 0)), ll);
+	Rf_warning(_("running command '%s' had status %d"), 
+	        R_CHAR(STRING_ELT(cmd, 0)), ll);
     }
     if (flag == 3) { /* intern = TRUE: convert pairlist to list */
-	PROTECT(rval = allocVector(STRSXP, i));
+	PROTECT(rval = Rf_allocVector(STRSXP, i));
 	for (j = (i - 1); j >= 0; j--) {
 	    SET_STRING_ELT(rval, j, CAR(tlist));
 	    tlist = CDR(tlist);
 	}
 	if(ll) {
-	    SEXP lsym = install("status");
-	    setAttrib(rval, lsym, ScalarInteger(ll));
+	    SEXP lsym = Rf_install("status");
+	    Rf_setAttrib(rval, lsym, Rf_ScalarInteger(ll));
 	}
 	UNPROTECT(2);
 	return rval;
     } else {
-	rval = ScalarInteger(ll);
+	rval = Rf_ScalarInteger(ll);
 	R_Visible = 0;
 	return rval;
     }

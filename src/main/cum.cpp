@@ -218,7 +218,7 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	    break;
 	default:
 	    Rf_errorcall(call, _("unknown cumxxx function"));
-	    ans = R_NilValue;
+	    ans = nullptr;
 	}
 	UNPROTECT(2); /* t, s */
 	return ans;
@@ -247,5 +247,5 @@ SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltIn
 	    Rf_errorcall(call, _("unknown cumxxx function"));
 	}
     }
-    return R_NilValue; /* for -Wall */
+    return nullptr; /* for -Wall */
 }

@@ -44,6 +44,3 @@ int main() {
 	 << "\nsizeof(Environment): " << sizeof(Environment) << '\n';
     return 0;
 }
-
-
-    

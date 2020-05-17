@@ -69,7 +69,7 @@ static double pdhyper (double x, double NR, double NB, double n, int log_p)
 	sum += term;
 	x--;
     }
-    
+
     double ss = (double) sum;
     return log_p ? log1p(ss) : 1 + ss;
 }

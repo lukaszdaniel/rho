@@ -1173,7 +1173,7 @@ int mspace_mallopt(int, int);
 
 #if 0
 #ifdef WIN32
-#pragma warning( disable : 4146 ) /* no "unsigned" warnings */
+#pragma Rf_warning( disable : 4146 ) /* no "unsigned" warnings */
 #endif /* WIN32 */
 #endif
 

@@ -144,6 +144,3 @@ int main() {
 	alloc(200000.0);
     return 0;
 }
-
-
-    

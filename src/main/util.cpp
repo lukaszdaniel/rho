@@ -79,7 +79,7 @@ int Rf_nrows(SEXP s)
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
 	t = Rf_getAttrib(s, Symbols::DimSymbol);
-	if (t == R_NilValue) return LENGTH(s);
+	if (t == nullptr) return LENGTH(s);
 	return INTEGER(t)[0];
     }
     else if (Rf_isFrame(s)) {
@@ -95,7 +95,7 @@ int Rf_ncols(SEXP s)
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
 	t = Rf_getAttrib(s, Symbols::DimSymbol);
-	if (t == R_NilValue) return 1;
+	if (t == nullptr) return 1;
 	if (LENGTH(t) >= 2) return INTEGER(t)[1];
 	/* This is a 1D (or possibly 0D array) */
 	return 1;
@@ -437,7 +437,7 @@ Rboolean isBlankString(const char *s)
 
 Rboolean Rf_StringBlank(SEXP x)
 {
-    if (x == R_NilValue) return TRUE;
+    if (x == nullptr) return TRUE;
     else return Rboolean(R_CHAR(x)[0] == '\0');
 }
 
@@ -494,7 +494,7 @@ void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
 				   const char *formal)
 {
     SEXP tag = TAG(const_cast<RObject*>(arg));
-    if (tag == R_NilValue) return;
+    if (tag == nullptr) return;
 
     const char *supplied = R_CHAR(PRINTNAME(tag));
     if (strncmp(supplied, formal, strlen(supplied)) != 0)
@@ -525,14 +525,14 @@ SEXP Rf_nthcdr(SEXP s, int n)
 {
     if (Rf_isList(s) || Rf_isLanguage(s) || Rf_isFrame(s) || TYPEOF(s) == DOTSXP ) {
 	while( n-- > 0 ) {
-	    if (s == R_NilValue)
+	    if (s == nullptr)
 		Rf_error(_("'nthcdr' list shorter than %d"), n);
 	    s = CDR(s);
 	}
 	return s;
     }
     else Rf_error(_("'nthcdr' needs a list to CDR down"));
-    return R_NilValue;/* for -Wall */
+    return nullptr;/* for -Wall */
 }
 
 
@@ -616,9 +616,9 @@ SEXP R_body_no_src(SEXP x) {
     SEXP b = PROTECT(Rf_duplicate(BODY_EXPR(x)));
     /* R's removeSource() works *recursively* on the body()
        in  ../library/utils/R/sourceutils.R  but that seems unneeded (?) */
-    Rf_setAttrib(b, Symbols::SrcrefSymbol, R_NilValue);
-    Rf_setAttrib(b, Symbols::SrcfileSymbol, R_NilValue);
-    Rf_setAttrib(b, Symbols::WholeSrcrefSymbol, R_NilValue);
+    Rf_setAttrib(b, Symbols::SrcrefSymbol, nullptr);
+    Rf_setAttrib(b, Symbols::SrcfileSymbol, nullptr);
+    Rf_setAttrib(b, Symbols::WholeSrcrefSymbol, nullptr);
     UNPROTECT(1);
     return b;
 }
@@ -730,7 +730,7 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 
 SEXP static intern_getwd(void)
 {
-    SEXP rval = R_NilValue;
+    SEXP rval = nullptr;
     char buf[4*PATH_MAX+1];
 
 #ifdef Win32
@@ -793,7 +793,7 @@ SEXP attribute_hidden do_setwd(/*const*/ Expression* call, const BuiltInFunction
 #ifdef Win32
 SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ans, s = R_NilValue;	/* -Wall */
+    SEXP ans, s = nullptr;	/* -Wall */
     char sp[4*PATH_MAX+1];
     wchar_t  buf[PATH_MAX], *p;
     const wchar_t *pp;
@@ -826,7 +826,7 @@ SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 #else
 SEXP attribute_hidden do_basename(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
 {
-    SEXP ans, s = R_NilValue;	/* -Wall */
+    SEXP ans, s = nullptr;	/* -Wall */
     char  buf[PATH_MAX], *p, fsp = FILESEP[0];
     const char *pp;
     int i, n;
@@ -865,7 +865,7 @@ SEXP attribute_hidden do_basename(/*const*/ Expression* call, const BuiltInFunct
 #ifdef Win32
 SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ans, s = R_NilValue;	/* -Wall */
+    SEXP ans, s = nullptr;	/* -Wall */
     wchar_t buf[PATH_MAX], *p;
     const wchar_t *pp;
     char sp[4*PATH_MAX+1];
@@ -907,7 +907,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 #else
 SEXP attribute_hidden do_dirname(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
 {
-    SEXP ans, s = R_NilValue;	/* -Wall */
+    SEXP ans, s = nullptr;	/* -Wall */
     char buf[PATH_MAX], *p, fsp = FILESEP[0];
     const char *pp;
     int i, n;
@@ -950,9 +950,9 @@ extern char *realpath(const char *path, char *resolved_path);
 #endif
 
 
-SEXP attribute_hidden do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
+SEXP attribute_hidden do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_, rho::RObject* winslash_, rho::RObject* mustWork_)
 {
-    SEXP ans, paths = CAR(args);
+    SEXP ans, paths = path_;
     int i, n = LENGTH(paths);
     const char *path;
     char abspath[PATH_MAX+1];
@@ -960,7 +960,7 @@ SEXP attribute_hidden do_normalizepath(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (!Rf_isString(paths))
 	Rf_error(_("'path' must be a character vector"));
 
-    int mustWork = Rf_asLogical(CADDR(args)); /* 1, NA_LOGICAL or 0 */
+    int mustWork = Rf_asLogical(mustWork_); /* 1, NA_LOGICAL or 0 */
 
 /* Does any platform not have this? */
 #ifdef HAVE_REALPATH
@@ -1242,7 +1242,7 @@ Rf_utf8toucs(wchar_t *wc, const char *s)
 	    if(byte == 0xFFFE || byte == 0xFFFF) return size_t(-1);
 	    return 3;
 	} else return size_t(-1);
-    
+
     } else if (byte < 0xf8) {
 	if(strlen(s) < 4) return size_t(-2);
 	if (((s[1] & 0xC0) == 0x80) && ((s[2] & 0xC0) == 0x80) && ((s[3] & 0xC0) == 0x80)) {
@@ -2010,7 +2010,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP x;
     UErrorCode  status = U_ZERO_ERROR;
 
-    for (; args != R_NilValue; args = CDR(args)) {
+    for (; args != nullptr; args = CDR(args)) {
 	SEXP tag = TAG(args);
 	if (Rf_isNull(tag)) Rf_error(_("all arguments must be named"));
 	const char *thiss = R_CHAR(PRINTNAME(tag));
@@ -2064,7 +2064,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
 
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -2134,7 +2134,7 @@ int Scollate(SEXP a, SEXP b)
 SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_warning(_("ICU is not supported on this build"));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)

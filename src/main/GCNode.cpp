@@ -118,7 +118,7 @@ void GCNode::destruct_aux() {
     }
     s_moribund->erase(it);
 }
-    
+
 extern RObject* R_Srcref;
 
 void GCNode::gc(bool markSweep) {

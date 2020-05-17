@@ -78,7 +78,7 @@ SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
 	return R_GlobalEnv;
     else
 	Rf_error(_("not that many frames on the stack"));
-    return R_NilValue;	   /* just for -Wall */
+    return nullptr;	   /* just for -Wall */
 }
 
 
@@ -158,7 +158,7 @@ SEXP attribute_hidden R_syscall(int n, ClosureContext* cptr)
 	cptr = ClosureContext::innermost(cptr->nextOut());
     }
     Rf_error(_("not that many frames on the stack"));
-    return R_NilValue; /* just for -Wall */
+    return nullptr; /* just for -Wall */
 }
 
 SEXP attribute_hidden R_sysfunction(int n, ClosureContext* cptr)
@@ -177,7 +177,7 @@ SEXP attribute_hidden R_sysfunction(int n, ClosureContext* cptr)
 	cptr = ClosureContext::innermost(cptr->nextOut());
     }
     Rf_error(_("not that many frames on the stack"));
-    return R_NilValue;	/* just for -Wall */
+    return nullptr;	/* just for -Wall */
 }
 
 
@@ -308,7 +308,7 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
 	return(R_sysfunction(n, cptr));
     default:
 	Rf_error(_("internal error in 'do_sys'"));
-	return R_NilValue;/* just for -Wall */
+	return nullptr;/* just for -Wall */
     }
 }
 
@@ -353,8 +353,8 @@ Rboolean R_ToplevelExec(void (*fun)(void *), void *data)
     GCStackRoot<PairList> oldRStack(R_RestartStack);
     //GCStackRoot<PairList> oldRVal(R_ReturnedValue);
     oldvis = R_Visible;
-    R_HandlerStack = R_NilValue;
-    R_RestartStack = R_NilValue;
+    R_HandlerStack = nullptr;
+    R_RestartStack = nullptr;
 
     try {
 	fun(data);

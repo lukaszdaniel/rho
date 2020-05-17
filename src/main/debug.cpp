@@ -42,7 +42,7 @@ using namespace rho;
 
 SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
 
 #define find_char_fun \
     if (Rf_isValidString(CAR(args))) {				\
@@ -94,7 +94,7 @@ SEXP attribute_hidden do_trace(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SET_RTRACE(CAR(args), 0);
 	break;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -139,7 +139,7 @@ SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunct
     char buffer[21];
 
     object = args[0];
-    if(object == R_NilValue)
+    if(object == nullptr)
 	Rf_errorcall(call, _("cannot trace NULL"));
 
     if(TYPEOF(object) == ENVSXP || TYPEOF(object) == PROMSXP)
@@ -161,7 +161,7 @@ SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFun
 
     object=args[0];
     object->setMemoryTracing(false);
-    return R_NilValue;
+    return nullptr;
 }
 
 #else
@@ -234,9 +234,9 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
     static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "x", "previous" });
     matcher->match(&arglist, { &object, &previous });
     if (object == R_MissingArg)
-	object = R_NilValue;
+	object = nullptr;
     if (previous == R_MissingArg)
-	previous = R_NilValue;
+	previous = nullptr;
 
     if(!Rf_isNull(previous) && (!Rf_isString(previous) || LENGTH(previous) != 1))
 	    Rf_errorcall(call, _("invalid '%s' argument"), "previous");
@@ -246,10 +246,10 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
 	ans = Rf_mkString(buffer);
     } else {
 	R_Visible = FALSE;
-	ans = R_NilValue;
+	ans = nullptr;
     }
 
-    if (previous != R_NilValue){
+    if (previous != nullptr){
 	object->setMemoryTracing(true);
 	if (R_current_trace_state()) {
 	    /* FIXME: previous will have <0x....> whereas other values are
@@ -262,6 +262,6 @@ SEXP do_retracemem(SEXP call, SEXP op, SEXP arg, SEXP rho)
     return ans;
 #else
     R_Visible = FALSE; /* for consistency with other case */
-    return R_NilValue;
+    return nullptr;
 #endif
 }

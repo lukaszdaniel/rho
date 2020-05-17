@@ -93,7 +93,7 @@ S3Launcher::findMethod(const Symbol* symbol, Environment* call_env,
 	if (tblbdg) {
 	    RObject* tblbdgval = tblbdg->forcedValue();
 	    if (tblbdgval && tblbdgval->sexptype() == ENVSXP)
-		table = static_cast<Environment*>(tblbdgval);
+		table = SEXP_downcast<Environment*>(tblbdgval);
 	}
     }
     // Look up method in table:
@@ -102,7 +102,7 @@ S3Launcher::findMethod(const Symbol* symbol, Environment* call_env,
 	if (symbdg) {
 	    RObject* symbdgval = symbdg->forcedValue();
 	    // Assume that the result is a FunctionBase:
-	    return make_pair(static_cast<FunctionBase*>(symbdgval), false);
+	    return make_pair(SEXP_downcast<FunctionBase*>(symbdgval), false);
 	}
     }
     return pair<FunctionBase*, bool>(nullptr, false);

@@ -117,7 +117,7 @@ SEXP attribute_hidden do_regFinaliz(/*const*/ Expression* call, const BuiltInFun
 	Rf_error(_("third argument must be 'TRUE' or 'FALSE'"));
 
     R_RegisterFinalizerEx(e_, f_, Rboolean(onexit));
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -284,18 +284,18 @@ void Rf_InitMemory()
   This definition allows the namelist argument to be shorter than the
   valuelist; in this case the remaining values must be named already.
   (This is useful in cases where the entire valuelist is already
-  named--namelist can then be R_NilValue.)
+  named--namelist can then be nullptr.)
 */
 SEXP Rf_NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
 {
     SEXP v = valuelist;
     SEXP n = namelist;
-    while (v != R_NilValue && n != R_NilValue) {
+    while (v != nullptr && n != nullptr) {
 	SET_TAG(v, TAG(n));
 	v = CDR(v);
 	n = CDR(n);
     }
-    
+
     GCStackRoot<> namelistr(namelist);
     GCStackRoot<PairList> namevalr(SEXP_downcast<PairList*>(valuelist));
     GCStackRoot<Environment> rhor(SEXP_downcast<Environment*>(rho));
@@ -372,15 +372,15 @@ SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
     return s;
 }
 
-static SEXP allocFormalsList(int nargs, ...) {
-    SEXP res = R_NilValue;
-    SEXP n;
+static PairList* allocFormalsList(int nargs, ...) {
+    PairList* res = nullptr;
+    PairList* n;
     int i;
     va_list syms;
     va_start(syms, nargs);
 
     for(i = 0; i < nargs; i++) {
-        res = CONS(R_NilValue, res);
+        res = PairList::cons(nullptr, res);
     }
     R_PreserveObject(res);
 
@@ -388,7 +388,7 @@ static SEXP allocFormalsList(int nargs, ...) {
     for(i = 0; i < nargs; i++) {
         SET_TAG(n, (SEXP) va_arg(syms, SEXP));
         MARK_NOT_MUTABLE(n);
-        n = CDR(n);
+        n = n->tail();
     }
     va_end(syms);
 
@@ -428,11 +428,12 @@ void R_gc(void)
 SEXP attribute_hidden do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, nms;
-    PROTECT(ans = Rf_allocVector(INTSXP, 24));
-    PROTECT(nms = Rf_allocVector(STRSXP, 24));
-    for (int i = 0; i < 24; i++) {
+    constexpr int n = 24;
+    PROTECT(ans = Rf_allocVector(INTSXP, n));
+    PROTECT(nms = Rf_allocVector(STRSXP, n));
+    for (int i = 0; i < n; i++) {
 	INTEGER(ans)[i] = 0;
-	SET_STRING_ELT(nms, i, Rf_type2str(SEXPTYPE(i > LGLSXP? i+2 : i)));
+	SET_STRING_ELT(nms, i, Rf_type2str(SEXPTYPE(i > LGLSXP ? i + 2 : i)));
     }
     Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     // Just return a vector of zeroes in rho.
@@ -505,11 +506,20 @@ DL_FUNC R_ExternalPtrAddrFn(SEXP s)
    implement the write barrier. */
 
 /* Vector Accessors */
-int (LENGTH)(SEXP x) { return LENGTH(x); } //was { return x == R_NilValue ? 0 : LENGTH(CHK2(x)); }
+int (LENGTH)(SEXP x) { return LENGTH(x); } //was { return x == nullptr ? 0 : LENGTH(CHK2(x)); }
 #if RHO_FALSE
 R_xlen_t (XLENGTH)(SEXP x) { return XLENGTH(CHK2(x)); }
 R_xlen_t (TRUELENGTH)(SEXP x) { return TRUELENGTH(CHK2(x)); }
-void (SETLENGTH)(SEXP x, R_xlen_t v) { SET_STDVEC_LENGTH(CHK2(x), v); }
+
+void (SETLENGTH)(SEXP x, R_xlen_t v)
+{
+    if (ALTREP(x))
+	Rf_error("SETLENGTH() cannot be applied to an ALTVEC object.");
+    if (! Rf_isVector(x))
+	Rf_error(_("SETLENGTH() can only be applied to a standard vector, not a '%s'"), Rf_type2char(TYPEOF(x)));
+    SET_STDVEC_LENGTH(CHK2(x), v);
+}
+
 void (SET_TRUELENGTH)(SEXP x, R_xlen_t v) { SET_TRUELENGTH(CHK2(x), v); }
 int  (IS_LONG_VEC)(SEXP x) { return IS_LONG_VEC(CHK2(x)); }
 #ifdef TESTING_WRITE_BARRIER
@@ -683,7 +693,7 @@ static void R_OutputStackTrace(FILE *file)
 	Evaluator::Context::Type type = cptr->type();
 	if (type == Evaluator::Context::FUNCTION
 	    || type == Evaluator::Context::CLOSURE) {
-	    FunctionContext* fctxt = static_cast<FunctionContext*>(cptr);
+	    FunctionContext* fctxt = SEXP_downcast<FunctionContext*>(cptr);
 	    SEXP fun = fctxt->call()->car();
 	    fprintf(file, "\"%s\" ",
 		    TYPEOF(fun) == SYMSXP ? R_CHAR(PRINTNAME(fun)) :
@@ -736,7 +746,7 @@ SEXP do_Rprofmem(SEXP args)
 	R_InitMemReporting(filename, append_mode, threshold);
     else
 	R_EndMemReporting();
-    return R_NilValue;
+    return nullptr;
 }
 
 #endif /* R_MEMORY_PROFILING */

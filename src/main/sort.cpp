@@ -186,6 +186,32 @@ Rboolean Rf_isUnsorted(SEXP x, Rboolean strictly)
 
 SEXP attribute_hidden do_isunsorted(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* strictly_)
 {
+    int sorted = UNKNOWN_SORTEDNESS;
+    switch(TYPEOF(x)) {
+    case INTSXP:
+	sorted = INTEGER_IS_SORTED(x);
+	break;
+    case REALSXP:
+	sorted = REAL_IS_SORTED(x);
+	break;
+    default:
+	break;
+    }
+
+    /* right now is.unsorted only tells you if something is sorted ascending
+      hopefully someday it will work for descending too */
+    if(!Rf_asLogical(strictly_)) { /*not strict since we don't memoize that */
+	if(KNOWN_INCR(sorted)) {
+	    UNPROTECT(1);
+	    return Rf_ScalarLogical(FALSE);
+	}
+	/* is.unsorted returns TRUE for vectors sorted in descending order */
+	else if( KNOWN_DECR(sorted) || sorted == KNOWN_UNSORTED) {
+	    UNPROTECT(1);
+	    return Rf_ScalarLogical(TRUE);
+	}
+    }
+
     int strictly = Rf_asLogical(strictly_);
     if(strictly == NA_LOGICAL)
 	Rf_error(_("invalid '%s' argument"), "strictly");
@@ -201,9 +227,11 @@ SEXP attribute_hidden do_isunsorted(/*const*/ Expression* call, const BuiltInFun
 	SEXP ans = Rf_eval(call, R_BaseEnv);
 	UNPROTECT(2);
 	return ans;
-    } // else
+    }
+    else {
 	UNPROTECT(1);
-    return Rf_ScalarLogical(NA_LOGICAL);
+	return Rf_ScalarLogical(NA_LOGICAL);
+    }
 }
 
 
@@ -338,19 +366,67 @@ SEXP attribute_hidden do_sort(/*const*/ Expression* call, const BuiltInFunction*
     decreasing = Rboolean(Rf_asLogical(decreasing_));
     if(decreasing == NA_LOGICAL)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
-    if(x_ == R_NilValue) return R_NilValue;
+    if(x_ == nullptr) return nullptr;
     if(!Rf_isVectorAtomic(x_))
 	Rf_error(_("only atomic vectors can be sorted"));
     if(TYPEOF(x_) == RAWSXP)
 	Rf_error(_("raw vectors cannot be sorted"));
+
     /* we need consistent behaviour here, including dropping attibutes,
        so as from 2.3.0 we always duplicate. */
     PROTECT(ans = Rf_duplicate(x_));
     ans->clearAttributes();  /* this is never called with names */
     Rf_sortVector(ans, decreasing);
     UNPROTECT(1);
-    return(ans);
+    return(ans); /* wrapping with metadata happens at end of sort.int */
 }
+
+Rboolean fastpass_sortcheck(SEXP x, int wanted) {
+    int sorted = UNKNOWN_SORTEDNESS;
+    if(!KNOWN_SORTED(wanted)) 
+	return FALSE;
+
+    Rboolean noNA, done = FALSE;
+
+    switch(TYPEOF(x)) {
+    case INTSXP:
+	sorted = INTEGER_IS_SORTED(x);
+	noNA = Rboolean(INTEGER_NO_NA(x));
+	break;
+    case REALSXP:
+	sorted = REAL_IS_SORTED(x);
+	noNA = Rboolean(REAL_NO_NA(x));
+	break;
+    default:
+	/* keep sorted == UNKNOWN_SORTEDNESS */
+	break;
+    }
+    /* we know wanted is not NA_INTEGER or 0 at this point because
+       of the immediate return at the beginning for that case */
+    if(!KNOWN_SORTED(sorted)) {
+	done = FALSE;
+    } else if(sorted == wanted) {   
+	done = TRUE;
+	/* if there are no NAs, na.last can be ignored */
+    } else if(noNA && sorted * wanted > 0) { /* same sign, thus same direction of sort */
+	done = TRUE;
+    }
+    return done;
+}
+
+
+SEXP attribute_hidden do_sorted_fpass(SEXP call, SEXP op, SEXP args, SEXP rho) {
+    int wanted; 
+
+    checkArity(op, args);
+
+    wanted = Rf_asInteger(CADR(args));
+    SEXP x = PROTECT(CAR(args)); 
+    Rboolean wassorted = fastpass_sortcheck(x, wanted);
+    UNPROTECT(1);
+    return Rf_ScalarLogical(wassorted);
+}
+
 
 /* faster versions of shellsort, following Sedgewick (1986) */
 
@@ -477,7 +553,7 @@ void Rf_sortVector(SEXP s, Rboolean decreasing)
 	    break;
 	case STRSXP:
 	    {
-		StringVector* sv = static_cast<StringVector*>(s);
+		StringVector* sv = SEXP_downcast<StringVector*>(s);
 		ssort2(sv, n, decreasing);
 		break;
 	    }
@@ -579,7 +655,7 @@ static void Psort(SEXP x, R_xlen_t lo, R_xlen_t hi, R_xlen_t k)
 	break;
     case STRSXP:
 	{
-	    StringVector* sv = static_cast<StringVector*>(x);
+	    StringVector* sv = SEXP_downcast<StringVector*>(x);
 	    sPsort2(sv, lo, hi, k);
 	    break;
 	}
@@ -740,7 +816,7 @@ static int listgreater(int i, int j, SEXP key, Rboolean nalast,
     SEXP x;
     int c = -1;
 
-    while (key != R_NilValue) {
+    while (key != nullptr) {
 	x = CAR(key);
 	switch (TYPEOF(x)) {
 	case LGLSXP:
@@ -836,7 +912,7 @@ static int listgreaterl(R_xlen_t i, R_xlen_t j, SEXP key, Rboolean nalast,
     SEXP x;
     int c = -1;
 
-    while (key != R_NilValue) {
+    while (key != nullptr) {
 	x = CAR(key);
 	switch (TYPEOF(x)) {
 	case LGLSXP:
@@ -963,14 +1039,14 @@ void R_orderVector1(int *indx, int n, SEXP x,
 		    Rboolean nalast, Rboolean decreasing)
 {
     for(int i = 0; i < n; i++) indx[i] = i;
-    orderVector1(indx, n, x, nalast, decreasing, R_NilValue);
+    orderVector1(indx, n, x, nalast, decreasing, nullptr);
 }
 
 
 
 /* Needs indx set to 0:(n-1) initially.
    Also used by do_options and ../gnuwin32/extra.c
-   Called with rho != R_NilValue only from do_rank, when NAs are not involved.
+   Called with rho != nullptr only from do_rank, when NAs are not involved.
  */
 void attribute_hidden
 orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
@@ -993,7 +1069,7 @@ orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean decreasing,
 	x = REAL(key);
 	break;
     case STRSXP:
-	sv = static_cast<StringVector*>(key);
+	sv = SEXP_downcast<StringVector*>(key);
 	break;
     case CPLXSXP:
 	cx = COMPLEX(key);
@@ -1134,7 +1210,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 	x = REAL(key);
 	break;
     case STRSXP:
-	sv = static_cast<StringVector*>(key);
+	sv = SEXP_downcast<StringVector*>(key);
 	break;
     case CPLXSXP:
 	cx = COMPLEX(key);
@@ -1255,7 +1331,7 @@ orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 /* FUNCTION order(...) */
 SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ap, ans = R_NilValue /* -Wall */;
+    SEXP ap, ans = nullptr /* -Wall */;
     int narg = 0;
     R_xlen_t n = -1;
     Rboolean nalast, decreasing;
@@ -1268,12 +1344,12 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(decreasing == NA_LOGICAL)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     args = CDR(args);
-    if (args == R_NilValue)
-	return R_NilValue;
+    if (args == nullptr)
+	return nullptr;
 
     if (Rf_isVector(CAR(args)))
 	n = XLENGTH(CAR(args));
-    for (ap = args; ap != R_NilValue; ap = CDR(ap), narg++) {
+    for (ap = args; ap != nullptr; ap = CDR(ap), narg++) {
 	if (!Rf_isVector(CAR(ap)))
 	    Rf_error(_("argument %d is not a vector"), narg + 1);
 	if (XLENGTH(CAR(ap)) != n)
@@ -1288,7 +1364,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 		R_xlen_t *in = static_cast<R_xlen_t *>(RHO_alloc(n, sizeof(R_xlen_t)));
 		for (R_xlen_t i = 0; i < n; i++) in[i] = i;
 		orderVector1l(in, n, CAR(args), nalast, decreasing,
-			      R_NilValue);
+			      nullptr);
 		for (R_xlen_t i = 0; i < n; i++) REAL(ans)[i] = in[i] + 1;
 	    } else
 #endif
@@ -1296,7 +1372,7 @@ SEXP attribute_hidden do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
 		PROTECT(ans = Rf_allocVector(INTSXP, n));
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i] = int(i);
 		orderVector1(INTEGER(ans), int(n), CAR(args), nalast,
-			     decreasing, R_NilValue);
+			     decreasing, nullptr);
 		for (R_xlen_t i = 0; i < n; i++) INTEGER(ans)[i]++;
 	    }
 	} else {

@@ -185,7 +185,7 @@ namespace rho {
 
 	typedef iterator_tmpl<ConsCell> iterator;
 	typedef const_iterator_tmpl<ConsCell> const_iterator;
-	
+
 	iterator begin()
 	{
 	    return iterator(this);
@@ -497,7 +497,7 @@ namespace rho {
 	 * contain the vars args[0]...args[size - 1].
 	 */
 	static PairList* make(int size, RObject* const* args);
-        
+
 	typedef iterator_tmpl<PairList> iterator;
 	typedef const_iterator_tmpl<PairList> const_iterator;
 
@@ -584,7 +584,7 @@ namespace rho {
         m_tail = clone(pattern.tail());
         m_tag = pattern.tag();
     }
-    
+
     inline ConsCell::ConsCell(const ConsCell& pattern, int)
 	: RObject(pattern)
     {
@@ -592,7 +592,7 @@ namespace rho {
         m_tail = nullptr;
         m_tag = pattern.tag();
     }
-    
+
     inline void ConsCell::setTail(PairList* tl)
     {
 	m_tail = tl;

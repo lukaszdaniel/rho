@@ -746,7 +746,7 @@ PHINode* Compiler::emitDispatchToExceptionHandler(const std::type_info* type,
     CreateCondBr(matches,
 		 handler->getParent(),
 		 fallthrough->getParent());
-    
+
     handler->addIncoming(exception_info, block);
     fallthrough->addIncoming(exception_info, block);
     return exception_info;
@@ -761,7 +761,7 @@ PHINode* Compiler::emitLoopExceptionHandler(llvm::BasicBlock* break_destination,
 
     BasicBlock* block = createBasicBlock("loop_exception_handler");
     SetInsertPoint(block);
-    
+
     PHINode* exception_info = CreatePHI(Runtime::exceptionInfoType(this), 1);
     Value* exception_ref = CreateExtractValue(exception_info, 0);
     Value* exception = Runtime::emitBeginCatch(exception_ref, this);
@@ -778,7 +778,7 @@ PHINode* Compiler::emitReturnExceptionHandler()
 
     BasicBlock* block = createBasicBlock("return_exception_handler");
     SetInsertPoint(block);
-    
+
     PHINode* exception_info = CreatePHI(Runtime::exceptionInfoType(this), 1);
     Value* exception_ref = CreateExtractValue(exception_info, 0);
     Value* exception = Runtime::emitBeginCatch(exception_ref, this);

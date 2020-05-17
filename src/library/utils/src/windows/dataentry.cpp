@@ -771,7 +771,7 @@ static SEXP processEscapes(SEXP x)
 {
     SEXP newval, pattern, replacement, expr;
     ParseStatus status;
-    
+
     /* We process escape sequences in a scalar string by escaping
        unescaped quotes, then quoting the whole thing and parsing it.  This
        is supposed to be equivalent to the R code
@@ -783,7 +783,7 @@ static SEXP processEscapes(SEXP x)
        We do it this way to avoid extracting the escape handling
        code from the parser.  We need it in C++ code because this may be executed
        numerous times from C++ in dataentry.cpp */
-    	
+
     PROTECT( pattern = Rf_mkString("(?<!\\\\)((\\\\\\\\)*)\"") );
     PROTECT( replacement = Rf_mkString("\\1\\\\\"") );
     SEXP s_gsub = Rf_install("gsub");
@@ -796,10 +796,10 @@ static SEXP processEscapes(SEXP x)
     PROTECT( expr = Rf_lang4(Rf_install("sub"), pattern, replacement, newval) );
     PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
     PROTECT( expr = R_ParseVector( newval, 1, &status, R_NilValue) );
-    
+
     /* We only handle the first entry. If this were available more generally,
        we'd probably want to loop over all of expr */
-       
+
     if (status == PARSE_OK && length(expr))
 	PROTECT( newval = Rf_eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
     else

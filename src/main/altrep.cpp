@@ -292,7 +292,7 @@ ALTREP_UNSERIALIZE_EX(SEXP info, SEXP state, SEXP attr, int objf, int levs)
 	Rf_warning("serialized class '%s' from package '%s' has type %s; registered class has type %s",
 		R_CHAR(PRINTNAME(csym)), R_CHAR(PRINTNAME(psym)),
 		Rf_type2char(type), Rf_type2char(rtype));
-    
+
     /* dispatch to a class method */
     altrep_methods_t *m = static_cast<altrep_methods_t *>(CLASS_METHODS_TABLE(class_));
     SEXP val = m->UnserializeEX(class_, state, attr, objf, levs);
@@ -377,7 +377,7 @@ R_xlen_t INTEGER_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, int *buf)
 
 int INTEGER_IS_SORTED(SEXP x)
 {
-    return ALTREP(x) ? ALTINTEGER_DISPATCH(Is_sorted, x) : 0;
+    return ALTREP(x) ? ALTINTEGER_DISPATCH(Is_sorted, x) : UNKNOWN_SORTEDNESS;
 }
 
 int INTEGER_NO_NA(SEXP x)
@@ -407,7 +407,7 @@ R_xlen_t REAL_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, double *buf)
 
 int REAL_IS_SORTED(SEXP x)
 {
-    return ALTREP(x) ? ALTREAL_DISPATCH(Is_sorted, x) : 0;
+    return ALTREP(x) ? ALTREAL_DISPATCH(Is_sorted, x) : UNKNOWN_SORTEDNESS;
 }
 
 int REAL_NO_NA(SEXP x)
@@ -448,7 +448,7 @@ void attribute_hidden ALTSTRING_SET_ELT(SEXP x, R_xlen_t i, SEXP v)
 
 int STRING_IS_SORTED(SEXP x)
 {
-    return ALTREP(x) ? ALTSTRING_DISPATCH(Is_sorted, x) : 0;
+    return ALTREP(x) ? ALTSTRING_DISPATCH(Is_sorted, x) : UNKNOWN_SORTEDNESS;
 }
 
 int STRING_NO_NA(SEXP x)
@@ -622,7 +622,7 @@ altinteger_Get_region_default(SEXP sx, R_xlen_t i, R_xlen_t n, int *buf)
     return ncopy;
 }
 
-static int altinteger_Is_sorted_default(SEXP x) { return 0; }
+static int altinteger_Is_sorted_default(SEXP x) { return UNKNOWN_SORTEDNESS; }
 static int altinteger_No_NA_default(SEXP x) { return 0; }
 
 static SEXP altinteger_Sum_default(SEXP x, Rboolean narm) { return nullptr; }
@@ -641,7 +641,7 @@ altreal_Get_region_default(SEXP sx, R_xlen_t i, R_xlen_t n, double *buf)
     return ncopy;
 }
 
-static int altreal_Is_sorted_default(SEXP x) { return 0; }
+static int altreal_Is_sorted_default(SEXP x) { return UNKNOWN_SORTEDNESS; }
 static int altreal_No_NA_default(SEXP x) { return 0; }
 
 static SEXP altreal_Sum_default(SEXP x, Rboolean narm) { return nullptr; }
@@ -658,7 +658,7 @@ static void altstring_Set_elt_default(SEXP x, R_xlen_t i, SEXP v)
     Rf_error("ALTSTRING classes must provide a Set_elt method");
 }
 
-static int altstring_Is_sorted_default(SEXP x) { return 0; }
+static int altstring_Is_sorted_default(SEXP x) { return UNKNOWN_SORTEDNESS; }
 static int altstring_No_NA_default(SEXP x) { return 0; }
 
 
@@ -684,7 +684,7 @@ static altinteger_methods_t altinteger_default_methods = {
     .No_NA = altinteger_No_NA_default,
     .Sum = altinteger_Sum_default,
     .Min = altinteger_Min_default,
-    .Max = altinteger_Max_default    
+    .Max = altinteger_Max_default
 };
 
 static altreal_methods_t altreal_default_methods = {
@@ -919,7 +919,7 @@ static SEXP compact_intseq_Unserialize(SEXP class_, SEXP state)
     else
 	Rf_error("compact sequences with increment %d not supported yet", inc);
 }
- 
+
 static SEXP compact_intseq_Coerce(SEXP x, int type)
 {
 #ifdef COMPACT_INTSEQ_MUTABLE
@@ -1061,7 +1061,7 @@ static int compact_intseq_Is_sorted(SEXP x)
 	return UNKNOWN_SORTEDNESS;
 #endif
     int inc = COMPACT_INTSEQ_INFO_INCR(COMPACT_SEQ_INFO(x));
-    return inc < 0 ? KNOWN_DECR : KNOWN_INCR;
+    return inc < 0 ? SORTED_DECR : SORTED_INCR;
 }
 
 static int compact_intseq_No_NA(SEXP x)
@@ -1225,7 +1225,7 @@ static void *compact_realseq_Dataptr(SEXP x, Rboolean writeable)
 	R_xlen_t n = COMPACT_REALSEQ_INFO_LENGTH(info);
 	double n1 = COMPACT_REALSEQ_INFO_FIRST(info);
 	double inc = COMPACT_REALSEQ_INFO_INCR(info);
-	
+
 	SEXP val = Rf_allocVector(REALSXP, (R_xlen_t) n);
 	double *data = REAL(val);
 
@@ -1292,7 +1292,7 @@ compact_realseq_Get_region(SEXP sx, R_xlen_t i, R_xlen_t n, double *buf)
     else
 	Rf_error("compact sequences with increment %f not supported yet", inc);
 }
-    
+
 static int compact_realseq_Is_sorted(SEXP x)
 {
 #ifdef COMPACT_REALSEQ_MUTABLE
@@ -1301,7 +1301,7 @@ static int compact_realseq_Is_sorted(SEXP x)
 	return UNKNOWN_SORTEDNESS;
 #endif
     double inc = COMPACT_REALSEQ_INFO_INCR(COMPACT_SEQ_INFO(x));
-    return inc < 0 ? KNOWN_DECR : KNOWN_INCR;
+    return inc < 0 ? SORTED_DECR : SORTED_INCR;
 }
 
 static int compact_realseq_No_NA(SEXP x)
@@ -1678,7 +1678,7 @@ SEXP attribute_hidden R_deferred_coerceToString(SEXP v, SEXP sp)
  */
 
 /* State is held in a LISTSXP of length 3, and includes
-   
+
        file
        size and length in a REALSXP
        type, ptrOK, wrtOK, serOK in an INTSXP
@@ -1710,7 +1710,7 @@ static SEXP make_mmap_state(SEXP file, size_t size, SEXPTYPE type,
     UNPROTECT(2);
     return state;
 }
-			    
+
 #define MMAP_STATE_FILE(x) CAR(x)
 #define MMAP_STATE_SIZE(x) ((size_t) REAL_ELT(CADR(x), 0))
 #define MMAP_STATE_LENGTH(x) ((size_t) REAL_ELT(CADR(x), 1))
@@ -1800,7 +1800,7 @@ static void register_mmap_eptr(SEXP eptr)
 	mmap_list = PairList::cons(nullptr, nullptr);
 	R_PreserveObject(mmap_list);
     }
-    
+
     /* clean out the weak list every MAXCOUNT calls*/
     static int cleancount = MAXCOUNT;
     if (--cleancount <= 0) {
@@ -1828,7 +1828,7 @@ static void finalize_mmap_objects()
 {
     if (mmap_list == nullptr)
 	return;
-    
+
     /* finalize any remaining mmap objects before unloading */
     for (SEXP next = CDR(mmap_list); next != nullptr; next = CDR(next))
 	R_RunWeakRefFinalizer(CAR(next));
@@ -1975,7 +1975,7 @@ static void InitMmapIntegerClass(DllInfo *dll)
     R_altrep_class_t cls =
 	R_make_altinteger_class("mmap_integer", MMAPPKG, dll);
     mmap_integer_class = cls;
- 
+
     /* override ALTREP methods */
     R_set_altrep_Unserialize_method(cls, mmap_Unserialize);
     R_set_altrep_Serialized_state_method(cls, mmap_Serialized_state);
@@ -2062,7 +2062,7 @@ static void mmap_finalize(SEXP eptr)
 	}						\
 	else Rf_error(str, __VA_ARGS__);			\
     } while (0)
-	    
+
 static SEXP mmap_file(SEXP file, SEXPTYPE type, Rboolean ptrOK, Rboolean wrtOK,
 		      Rboolean serOK, Rboolean warn)
 {
@@ -2389,7 +2389,7 @@ static void InitWrapIntegerClass(DllInfo *dll)
     R_altrep_class_t cls =
 	R_make_altinteger_class("wrap_integer", WRAPPKG, dll);
     wrap_integer_class = cls;
- 
+
     /* override ALTREP methods */
     R_set_altrep_Unserialize_method(cls, wrapper_Unserialize);
     R_set_altrep_Serialized_state_method(cls, wrapper_Serialized_state);
@@ -2413,7 +2413,7 @@ static void InitWrapRealClass(DllInfo *dll)
     R_altrep_class_t cls =
 	R_make_altreal_class("wrap_real", WRAPPKG, dll);
     wrap_real_class = cls;
- 
+
     /* override ALTREP methods */
     R_set_altrep_Unserialize_method(cls, wrapper_Unserialize);
     R_set_altrep_Serialized_state_method(cls, wrapper_Serialized_state);
@@ -2437,7 +2437,7 @@ static void InitWrapStringClass(DllInfo *dll)
     R_altrep_class_t cls =
 	R_make_altstring_class("wrap_string", WRAPPKG, dll);
     wrap_string_class = cls;
- 
+
     /* override ALTREP methods */
     R_set_altrep_Unserialize_method(cls, wrapper_Unserialize);
     R_set_altrep_Serialized_state_method(cls, wrapper_Serialized_state);
@@ -2478,7 +2478,7 @@ static SEXP make_wrapper(SEXP x, SEXP meta)
 	/* make sure no mutation can happen through another reference */
 	MARK_NOT_MUTABLE(x);
 #endif
-    
+
     return ans;
 }
 
@@ -2491,17 +2491,20 @@ SEXP attribute_hidden do_wrap_meta(SEXP call, SEXP op, SEXP args, SEXP env)
     case STRSXP: break;
     default: Rf_error("only INTSXP, REALSXP, STRSXP vectors suppoted for now");
     }
+
     if (ATTRIB(x) != nullptr)
 	/* For objects without references we could move the attributes
 	   to the wrapper. For objects with references the attributes
 	   would have to be shallow duplicated at least. The object/S4
 	   bits would need to be moved as well.	*/
-	Rf_error("only vectors without attributes are supported for now");
+	/* For now, just return the original object. */
+	return x;
 
     int srt = Rf_asInteger(CADR(args));
-    if (srt < -1 || srt > 1)
-	Rf_error("srt must be -1, 0, or +1");
-    
+    if (!KNOWN_SORTED(srt) && srt != KNOWN_UNSORTED &&
+	srt != UNKNOWN_SORTEDNESS)
+	Rf_error("srt must be -2, -1, 0, or +1, +2, or NA");
+
     int no_na = Rf_asInteger(CADDR(args));
     if (no_na < 0 || no_na > 1)
 	Rf_error("no_na must be 0 or +1");

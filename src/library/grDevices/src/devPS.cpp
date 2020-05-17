@@ -5624,7 +5624,7 @@ static void writeRasterXObject(rasterImage raster, int n,
 {
     Bytef *buf, *buf2, *p;
     uLong inlen;
-    
+
     if (streql(pd->colormodel, "gray")) {
 	inlen = raster.w * raster.h;
 	p = buf = Calloc(inlen, Bytef);
@@ -7060,7 +7060,7 @@ static Rboolean PDF_Open(pDevDesc dd, PDFDesc *pd)
 
     if (pd->offline)
         return TRUE;
-    
+
     if (pd->filename[0] == '|') {
 	strncpy(pd->cmd, pd->filename + 1, PATH_MAX);
 	char *tmp = R_tmpnam("Rpdf", R_TempDir);

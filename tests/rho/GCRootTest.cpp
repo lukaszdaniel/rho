@@ -36,7 +36,7 @@ TEST(GCRootTest, UpdatesReferenceCounts) {
     // Since we're testing gc roots, these tests may not always have the
     // roots declared at GC points, so disable GC.
     GCManager::GCInhibitor no_gc;
-    
+
     RObject* object1 = RealVector::createScalar(1);
     EXPECT_EQ(0, getRefCount(object1));
 
@@ -55,7 +55,7 @@ TEST(GCRootTest, UpdatesReferenceCounts) {
 
 TEST(GCRootTest, TestAssignment) {
     GCManager::GCInhibitor no_gc;
-    
+
     RObject* object1 = RealVector::createScalar(1);
     RObject* object2 = RealVector::createScalar(2);
 

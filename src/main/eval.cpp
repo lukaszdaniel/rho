@@ -493,13 +493,13 @@ SEXP do_Rprof(SEXP args)
 			gc_profiling, line_profiling, numfiles, bufsize);
     else
 	R_EndProfiling();
-    return R_NilValue;
+    return nullptr;
 }
 #else /* not R_PROFILING */
 SEXP do_Rprof(SEXP args)
 {
     Rf_error(_("R profiling is not available on this system"));
-    return R_NilValue;		/* -Wall */
+    return nullptr;		/* -Wall */
 }
 #endif /* not R_PROFILING */
 
@@ -516,7 +516,7 @@ attribute_hidden
 void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 {
     /* If we have a valid srcref, use it */
-    if (srcref && srcref != R_NilValue) {
+    if (srcref && srcref != nullptr) {
 	if (TYPEOF(srcref) == VECSXP) srcref = VECTOR_ELT(srcref, 0);
 	SEXP srcfile = Rf_getAttrib(srcref, Symbols::SrcfileSymbol);
 	if (TYPEOF(srcfile) == ENVSXP) {
@@ -539,7 +539,7 @@ static R_INLINE SEXP getBlockSrcrefs(SEXP call)
 {
     SEXP srcrefs = Rf_getAttrib(call, Symbols::SrcrefSymbol);
     if (TYPEOF(srcrefs) == VECSXP) return srcrefs;
-    return R_NilValue;
+    return nullptr;
 }
 
 /* this function extracts one srcref, and confirms the format */
@@ -554,7 +554,7 @@ static R_INLINE SEXP getSrcref(SEXP srcrefs, int ind)
 	&& TYPEOF(result) == INTSXP
 	&& Rf_length(result) >= 6)
 	return result;
-    return R_NilValue;
+    return nullptr;
 }
 
 /* There's another copy of this in main.cpp */
@@ -754,7 +754,7 @@ static SEXP replaceCall(SEXP fun, SEXP val, SEXP args, SEXP rhs)
     UNPROTECT(4);
     SETCAR(ptmp, fun); ptmp = CDR(ptmp);
     SETCAR(ptmp, val); ptmp = CDR(ptmp);
-    while(args != R_NilValue) {
+    while(args != nullptr) {
 	SETCAR(ptmp, CAR(args));
 	SET_TAG(ptmp, TAG(args));
 	ptmp = CDR(ptmp);
@@ -807,13 +807,13 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 	    size_t lprefix = strlen(pprefix);
 	    if (!strncmp(pprefix, check, lprefix)) {
 		/* check starts with "package:" */
-		SEXP spkg = R_NilValue;
-		for(; spkg == R_NilValue && rho != R_EmptyEnv; rho = ENCLOS(rho))
+		SEXP spkg = nullptr;
+		for(; spkg == nullptr && rho != R_EmptyEnv; rho = ENCLOS(rho))
 		    if (R_IsPackageEnv(rho))
 			spkg = R_PackageEnvName(rho);
 		    else if (R_IsNamespaceEnv(rho))
 			spkg = R_NamespaceEnvSpec(rho);
-		if (spkg != R_NilValue) {
+		if (spkg != nullptr) {
 		    const char *pkgname = Rf_translateChar(STRING_ELT(spkg, 0));
 		    if (!strcmp(check + lprefix, pkgname))
 			err = TRUE;
@@ -854,7 +854,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 	    _("argument is of length zero");
 	Rf_errorcall(call, msg);
     }
-    return static_cast<Rboolean>(cond);
+    return Rboolean(cond);
 }
 
 
@@ -874,7 +874,7 @@ namespace {
     }
 
     /* Allocate space for the loop variable value the first time through
-       (when v == R_NilValue) and when the value has been assigned to
+       (when v == nullptr) and when the value has been assigned to
        another variable (NAMED(v) == 2). This should be safe and avoid
        allocation in many cases. */
     inline RObject* ALLOC_LOOP_VAR(RObject* v, SEXPTYPE val_type)
@@ -897,7 +897,7 @@ namespace {
 
 SEXP attribute_hidden do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP Cond, Stmt=R_NilValue;
+    SEXP Cond, Stmt=nullptr;
     int vis=0;
 
     PROTECT(Cond = Rf_eval(CAR(args), rho));
@@ -958,12 +958,12 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
-	return R_NilValue;
+	return nullptr;
     }
     */
 
     val = Rf_eval(val, rho);
-    Rf_defineVar(sym, R_NilValue, rho);
+    Rf_defineVar(sym, nullptr, rho);
 
     /* deal with the case where we are iterating over a factor
        we need to coerce to character - then iterate */
@@ -1074,13 +1074,13 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
     SET_ENV_DEBUG(rho, dbg);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_for(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
-    
+
     return GCStackFrameBoundary::withStackFrameBoundary(
 	[=]() { return do_for_impl(call, op, args, rho); });
 }
@@ -1096,7 +1096,7 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
-	return R_NilValue;
+	return nullptr;
     }
     */
 
@@ -1136,7 +1136,7 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
     SET_ENV_DEBUG(rho, dbg);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_while(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -1158,7 +1158,7 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
-	return R_NilValue;
+	return nullptr;
     }
     */
 
@@ -1198,7 +1198,7 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     SET_ENV_DEBUG(rho, dbg);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_repeat(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -1229,12 +1229,12 @@ RObject* do_paren(Expression* call,
 
 SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP s = R_NilValue;
-    if (args != R_NilValue) {
+    SEXP s = nullptr;
+    if (args != nullptr) {
 	GCStackRoot<> srcrefs(getBlockSrcrefs(call));
 	PROTECT(srcrefs);
 	int i = 1;
-	while (args != R_NilValue) {
+	while (args != nullptr) {
 	    R_Srcref = getSrcref(srcrefs, i++);
 	    if (ENV_DEBUG(rho)) {
 		Rf_SrcrefPrompt("debug", R_Srcref);
@@ -1251,7 +1251,7 @@ SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    args = CDR(args);
 	}
-	R_Srcref = R_NilValue;
+	R_Srcref = nullptr;
 	UNPROTECT(1); /* srcrefs */
     }
     return s;
@@ -1262,12 +1262,12 @@ SEXP attribute_hidden do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> v;
 
-    if (args == R_NilValue) /* zero arguments provided */
-	v = R_NilValue;
-    else if (CDR(args) == R_NilValue) /* one argument */
+    if (args == nullptr) /* zero arguments provided */
+	v = nullptr;
+    else if (CDR(args) == nullptr) /* one argument */
 	v = Rf_eval(CAR(args), rho);
     else {
-	v = R_NilValue; /* to avoid compiler warnings */
+	v = nullptr; /* to avoid compiler warnings */
 	Rf_errorcall(call, _("multi-argument returns are not permitted"));
     }
 
@@ -1337,7 +1337,7 @@ static PairList* evalseq(SEXP expr, SEXP rho, int forcelocal,
 	return PairList::cons(nval, PairList::cons(expr));
     }
     else if (Rf_isLanguage(expr)) {
-	Expression* exprn = static_cast<Expression*>(expr);
+	Expression* exprn = SEXP_downcast<Expression*>(expr);
 	GCStackRoot<PairList> val(evalseq(exprn->tail()->car(), rho, forcelocal, tmploc));
 	tmploc->assign(val->car());
 	GCStackRoot<PairList> nexprargs(
@@ -1348,7 +1348,7 @@ static PairList* evalseq(SEXP expr, SEXP rho, int forcelocal,
 	return PairList::cons(nval, val);
     }
     else Rf_error(_("target of assignment expands to non-language object"));
-    return R_NilValue;	/*NOTREACHED*/
+    return nullptr;	/*NOTREACHED*/
 }
 
 /* Main entry point for complex assignments */
@@ -1473,7 +1473,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_errorcall(call, _("cannot do complex assignments in base namespace"));
     if (rho == R_BaseEnv)
 	Rf_errorcall(call, _("cannot do complex assignments in base environment"));
-    Rf_defineVar(Symbols::TmpvalSymbol, R_NilValue, rho);
+    Rf_defineVar(Symbols::TmpvalSymbol, nullptr, rho);
     Frame::Binding* tmploc
 	= SEXP_downcast<Environment*>(rho)->frame()->binding(TmpvalSymbol);
     /* Now use try-catch to remove it when we are done, even in the
@@ -1491,7 +1491,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	while (Rf_isLanguage(firstarg)) {
 	    GCStackRoot<> tmp;
 	    if (TYPEOF(functor) == SYMSXP)
-		tmp = func2ReplacementFunc(static_cast<Symbol*>(functor));
+		tmp = func2ReplacementFunc(SEXP_downcast<Symbol*>(functor));
 	    else {
 		/* check for and handle assignments of the form
 		   foo::bar(x) <- y or foo:::bar(x) <- y */
@@ -1502,7 +1502,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 			&& Rf_length(functor) == 3) {
 			SEXP arg2 = CADDR(functor);
 			if (TYPEOF(arg2) == SYMSXP) {
-			    const Symbol* fsym = static_cast<Symbol*>(arg2);
+			    const Symbol* fsym = SEXP_downcast<Symbol*>(arg2);
 			    tmp = func2ReplacementFunc(fsym);
 			    tmp = Rf_lang3(funchead, CADR(functor), tmp);
 			}
@@ -1524,7 +1524,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 	GCStackRoot<> afun;
 	if (TYPEOF(functor) == SYMSXP)
-	    afun = func2ReplacementFunc(static_cast<Symbol*>(functor));
+	    afun = func2ReplacementFunc(SEXP_downcast<Symbol*>(functor));
 	else {
 	    /* check for and handle assignments of the form
 	       foo::bar(x) <- y or foo:::bar(x) <- y */
@@ -1535,7 +1535,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    && Rf_length(functor) == 3) {
 		    SEXP arg2 = CADDR(functor);
 		    if (TYPEOF(arg2) == SYMSXP) {
-			const Symbol* fsym = static_cast<Symbol*>(arg2);
+			const Symbol* fsym = SEXP_downcast<Symbol*>(arg2);
 			afun = func2ReplacementFunc(fsym);
 			afun = Rf_lang3(funchead, CADR(functor), afun);
 		    }
@@ -1573,9 +1573,9 @@ SEXP attribute_hidden do_set(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP lhs, rhs;
 
-    if (args == R_NilValue ||
-	CDR(args) == R_NilValue ||
-	CDDR(args) != R_NilValue)
+    if (args == nullptr ||
+	CDR(args) == nullptr ||
+	CDDR(args) != nullptr)
 	WrongArgCount(asym[PRIMVAL(op)]);
 
     lhs = CAR(args);
@@ -1600,7 +1600,7 @@ SEXP attribute_hidden do_set(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_errorcall(call, _("invalid (do_set) left-hand side to assignment"));
     }
 
-    return R_NilValue;/*NOTREACHED*/
+    return nullptr;/*NOTREACHED*/
 }
 
 
@@ -1612,7 +1612,7 @@ static SEXP VectorToPairListNamed(SEXP x)
 
     PROTECT(x);
     PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol)); /* isn't this protected via x? */
-    named = (xnames != R_NilValue);
+    named = (xnames != nullptr);
     if(named)
 	for (i = 0; i < Rf_length(x); i++)
 	    if (R_CHAR(STRING_ELT(xnames, i))[0] != '\0') len++;
@@ -1634,7 +1634,7 @@ static SEXP VectorToPairListNamed(SEXP x)
     return xnew;
 }
 
-#define simple_as_environment(arg) (IS_S4_OBJECT(arg) && (TYPEOF(arg) == S4SXP) ? R_getS4DataSlot(arg, ENVSXP) : R_NilValue)
+#define simple_as_environment(arg) (IS_S4_OBJECT(arg) && (TYPEOF(arg) == S4SXP) ? R_getS4DataSlot(arg, ENVSXP) : nullptr)
 
 /* "eval": Evaluate the first argument
    in the environment specified by the second argument. */
@@ -1670,15 +1670,15 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	break;
     case LISTSXP:
 	/* This usage requires all the pairlist to be named */
-	env = Rf_NewEnvironment(R_NilValue, Rf_duplicate(env), encl);
+	env = Rf_NewEnvironment(nullptr, Rf_duplicate(env), encl);
 	PROTECT(env);
 	break;
     case VECSXP:
 	/* PR#14035 */
 	x = VectorToPairListNamed(env);
-	for (SEXP xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr))
+	for (SEXP xptr = x ; xptr != nullptr ; xptr = CDR(xptr))
 	    ENSURE_NAMEDMAX(CAR(xptr));
-	env = Rf_NewEnvironment(R_NilValue, x, encl);
+	env = Rf_NewEnvironment(nullptr, x, encl);
 	PROTECT(env);
 	break;
     case INTSXP:
@@ -1724,7 +1724,7 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	SEXP srcrefs = getBlockSrcrefs(expr);
 	PROTECT(expr);
 	n = LENGTH(expr);
-	SEXP tmp = R_NilValue;
+	SEXP tmp = nullptr;
 	{
 	    Expression* callx = SEXP_downcast<Expression*>(call);
 	    Environment* call_env = SEXP_downcast<Environment*>(rho);
@@ -1798,7 +1798,7 @@ SEXP attribute_hidden do_recall(SEXP call, SEXP op, SEXP args, SEXP rho)
        otherwise search for it by name or evaluate the expression
        originally used to get it.
     */
-    if (cptr->function() != R_NilValue)
+    if (cptr->function() != nullptr)
 	PROTECT(s = const_cast<FunctionBase*>(cptr->function()));
     else if( TYPEOF(CAR(const_cast<Expression*>(cptr->call()))) == SYMSXP)
 	PROTECT(s = Rf_findFun(CAR(const_cast<Expression*>(cptr->call())), cptr->callEnvironment()));
@@ -1818,7 +1818,7 @@ static bool isDefaultMethod(const Expression* call) {
     if (callcar->sexptype() != SYMSXP) {
 	return false;
     }
-    const String* symbol_name = static_cast<Symbol*>(callcar)->name();
+    const String* symbol_name = SEXP_downcast<Symbol*>(callcar)->name();
 
     static const size_t suffix_length = strlen(".default");
     if (symbol_name->size() < suffix_length)
@@ -1847,7 +1847,7 @@ int DispatchAnyOrEval(SEXP call, SEXP op, const char *generic, SEXP args,
 	    argsevald = TRUE;
 	}
 	else argValue = args;
-	for(el = argValue; el != R_NilValue; el = CDR(el)) {
+	for(el = argValue; el != nullptr; el = CDR(el)) {
 	    if(IS_S4_OBJECT(CAR(el))) {
 		value = R_possible_dispatch(call, op, argValue, rho, TRUE);
 		if(value) {
@@ -2182,7 +2182,7 @@ SEXP attribute_hidden do_savefile(/*const*/ Expression* call, const BuiltInFunct
     R_SaveToFileV(args[0], fp, INTEGER(args[2])[0], 0);
 
     fclose(fp);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_setnumthreads(/*const*/ Expression* call, const BuiltInFunction* op, RObject* num_threads_)
@@ -2327,8 +2327,8 @@ Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
 	return TRUE;
 
     /* set up context to recover checkingInProgress */
-    // begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_BaseEnv, R_BaseEnv,
-    //              R_NilValue, R_NilValue);
+    // begincontext(&cntxt, CTXT_CCODE, nullptr, R_BaseEnv, R_BaseEnv,
+    //              nullptr, nullptr);
     // cntxt.cend = &const_cleanup;
     // cntxt.cenddata = &checkingInProgress;
 
@@ -2336,12 +2336,12 @@ Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
     SEXP prev_crec = R_ConstantsRegistry;
     SEXP crec = VECTOR_ELT(prev_crec, 0);
     Rboolean constsOK = TRUE;
-    while(crec != R_NilValue) {
+    while(crec != nullptr) {
 	SEXP wref = VECTOR_ELT(crec, 1);
 	SEXP bc = R_WeakRefKey(wref);
 	if (!checkConstantsInRecord(crec, abortOnError))
 	    constsOK = FALSE;
-	if (bc == R_NilValue)
+	if (bc == nullptr)
 	    /* remove no longer needed record from the registry */
 	    SET_VECTOR_ELT(prev_crec, 0, VECTOR_ELT(crec, 0));
 	else
@@ -2365,7 +2365,7 @@ SEXP R_ParseEvalString(const char *str, SEXP env)
     SEXP s = PROTECT(Rf_mkString(str));
 
     ParseStatus status;
-    SEXP ps = PROTECT(R_ParseVector(s, -1, &status, R_NilValue));
+    SEXP ps = PROTECT(R_ParseVector(s, -1, &status, nullptr));
     if (status != PARSE_OK ||
 	TYPEOF(ps) != EXPRSXP ||
 	LENGTH(ps) != 1)

@@ -98,7 +98,7 @@ static void (* R_Tcl_do)(void) = NULL; /* Initialized to be sure */
 void set_R_Tcldo(DO_FUNC ptr)
 {
     if (R_Tcl_do)
-	error("Thief about! Something other than package tcltk has set or is attempting to set R_Tcl_do");
+	Rf_error("Thief about! Something other than package tcltk has set or is attempting to set R_Tcl_do");
     R_Tcl_do = ptr;
     return;
 }
@@ -108,7 +108,7 @@ void unset_R_Tcldo(DO_FUNC ptr)
     /* This needs to be a warning not an error, or tcltk will not be able
        to be detached. */
     if (R_Tcl_do != ptr)
-	warning("Thief about! Something other than package tcltk has set or is attempting to unset R_Tcl_do");
+	Rf_warning("Thief about! Something other than package tcltk has set or is attempting to unset R_Tcl_do");
     R_Tcl_do = NULL;
     return;
 }
@@ -124,17 +124,17 @@ void R_ProcessEvents(void)
 	    cpuLimit = elapsedLimit = -1;
 	    if (elapsedLimit2 > 0.0 && data[2] > elapsedLimit2) {
 		elapsedLimit2 = -1.0;
-		error(_("reached session elapsed time limit"));
+		Rf_error(_("reached session elapsed time limit"));
 	    } else
-		error(_("reached elapsed time limit"));
+		Rf_error(_("reached elapsed time limit"));
 	}
 	if (cpuLimit > 0.0 && cpu > cpuLimit) {
 	    cpuLimit = elapsedLimit = -1;
 	    if (cpuLimit2 > 0.0 && cpu > cpuLimit2) {
 		cpuLimit2 = -1.0;
-		error(_("reached session CPU time limit"));
+		Rf_error(_("reached session CPU time limit"));
 	    } else
-		error(_("reached CPU time limit"));
+		Rf_error(_("reached CPU time limit"));
 	}
     }
     if (UserBreak) {
@@ -249,7 +249,7 @@ GuiReadConsole(const char *prompt, char *buf, int len, int addtohistory)
 {
     int res;
     const char *NormalPrompt =
-	CHAR(STRING_ELT(GetOption1(install("prompt")), 0));
+	R_CHAR(STRING_ELT(Rf_GetOption1(Rf_install("prompt")), 0));
 
     if(!R_is_running) {
 	R_is_running = 1;
@@ -337,7 +337,7 @@ FileReadConsole(const char *prompt, char *buf, int len, int addhistory)
 	char obuf[len+1], *ob = obuf;
 	if(!cd) {
 	    cd = Riconv_open("", R_StdinEnc);
-	    if(cd == (void *)-1) error(_("encoding '%s' is not recognised"), R_StdinEnc);
+	    if(cd == (void *)-1) Rf_error(_("encoding '%s' is not recognised"), R_StdinEnc);
 	}
 	res = Riconv(cd, &ib, &inb, &ob, &onb);
 	*ob = '\0';
@@ -567,7 +567,7 @@ int R_ShowFiles(int nfile, const char **file, const char **headers,
 			snprintf(buf, 1024,
 				 _("cannot open file '%s': %s"),
 				 file[i], strerror(errno));
-			warning(buf);
+			Rf_warning(buf);
 		    }
 		} else {
 		    /* Quote path if necessary */
@@ -576,13 +576,13 @@ int R_ShowFiles(int nfile, const char **file, const char **headers,
 		    else
 			snprintf(buf, 1024, "%s \"%s\"", pager, file[i]);
 		    ll = runcmd(buf, CE_NATIVE, 0, 1, NULL, NULL, NULL);
-		    if (ll == NOLAUNCH) warning(runerror());
+		    if (ll == NOLAUNCH) Rf_warning(runerror());
 		}
 	    } else {
 		snprintf(buf, 1024,
 			 _("file.show(): file '%s' does not exist\n"),
 			 file[i]);
-		warning(buf);
+		Rf_warning(buf);
 	    }
 	}
 	return 0;
@@ -623,7 +623,7 @@ int R_EditFiles(int nfile, const char **file, const char **title,
 		else
 		    snprintf(buf, 1024, "%s \"%s\"", editor, file[i]);
 		ll = runcmd(buf, CE_UTF8, 0, 1, NULL, NULL, NULL);
-		if (ll == NOLAUNCH) warning(runerror());
+		if (ll == NOLAUNCH) Rf_warning(runerror());
 	    }
 
 	}

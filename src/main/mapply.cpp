@@ -69,11 +69,11 @@ do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rh
        f(dots[[1]][[4]], dots[[2]][[4]], dots[[3]][[4]], d=7)
     */
 
-    PairList* fargs = R_NilValue; // -Wall
-    if (constantArgs == R_NilValue)
+    PairList* fargs = nullptr; // -Wall
+    if (constantArgs == nullptr)
 	;
     else if (Rf_isVectorList(constantArgs))
-	fargs = static_cast<PairList*>(Rf_VectorToPairList(constantArgs));
+	fargs = SEXP_downcast<PairList*>(Rf_VectorToPairList(constantArgs));
     else
 	Rf_error(_("argument 'MoreArgs' of 'mapply' is not a list"));
     PROTECT_INDEX fi;

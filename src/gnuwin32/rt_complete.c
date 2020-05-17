@@ -70,18 +70,18 @@ static int rt_completion(char *buf, int offset, int *loc)
 	    return gl_tab(buf, offset, loc);
 	}
 	/* First check if namespace is loaded */
-	if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	   != R_UnboundValue) completion_available = 1;
 	else { /* Then try to load it */
 	    char *p = "try(loadNamespace('utils'), silent=TRUE)";
-	    PROTECT(cmdSexp = mkString(p));
+	    PROTECT(cmdSexp = Rf_mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
 		for(i = 0; i < Rf_length(cmdexpr); i++)
-		    eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+		    Rf_eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
-	    if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	    if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	       != R_UnboundValue) completion_available = 1;
 	    else {
 		completion_available = 0;
@@ -105,7 +105,7 @@ static int rt_completion(char *buf, int offset, int *loc)
     snprintf(cmd, len,
 	     "utils:::.win32consoleCompletion(\"%s\", %d)",
 	     pline, cursor_position);
-    PROTECT(cmdSexp = mkString(cmd));
+    PROTECT(cmdSexp = Rf_mkString(cmd));
     cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
     if (status != PARSE_OK) {
 	UNPROTECT(2);
@@ -116,7 +116,7 @@ static int rt_completion(char *buf, int offset, int *loc)
     }
     /* Loop is needed here as EXPRSEXP will be of length > 1 */
     for(i = 0; i < Rf_length(cmdexpr); i++)
-	ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+	ans = Rf_eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
     UNPROTECT(2);
 
     /* ans has the form list(addition, possible), where 'addition' is
@@ -135,13 +135,13 @@ static int rt_completion(char *buf, int offset, int *loc)
 	int max_show = 10;
 	printf("\n"); /* finish current line */
 	for (i = 0; i < min(alen, max_show); i++) {
-	    printf("%s\n", CHAR(STRING_ELT(VECTOR_ELT(ans, POSSIBLE), i)));
+	    printf("%s\n", R_CHAR(STRING_ELT(VECTOR_ELT(ans, POSSIBLE), i)));
 	}
 	if (alen > max_show)
 	    printf("\n[...truncated]\n");
 	cursor_position = -2; /* Need to redisplay whole line */
     }
-    additional_text = CHAR(STRING_ELT( VECTOR_ELT(ans, ADDITION), 0 ));
+    additional_text = R_CHAR(STRING_ELT( VECTOR_ELT(ans, ADDITION), 0 ));
     alen = strlen(additional_text);
     if (alen) {
 	int cp = *loc;

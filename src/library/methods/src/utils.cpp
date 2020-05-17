@@ -22,7 +22,6 @@
 #include "localization.h"
 #include "methods.h"
 
-const char *getPRIMNAME(SEXP object);
 
 #ifdef __cplusplus
 extern "C" 
@@ -31,7 +30,7 @@ SEXP R_get_primname(SEXP object)
 {
     if(TYPEOF(object) != BUILTINSXP && TYPEOF(object) != SPECIALSXP)
 	Rf_error("'R_get_primname' called on a non-primitive");
-    return Rf_mkString(getPRIMNAME(object));
+    return Rf_mkString(PRIMNAME(object));
 }
 
 /* The main entry point is in Rinternals.h, but we want to register

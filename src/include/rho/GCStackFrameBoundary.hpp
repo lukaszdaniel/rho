@@ -85,7 +85,7 @@ private:
     {
 	s_boundaries.push_back(*this);
     }
-    
+
     ~GCStackFrameBoundary()
     {
 	assert(this == &s_boundaries.back());
@@ -111,7 +111,7 @@ private:
 	GCStackFrameBoundary,
 	boost::intrusive::constant_time_size<false>> BoundaryStack;
     static BoundaryStack s_boundaries;
- 
+
     static GCStackFrameBoundary* s_bottom_of_stack;
 
     static std::stack<const GCNode*> s_protected_nodes;

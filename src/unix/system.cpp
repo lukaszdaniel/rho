@@ -561,7 +561,7 @@ int R_EnsureFDLimit(int desired) {
 	rlim.rlim_cur = hlim;
     if (setrlimit(RLIMIT_NOFILE, &rlim))
 	return (int) lim; /* also could return error */
-    
+
     return (int) rlim.rlim_cur;
 #else
     return -1;

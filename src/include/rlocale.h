@@ -47,7 +47,7 @@ extern "C" {
  * as wchar_t, but on Windows (and others?) where wchar_t is too small and UTF-16 is used,
  * it is an unsigned int instead.
  */
- 
+
 #ifdef Win32
 typedef unsigned int Rwchar_t;
 #else

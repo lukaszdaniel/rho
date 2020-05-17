@@ -95,7 +95,7 @@ SEXP Rdownload(SEXP args)
 	return (*ptr->download)(args);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -315,7 +315,7 @@ SEXP attribute_hidden do_curlVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return (*ptr->curlVersion)(call, op, args, rho);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -327,7 +327,7 @@ SEXP attribute_hidden do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return (*ptr->curlGetHeaders)(call, op, args, rho);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -339,7 +339,7 @@ SEXP attribute_hidden do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return (*ptr->curlDownload)(call, op, args, rho);
     else {
 	Rf_error(_("internet routines cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 

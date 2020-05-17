@@ -1309,7 +1309,7 @@ SEXP attribute_hidden do_charmatch(/*const*/ Expression* call, const BuiltInFunc
 
 static SEXP StripUnmatched(SEXP s)
 {
-    if (s == R_NilValue) return s;
+    if (s == nullptr) return s;
 
     if (CAR(s) == R_MissingArg) {
 	return StripUnmatched(CDR(s));
@@ -1328,17 +1328,17 @@ static SEXP ExpandDots(SEXP s, int expdots)
     SEXP r;
     // The call to ConsCell::convert below will allocate memory:
     GCStackRoot<> sr(s);
-    if (s == R_NilValue)
+    if (s == nullptr)
 	return s;
     if (TYPEOF(CAR(s)) == DOTSXP ) {
 	// Convert CAR(s) to a PairList:
 	{
-	    ConsCell* cc = static_cast<ConsCell*>(CAR(s));
+	    ConsCell* cc = SEXP_downcast<ConsCell*>(CAR(s));
 	    SETCAR(s, ConsCell::convert<PairList>(cc));
 	}
 	if (expdots) {
 	    r = CAR(s);
-	    while (CDR(r) != R_NilValue ) {
+	    while (CDR(r) != nullptr ) {
 		r = CDR(r);
 	    }
 	    SETCDR(r, ExpandDots(CDR(s), expdots));
@@ -1419,7 +1419,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
        of the actuals  */
 
     t2 = R_MissingArg;
-    for (t1=actuals ; t1!=R_NilValue ; t1 = CDR(t1) ) {
+    for (t1=actuals ; t1!=nullptr ; t1 = CDR(t1) ) {
 	if (CAR(t1) == Symbols::DotsSymbol) {
 	    t2 = subDots(sysp);
 	    break;
@@ -1433,7 +1433,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 	    PROTECT(actuals);
 	}
 	else {
-	    for(t1=actuals; t1!=R_NilValue; t1=CDR(t1)) {
+	    for(t1=actuals; t1!=nullptr; t1=CDR(t1)) {
 		if( CADR(t1) == Symbols::DotsSymbol ) {
 		    tail = CDDR(t1);
 		    SETCDR(t1, t2);
@@ -1449,7 +1449,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 	    PROTECT(actuals);
 	}
 	else {
-	    for(t1=actuals; t1!=R_NilValue; t1=CDR(t1)) {
+	    for(t1=actuals; t1!=nullptr; t1=CDR(t1)) {
 		if( CADR(t1) == Symbols::DotsSymbol ) {
 		    tail = CDDR(t1);
 		    SETCDR(t1, tail);
@@ -1465,7 +1465,7 @@ SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 
     /* Attach the argument names as tags */
 
-    for (f = formals, b = rlist; b != R_NilValue; b = CDR(b), f = CDR(f)) {
+    for (f = formals, b = rlist; b != nullptr; b = CDR(b), f = CDR(f)) {
 	SET_TAG(b, TAG(f));
     }
 

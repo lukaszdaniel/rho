@@ -58,7 +58,7 @@ struct SrcRefState {
     int xxcolno;		/* Character number on line */
     int xxbyteno;		/* Byte number on line */
     int xxparseno;              /* Line number ignoring #line directives */
-    
+
     SrcRefState* prevState;
 };
 #endif  // __cplusplus
@@ -85,7 +85,7 @@ typedef struct Rconn  *Rconnection;
 SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile);
 
 	/* Report a parse error */
-	
+
 void NORET parseError(SEXP call, int linenum);
 
 #ifdef __cplusplus

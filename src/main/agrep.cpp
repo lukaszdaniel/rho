@@ -299,14 +299,14 @@ SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::Built
 static SEXP
 adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 {
-    SEXP ans, counts, trafos = R_NilValue /* -Wall */, dimnames, names;
+    SEXP ans, counts, trafos = nullptr /* -Wall */, dimnames, names;
     double cost_ins, cost_del, cost_sub;
     double *dists, d, d_ins, d_del, d_sub;
     char *paths = nullptr, p, *buf = nullptr;
     int i, j, k, l, m, nx, ny, nxy, *xi, *yj, nxi, nyj, nr, nc, nz;
     int nins, ndel, nsub, buflen = 100, need;
 
-    counts = R_NilValue;	/* -Wall */
+    counts = nullptr;	/* -Wall */
 
     nx = LENGTH(x);
     ny = LENGTH(y);
@@ -532,8 +532,8 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     if(!opt_partial)
 	return(adist_full(x, y, REAL(opt_costs), Rboolean(opt_counts)));
 
-    counts = R_NilValue;	/* -Wall */
-    offsets = R_NilValue;	/* -Wall */
+    counts = nullptr;	/* -Wall */
+    offsets = nullptr;	/* -Wall */
 
     if(!opt_counts) cflags |= REG_NOSUB;
 

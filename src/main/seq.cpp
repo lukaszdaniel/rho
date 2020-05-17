@@ -374,7 +374,7 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
 	Rf_error(_("invalid type (%s) for '%s' (must be a vector)"),
 	      Rf_type2char(TYPEOF(ncopy)), "times");
 
-    if (!Rf_isVector(s) && s != R_NilValue)
+    if (!Rf_isVector(s) && s != nullptr)
 	Rf_error(_("attempt to replicate an object of type '%s'"),
 	      Rf_type2char(TYPEOF(s)));
 
@@ -427,7 +427,7 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 
     s = x_;
 
-    if (!Rf_isVector(s) && s != R_NilValue)
+    if (!Rf_isVector(s) && s != nullptr)
 	Rf_error(_("attempt to replicate non-vector"));
 
     len = length_out_;
@@ -697,11 +697,11 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     if(each == NA_INTEGER) each = 1;
 
     if(lx == 0) {
-	if(len > 0 && x == R_NilValue)
+	if(len > 0 && x == nullptr)
 	    Rf_warningcall(call, "'x' is NULL so the result will be NULL");
 	SEXP a;
 	PROTECT(a = Rf_duplicate(x));
-	if(len != NA_INTEGER && len > 0 && x != R_NilValue)
+	if(len != NA_INTEGER && len > 0 && x != nullptr)
 	    a = Rf_xlengthgets(a, len);
 	UNPROTECT(3);
 	return a;
@@ -798,7 +798,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* to match seq.default */
 SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ans = R_NilValue /* -Wall */, from, to, by, len, along, ignored;
+    SEXP ans = nullptr /* -Wall */, from, to, by, len, along, ignored;
     int nargs = Rf_length(args), lf;
     Rboolean One = Rboolean(nargs == 1);
     R_xlen_t i, lout = NA_INTEGER;
@@ -844,7 +844,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    ans = lout ? seq_colon(1.0, double(lout), call) : Rf_allocVector(INTSXP, 0);
 	    goto done;
 	}
-    } else if(len != R_MissingArg && len != R_NilValue) {
+    } else if(len != R_MissingArg && len != nullptr) {
 	double rout = Rf_asReal(len);
 	if(ISNAN(rout) || rout <= -0.5)
 	    Rf_errorcall(call, _("'length.out' must be a non-negative number"));

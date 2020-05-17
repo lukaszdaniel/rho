@@ -101,7 +101,7 @@ SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
     default:
 	Rf_errorcall(call, _("invalid complex unary operator"));
     }
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 }
 
 static R_INLINE std::complex<double> R_cpow_n(std::complex<double> X, int k)
@@ -253,14 +253,14 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
     UNPROTECT(1);
 
     /* quick return if there are no attributes */
-    if (ATTRIB(s1) == R_NilValue && ATTRIB(s2) == R_NilValue)
+    if (ATTRIB(s1) == nullptr && ATTRIB(s2) == nullptr)
 	return ans;
 
     /* Copy attributes from longer argument. */
 
-    if (ans != s2 && n == n2 && ATTRIB(s2) != R_NilValue)
+    if (ans != s2 && n == n2 && ATTRIB(s2) != nullptr)
 	Rf_copyMostAttrib(s2, ans);
-    if (ans != s1 && n == n1 && ATTRIB(s1) != R_NilValue)
+    if (ans != s1 && n == n1 && ATTRIB(s1) != nullptr)
 	Rf_copyMostAttrib(s1, ans); /* Done 2nd so s1's attrs overwrite s2's */
 
     return ans;
@@ -268,7 +268,7 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
 
 SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP x, y = R_NilValue;	/* -Wall*/
+    SEXP x, y = nullptr;	/* -Wall*/
     R_xlen_t i, n;
 
     if (Rf_DispatchGroup("Complex", call, op, args, env, &x))
@@ -368,7 +368,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
     }
     else Rf_errorcall(call, _("non-numeric argument to function"));
 
-    if (x != y && ATTRIB(x) != R_NilValue) {
+    if (x != y && ATTRIB(x) != nullptr) {
 	PROTECT(x);
 	PROTECT(y);
 	SHALLOW_DUPLICATE_ATTRIB(y, x);

@@ -48,7 +48,7 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT_INDEX px;
 
     SEXP X, XX, FUN;
-    PROTECT_WITH_INDEX(X =CAR(args), &px);
+    PROTECT_WITH_INDEX(X = CAR(args), &px);
     XX = PROTECT(Rf_eval(CAR(args), rho));
     R_xlen_t n = Rf_xlength(XX);  // a vector, so will be valid.
     FUN = CADR(args);
@@ -86,7 +86,7 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* This is a special .Internal */
 SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP ans, names = R_NilValue, rowNames = R_NilValue,
+    SEXP ans, names = nullptr, rowNames = nullptr,
 	X, XX, FUN, value, dim_v;
     R_xlen_t i, n;
     int commonLen;
@@ -268,12 +268,12 @@ SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     return ans;
 }
 
-static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
-		   Rboolean replace, SEXP rho)
+static RObject* do_one(RObject* X, RObject* FUN, RObject* classes, RObject* deflt,
+		   Rboolean replace, RObject* rho)
 {
     SEXP ans, names, klass;
     int i, j, n;
-    Rboolean matched = FALSE;
+    bool matched = false;
 
     /* if X is a list, recurse.  Otherwise if it matches classes call f */
     if(Rf_isNewList(X)) {
@@ -292,13 +292,13 @@ static SEXP do_one(SEXP X, SEXP FUN, SEXP classes, SEXP deflt,
 	return ans;
     }
     if(streql(R_CHAR(STRING_ELT(classes, 0)), "ANY")) /* ASCII */
-	matched = TRUE;
+	matched = true;
     else {
 	PROTECT(klass = R_data_class(X, FALSE));
 	for(i = 0; i < LENGTH(klass); i++)
 	    for(j = 0; j < Rf_length(classes); j++)
 		if(Rf_Seql(STRING_ELT(klass, i), STRING_ELT(classes, j)))
-		    matched = TRUE;
+		    matched = true;
 	UNPROTECT(1);
     }
     if(matched) {
@@ -334,7 +334,7 @@ SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunctio
     deflt = args[0]; args = (args + 1);
     how = args[0];
     if(!Rf_isString(how)) Rf_error(_("invalid '%s' argument"), "how");
-    replace = Rboolean(streql(R_CHAR(STRING_ELT(how, 0)), "replace")); /* ASCII */
+    replace = streql(R_CHAR(STRING_ELT(how, 0)), "replace"); /* ASCII */
     n = Rf_length(X);
     if (replace) {
       PROTECT(ans = Rf_shallow_duplicate(X));
@@ -350,7 +350,7 @@ SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunctio
     return ans;
 }
 
-static Rboolean islistfactor(SEXP X)
+static Rboolean islistfactor(RObject* X)
 {
     int i, n = Rf_length(X);
 
@@ -387,7 +387,7 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
     n = Rf_length(X);
     if(n == 0 || !Rf_isVectorList(X)) {
 	lans = FALSE;
-	goto do_ans;
+	return Rf_ScalarLogical(lans);
     }
     if(!recursive) {
 	for(i = 0; i < LENGTH(X); i++)
@@ -423,6 +423,5 @@ SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInF
 	    break;
 	}
     }
-do_ans:
     return Rf_ScalarLogical(lans);
 }

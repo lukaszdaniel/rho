@@ -71,7 +71,7 @@ SEXP attribute_hidden do_inspect(/*const*/ rho::Expression* call, const rho::Bui
 
 SEXP attribute_hidden do_address(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
-    return R_MakeExternalPtr((void *) x, R_NilValue, R_NilValue);
+    return R_MakeExternalPtr((void *) x, nullptr, nullptr);
 }
 
 SEXP attribute_hidden do_named(SEXP call, SEXP op, SEXP args, SEXP rho)

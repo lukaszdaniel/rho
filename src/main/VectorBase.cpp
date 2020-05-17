@@ -113,7 +113,7 @@ void VectorBase::setDimensionNames(unsigned int d, StringVector* names)
     if (d == 0 || d > ndims)
 	Rf_error(_("Attempt to associate dimnames with a non-existent dimension"));
     ListVector* lv
-	= static_cast<ListVector*>(getAttribute(DimNamesSymbol));
+	= SEXP_downcast<ListVector*>(getAttribute(DimNamesSymbol));
     if (!lv) {
 	lv = ListVector::create(ndims);
 	setAttribute(DimNamesSymbol, lv);
@@ -149,7 +149,7 @@ void VectorBase::tooBig(std::size_t bytes)
 		     dsize/1024.0);
     Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f KB"), dsize);
 }
-		     
+
 // Rf_allocVector is still in memory.cpp (for the time being).
 
 Rboolean Rf_isVector(SEXP s)

@@ -103,7 +103,7 @@ void GCStackFrameBoundary::advanceBarrierOneFrame(
     GCStackFrameBoundary* frame_start, GCStackFrameBoundary* frame_end)
 {
     ProtectPointerVisitor visitor(&frame_end->m_num_protected_pointers);
-    
+
     GCStackRootBase::visitRoots(&visitor,
 				frame_start->getStackPointer(),
 				frame_end->getStackPointer());

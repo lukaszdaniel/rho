@@ -51,9 +51,9 @@
 using namespace std;
 using namespace rho;
 
-/* We might get a call with R_NilValue from subassignment code */
-#define ECALL(call, yy)     if(call == R_NilValue) Rf_error(yy);    else Rf_errorcall(call, yy);
-#define ECALL3(call, yy, A) if(call == R_NilValue) Rf_error(yy, A); else Rf_errorcall(call, yy, A);
+/* We might get a call with nullptr from subassignment code */
+#define ECALL(call, yy)     if(call == nullptr) Rf_error(yy);    else Rf_errorcall(call, yy);
+#define ECALL3(call, yy, A) if(call == nullptr) Rf_error(yy, A); else Rf_errorcall(call, yy, A);
 
 /* This allows for the unusual case where x is of length 2,
    and x[[-m]] selects one element for m = 1, 2.
@@ -94,7 +94,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
     if(pos < 0) pos = 0;
 
     indx = -1;
-    *newname = R_NilValue;
+    *newname = nullptr;
     switch(TYPEOF(s)) {
     case LGLSXP:
     case INTSXP:
@@ -106,7 +106,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
     case STRSXP:
 	vmax = vmaxget();
 	names = Rf_getAttrib(x, Symbols::NamesSymbol);
-	if (names != R_NilValue) {
+	if (names != nullptr) {
 	    PROTECT(names);
 	    /* Try for exact match */
 	    for (i = 0; i < nx; i++) {
@@ -141,7 +141,7 @@ Rf_OneIndex(SEXP x, SEXP s, R_xlen_t nx, int partial, SEXP *newname,
     case SYMSXP:
 	vmax = vmaxget();
 	names = Rf_getAttrib(x, Symbols::NamesSymbol);
-	if (names != R_NilValue) {
+	if (names != nullptr) {
 	    PROTECT(names);
 	    for (i = 0; i < nx; i++)
 		if (streql(Rf_translateChar(STRING_ELT(names, i)),
@@ -252,7 +252,7 @@ Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 			    if (indx == -1) {/* first one */
 				indx = i;
 				if (warn_pok) {
-				    if (call == R_NilValue)
+				    if (call == nullptr)
 					Rf_warning(_("partial match of '%s' to '%s'"),
 						ss, cur_name);
 				    else
@@ -264,7 +264,7 @@ Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos, SEXP call)
 			    else {
 				indx = -2;/* more than one partial match */
 				if (warn_pok) /* already given context */
-				    Rf_warningcall(R_NilValue,
+				    Rf_warningcall(nullptr,
 						_("further partial match of '%s' to '%s'"),
 						ss, cur_name);
 				break;
@@ -630,7 +630,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 	}
 	return indx;
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* This uses a couple of horrible hacks in conjunction with
@@ -690,7 +690,7 @@ int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
     case STRSXP:
 	{
 	    SEXP dnames = Rf_getAttrib(x, Symbols::DimNamesSymbol);
-	    if (dnames == R_NilValue) {
+	    if (dnames == nullptr) {
 		ECALL(0, _("no 'dimnames' attribute for array"));
 	    }
 	    dnames = VECTOR_ELT(dnames, dim);
@@ -702,7 +702,7 @@ int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
     default:
 	ECALL3(call, _("invalid subscript type '%s'"), Rf_type2char(TYPEOF(s)));
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* This is used by packages arules, cba, proxy and seriation. */
@@ -713,7 +713,7 @@ SEXP
 Rf_arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
 	       StringEltGetter strg, SEXP x)
 {
-    return int_arraySubscript(dim, s, dims, x, R_NilValue);
+    return int_arraySubscript(dim, s, dims, x, nullptr);
 }
 
 /* Subscript creation.  The first thing we do is check to see */
@@ -754,7 +754,7 @@ Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
     }
 
     R_xlen_t ns = Rf_xlength(s);
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     switch (TYPEOF(s)) {
     case NILSXP:
 	*stretch = 0;

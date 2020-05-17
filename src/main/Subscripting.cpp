@@ -60,7 +60,7 @@ void Subscripting::Indices::applyNewNames(VectorBase* v) const
     }
     v->setAttribute(NamesSymbol, newnames);
 }    
-    
+
 void
 Subscripting::Indices::initialize(const RObject* subscripts,
 				  std::size_t range_size,
@@ -342,7 +342,7 @@ Subscripting::canonicalize(const RObject* raw_indices, std::size_t range_size,
 	return std::make_pair(canvec.get(), maxindex);
     }
 }
-	
+
 void
 Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
 					  const VectorBase* v,
@@ -360,7 +360,7 @@ Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
 	    Rf_error(_("too few subscripts"));
 	std::size_t dimsize = std::size_t((*dims)[d]);
 	const StringVector* names
-	    = (dimnames ? static_cast<StringVector*>((*dimnames)[d].get()) : nullptr);
+	    = (dimnames ? SEXP_downcast<StringVector*>((*dimnames)[d].get()) : nullptr);
 	Indices& indices = (*indicesvec)[d];
         indices.initialize(pl->car(), dimsize, names);
 	if (indices.maximumIndex() > dimsize)
@@ -370,7 +370,7 @@ Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
     if (pl)
 	Rf_error(_("too many subscripts"));
 }
-	
+
 std::size_t
 Subscripting::createDimIndexers(DimIndexerVector* dimindexers,
 				const IntVector* source_dims,
@@ -461,7 +461,7 @@ bool Subscripting::dropDimensions(VectorBase* v)
 	    std::size_t d = 0;
 	    while ((*dims)[d] == 1)
 		++d;
-	    v->setNames(static_cast<StringVector*>((*dimnames)[d].get()));
+	    v->setNames(SEXP_downcast<StringVector*>((*dimnames)[d].get()));
 	}
     } else /* ngooddims == 0 */ {
 	v->setDimensions(nullptr);
@@ -475,7 +475,7 @@ bool Subscripting::dropDimensions(VectorBase* v)
 	    for (std::size_t d = 0; d < ndims; ++d) {
 		RObject* dnd = (*dimnames)[d];
 		if (dnd) {
-		    newnames = static_cast<StringVector*>(dnd);
+		    newnames = SEXP_downcast<StringVector*>(dnd);
 		    ++count;
 		}
 	    }

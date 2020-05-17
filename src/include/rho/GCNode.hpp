@@ -53,7 +53,7 @@
  * the stack.  (StackFrameBoundaries and barriers are used to prevent rescanning
  * stack frames that don't change.)
  *
- * Since the stack bit information may be out of  date, objects cannot
+ * Since the stack bit information may be out of date, objects cannot
  * be safely deleted when the reference count and stack bit reach zero.
  * Instead they are added to the moribund list for potential deletion at the
  * next garbage collection cycle, when the stack bit will be available (if
@@ -194,7 +194,7 @@ namespace rho {
 	 * derived class, to ensure that \e all referents of the
 	 * object get detached.
 	 */
-	virtual void detachReferents()  {}
+	virtual void detachReferents() {}
 
 	/** @brief Initiate a garbage collection.
 	 *
@@ -211,7 +211,7 @@ namespace rho {
 	 * @return the number of GCNode objects currently in
 	 * existence.
 	 */
-	static size_t numNodes() {return s_num_nodes;}
+	static size_t numNodes() { return s_num_nodes; }
 
 	/** @brief Conduct a visitor to the nodes referred to by this
 	 * one.

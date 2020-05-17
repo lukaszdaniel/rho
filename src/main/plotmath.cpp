@@ -948,7 +948,7 @@ static BBOX RenderSymbolChar(int ascii, int draw, mathContext *mc,
 	prev = SetFont(SymbolFont, gc);
     bbox = GlyphBBox(ascii, gc, dd);
     if (draw) {
-	asciiStr[0] = char( ascii);
+	asciiStr[0] = char(ascii);
 	asciiStr[1] = '\0';
 	GEText(ConvertedX(mc ,dd), ConvertedY(mc, dd), asciiStr,
 	       CE_SYMBOL,
@@ -1073,7 +1073,7 @@ static BBOX RenderChar(int ascii, int draw, mathContext *mc,
 	    if(res == size_t(-1))
 		Rf_error("invalid character in current multibyte locale");
 	} else
-	    asciiStr[0] = char( ascii);
+	    asciiStr[0] = char(ascii);
 	GEText(ConvertedX(mc ,dd), ConvertedY(mc, dd), asciiStr, CE_NATIVE,
 	       0.0, 0.0, mc->CurrentAngle, gc,
 	       dd);
@@ -1433,7 +1433,7 @@ static BBOX RenderSup(SEXP expr, int draw, mathContext *mc,
     BBOX bodyBBox, subBBox, supBBox;
     SEXP body = CADR(expr);
     SEXP sup = CADDR(expr);
-    SEXP sub = R_NilValue;	/* -Wall */
+    SEXP sub = nullptr;	/* -Wall */
     STYLE style = GetStyle(mc);
     double savedX = mc->CurrentX;
     double savedY = mc->CurrentY;
@@ -2453,7 +2453,7 @@ static BBOX RenderRadical(SEXP expr, int draw, mathContext *mc,
 
     leadWidth = radWidth;
     leadHeight = radHeight;
-    if (order != R_NilValue) {
+    if (order != nullptr) {
 	SetSupStyle(style, mc, gc);
 	orderBBox = RenderScript(order, 0, mc, gc, dd);
 	leadWidth = max(leadWidth, bboxWidth(orderBBox) + 0.4 * radWidth);

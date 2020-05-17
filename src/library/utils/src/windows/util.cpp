@@ -505,7 +505,7 @@ SEXP getWindowsHandles(SEXP which, SEXP minimized)
     	EnumChildWindows(GetParent(getHandle(RConsole)), EnumWindowsProc, 0);
     else
     	EnumWindows(EnumWindowsProc, 0);
-    	
+
     EnumResult = Rf_lengthgets(EnumResult, EnumCount);
     UNPROTECT(1);
     return EnumResult;
@@ -536,7 +536,7 @@ in_ArrangeWindows(int n, void** windows, int action, int preserve, int outer)
 	    }
 	}
         if (rect.left == rect.right || rect.top == rect.bottom) prect = NULL;
-        
+
         if (!outer && ismdi())
             parent = GetParent(getHandle(RConsole));
         else
@@ -556,7 +556,7 @@ SEXP arrangeWindows(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP windows;
     int action, preserve, outer;
-    
+
     args = CDR(args);
     windows = CAR(args);
     if (length(windows)) {

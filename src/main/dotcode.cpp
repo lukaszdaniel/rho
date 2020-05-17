@@ -53,7 +53,7 @@ using namespace std;
    'name' up to 2.15.1. */
 static void check1arg2(SEXP arg, SEXP call, const char *formal)
 {
-    if (TAG(arg) == R_NilValue) return;
+    if (TAG(arg) == nullptr) return;
     Rf_errorcall(call, "the first argument should not be named");
  }
 
@@ -252,7 +252,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     const char *ns = "";
     if(R_IsNamespaceEnv(env2))
 	ns = R_CHAR(STRING_ELT(R_NamespaceEnvSpec(env2), 0));
-    else env2 = R_NilValue;
+    else env2 = nullptr;
 
 #ifdef CHECK_CROSS_USAGE
     if (dll.type == FILENAME && strcmp(dll.DLLname, "base")) {
@@ -375,7 +375,7 @@ static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll)
 
     *naok = 0;
     *len = 0;
-    for(s = args, prev=args; s != R_NilValue;) {
+    for(s = args, prev=args; s != nullptr;) {
 	if(TAG(s) == NaokSymbol) {
 	    *naok = Rf_asLogical(CAR(s));
 	    if(naokused++ == 1) Rf_warning(_("'%s' used more than once"), "NAOK");
@@ -448,17 +448,17 @@ static SEXP pkgtrim(SEXP args, DllReference *dll)
 
     if (PkgSymbol == nullptr) PkgSymbol = Rf_install("PACKAGE");
 
-    for(s = args ; s != R_NilValue;) {
+    for(s = args ; s != nullptr;) {
 	ss = CDR(s);
 	/* Look for PACKAGE=. We look at the next arg, unless
 	   this is the last one (which will only happen for one arg),
 	   and remove it */
-	if(ss == R_NilValue && TAG(s) == PkgSymbol) {
+	if(ss == nullptr && TAG(s) == PkgSymbol) {
 	    if(pkgused++ == 1)
 		Rf_warning(_("'%s' used more than once"), "PACKAGE");
 	    setDLLname(s, dll->DLLname);
 	    dll->type = FILENAME;
-	    return R_NilValue;
+	    return nullptr;
 	}
 	if(TAG(ss) == PkgSymbol) {
 	    if(pkgused++ == 1)
@@ -476,14 +476,14 @@ static SEXP enctrim(SEXP args)
 {
     SEXP s, ss;
 
-    for(s = args ; s != R_NilValue;) {
+    for(s = args ; s != nullptr;) {
 	ss = CDR(s);
 	/* Look for ENCODING=. We look at the next arg, unless
 	   this is the last one (which will only happen for one arg),
 	   and remove it */
-	if(ss == R_NilValue && TAG(s) == EncSymbol) {
+	if(ss == nullptr && TAG(s) == EncSymbol) {
 	    Rf_warning("ENCODING is defunct and will be ignored");
-	    return R_NilValue;
+	    return nullptr;
 	}
 	if(TAG(ss) == EncSymbol) {
 	    Rf_warning("ENCODING is defunct and will be ignored");
@@ -569,7 +569,7 @@ typedef SEXP (*VarFun)(...);
 SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 				  SEXP call) {
     VarFun fun = NULL;
-    SEXP retval = R_NilValue;	/* -Wall */
+    SEXP retval = nullptr;	/* -Wall */
     fun = (VarFun) ofun;
     switch (nargs) {
     case 0:
@@ -620,7 +620,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
     args = resolveNativeRoutine(args, &ofun, &symbol, buf, NULL, NULL, call, env);
     args = CDR(args);
 
-    for(nargs = 0, pargs = args ; pargs != R_NilValue; pargs = CDR(pargs)) {
+    for(nargs = 0, pargs = args ; pargs != nullptr; pargs = CDR(pargs)) {
 	if (nargs == MAX_ARGS)
 	    Rf_errorcall(call, _("too many arguments in foreign function call"));
 	cargs[nargs] = CAR(pargs);
@@ -700,7 +700,7 @@ SEXP attribute_hidden do_Externalgr(SEXP call, SEXP op, SEXP args, SEXP env)
     dd->recordGraphics = FALSE;
     PROTECT(retval = do_External(call, op, args, env));
     dd->recordGraphics = record;
-    if (GErecording(call, dd)) { // which is record && call != R_NilValue
+    if (GErecording(call, dd)) { // which is record && call != nullptr
 	if (!GEcheckState(dd))
 	    Rf_errorcall(call, _("invalid graphics state"));
 	GErecordGraphicOperation(op, args, dd);
@@ -730,7 +730,7 @@ static SEXP
 Rf_getCallingDLL(void)
 {
     SEXP e, ans;
-    SEXP rho = R_NilValue;
+    SEXP rho = nullptr;
     Rboolean found = FALSE;
 
     /* First find the environment of the caller.
@@ -745,7 +745,7 @@ Rf_getCallingDLL(void)
     /* Then search up until we hit a namespace or globalenv.
        The idea is that we will not find a namespace unless the caller
        was defined in one. */
-    while(rho != R_NilValue) {
+    while(rho != nullptr) {
 	if (rho == R_GlobalEnv) break;
 	else if (R_IsNamespaceEnv(rho)) {
 	    found = TRUE;
@@ -753,7 +753,7 @@ Rf_getCallingDLL(void)
 	}
 	rho = ENCLOS(rho);
     }
-    if(!found) return R_NilValue;
+    if(!found) return nullptr;
 
     PROTECT(e = Rf_lang2(Rf_install("getCallingDLLe"), rho));
     ans = Rf_eval(e,  R_GlobalEnv);
@@ -782,7 +782,7 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
     if(dll->obj == nullptr) {
 	/* Rprintf("\nsearching for %s\n", name); */
 	//dll->obj = Rf_getCallingDLL();
-	if (env != R_NilValue) {
+	if (env != nullptr) {
 	    SEXP e;
 	    PROTECT(e = Rf_lang2(Rf_install("getCallingDLLe"), env));
 	    dll->obj = Rf_eval(e, R_GlobalEnv);
@@ -865,8 +865,8 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     /* Construct the return value */
     nargs = 0;
     havenames = FALSE;
-    for(pa = args ; pa != R_NilValue; pa = CDR(pa)) {
-	if (TAG(pa) != R_NilValue) havenames = TRUE;
+    for(pa = args ; pa != nullptr; pa = CDR(pa)) {
+	if (TAG(pa) != nullptr) havenames = TRUE;
 	nargs++;
     }
 
@@ -874,8 +874,8 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     if (havenames) {
 	SEXP names;
 	PROTECT(names = Rf_allocVector(STRSXP, nargs));
-	for (na = 0, pa = args ; pa != R_NilValue ; pa = CDR(pa), na++) {
-	    if (TAG(pa) == R_NilValue)
+	for (na = 0, pa = args ; pa != nullptr ; pa = CDR(pa), na++) {
+	    if (TAG(pa) == nullptr)
 		SET_STRING_ELT(names, na, R_BlankString);
 	    else
 		SET_STRING_ELT(names, na, PRINTNAME(TAG(pa)));
@@ -887,7 +887,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
     /* Convert the arguments for use in foreign function calls. */
     cargs = static_cast<void**>(RHO_alloc(nargs, sizeof(void*)));
     if (copy) cargs0 = static_cast<void**>(RHO_alloc(nargs, sizeof(void*)));
-    for(na = 0, pa = args ; pa != R_NilValue; pa = CDR(pa), na++) {
+    for(na = 0, pa = args ; pa != nullptr; pa = CDR(pa), na++) {
 	if(checkTypes &&
 	   !comparePrimitiveTypes(checkTypes[na], CAR(pa))) {
 	    /* We can loop over all the arguments and report all the
@@ -1149,7 +1149,7 @@ SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 	Rf_errorcall(call, _("too many arguments, sorry"));
     }
 
-    for (na = 0, pa = args ; pa != R_NilValue ; pa = CDR(pa), na++) {
+    for (na = 0, pa = args ; pa != nullptr ; pa = CDR(pa), na++) {
 	void *p = cargs[na];
 	SEXP arg = CAR(pa);
 	s = VECTOR_ELT(ans, na);
@@ -1455,7 +1455,7 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
     GCStackRoot<PairList> tl(PairList::make(nargs));
     PROTECT(pcall = call = new Expression(nullptr, tl));
     SETCAR(pcall, reinterpret_cast<SEXP>(func));
-    s = R_NilValue;		/* -Wall */
+    s = nullptr;		/* -Wall */
     for (i = 0 ; i < nargs ; i++) {
 	pcall = CDR(pcall);
 	type = string2type(modes[i]);

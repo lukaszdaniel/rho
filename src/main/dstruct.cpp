@@ -47,17 +47,16 @@ R_len_t Rf_length(SEXP s)
 	return 0;
     case LISTSXP:
     case LANGSXP:
-    case DOTSXP:
-	{
-	    int i = 0;
-	    while (s != nullptr && s != R_NilValue) {
-		i++;
-		s = CDR(s);
-	    }
-	    return i;
+    case DOTSXP: {
+	int i = 0;
+	while (s) {
+	    i++;
+	    s = CDR(s);
 	}
+	return i;
+    }
     case ENVSXP:
-	return (static_cast<Environment*>(s))->frame()->size();
+	return (SEXP_downcast<Environment*>(s))->frame()->size();
     default:
 	return 1;
     }
@@ -80,18 +79,17 @@ R_xlen_t Rf_xlength(SEXP s)
 	return XLENGTH(s);
     case LISTSXP:
     case LANGSXP:
-    case DOTSXP:
-    {
+    case DOTSXP: {
 	// it is implausible this would be >= 2^31 elements, but allow it
 	R_xlen_t i = 0;
-	while (s != nullptr && s != R_NilValue) {
+	while (s) {
 	    i++;
 	    s = CDR(s);
 	}
 	return i;
     }
     case ENVSXP:
-	return (static_cast<Environment*>(s))->frame()->size();
+	return (SEXP_downcast<Environment*>(s))->frame()->size();
     default:
 	return 1;
     }

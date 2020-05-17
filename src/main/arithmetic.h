@@ -85,20 +85,20 @@ static R_INLINE SEXP R_allocOrReuseVector(SEXP s1, SEXP s2,
 
     if (n == n2) {
         if (TYPEOF(s2) == type && NO_REFERENCES(s2)) {
-	    if (ATTRIB(s2) != R_NilValue)
+	    if (ATTRIB(s2) != nullptr)
 		/* need to remove 'names' attribute if present to
 		   match what copyMostAttrib does. copyMostAttributes
 		   also skips 'dim' and 'dimnames' but those, here
 		   since those, if present, will be replaced by
 		   attribute cleanup code in R_Binary) */
-		Rf_setAttrib(s2, R_NamesSymbol, R_NilValue);
+		Rf_setAttrib(s2, R_NamesSymbol, nullptr);
             return s2;
 	}
         else
             /* Can use 1st arg's space only if 2nd arg has no attributes, else
                we may not get attributes of result right. */
             if (n == n1 && TYPEOF(s1) == type && NO_REFERENCES(s1)
-		&& ATTRIB(s2) == R_NilValue)
+		&& ATTRIB(s2) == nullptr)
                 return s1;
     }
     else if (n == n1 && TYPEOF(s1) == type && NO_REFERENCES(s1))

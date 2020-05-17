@@ -61,7 +61,7 @@ namespace {
     {
 	return (l.r == r.r) && (l.i == r.i);
     }
-    
+
     inline bool operator!=(const Rcomplex& l, const Rcomplex& r)
     {
 	return !(l==r);
@@ -172,71 +172,71 @@ SEXP do_relop(/*const*/ Expression* call,
 	Rf_errorcall(call, _("comparison is not allowed for expressions"));
 
     /* ELSE :  x and y are both atomic or list */
-	checkOperandsConformable(static_cast<VectorBase*>(xarg), static_cast<VectorBase*>(yarg));
+	checkOperandsConformable(SEXP_downcast<VectorBase*>(xarg), SEXP_downcast<VectorBase*>(yarg));
 
   if (nx > 0 && ny > 0) {
     RELOP_TYPE opcode = RELOP_TYPE(op->variant());
     if (Rf_isString(x) || Rf_isString(y)) {
 	// This case has not yet been brought into line with the
 	// general rho pattern.
-	VectorBase* xv = static_cast<VectorBase*>(Rf_coerceVector(x, STRSXP));
-	VectorBase* yv = static_cast<VectorBase*>(Rf_coerceVector(y, STRSXP));
+	VectorBase* xv = SEXP_downcast<VectorBase*>(Rf_coerceVector(x, STRSXP));
+	VectorBase* yv = SEXP_downcast<VectorBase*>(Rf_coerceVector(y, STRSXP));
 	if (((nx > ny) ? nx % ny : ny % nx) != 0) // mismatch
 	    Rf_warningcall(call, _("longer object length is not a multiple of shorter object length"));
 	GCStackRoot<VectorBase>
-	    ans(static_cast<VectorBase*>(string_relop(opcode, xv, yv)));
+	    ans(SEXP_downcast<VectorBase*>(string_relop(opcode, xv, yv)));
 	GeneralBinaryAttributeCopier::copyAttributes(ans, xv, yv);
 	return ans;
     }
     else if (Rf_isComplex(x) || Rf_isComplex(y)) {
 	GCStackRoot<ComplexVector>
-	    vl(static_cast<ComplexVector*>(Rf_coerceVector(x, CPLXSXP)));
+	    vl(SEXP_downcast<ComplexVector*>(Rf_coerceVector(x, CPLXSXP)));
 	GCStackRoot<ComplexVector>
-	    vr(static_cast<ComplexVector*>(Rf_coerceVector(y, CPLXSXP)));
+	    vr(SEXP_downcast<ComplexVector*>(Rf_coerceVector(y, CPLXSXP)));
 	return relop_no_order(vl.get(), vr.get(), opcode);
     }
     else if ((Rf_isNumeric(x) || Rf_isLogical(x)) && (Rf_isNumeric(y) || Rf_isLogical(y))) {
 	GCStackRoot<RealVector>
-	    vl(static_cast<RealVector*>(Rf_coerceVector(x, REALSXP)));
+	    vl(SEXP_downcast<RealVector*>(Rf_coerceVector(x, REALSXP)));
 	GCStackRoot<RealVector>
-	    vr(static_cast<RealVector*>(Rf_coerceVector(y, REALSXP)));
+	    vr(SEXP_downcast<RealVector*>(Rf_coerceVector(y, REALSXP)));
     return relop(vl.get(), vr.get(), opcode);
     } // rest of cases only apply when 'x' or 'y' is raw
     else if (Rf_isReal(x) || Rf_isReal(y)) {
 	GCStackRoot<RealVector>
-	    vl(static_cast<RealVector*>(Rf_coerceVector(x, REALSXP)));
+	    vl(SEXP_downcast<RealVector*>(Rf_coerceVector(x, REALSXP)));
 	GCStackRoot<RealVector>
-	    vr(static_cast<RealVector*>(Rf_coerceVector(y, REALSXP)));
+	    vr(SEXP_downcast<RealVector*>(Rf_coerceVector(y, REALSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
     else if (Rf_isInteger(x) || Rf_isInteger(y)) {
 	GCStackRoot<IntVector>
-	    vl(static_cast<IntVector*>(Rf_coerceVector(x, INTSXP)));
+	    vl(SEXP_downcast<IntVector*>(Rf_coerceVector(x, INTSXP)));
 	GCStackRoot<IntVector>
-	    vr(static_cast<IntVector*>(Rf_coerceVector(y, INTSXP)));
+	    vr(SEXP_downcast<IntVector*>(Rf_coerceVector(y, INTSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
     else if (Rf_isLogical(x) || Rf_isLogical(y)) {
 	// TODO(kmillar): do this without promoting to integer.
 	GCStackRoot<IntVector>
-	    vl(static_cast<IntVector*>(Rf_coerceVector(x, INTSXP)));
+	    vl(SEXP_downcast<IntVector*>(Rf_coerceVector(x, INTSXP)));
 	GCStackRoot<IntVector>
-	    vr(static_cast<IntVector*>(Rf_coerceVector(y, INTSXP)));
+	    vr(SEXP_downcast<IntVector*>(Rf_coerceVector(y, INTSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     }
     else if (TYPEOF(x) == RAWSXP || TYPEOF(y) == RAWSXP) {
 	GCStackRoot<RawVector>
-	    vl(static_cast<RawVector*>(Rf_coerceVector(x, RAWSXP)));
+	    vl(SEXP_downcast<RawVector*>(Rf_coerceVector(x, RAWSXP)));
 	GCStackRoot<RawVector>
-	    vr(static_cast<RawVector*>(Rf_coerceVector(y, RAWSXP)));
+	    vr(SEXP_downcast<RawVector*>(Rf_coerceVector(y, RAWSXP)));
 	return relop(vl.get(), vr.get(), opcode);
     } else Rf_errorcall(call, _("comparison of these types is not implemented"));
   }  else {
       GCStackRoot<> val(Rf_allocVector(LGLSXP, 0));
       GeneralBinaryAttributeCopier::copyAttributes(
 	  SEXP_downcast<VectorBase*>(val.get()),
-	  static_cast<VectorBase*>(xarg),
-	  static_cast<VectorBase*>(yarg));
+	  SEXP_downcast<VectorBase*>(xarg),
+	  SEXP_downcast<VectorBase*>(yarg));
       return val;
   }
     return nullptr;  // -Wall

@@ -207,7 +207,7 @@ void WeakRef::markThru()
 {
     WeakRef::check();
     WRList newlive;
-    
+
     WRList* live = getLive();
     WRList* finalization_pending = getFinalizationPending();
 
@@ -324,7 +324,7 @@ bool WeakRef::runFinalizers()
     static Rboolean running = FALSE;
     if (running) return FALSE;
     running = TRUE;
-    
+
     try {
 	WeakRef::check();
 

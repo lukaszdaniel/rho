@@ -319,7 +319,7 @@ static void menude(control m)
     if (!ConsoleAcceptCmd) return;
     s = askstring(G_("Name of data frame or matrix"), "");
     if(s) {
-	var = findVar(install(s), R_GlobalEnv);
+	var = findVar(Rf_install(s), R_GlobalEnv);
 	if (var != R_UnboundValue) {
 	    snprintf(cmd, 1024,"fix(%s)", s);
 	    consolecmd(RConsole, cmd);

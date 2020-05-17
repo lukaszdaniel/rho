@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-11 r4394d41b2b) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-02-03 r74200) -- "Frisbee Sailing"
+R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -209,7 +209,7 @@ Error in assertWarning(ff()) :
 > bibstyle("unsorted", sortKeys = function(refs) seq_along(refs),
 +     fmtPrefix = function(paper) paste0("[", paper$.index, "]"),
 +        .init = TRUE)
-<environment: 0x7f9eae52abd0>
+<environment: 0x7f7026dba680>
 > print(refs, .bibstyle = "unsorted")
 [1] R Core Team (2013). _R: A Language and Environment for Statistical
 Computing_. R Foundation for Statistical Computing, Vienna, Austria.
@@ -1004,7 +1004,7 @@ List of 6
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.283 0.004 0.288 0 0 
+Time elapsed:  0.297 0 0.298 0 0 
 > grDevices::dev.off()
 null device 
           1 

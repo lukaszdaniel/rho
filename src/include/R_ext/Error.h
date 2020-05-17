@@ -44,7 +44,7 @@ void NORET WrongArgCount(const char *);
 
 void	Rf_warning(const char *, ...);
 void 	R_ShowMessage(const char *s);
-    
+
 
 #ifdef  __cplusplus
 }

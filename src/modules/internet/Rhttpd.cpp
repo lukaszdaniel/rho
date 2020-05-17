@@ -582,7 +582,7 @@ static void process_request_(void *ptr)
 				  sTrue));
 	SET_TAG(CDR(CDR(x)), Rf_install("silent"));
 	DBG(Rprintf("Rf_eval(try(httpd('%s'),silent=TRUE))\n", c->url));
-	
+
 	/* evaluate the above in the tools namespace */
 	SEXP toolsNS = PROTECT(R_FindNamespace(Rf_mkString("tools")));
 	x = Rf_eval(x, toolsNS);

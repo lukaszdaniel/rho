@@ -931,18 +931,18 @@ static void performCompletion(control c)
 	    return;
 	}
 	/* First check if namespace is loaded */
-	if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	   != R_UnboundValue) completion_available = 1;
 	else { /* Then try to load it */
 	    char *p = "try(loadNamespace('utils'), silent=TRUE)";
-	    PROTECT(cmdSexp = mkString(p));
+	    PROTECT(cmdSexp = Rf_mkString(p));
 	    cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
 	    if(status == PARSE_OK) {
 		for(i = 0; i < Rf_length(cmdexpr); i++)
-		    eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+		    Rf_eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
 	    }
 	    UNPROTECT(2);
-	    if(findVarInFrame(R_NamespaceRegistry, install("utils"))
+	    if(Rf_findVarInFrame(R_NamespaceRegistry, Rf_install("utils"))
 	       != R_UnboundValue) completion_available = 1;
 	    else {
 		completion_available = 0;
@@ -965,7 +965,7 @@ static void performCompletion(control c)
     char cmd[len];
     snprintf(cmd, len, "utils:::.win32consoleCompletion(\"%ls\", %d)",
 	     pline, cursor_position);
-    PROTECT(cmdSexp = mkString(cmd));
+    PROTECT(cmdSexp = Rf_mkString(cmd));
     cmdexpr = PROTECT(R_ParseVector(cmdSexp, -1, &status, R_NilValue));
     if (status != PARSE_OK) {
 	UNPROTECT(2);
@@ -976,7 +976,7 @@ static void performCompletion(control c)
     }
     /* Loop is needed here as EXPSEXP will be of length > 1 */
     for(i = 0; i < Rf_length(cmdexpr); i++)
-	ans = eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
+	ans = Rf_eval(VECTOR_ELT(cmdexpr, i), R_GlobalEnv);
     UNPROTECT(2);
 
     /* ans has the form list(addition, possible), where 'addition' is
@@ -991,7 +991,7 @@ static void performCompletion(control c)
 #define POSSIBLE 1
 
     alen = Rf_length(VECTOR_ELT(ans, POSSIBLE));
-    additional_text = CHAR(STRING_ELT( VECTOR_ELT(ans, ADDITION), 0 ));
+    additional_text = R_CHAR(STRING_ELT( VECTOR_ELT(ans, ADDITION), 0 ));
     alen2 = strlen(additional_text);
     if (alen) {
 	/* make a copy of the current string first */
@@ -1005,7 +1005,7 @@ static void performCompletion(control c)
 
 	for (i = 0; i < min(alen, max_show); i++) {
             consolewrites(c, "\n");
-	    consolewrites(c, CHAR(STRING_ELT(VECTOR_ELT(ans, POSSIBLE), i)));
+	    consolewrites(c, R_CHAR(STRING_ELT(VECTOR_ELT(ans, POSSIBLE), i)));
 	}
 	if (alen > max_show)
 	    consolewrites(c, "\n[...truncated]");

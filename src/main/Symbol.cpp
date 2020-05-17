@@ -239,8 +239,6 @@ namespace rho {
 #include "rho/PredefinedSymbols.hpp"
 #undef PREDEFINED_SYMBOL
 
-// Rf_install() is currently defined in main.cpp
-
 SEXP PRINTNAME(SEXP x)
 {
     using namespace rho;
@@ -251,4 +249,15 @@ SEXP PRINTNAME(SEXP x)
 bool rho::isDotSymbol(const Symbol* symbol)
 {
     return symbol && symbol->name()->c_str()[0] == '.';
+}
+
+SEXP Rf_installNoTrChar(SEXP charSXP)
+{
+    String* name = SEXP_downcast<String*>(charSXP);
+    return Symbol::obtain(name);
+}
+
+SEXP Rf_installS3Signature(const char* methodName, const char* className)
+{
+    return Symbol::obtainS3Signature(methodName, className);
 }

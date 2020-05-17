@@ -600,6 +600,7 @@ new BuiltInFunction("browserSetDebug", do_sysbrowser,	3,	111,	1,	{PP_FUNCALL, PR
 new BuiltInFunction("parent.frame",do_parentframe,	0,	11,	1,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("sort",	do_sort,	1,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("is.unsorted",	do_isunsorted,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}, nullptr, Dispatch::INTERNAL),
+new BuiltInFunction("sorted_fpass",do_sorted_fpass,0,      11,     2,      {PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("psort",	do_psort,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("qsort",	do_qsort,	0,	11,	2,	{PP_FUNCALL, PREC_FN,	0}),
 new BuiltInFunction("radixsort",	do_radixsort,	0,	11,	-1,	{PP_FUNCALL, PREC_FN,	0}),
@@ -923,10 +924,10 @@ SEXP attribute_hidden do_primitive(/*const*/ Expression* call, const BuiltInFunc
     SEXP name, prim;
     name = name_;
     if (!Rf_isString(name) || Rf_length(name) != 1 ||
-	STRING_ELT(name, 0) == R_NilValue)
+	STRING_ELT(name, 0) == nullptr)
 	Rf_errorcall(call, _("string argument required"));
     prim = R_Primitive(R_CHAR(STRING_ELT(name, 0)));
-    if (prim == R_NilValue)
+    if (prim == nullptr)
 	Rf_errorcall(call, _("no such primitive function"));
     return prim;
 }
@@ -937,7 +938,7 @@ static SEXP mkSymMarker(SEXP pname)
     PROTECT(pname);
     SEXP ans = Rf_allocSExp(SYMSXP);
     SET_SYMVALUE(ans, ans);
-    SET_ATTRIB(ans, R_NilValue);
+    SET_ATTRIB(ans, nullptr);
     SET_PRINTNAME(ans, pname);
     UNPROTECT(1);
     return ans;
@@ -978,25 +979,7 @@ SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 /* For use in packages */
 
-const char *getPRIMNAME(SEXP object)
-{
-    return PRIMNAME(object);
-}
-
-// TODO: move to Symbol.h
-/* This function is equivalent to Rf_install(R_CHAR(charSXP)), but faster.
-   Like the equivalent code pattern, it discards the encoding information,
-   hence in almost all cases installTrChar should be used, instead. */
-extern "C"
-attribute_hidden
-SEXP Rf_installNoTrChar(SEXP charSXP)
-{
-    String* name = SEXP_downcast<String*>(charSXP);
-    return Symbol::obtain(name);
-}
-
-extern "C"
-attribute_hidden
-SEXP Rf_installS3Signature(const char *methodName, const char *className) {
-    return Symbol::obtainS3Signature(methodName, className);
-}
+// const char *getPRIMNAME(SEXP object)
+// {
+//     return PRIMNAME(object);
+// }

@@ -49,7 +49,7 @@ typedef Rconnection (*R_NewSockRoutine)(const char *host, int port, int server, 
 typedef void * (*R_HTTPOpenRoutine)(const char *url, const char *headers, const int cacheOK);
 typedef int    (*R_HTTPReadRoutine)(void *ctx, char *dest, int len);
 typedef void   (*R_HTTPCloseRoutine)(void *ctx);
-	      
+
 typedef void * (*R_FTPOpenRoutine)(const char *url);
 typedef int    (*R_FTPReadRoutine)(void *ctx, char *dest, int len);
 typedef void   (*R_FTPCloseRoutine)(void *ctx);

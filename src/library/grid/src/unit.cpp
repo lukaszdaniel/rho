@@ -132,7 +132,7 @@ int fOp(SEXP ua) {
 int minFunc(SEXP ua) {
     return fNameMatch(ua, "min");
 }
-    
+
 int maxFunc(SEXP ua) {
     return fNameMatch(ua, "max");
 }
@@ -748,7 +748,7 @@ double evaluateGrobDescentUnit(SEXP grob,
  * TRANSFORMATIONS
  **************************
  */
-    
+
 /* Map a value from arbitrary units to INCHES */
 
 /*
@@ -1905,7 +1905,7 @@ int convertUnit(SEXP unit, int index)
 	Rf_error(_("Invalid unit"));
     return result;
 }
-	    
+
 SEXP validUnits(SEXP units) 
 {
     int i;

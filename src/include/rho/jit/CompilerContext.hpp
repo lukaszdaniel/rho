@@ -147,14 +147,14 @@ public:
 	m_context = context;
 	context->pushLoopContext(continue_block, loop_header, compiler);
     }
-    
+
     ~LoopScope()
     {
 	m_context->popLoopContext();
     }
 private:
     CompilerContext* m_context;
-    
+
     LoopScope(const LoopScope&) = delete;
     LoopScope& operator=(const LoopScope&) = delete;
 };

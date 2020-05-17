@@ -977,7 +977,7 @@ SEXP attribute_hidden do_dynunload(/*const*/ Expression* call, const BuiltInFunc
     GetFullDLLPath(call, buf, Rf_translateChar(STRING_ELT(x_, 0)));
     if(!DeleteDLL(buf))
 	Rf_error(_("shared object '%s\' was not loaded"), buf);
-    return R_NilValue;
+    return nullptr;
 }
 
 int R_moduleCdynload(const char *module, int local, int now)
@@ -1164,7 +1164,7 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
     const void *vmax = vmaxget();
     const char *package, *name;
     R_RegisteredNativeSymbol symbol = {R_ANY_SYM, {nullptr}, nullptr};
-    SEXP sym = R_NilValue;
+    SEXP sym = nullptr;
     DL_FUNC f = nullptr;
 
     package = "";
@@ -1229,7 +1229,7 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
     PROTECT(sym = Rf_allocVector(VECSXP, n));    numProtects++;
     PROTECT(names = Rf_allocVector(STRSXP, n));    numProtects++;
 
-    if(!sname || sname == R_NilValue) {
+    if(!sname || sname == nullptr) {
 	PROTECT(sname = Rf_mkString(symbol->symbol.call->name));
 	numProtects++;
     }
@@ -1384,7 +1384,7 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 {
     const char *package = "", *name;
     R_RegisteredNativeSymbol symbol = {R_ANY_SYM, {nullptr}, nullptr};
-    SEXP sym = R_NilValue;
+    SEXP sym = nullptr;
     DL_FUNC f = nullptr;
 
     SEXP sname = name_, spackage = package_, 
@@ -1487,13 +1487,13 @@ static SEXP get_package_CEntry_table(const char *package)
 
     GCStackRoot<> zero(Rf_ScalarInteger(0));
     if (CEntryTable == nullptr) {
-	CEntryTable = R_NewHashedEnv(R_NilValue, zero);
+	CEntryTable = R_NewHashedEnv(nullptr, zero);
 	R_PreserveObject(CEntryTable);
     }
     pname = Rf_install(package);
     penv = Rf_findVarInFrame(CEntryTable, pname);
     if (penv == R_UnboundValue) {
-	penv = R_NewHashedEnv(R_NilValue, zero);
+	penv = R_NewHashedEnv(nullptr, zero);
 	Rf_defineVar(pname, penv, CEntryTable);
     }
     return penv;
@@ -1504,7 +1504,7 @@ void R_RegisterCCallable(const char *package, const char *name, DL_FUNC fptr)
 {
     SEXP penv = get_package_CEntry_table(package);
     PROTECT(penv);
-    SEXP eptr = R_MakeExternalPtrFn(fptr, R_NilValue, R_NilValue);
+    SEXP eptr = R_MakeExternalPtrFn(fptr, nullptr, nullptr);
     PROTECT(eptr);
     Rf_defineVar(Rf_install(name), eptr, penv);
     UNPROTECT(2);

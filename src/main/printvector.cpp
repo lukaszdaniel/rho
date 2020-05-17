@@ -209,7 +209,7 @@ void printVector(SEXP x, int indx, int quote)
 	    break;
 	case STRSXP:
 	    {
-		const StringVector* sv = static_cast<StringVector*>(x);
+		const StringVector* sv = SEXP_downcast<StringVector*>(x);
 		printStringVector(sv, n_pr, (quote ? '"' : 0), indx);
 		break;
 	    }
@@ -372,7 +372,7 @@ void printNamedVector(SEXP x, SEXP names, int quote, const char *title)
 	case STRSXP:
 	    {
 		if(quote) quote = '"';
-		StringVector* sv = static_cast<StringVector*>(x);
+		StringVector* sv = SEXP_downcast<StringVector*>(x);
 	        printNamedStringVector(sv, n_pr, quote, namesv);
 		break;
 	    }

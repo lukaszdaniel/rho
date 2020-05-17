@@ -165,7 +165,7 @@ using namespace rho;
    environments, and the global environment).  The hook function
    consists of a function pointer and a data value.  The serialization
    function pointer is called with the reference object and the data
-   value as arguments.  It should return R_NilValue for standard
+   value as arguments.  It should return nullptr for standard
    handling and an STRSXP for special handling.  In an STRSXP is
    returned, then a special handing mark is written followed by the
    strings in the STRSXP (attributes are ignored).  On unserializing,
@@ -408,7 +408,7 @@ static void InWord(R_inpstream_t stream, char * buf, int size)
 	    Rf_error(_("read error"));
     } while (isspace(c));
     while (! isspace(c) && i < size) {
-	buf[i++] = char( c);
+	buf[i++] = char(c);
 	c = stream->InChar(stream);
     }
     if (i == size)
@@ -558,13 +558,13 @@ static void InString(R_inpstream_t stream, char *buf, int length)
 			    c = GetChar(&iss);
 			    j++;
 			}
-			buf[i] = char( d);
+			buf[i] = char(d);
 			UngetChar(&iss, c);
 			break;
-		    default  : buf[i] = char( c);
+		    default  : buf[i] = char(c);
 		    }
 		}
-		else buf[i] = char( c);
+		else buf[i] = char(c);
 	    }
 	}
     }
@@ -668,7 +668,7 @@ static int HashGet(SEXP item, const HashTable* table)
  * Administrative SXP values
  *
  * These macros defind SXP "type" for specifying special object, such
- * as R_NilValue, or control information, like REFSXP or NAMESPACESXP.
+ * as nullptr, or control information, like REFSXP or NAMESPACESXP.
  * The range of SXP types is limited to 5 bit by the current sxpinfo
  * layout, but just in case these values are placed at the top of the
  * 8 bit range.
@@ -795,15 +795,15 @@ static SEXP GetPersistentName(R_outpstream_t stream, SEXP s)
 		s == R_EmptyEnv ||
 		R_IsNamespaceEnv(s) ||
 		R_IsPackageEnv(s))
-		return R_NilValue;
+		return nullptr;
 	    else
 		break;
-	default: return R_NilValue;
+	default: return nullptr;
 	}
 	return stream->OutPersistHookFunc(s, stream->OutPersistHookData);
     }
     else
-	return R_NilValue;
+	return nullptr;
 }
 
 static SEXP PersistentRestore(R_inpstream_t stream, SEXP s)
@@ -820,7 +820,7 @@ static SEXP PersistentRestore(R_inpstream_t stream, SEXP s)
 
 static int SaveSpecialHook(SEXP item)
 {
-    if (item == R_NilValue)      return NILVALUE_SXP;
+    if (item == nullptr)      return NILVALUE_SXP;
     if (item == R_EmptyEnv)	 return EMPTYENV_SXP;
     if (item == R_BaseEnv)	 return BASEENV_SXP;
     if (item == R_GlobalEnv)     return GLOBALENV_SXP;
@@ -850,7 +850,7 @@ static void OutStringVec(R_outpstream_t stream, SEXP s, HashTable* ref_table)
 
 #ifdef WARN_ABOUT_NAMES_IN_PERSISTENT_STRINGS
     SEXP names = Rf_getAttrib(s, Symbols::NamesSymbol);
-    if (names != R_NilValue)
+    if (names != nullptr)
 	Rf_warning(_("names in persistent strings are currently ignored"));
 #endif
 
@@ -1008,7 +1008,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 #endif
     if ((i = HashGet(s, ref_table)) != 0)
 	OutRefIndex(stream, i);
-    else if ((t = GetPersistentName(stream, s)) != R_NilValue) {
+    else if ((t = GetPersistentName(stream, s)) != nullptr) {
 	R_assert(TYPEOF(t) == STRSXP && LENGTH(t) > 0);
 	PROTECT(t);
 	HashAdd(s, ref_table);
@@ -1058,7 +1058,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	case LISTSXP:
 	case LANGSXP:
 	case DOTSXP:
-	    hastag = TAG(s) != R_NilValue;
+	    hastag = TAG(s) != nullptr;
 	    break;
 	case CLOSXP:
 	    hastag = (CLOENV(s) != nullptr);
@@ -1072,7 +1072,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	   field the content of that field must not be serialized, so
 	   we treat it as not there. */
 	// rho doesn't use CHARSXP cache chains, but we keep the same logic:
-	hasattr = (TYPEOF(s) != CHARSXP && ATTRIB(s) != R_NilValue);
+	hasattr = (TYPEOF(s) != CHARSXP && ATTRIB(s) != nullptr);
 	flags = PackFlags(TYPEOF(s), LEVELS(s), OBJECT(s),
 			  hasattr, hastag);
 	OutInteger(stream, flags);
@@ -1085,7 +1085,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	       recursion on the CDR */
 	    if (hasattr)
 		WriteItem(ATTRIB(s), ref_table, stream);
-	    if (TAG(s) != R_NilValue)
+	    if (TAG(s) != nullptr)
 		WriteItem(TAG(s), ref_table, stream);
 	    WriteItem(CAR(s), ref_table, stream);
 	    /* now do a tail call to WriteItem to handle the CDR */
@@ -1429,7 +1429,7 @@ ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
 		    buflen *= 2;
 		    continue;
 		} else
-		    return R_NilValue;
+		    return nullptr;
 	    }
 	    return Rf_mkCharLenCE(buf, (int)(buflen - bufleft), enc);
 	} else {
@@ -1440,7 +1440,7 @@ ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
 		    buflen *= 2;
 		    continue;
 		} else
-		    return R_NilValue;
+		    return nullptr;
 	    }
 	    SEXP ans = Rf_mkCharLenCE(buf, (int)(buflen - bufleft), enc);
 	    Free(buf);
@@ -1504,7 +1504,7 @@ ReadChar(R_inpstream_t stream, char *buf, int length, int levs)
 	if (known_to_be_utf8) enc = CE_UTF8;
 	else if (known_to_be_latin1) enc = CE_LATIN1;
 	SEXP ans = ConvertChar(stream->nat2nat_obj, buf, length, enc);
-	if (ans != R_NilValue)
+	if (ans != nullptr)
 	    return ans;
 	if (known_to_be_utf8) {
 	    /* nat2nat_obj is converting to UTF-8, no need to use nat2utf8_obj */
@@ -1528,7 +1528,7 @@ ReadChar(R_inpstream_t stream, char *buf, int length, int levs)
     }
     if (stream->nat2utf8_obj != (void *)-1) {
 	SEXP ans = ConvertChar(stream->nat2utf8_obj, buf, length, CE_UTF8);
-	if (ans != R_NilValue)
+	if (ans != nullptr)
 	    return ans;
 	char *from = native_fromcode(stream);
 	Rf_warning(_("input string '%s' cannot be translated to UTF-8, is it valid in '%s' ?"),
@@ -1584,7 +1584,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
     UnpackFlags(flags, &type, &levs, &objf, &hasattr, &hastag);
 
     switch(type) {
-    case NILVALUE_SXP:      return R_NilValue;
+    case NILVALUE_SXP:      return nullptr;
     case EMPTYENV_SXP:	    return R_EmptyEnv;
     case BASEENV_SXP:	    return R_BaseEnv;
     case GLOBALENV_SXP:     return R_GlobalEnv;
@@ -1702,8 +1702,8 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	PROTECT(s = new PairList);
 	SETLEVELS(s, levs);
 	R_ReadItemDepth++;
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : R_NilValue);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : R_NilValue);
+	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
 	if (hastag && R_ReadItemDepth == R_InitReadItemDepth + 1 &&
 	    Rf_isSymbol(TAG(s))) {
 	    snprintf(lastname, 8192, "%s", R_CHAR(PRINTNAME(TAG(s))));
@@ -1720,8 +1720,8 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
     case LANGSXP:
 	PROTECT(s = new CachingExpression);
 	SETLEVELS(s, levs);
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : R_NilValue);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : R_NilValue);
+	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
 	SETCAR(s, ReadItem(ref_table, stream));
 	// Convert tail to PairList if necessary:
 	{
@@ -1734,8 +1734,8 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
     case DOTSXP:
 	PROTECT(s = new DottedArgs);
 	SETLEVELS(s, levs);
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : R_NilValue);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : R_NilValue);
+	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
 	SETCAR(s, ReadItem(ref_table, stream));
 	// Convert tail to PairList if necessary:
 	{
@@ -1817,7 +1817,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 		InString(stream, cbuf, length);
 		cbuf[length] = '\0';
 		PROTECT(s = BuiltInFunction::obtainPrimitive(cbuf));
-		if (s == R_NilValue)
+		if (s == nullptr)
 		    Rf_warning(_("unrecognized internal function name \"%s\""),
 			       cbuf); 
 		break;
@@ -1890,7 +1890,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	    PROTECT(s = Rf_allocS4Object());
 	    break;
 	default:
-	    s = R_NilValue; /* keep compiler happy */
+	    s = nullptr; /* keep compiler happy */
 	    Rf_error(_("ReadItem: unknown type %i, perhaps written by later version of R"), type);
 	}
 
@@ -2316,7 +2316,7 @@ static void OutCharConn(R_outpstream_t stream, int c)
 	Rconn_printf(con, "%c", c);
     else {
 	char buf[1];
-	buf[0] = char( c);
+	buf[0] = char(c);
 	if (1 != con->write(buf, 1, 1, con))
 	    Rf_error(_("error writing to connection"));
     }
@@ -2382,7 +2382,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     else if (ascii) type = R_pstream_ascii_format;
     else type = R_pstream_xdr_format;
 
-    if (version_ == R_NilValue)
+    if (version_ == nullptr)
 	version = defaultSerializeVersion();
     else
 	version = Rf_asInteger(version_);
@@ -2392,7 +2392,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 	Rf_error(_("cannot save to connections in version %d format"), version);
 
     fun = refhook_;
-    hook = fun != R_NilValue ? CallHook : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 
     /* Now we need to do some sanity checking of the arguments.
        A filename will already have been opened, so anything 
@@ -2422,7 +2422,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 	throw;
     }
 
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Used from readRDS().
@@ -2442,7 +2442,7 @@ do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RO
     con = getConnection(Rf_asInteger(con_));
 
     fun = refhook_;
-    hook = fun != R_NilValue ? CallHook : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 
     /* Now we need to do some sanity checking of the arguments.
        A filename will already have been opened, so anything 
@@ -2503,7 +2503,7 @@ do_serializeInfoFromConn(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (!con->canread)
 	    Rf_error(_("connection not open for reading"));
 
-	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, R_NilValue);
+	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, nullptr);
 	PROTECT(ans = R_SerializeInfo(&in)); /* paranoia about next line */
 	if (!wasopen)
 	    con->close(con);
@@ -2546,7 +2546,7 @@ static void OutCharBB(R_outpstream_t stream, int c)
     bconbuf_t bb = static_cast<bconbuf_st*>(stream->data);
     if (bb->count >= BCONBUFSIZ)
 	flush_bcon_buffer(bb);
-    bb->buf[bb->count++] = char( c);
+    bb->buf[bb->count++] = char(c);
 }
 
 static void OutBytesBB(R_outpstream_t stream, const void *buf, int length)
@@ -2583,20 +2583,20 @@ R_serializeb(SEXP object, SEXP icon, SEXP xdr, SEXP Sversion, SEXP fun)
     Rconnection con = getConnection(Rf_asInteger(icon));
     int version;
 
-    if (Sversion == R_NilValue)
+    if (Sversion == nullptr)
 	version = defaultSerializeVersion();
     else version = Rf_asInteger(Sversion);
     if (version == NA_INTEGER || version <= 0)
 	Rf_error(_("bad version value"));
 
-    hook = fun != R_NilValue ? CallHook : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 
     InitBConOutPStream(&out, &bbs, con,
 		       Rf_asLogical(xdr) ? R_pstream_xdr_format : R_pstream_binary_format,
 		       version, hook, fun);
     R_Serialize(object, &out);
     flush_bcon_buffer(&bbs);
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -2642,7 +2642,7 @@ static void OutCharMem(R_outpstream_t stream, int c)
     membuf_t mb = static_cast<membuf_st*>(stream->data);
     if (mb->count >= mb->size)
 	resize_buffer(mb, mb->count + 1);
-    mb->buf[mb->count++] = char( c);
+    mb->buf[mb->count++] = char(c);
 }
 
 static void OutBytesMem(R_outpstream_t stream, const void *buf, int length)
@@ -2730,14 +2730,14 @@ R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
     R_pstream_format_t type;
     SEXP (*hook)(SEXP, SEXP);
     int version;
-    
-    if (Sversion == R_NilValue)
+
+    if (Sversion == nullptr)
 	version = defaultSerializeVersion();
     else version = Rf_asInteger(Sversion);
     if (version == NA_INTEGER || version <= 0)
 	Rf_error(_("bad version value"));
 
-    hook = fun != R_NilValue ? CallHook : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 
     // Prior to 3.2.0 this was logical, values 0/1/NA for binary.
     int asc = Rf_asInteger(ascii);
@@ -2748,7 +2748,7 @@ R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
     default: type = R_pstream_xdr_format; break;
     }
 
-    if (icon == R_NilValue) {
+    if (icon == nullptr) {
 	struct membuf_st mbs;
 	SEXP val;
 
@@ -2770,7 +2770,7 @@ R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
 	Rconnection con = getConnection(Rf_asInteger(icon));
 	R_InitConnOutPStream(&out, con, type, 0, hook, fun);
 	R_Serialize(object, &out);
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -2780,12 +2780,12 @@ SEXP attribute_hidden R_unserialize(SEXP icon, SEXP fun)
     struct R_inpstream_st in;
     SEXP (*hook)(SEXP, SEXP);
 
-    hook = fun != R_NilValue ? CallHook : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 
     if (TYPEOF(icon) == STRSXP && LENGTH(icon) > 0) {
 	/* was the format in R < 2.4.0, removed in R 2.8.0 */
 	Rf_error("character vectors are no longer accepted by unserialize()");
-	return R_NilValue; /* -Wall */
+	return nullptr; /* -Wall */
     } else if (TYPEOF(icon) == RAWSXP) {
 	/* We might want to read from a long raw vector */
 	struct membuf_st mbs;
@@ -2873,7 +2873,7 @@ do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 	    break;
 	}
     /* fprintf(stderr, "\n"); */
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -3034,7 +3034,7 @@ R_lazyLoadDBinsertValue(SEXP value, SEXP file, SEXP ascii,
     int compress = Rf_asInteger(compsxp);
     SEXP key;
 
-    value = R_serialize(value, R_NilValue, ascii, R_NilValue, hook);
+    value = R_serialize(value, nullptr, ascii, nullptr, hook);
     PROTECT_WITH_INDEX(value, &vpi);
     if (compress == 3)
 	REPROTECT(value = R_compress3(value), vpi);

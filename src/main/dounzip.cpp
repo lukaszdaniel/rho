@@ -258,7 +258,7 @@ zipunzip(const char *zipname, const char *dest, int nfiles, const char **files,
 
 static SEXP ziplist(const char *zipname)
 {
-    SEXP ans = R_NilValue, names, lengths, dates;
+    SEXP ans = nullptr, names, lengths, dates;
     unzFile uf;
     uLong i;
     unz_global_info64 gi;
@@ -314,7 +314,7 @@ static SEXP ziplist(const char *zipname)
    the R_alloc stack here is prudence */
 SEXP Runzip(SEXP args)
 {
-    SEXP  fn, ans, names = R_NilValue;
+    SEXP  fn, ans, names = nullptr;
     char  zipname[PATH_MAX], dest[PATH_MAX];
     const char *p, **topics = nullptr;
     int   i, ntopics, list, overwrite, junk, setTime, rc, nnames = 0;

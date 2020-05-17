@@ -321,7 +321,7 @@ namespace rho {
 	    }
             return invokeWithoutDispatch(call, env, args);
         }
-      
+
 	RObject* invokeWithoutDispatch(const Expression* call, Environment* env,
                                        const ArgList& args) const
         {
@@ -344,7 +344,7 @@ namespace rho {
 	    }
             return invokeWithoutDispatch(call, env, args, num_args, tags);
         }
-      
+
         RObject* invokeWithoutDispatch(const Expression* call, Environment* env,
                                        RObject* const* args, int num_args,
                                        const PairList* tags) const
@@ -448,7 +448,7 @@ namespace rho {
 			 ArgList&& evaluated_args) const
         {
             assert(evaluated_args.status() == ArgList::EVALUATED);
-  
+
             // NB: functionNeedsInternalDispatch() might not be true, since
             //   we could be doing dispatch for a special etc.
             assert(m_dispatch_type != DispatchType::NONE);
@@ -689,7 +689,7 @@ inline const char* PRIMNAME(SEXP x)
     BuiltInFunction& bif = *SEXP_downcast<BuiltInFunction*>(x);
     return bif.name();
 }
-  
+
     /** @brief Get offset of a rho::BuiltInFunction.
      *
      * @param x Pointer to a rho::BuiltInFunction.
@@ -709,7 +709,7 @@ inline unsigned int PRIMVAL(SEXP x)
     BuiltInFunction& bif = *SEXP_downcast<BuiltInFunction*>(x);
     return bif.variant();
 }
-  
+
 }
 
 #endif /* BUILTINFUNCTION_H */

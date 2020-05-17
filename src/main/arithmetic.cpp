@@ -325,7 +325,7 @@ namespace {
     VectorBase* COERCE_IF_NEEDED(SEXP v, SEXPTYPE tp) {
 	if (v->sexptype() != tp)
 	    v = Rf_coerceVector(v, tp);
-	return static_cast<VectorBase*>(v);
+	return SEXP_downcast<VectorBase*>(v);
     }
 
     VectorBase* FIXUP_NULL_AND_CHECK_TYPES(SEXP v)
@@ -341,7 +341,7 @@ namespace {
 	default:
 	    Rf_error(_("non-numeric argument to binary operator"));
 	}
-	return static_cast<VectorBase*>(v);
+	return SEXP_downcast<VectorBase*>(v);
     }
 }
 
@@ -377,16 +377,16 @@ SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 		_(
 	"Recycling array of length 1 in array-vector arithmetic is deprecated.\n\
   Use c() or as.vector() instead.\n"));
-    	    x = static_cast<VectorBase*>(Rf_duplicate(x));
-    	    Rf_setAttrib(x, Symbols::DimSymbol, R_NilValue);
+    	    x = SEXP_downcast<VectorBase*>(Rf_duplicate(x));
+    	    Rf_setAttrib(x, Symbols::DimSymbol, nullptr);
     	}
     	if (yarray && ny==1 && nx!=1) {
 	    if(nx != 0)
 		Rf_warningcall(call,
 		_("Recycling array of length 1 in vector-array arithmetic is deprecated.\n\
   Use c() or as.vector() instead.\n"));
-    	    y = static_cast<VectorBase*>(Rf_duplicate(y));
-    	    Rf_setAttrib(y, Symbols::DimSymbol, R_NilValue);
+    	    y = SEXP_downcast<VectorBase*>(Rf_duplicate(y));
+    	    Rf_setAttrib(y, Symbols::DimSymbol, nullptr);
     	}
     }
 #endif
@@ -700,7 +700,7 @@ static SEXP real_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
 	    [](double lhs, double rhs) { return myfloor(lhs, rhs); },
 	    s1, s2);
     }
-    return R_NilValue;  // Unreachable; -Wall.
+    return nullptr;  // Unreachable; -Wall.
 }
 
 
@@ -818,7 +818,7 @@ SEXP attribute_hidden do_math1(Expression* call, const BuiltInFunction* builtin,
 SEXP attribute_hidden do_trunc(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     call->check1arg("x"); // Checked _after_ internal dispatch.
-    SEXP arg = R_NilValue;
+    SEXP arg = nullptr;
     if (num_args > 0) {
 	UNPACK_VA_ARGS(num_args, (arg_));
 	arg = arg_;
@@ -835,7 +835,7 @@ SEXP attribute_hidden do_trunc(/*const*/ Expression* call, const BuiltInFunction
 
 SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP x, s = R_NilValue /* -Wall */;
+    SEXP x, s = nullptr /* -Wall */;
 
     x = CAR(args);
     if (Rf_isInteger(x) || Rf_isLogical(x)) {
@@ -860,12 +860,12 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	for(i = 0 ; i < n ; i++)
 	    pa[i] = fabs(px[i]);
     } else if (Rf_isComplex(x)) {
-	SET_TAG(args, R_NilValue); /* cmathfuns want "z"; we might have "x" PR#16047 */
+	SET_TAG(args, nullptr); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);
     } else
 	Rf_errorcall(call, R_MSG_NONNUM_MATH);
 
-    if (x != s && ATTRIB(x) != R_NilValue)
+    if (x != s && ATTRIB(x) != nullptr)
 	SHALLOW_DUPLICATE_ATTRIB(s, x);
     UNPROTECT(1);
     return s;
@@ -1066,7 +1066,7 @@ SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
 /* log{2,10} are builtins */
 SEXP attribute_hidden do_log1arg(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
-    SEXP tmp = R_NilValue /* -Wall */;
+    SEXP tmp = nullptr /* -Wall */;
 
     if(op->variant() == 10) tmp = Rf_ScalarReal(10.0);
     if(op->variant() == 2)  tmp = Rf_ScalarReal(2.0);
@@ -1117,7 +1117,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
     int n = Rf_length(args);
     SEXP res;
 
-    if (n == 1 && TAG(args) == R_NilValue) {
+    if (n == 1 && TAG(args) == nullptr) {
 	/* log(x) is handled here */
 	SEXP x = CAR(args);
 	if (x != R_MissingArg && ! OBJECT(x)) {
@@ -1130,8 +1130,8 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     }
     else if (n == 2 &&
-	     TAG(args) == R_NilValue &&
-	     (TAG(CDR(args)) == R_NilValue || TAG(CDR(args)) == Symbols::BaseSymbol)) {
+	     TAG(args) == nullptr &&
+	     (TAG(CDR(args)) == nullptr || TAG(CDR(args)) == Symbols::BaseSymbol)) {
 	/* log(x, y) or log(x, base = y) are handled here */
 	SEXP x = CAR(args);
 	SEXP y = CADR(args);
@@ -1151,7 +1151,7 @@ SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (n == 1) {
 	if (CAR(args) == R_MissingArg ||
-	    (TAG(args) != R_NilValue && TAG(args) != R_x_Symbol))
+	    (TAG(args) != nullptr && TAG(args) != R_x_Symbol))
 	    Rf_error(_("argument \"%s\" is missing, with no default"), "x");
 
 	ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);

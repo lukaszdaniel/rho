@@ -112,7 +112,7 @@ char* S_alloc(long num_elts, int elt_size)
     memset(ans, 0, size);
     return ans;
 }
-    
+
 char* S_realloc(char *prev_block, long new_sz, long old_sz, int elt_size)
 {
     if (new_sz <= old_sz)

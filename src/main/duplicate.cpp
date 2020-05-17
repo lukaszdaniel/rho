@@ -96,11 +96,11 @@ using namespace rho;
 
 /* The following macros avoid the cost of going through calls to the
    assignment functions (and duplicate in the case of ATTRIB) when the
-   ATTRIB or TAG value to be stored is R_NilValue, the value the field
+   ATTRIB or TAG value to be stored is nullptr, the value the field
    will have been set to by the allocation function */
 #define SHALLOW_DUPLICATE_ATTRIB(to, from, deep) do { \
   SEXP __a__ = ATTRIB(from); \
-  if (__a__ != R_NilValue) { \
+  if (__a__ != nullptr) { \
       SET_ATTRIB(to, shallow_duplicate1(__a__, deep)); \
     SET_OBJECT(to, OBJECT(from)); \
     IS_S4_OBJECT(from) ? SET_S4_OBJECT(to) : UNSET_S4_OBJECT(to);  \
@@ -109,7 +109,7 @@ using namespace rho;
 
 #define DUPLICATE_ATTRIB(to, from, deep) do { \
   SEXP __a__ = ATTRIB(from); \
-  if (__a__ != R_NilValue) { \
+  if (__a__ != nullptr) { \
       SET_ATTRIB(to, duplicate1(__a__, deep)); \
     SET_OBJECT(to, OBJECT(from)); \
     IS_S4_OBJECT(from) ? SET_S4_OBJECT(to) : UNSET_S4_OBJECT(to);  \
@@ -118,7 +118,7 @@ using namespace rho;
 
 #define COPY_TAG(to, from) do { \
   SEXP __tag__ = TAG(from); \
-  if (__tag__ != R_NilValue) SET_TAG(to, __tag__); \
+  if (__tag__ != nullptr) SET_TAG(to, __tag__); \
 } while (0)
 
 
@@ -224,16 +224,16 @@ Rboolean R_cycle_detected(SEXP s, SEXP child) {
         return TRUE;
 	}
     }
-    if (ATTRIB(child) != R_NilValue) {
+    if (ATTRIB(child) != nullptr) {
         if (R_cycle_detected(s, ATTRIB(child)))
             return TRUE;
     }
     if (Rf_isPairList(child)) {
         SEXP el = child;
-        while(el != R_NilValue) {
+        while(el != nullptr) {
 	    if (s == el || R_cycle_detected(s, CAR(el)))
                 return TRUE;
-	    if (ATTRIB(el) != R_NilValue && R_cycle_detected(s, ATTRIB(el)))
+	    if (ATTRIB(el) != nullptr && R_cycle_detected(s, ATTRIB(el)))
 		return TRUE;
 	    el = CDR(el);
 	}
@@ -258,23 +258,23 @@ void Rf_copyVector(SEXP s, SEXP t)
 	xcopyStringWithRecycle(s, t, 0, ns, nt);
 	break;
     case LGLSXP:
-	xcopyLogicalWithRecycle(LOGICAL(s), LOGICAL(t), 0, ns, nt);
+	xcopyWithRecycle(LOGICAL(s), LOGICAL(t), 0, ns, nt);
 	break;
     case INTSXP:
-	xcopyIntegerWithRecycle(INTEGER(s), INTEGER(t), 0, ns, nt);
+	xcopyWithRecycle(INTEGER(s), INTEGER(t), 0, ns, nt);
 	break;
     case REALSXP:
-	xcopyRealWithRecycle(REAL(s), REAL(t), 0, ns, nt);
+	xcopyWithRecycle(REAL(s), REAL(t), 0, ns, nt);
 	break;
     case CPLXSXP:
-	xcopyComplexWithRecycle(COMPLEX(s), COMPLEX(t), 0, ns, nt);
+	xcopyWithRecycle(COMPLEX(s), COMPLEX(t), 0, ns, nt);
 	break;
     case EXPRSXP:
     case VECSXP:
 	xcopyVectorWithRecycle(s, t, 0, ns, nt);
 	break;
     case RAWSXP:
-	xcopyRawWithRecycle(RAW(s), RAW(t), 0, ns, nt);
+	xcopyWithRecycle(RAW(s), RAW(t), 0, ns, nt);
 	break;
     default:
 	UNIMPLEMENTED_TYPE("copyVector", s);
@@ -298,7 +298,7 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
 	    for (j = 0; j < nc; j++) {
 		SET_STRING_ELT(tmp, i + j * NR, Rf_duplicate(CAR(pt)));
 		pt = CDR(pt);
-		if(pt == R_NilValue) pt = t;
+		if(pt == nullptr) pt = t;
 	    }
 	for (i = 0; i < ns; i++) {
 	    SETCAR(s, STRING_ELT(tmp, i++));
@@ -311,7 +311,7 @@ void Rf_copyListMatrix(SEXP s, SEXP t, Rboolean byrow)
 	    SETCAR(s, Rf_duplicate(CAR(pt)));
 	    s = CDR(s);
 	    pt = CDR(pt);
-	    if(pt == R_NilValue) pt = t;
+	    if(pt == nullptr) pt = t;
 	}
     }
 }
@@ -360,36 +360,6 @@ void Rf_copyMatrix(SEXP s, SEXP t, Rboolean byrow)
 	Rf_copyVector(s, t);
 }
 
-#define COPY_WITH_RECYCLE(VALTYPE, TNAME) \
-void attribute_hidden \
-xcopy##TNAME##WithRecycle(VALTYPE *dst, VALTYPE *src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc) { \
-							\
-    if (nsrc >= n) { /* no recycle needed */		\
-	for(R_xlen_t i = 0; i < n; i++)		\
-	    dst[dstart + i] = src[i];			\
-	return;					\
-    }							\
-    if (nsrc == 1) {					\
-	VALTYPE val = src[0];				\
-	for(R_xlen_t i = 0; i < n; i++)			\
-	    dst[dstart + i] = val;			\
-	return;						\
-    }							\
-							\
-    /* recycle needed */					\
-    R_xlen_t sidx = 0;					\
-    for(R_xlen_t i = 0; i < n; i++, sidx++) {		\
-	if (sidx == nsrc) sidx = 0;			\
-	dst[dstart + i] = src[sidx];			\
-    }							\
-}
-
-COPY_WITH_RECYCLE(Rcomplex, Complex)	/* xcopyComplexWithRecycle */
-COPY_WITH_RECYCLE(int, Integer)		/* xcopyIntegerWithRecycle */
-COPY_WITH_RECYCLE(int, Logical)		/* xcopyLogicalWithRecycle */
-COPY_WITH_RECYCLE(Rbyte, Raw)		/* xcopyRawWithRecycle */
-COPY_WITH_RECYCLE(double, Real)		/* xcopyRealWithRecycle */
-
 #define COPY_ELT_WITH_RECYCLE(TNAME, GETELT, SETELT) \
 void attribute_hidden \
 xcopy##TNAME##WithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc) { \
@@ -416,21 +386,6 @@ xcopy##TNAME##WithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xle
 
 COPY_ELT_WITH_RECYCLE(String, STRING_ELT, SET_STRING_ELT) /* xcopyStringWithRecycle */
 COPY_ELT_WITH_RECYCLE(Vector, VECTOR_ELT, SET_VECTOR_ELT) /* xcopyVectorWithRecycle */
-
-#define FILL_WITH_RECYCLE(VALTYPE, TNAME) \
-void attribute_hidden xfill##TNAME##MatrixWithRecycle(VALTYPE *dst, VALTYPE *src,	\
-    R_xlen_t dstart, R_xlen_t drows, R_xlen_t srows,		\
-    R_xlen_t cols, R_xlen_t nsrc) {				\
-								\
-    FILL_MATRIX_ITERATE(dstart, drows, srows, cols, nsrc)	\
-	dst[didx] = src[sidx];					\
-}
-
-FILL_WITH_RECYCLE(Rcomplex, Complex)	/* xfillComplexMatrixWithRecycle */
-FILL_WITH_RECYCLE(int, Integer)		/* xfillIntegerMatrixWithRecycle */
-FILL_WITH_RECYCLE(int, Logical)		/* xfillLogicalMatrixWithRecycle */
-FILL_WITH_RECYCLE(Rbyte, Raw)		/* xfillRawMatrixWithRecycle */
-FILL_WITH_RECYCLE(double, Real)		/* xfillRealMatrixWithRecycle */
 
 #define FILL_ELT_WITH_RECYCLE(TNAME, GETELT, SETELT) \
 void attribute_hidden xfill##TNAME##MatrixWithRecycle(SEXP dst, SEXP src,	\

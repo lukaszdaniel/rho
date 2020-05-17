@@ -625,7 +625,7 @@ const char *locale2charset(const char *locale)
 	p = strrchr(la_loc, '.');
 	if(p) *p = '\0';
     }
-    
+
 #ifdef Win32
     /*
       ## PUTTY suggests mapping Windows code pages as
@@ -667,7 +667,7 @@ const char *locale2charset(const char *locale)
     if (streql(enc, "UTF-8")) strcpy(enc, "utf8");
 
     if(strcmp(enc, "") && strcmp(enc, "utf8")) {
-	for(i = 0; enc[i]; i++) enc[i] = char( tolower(enc[i]));
+	for(i = 0; enc[i]; i++) enc[i] = char(tolower(enc[i]));
 
 	for(i = 0; i < known_count; i++)
 	    if (streql(known[i].name,enc)) return known[i].value;
@@ -693,7 +693,7 @@ const char *locale2charset(const char *locale)
 		    charset[3] = '-';
 		}
 		for(i = 0; charset[i]; i++)
-		    charset[i] = char( toupper(charset[i]));
+		    charset[i] = char(toupper(charset[i]));
 		return charset;
 	    }
 	}

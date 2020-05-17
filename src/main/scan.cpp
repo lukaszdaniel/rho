@@ -364,9 +364,9 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 		    if (c == R_EOF) break;
 		    if(c != quote) buffer->data[m++] = '\\';
 		}
-		buffer->data[m++] = char( c);
+		buffer->data[m++] = char(c);
 		if(dbcslocale && btowc(c) == WEOF)
-		    buffer->data[m++] = char( scanchar2(d));
+		    buffer->data[m++] = char(scanchar2(d));
 	    }
 	    if (c == R_EOF)
 		Rf_warning(_("EOF within quoted string"));
@@ -379,9 +379,9 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 		    nbuf *= 2;
 		    R_AllocStringBuffer(nbuf, buffer);
 		}
-		buffer->data[m++] = char( c);
+		buffer->data[m++] = char(c);
 		if(dbcslocale && btowc(c) == WEOF)
-		    buffer->data[m++] = char( scanchar2(d));
+		    buffer->data[m++] = char(scanchar2(d));
 		c = scanchar(FALSE, d);
 	    } while (!Rspace(c) && c != R_EOF);
 	}
@@ -414,9 +414,9 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 			    nbuf *= 2;
 			    R_AllocStringBuffer(nbuf, buffer);
 			}
-			buffer->data[m++] = char( c);
+			buffer->data[m++] = char(c);
 			if(dbcslocale && btowc(c) == WEOF)
-			    buffer->data[m++] = char( scanchar2(d));
+			    buffer->data[m++] = char(scanchar2(d));
 		    }
 		    if (c == R_EOF)
 			Rf_warning(_("EOF within quoted string"));
@@ -427,7 +427,7 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 			    nbuf *= 2;
 			    R_AllocStringBuffer(nbuf, buffer);
 			}
-			buffer->data[m++] = char( quote);
+			buffer->data[m++] = char(quote);
 			goto inquote; /* FIXME: Ick! Clean up logic */
 		    }
 		    mm = m;
@@ -445,9 +445,9 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 			nbuf *= 2;
 			R_AllocStringBuffer(nbuf, buffer);
 		    }
-		    buffer->data[m++] = char( c);
+		    buffer->data[m++] = char(c);
 		    if(dbcslocale && btowc(c) == WEOF)
-			buffer->data[m++] = char( scanchar2(d));
+			buffer->data[m++] = char(scanchar2(d));
 		}
 	    }
 	filled = c; /* last lead byte in a DBCS */
@@ -835,7 +835,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     const char *p, *encoding;
     LocalData data = {nullptr, 0, 0, '.', nullptr, NO_COMCHAR, 0, nullptr, FALSE,
 		      FALSE, 0, FALSE, FALSE, FALSE, FALSE, FALSE, {FALSE}};
-    data.NAstrings = R_NilValue;
+    data.NAstrings = nullptr;
 
     file = file_;
     what = what_;
@@ -948,7 +948,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
 	    while ((c = scanchar(FALSE, &data)) != '\n' && c != R_EOF);
     }
 
-    ans = R_NilValue;		/* -Wall */
+    ans = nullptr;		/* -Wall */
     data.save = 0;
 
     /* Use try-catch to close the connection if there is
@@ -983,7 +983,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
        So pushback if possible */
     if (data.save && !data.ttyflag && data.wasopen) {
 	char line[2] = " ";
-	line[0] = char( data.save);
+	line[0] = char(data.save);
 	con_pushback(data.con, FALSE, line);
     }
     if (!data.ttyflag && !data.wasopen)
@@ -1002,7 +1002,7 @@ SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunctio
     SEXP ans, prompt;
 
     prompt = prompt_;
-    if (prompt == R_NilValue) {
+    if (prompt == nullptr) {
 	ConsolePrompt[0] = '\0'; /* precaution */
 	PROTECT(prompt);
     } else {
@@ -1018,10 +1018,10 @@ SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunctio
 	/* skip space or tab */
 	while ((c = ConsoleGetchar()) == ' ' || c == '\t') ;
 	if (c != '\n' && c != R_EOF) {
-	    *bufp++ = char( c);
+	    *bufp++ = char(c);
 	    while ((c = ConsoleGetchar())!= '\n' && c != R_EOF) {
 		if (bufp >= &buffer[MAXELTSIZE - 2]) continue;
-		*bufp++ = char( c);
+		*bufp++ = char(c);
 	    }
 	}
 	/* now strip white space off the end as well */

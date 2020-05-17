@@ -67,7 +67,7 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
 	buf[1] = '\0';
 	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
-	    buf[0] = char( RAW(x)[i]);
+	    buf[0] = char(RAW(x)[i]);
 	    SET_STRING_ELT(ans, i, Rf_mkChar(buf));
 	}
 	/* do we want to copy e.g. names here? */

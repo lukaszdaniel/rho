@@ -2569,7 +2569,7 @@ Rboolean GLocator(double *x, double *y, int coords, pGEDevDesc dd)
   */
   old_close = (dd->dev)->close;
   dd->dev->close = &locator_close;
-  
+
   if(dd->dev->locator && dd->dev->locator(x, y, dd->dev)) {
       GConvert(x, y, DEVICE, GUnit(coords), dd);
       ret =  TRUE;
@@ -2578,7 +2578,7 @@ Rboolean GLocator(double *x, double *y, int coords, pGEDevDesc dd)
   dd->dev->close = old_close;
   old_close = NULL;
   return ret;
-  
+
 }
 
 /* Access character font metric information.  */

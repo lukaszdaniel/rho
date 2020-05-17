@@ -45,7 +45,7 @@ SEXP attribute_hidden getParseContext(void)
     int i, last = PARSE_CONTEXT_SIZE;
     char context[PARSE_CONTEXT_SIZE+1];
 
-    SEXP ans = R_NilValue, ans2;
+    SEXP ans = nullptr, ans2;
     int nn, nread;
     char c;
 
@@ -235,7 +235,7 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
     } else if(!streql(encoding, "unknown") && !streql(encoding, "native.enc"))
 	Rf_warning(_("argument '%s = \"%s\"' will be ignored"), "encoding", encoding);
 
-    if (prompt == R_NilValue)
+    if (prompt == nullptr)
 	PROTECT(prompt);
     else
 	PROTECT(prompt = Rf_coerceVector(prompt, STRSXP));

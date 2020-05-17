@@ -421,7 +421,7 @@ static SEXP Cairo_Cap(pDevDesc dd)
 	cairo_surface_destroy(screen);
         return raster;
     }
-        
+
     size = width*height;
 
     /* FIXME: the screen surface reference will leak if Rf_allocVector() fails */
@@ -433,7 +433,7 @@ static SEXP Cairo_Cap(pDevDesc dd)
     rint = (unsigned int *) INTEGER(raster);
     for (i = 0; i < size; i++)
         rint[i] = R_RGB((screenData[i] >> 16) & 255, (screenData[i] >> 8) & 255, screenData[i] & 255);
-    
+
     /* Release MY reference to the screen surface (do it here in case anything fails below) */
     cairo_surface_destroy(screen);    
 
@@ -446,7 +446,7 @@ static SEXP Cairo_Cap(pDevDesc dd)
     return raster;
 }
 #endif
-                         
+
 #ifdef HAVE_PANGOCAIRO
 /* ------------- pangocairo section --------------- */
 

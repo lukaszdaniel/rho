@@ -28,7 +28,7 @@
  *
  * All sorts of character manipulation, including grep and agrep.
  */
- 
+
 /* The character functions in this file are
 
 nzchar nchar substr substr<- abbreviate tolower toupper chartr strtrim
@@ -272,11 +272,11 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
 	s_[i] = R_nchar(sxi, type_, Rboolean(allowNA), Rboolean(keepNA), msg_i);
     }
     R_FreeStringBufferL(&cbuff);
-    if ((d = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+    if ((d = Rf_getAttrib(x, Symbols::NamesSymbol)) != nullptr)
 	Rf_setAttrib(s, Symbols::NamesSymbol, d);
-    if ((d = Rf_getAttrib(x, Symbols::DimSymbol)) != R_NilValue)
+    if ((d = Rf_getAttrib(x, Symbols::DimSymbol)) != nullptr)
 	Rf_setAttrib(s, Symbols::DimSymbol, d);
-    if ((d = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != R_NilValue)
+    if ((d = Rf_getAttrib(x, Symbols::DimNamesSymbol)) != nullptr)
 	Rf_setAttrib(s, Symbols::DimNamesSymbol, d);
     UNPROTECT(2);
     return s;
@@ -1038,7 +1038,7 @@ SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFuncti
 		xi = CallocCharBuf(strlen(R_CHAR(STRING_ELT(x, i))));
 		strcpy(xi, Rf_translateChar(STRING_ELT(x, i)));
 		for (p = xi; *p != '\0'; p++)
-		    *p = char( ul ? toupper(*p) : tolower(*p));
+		    *p = char(ul ? toupper(*p) : tolower(*p));
 		SET_STRING_ELT(y, i, Rf_markKnown(xi, STRING_ELT(x, i)));
 		Free(xi);
 	    }
@@ -1694,7 +1694,7 @@ SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, ROb
     }
     /* Copy names if not recycled. */
     if((ns == nx) &&
-       (d = Rf_getAttrib(x, Symbols::NamesSymbol)) != R_NilValue)
+       (d = Rf_getAttrib(x, Symbols::NamesSymbol)) != nullptr)
 	Rf_setAttrib(s, Symbols::NamesSymbol, d);
     UNPROTECT(1);
     return s;

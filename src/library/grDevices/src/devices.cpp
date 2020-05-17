@@ -164,7 +164,7 @@ SEXP devcapture(SEXP args)
     pGEDevDesc gdd = GEcurrentDevice();
     int *rint;
     SEXP raster, image, idim;
-    
+
     args = CDR(args);
 
     native = Rboolean(Rf_asLogical(CAR(args)));
@@ -185,7 +185,7 @@ SEXP devcapture(SEXP args)
     size = LENGTH(raster);
     nrow = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[0];
     ncol = INTEGER(Rf_getAttrib(raster, R_DimSymbol))[1];
-        
+
     PROTECT(image = Rf_allocVector(STRSXP, size));
     rint = INTEGER(raster);
     for (i = 0; i < size; i++) {
@@ -194,7 +194,7 @@ SEXP devcapture(SEXP args)
 	SET_STRING_ELT(image, (col - 1) * nrow + row - 1, 
 		       Rf_mkChar(col2name(rint[i])));
     }
-        
+
     PROTECT(idim = Rf_allocVector(INTSXP, 2));
     INTEGER(idim)[0] = nrow;
     INTEGER(idim)[1] = ncol;

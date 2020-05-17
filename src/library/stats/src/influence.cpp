@@ -26,7 +26,7 @@ extern "C"
 void F77_NAME(lminfl)(double *x, int *ldx, int *n, int *k, int *docoef,
 		      double *qraux, double *resid, double *hat,
 		      double *coef, double *sigma, double *tol);
-					
+
 SEXP influence(SEXP mqr, SEXP do_coef, SEXP e, SEXP stol)
 {
     SEXP qr = getListElement(mqr, "qr"), qraux = getListElement(mqr, "qraux");

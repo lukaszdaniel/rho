@@ -2247,7 +2247,7 @@ static void X11_Raster(unsigned int *raster, int w, int h,
     XImage *image;
     unsigned int *rasterImage;
     const void *vmax = vmaxget();
-   
+
     if (height < 0) {
         imageHeight = (int) -(height - .5);
         /* convert (x, y) from bottom-left to top-left */
@@ -2279,9 +2279,9 @@ static void X11_Raster(unsigned int *raster, int w, int h,
         R_GE_rasterScale(raster, w, h, 
                          rasterImage, imageWidth, imageHeight);
     }
-    
+
     if (rot != 0) {
-        
+
         int newW, newH;
         double xoff, yoff;
         unsigned int *resizedRaster, *rotatedRaster;
@@ -2299,7 +2299,7 @@ static void X11_Raster(unsigned int *raster, int w, int h,
                                                  sizeof(unsigned int));
         R_GE_rasterRotate(resizedRaster, newW, newH, angle, rotatedRaster, gc,
                           Rboolean(FALSE));
-            
+
         /* 
          * Adjust (x, y) for resized and rotated image
          */
@@ -2371,7 +2371,7 @@ static SEXP X11_Cap(pDevDesc dd)
         unsigned int *rint;
 
         PROTECT(raster = Rf_allocVector(INTSXP, size));
-        
+
         /* Copy each byte of screen to an R matrix. 
          * The ARGB32 needs to be converted to an R ABGR32 */
         rint = (unsigned int *) INTEGER(raster);
@@ -2387,7 +2387,7 @@ static SEXP X11_Cap(pDevDesc dd)
         INTEGER(dim)[0] = xd->windowHeight;
         INTEGER(dim)[1] = xd->windowWidth;
         Rf_setAttrib(raster, R_DimSymbol, dim);
-    
+
         UNPROTECT(2);
 
         XDestroyImage(image);
@@ -2719,7 +2719,7 @@ static void X11_Mode(int mode, pDevDesc dd)
 	    cairo_paint(xd->xcc);
 	    cairo_surface_flush(xd->xcs);
 	}
-	
+
 #endif
 	if(xd->type==WINDOW) XDefineCursor(display, xd->window, arrow_cursor);
 	XSync(display, 0);
@@ -3400,7 +3400,7 @@ static Rboolean in_R_X11readclp(Rclpconn this_, const char *type)
 	    }
 	}
     }
-    
+
     XDeleteProperty(display, clpwin, pty);
     if (!displayOpen) {
 	XCloseDisplay(display);

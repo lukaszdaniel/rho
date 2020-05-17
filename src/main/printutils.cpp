@@ -638,7 +638,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 	for(i = 0 ; i < b0 ; i++) *q++ = ' ';
 	b -= b0;
     }
-    if(quote) *q++ = char( quote);
+    if(quote) *q++ = char(quote);
     if(mbcslocale || ienc == CE_UTF8) {
 	int j, res;
 	mbstate_t mb_st;
@@ -777,7 +777,7 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 #ifdef Win32
     if(WinUTF8out && ienc == CE_UTF8)  { memcpy(q, UTF8out, 3); q += 3; }
 #endif
-    if(quote) *q++ = char( quote);
+    if(quote) *q++ = char(quote);
     if(b > 0 && justify != Rprt_adj_right) {
 	for(i = 0 ; i < b ; i++) *q++ = ' ';
     }
@@ -818,7 +818,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
 	break;
     case STRSXP:
 	{
-	    StringVector* sv = static_cast<StringVector*>(x);
+	    StringVector* sv = SEXP_downcast<StringVector*>(x);
 	    String* str = (*sv)[indx];
 	    w = (quote ? stringWidthQuote(0, str) : stringWidth(0, str));
 	    res = Rf_EncodeString(str, w, quote, Rprt_adj_left);

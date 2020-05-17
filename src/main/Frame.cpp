@@ -55,7 +55,7 @@ PairList* Frame::Binding::asPairList(PairList* tail) const
 }
 
 // Frame::Binding::assign() is defined in envir.cpp (for the time being).
-	
+
 pair<RObject*, bool>
 Frame::Binding::forcedValueSlow() const
 {
@@ -85,7 +85,7 @@ void Frame::Binding::fromPairList(PairList* pl)
     else setValue(pl->car(), pl_origin);
     setLocking(pl->m_binding_locked);
 }
-    
+
 void Frame::Binding::initialize(Frame* frame, const Symbol* sym)
 {
     if (m_frame)
@@ -340,7 +340,7 @@ Frame::Binding* Frame::obtainBinding(const Symbol* symbol)
 	}
 	return binding;
     }
-    
+
     if (m_descriptor)
     {
 	// Use the pressigned location.
@@ -356,7 +356,7 @@ Frame::Binding* Frame::obtainBinding(const Symbol* symbol)
 	binding = Frame::binding(symbol);
 	if (binding)
 	    return binding;
-	
+
         // Otherwise return the first unused space in the array if any.
 	for (unsigned char i = 0; i < m_bindings_size; ++i) {
 	    if (!m_bindings[i].isSet()) {

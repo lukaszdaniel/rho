@@ -57,7 +57,7 @@ void EvaluatorTest::runErrorTest(SingleTest test)
     ASSERT_NE(nullptr, test.expected_error_message_);
     EXPECT_THROW(GetParam()->parseAndEval(test.expression_),
 		 CommandTerminated);
-    
+
     std::string error_message = R_curErrorBuf();
     EXPECT_PRED2(errorMatches,
 		 test.expected_error_message_, error_message);
@@ -101,7 +101,7 @@ void EvaluatorTest::runSingleTest(SingleTest test)
 
     // Evaluate the expression with the configured evaluator.
     GCStackRoot<> result(GetParam()->parseAndEval(test.expression_));
-    
+
     // Evaluate the expected result with the interpreter.
     GCStackRoot<> expected_result(
 	Executor::parseAndEvalWithInterpreter(test.expected_result_));
@@ -171,16 +171,16 @@ public:
 	const std::string& expression, Environment* env)
     {
 	GCStackRoot<> protect_env(env);
-	
+
 	// Wrap the expression in a function so it can be compiled.
 	std::string function = "function() " + expression;
 	GCStackRoot<> parsed_funtion(parse(function));
-    
+
 	RObject* parse_eval = Evaluator::evaluate(parsed_funtion, env);
 	EXPECT_TRUE(parse_eval != nullptr);
 	GCStackRoot<Closure> closure(dynamic_cast<Closure*>(parse_eval));
 	EXPECT_TRUE(closure.get() != nullptr);
-	
+
 	// Compile the function.
 	closure = compile(closure);
 

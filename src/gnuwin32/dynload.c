@@ -164,8 +164,8 @@ HINSTANCE R_loadLibrary(const char *path, int asLocal, int now,
     dllcw = _controlfp(0,0) & ~_MCW_IC;
     if (dllcw != rcw) {
 	_controlfp(rcw, _MCW_EM | _MCW_IC | _MCW_RC | _MCW_PC);
-	if (LOGICAL(GetOption1(install("warn.FPU")))[0])
-	    warning(_("DLL attempted to change FPU control word from %x to %x"),
+	if (LOGICAL(GetOption1(Rf_install("warn.FPU")))[0])
+	    Rf_warning(_("DLL attempted to change FPU control word from %x to %x"),
 		    rcw,dllcw);
     }
     return(tdlh);
@@ -206,7 +206,7 @@ static void GetFullDLLPath(SEXP call, char *buf, const char *path)
 
     if ((path[0] != '/') && (path[0] != '\\') && (path[1] != ':')) {
 	if (!getcwd(buf, MAX_PATH))
-	    errorcall(call, _("cannot get working directory"));
+	    Rf_errorcall(call, _("cannot get working directory"));
 	strcat(buf, "\\");
 	strcat(buf, path);
     } else

@@ -87,7 +87,7 @@ FunctionBase* Expression::getFunction(Environment* env) const
 {
     RObject* head = car();
     if (head->sexptype() == SYMSXP) {
-	Symbol* symbol = static_cast<Symbol*>(head);
+	Symbol* symbol = SEXP_downcast<Symbol*>(head);
 	FunctionBase* func = findFunction(symbol, env);
 	if (!func)
 	    Rf_error(_("could not find function \"%s\""),
@@ -97,7 +97,7 @@ FunctionBase* Expression::getFunction(Environment* env) const
 	RObject* val = Evaluator::evaluate(head, env);
 	if (!FunctionBase::isA(val))
 	    Rf_error(_("attempt to apply non-function in getFunction"));
-	return static_cast<FunctionBase*>(val);
+	return SEXP_downcast<FunctionBase*>(val);
     }
 }
 

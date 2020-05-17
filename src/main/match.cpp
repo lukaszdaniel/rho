@@ -146,7 +146,7 @@ void ArgMatcher::unusedArgsError(const ConsCell* unused_list)
 {
     // Prepare error message:
     GCStackRoot<StringVector>
-	argstrv(static_cast<StringVector*>(
+	argstrv(SEXP_downcast<StringVector*>(
 		    Rf_deparse1line(
 			const_cast<ConsCell*>(unused_list), FALSE)));
     // '+ 8' is to remove 'pairlist' from 'pairlist(badTag1, ...' :
@@ -160,7 +160,7 @@ void ArgMatcher::unusedArgsError(const ConsCell* unused_list)
 // Used for matching na.rm in logic.cpp and match.cpp.
 SEXP attribute_hidden Rf_matchArgExact(SEXP tag, SEXP *list)
 {
-    if (*list == R_NilValue)
+    if (*list == nullptr)
 	return R_MissingArg;
     else if (TAG(*list) == tag) {
 	SEXP s = *list;
@@ -170,7 +170,7 @@ SEXP attribute_hidden Rf_matchArgExact(SEXP tag, SEXP *list)
     else {
 	SEXP last = *list;
 	SEXP next = CDR(*list);
-	while (next != R_NilValue) {
+	while (next != nullptr) {
 	    if (TAG(next) == tag) {
 		SETCDR(last, CDR(next));
 		return CAR(next);

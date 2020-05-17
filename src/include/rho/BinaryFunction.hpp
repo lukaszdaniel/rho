@@ -265,5 +265,5 @@ namespace rho {
 
     }  // namespace VectorOps
 }  // namespace rho
-	
+
 #endif  // BINARYFUNCTION_HPP

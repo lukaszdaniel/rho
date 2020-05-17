@@ -367,7 +367,7 @@ namespace rho {
 	  // will have had their reference counts increased by this
 	  // class.  Stack entries beyond this (if any) will not yet
 	  // have had this protection applied.
- 
+
 	Scope* m_innermost_scope;
 
 	// Helper function for retarget(), handling the case where

@@ -92,7 +92,7 @@ void attribute_hidden Rf_CoercionWarning(int warn)
 {
 /* FIXME: Use
    =====
-   WarningMessage(R_NilValue, WARNING_....);
+   WarningMessage(nullptr, WARNING_....);
 */
     if (warn & WARN_NA)
 	Rf_warning(_("NAs introduced by coercion"));
@@ -382,8 +382,8 @@ SEXP Rf_PairToVectorList(SEXP x)
 {
     SEXP xptr, xnew, xnames;
     int i, len = 0, named = 0;
-    for (xptr = x ; xptr != R_NilValue ; xptr = CDR(xptr)) {
-	named = named | (TAG(xptr) != R_NilValue);
+    for (xptr = x ; xptr != nullptr ; xptr = CDR(xptr)) {
+	named = named | (TAG(xptr) != nullptr);
 	len++;
     }
     PROTECT(x);
@@ -396,7 +396,7 @@ SEXP Rf_PairToVectorList(SEXP x)
 	PROTECT(xnames = Rf_allocVector(STRSXP, len));
 	xptr = x;
 	for (i = 0, xptr = x; i < len; i++, xptr = CDR(xptr)) {
-	    if(TAG(xptr) == R_NilValue)
+	    if(TAG(xptr) == nullptr)
 		SET_STRING_ELT(xnames, i, R_BlankString);
 	    else
 		SET_STRING_ELT(xnames, i, PRINTNAME(TAG(xptr)));
@@ -418,7 +418,7 @@ SEXP Rf_VectorToPairList(SEXP x)
     PROTECT(x);
     PROTECT(xnew = Rf_allocList(len)); /* limited to int */
     PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol));
-    named = (xnames != R_NilValue);
+    named = (xnames != nullptr);
     xptr = xnew;
     for (i = 0; i < len; i++) {
 	RAISE_NAMED(VECTOR_ELT(x, i), NAMED(x));
@@ -435,7 +435,7 @@ SEXP Rf_VectorToPairList(SEXP x)
 
 static SEXP coerceToSymbol(SEXP v)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     int warn = 0;
     if (Rf_length(v) <= 0)
 	Rf_error(_("invalid data of mode '%s' (too short)"),
@@ -890,7 +890,7 @@ static SEXP coerceToVectorList(SEXP v)
 	UNIMPLEMENTED_TYPE("coerceToVectorList", v);
     }
     tmp = Rf_getAttrib(v, Symbols::NamesSymbol);
-    if (tmp != R_NilValue)
+    if (tmp != nullptr)
 	Rf_setAttrib(ans, Symbols::NamesSymbol, tmp);
     UNPROTECT(1);
     return (ans);
@@ -939,7 +939,7 @@ static SEXP coerceToPairList(SEXP v)
 	ansp = CDR(ansp);
     }
     ansp = Rf_getAttrib(v, Symbols::NamesSymbol);
-    if (ansp != R_NilValue)
+    if (ansp != nullptr)
 	Rf_setAttrib(ans, Symbols::NamesSymbol, ansp);
     UNPROTECT(1);
     return (ans);
@@ -949,7 +949,7 @@ static SEXP coerceToPairList(SEXP v)
 static SEXP coercePairList(SEXP v, SEXPTYPE type)
 {
     int i, n=0;
-    SEXP rval= R_NilValue, vp, names;
+    SEXP rval= nullptr, vp, names;
 
     /* Hmm, this is also called to LANGSXP, and Rf_coerceVector already
        did the check of TYPEOF(v) == type */
@@ -965,7 +965,7 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
     else if (type == STRSXP) {
 	n = Rf_length(v);
 	PROTECT(rval = Rf_allocVector(type, n));
-	for (vp = v, i = 0; vp != R_NilValue; vp = CDR(vp), i++) {
+	for (vp = v, i = 0; vp != nullptr; vp = CDR(vp), i++) {
 	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(rval, i, STRING_ELT(CAR(vp), 0));
 	    else
@@ -1010,15 +1010,15 @@ static SEXP coercePairList(SEXP v, SEXPTYPE type)
 
     /* If any tags are non-null then we */
     /* need to add a names attribute. */
-    for (vp = v, i = 0; vp != R_NilValue; vp = CDR(vp))
-	if (TAG(vp) != R_NilValue)
+    for (vp = v, i = 0; vp != nullptr; vp = CDR(vp))
+	if (TAG(vp) != nullptr)
 	    i = 1;
 
     if (i) {
 	i = 0;
 	names = Rf_allocVector(STRSXP, n);
-	for (vp = v; vp != R_NilValue; vp = CDR(vp), i++)
-	    if (TAG(vp) != R_NilValue)
+	for (vp = v; vp != nullptr; vp = CDR(vp), i++)
+	    if (TAG(vp) != nullptr)
 		SET_STRING_ELT(names, i, PRINTNAME(TAG(vp)));
 	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     }
@@ -1034,7 +1034,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
     SEXP rval, names;
 
     names = v;
-    rval = R_NilValue;	/* -Wall */
+    rval = nullptr;	/* -Wall */
 
     /* expression -> list, new in R 2.4.0 */
     if (type == VECSXP)
@@ -1133,7 +1133,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 
     if (warn) Rf_CoercionWarning(warn);
     names = Rf_getAttrib(v, Symbols::NamesSymbol);
-    if (names != R_NilValue)
+    if (names != nullptr)
 	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     UNPROTECT(1);
     return rval;
@@ -1141,7 +1141,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 
 static SEXP coerceSymbol(SEXP v, SEXPTYPE type)
 {
-    SEXP rval = R_NilValue;
+    SEXP rval = nullptr;
     if (type == EXPRSXP) {
 	PROTECT(rval = Rf_allocVector(type, 1));
 	SET_XVECTOR_ELT(rval, 0, v);
@@ -1158,7 +1158,7 @@ static SEXP coerceSymbol(SEXP v, SEXPTYPE type)
 
 SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 {
-    SEXP op, vp, ans = R_NilValue;	/* -Wall */
+    SEXP op, vp, ans = nullptr;	/* -Wall */
     int i,n;
 
     if (TYPEOF(v) == type)
@@ -1172,7 +1172,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
     /* code to allow classes to extend ENVSXP, SYMSXP, etc */
     if(IS_S4_OBJECT(v) && TYPEOF(v) == S4SXP) {
 	SEXP vv = R_getS4DataSlot(v, ANYSXP);
-	if(vv == R_NilValue)
+	if(vv == nullptr)
 	  Rf_error(_("no method for coercing this S4 class to a vector"));
 	else if(TYPEOF(vv) == type)
 	  return vv;
@@ -1223,7 +1223,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	/* The distinction between strings and other elements was
 	 * here "always", but is really dubious since it makes x <- a
 	 * and x <- "a" come out identical. Won't fix just now. */
-	for (vp = v;  vp != R_NilValue; vp = CDR(vp), i++) {
+	for (vp = v;  vp != nullptr; vp = CDR(vp), i++) {
 	    if (Rf_isString(CAR(vp)) && Rf_length(CAR(vp)) == 1)
 		SET_STRING_ELT(ans, i, STRING_ELT(CAR(vp), 0));
 	    else
@@ -1264,7 +1264,7 @@ SEXP Rf_coerceVector(SEXP v, SEXPTYPE type)
 	case RAWSXP:
 	    ans = coerceToRaw(v);	    break;
 	case STRSXP:
-	    if (RHO_FALSE && ATTRIB(v) == R_NilValue)
+	    if (RHO_FALSE && ATTRIB(v) == nullptr)
 		switch(TYPEOF(v)) {
 		case INTSXP:
 		case REALSXP:
@@ -1320,7 +1320,7 @@ static SEXP asFunction(SEXP x)
 	SEXP formals = Rf_allocList(n - 1);
 	SEXP pf = formals;
 	while(--n) {
-	    if (TAG(x) == R_NilValue) {
+	    if (TAG(x) == nullptr) {
 		SET_TAG(pf, Rf_CreateTag(CAR(x)));
 		SETCAR(pf, R_MissingArg);
 	    }
@@ -1439,7 +1439,7 @@ SEXP attribute_hidden do_asatomic(/*const*/ Expression* call, const BuiltInFunct
 	x = y;
     }
     if(TYPEOF(x) == type) {
-	if(ATTRIB(x) == R_NilValue) return x;
+	if(ATTRIB(x) == nullptr) return x;
 	ans = MAYBE_REFERENCED(x) ? Rf_duplicate(x) : x;
 	CLEAR_ATTRIB(ans);
 	return ans;
@@ -1472,7 +1472,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
 	case CPLXSXP:
 	case STRSXP:
 	case RAWSXP:
-	    if(ATTRIB(x) == R_NilValue) return x;
+	    if(ATTRIB(x) == nullptr) return x;
 	    ans  = MAYBE_REFERENCED(x) ? Rf_duplicate(x) : x;
 	    CLEAR_ATTRIB(ans);
 	    return ans;
@@ -1486,7 +1486,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
 
     if(IS_S4_OBJECT(x) && TYPEOF(x) == S4SXP) {
 	SEXP v = R_getS4DataSlot(x, ANYSXP);
-	if(v == R_NilValue)
+	if(v == nullptr)
 	    Rf_error(_("no method for coercing this S4 class to a vector"));
 	x = v;
     }
@@ -1546,10 +1546,10 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
     PROTECT(pargs = args = Rf_allocList(n - 1));
     for (i = 0; i < n - 1; i++) {
 	SETCAR(pargs, VECTOR_ELT(arglist, i));
-	if (names != R_NilValue && *R_CHAR(STRING_ELT(names, i)) != '\0') /* ASCII */
+	if (names != nullptr && *R_CHAR(STRING_ELT(names, i)) != '\0') /* ASCII */
 	    SET_TAG(pargs, Rf_installTrChar(STRING_ELT(names, i)));
 	else
-	    SET_TAG(pargs, R_NilValue);
+	    SET_TAG(pargs, nullptr);
 	pargs = CDR(pargs);
     }
     PROTECT(body = VECTOR_ELT(arglist, n-1));
@@ -1587,7 +1587,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	    PROTECT(ap = ans = new CachingExpression(nullptr, tl));
 	    for (i = 0; i < n; i++) {
 		SETCAR(ap, VECTOR_ELT(args, i));
-		if (names != R_NilValue && !Rf_StringBlank(STRING_ELT(names, i)))
+		if (names != nullptr && !Rf_StringBlank(STRING_ELT(names, i)))
 		    SET_TAG(ap, Rf_install(Rf_translateChar(STRING_ELT(names, i))));
 		ap = CDR(ap);
 	    }
@@ -1603,7 +1603,7 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	    PROTECT(ap = ans = new CachingExpression(nullptr, tl));
 	    for (i = 0; i < n; i++) {
 		SETCAR(ap, XVECTOR_ELT(args, i));
-		if (names != R_NilValue && !Rf_StringBlank(STRING_ELT(names, i)))
+		if (names != nullptr && !Rf_StringBlank(STRING_ELT(names, i)))
 		    SET_TAG(ap, Rf_installTrChar(STRING_ELT(names, i)));
 		ap = CDR(ap);
 	    }
@@ -1622,9 +1622,9 @@ SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunctio
 	break;
     default:
 	Rf_errorcall(call, _("invalid argument list"));
-	ans = R_NilValue;
+	ans = nullptr;
     }
-    SET_TAG(ans, R_NilValue);
+    SET_TAG(ans, nullptr);
     return ans;
 }
 
@@ -1957,9 +1957,9 @@ SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunct
 	LOGICAL0(ans)[0] = Rboolean(0);
 
     /* We allow a "names" attribute on any vector. */
-    if (LOGICAL0(ans)[0] && ATTRIB(x_) != R_NilValue) {
+    if (LOGICAL0(ans)[0] && ATTRIB(x_) != nullptr) {
 	a = ATTRIB(x_);
-	while(a != R_NilValue) {
+	while(a != nullptr) {
 	    if (TAG(a) != Symbols::NamesSymbol) {
 		LOGICAL0(ans)[0] = Rboolean(0);
 		break;
@@ -2005,18 +2005,18 @@ static R_INLINE void copyDimAndNames(SEXP x, SEXP ans)
 	/* PROTECT/UNPROTECT are probably not needed here */
 	SEXP dims, names;
 	PROTECT(dims = Rf_getAttrib(x, Symbols::DimSymbol));
-	if (dims != R_NilValue)
+	if (dims != nullptr)
 	    Rf_setAttrib(ans, Symbols::DimSymbol, dims);
 	UNPROTECT(1);
 	if (Rf_isArray(x)) {
 	    PROTECT(names = Rf_getAttrib(x, Symbols::DimNamesSymbol));
-	    if (names != R_NilValue)
+	    if (names != nullptr)
 		Rf_setAttrib(ans, Symbols::DimNamesSymbol, names);
 	    UNPROTECT(1);
 	}
 	else {
 	    PROTECT(names = Rf_getAttrib(x, Symbols::NamesSymbol));
-	    if (names != R_NilValue)
+	    if (names != nullptr)
 		Rf_setAttrib(ans, Symbols::NamesSymbol, names);
 	    UNPROTECT(1);
 	}
@@ -2304,7 +2304,7 @@ SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunct
 	else
 	    names = Rf_getAttrib(x, Symbols::NamesSymbol);
     }
-    else dims = names = R_NilValue;
+    else dims = names = nullptr;
     switch (TYPEOF(x)) {
     case STRSXP:
     case RAWSXP:
@@ -2331,9 +2331,9 @@ SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunct
 	Rf_errorcall(call, _("default method not implemented for type '%s'"),
 		     Rf_type2char(TYPEOF(x)));
     }
-    if (dims != R_NilValue)
+    if (dims != nullptr)
 	Rf_setAttrib(ans, Symbols::DimSymbol, dims);
-    if (names != R_NilValue) {
+    if (names != nullptr) {
 	if (Rf_isArray(x))
 	    Rf_setAttrib(ans, Symbols::DimNamesSymbol, names);
 	else
@@ -2363,7 +2363,7 @@ SEXP attribute_hidden do_isinfinite(/*const*/ Expression* call, const BuiltInFun
 	else
 	    names = Rf_getAttrib(x, Symbols::NamesSymbol);
     }
-    else	dims = names = R_NilValue;
+    else	dims = names = nullptr;
     switch (TYPEOF(x)) {
     case STRSXP:
     case RAWSXP:
@@ -2423,7 +2423,7 @@ SEXP attribute_hidden do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (streql(str, ".Internal")) Rf_error("illegal usage");
     PROTECT(rfun = Rf_install(str));
     PROTECT(evargs = Rf_shallow_duplicate(CDR(args)));
-    for (rest = evargs; rest != R_NilValue; rest = CDR(rest)) {
+    for (rest = evargs; rest != nullptr; rest = CDR(rest)) {
 	PROTECT(tmp = Rf_eval(CAR(rest), rho));
 	if (NAMED(tmp)) MARK_NOT_MUTABLE(tmp);
 	SETCAR(rest, tmp);
@@ -2482,7 +2482,7 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
 	SETCAR(c, Promise::createEvaluatedPromise(VECTOR_ELT(args, i),
 						  VECTOR_ELT(args, i)));
 #endif
-	if (Rf_ItemName(names, int(i)) != R_NilValue)
+	if (Rf_ItemName(names, int(i)) != nullptr)
 	    SET_TAG(c, Rf_installTrChar(Rf_ItemName(names, i)));
 	c = CDR(c);
     }
@@ -2497,8 +2497,8 @@ SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunctio
    values as found in the environment.	There is no inheritance so only
    the supplied environment is searched. If no environment is specified
    the environment in which substitute was called is used.  If the
-   specified environment is R_GlobalEnv it is converted to R_NilValue, for
-   historical reasons. In Rf_substitute(), R_NilValue signals that no
+   specified environment is R_GlobalEnv it is converted to nullptr, for
+   historical reasons. In Rf_substitute(), nullptr signals that no
    substitution should be done, only extraction of promise expressions.
    Arguments to do_substitute should not be evaluated.
 */
@@ -2510,7 +2510,7 @@ SEXP Rf_substitute(SEXP lang, SEXP rho)
     case PROMSXP:
 	return Rf_substitute(PREXPR(lang), rho);
     case SYMSXP:
-	if (rho != R_NilValue) {
+	if (rho != nullptr) {
 	    t = Rf_findVarInFrame3( rho, lang, TRUE);
 	    if (t != R_UnboundValue) {
 		if (TYPEOF(t) == PROMSXP) {
@@ -2541,27 +2541,27 @@ SEXP Rf_substitute(SEXP lang, SEXP rho)
 
 SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 {
-    SEXP h, p = R_NilValue, res = R_NilValue;
+    SEXP h, p = nullptr, res = nullptr;
 
     if (Rf_isNull(el)) return el;
 
-    while (el != R_NilValue) {
+    while (el != nullptr) {
 	/* walk along the pairlist, substituting elements.
 	   res is the result
 	   p is the current last element
 	   h is the element currently being processed
 	 */
 	if (CAR(el) == Symbols::DotsSymbol) {
-	    if (rho == R_NilValue)
+	    if (rho == nullptr)
 		h = R_UnboundValue;	/* so there is no substitution below */
 	    else
 		h = Rf_findVarInFrame3(rho, CAR(el), TRUE);
 	    if (h == R_UnboundValue)
 		h = PairList::cons(Symbols::DotsSymbol, nullptr);
-	    else if (h == R_NilValue  || h == R_MissingArg)
-		h = R_NilValue;
+	    else if (h == nullptr  || h == R_MissingArg)
+		h = nullptr;
 	    else if (TYPEOF(h) == DOTSXP)
-		h = Rf_substituteList(h, R_NilValue);
+		h = Rf_substituteList(h, nullptr);
 	    else
  		Rf_error(_("'...' used in an incorrect context"));
 	} else {
@@ -2572,18 +2572,18 @@ SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 		h = PairList::cons(h, nullptr);
 	    SET_TAG(h, TAG(el));
 	}
-	if (h != R_NilValue) {
-	    if (res == R_NilValue)
+	if (h != nullptr) {
+	    if (res == nullptr)
 		PROTECT(res = h);
 	    else
 		SETCDR(p, h);
 	    /* now set 'p': dots might have expanded to a list of length > 1 */
-	    while (CDR(h) != R_NilValue) h = CDR(h);
+	    while (CDR(h) != nullptr) h = CDR(h);
 	    p = h;
 	}
 	el = CDR(el);
     }
-    if(res != R_NilValue) UNPROTECT(1);
+    if(res != nullptr) UNPROTECT(1);
     return res;
 }
 
@@ -2593,7 +2593,7 @@ SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP expr, env;
     static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "expr", "env" });
-    
+
     /* argument matching */
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
     matcher->match(arglist, { &expr, &env });
@@ -2604,12 +2604,12 @@ SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
     else
 	env = Rf_eval(env, rho);
     if (env == R_GlobalEnv)	/* For historical reasons, don't substitute in R_GlobalEnv */
-	env = R_NilValue;
+	env = nullptr;
     else if (TYPEOF(env) == VECSXP)
-	env = Rf_NewEnvironment(R_NilValue, Rf_VectorToPairList(env), R_BaseEnv);
+	env = Rf_NewEnvironment(nullptr, Rf_VectorToPairList(env), R_BaseEnv);
     else if (TYPEOF(env) == LISTSXP)
-	env = Rf_NewEnvironment(R_NilValue, Rf_duplicate(env), R_BaseEnv);
-    if (env != R_NilValue && TYPEOF(env) != ENVSXP)
+	env = Rf_NewEnvironment(nullptr, Rf_duplicate(env), R_BaseEnv);
+    if (env != nullptr && TYPEOF(env) != ENVSXP)
 	Rf_errorcall(call, _("invalid environment specified"));
 
     SEXP t = PairList::cons(Rf_duplicate(expr), nullptr);
@@ -2726,7 +2726,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	/*  assigning type as a class deletes an explicit class attribute. */
 	if(valueType != (SEXPTYPE)-1) {
             SEXPTYPE valueType = classTable[whichType].sexp;
-	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, nullptr);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      do_unsetS4(obj, value);
 	    if(classTable[whichType].canChange) {
@@ -2739,7 +2739,7 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	    /* else, leave alone */
 	}
 	else if(streql("numeric", valueString)) {
-	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, nullptr);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      do_unsetS4(obj, value);
 	    switch(TYPEOF(obj)) {
@@ -2754,14 +2754,14 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
 	    if(Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)) != 2)
 		Rf_error(_("invalid to set the class to matrix unless the dimension attribute is of length 2 (was %d)"),
 		 Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)));
-	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, nullptr);
 	    if(IS_S4_OBJECT(obj))
 	      do_unsetS4(obj, value);
 	}
 	else if(streql("array", valueString)) {
 	    if(Rf_length(Rf_getAttrib(obj, Symbols::DimSymbol)) <= 0)
 		Rf_error(_("cannot set class to \"array\" unless the dimension attribute has length > 0"));
-	    Rf_setAttrib(obj, Symbols::ClassSymbol, R_NilValue);
+	    Rf_setAttrib(obj, Symbols::ClassSymbol, nullptr);
 	    if(IS_S4_OBJECT(obj)) /* NULL class is only valid for S3 objects */
 	      UNSET_S4_OBJECT(obj);
 	}

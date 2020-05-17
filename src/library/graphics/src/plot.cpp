@@ -598,7 +598,7 @@ static void GetAxisLimits(double left, double right, Rboolean logflag, double *l
 	eps *= FLT_EPSILON;
     *low = left - eps;
     *high = right + eps;
-    
+
     if (logflag) {
 	*low = exp(*low);
 	*high = exp(*high);
@@ -2967,7 +2967,7 @@ SEXP C_locator(SEXP call, SEXP op, SEXP args, SEXP rho)
     double xp, yp, xold=0, yold=0;
     pGEDevDesc dd = GEcurrentDevice();
     SEXP name = CAR(args);
-    
+
     args = CDR(args);
     /* If replaying, just draw the points and lines that were recorded */
     if (call == R_NilValue) {
@@ -3084,7 +3084,7 @@ SEXP C_identify(SEXP call, SEXP op, SEXP args, SEXP rho)
     int atpen, i, imin, k, n, nl, npts, plot, posi, warn;
     pGEDevDesc dd = GEcurrentDevice();
     SEXP name = CAR(args);
-    
+
     args = CDR(args);
     /* If we are replaying the display list, then just redraw the
        labels beside the identified points */

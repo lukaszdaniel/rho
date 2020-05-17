@@ -174,12 +174,12 @@ static void Putenv(char *a, const char *b)
     *q = '\0';
 #ifdef HAVE_SETENV
     if(setenv(a, buf, 1))
-	Rf_warningcall(R_NilValue,
+	Rf_warningcall(nullptr,
 		    _("problem in setting variable '%s' in Renviron"), a);
     free(buf);
 #elif defined(HAVE_PUTENV)
     if(putenv(buf))
-	Rf_warningcall(R_NilValue,
+	Rf_warningcall(nullptr,
 		    _("problem in setting variable '%s' in Renviron"), a);
     /* no free here: storage remains in use */
 #else

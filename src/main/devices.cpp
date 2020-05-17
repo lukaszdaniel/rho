@@ -431,7 +431,7 @@ void GEaddDevice(pGEDevDesc gdd)
 
     /* find empty slot for new descriptor */
     i = 1;
-    if (CDR(s) == R_NilValue)
+    if (CDR(s) == nullptr)
 	appnd = TRUE;
     else {
 	s = CDR(s);
@@ -439,7 +439,7 @@ void GEaddDevice(pGEDevDesc gdd)
     }
     while (R_Devices[i] != nullptr) {
 	i++;
-	if (CDR(s) == R_NilValue)
+	if (CDR(s) == nullptr)
 	    appnd = TRUE;
 	else
 	    s = CDR(s);
@@ -515,12 +515,12 @@ pGEDevDesc GEcreateDevDesc(pDevDesc dev)
     gdd->index = -1;
     gdd->dev = dev;
     gdd->displayListOn = dev->displayListOn;
-    gdd->displayList = R_NilValue; /* gc needs this */
-    gdd->savedSnapshot = R_NilValue; /* gc needs this */
+    gdd->displayList = nullptr; /* gc needs this */
+    gdd->savedSnapshot = nullptr; /* gc needs this */
     gdd->dirty = FALSE;
     gdd->recordGraphics = TRUE;
     gdd->ask = Rf_GetOptionDeviceAsk();
-    gdd->dev->eventEnv = R_NilValue;  /* gc needs this */
+    gdd->dev->eventEnv = nullptr;  /* gc needs this */
     return gdd;
 }
 

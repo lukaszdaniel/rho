@@ -95,7 +95,7 @@ SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFuncti
 	Rf_error(_("invalid '%s' argument"), "assign.env");
 
     Rf_defineVar(name, Rf_mkPROMISE(expr, eenv), aenv);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* makeLazy(names, values, expr, eenv, aenv) */
@@ -122,7 +122,7 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
 	Rf_defineVar(name, Rf_mkPROMISE(expr0, eenv), aenv);
 	UNPROTECT(2);
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 /* This is a primitive SPECIALSXP */
@@ -206,7 +206,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
 	if(s2 != R_UnboundValue) {
 	    s = Rf_duplicate(s2);
-	    SET_BODY(s, R_NilValue);
+	    SET_BODY(s, nullptr);
 	    SET_CLOENV(s, R_GlobalEnv);
 	    UNPROTECT(2);
 	    return s;
@@ -223,7 +223,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
 	UNPROTECT(2);
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
@@ -236,7 +236,7 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
 	    Rf_warningcall(call, _("argument is not a function"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -250,7 +250,7 @@ SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction*
 	if(!(TYPEOF(fun_) == BUILTINSXP ||
 	     TYPEOF(fun_) == SPECIALSXP))
 	    Rf_warningcall(call, _("argument is not a function"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -263,7 +263,7 @@ SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction
 {
     if (TYPEOF(fun_) == CLOSXP)
 	return CLOENV(fun_);
-    else if (fun_ == R_NilValue)
+    else if (fun_ == nullptr)
 	return R_GlobalContext()->callEnvironment();
     else return Rf_getAttrib(fun_, Symbols::DotEnvSymbol);
 }
@@ -305,7 +305,7 @@ SEXP attribute_hidden do_newenv(/*const*/ Expression* call, const BuiltInFunctio
 	ans = R_NewHashedEnv(enclos, size);
 	UNPROTECT(1);
     } else
-	ans = Rf_NewEnvironment(R_NilValue, R_NilValue, enclos);
+	ans = Rf_NewEnvironment(nullptr, nullptr, enclos);
     return ans;
 }
 
@@ -420,7 +420,7 @@ static void cat_newline(SEXP labels, int *width, int lablen, int ntot)
 {
     Rprintf("\n");
     *width = 0;
-    if (labels != R_NilValue) {
+    if (labels != nullptr) {
 	Rprintf("%s ", Rf_EncodeString(STRING_ELT(labels, ntot % lablen),
 				    1, 0, Rprt_adj_left));
 	*width += Rstrlen(STRING_ELT(labels, ntot % lablen), 0) + 1;
@@ -429,7 +429,7 @@ static void cat_newline(SEXP labels, int *width, int lablen, int ntot)
 
 static void cat_sepwidth(SEXP sep, int *width, int ntot)
 {
-    if (sep == R_NilValue || LENGTH(sep) == 0)
+    if (sep == nullptr || LENGTH(sep) == 0)
 	*width = 0;
     else
 	*width = Rstrlen(STRING_ELT(sep, ntot % LENGTH(sep)), 0);
@@ -438,7 +438,7 @@ static void cat_sepwidth(SEXP sep, int *width, int ntot)
 static void cat_printsep(SEXP sep, int ntot)
 {
     const char *sepchar;
-    if (sep == R_NilValue || LENGTH(sep) == 0)
+    if (sep == nullptr || LENGTH(sep) == 0)
 	return;
 
     sepchar = trChar(STRING_ELT(sep, ntot % LENGTH(sep)));
@@ -512,7 +512,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
     }
 
     labs = labels_;
-    if (!Rf_isString(labs) && labs != R_NilValue)
+    if (!Rf_isString(labs) && labs != nullptr)
 	Rf_error(_("invalid '%s' argument"), "labels");
     lablen = Rf_length(labs);
 
@@ -544,7 +544,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 	    n = Rf_length(s);
 	    /* 0-length objects are ignored */
 	    if (n > 0) {
-		if (labs != R_NilValue && (iobj == 0)
+		if (labs != nullptr && (iobj == 0)
 		    && (Rf_asInteger(fill) > 0)) {
 		    Rprintf("%s ", trChar(STRING_ELT(labs, nlines % lablen)));
 		    /* FIXME -- Rstrlen allows for double-width chars */
@@ -618,7 +618,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
 
     cat_cleanup(&ci);
 
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -627,18 +627,18 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* compute number of args and check for names */
     SEXP next;
     for (next = args, n = 0, havenames = FALSE;
-	 next != R_NilValue;
+	 next != nullptr;
 	 next = CDR(next)) {
-	if (TAG(next) != R_NilValue)
+	if (TAG(next) != nullptr)
 	    havenames = TRUE;
 	n++;
     }
 
     SEXP list = PROTECT(Rf_allocVector(VECSXP, n));
-    SEXP names = PROTECT(havenames ? Rf_allocVector(STRSXP, n) : R_NilValue);
+    SEXP names = PROTECT(havenames ? Rf_allocVector(STRSXP, n) : nullptr);
     for (int i = 0; i < n; i++) {
 	if (havenames) {
-	    if (TAG(args) != R_NilValue)
+	    if (TAG(args) != nullptr)
 		SET_STRING_ELT(names, i, PRINTNAME(TAG(args)));
 	    else
 		SET_STRING_ELT(names, i, R_BlankString);
@@ -669,14 +669,14 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    SET_XVECTOR_ELT(ans, i, Rf_duplicate(CAR(a)));
 	else
 	    SET_XVECTOR_ELT(ans, i, CAR(a));
-	if (TAG(a) != R_NilValue) named = 1;
+	if (TAG(a) != nullptr) named = 1;
 	a = CDR(a);
     }
     if (named) {
 	PROTECT(nms = Rf_allocVector(STRSXP, n));
 	a = args;
 	for (i = 0; i < n; i++) {
-	    if (TAG(a) != R_NilValue)
+	    if (TAG(a) != nullptr)
 		SET_STRING_ELT(nms, i, PRINTNAME(TAG(a)));
 	    else
 		SET_STRING_ELT(nms, i, R_BlankString);
@@ -754,9 +754,9 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	return (x);
     PROTECT(rval = Rf_allocVector(TYPEOF(x), len));
     PROTECT(xnames = Rf_getAttrib(x, Symbols::NamesSymbol));
-    if (xnames != R_NilValue)
+    if (xnames != nullptr)
 	names = Rf_allocVector(STRSXP, len);
-    else names = R_NilValue;	/*- just for -Wall --- should we do this ? */
+    else names = nullptr;	/*- just for -Wall --- should we do this ? */
     switch (TYPEOF(x)) {
     case NILSXP:
 	break;
@@ -765,7 +765,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		INTEGER(rval)[i] = INTEGER(x)[i];
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
@@ -775,7 +775,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		REAL(rval)[i] = REAL(x)[i];
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
@@ -785,7 +785,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		COMPLEX(rval)[i] = COMPLEX(x)[i];
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else {
@@ -797,14 +797,14 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		SET_STRING_ELT(rval, i, STRING_ELT(x, i));
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
 		SET_STRING_ELT(rval, i, NA_STRING);
 	break;
     case LISTSXP:
-	for (t = rval; t != R_NilValue; t = CDR(t), x = CDR(x)) {
+	for (t = rval; t != nullptr; t = CDR(t), x = CDR(x)) {
 	    SETCAR(t, CAR(x));
 	    SET_TAG(t, TAG(x));
 	}
@@ -813,7 +813,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		SET_VECTOR_ELT(rval, i, VECTOR_ELT(x, i));
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	break;
@@ -821,7 +821,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 	for (i = 0; i < len; i++)
 	    if (i < lenx) {
 		RAW(rval)[i] = RAW(x)[i];
-		if (xnames != R_NilValue)
+		if (xnames != nullptr)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
@@ -830,7 +830,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
     default:
 	UNIMPLEMENTED_TYPE("length<-", x);
     }
-    if (Rf_isVector(x) && xnames != R_NilValue)
+    if (Rf_isVector(x) && xnames != nullptr)
 	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
     UNPROTECT(2);
     return rval;
@@ -874,17 +874,17 @@ static SEXP expandDots(SEXP el, SEXP rho)
     PROTECT(el); /* in do_switch, this is already protected */
     PROTECT(ans = tail = PairList::cons(nullptr, nullptr));
 
-    while (el != R_NilValue) {
+    while (el != nullptr) {
 	if (CAR(el) == Symbols::DotsSymbol) {
 	    SEXP h = PROTECT(Rf_findVar(CAR(el), rho));
-	    if (TYPEOF(h) == DOTSXP || h == R_NilValue) {
-		while (h != R_NilValue) {
+	    if (TYPEOF(h) == DOTSXP || h == nullptr) {
+		while (h != nullptr) {
 		    if (TYPEOF(CAR(h)) == PROMSXP || CAR(h) == R_MissingArg)
 		      SETCDR(tail, PairList::cons(CAR(h), nullptr));
                     else
 		      SETCDR(tail, PairList::cons(Rf_mkPROMISE(CAR(h), rho), nullptr));
 		    tail = CDR(tail);
-		    if(TAG(h) != R_NilValue) SET_TAG(tail, TAG(h));
+		    if(TAG(h) != nullptr) SET_TAG(tail, TAG(h));
 		    h = CDR(h);
 		}
 	    } else if (h != R_MissingArg)
@@ -893,7 +893,7 @@ static SEXP expandDots(SEXP el, SEXP rho)
 	} else {
 	    SETCDR(tail, PairList::cons(CAR(el), nullptr));
 	    tail = CDR(tail);
-	    if(TAG(el) != R_NilValue) SET_TAG(tail, TAG(el));
+	    if(TAG(el) != nullptr) SET_TAG(tail, TAG(el));
 	}
 	el = CDR(el);
     }
@@ -955,27 +955,27 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	   there may be a ... argument */
 	PROTECT(w = expandDots(CDR(args), rho));
 	if (Rf_isString(x)) {
-	    for (y = w; y != R_NilValue; y = CDR(y)) {
-		if (TAG(y) != R_NilValue) {
+	    for (y = w; y != nullptr; y = CDR(y)) {
+		if (TAG(y) != nullptr) {
 		    if (Rf_pmatch(STRING_ELT(x, 0), TAG(y), TRUE /* exact */)) {
 			/* Find the next non-missing argument.
 			   (If there is none, return NULL.) */
 			while (CAR(y) == R_MissingArg) {
 			    y = CDR(y);
-			    if (y == R_NilValue) break;
-			    if (TAG(y) == R_NilValue) dflt = setDflt(y, dflt);
+			    if (y == nullptr) break;
+			    if (TAG(y) == nullptr) dflt = setDflt(y, dflt);
 			}
-			if (y == R_NilValue) {
+			if (y == nullptr) {
 			    R_Visible = FALSE;
 			    UNPROTECT(2);
-			    return R_NilValue;
+			    return nullptr;
 			}
 			/* Check for multiple defaults following y.  This loop
 			   is not necessary to determine the value of the
 			   switch(), but it should be fast and will detect
 			   typos. */
-			for (z = CDR(y); z != R_NilValue; z = CDR(z))
-			    if (TAG(z) == R_NilValue) dflt = setDflt(z, dflt);
+			for (z = CDR(y); z != nullptr; z = CDR(z))
+			    if (TAG(z) == nullptr) dflt = setDflt(z, dflt);
 
 			ans =  Rf_eval(CAR(y), rho);
 			UNPROTECT(2);
@@ -1008,5 +1008,5 @@ SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* an error */
     UNPROTECT(1); /* x */
     R_Visible = FALSE;
-    return R_NilValue;
+    return nullptr;
 }

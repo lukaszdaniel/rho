@@ -127,7 +127,7 @@ SEXP attribute_hidden do_invisible(/*const*/ Expression* call, const BuiltInFunc
 {
     switch (num_args) {
     case 0:
-	return R_NilValue;
+	return nullptr;
     case 1:
     {
 	call->check1arg("x");
@@ -163,8 +163,8 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
 	    int(strlen(R_CHAR(R_print.na_string)));
     }
 
-    if (Rf_length(rowlab) == 0) rowlab = R_NilValue;
-    if (Rf_length(collab) == 0) collab = R_NilValue;
+    if (Rf_length(rowlab) == 0) rowlab = nullptr;
+    if (Rf_length(collab) == 0) collab = nullptr;
     if (!Rf_isNull(rowlab) && !Rf_isString(rowlab))
 	Rf_error(_("invalid row labels"));
     if (!Rf_isNull(collab) && !Rf_isString(collab))
@@ -342,7 +342,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
     char pbuf[115], *ptag, save[TAGBUFLEN0];
 
     ns = Rf_length(s);
-    if((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
+    if((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != nullptr && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = Rf_allocArray(STRSXP, dims));
@@ -460,8 +460,8 @@ static void PrintGenericVector(SEXP s, SEXP env)
 	    /* '...max +1'  ==> will omit at least 2 ==> plural in msg below */
 	    for (i = 0; i < n_pr; i++) {
 		if (i > 0) Rprintf("\n");
-		if (names != R_NilValue &&
-		    STRING_ELT(names, i) != R_NilValue &&
+		if (names != nullptr &&
+		    STRING_ELT(names, i) != nullptr &&
 		    *R_CHAR(STRING_ELT(names, i)) != '\0') {
 		    const void *vmax = vmaxget();
 		    /* Bug for L <- list(`a\\b` = 1, `a\\c` = 2)  :
@@ -530,7 +530,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		return;
 	    }
 	    else {
-		if(names != R_NilValue) Rprintf("named ");
+		if(names != nullptr) Rprintf("named ");
 		Rprintf("list()\n");
 	    }
 	    vmaxset(vmax);
@@ -550,12 +550,12 @@ static void printList(SEXP s, SEXP env)
     char pbuf[101], *ptag;
     const char *rn, *cn;
 
-    if ((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != R_NilValue && Rf_length(dims) > 1) {
+    if ((dims = Rf_getAttrib(s, Symbols::DimSymbol)) != nullptr && Rf_length(dims) > 1) {
 	// special case: array-like list
 	PROTECT(dims);
 	PROTECT(t = Rf_allocArray(STRSXP, dims));
 	i = 0;
-	while(s != R_NilValue) {
+	while(s != nullptr) {
 	    switch(TYPEOF(CAR(s))) {
 
 	    case NILSXP:
@@ -618,7 +618,7 @@ static void printList(SEXP s, SEXP env)
         PROTECT(newcall = new Expression(Rf_install("print"), { nullptr }));
 	while (TYPEOF(s) == LISTSXP) {
 	    if (i > 1) Rprintf("\n");
-	    if (TAG(s) != R_NilValue && Rf_isSymbol(TAG(s))) {
+	    if (TAG(s) != nullptr && Rf_isSymbol(TAG(s))) {
 		if (taglen + strlen(R_CHAR(PRINTNAME(TAG(s)))) > TAGBUFLEN) {
 		    if (taglen <= TAGBUFLEN)
 			sprintf(ptag, "$...");
@@ -650,7 +650,7 @@ static void printList(SEXP s, SEXP env)
 	    s = CDR(s);
 	    i++;
 	}
-	if (s != R_NilValue) {
+	if (s != nullptr) {
 	    Rprintf("\n. \n\n");
 	    Rf_PrintValueRec(s,env);
 	}
@@ -788,7 +788,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	    if (LENGTH(t) == 1) {
 		const void *vmax = vmaxget();
 		PROTECT(t = Rf_getAttrib(s, Symbols::DimNamesSymbol));
-		if (t != R_NilValue && VECTOR_ELT(t, 0) != R_NilValue) {
+		if (t != nullptr && VECTOR_ELT(t, 0) != nullptr) {
 		    SEXP nn = Rf_getAttrib(t, Symbols::NamesSymbol);
 		    const char *title = nullptr;
 
@@ -818,7 +818,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	else {
 	    UNPROTECT(1);
 	    PROTECT(t = Rf_getAttrib(s, Symbols::NamesSymbol));
-	    if (t != R_NilValue)
+	    if (t != nullptr)
 		printNamedVector(s, t, R_print.quote, nullptr);
 	    else
 		printVector(s, 1, R_print.quote);
@@ -860,7 +860,7 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
     char save[TAGBUFLEN0] = "\0";
 
     a = ATTRIB(s);
-    if (a != R_NilValue) {
+    if (a != nullptr) {
 	/* guard against cycles through attributes on environments */
 	if (strlen(tagbuf) > TAGBUFLEN0)
 	    Rf_error(_("print buffer overflow"));
@@ -870,7 +870,7 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 	    *(tagbuf + strlen(tagbuf) - 1) != ')')
 	    tagbuf[0] = '\0';
 	ptag = tagbuf + strlen(tagbuf);
-	while (a != R_NilValue) {
+	while (a != nullptr) {
 	    if(useSlots && TAG(a) == Symbols::ClassSymbol)
 		    goto nextattr;
 	    if(Rf_isArray(s) || Rf_isList(s)) {
@@ -1009,10 +1009,10 @@ void attribute_hidden Rf_PrintValueEnv(SEXP s, SEXP env)
 	   problems in previous approaches with value duplication and
 	   evaluating the value, which might be a call object. */
 	PROTECT(call = Rf_lang2(prinfun, xsym));
-	PROTECT(env = Rf_NewEnvironment(R_NilValue, R_NilValue, env));
+	PROTECT(env = Rf_NewEnvironment(nullptr, nullptr, env));
 	Rf_defineVar(xsym, s, env);
 	Rf_eval(call, env);
-	Rf_defineVar(xsym, R_NilValue, env); /* to eliminate reference to s */
+	Rf_defineVar(xsym, nullptr, env); /* to eliminate reference to s */
 	UNPROTECT(2);
     } else Rf_PrintValueRec(s, env);
     UNPROTECT(1);

@@ -281,7 +281,7 @@ static void icount(int *x, int *o, int n)
 	else
 	    counts[x[i] - xmin]++;
     }
-    
+
     int tmp = 0;
     if (nalast != 1 && counts[napos]) {
         push(counts[napos]);
@@ -1564,7 +1564,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (sizeof(double) != 8) {
         Rf_error("radix sort assumes sizeof(double) == 8");
     }
-    
+
     nalast = (Rf_asLogical(CAR(args)) == NA_LOGICAL) ? 0 :
 	(Rf_asLogical(CAR(args)) == TRUE) ? 1 : -1; // 1=TRUE, -1=FALSE, 0=NA
     args = CDR(args);
@@ -1585,11 +1585,11 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* When grouping, we round off doubles to account for imprecision */
     setNumericRounding(retGrp ? 2 : 0);
 
-    if (args == R_NilValue)
-	return R_NilValue;
+    if (args == nullptr)
+	return nullptr;
     if (Rf_isVector(CAR(args)))
 	nl = XLENGTH(CAR(args));
-    for (SEXP ap = args; ap != R_NilValue; ap = CDR(ap), narg++) {
+    for (SEXP ap = args; ap != nullptr; ap = CDR(ap), narg++) {
 	if (!Rf_isVector(CAR(ap)))
 	    Rf_error(_("argument %d is not a vector"), narg + 1);
         //Rprintf("%d, %d\n", XLENGTH(CAR(ap)), nl);
@@ -1637,7 +1637,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(x) == STRSXP) {
         checkEncodings(x);
     }
-    
+
     savetl_init();   // from now on use Error not error.
 
     switch (TYPEOF(x)) {
@@ -1700,12 +1700,12 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 		("Internal error: previous default should have caught unsupported type");
 	}
     }
-    
+
     int maxgrpn = gsmax[flip];   // biggest group in the first arg
     void *xsub = NULL;           // local
     int (*f) ();
     void (*g) ();
-    
+
     if (narg > 1 && gsngrp[flip] < n) {
         // double is the largest type, 8
         xsub = (void *) malloc(maxgrpn * sizeof(double));
@@ -1812,7 +1812,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
             else
                 for (int j = 0; j < thisgrpn; j++)
                     ((int *) xsub)[j] = ((int *) xd)[o[i++] - 1];
-                
+
             // continue; // BASELINE short circuit timing
             // point. Up to here is the cost of creating xsub.
             // [i|d|c]sorted(); very low cost, sequential
@@ -1910,7 +1910,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
             UNPROTECT(1);
         }
     }
-    
+
     gsfree();
     free(radix_xsub);          radix_xsub=NULL;    radix_xsuballoc=0;
     free(xsub); free(newo);    xsub=newo=NULL;

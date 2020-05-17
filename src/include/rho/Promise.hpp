@@ -325,7 +325,7 @@ namespace rho {
 	Promise(const Promise&) = delete;
 	Promise& operator=(const Promise&) = delete;
     };
-    
+
     /** @brief Use forced value if RObject is a Promise.
      *
      * @param object Pointer, possibly null, to an RObject.

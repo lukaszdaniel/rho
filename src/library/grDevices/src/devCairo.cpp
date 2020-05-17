@@ -36,7 +36,7 @@ static R_cairoVersion_t R_cairoVersion;
 static int Load_Rcairo_Dll(void)
 {
     static int initialized = 0;
- 
+
     if (initialized) return initialized;
     initialized = -1;
 

@@ -836,7 +836,7 @@ static void closerect(DEstruct DE)
 	    /* do it this way to ensure NA, Inf, ...  can get set */
 	    char *endp;
 	    double new_ = R_strtod(DE->buf, &endp);
-	    int warn = !isBlankString(endp);
+	    int warn = !Rf_isBlankString(endp);
 	    if (TYPEOF(cvec) == STRSXP) {
 	    	SEXP newval;
 	    	PROTECT( newval = Rf_mkString(DE->buf) );

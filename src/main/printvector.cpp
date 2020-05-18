@@ -50,7 +50,7 @@ using namespace rho;
 
 #define DO_first_lab			\
     if (indx) {				\
-	labwidth = IndexWidth(n) + 2;	\
+	labwidth = Rf_IndexWidth(n) + 2;	\
 	/* labwidth may well be		\
 	   one more than desired ..*/	\
 	VectorIndex(1, labwidth);	\

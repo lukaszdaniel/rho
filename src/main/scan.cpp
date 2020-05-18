@@ -186,7 +186,7 @@ strtoc(const char *nptr, char **endptr, Rboolean NA, LocalData *d)
     char *s, *endp;
 
     x = Strtod(nptr, &endp, NA, d);
-    if (isBlankString(endp)) {
+    if (Rf_isBlankString(endp)) {
 	z.r = x; z.i = 0;
     } else if (*endp == 'i')  {
 	z.r = 0; z.i = x;
@@ -502,7 +502,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	if (isNAstring(buffer, 0, d))
 	    LOGICAL(ans)[i] = NA_INTEGER;
 	else {
-	    int tr = StringTrue(buffer), fa = StringFalse(buffer);
+	    int tr = Rf_StringTrue(buffer), fa = Rf_StringFalse(buffer);
 	    if(tr || fa) LOGICAL(ans)[i] = tr;
 	    else expected("a logical", buffer, d);
 	}
@@ -521,7 +521,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	    REAL(ans)[i] = NA_REAL;
 	else {
 	    REAL(ans)[i] = Strtod(buffer, &endp, TRUE, d);
-	    if (!isBlankString(endp))
+	    if (!Rf_isBlankString(endp))
 		expected("a real", buffer, d);
 	}
 	break;
@@ -530,7 +530,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	    COMPLEX(ans)[i].r = COMPLEX(ans)[i].i = NA_REAL;
 	else {
 	    COMPLEX(ans)[i] = strtoc(buffer, &endp, TRUE, d);
-	    if (!isBlankString(endp))
+	    if (!Rf_isBlankString(endp))
 		expected("a complex", buffer, d);
 	}
 	break;
@@ -545,7 +545,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	    RAW(ans)[i] = 0;
 	else {
 	    RAW(ans)[i] = strtoraw(buffer, &endp);
-	    if (!isBlankString(endp))
+	    if (!Rf_isBlankString(endp))
 		expected("a raw", buffer, d);
 	}
 	break;

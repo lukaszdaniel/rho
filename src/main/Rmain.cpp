@@ -30,16 +30,16 @@
 #include <exception>
 #include <execinfo.h>
 
-int Rf_initialize_R(int ac, char **av); /* in ../unix/system.cpp */
+int Rf_initialize_R(int ac, char** av); /* in ../unix/system.cpp */
 
-
-static void terminate_handler() {
+static void terminate_handler()
+{
     void* buffer[128];
     backtrace(buffer, 128);
     backtrace_symbols_fd(buffer, 128, 2);
 }
 
-int main(int ac, char **av)
+int main(int ac, char** av)
 {
     std::set_terminate(terminate_handler);
     R_running_as_main_program = 1;
@@ -48,8 +48,8 @@ int main(int ac, char **av)
     return 0;
 }
 
-	/* Declarations to keep f77 happy */
+/* Declarations to keep f77 happy */
 
-int MAIN_(int ac, char **av)  {return 0;}
-int MAIN__(int ac, char **av) {return 0;}
-int __main(int ac, char **av) {return 0;}
+int MAIN_(int ac, char** av) { return 0; }
+int MAIN__(int ac, char** av) { return 0; }
+int __main(int ac, char** av) { return 0; }

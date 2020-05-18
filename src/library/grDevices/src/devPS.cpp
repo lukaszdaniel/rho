@@ -1643,8 +1643,12 @@ fontMetricsFileName(const char *family, int faceIndex,
 
 static const char *getFontType(const char *family, const char *fontdbname)
 {
-    return R_CHAR(STRING_ELT(Rf_getAttrib(getFont(family, fontdbname),
-				     R_ClassSymbol), 0));
+    const char *result = NULL;
+    SEXP font = getFont(family, fontdbname);
+    if (!Rf_isNull(font)) {
+        result = R_CHAR(STRING_ELT(Rf_getAttrib(font, R_ClassSymbol), 0));
+    }
+    return result;
 }
 
 static Rboolean isType1Font(const char *family, const char *fontdbname,
@@ -1662,9 +1666,13 @@ static Rboolean isType1Font(const char *family, const char *fontdbname,
 	    return TRUE;
 	else
 	    return FALSE;
-    } else
-	return streql(getFontType(family, fontdbname),
-		       "Type1Font");
+    } else {
+        const char *fontType = getFontType(family, fontdbname);
+        if (fontType) 
+            return streql(fontType, "Type1Font");
+        else
+            return FALSE;
+    }
 }
 
 static Rboolean isCIDFont(const char *family, const char *fontdbname,
@@ -1681,9 +1689,13 @@ static Rboolean isCIDFont(const char *family, const char *fontdbname,
 	    return TRUE;
 	else
 	    return FALSE;
-    } else
-	return streql(getFontType(family, fontdbname),
-		       "CIDFont");
+    } else {
+        const char *fontType = getFontType(family, fontdbname);
+        if (fontType) 
+            return streql(fontType, "CIDFont");
+        else
+            return FALSE;
+    }
 }
 
 /*

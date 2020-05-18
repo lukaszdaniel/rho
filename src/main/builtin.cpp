@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1999-2017  The R Core Team
+ *  Copyright (C) 1999-2018  The R Core Team
  *  Copyright (C) 1995-1998  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -169,7 +169,7 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    else {
 		if (after) {
 		    PairList* codelist = PairList::cons(code, nullptr);
-		    ctxt->setOnExit(Rf_listAppend(Rf_duplicate(oldcode), codelist));
+		    ctxt->setOnExit(Rf_listAppend(Rf_shallow_duplicate(oldcode), codelist));
 		} else {
 		    ctxt->setOnExit(CONS(code, oldcode));
 		}
@@ -832,11 +832,12 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
     }
     if (Rf_isVector(x) && xnames != nullptr)
 	Rf_setAttrib(rval, Symbols::NamesSymbol, names);
+    // *not* keeping "class": in line with  x[1:k]
     UNPROTECT(2);
     return rval;
 }
 
-/* public older version */
+/* older version */
 SEXP Rf_lengthgets(SEXP x, R_len_t len)
 {
     return Rf_xlengthgets(x, R_xlen_t(len));
@@ -847,23 +848,17 @@ SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFun
 {
     SEXP x = x_;
 
-    // more 'x' checks in x?Rf_lengthgets()
+    // more 'x' checks in xlengthgets()
     if (Rf_length(value_) != 1)
 	Rf_error(_("wrong length for '%s' argument"), "value");
     R_xlen_t len = asVecSize(value_);
-    if (op->variant()) { /* xlength<- */
-	return Rf_xlengthgets(x, len);
-    }
-    // else  length<- :
+#ifndef LONG_VECTOR_SUPPORT
     if (len > R_LEN_T_MAX) {
-#ifdef LONG_VECTOR_SUPPORT
-	return Rf_xlengthgets(x, len);
-#else
 	Rf_error(_("vector size specified is too large"));
 	return x; /* -Wall */
-#endif
     }
-    return Rf_lengthgets(x, R_len_t(len));
+#endif
+    return Rf_xlengthgets(x, len);
 }
 
 /* Expand dots in args, but do not evaluate */

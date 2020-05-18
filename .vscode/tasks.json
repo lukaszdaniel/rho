@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "configure project",
+			"command": "bash",
+			"args": [
+				"-c",
+				"aclocal -I m4 --install && autoconf; tools/rsync-recommended; ./configure CC=gcc   CXX=g++ --enable-werror --enable-maintainer-mode"
+			],
+			"options": {
+				//"cwd": "/usr/bin"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"label": "make project",
+			"command": "make",
+			"args": [
+			],
+			"options": {
+				//"cwd": "/usr/bin"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		}
+	]
+}

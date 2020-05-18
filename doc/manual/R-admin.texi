@@ -4733,6 +4733,18 @@ increase the optimization levels to @option{-O3}: however for many
 versions of the compilers this has caused problems in at least one
 @acronym{CRAN} package.
 
+As from @command{g++} 6 the default C++ standard is C++14.
+Compatibility with earlier releases can be obtained by using
+
+@example
+CXXSTD=-std=gnu++98
+@end example
+
+@noindent
+in @file{config.site}.  This is desirable when checking packages, to
+ensure as far as possible that features from later C++ standards are not
+used unintentionally.
+
 For platforms with both 64- and 32-bit support, it is likely that
 
 @example
@@ -4826,11 +4838,25 @@ This has to be used in conjunction with a Fortran compiler: the
 @command{configure} code will remove @option{-lgcc} from @env{FLIBS},
 which is needed for some versions of @command{gfortran}.
 
-The current default for @command{clang++} is to use the C++ runtime from
-the installed @command{g++}.  Using the runtime from the @code{libc++}
-project (@url{http://libcxx.llvm.org/}, Fedora RPM @code{libcxx-devel})
-has also been tested: for some @R{} packages only the variant using
-@code{libcxxabi} was successful.
+The current out-of-the-box default for @command{clang++} is to use the
+C++ runtime from the installed @command{g++}.  Using the runtime from
+the @code{libc++} project (@url{http://libcxx.llvm.org/}, Fedora RPM
+@code{libcxx-devel}) @emph{via} @option{-stdlib=libc++} has also been
+tested.
+
+As from @command{clang++} 6.0.0 the default C++ standard is C++14, which
+@R{}'s configure also uses when C++11 is requested.  Compatibility with
+earlier releases can be obtained by using
+
+@example
+CXXSTD=-std=gnu++98
+CX11STD=-std=gnu++11
+@end example
+
+@noindent
+in @file{config.site}.  These are desirable when checking packages, to
+ensure as far as possible that features from later C++ standards are not
+used unintentionally.
 
 Recent versions have (optional when built) OpenMP support.@footnote{This
 also needs the OpenMP runtime which has sometimes been distributed
@@ -4864,7 +4890,7 @@ seems this conflicts with using OpenMP in @R{}.  So it may be necessary
 to disable the latter by configuring using @option{--without-openmp}.
 
 It is not clear what architectures @command{flang} intends to support:
-experiments were done on @cputype{x86_64}.
+our experiments were done on @cputype{x86_64}.
 
 
 @node Intel compilers,  , Clang, Linux
@@ -5206,14 +5232,15 @@ this should prompt you to install it.  You can also install directly a
 recent Java from Oracle (currently from
 @uref{http://www.oracle.com/@/technetwork/@/java/@/javase/@/downloads/@/index.html}:
 note that Java 9 and 10 have a limited lifetime and at the time of
-writing @CRANpkg{rJava} did not install with Java 10).  Builds of
-OpenJDK may also be available, e.g.@: from @uref{http://jdk.java.net/}.
+writing @CRANpkg{rJava}@footnote{the current version @code{0.9-9}.} did
+not install with Java 10).  Builds of OpenJDK may also be available,
+e.g.@: from @uref{http://jdk.java.net/}.
 
 Binary distributions of @R{} are built against a specific version (e.g.@:
 1.8.0_161) of Oracle Java so @command{sudo R CMD javareconf} may be
 needed before using Java-using packages.
 
-To see what compatible versions of Java are currently installed, run
+To see what compatible versions of Oracle Java are currently installed, run
 @command{/usr/libexec/java_home -V -a x86_64}.  If needed, set the
 environment variable @env{JAVA_HOME} to choose between these, both when
 @R{} is built from the sources and when @command{R CMD javareconf} is
@@ -5243,6 +5270,21 @@ JAVA_LIBS="-L/$@{JAVA_HOME@}/lib/server -ljvm"
 @end example
 @noindent
 in @file{config.site}.
+
+To use the builds of OpenJDK from  @uref{http://jdk.java.net/}, set
+@env{JAVA_HOME}:
+@example
+JAVA_HOME=@var{/path/to/JDK}/jdk-10.jdk/Contents/Home
+@end example
+@noindent
+where @file{@var{/path/to/JDK}} is wherever the distribution tarball was
+unpacked.  Java 10 JDKs do not contain @command{javah}, but @R{}
+configuration / @command{R CMD javareconf} can use one from an earlier
+installation if @env{JAVAH} is set, e.g.,
+@example
+JAVAH=/Library/Java/JavaVirtualMachines/jdk1.8.0_161.jdk/Contents/Home/bin/javah
+@end example
+
 
 Note that it is necessary to set the environment variable @env{NOAWT} to
 @code{1} to install many of the Java-using packages.
@@ -5708,7 +5750,8 @@ environment can be found in the ``R on AIX'' project on R-Forge
 @cindex FreeBSD
 
 There have been few recent reports on FreeBSD: there is a `port' at
-@uref{https://www.freebsd.org/@/ports/@/math.html}.
+@uref{https://www.freebsd.org/@/ports/@/math.html}.  Recent versions of
+FreeBSD use Clang and the @code{libc++} C++ headers and runtime.
 
 Use of ICU for collation and the @command{configure} option
 @option{--with-internal-tzcode} are desirable workarounds.

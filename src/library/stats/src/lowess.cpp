@@ -29,7 +29,7 @@
 #include <Rmath.h>		/* fmax2, imin2, imax2 */
 #include <R_ext/Applic.h>	/* prototypes for lowess and clowess */
 #include <R_ext/Boolean.h>
-#include <R_ext/Utils.h>	/* rPsort() */
+#include <R_ext/Utils.h>	/* Rf_rPsort() */
 #ifdef DEBUG_lowess
 # include <R_ext/Print.h>
 #endif
@@ -249,10 +249,10 @@ void clowess(double *x, double *y, int n,
 	/* FIXME: We need C API in R for Median ! */
 	m1 = n/2;
 	/* partial sort, for m1 & m2 */
-	rPsort(rw, n, m1);
+	Rf_rPsort(rw, n, m1);
 	if(n % 2 == 0) {
 	    m2 = n-m1-1;
-	    rPsort(rw, n, m2);
+	    Rf_rPsort(rw, n, m2);
 	    cmad = 3.*(rw[m1]+rw[m2]);
 	}
 	else { /* n odd */

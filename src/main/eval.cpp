@@ -800,7 +800,7 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 	GCStackRoot<> gc_protect(s);
 	char *check = getenv("_R_CHECK_LENGTH_1_CONDITION_");
 	const void *vmax = vmaxget();
-	Rboolean err = Rboolean(check && StringTrue(check)); /* warn by default */
+	Rboolean err = Rboolean(check && Rf_StringTrue(check)); /* warn by default */
 	if (!err && check) {
 	    /* err when the condition is evaluated in given package */
 	    const char *pprefix  = "package:";

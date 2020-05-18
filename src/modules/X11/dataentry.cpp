@@ -1129,7 +1129,7 @@ static void closerect(DEstruct DE)
 		/* do it this way to ensure NA, Inf, ...  can get set */
 		char *endp;
 		double newd = R_strtod(buf, &endp);
-		Rboolean warn = Rboolean(!isBlankString(endp));
+		Rboolean warn = Rboolean(!Rf_isBlankString(endp));
 		if (TYPEOF(cvec) == STRSXP) {
 		    SEXP newval;
 		    PROTECT( newval = Rf_mkString(buf) );

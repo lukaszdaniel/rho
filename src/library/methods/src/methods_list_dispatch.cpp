@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2001-2016   The R Core Team.
+ *  Copyright (C) 2001-2018   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -688,7 +688,9 @@ SEXP R_nextMethodCall(SEXP matched_call, SEXP ev)
 	    SEXP generic = Rf_findVarInFrame3(ev, rho::Symbols::DotGenericSymbol, TRUE);
 	    if(generic == R_UnboundValue)
 	        Rf_error("internal error in 'callNextMethod': '.Generic' was not assigned in the frame of the method call");
+	    PROTECT(generic);
 	    op = INTERNAL(Rf_installTrChar(Rf_asChar(generic)));
+	    UNPROTECT(1); /* generic */
 	    prim_case = TRUE;
 	}
     }
@@ -1016,11 +1018,11 @@ SEXP R_dispatchGeneric(SEXP fname, SEXP ev, SEXP fdef)
 		thisClass = dots_class(ev, &check_err);
 	    }
 	    else {
-		arg = Rf_eval(arg_sym, ev);
+		PROTECT(arg = Rf_eval(arg_sym, ev));
 		/* PROTECT(arg = R_tryEvalSilent(arg_sym, ev, &check_err)); // <- related to bug PR#16111 */
 		/* if(!check_err) */
 		thisClass = R_data_class(arg, TRUE);
-		/* UNPROTECT(1); /\* for arg *\/ */
+		UNPROTECT(1); /* arg */
 	    }
 	    if(check_err)
 		Rf_error(_("error in evaluating the argument '%s' in selecting a method for function '%s': %s"),

@@ -1028,7 +1028,7 @@ void REvprintf(const char *format, va_list arg)
     }
 }
 
-int attribute_hidden IndexWidth(R_xlen_t n)
+int attribute_hidden Rf_IndexWidth(R_xlen_t n)
 {
     return int(log10(n + 0.5) + 1);
 }
@@ -1036,5 +1036,5 @@ int attribute_hidden IndexWidth(R_xlen_t n)
 void attribute_hidden VectorIndex(R_xlen_t i, int w)
 {
 /* print index label "[`i']" , using total width `w' (left filling blanks) */
-    Rprintf("%*s[%ld]", w-IndexWidth(i)-2, "", i);
+    Rprintf("%*s[%ld]", w-Rf_IndexWidth(i)-2, "", i);
 }

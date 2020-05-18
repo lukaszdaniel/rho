@@ -177,7 +177,7 @@ strtoc(const char *nptr, char **endptr, Rboolean NA, LocalData *d, int i_exact)
     char *s, *endp;
 
     x = Strtod(nptr, &endp, NA, d, i_exact);
-    if (isBlankString(endp)) {
+    if (Rf_isBlankString(endp)) {
 	z.r = x; z.i = 0;
     } else if (*endp == 'i')  {
 	if (endp == nptr) {
@@ -520,13 +520,13 @@ static void ruleout_types(const char *s, Typecvt_Info *typeInfo, LocalData *data
 
     if (typeInfo->isreal) {
 	Strtod(s, &endp, TRUE, data, exact);
-	if (!isBlankString(endp))
+	if (!Rf_isBlankString(endp))
 	    typeInfo->isreal = FALSE;
     }
 
     if (typeInfo->iscomplex) {
 	strtoc(s, &endp, TRUE, data, exact);
-	if (!isBlankString(endp))
+	if (!Rf_isBlankString(endp))
 	    typeInfo->iscomplex = FALSE;
     }
 }
@@ -612,7 +612,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     for (i = 0; i < len; i++) {
 	tmp = R_CHAR(STRING_ELT(cvec, i));
 	if (!(STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
-	      || isNAstring(tmp, 1, &data) || isBlankString(tmp)))
+	      || isNAstring(tmp, 1, &data) || Rf_isBlankString(tmp)))
 	    break;
     }
     if (i < len) { // Found non-NA entry; use it to screen:
@@ -624,7 +624,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 	for (i = 0; i < len; i++) {
 	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
-		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
+		|| isNAstring(tmp, 1, &data) || Rf_isBlankString(tmp))
 		LOGICAL(rval)[i] = NA_LOGICAL;
 	    else {
 		if (streql(tmp, "F") || streql(tmp, "FALSE"))
@@ -646,7 +646,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 	for (i = 0; i < len; i++) {
 	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
-		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
+		|| isNAstring(tmp, 1, &data) || Rf_isBlankString(tmp))
 		INTEGER(rval)[i] = NA_INTEGER;
 	    else {
 		INTEGER(rval)[i] = Strtoi(tmp, 10);
@@ -665,11 +665,11 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 	for (i = 0; i < len; i++) {
 	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
-		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
+		|| isNAstring(tmp, 1, &data) || Rf_isBlankString(tmp))
 		REAL(rval)[i] = NA_REAL;
 	    else {
 		REAL(rval)[i] = Strtod(tmp, &endp, FALSE, &data, i_exact);
-		if (!isBlankString(endp)) {
+		if (!Rf_isBlankString(endp)) {
 		    typeInfo.isreal = FALSE;
 		    ruleout_types(tmp, &typeInfo, &data, exact);
 		    break;
@@ -684,11 +684,11 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
 	for (i = 0; i < len; i++) {
 	    tmp = R_CHAR(STRING_ELT(cvec, i));
 	    if (STRING_ELT(cvec, i) == NA_STRING || strlen(tmp) == 0
-		|| isNAstring(tmp, 1, &data) || isBlankString(tmp))
+		|| isNAstring(tmp, 1, &data) || Rf_isBlankString(tmp))
 		COMPLEX(rval)[i].r = COMPLEX(rval)[i].i = NA_REAL;
 	    else {
 		COMPLEX(rval)[i] = strtoc(tmp, &endp, FALSE, &data, i_exact);
-		if (!isBlankString(endp)) {
+		if (!Rf_isBlankString(endp)) {
 		    typeInfo.iscomplex = FALSE;
 		    /* this is not needed, unless other cases are added */
 		    ruleout_types(tmp, &typeInfo, &data, exact);

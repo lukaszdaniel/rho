@@ -217,7 +217,7 @@ SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
     if (lookup_baseenv_after_globalenv == -1) {
 	lookup = getenv("_R_S3_METHOD_LOOKUP_BASEENV_AFTER_GLOBALENV_");
 	lookup_baseenv_after_globalenv
-	    = ((lookup != nullptr) && StringTrue(lookup)) ? 1 : 0;
+	    = ((lookup != nullptr) && Rf_StringTrue(lookup)) ? 1 : 0;
     }
 
 	top = SEXP_downcast<Environment*>(Rf_topenv(nullptr, callrho));
@@ -405,6 +405,9 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     Environment* argsenv = SEXP_downcast<Environment*>(env);
 
+    static int lookup_use_topenv_as_defenv = -1;
+    char *lookup;
+
     // Find and check ClosureContext:
     ClosureContext* cptr = R_GlobalContext();
     if (!cptr || cptr->workingEnvironment() != argsenv)
@@ -413,6 +416,12 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
     StringVector* generic = nullptr;
     GCStackRoot<> obj;
     matchArgsForUseMethod(call, args, argsenv, cptr, &generic, &obj);
+
+    if(lookup_use_topenv_as_defenv == -1) {
+	lookup = getenv("_R_S3_METHOD_LOOKUP_USE_TOPENV_AS_DEFENV_");
+	lookup_use_topenv_as_defenv = 
+	    ((lookup != nullptr) && Rf_StringTrue(lookup)) ? 1 : 0;
+    }
 
     /* get environments needed for dispatching.
        callenv = environment from which the generic was called
@@ -438,6 +447,17 @@ SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 			   argsenv->enclosingEnvironment());
 	if (func && func->sexptype() == CLOSXP)
 	    defenv = SEXP_downcast<Closure*>(func)->environment();
+    }
+
+    if(lookup_use_topenv_as_defenv) {
+	Environment* defenv2 = SEXP_downcast<Environment*>(Rf_topenv(nullptr, env));
+	if(defenv2 != defenv) {
+	    Rprintf("*** S3 method lookup problem ***\n");
+	    Rf_PrintValue(generic);
+	    Rf_PrintValue(defenv);
+	    Rf_PrintValue(defenv2);
+	    defenv = defenv2;
+	}
     }
 
     // Try invoking method:

@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -282,12 +282,18 @@ SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction
     return s;
 }
 
-static void substr(char *buf, const char *str, int ienc, int sa, int so)
+static void substr(char *buf, const char *str, int ienc, int sa, int so,
+                   R_xlen_t idx)
 {
 /* Store the substring	str [sa:so]  into buf[] */
     int i, j, used;
 
     if (ienc == CE_UTF8) {
+	if (!utf8Valid(str)) {
+	    char msg[30];
+	    sprintf(msg, "element %ld", (long)idx+1);
+	    Rf_error(_("invalid multibyte string, %s"), msg);
+	}
 	const char *end = str + strlen(str);
 	for (i = 0; i < so && str < end; i++) {
 	    int used = utf8clen(*str);
@@ -347,7 +353,7 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
 		buf[0] = '\0';
 	    } else {
 		if (stop > int(slen)) stop = int(slen);
-		substr(buf, ss, ienc, start, stop);
+		substr(buf, ss, ienc, start, stop, i);
 	    }
 	    SET_STRING_ELT(s, i, Rf_mkCharCE(buf, ienc));
 	}
@@ -465,13 +471,24 @@ do_startsWith(Expression* call, const BuiltInFunction* op,
 
 
 static void
-substrset(char *buf, const char *const str, cetype_t ienc, size_t sa, size_t so)
+substrset(char *buf, const char *const str, cetype_t ienc, size_t sa, size_t so,
+          R_xlen_t xidx, R_xlen_t vidx)
 {
     /* Replace the substring buf[sa:so] by str[] */
     //int i;
 	size_t in = 0, out = 0;
 
     if (ienc == CE_UTF8) {
+	if (!utf8Valid(buf)) {
+	    char msg[30];
+	    sprintf(msg, "element %ld", (long)xidx+1);
+	    Rf_error(_("invalid multibyte string, %s"), msg);
+	}
+	if (!utf8Valid(str)) {
+	    char msg[30];
+	    sprintf(msg, "value element %ld", (long)vidx+1);
+	    Rf_error(_("invalid multibyte string, %s"), msg);
+	}
 	for (size_t i = 1; i < sa; i++) buf += utf8clen(*buf);
 	for (size_t i = sa; i <= so && in < strlen(str); i++) {
 	    in +=  utf8clen(str[in]);
@@ -568,7 +585,7 @@ SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFun
 		/* might expand under MBCS */
 		buf = static_cast<char*>(R_AllocStringBuffer(slen+strlen(v_ss), &cbuff));
 		strcpy(buf, ss);
-		substrset(buf, v_ss, ienc2, start, stop);
+		substrset(buf, v_ss, ienc2, start, stop, i, i % v);
 		SET_STRING_ELT(s, i, Rf_mkCharCE(buf, ienc2));
 	    }
 	    vmaxset(vmax);

@@ -599,7 +599,7 @@ static RObject* NewName(RObject* base, RObject* tag, R_xlen_t seqno, int count)
 	    const void *vmax = vmaxget();
 	    const char *sb = Rf_translateCharUTF8(base);
 	    char *cbuf;
-	    cbuf = static_cast<char*>(R_AllocStringBuffer(strlen(sb) + size_t(IndexWidth(seqno)),
+	    cbuf = static_cast<char*>(R_AllocStringBuffer(strlen(sb) + size_t(Rf_IndexWidth(seqno)),
 				       &cbuff));
 #ifdef LONG_VECTOR_SUPPORT
 	    if (seqno > INT_MAX)

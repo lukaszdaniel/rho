@@ -79,7 +79,7 @@ int Rf_nrows(SEXP s)
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
 	t = Rf_getAttrib(s, Symbols::DimSymbol);
-	if (t == nullptr) return LENGTH(s);
+	if (!t) return LENGTH(s);
 	return INTEGER(t)[0];
     }
     else if (Rf_isFrame(s)) {
@@ -95,7 +95,7 @@ int Rf_ncols(SEXP s)
     SEXP t;
     if (Rf_isVector(s) || Rf_isList(s)) {
 	t = Rf_getAttrib(s, Symbols::DimSymbol);
-	if (t == nullptr) return 1;
+	if (!t) return 1;
 	if (LENGTH(t) >= 2) return INTEGER(t)[1];
 	/* This is a 1D (or possibly 0D array) */
 	return 1;
@@ -120,22 +120,6 @@ void Rf_internalTypeCheck(SEXP call, SEXP s, SEXPTYPE type)
     }
 }
 #endif
-
-const static char * const truenames[] = {
-    "T",
-    "True",
-    "TRUE",
-    "true",
-    nullptr,
-};
-
-const static char * const falsenames[] = {
-    "F",
-    "False",
-    "FALSE",
-    "false",
-    nullptr,
-};
 
 SEXP Rf_asChar(SEXP x)
 {
@@ -290,7 +274,7 @@ SEXP Rf_type2str_nowarn(const SEXPTYPE t) /* returns a CHARSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rcharName;
-	if (res != nullptr) return res;
+	if (res) return res;
     }
     return nullptr;
 }
@@ -298,9 +282,7 @@ SEXP Rf_type2str_nowarn(const SEXPTYPE t) /* returns a CHARSXP */
 SEXP Rf_type2str(const SEXPTYPE t) /* returns a CHARSXP */
 {
     SEXP s = Rf_type2str_nowarn(t);
-    if (s != nullptr) {
-	return s;
-    }
+    if (s) return s;
     Rf_warning(_("type %d is unimplemented in '%s'"), t, "type2str");
     char buf[50];
     snprintf(buf, 50, "unknown type #%d", t);
@@ -311,7 +293,7 @@ SEXP Rf_type2rstr(const SEXPTYPE t) /* returns a STRSXP */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rstrName;
-	if (res != NULL) return res;
+	if (res) return res;
     }
     Rf_error(_("type %d is unimplemented in '%s'"), t,
 	  "type2ImmutableScalarString");
@@ -322,7 +304,7 @@ const char *Rf_type2char(const SEXPTYPE t) /* returns a char* */
 {
     if (t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	const char * res = Type2Table[t].cstrName;
-	if (res != NULL) return res;
+	if (res) return res;
     }
     Rf_warning(_("type %d is unimplemented in '%s'"), t, "type2char");
     static char buf[50];
@@ -346,9 +328,7 @@ SEXP NORET Rf_type2symbol(SEXPTYPE t)
 attribute_hidden
 void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
 {
-    int i;
-
-    for (i = 0; TypeTable[i].str; i++) {
+    for (int i = 0; TypeTable[i].str; i++) {
 	if (TypeTable[i].type == int(t))
 	    Rf_error(_("unimplemented type '%s' in '%s'\n"), TypeTable[i].str, s);
     }
@@ -420,7 +400,7 @@ size_t mbcsToUcs2(const char *in, ucs2_t *out, int nout, int enc)
 #include <wctype.h>
 
 /* This one is not in Rinternals.h, but is used in internet module */
-Rboolean isBlankString(const char *s)
+Rboolean Rf_isBlankString(const char *s)
 {
     if(mbcslocale) {
 	wchar_t wc; size_t used; mbstate_t mb_st;
@@ -437,26 +417,28 @@ Rboolean isBlankString(const char *s)
 
 Rboolean Rf_StringBlank(SEXP x)
 {
-    if (x == nullptr) return TRUE;
-    else return Rboolean(R_CHAR(x)[0] == '\0');
+    if (!x) return TRUE;
+    return Rboolean(R_CHAR(x)[0] == '\0');
 }
 
 /* Function to test whether a string is a true value */
 
-Rboolean StringTrue(const char *name)
+Rboolean Rf_StringTrue(const char* name)
 {
-    int i;
-    for (i = 0; truenames[i]; i++)
-	if (streql(name, truenames[i]))
+    string str(name);
+    vector<string> truenames { "T", "True", "TRUE", "true" };
+    for (const string& word : truenames)
+	if (str == word)
 	    return TRUE;
     return FALSE;
 }
 
-Rboolean StringFalse(const char *name)
+Rboolean Rf_StringFalse(const char* name)
 {
-    int i;
-    for (i = 0; falsenames[i]; i++)
-	if (streql(name, falsenames[i]))
+    vector<string> falsenames { "F", "False", "FALSE", "false" };
+    string str(name);
+    for (const string& word : falsenames)
+	if (str == word)
 	    return TRUE;
     return FALSE;
 }
@@ -494,7 +476,7 @@ void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
 				   const char *formal)
 {
     SEXP tag = TAG(const_cast<RObject*>(arg));
-    if (tag == nullptr) return;
+    if (!tag) return;
 
     const char *supplied = R_CHAR(PRINTNAME(tag));
     if (strncmp(supplied, formal, strlen(supplied)) != 0)
@@ -525,7 +507,7 @@ SEXP Rf_nthcdr(SEXP s, int n)
 {
     if (Rf_isList(s) || Rf_isLanguage(s) || Rf_isFrame(s) || TYPEOF(s) == DOTSXP ) {
 	while( n-- > 0 ) {
-	    if (s == nullptr)
+	    if (!s)
 		Rf_error(_("'nthcdr' list shorter than %d"), n);
 	    s = CDR(s);
 	}
@@ -553,14 +535,14 @@ void attribute_hidden setVector(T * vec, const int& len, const T& val) {
 	for (int i = 0; i < len; i++) vec[i] = val;
 }
 /* formerly used in subscript.cpp, in Utils.h */
-void attribute_hidden setIVector(int * vec, int len, int val)
+void attribute_hidden Rf_setIVector(int * vec, int len, int val)
 {
     setVector(vec, len, val);
 }
 
 
 /* unused in R, in Utils.h, apparently used in Rcpp  */
-void attribute_hidden setRVector(double * vec, int len, double val)
+void attribute_hidden Rf_setRVector(double * vec, int len, double val)
 {
     setVector(vec, len, val);
 }

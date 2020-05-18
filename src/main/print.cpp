@@ -484,7 +484,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		    vmaxset(vmax);
 		}
 		else {
-		    if (taglen + IndexWidth(i) > TAGBUFLEN) {
+		    if (taglen + Rf_IndexWidth(i) > TAGBUFLEN) {
 			if (taglen <= TAGBUFLEN)
 			    sprintf(ptag, "$...");
 		    } else
@@ -634,7 +634,7 @@ static void printList(SEXP s, SEXP env)
 		}
 	    }
 	    else {
-		if (taglen + IndexWidth(i) > TAGBUFLEN) {
+		if (taglen + Rf_IndexWidth(i) > TAGBUFLEN) {
 		    if (taglen <= TAGBUFLEN)
 			sprintf(ptag, "$...");
 		} else

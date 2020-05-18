@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -2367,11 +2367,12 @@ extern int R_InitReadItemDepth;
 
 SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* envir_, RObject* verbose_)
 {
-    /* loadFromConn2(conn, environment, verbose) */
+    /* 0 .. loadFromConn2(conn, environment, verbose) */
+    /* 1 .. loadInfoFromConn2(conn) */
 
     struct R_inpstream_st in;
     Rconnection con;
-    SEXP aenv;
+    SEXP aenv = nullptr;
     GCStackRoot<> res(nullptr);
     unsigned char buf[6];
     size_t count;
@@ -2390,10 +2391,11 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
 	if(!con->canread) Rf_error(_("connection not open for reading"));
 	if(con->text) Rf_error(_("can only load() from a binary connection"));
 
+    if (op->variant() == 0) {
 	aenv = downcast_to_env(envir_);
 	if (!aenv)
 	    Rf_error(_("invalid '%s' argument"), "envir");
-
+    }
 	/* check magic */
 	memset(buf, 0, 6);
 	count = con->read(buf, sizeof(char), 5, con);
@@ -2405,10 +2407,14 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
 	    streqln(reinterpret_cast<char*>(buf), "RDB3\n", 5) ||
 	    streqln(reinterpret_cast<char*>(buf), "RDX3\n", 5)) {
 	    R_InitConnInPStream(&in, con, R_pstream_any_format, nullptr, nullptr);
+	if (op->variant() == 0) {
 	    GCStackRoot<> unser(R_Unserialize(&in));
 	    R_InitReadItemDepth = R_ReadItemDepth = -Rf_asInteger(verbose_);
 	    res = RestoreToEnv(unser, aenv);
 	    R_ReadItemDepth = 0;
+	} else {
+	    res = R_SerializeInfo(&in);
+    }
 	    if(!wasopen)
 		con->close(con);
 	} else
@@ -2420,57 +2426,3 @@ SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltIn
     }
     return res;
 }
-
-SEXP attribute_hidden do_loadInfoFromConn2(SEXP call, SEXP op, SEXP args, SEXP env)
-{
-    /* loadInfoFromConn2(conn) */
-
-    struct R_inpstream_st in;
-    Rconnection con;
-    SEXP res = nullptr;
-    unsigned char buf[6];
-    size_t count;
-    Rboolean wasopen;
-
-    checkArity(op, args);
-
-    con = getConnection(Rf_asInteger(CAR(args)));
-
-    wasopen = con->isopen;
-    if(!wasopen) {
-	char mode[5];
-	strcpy(mode, con->mode);
-	strcpy(con->mode, "rb");
-	if(!con->open(con)) Rf_error(_("cannot open the connection"));
-	strcpy(con->mode, mode);
-    }
-    try {
-    if(!con->canread) Rf_error(_("connection not open for reading"));
-    if(con->text) Rf_error(_("can only load() from a binary connection"));
-
-    /* check magic */
-    memset(buf, 0, 6);
-    count = con->read(buf, sizeof(char), 5, con);
-    if (count == 0) Rf_error(_("no input is available"));
-    if (streqln(reinterpret_cast<char*>(buf), "RDA2\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDB2\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDX2\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDA3\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDB3\n", 5) ||
-	    streqln(reinterpret_cast<char*>(buf), "RDX3\n", 5)) {
-	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, NULL);
-	/* PROTECT is paranoia: some close() method might allocate */
-	PROTECT(res = R_SerializeInfo(&in));
-	if(!wasopen) con->close(con);
-	UNPROTECT(1);
-    } else
-	Rf_error(_("the input does not start with a magic number compatible with loading from a connection"));
-    }
-    catch(...){
-	if (!wasopen && con->isopen)
-	    con->close(con);
-        throw;
-    }
-    return res;
-}
-

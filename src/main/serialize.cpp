@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995--2017  The R Core Team
+ *  Copyright (C) 1995--2018  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -84,10 +84,18 @@ using namespace rho;
  *    versions are stored as an integer packed by the R_Version macro
  *    from Rversion.h.  Some workspace formats may only exist
  *    temporarily in the development stage.  If readers are not
- *    provided in a release version, then these should specify the
+ *    provided in a released version, then these should specify the
  *    oldest reader R version as -1.
  */
-
+ 
+ /* It is now customary that the version (1, 2, 3) of the format is
+  * reflected also in magic numbers (such as RDX2, RDX3, ...), together with
+  * type (xdr/ascii/binary).  Adding a new serialization format thus now
+  * also requires adding a new set of magic numbers, yet in principle this
+  * could be changed in the future.  The code in this file does not need the
+  * magic numbers, it relies on version and type information in the
+  * serialization header (version 2 and 3).
+  */
 
 /* ----- V e r s i o n -- T w o -- S a v e / R e s t o r e ----- */
 
@@ -166,7 +174,7 @@ using namespace rho;
    consists of a function pointer and a data value.  The serialization
    function pointer is called with the reference object and the data
    value as arguments.  It should return nullptr for standard
-   handling and an STRSXP for special handling.  In an STRSXP is
+   handling and an STRSXP for special handling.  If an STRSXP is
    returned, then a special handing mark is written followed by the
    strings in the STRSXP (attributes are ignored).  On unserializing,
    any specially marked entry causes a call to the hook function with
@@ -184,11 +192,15 @@ using namespace rho;
 
 /* ----- V e r s i o n -- T h r e e -- S a v e / R e s t o r e ----- */
 
-/* Experimental version. Currently extends version 2 by adding current native
-   encoding to the serialization header. This information is used
-   on de-serialization: deserialized strings without an encoding flag will be
-   converted to the current native encoding, if possible, or to (flagged)
-   UTF-8.
+/* This format extends version 2 format by adding an identifier of the
+   current native encoding to the serialization header.  On deserialization,
+   strings without an encoding flag will be converted to the current native
+   encoding, if possible, or to (flagged) UTF-8.  The conversion may fail
+   when the original encoding is not supported by iconv (unlikely) or when
+   the string is not valid in its declared encoding, which unfortunately is
+   not uncommon.  The conversion code now deliberately does not check
+   whether strings are valid when no conversion is needed, but such check
+   could be added in the future without changing the format.
 
    Version 3 also adds support for custom ALTREP serialization. Under
    version 2 ALTREP objects are serialied like non-ALTREP ones. */
@@ -837,7 +849,7 @@ static void WriteLENGTH(R_outpstream_t stream, SEXP s)
 	OutInteger(stream, -1);
 	R_xlen_t len = XLENGTH(s);
 	OutInteger(stream, int(len / 4294967296L));
- 	OutInteger(stream, int(len % 4294967296L));
+	OutInteger(stream, int(len % 4294967296L));
    } else OutInteger(stream, LENGTH(s));
 #else
     OutInteger(stream, LENGTH(s));
@@ -929,7 +941,7 @@ OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     case R_pstream_binary_format:
     {
 	R_xlen_t done, thiss;
-        for (done = 0; done < length; done += thiss) {
+	for (done = 0; done < length; done += thiss) {
 	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->OutBytes(stream, REAL(s) + done,
 			     int(sizeof(double) * thiss));
@@ -952,7 +964,7 @@ OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 	R_xlen_t done, thiss;
 	XDR xdrs;
 	Rcomplex *c = COMPLEX(s);
-        for (done = 0; done < length; done += thiss) {
+	for (done = 0; done < length; done += thiss) {
 	    thiss = std::min(CHUNK_SIZE, length - done);
 	    xdrmem_create(&xdrs, buf, int(thiss * sizeof(Rcomplex)), XDR_ENCODE);
 	    for(int cnt = 0; cnt < thiss; cnt++) {
@@ -968,7 +980,7 @@ OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     case R_pstream_binary_format:
     {
 	R_xlen_t done, thiss;
-        for (done = 0; done < length; done += thiss) {
+	for (done = 0; done < length; done += thiss) {
 	    thiss = std::min(CHUNK_SIZE, length - done);
 	    stream->OutBytes(stream, COMPLEX(s) + done,
 			     int(sizeof(Rcomplex) * thiss));
@@ -1217,7 +1229,7 @@ void R_Serialize(SEXP s, R_outpstream_t stream)
     {
 	OutInteger(stream, version);
 	OutInteger(stream, R_VERSION);
-	OutInteger(stream, -1); /* released R versions can't read yet */
+	OutInteger(stream, R_Version(3,5,0));
 	const char *natenc = R_nativeEncoding();
 	int nelen = (int) strlen(natenc);
 	OutInteger(stream, nelen);
@@ -2017,7 +2029,7 @@ static void DecodeVersion(int packed, int *v, int *p, int *s)
 SEXP R_Unserialize(R_inpstream_t stream)
 {
     int version;
-    int writer_version, release_version;
+    int writer_version, min_reader_version;
     SEXP obj, ref_table;
 
     lastname[0] = '\0';
@@ -2026,7 +2038,7 @@ SEXP R_Unserialize(R_inpstream_t stream)
     /* Read the version numbers */
     version = InInteger(stream);
     writer_version = InInteger(stream);
-    release_version = InInteger(stream);
+    min_reader_version = InInteger(stream);
     switch (version) {
     case 2: break;
     case 3:
@@ -2044,11 +2056,11 @@ SEXP R_Unserialize(R_inpstream_t stream)
 	{
 	    int vw, pw, sw;
 	    DecodeVersion(writer_version, &vw, &pw, &sw);
-	    if (release_version < 0)
+	    if (min_reader_version < 0)
 		Rf_error(_("cannot read unreleased workspace version %d written by experimental R %d.%d.%d"), version, vw, pw, sw);
 	    else {
 		int vm, pm, sm;
-		DecodeVersion(release_version, &vm, &pm, &sm);
+		DecodeVersion(min_reader_version, &vm, &pm, &sm);
 		Rf_error(_("cannot read workspace version %d written by R %d.%d.%d; need R %d.%d.%d or newer"),
 		      version, vw, pw, sw, vm, pm, sm);
 	    }
@@ -2077,7 +2089,7 @@ SEXP R_Unserialize(R_inpstream_t stream)
 SEXP R_SerializeInfo(R_inpstream_t stream)
 {
     int version;
-    int writer_version, release_version, vv, vp, vs;
+    int writer_version, min_reader_version, vv, vp, vs;
     int anslen = 4;
     SEXP ans, names;
     char buf[128];
@@ -2089,7 +2101,7 @@ SEXP R_SerializeInfo(R_inpstream_t stream)
     if (version == 3)
 	anslen++;
     writer_version = InInteger(stream);
-    release_version = InInteger(stream);
+    min_reader_version = InInteger(stream);
 
     PROTECT(ans = Rf_allocVector(VECSXP, anslen));
     PROTECT(names = Rf_allocVector(STRSXP, anslen));
@@ -2099,12 +2111,12 @@ SEXP R_SerializeInfo(R_inpstream_t stream)
     DecodeVersion(writer_version, &vv, &vp, &vs);
     snprintf(buf, 128, "%d.%d.%d", vv, vp, vs); 
     SET_VECTOR_ELT(ans, 1, Rf_mkString(buf));
-    SET_STRING_ELT(names, 2, Rf_mkChar("min_release_version"));
-    if (release_version < 0)
+    SET_STRING_ELT(names, 2, Rf_mkChar("min_reader_version"));
+    if (min_reader_version < 0)
 	/* unreleased version of R */
 	SET_VECTOR_ELT(ans, 2, Rf_ScalarString(NA_STRING));
     else { 
-	DecodeVersion(release_version, &vv, &vp, &vs);
+	DecodeVersion(min_reader_version, &vv, &vp, &vs);
 	snprintf(buf, 128, "%d.%d.%d", vv, vp, vs);
 	SET_VECTOR_ELT(ans, 2, Rf_mkString(buf));
     }
@@ -2425,13 +2437,14 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     return nullptr;
 }
 
-/* Used from readRDS().
-   This became public in R 2.13.0, and that version added support for
+/* unserializeFromConn(conn, hook) used from readRDS().
+   It became public in R 2.13.0, and that version added support for
    connections internally */
-SEXP attribute_hidden 
+SEXP attribute_hidden
 do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* refhook_)
 {
-    /* unserializeFromConn(conn, hook) */
+    /* 0 .. unserializeFromConn(conn, hook) */
+    /* 1 .. serializeInfoFromConn(conn) */
 
     struct R_inpstream_st in;
     Rconnection con;
@@ -2440,9 +2453,6 @@ do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RO
     Rboolean wasopen;
 
     con = getConnection(Rf_asInteger(con_));
-
-    fun = refhook_;
-    hook = fun != nullptr ? CallHook : nullptr;
 
     /* Now we need to do some sanity checking of the arguments.
        A filename will already have been opened, so anything 
@@ -2459,11 +2469,15 @@ do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RO
     try {
 	if(!con->canread) Rf_error(_("connection not open for reading"));
 
+    fun = op->variant() == 0 ? refhook_ : nullptr;
+    hook = fun != nullptr ? CallHook : nullptr;
 	R_InitConnInPStream(&in, con, R_pstream_any_format, hook, fun);
-	PROTECT(ans = R_Unserialize(&in)); /* paranoia about next line */
-	if(!wasopen)
+	ans = op->variant() == 0 ? R_Unserialize(&in) : R_SerializeInfo(&in);
+	if(!wasopen) {
+		PROTECT(ans); /* paranoia about next line */
 	    con->close(con);
-	UNPROTECT(1);
+		UNPROTECT(1);
+	}
     } catch (...) {
 	if (!wasopen && con->isopen)
 	    con->close(con);
@@ -2471,51 +2485,6 @@ do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RO
     }
     return ans;
 }
-
-SEXP attribute_hidden
-do_serializeInfoFromConn(SEXP call, SEXP op, SEXP args, SEXP env)
-{
-    /* serializeInfoFromConn(conn) */
-
-    struct R_inpstream_st in;
-    Rconnection con;
-    SEXP ans;
-    Rboolean wasopen;
-
-    checkArity(op, args);
-
-    con = getConnection(Rf_asInteger(CAR(args)));
-
-    /* Now we need to do some sanity checking of the arguments.
-       A filename will already have been opened, so anything
-       not open was specified as a connection directly.
-     */
-    wasopen = con->isopen;
-    if (!wasopen) {
-	char mode[5];
-	strcpy(mode, con->mode);
-	strcpy(con->mode, "rb");
-	if (!con->open(con))
-	    Rf_error(_("cannot open the connection"));
-	strcpy(con->mode, mode);
-    }
-    try {
-	if (!con->canread)
-	    Rf_error(_("connection not open for reading"));
-
-	R_InitConnInPStream(&in, con, R_pstream_any_format, NULL, nullptr);
-	PROTECT(ans = R_SerializeInfo(&in)); /* paranoia about next line */
-	if (!wasopen)
-	    con->close(con);
-	UNPROTECT(1);
-    } catch (...) {
-	if (!wasopen && con->isopen)
-	    con->close(con);
-	throw;
-    }
-    return ans;
-}
-
 
 /*
  * Persistent Buffered Binary Connection Streams

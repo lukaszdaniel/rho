@@ -129,8 +129,8 @@ int attribute_hidden
 Rf_LogicalFromString(SEXP x, int *warn)
 {
     if (x != R_NaString) {
-	if (StringTrue(R_CHAR(x))) return 1;
-	if (StringFalse(R_CHAR(x))) return 0;
+	if (Rf_StringTrue(R_CHAR(x))) return 1;
+	if (Rf_StringFalse(R_CHAR(x))) return 0;
     }
     return NA_LOGICAL;
 }
@@ -174,9 +174,9 @@ Rf_IntegerFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
-    if (x != R_NaString && !isBlankString(R_CHAR(x))) { /* ASCII */
+    if (x != R_NaString && !Rf_isBlankString(R_CHAR(x))) { /* ASCII */
 	xdouble = R_strtod(R_CHAR(x), &endp); /* ASCII */
-	if (isBlankString(endp)) {
+	if (Rf_isBlankString(endp)) {
 #ifdef _R_pre_Version_3_3_0
 	    if (xdouble > INT_MAX) {
 		*warn |= WARN_INT_NA;
@@ -234,9 +234,9 @@ Rf_RealFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
-    if (x != R_NaString && !isBlankString(R_CHAR(x))) { /* ASCII */
+    if (x != R_NaString && !Rf_isBlankString(R_CHAR(x))) { /* ASCII */
 	xdouble = R_strtod(R_CHAR(x), &endp); /* ASCII */
-	if (isBlankString(endp))
+	if (Rf_isBlankString(endp))
 	    return xdouble;
 	else
 	    *warn |= WARN_NA;
@@ -302,15 +302,15 @@ Rf_ComplexFromString(SEXP x, int *warn)
     char *endp;
 
     z.r = z.i = NA_REAL;
-    if (x != R_NaString && !isBlankString(xx)) {
+    if (x != R_NaString && !Rf_isBlankString(xx)) {
 	xr = R_strtod(xx, &endp);
-	if (isBlankString(endp)) {
+	if (Rf_isBlankString(endp)) {
 	    z.r = xr;
 	    z.i = 0.0;
 	}
 	else if (*endp == '+' || *endp == '-') {
 	    xi = R_strtod(endp, &endp);
-	    if (*endp++ == 'i' && isBlankString(endp)) {
+	    if (*endp++ == 'i' && Rf_isBlankString(endp)) {
 		z.r = xr;
 		z.i = xi;
 	    }

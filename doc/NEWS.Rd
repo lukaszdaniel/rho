@@ -7,16 +7,33 @@
 
 \section{\Rlogo CHANGES IN R-devel}{
 
-%%   \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
-%%     \itemize{
-%%       \item The default version for \code{save()}, \code{saveRDS()},
-%%       \code{serialize()} and similar has been changed to \samp{3}.
-%%       Objects saved with version 3 are not readable by earlier versions
-%%       of \R.
+   \subsection{NEW FEATURES}{
+    \itemize{
+      \item \code{optim(*, control = list(warn.1d.NelderMead = FALSE))}
+      allows to turn off the warning when applying the default
+      \code{"Nelder-Mead"} method to 1-dimensional problems.
+    }
+  }
 
-%%       This includes saved workspaces.
-%%     }
-%%   }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \code{match.arg()} more carefully chooses the environment
+      for constucting default \code{choices}, fixing \PR{17401} as
+      proposed by Duncan Murdoch.
+    }
+  }
+}
+
+\section{\Rlogo CHANGES IN R 3.5.0}{
+
+  \subsection{SIGNIFICANT USER-VISIBLE CHANGES}{
+    \itemize{
+      \item All packages are by default byte-compiled on installation.
+      This makes the installed packages larger (usually marginally so)
+      and may affect the format of messages and tracebacks (which often
+      exclude \code{.Call} and similar).
+    }
+  }
 
   \subsection{NEW FEATURES}{
     \itemize{
@@ -343,6 +360,22 @@
       argument \code{make.names} allows to specify \emph{how} invalid
       row names \code{rNms} are handled.  \code{.rowNamesDF()} is a
       \dQuote{workaround} compatible default.
+
+      \item R has new serialization format (version 3) which supports custom
+      serialization of \code{ALTREP} framework objects.  These objects can
+      still be serialized in format 2, but less efficiently.  Serialization
+      format 3 also records the current native encoding of unflagged strings
+      and converts them when de-serialized in R running under different
+      native encoding.  Format 3 comes with new serialization magic numbers
+      (RDA3, RDB3, RDX3).  Format 3 can be selected by \code{version = 3} in
+      \code{save()}, \code{serialize()} and \code{saveRDS()}, but format 2
+      remains the default for all serialization and saving of the workspace.
+      Serialized data in format 3 cannot be read in \R prior to version
+      3.5.0.
+
+      \item The \code{"Date"} and \dQuote{date-time} classes
+      \code{"POSIXlt"} and \code{"POSIXct"} now have a working
+      \code{`length<-`} method, as wished in \PR{17387}.
     }
   }
 
@@ -373,12 +406,6 @@
       test-suite-management packages available and (for the time being)
       works around a common omission of \CRANpkg{rmarkdown} from the
       \samp{VignetteBuilder} field.
-    }
-  }
-
-  \subsection{PACKAGE INSTALLATION}{
-    \itemize{
-      \item By default, packages are now byte-compiled on installation.
     }
   }
 
@@ -435,8 +462,8 @@
       favour of \code{cbind} and \code{rbind}).
 
       \item The declaration of \code{pythag()} in \file{Rmath.h} has
-      been removed --- it has not been provided since \R 2.14.0.
-      [Deferred until \CRANpkg{Rcpp} catches up.]
+      been removed --- the entry point has not been provided since \R
+      2.14.0.
     }
   }
 
@@ -619,6 +646,9 @@
 
       \item Indexing a list using dollar and empty string (\code{l$""})
       returns NULL.
+
+      \item Using \code{ \\usage\{ data(<name>, package="<pkg>") \} }
+      no longer produces \command{R CMD check} warnings.
     }
   }
 }

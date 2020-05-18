@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -2557,7 +2557,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     if (!Rf_isString(text))
 	Rf_error(_("invalid '%s' argument"), "text");
 
-    itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars"));
+    PROTECT(itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars")));
 
     n = XLENGTH(text);
     if (!useBytes) {
@@ -2849,7 +2849,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
     } else
 	tre_regfree(&reg);
 
-    UNPROTECT(1);
+    UNPROTECT(2);
     return ans;
 }
 
@@ -2897,7 +2897,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
     if(!Rf_isString(text))
 	Rf_error(_("invalid '%s' argument"), "text");
 
-    itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars"));
+    PROTECT(itype = Rf_ScalarString(Rf_mkChar(useBytes ? "bytes" : "chars")));
 
     n = XLENGTH(text);
 
@@ -3032,7 +3032,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
 
     tre_regfree(&reg);
 
-    UNPROTECT(1);
+    UNPROTECT(2);
 
     return ans;
 }

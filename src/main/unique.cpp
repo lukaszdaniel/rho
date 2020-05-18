@@ -62,7 +62,7 @@ struct _HashData {
     Rboolean isLong;
 #endif
     size_t (*hash)(SEXP, R_xlen_t, HashData *);
-    int (*equal)(SEXP, R_xlen_t, SEXP, R_xlen_t);
+    bool (*equal)(SEXP, R_xlen_t, SEXP, R_xlen_t);
     SEXP HashTable;
 
     int nomatch;
@@ -200,71 +200,71 @@ static R_INLINE size_t shash(SEXP x, R_xlen_t indx, HashData *d)
     return scatter(k, d);
 }
 
-static int lequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool lequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     return (LOGICAL_ELT(x, i) == LOGICAL_ELT(y, j));
 }
 
 
-static R_INLINE int iequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool iequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     return (INTEGER_ELT(x, i) == INTEGER_ELT(y, j));
 }
 
 /* BDR 2002-1-17  We don't want NA and other NaNs to be equal */
-static R_INLINE int requal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool requal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return 0;
     double xi = REAL_ELT(x, i);
     double yj = REAL_ELT(y, j);
     if (!ISNAN(xi) && !ISNAN(yj))
 	return (xi == yj);
-    else if (R_IsNA(xi) && R_IsNA(yj)) return 1;
-    else if (R_IsNaN(xi) && R_IsNaN(yj)) return 1;
-    else return 0;
+    else if (R_IsNA(xi) && R_IsNA(yj)) return true;
+    else if (R_IsNaN(xi) && R_IsNaN(yj)) return true;
+    else return false;
 }
 
 /* This is differentiating {NA,1}, {NA,0}, {NA, NaN}, {NA, NA},
  * but R's print() and format()  render all as "NA" */
-static int cplx_eq(Rcomplex x, Rcomplex y)
+static inline bool cplx_eq(const Rcomplex &x, const Rcomplex &y)
 {
     if (!ISNAN(x.r) && !ISNAN(x.i) && !ISNAN(y.r) && !ISNAN(y.i))
 	return x.r == y.r && x.i == y.i;
     else if (R_IsNA(x.r) || R_IsNA(x.i)) // x is NA
-	return (R_IsNA(y.r) || R_IsNA(y.i)) ? 1 : 0;
+	return (R_IsNA(y.r) || R_IsNA(y.i)) ? true : false;
     else if (R_IsNA(y.r) || R_IsNA(y.i)) // y is NA but x is not
-	return 0;
+	return false;
     // else : none is NA but there's at least one NaN;  hence  ISNAN(.) == R_IsNaN(.)
     return
 	(((ISNAN(x.r) && ISNAN(y.r)) || (!ISNAN(x.r) && !ISNAN(y.r) && x.r == y.r)) && // Re
 	 ((ISNAN(x.i) && ISNAN(y.i)) || (!ISNAN(x.i) && !ISNAN(y.i) && x.i == y.i))    // Im
-	    ) ? 1 : 0;
+	    ) ? true : false;
 }
 
-static int cequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool cequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     return cplx_eq(COMPLEX_ELT(x, i), COMPLEX_ELT(y, j));
 }
 
-static R_INLINE int sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     SEXP xi = STRING_ELT(x, i);
     SEXP yj = STRING_ELT(y, j);
     /* Two strings which have the same address must be the same,
        so avoid looking at the contents */
-    if (xi == yj) return 1;
+    if (xi == yj) return true;
     /* Then if either is NA the other cannot be */
     /* Once all CHARSXPs are cached, Seql will handle this */
     if (xi == NA_STRING || yj == NA_STRING)
-	return 0;
+	return false;
     /* another pre-test to avoid the call to Seql */
     if (/*IS_CACHED(xi) && IS_CACHED(yj) && */ ENC_KNOWN(xi) == ENC_KNOWN(yj))
-	return 0;
-    return Rf_Seql(xi, yj);
+	return false;
+    return bool(Rf_Seql(xi, yj));
 }
 
 static size_t rawhash(SEXP x, R_xlen_t indx, HashData *d)
@@ -272,9 +272,9 @@ static size_t rawhash(SEXP x, R_xlen_t indx, HashData *d)
     return size_t(RAW_ELT(x, indx));
 }
 
-static int rawequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool rawequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     return (RAW_ELT(x, i) == RAW_ELT(y, j));
 }
 
@@ -336,9 +336,9 @@ static size_t vhash(SEXP x, R_xlen_t indx, HashData *d)
     return scatter(key, d);
 }
 
-static int vequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool vequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
-    if (i < 0 || j < 0) return 0;
+    if (i < 0 || j < 0) return false;
     return R_compute_identical(VECTOR_ELT(x, i), VECTOR_ELT(y, j), 0);
 }
 
@@ -1755,7 +1755,7 @@ SEXP attribute_hidden do_makeunique(/*const*/ Expression* call, const BuiltInFun
 /* Use hashing to improve object.size. Here we want equal CHARSXPs,
    not equal contents. */
 
-static int csequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+static inline bool csequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     return STRING_ELT(x, i) == STRING_ELT(y, j);
 }

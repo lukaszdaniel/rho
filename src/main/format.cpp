@@ -119,11 +119,11 @@ void formatInteger(const int *x, R_xlen_t n, int *fieldwidth)
     else *fieldwidth = 1;
 
     if (xmin < 0) {
-	l = IndexWidth(-xmin) + 1;	/* +1 for sign */
+	l = Rf_IndexWidth(-xmin) + 1;	/* +1 for sign */
 	if (l > *fieldwidth) *fieldwidth = l;
     }
     if (xmax > 0) {
-	l = IndexWidth(xmax);
+	l = Rf_IndexWidth(xmax);
 	if (l > *fieldwidth) *fieldwidth = l;
     }
 }

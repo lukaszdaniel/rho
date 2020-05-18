@@ -80,7 +80,7 @@ static void MatrixColumnLabel(SEXP cl, int j, int w)
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_left));
     }
     else {
-	Rprintf("%*s[,%ld]", w-IndexWidth(j+1)-3, "", j+1);
+	Rprintf("%*s[,%ld]", w-Rf_IndexWidth(j+1)-3, "", j+1);
     }
 }
 
@@ -96,7 +96,7 @@ static void RightMatrixColumnLabel(SEXP cl, int j, int w)
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_right));
     }
     else {
-	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-IndexWidth(j+1)-3, "");
+	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-Rf_IndexWidth(j+1)-3, "");
     }
 }
 
@@ -109,7 +109,7 @@ static void LeftMatrixColumnLabel(SEXP cl, int j, int w)
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_left), w-l, "");
     }
     else {
-	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-IndexWidth(j+1)-3, "");
+	Rprintf("%*s[,%ld]%*s", R_print.gap, "", j+1, w-Rf_IndexWidth(j+1)-3, "");
     }
 }
 
@@ -123,7 +123,7 @@ static void MatrixRowLabel(SEXP rl, int i, int rlabw, int lbloff)
 		rlabw-l-lbloff, "");
     }
     else {
-	Rprintf("\n%*s[%ld,]", rlabw-3-IndexWidth(i + 1), "", i+1);
+	Rprintf("\n%*s[%ld,]", rlabw-3-Rf_IndexWidth(i + 1), "", i+1);
     }
 }
 
@@ -149,7 +149,7 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 	StringVector::const_iterator beg = rl->begin(); \
         rlabw = std::accumulate(beg, beg + r, 0, stringWidth);  \
     } else						\
-	rlabw = IndexWidth(r + 1) + 3;			\
+	rlabw = Rf_IndexWidth(r + 1) + 3;			\
 							\
     if (rn) {						\
 	int rnw = strwidth(rn);				\
@@ -173,7 +173,7 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 	    else clabw = strwidth(Rf_translateChar(STRING_ELT(cl, j)));	\
 	    vmaxset(vmax);						\
 	} else								\
-	    clabw = IndexWidth(j + 1) + 3;				\
+	    clabw = Rf_IndexWidth(j + 1) + 3;				\
 									\
 	if (w[j] < clabw)						\
 	    w[j] = clabw;						\

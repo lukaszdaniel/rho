@@ -48,7 +48,7 @@ static RObject* removeAttrib(RObject* vec, Symbol* name);
 SEXP comment(SEXP);
 static RObject* commentgets(RObject* vec, RObject* comment);
 
-static RObject* row_names_gets(RObject* vec , RObject* val)
+static RObject* row_names_gets(RObject* vec, RObject* val)
 {
     RObject* ans;
 
@@ -268,7 +268,7 @@ SEXP Rf_setAttrib(SEXP vec, SEXP name, SEXP val)
 	return Rf_tspgets(vec, val);
     else if (name == Symbols::CommentSymbol)
 	return commentgets(vec, val);
-    else if (name == Symbols::RowNamesSymbol)
+    else if (name == Symbols::RowNamesSymbol) // "row.names" -> care for data frames
 	return row_names_gets(vec, val);
     else {
 	vec->setAttribute(SEXP_downcast<Symbol*>(name), val);
@@ -848,7 +848,7 @@ SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunc
     /* FIXME:
        Need to special-case names(x) <- NULL for 1-d arrays to perform
          Rf_setAttrib(x, Symbols::DimNamesSymbol, nullptr)
-       (and remove the dimnames) here if we want 
+       (and remove the dimnames) here if we want
          Rf_setAttrib(x, Symbols::NamesSymbol, nullptr)
        to actually remove the names, as needed in subset.cpp.
     */
@@ -1163,7 +1163,7 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
 	    MARK_NOT_MUTABLE(CAR(attrs));
 	    SET_VECTOR_ELT(value, nvalues, CAR(attrs));
 	    SET_STRING_ELT(names, nvalues, R_BlankString);
-	}	
+	}
 	attrs = CDR(attrs);
 	nvalues++;
     }

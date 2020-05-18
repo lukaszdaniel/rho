@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-17 r7c8bdccf3a) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-03-25 r74461) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -6389,15 +6389,15 @@ function ()
 > print.function
 function (x, ...)  
  - attr(*, "srcref")= 'srcref' int [1:8] 1 19 1 63 19 63 1 1
-  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fe93be9b1e0> 
+  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd65da850> 
 > f
 function ()  
  - attr(*, "srcref")= 'srcref' int [1:8] 1 17 1 28 17 28 1 1
-  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fe93b7b3ff0> 
+  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd66232b0> 
  - attr(*, "note")= chr "just a note"
  - attr(*, "yada")=function ()  
   ..- attr(*, "srcref")= 'srcref' int [1:8] 2 24 2 48 24 48 2 2
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fe93b7b3ff0> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd66232b0> 
 > rm(print.function)
 > ## auto-printing and printing differed up to R 2.9.x
 > 
@@ -7882,4 +7882,55 @@ Error in command 'sprintf("%d", c(1, NaN))':
  - attr(*, "names")= chr [1:7] "a" "b1" "b2" "b3" ...
  - attr(*, "color")= chr "blue"
 > ## did print " atomic [1:7] ..." in R <= 3.4.x
+> 
+> 
+> ## check stopifnot(exprs = ....)
+> tryCatch(stopifnot(exprs = {
++   all.equal(pi, 3.1415927)
++   2 < 2
++   cat("Kilroy was here!\n")
++   all(1:10 < 12)
++   "a" < "b"
++ }), error = function(e) e$message) -> M ; cat("Error: ", M, "\n")
+Error:  2 < 2 is not TRUE 
+> 
+> tryCatch(stopifnot(exprs = {
++   all.equal(pi, 3.1415927)
++   { cat("Kilroy was here!\n"); TRUE }
++   pi < 3
++   cat("whereas I won't be printed ...\n")
++   all(1:10 < 12)
++   "a" < "b"
++ }), error = function(e) e$message) -> M2 ; cat("Error: ", M2, "\n")
+Kilroy was here!
+Error:  pi < 3 is not TRUE 
+> 
+> stopifnot(exprs = {
++   all.equal(pi, 3.1415927)
++   { cat("\nKilroy was here! ... "); TRUE }
++   pi > 3
++   all(1:10 < 12)
++   "a" < "b"
++   { cat("and I'm printed as well ...\n"); TRUE}
++ })
+
+Kilroy was here! ... and I'm printed as well ...
+> ## without "{ .. }" :
+> stopifnot(exprs = 2 == 2)
+> try(stopifnot(exprs = 1 > 2))
+Error : 1 > 2 is not TRUE
+> ## passing an expression object:
+> stopifnot(exprs = expression(2 == 2, pi < 4))
+Error: expression(2 == 2, pi < 4) are not all TRUE
+> tryCatch(stopifnot(exprs = expression(
++                        2 == 2,
++                        { cat("\n Kilroy again .."); TRUE },
++                        pi < 4,
++                        0 == 1,
++                        { cat("\n no way..\n"); TRUE })),
++          error = function(e) e$message) -> M3
+> cat("Error: ", M3, "\n")
+Error:  expression(2 == 2, { .... are not all TRUE 
+> ## was partly not ok for many weeks in R-devel, early 2018
+> 
 > 

@@ -8,6 +8,7 @@
 compilerOptions <- new.env(hash = TRUE, parent = emptyenv())
 compilerOptions$optimize <- 2
 compilerOptions$suppressAll <- TRUE
+compilerOptions$suppressNoSuperAssignVar <- FALSE
 compilerOptions$suppressUndefined <-
     c(".Generic", ".Method", ".Random.seed", ".self")
 
@@ -44,6 +45,14 @@ setCompilerOptions <- function(...) {
                        old <- c(old, list(suppressAll =
                                           compilerOptions$suppressAll))
                        newOptions$suppressAll <- op
+                   }
+               },
+               suppressNoSuperAssignVar = {
+                   if (isTRUE(op) || isFALSE(op)) {
+                       old <- c(old, list(
+                           suppressNoSuperAssignVar =
+                               compilerOptions$suppressNoSuperAssignVar))
+                       newOptions$suppressNoSuperAssignVar <- op
                    }
                },
                suppressUndefined = {

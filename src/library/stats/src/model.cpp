@@ -334,6 +334,7 @@ static SEXP ColumnNames(SEXP x)
 	return VECTOR_ELT(dn, 1);
 }
 
+// called from R as  .Externals2(C_modelmatrix, t, data)
 SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP expr, factors, terms, vars, vnames, assign;
@@ -352,8 +353,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* Get the "terms" structure and extract */
     /* the intercept and response attributes. */
-
-    terms = CAR(args);
+    terms = CAR(args); // = 't' in R's calling code
 
     intrcept = Rf_asLogical(Rf_getAttrib(terms, Rf_install("intercept")));
     if (intrcept == NA_INTEGER)

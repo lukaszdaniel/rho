@@ -46,7 +46,6 @@
 # define R_SIZE_T size_t
 #endif
 
-#if 0
 #define revsort       Rf_revsort
 #define iPsort        Rf_iPsort
 #define rPsort        Rf_rPsort
@@ -57,7 +56,6 @@
 #define StringFalse   Rf_StringFalse
 #define StringTrue    Rf_StringTrue
 #define isBlankString Rf_isBlankString
-#endif
 
 #ifdef  __cplusplus
 extern "C" {
@@ -69,9 +67,9 @@ void	R_rsort(double*, int);
 void	R_csort(Rcomplex*, int);
 void    rsort_with_index(double *, int *, int);
 void	Rf_revsort(double*, int*, int);/* reverse; sort i[] alongside */
-void	iPsort(int*,    int, int);
-void	rPsort(double*, int, int);
-void	cPsort(Rcomplex*, int, int);
+void	Rf_iPsort(int*,    int, int);
+void	Rf_rPsort(double*, int, int);
+void	Rf_cPsort(Rcomplex*, int, int);
 
 /* ../../main/qsort.cpp : */
 /* dummy renamed to II to avoid problems with g++ on Solaris */
@@ -89,11 +87,11 @@ const char *R_ExpandFileName(const char *);
 #ifdef Win32
 const char *R_ExpandFileNameUTF8(const char *);
 #endif
-void	setIVector(int*, int, int);
-void	setRVector(double*, int, double);
-Rboolean StringFalse(const char *);
-Rboolean StringTrue(const char *);
-Rboolean isBlankString(const char *);
+void	Rf_setIVector(int*, int, int);
+void	Rf_setRVector(double*, int, double);
+Rboolean Rf_StringFalse(const char *);
+Rboolean Rf_StringTrue(const char *);
+Rboolean Rf_isBlankString(const char *);
 
 /* These two are guaranteed to use '.' as the decimal point,
    and to accept "NA".

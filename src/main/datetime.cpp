@@ -627,7 +627,7 @@ static void glibc_fix(stm *tm, int *invalid)
 
        Specifying mon but not mday nor yday is invalid.
     */
-    time_t t = time(NULL);
+    time_t t = time(nullptr);
     stm *tm0;
     int tmp;
 #ifndef HAVE_POSIX_LEAPSECONDS
@@ -694,7 +694,7 @@ makelt(stm *tm, SEXP ans, R_xlen_t i, int valid, double frac_secs)
 	     /* --------- R interfaces --------- */
 
 // We assume time zone names/abbreviations are ASCII, as all known ones are.
-SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* tz_)
+HIDDEN SEXP do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* tz_)
 {
     SEXP stz, x, ans, ansnames, klass, tzone;
     int isgmt = 0, valid, settz = 0;
@@ -790,13 +790,13 @@ SEXP attribute_hidden do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::B
 }
 
 // .Internal(as.POSIXct(x, tz)) -- called only from  as.POSIXct.POSIXlt()
-SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* tz_)
+HIDDEN SEXP do_asPOSIXct(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* tz_)
 {
     SEXP stz, x, ans;
     R_xlen_t n = 0, nlen[9];
     int isgmt = 0, settz = 0;
     char oldtz[1001] = "";
-    const char *tz = NULL;
+    const char *tz = nullptr;
     stm tm;
     double tmp;
 
@@ -881,7 +881,7 @@ SEXP attribute_hidden do_asPOSIXct(/*const*/ rho::Expression* call, const rho::B
     return ans;
 }
 
-SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* usetz_)
+HIDDEN SEXP do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* usetz_)
 {
     int settz = 0;
     char buff[300];
@@ -1058,12 +1058,12 @@ SEXP attribute_hidden do_formatPOSIXlt(/*const*/ rho::Expression* call, const rh
 }
 
 // .Internal(strptime(as.character(x), format, tz))
-SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* tz_)
+HIDDEN SEXP do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* format_, rho::RObject* tz_)
 {
     SEXP x, sformat, ans, ansnames, klass, stz, tzone = nullptr;
     int invalid, isgmt = 0, settz = 0, offset;
     stm tm, tm2, *ptm = &tm;
-    const char *tz = NULL;
+    const char *tz = nullptr;
     char oldtz[1001] = "";
     double psecs = 0.0;
     R_xlen_t n, m, N;
@@ -1205,7 +1205,7 @@ SEXP attribute_hidden do_strptime(/*const*/ rho::Expression* call, const rho::Bu
     return ans;
 }
 
-SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP x, ans, ansnames, klass;
     R_xlen_t n;
@@ -1266,7 +1266,7 @@ SEXP attribute_hidden do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::B
     return ans;
 }
 
-SEXP attribute_hidden do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP x, ans, klass;
     R_xlen_t n = 0, nlen[9];

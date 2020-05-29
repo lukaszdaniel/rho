@@ -9,17 +9,50 @@
 
    \subsection{NEW FEATURES}{
     \itemize{
-      \item \code{optim(*, control = list(warn.1d.NelderMead = FALSE))}
-      allows to turn off the warning when applying the default
-      \code{"Nelder-Mead"} method to 1-dimensional problems.
+      \item \code{Sys.setFileTime()} has been vectorized, its arguments
+      \code{path} and \code{time} of length greater than one are now
+      supported.
+
+      \item \code{axis()} gets new option \code{gap.axis = NA} for
+      specifying a multiplication factor for the minimal \dQuote{gap}
+      (distance) between axis labels drawn.   Its default is \code{1}
+      for labels \emph{parallel} to the axis, and \code{0.5} for
+      perpendicular ones.
+
+      These (perpendicular labels) no longer overlap, fixing bug \PR{17384}.
     }
   }
 
   \subsection{BUG FIXES}{
     \itemize{
-      \item \code{match.arg()} more carefully chooses the environment
-      for constucting default \code{choices}, fixing \PR{17401} as
-      proposed by Duncan Murdoch.
+      \item \code{replayPlot(r)} now also works in the same \R session
+      when \code{r} has been \dQuote{reproduced} from serialization,
+      typically after saving to and reading from an RDS file.
+
+      \item \code{substr()} and \code{substring()} now signal an error
+      when the input is invalid UTF-8.
+
+      \item \code{file.copy()} now works also when its argument \code{to}
+      is of length greater than one.
+
+      \item \code{mantelhaen.test()} no longer suffers from integer
+      overflow in largish cases, thanks to Ben Bolker's \PR{17383}.
+
+      \item \code{dput()} and \code{dump()} are no longer truncating
+      when \code{options(deparse.max.lines = *)} is set.
+
+      \item Calls with an S3 class are no longer evaluated when printed,
+      fixing part of \PR{17398}, thanks to a patch from Lionel Henry.
+
+      \item \code{optim(*, lower = c(-Inf, -Inf))} no longer warns (and
+      switches the method), thanks to a suggestion by John Nash.
+    }
+  }
+
+  \subsection{INSTALLATION on a UNIX-ALIKE}{
+    \itemize{
+      \item The C++ compiler defaults to the C++11 standard, if
+      supported; otherwise to the C++98 standard.
     }
   }
 }
@@ -273,9 +306,9 @@
 
       \item \code{write.dcf()} gets optional argument \code{useBytes}.
 
-      \item New function \code{packageDate()} which tries to get a valid
-      \code{"Date"} object from a package \file{DESCRIPTION} file,
-      thanks to suggestions in \PR{17324}.
+      \item New, partly experimental \code{packageDate()} which tries to
+      get a valid \code{"Date"} object from a package \file{DESCRIPTION}
+      file, thanks to suggestions in \PR{17324}.
 
       \item \code{tools::resaveRdaFiles()} gains a \code{version}
       argument, for use when packages should remain compatible with
@@ -316,7 +349,7 @@
       \item The environment variable \env{R_MAX_VSIZE} can now be used
       to specify the maximal vector heap size. On macOS, unless specified
       by this environment variable, the maximal vector heap size is set to
-      the maximum on 16GB and the available physical memory. This is to
+      the maximum of 16GB and the available physical memory. This is to
       avoid having the \command{R} process killed when macOS over-commits
       memory.
 
@@ -361,21 +394,43 @@
       row names \code{rNms} are handled.  \code{.rowNamesDF()} is a
       \dQuote{workaround} compatible default.
 
-      \item R has new serialization format (version 3) which supports custom
-      serialization of \code{ALTREP} framework objects.  These objects can
-      still be serialized in format 2, but less efficiently.  Serialization
-      format 3 also records the current native encoding of unflagged strings
-      and converts them when de-serialized in R running under different
-      native encoding.  Format 3 comes with new serialization magic numbers
-      (RDA3, RDB3, RDX3).  Format 3 can be selected by \code{version = 3} in
-      \code{save()}, \code{serialize()} and \code{saveRDS()}, but format 2
-      remains the default for all serialization and saving of the workspace.
-      Serialized data in format 3 cannot be read in \R prior to version
-      3.5.0.
+      \item R has new serialization format (version 3) which supports
+      custom serialization of \code{ALTREP} framework objects.  These
+      objects can still be serialized in format 2, but less efficiently.
+      Serialization format 3 also records the current native encoding of
+      unflagged strings and converts them when de-serialized in R
+      running under different native encoding.  Format 3 comes with new
+      serialization magic numbers (RDA3, RDB3, RDX3).  Format 3 can be
+      selected by \code{version = 3} in \code{save()},
+      \code{serialize()} and \code{saveRDS()}, but format 2 remains the
+      default for all serialization and saving of the workspace.
+      Serialized data in format 3 cannot be read by versions of \R prior
+      to version 3.5.0.
 
       \item The \code{"Date"} and \dQuote{date-time} classes
       \code{"POSIXlt"} and \code{"POSIXct"} now have a working
       \code{`length<-`} method, as wished in \PR{17387}.
+
+      \item \code{optim(*, control = list(warn.1d.NelderMead = FALSE))}
+      allows to turn off the warning when applying the default
+      \code{"Nelder-Mead"} method to 1-dimensional problems.
+
+      \item \code{matplot(.., panel.first = .)} etc now work, as
+      \code{log} becomes explicit argument and \code{...} is passed to
+      \code{plot()} unevaluated, as suggested by Sebastian Meyer in \PR{17386}.
+
+      \item Interrupts can be suspended while evaluating an expression
+      using \code{suspendInterrupts}.  Subexpression can be evaluated
+      with interrupts enabled using \code{allowInterrupts}.  These
+      functions can be used to make sure cleanup handlers cannot be
+      interrupted.
+
+      \item \R 3.5.0 includes a framework that allows packages to
+      provide alternate representations of basic \R objects
+      (\code{ALTREP}).  The framework is still experimental and may
+      undergo changes in future \R releases as more experience is
+      gained. For now, documentation is provided in
+      \url{https://svn.r-project.org/R/branches/ALTREP/ALTREP.html}.
     }
   }
 
@@ -424,6 +479,12 @@
 
       \item C99 functions \code{expm1}, \code{hypot}, \code{log1p} and
       \code{nearbyint} are now required.
+
+      \item \command{configure} sets a \option{-std} flag for the C++
+      compiler for all supported C++ standards (e.g., \option{-std=gnu++11}
+      for the C++11 compiler).   Previously this was not done in a few
+      cases where the default standard passed the tests made
+      (e.g.\sspace\command{clang 6.0.0} for C++11).
     }
   }
 
@@ -626,7 +687,7 @@
       \code{NA}.  (Thanks to Suharto Anggono's patches in \PR{17280}).
 
       \item The \code{duplicated()} method for data frames is now based
-      on \code{list}s (instead of string coercion).  Consequently
+      on the \code{list} method (instead of string coercion).  Consequently
       \code{unique()} is better distinguishing data frame rows, fixing
       \PR{17369} and \PR{17381}.  The methods for matrices and arrays
       are changed accordingly.
@@ -649,6 +710,16 @@
 
       \item Using \code{ \\usage\{ data(<name>, package="<pkg>") \} }
       no longer produces \command{R CMD check} warnings.
+
+      \item \code{match.arg()} more carefully chooses the environment
+      for constructing default \code{choices}, fixing \PR{17401} as
+      proposed by Duncan Murdoch.
+
+      \item Deparsing of consecutive \code{!} calls is now consistent
+      with deparsing unary \code{-} and \code{+} calls and creates code
+      that can be reparsed exactly; thanks to a patch by Lionel Henry in
+      \PR{17397}.  (As a side effect, this uses fewer parentheses in
+      some other deparsing involving \code{!} calls.)
     }
   }
 }
@@ -4390,7 +4461,7 @@
 
       \item \code{as.environment(list())} now works, and
       \code{as.list()} of such an environment is now the same as
-      \code{list()}.
+      \code{list()}. (\PR{15926})
 
       \item Several \pkg{tcltk} functions failed when run in unusual
       environments. (\PR{15970})

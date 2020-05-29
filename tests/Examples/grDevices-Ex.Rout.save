@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -2588,6 +2588,9 @@ List of 18
 > ### ** Examples
 > 
 > require(graphics)
+> ## Don't show: 
+> oldwd <- setwd(tempdir())
+> ## End(Don't show)
 > 
 > pictex()
 > plot(1:11, (-5:5)^2, type = "b", main = "Simple Example Plot")
@@ -2611,6 +2614,9 @@ pdf
 > ## End(Not run)
 > ##--------------------
 > unlink("Rplots.tex")
+> ## Don't show: 
+> setwd(oldwd)
+> ## End(Don't show)
 > 
 > 
 > 
@@ -3799,7 +3805,7 @@ $zlab
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  10.948 0.331 11.291 0 0 
+Time elapsed:  11.921 0.288 12.209 0 0 
 > grDevices::dev.off()
 null device 
           1 

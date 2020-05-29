@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 1995--2017  The R Core Team.
+ *  Copyright (C) 1995--2018  The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -79,9 +79,8 @@ static int immediateWarning = 0;
 static int noBreakWarning = 0;
 
 static void try_jump_to_restart(void);
-// The next is crucial to the use of NORET attributes.
-static void NORET
-jump_to_top_ex(Rboolean, Rboolean, Rboolean, Rboolean, Rboolean);
+// The next is crucial to the use of [[noreturn]] attributes.
+[[noreturn]] static void jump_to_top_ex(Rboolean, Rboolean, Rboolean, Rboolean, Rboolean);
 static void signalInterrupt(void);
 static const char * R_ConciseTraceback(SEXP call, int skip);
 
@@ -179,7 +178,7 @@ void Rf_onintrNoResume() { onintrEx(FALSE); }
    These do far more processing than is allowed in a signal handler ....
 */
 
-RETSIGTYPE attribute_hidden Rf_onsigusr1(int dummy)
+HIDDEN RETSIGTYPE Rf_onsigusr1(int dummy)
 {
     if (R_interrupts_suspended) {
 	/**** ought to save signal and handle after suspend */
@@ -207,7 +206,7 @@ RETSIGTYPE attribute_hidden Rf_onsigusr1(int dummy)
 }
 
 
-RETSIGTYPE attribute_hidden Rf_onsigusr2(int dummy)
+HIDDEN RETSIGTYPE Rf_onsigusr2(int dummy)
 {
     inError = 1;
 
@@ -260,7 +259,7 @@ static int Rvsnprintf(char *buf, std::size_t size, const char  *format, va_list 
 
 constexpr size_t BUFSIZE = 8192;
 
-static R_INLINE void RprintTrunc(char *buf)
+R_INLINE static void RprintTrunc(char *buf)
 {
     if(R_WarnLength < BUFSIZE - 20 && strlen(buf) == R_WarnLength) {
 	strcat(buf, " ");
@@ -297,7 +296,7 @@ void Rf_warning(const char *format, ...)
 
 static void vsignalError(SEXP call, const char *format, va_list ap);
 static void vsignalWarning(SEXP call, const char *format, va_list ap);
-static void NORET invokeRestart(SEXP, SEXP);
+[[noreturn]] static void invokeRestart(SEXP, SEXP);
 
 #include <rlocale.h>
 
@@ -433,7 +432,7 @@ void Rf_warningcall_immediate(SEXP call, const char *format, ...)
     immediateWarning = 0;
 }
 
-attribute_hidden
+HIDDEN
 void Rf_PrintWarnings(const char *hdr = nullptr)
 {
     int i;
@@ -596,8 +595,7 @@ static void (*R_ErrorHook)(SEXP, char *) = nullptr;
    checks in GC and session exit (or .Call) do not have such limit. */
 static int allowedConstsChecks = 1000;
 
-static void NORET
-verrorcall_dflt(SEXP call, const char *format, va_list ap)
+[[noreturn]] static void verrorcall_dflt(SEXP call, const char *format, va_list ap)
 {
     if (allowedConstsChecks > 0) {
 	allowedConstsChecks--;
@@ -733,7 +731,7 @@ verrorcall_dflt(SEXP call, const char *format, va_list ap)
     inError = oldInError;
 }
 
-static void NORET errorcall_dflt(SEXP call, const char *format,...)
+[[noreturn]] static void errorcall_dflt(SEXP call, const char *format,...)
 {
     va_list ap;
 
@@ -742,7 +740,7 @@ static void NORET errorcall_dflt(SEXP call, const char *format,...)
     va_end(ap);
 }
 
-void NORET Rf_errorcall(SEXP call, const char *format,...)
+NORET void Rf_errorcall(SEXP call, const char *format,...)
 {
     va_list ap;
 
@@ -767,8 +765,7 @@ void NORET Rf_errorcall(SEXP call, const char *format,...)
 
 /* Like errorcall, but copies all data for the error message into a buffer
    before doing anything else. */
-attribute_hidden
-void NORET errorcall_cpy(SEXP call, const char *format, ...)
+NORET HIDDEN void errorcall_cpy(SEXP call, const char* format, ...)
 {
     char buf[BUFSIZE];
 
@@ -781,7 +778,7 @@ void NORET errorcall_cpy(SEXP call, const char *format, ...)
 }
 
 // geterrmessage(): Return (the global) 'errbuf' as R string
-SEXP attribute_hidden do_geterrmessage(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_geterrmessage(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return Rf_ScalarString(Rf_mkChar(errbuf));
 }
@@ -883,8 +880,9 @@ static void jump_to_top_ex(Rboolean traceback,
 	   exit.  */
 
 	/* jump to a browser/try if one is on the stack */
-	if (! ignoreRestartContexts)
+	if (!ignoreRestartContexts) {
 	    try_jump_to_restart();
+	}
 	/* at this point, i.e. if we have not exited in
 	   try_jump_to_restart, we are heading for top level */
 
@@ -913,7 +911,7 @@ static void jump_to_top_ex(Rboolean traceback,
     */
 }
 
-void NORET jump_to_toplevel()
+NORET void jump_to_toplevel()
 {
     /* no traceback, no user error option; for now, warnings are
        printed here and console is reset -- eventually these should be
@@ -925,7 +923,7 @@ void NORET jump_to_toplevel()
 /* #define DEBUG_GETTEXT 1 */
 
 /* gettext(domain, string) */
-SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* domain_)
+HIDDEN SEXP do_gettext(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* domain_)
 {
 #ifdef ENABLE_NLS
     const char *domain = "", *cfn;
@@ -1027,7 +1025,7 @@ SEXP attribute_hidden do_gettext(/*const*/ Expression* call, const BuiltInFuncti
 }
 
 /* ngettext(n, msg1, msg2, domain) */
-SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_, RObject* msg1_, RObject* msg2_, RObject* domain_)
+HIDDEN SEXP do_ngettext(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_, RObject* msg1_, RObject* msg2_, RObject* domain_)
 {
 #ifdef ENABLE_NLS
     const char *domain = "", *cfn;;
@@ -1049,7 +1047,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 
 	for(ClosureContext *cptr = ClosureContext::innermost(
 		Evaluator::Context::innermost()->nextOut());
-	    cptr != NULL;
+	    cptr != nullptr;
 	    cptr = ClosureContext::innermost(cptr->nextOut()))
 	{
 	    /* stop() etc have internal call to .makeMessage */
@@ -1094,7 +1092,7 @@ SEXP attribute_hidden do_ngettext(/*const*/ Expression* call, const BuiltInFunct
 
 
 /* bindtextdomain(domain, dirname) */
-SEXP attribute_hidden do_bindtextdomain(/*const*/ Expression* call, const BuiltInFunction* op, RObject* domain_, RObject* dirname_)
+HIDDEN SEXP do_bindtextdomain(/*const*/ Expression* call, const BuiltInFunction* op, RObject* domain_, RObject* dirname_)
 {
 #ifdef ENABLE_NLS
     char *res;
@@ -1122,7 +1120,7 @@ static Expression* findCall(void)
     return (cptr ? const_cast<Expression*>(cptr->call()) : nullptr);
 }
 
-SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
+NORET HIDDEN SEXP do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 /* Rf_error(.) : really doesn't return anything; but all do_foo() must be SEXP */
     Expression* c_call;
@@ -1146,7 +1144,7 @@ SEXP attribute_hidden NORET do_stop(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* never called: */
 }
 
-SEXP attribute_hidden do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP c_call;
     checkArity(op, args);
@@ -1183,14 +1181,13 @@ SEXP attribute_hidden do_warning(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* Error recovery for incorrect argument count error. */
-attribute_hidden
-void NORET WrongArgCount(const char *s)
+NORET HIDDEN void WrongArgCount(const char* s)
 {
     Rf_error(_("incorrect number of arguments to \"%s\""), s);
 }
 
 
-void NORET UNIMPLEMENTED(const char *s)
+NORET void UNIMPLEMENTED(const char *s)
 {
     Rf_error(_("unimplemented feature in %s"), s);
 }
@@ -1224,8 +1221,7 @@ WarningDB[] = {
 };
 
 
-attribute_hidden
-void NORET Rf_ErrorMessage(SEXP call, int which_error, ...)
+NORET HIDDEN void Rf_ErrorMessage(SEXP call, int which_error, ...)
 {
     int i;
     char buf[BUFSIZE];
@@ -1244,7 +1240,7 @@ void NORET Rf_ErrorMessage(SEXP call, int which_error, ...)
     Rf_errorcall(call, "%s", buf);
 }
 
-attribute_hidden
+HIDDEN
 void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
 {
     int i;
@@ -1259,7 +1255,7 @@ void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
     }
 
 /* clang pre-3.9.0 says
-      warning: passing an object that undergoes default argument promotion to 
+      warning: passing an object that undergoes default argument promotion to
       'va_start' has undefined behavior [-Wvarargs]
 */
     va_start(ap, which_warn);
@@ -1270,7 +1266,7 @@ void WarningMessage(SEXP call, int /* R_WARNING */ which_warn, ...)
 
 #ifdef UNUSED
 /* temporary hook to allow experimenting with alternate warning mechanisms */
-static void (*R_WarningHook)(SEXP, char *) = NULL;
+static void (*R_WarningHook)(SEXP, char *) = nullptr;
 
 void R_SetWarningHook(void (*hook)(SEXP, char *))
 {
@@ -1296,7 +1292,7 @@ static void R_PrintDeferredWarnings(void)
     }
 }
 
-attribute_hidden
+HIDDEN
 SEXP R_GetTraceback(int skip)
 {
     int nback = 0, ns;
@@ -1319,7 +1315,7 @@ SEXP R_GetTraceback(int skip)
 	if (skip > 0)
 	    skip--;
 	else {
-	    SETCAR(t, Rf_deparse1(const_cast<Expression*>(c->call()), FALSE, DEFAULTDEPARSE));
+	    SETCAR(t, Rf_deparse1m(const_cast<Expression*>(c->call()), FALSE, DEFAULTDEPARSE));
 	    if (c->sourceLocation() && !Rf_isNull(c->sourceLocation())) 
 		Rf_setAttrib(CAR(t), Symbols::SrcrefSymbol, Rf_duplicate(c->sourceLocation()));
 	    t = CDR(t);
@@ -1328,7 +1324,7 @@ SEXP R_GetTraceback(int skip)
     return s;
 }
 
-SEXP attribute_hidden do_traceback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_traceback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     int skip;
 
@@ -1531,9 +1527,9 @@ namespace {
 
 #define RESULT_SIZE 4
 
-static SEXP R_HandlerResultToken = NULL;
+static SEXP R_HandlerResultToken = nullptr;
 
-void attribute_hidden R_FixupExitingHandlerResult(SEXP result)
+HIDDEN void R_FixupExitingHandlerResult(SEXP result)
 {
     /* The internal error handling mechanism stores the error message
        in 'errbuf'.  If an on.exit() action is processed while jumping
@@ -1545,7 +1541,7 @@ void attribute_hidden R_FixupExitingHandlerResult(SEXP result)
        more favorable stack context than before the jump. The
        R_HandlerResultToken is used to make sure the result being
        modified is associated with jumping to an exiting handler. */
-    if (result != NULL &&
+    if (result != nullptr &&
 	TYPEOF(result) == VECSXP &&
 	XLENGTH(result) == RESULT_SIZE &&
 	VECTOR_ELT(result, 0) == nullptr &&
@@ -1554,11 +1550,11 @@ void attribute_hidden R_FixupExitingHandlerResult(SEXP result)
     }
 }
 
-SEXP attribute_hidden do_addCondHands(/*const*/ Expression* call, const BuiltInFunction* op, RObject* classes, RObject* handlers, RObject* parentenv, RObject* target, RObject* calling_)
+HIDDEN SEXP do_addCondHands(/*const*/ Expression* call, const BuiltInFunction* op, RObject* classes, RObject* handlers, RObject* parentenv, RObject* target, RObject* calling_)
 {
     int calling = Rf_asLogical(calling_);
 
-    if (R_HandlerResultToken == NULL) {
+    if (R_HandlerResultToken == nullptr) {
 	R_HandlerResultToken = Rf_allocVector(VECSXP, 1);
 	R_PreserveObject(R_HandlerResultToken);
     }
@@ -1615,7 +1611,7 @@ static void vsignalWarning(SEXP call, const char *format, va_list ap)
     else vwarningcall_dflt(call, format, ap);
 }
 
-static void NORET gotoExitingHandler(SEXP cond, SEXP call, SEXP entry)
+[[noreturn]] static void gotoExitingHandler(SEXP cond, SEXP call, SEXP entry)
 {
     SEXP rho = ENTRY_TARGET_ENVIR(entry);
     SEXP result = ENTRY_RETURN_RESULT(entry);
@@ -1680,7 +1676,7 @@ static PairList* findConditionHandler(SEXP cond)
     return nullptr;
 }
 
-SEXP attribute_hidden do_signalCondition(/*const*/ Expression* call, const BuiltInFunction* op, RObject* cond, RObject* msg, RObject* ecall)
+HIDDEN SEXP do_signalCondition(/*const*/ Expression* call, const BuiltInFunction* op, RObject* cond, RObject* msg, RObject* ecall)
 {
     PairList* list;
     GCStackRoot<PairList> oldstack(R_HandlerStack);
@@ -1756,7 +1752,7 @@ static void signalInterrupt(void)
     }
 }
 
-void attribute_hidden
+HIDDEN void
 R_InsertRestartHandlers(ClosureContext *cptr, const char *cname)
 {
     SEXP klass, rho, entry, name;
@@ -1779,7 +1775,7 @@ R_InsertRestartHandlers(ClosureContext *cptr, const char *cname)
     UNPROTECT(2);
 }
 
-SEXP attribute_hidden do_dfltWarn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_, RObject* call_)
+HIDDEN SEXP do_dfltWarn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_, RObject* call_)
 {
     const char *msg;
     SEXP ecall;
@@ -1793,7 +1789,7 @@ SEXP attribute_hidden do_dfltWarn(/*const*/ Expression* call, const BuiltInFunct
     return nullptr;
 }
 
-SEXP attribute_hidden NORET do_dfltStop(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_, RObject* call_)
+NORET HIDDEN SEXP do_dfltStop(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_, RObject* call_)
 {
     const char *msg;
     SEXP ecall;
@@ -1811,7 +1807,7 @@ SEXP attribute_hidden NORET do_dfltStop(/*const*/ Expression* call, const BuiltI
  * Restart Handling
  */
 
-SEXP attribute_hidden do_getRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* i_)
+HIDDEN SEXP do_getRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* i_)
 {
     int i;
     SEXP list;
@@ -1842,7 +1838,7 @@ namespace {
     }
 }
 
-SEXP attribute_hidden do_addRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* restart)
+HIDDEN SEXP do_addRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* restart)
 {
     CHECK_RESTART(restart);
     push_restart(restart);
@@ -1851,7 +1847,7 @@ SEXP attribute_hidden do_addRestart(/*const*/ Expression* call, const BuiltInFun
 
 #define RESTART_EXIT(r) VECTOR_ELT(r, 1)
 
-static void NORET invokeRestart(SEXP r, SEXP arglist)
+[[noreturn]] static void invokeRestart(SEXP r, SEXP arglist)
 {
     SEXP exit = RESTART_EXIT(r);
 
@@ -1876,13 +1872,13 @@ static void NORET invokeRestart(SEXP r, SEXP arglist)
     }
 }
 
-SEXP attribute_hidden NORET do_invokeRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* r_, RObject* args_)
+NORET HIDDEN SEXP do_invokeRestart(/*const*/ Expression* call, const BuiltInFunction* op, RObject* r_, RObject* args_)
 {
     CHECK_RESTART(r_);
     invokeRestart(r_, args_);
 }
 
-SEXP attribute_hidden do_seterrmessage(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_)
+HIDDEN SEXP do_seterrmessage(/*const*/ Expression* call, const BuiltInFunction* op, RObject* message_)
 {
     SEXP msg;
 
@@ -1893,7 +1889,7 @@ SEXP attribute_hidden do_seterrmessage(/*const*/ Expression* call, const BuiltIn
     return nullptr;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_printDeferredWarnings(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     R_PrintDeferredWarnings();
@@ -1965,7 +1961,7 @@ SEXP R_tryCatchError(SEXP (*body)(void *), void *bdata,
     SEXP cond = Rf_mkString("error");
 
     PROTECT(cond);
-    val = R_tryCatch(body, bdata, cond, handler, hdata, NULL, NULL);
+    val = R_tryCatch(body, bdata, cond, handler, hdata, nullptr, nullptr);
     UNPROTECT(1);
     return val;
 }
@@ -1983,6 +1979,7 @@ SEXP R_tryCatchError(SEXP (*body)(void *), void *bdata,
     void *hdata;
     void (*finally)(void *);
     void *fdata;
+    int suspended;
 };
 
 static SEXP default_tryCatch_handler(SEXP cond, void *data)
@@ -1992,7 +1989,7 @@ static SEXP default_tryCatch_handler(SEXP cond, void *data)
 
 static void default_tryCatch_finally(void *data) { }
 
-static SEXP trycatch_callback = NULL;
+static SEXP trycatch_callback = nullptr;
 static const char* trycatch_callback_source =
     "function(code, conds, fin) {\n"
     "    handler <- function(cond)\n"
@@ -2014,9 +2011,9 @@ SEXP R_tryCatch(SEXP (*body)(void *), void *bdata,
 		SEXP (*handler)(SEXP, void *), void *hdata,
 		void (*finally)(void *), void *fdata)
 {
-    if (body == NULL) Rf_error("must supply a body function");
+    if (body == nullptr) Rf_error("must supply a body function");
 
-    if (trycatch_callback == NULL) {
+    if (trycatch_callback == nullptr) {
 	trycatch_callback = R_ParseEvalString(trycatch_callback_source,
 					      R_BaseNamespace);
 	R_PreserveObject(trycatch_callback);
@@ -2025,20 +2022,28 @@ SEXP R_tryCatch(SEXP (*body)(void *), void *bdata,
     tryCatchData_t tcd = {
 	.body = body,
 	.bdata = bdata,
-	.handler = handler != NULL ? handler : default_tryCatch_handler,
+	.handler = handler != nullptr ? handler : default_tryCatch_handler,
 	.hdata = hdata,
-	.finally = finally != NULL ? finally : default_tryCatch_finally,
-	.fdata = fdata
+	.finally = finally != nullptr ? finally : default_tryCatch_finally,
+	.fdata = fdata,
+	.suspended = R_interrupts_suspended
     };
 
-    if (conds == NULL) conds = Rf_allocVector(STRSXP, 0);
+    /* Interrupts are suspended while in the infrastructure R code and
+       enabled, if the were on entry to R_TryCatch, while calling the
+       body function in do_tryCatchHelper */
+
+    R_interrupts_suspended = TRUE;
+
+    if (conds == nullptr) conds = Rf_allocVector(STRSXP, 0);
     PROTECT(conds);
-    SEXP fin = finally != NULL ? R_TrueValue : R_FalseValue;
+    SEXP fin = finally != nullptr ? R_TrueValue : R_FalseValue;
     SEXP tcdptr = R_MakeExternalPtr(&tcd, nullptr, nullptr);
     SEXP expr = Rf_lang4(trycatch_callback, tcdptr, conds, fin);
     PROTECT(expr);
     SEXP val = Rf_eval(expr, R_GlobalEnv);
     UNPROTECT(2); /* conds, expr */
+    R_interrupts_suspended = Rboolean(tcd.suspended);
     return val;
 }
 
@@ -2055,13 +2060,26 @@ SEXP do_tryCatchHelper(SEXP call, SEXP op, SEXP args, SEXP env)
 
     switch (Rf_asInteger(sw)) {
     case 0:
-	return ptcd->body(ptcd->bdata);
+	if (ptcd->suspended)
+	    /* Interrupts were suspended for the call to R_TryCatch,
+	       so leave them that way */
+	    return ptcd->body(ptcd->bdata);
+	else {
+	    /* Interrupts were not suspended for the call to
+	       R_TryCatch, but were suspended for the call through
+	       R. So enable them for the body and suspend again on the
+	       way out. */
+	    R_interrupts_suspended = FALSE;
+	    SEXP val = ptcd->body(ptcd->bdata);
+	    R_interrupts_suspended = TRUE;
+	    return val;
+	}
     case 1:
-	if (ptcd->handler != NULL)
+	if (ptcd->handler != nullptr)
 	    return ptcd->handler(cond, ptcd->hdata);
 	else return nullptr;
     case 2:
-	if (ptcd->finally != NULL)
+	if (ptcd->finally != nullptr)
 	    ptcd->finally(ptcd->fdata);
 	return nullptr;
     default: return nullptr; /* should not happen */

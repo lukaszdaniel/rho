@@ -60,7 +60,7 @@ expected <- structure(list(Sepal.Length = c(5.1, 4.9, 4.7, 4.6, 5, 5.4, 4.6,
     2, 2, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 3, 2, 2, 2, 1, 2, 
     2, 2, 3, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2)), .Names = c("Sepal.Length", 
-"Sepal.Width", "Petal.Length", "Petal.Width", "Species", "c(\"4\" = 3, \"3\" = 2, \"3\" = 2, \"3\" = 2, \"4\" = 3, \"4\" = 3, \"3\" = 2, "
+"Sepal.Width", "Petal.Length", "Petal.Width", "Species", "c(\"4\" = 3, \"3\" = 2, \"3\" = 2, \"3\" = 2, \"4\" = 3, \"4\" = 3, \"3\" = 2, \"3\" = 2, \"3\" = 2, "
 ), row.names = c(NA, -150L), class = "data.frame")
 test(id=226, code={
 argv <- list(structure(list(Sepal.Length = c(5.1, 4.9, 4.7, 4.6, 5, 5.4, 

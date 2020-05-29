@@ -49,7 +49,7 @@ static void inspect_tree(int pre, SEXP v, int deep, int pvec) {
 /* internal API - takes one mandatory argument (object to inspect) and
    two optional arguments (deep and pvec - see above), positional argument
    matching only */
-SEXP attribute_hidden do_inspect(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_inspect(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, int num_args, ...)
 {
     va_list args;
     va_start(args, num_args);
@@ -69,18 +69,18 @@ SEXP attribute_hidden do_inspect(/*const*/ rho::Expression* call, const rho::Bui
     return obj;
 }
 
-SEXP attribute_hidden do_address(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
+HIDDEN SEXP do_address(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
     return R_MakeExternalPtr((void *) x, nullptr, nullptr);
 }
 
-SEXP attribute_hidden do_named(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_named(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
     return Rf_ScalarInteger(NAMED(CAR(args)));
 }
 
-SEXP attribute_hidden do_refcnt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
+HIDDEN SEXP do_refcnt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
     // return Rf_ScalarInteger(REFCNT(CAR(args)));
     return Rf_ScalarInteger(NA_INTEGER); // Not currently implemented in rho
@@ -88,12 +88,12 @@ SEXP attribute_hidden do_refcnt(rho::Expression* call, const rho::BuiltInFunctio
 
 /* the following functions can be use internally and for debugging purposes -
    so far they are not used in any actual code */
-SEXP attribute_hidden R_inspect(SEXP x) {
+HIDDEN SEXP R_inspect(SEXP x) {
     inspect_tree(0, x, -1, 5);
     return x;
 }
 
-SEXP attribute_hidden R_inspect3(SEXP x, int deep, int pvec) {
+HIDDEN SEXP R_inspect3(SEXP x, int deep, int pvec) {
     inspect_tree(0, x, deep, pvec);
     return x;
 }

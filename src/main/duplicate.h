@@ -46,8 +46,7 @@ void xcopyRealWithRecycle(double *dst, double *src, R_xlen_t dstart, R_xlen_t n,
 void xcopyStringWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc);
 void xcopyVectorWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc);
 template<typename VALTYPE>
-void attribute_hidden
-xcopyWithRecycle(VALTYPE *dst, VALTYPE *src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc) {
+HIDDEN void xcopyWithRecycle(VALTYPE *dst, VALTYPE *src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc) {
 
     if (nsrc >= n) { /* no recycle needed */
 	for(R_xlen_t i = 0; i < n; i++)
@@ -71,13 +70,13 @@ xcopyWithRecycle(VALTYPE *dst, VALTYPE *src, R_xlen_t dstart, R_xlen_t n, R_xlen
 
 void xfillStringMatrixWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t drows, R_xlen_t srows, R_xlen_t cols, R_xlen_t nsrc);
 void xfillVectorMatrixWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t drows, R_xlen_t srows, R_xlen_t cols, R_xlen_t nsrc);
-template<typename VALTYPE>
-void attribute_hidden xfillMatrixWithRecycle(VALTYPE *dst, VALTYPE *src,
-    R_xlen_t dstart, R_xlen_t drows, R_xlen_t srows,
-    R_xlen_t cols, R_xlen_t nsrc) {
+template <typename VALTYPE>
+HIDDEN void xfillMatrixWithRecycle(VALTYPE* dst, VALTYPE* src, R_xlen_t dstart,
+    R_xlen_t drows, R_xlen_t srows, R_xlen_t cols, R_xlen_t nsrc)
+{
 
     FILL_MATRIX_ITERATE(dstart, drows, srows, cols, nsrc)
-	dst[didx] = src[sidx];
+    dst[didx] = src[sidx];
 }
 
 #define FILL_MATRIX_BYROW_ITERATE(dstart, drows, dcols, nsrc) 		\

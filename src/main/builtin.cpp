@@ -45,7 +45,7 @@
 
 using namespace rho;
 
-attribute_hidden
+HIDDEN
 R_xlen_t asVecSize(SEXP x)
 {
     if (Rf_isVectorAtomic(x) && LENGTH(x) >= 1) {
@@ -61,7 +61,7 @@ R_xlen_t asVecSize(SEXP x)
 	    double d = REAL(x)[0];
 	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
 	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
-	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
+	    if(d > double(R_XLEN_T_MAX)) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t(d);
 	}
 	case STRSXP:
@@ -69,7 +69,7 @@ R_xlen_t asVecSize(SEXP x)
 	    double d = Rf_asReal(x);
 	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
 	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
-	    if(d > R_XLEN_T_MAX) Rf_error(_("vector size specified is too large"));
+	    if(d > double(R_XLEN_T_MAX)) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t(d);
 	}
 	default:
@@ -79,7 +79,7 @@ R_xlen_t asVecSize(SEXP x)
     return -999;  /* which gives error in the caller */
 }
 
-SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_, RObject* eval_env_, RObject* assign_env_)
+HIDDEN SEXP do_delayed(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_, RObject* eval_env_, RObject* assign_env_)
 {
     if (!Rf_isString(x_) || Rf_length(x_) == 0)
 	Rf_error(_("invalid first argument"));
@@ -99,7 +99,7 @@ SEXP attribute_hidden do_delayed(/*const*/ Expression* call, const BuiltInFuncti
 }
 
 /* makeLazy(names, values, expr, eenv, aenv) */
-SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vars_, RObject* vals_, RObject* expr_, RObject* db_, RObject* envir_)
+HIDDEN SEXP do_makelazy(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vars_, RObject* vals_, RObject* expr_, RObject* db_, RObject* envir_)
 {
     SEXP names, values, val, expr, eenv, aenv, expr0;
     R_xlen_t i;
@@ -126,7 +126,7 @@ SEXP attribute_hidden do_makelazy(/*const*/ Expression* call, const BuiltInFunct
 }
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *ctxt;
     SEXP code, oldcode, argList_, after_;
@@ -179,7 +179,7 @@ SEXP attribute_hidden do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP s;
 
@@ -226,7 +226,7 @@ SEXP attribute_hidden do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
+HIDDEN SEXP do_formals(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP) {
 	SEXP f = FORMALS(fun_);
@@ -240,7 +240,7 @@ SEXP attribute_hidden do_formals(/*const*/ Expression* call, const BuiltInFuncti
     }
 }
 
-SEXP attribute_hidden do_body(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
+HIDDEN SEXP do_body(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP) {
 	SEXP b = BODY_EXPR(fun_);
@@ -259,7 +259,7 @@ namespace rho {
     Environment* simple_as_environment(RObject* arg, bool allow_null = false);
 }
 
-SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
+HIDDEN SEXP do_envir(/*const*/ Expression* call, const BuiltInFunction* op, RObject* fun_)
 {
     if (TYPEOF(fun_) == CLOSXP)
 	return CLOENV(fun_);
@@ -268,7 +268,7 @@ SEXP attribute_hidden do_envir(/*const*/ Expression* call, const BuiltInFunction
     else return Rf_getAttrib(fun_, Symbols::DotEnvSymbol);
 }
 
-SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* s, RObject* env)
+HIDDEN SEXP do_envirgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* s, RObject* env)
 {
     if (TYPEOF(s) == CLOSXP && (env = simple_as_environment(env)) != nullptr) {
 	if(MAYBE_SHARED(s))
@@ -288,7 +288,7 @@ SEXP attribute_hidden do_envirgets(/*const*/ Expression* call, const BuiltInFunc
  *
  * @return a newly created environment()
  */
-SEXP attribute_hidden do_newenv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* hash_, RObject* parent_, RObject* size_)
+HIDDEN SEXP do_newenv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* hash_, RObject* parent_, RObject* size_)
 {
     SEXP size, ans;
     int hash;
@@ -309,7 +309,7 @@ SEXP attribute_hidden do_newenv(/*const*/ Expression* call, const BuiltInFunctio
     return ans;
 }
 
-SEXP attribute_hidden do_parentenv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
+HIDDEN SEXP do_parentenv(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
 {
     Environment* arg = simple_as_environment(env_);
     if (!arg)
@@ -335,7 +335,7 @@ static Rboolean R_IsImportsEnv(SEXP env)
     return streqln(name_string, imports_prefix, strlen(imports_prefix));
 }
 
-SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_, RObject* value_)
+HIDDEN SEXP do_parentenvgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_, RObject* value_)
 {
     Environment* env = simple_as_environment(env_);
     if (!env)
@@ -355,7 +355,7 @@ SEXP attribute_hidden do_parentenvgets(/*const*/ Expression* call, const BuiltIn
     return env;
 }
 
-SEXP attribute_hidden do_envirName(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
+HIDDEN SEXP do_envirName(/*const*/ Expression* call, const BuiltInFunction* op, RObject* env_)
 {
     SEXP ans=Rf_mkString(""), res;
 
@@ -449,7 +449,9 @@ static void cat_printsep(SEXP sep, int ntot)
 struct cat_info {
     Rboolean wasopen;
     int changedcon;
-    Rconnection con;
+    Rconn* con;
+    cat_info() : wasopen(FALSE), changedcon(0), con(nullptr) {};
+    ~cat_info() {};
 };
 
 static void cat_cleanup(cat_info* pci)
@@ -467,7 +469,7 @@ static void cat_cleanup(cat_info* pci)
 #endif
 }
 
-SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* file_, RObject* sep_, RObject* fill_, RObject* labels_, RObject* append_)
+HIDDEN SEXP do_cat(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* file_, RObject* sep_, RObject* fill_, RObject* labels_, RObject* append_)
 {
     cat_info ci;
     SEXP objs, file, fill, sepr, labs, s;
@@ -621,7 +623,7 @@ SEXP attribute_hidden do_cat(/*const*/ Expression* call, const BuiltInFunction* 
     return nullptr;
 }
 
-SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n, havenames;
     /* compute number of args and check for names */
@@ -656,7 +658,7 @@ SEXP attribute_hidden do_makelist(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP a, ans, nms;
     int i, n, named;
@@ -690,7 +692,7 @@ SEXP attribute_hidden do_expression(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* vector(mode="logical", length=0) */
-SEXP attribute_hidden do_makevector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* mode_, RObject* length_)
+HIDDEN SEXP do_makevector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* mode_, RObject* length_)
 {
     R_xlen_t len;
     SEXP s;
@@ -844,7 +846,7 @@ SEXP Rf_lengthgets(SEXP x, R_len_t len)
 }
 
 
-SEXP attribute_hidden do_lengthgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_lengthgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     SEXP x = x_;
 
@@ -933,7 +935,7 @@ static SEXP setDflt(SEXP arg, SEXP dflt)
 */
 
 
-SEXP attribute_hidden do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int argval, nargs = Rf_length(args);
     SEXP x, y, z, w, ans, dflt = nullptr;

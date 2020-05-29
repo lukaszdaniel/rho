@@ -74,7 +74,6 @@
 #define yylloc          gram_lloc
 
 /* First part of user prologue.  */
-#line 1 "./gram.y"
 
 /*
  *  R : A Computer Language for Statistical Data Analysis
@@ -321,8 +320,9 @@ static int mbcs_get_next(int c, wchar_t *wc)
     if(utf8locale) {
 	clen = utf8clen((char) c);
 	for(size_t i = 1; i < clen; i++) {
-	    s[i] = (char) xxgetc();
-	    if(s[i] == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    c = xxgetc();
+	    if(c == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    s[i] = (char) c;
 	}
 	s[clen] ='\0'; /* x86 Solaris requires this */
 	res = (int) mbrtowc(wc, s, clen, NULL);
@@ -390,7 +390,6 @@ static int	xxvalue(SEXP, int, YYLTYPE *);
 #define YYSTYPE		SEXP
 
 
-#line 394 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -933,16 +932,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   360,   360,   361,   362,   363,   364,   367,   368,   371,
-     374,   375,   376,   377,   379,   380,   382,   383,   384,   385,
-     386,   388,   389,   390,   391,   392,   393,   394,   395,   396,
-     397,   398,   399,   400,   401,   402,   403,   404,   405,   406,
-     407,   409,   410,   411,   413,   414,   415,   416,   417,   418,
-     419,   420,   421,   422,   423,   424,   425,   426,   427,   428,
-     429,   430,   431,   432,   433,   434,   438,   441,   444,   448,
-     449,   450,   451,   452,   453,   456,   457,   460,   461,   462,
-     463,   464,   465,   466,   467,   470,   471,   472,   473,   474,
-     478
+       0,   361,   361,   362,   363,   364,   365,   368,   369,   372,
+     375,   376,   377,   378,   380,   381,   383,   384,   385,   386,
+     387,   389,   390,   391,   392,   393,   394,   395,   396,   397,
+     398,   399,   400,   401,   402,   403,   404,   405,   406,   407,
+     408,   410,   411,   412,   414,   415,   416,   417,   418,   419,
+     420,   421,   422,   423,   424,   425,   426,   427,   428,   429,
+     430,   431,   432,   433,   434,   435,   439,   442,   445,   449,
+     450,   451,   452,   453,   454,   457,   458,   461,   462,   463,
+     464,   465,   466,   467,   468,   471,   472,   473,   474,   475,
+     479
 };
 #endif
 
@@ -2061,541 +2060,362 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 360 "./gram.y"
                                                 { YYACCEPT; }
-#line 2067 "y.tab.c"
     break;
 
   case 3:
-#line 361 "./gram.y"
                                                 { yyresult = xxvalue(NULL,2,NULL);	goto yyreturn; }
-#line 2073 "y.tab.c"
     break;
 
   case 4:
-#line 362 "./gram.y"
                                                         { yyresult = xxvalue(yyvsp[-1],3,&(yylsp[-1]));	goto yyreturn; }
-#line 2079 "y.tab.c"
     break;
 
   case 5:
-#line 363 "./gram.y"
                                                         { yyresult = xxvalue(yyvsp[-1],4,&(yylsp[-1]));	goto yyreturn; }
-#line 2085 "y.tab.c"
     break;
 
   case 6:
-#line 364 "./gram.y"
                                                 { YYABORT; }
-#line 2091 "y.tab.c"
     break;
 
   case 7:
-#line 367 "./gram.y"
                                                 { yyval = yyvsp[0]; }
-#line 2097 "y.tab.c"
     break;
 
   case 8:
-#line 368 "./gram.y"
                                                 { yyval = yyvsp[0]; }
-#line 2103 "y.tab.c"
     break;
 
   case 9:
-#line 371 "./gram.y"
                                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]); }
-#line 2109 "y.tab.c"
     break;
 
   case 10:
-#line 374 "./gram.y"
                                                 { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-#line 2115 "y.tab.c"
     break;
 
   case 11:
-#line 375 "./gram.y"
                                                 { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-#line 2121 "y.tab.c"
     break;
 
   case 12:
-#line 376 "./gram.y"
                                                 { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-#line 2127 "y.tab.c"
     break;
 
   case 13:
-#line 377 "./gram.y"
                                                 { yyval = yyvsp[0];	setId( yyval, (yyloc)); }
-#line 2133 "y.tab.c"
     break;
 
   case 14:
-#line 379 "./gram.y"
                                                 { yyval = xxexprlist(yyvsp[-2],&(yylsp[-2]),yyvsp[-1]); setId( yyval, (yyloc)); }
-#line 2139 "y.tab.c"
     break;
 
   case 15:
-#line 380 "./gram.y"
                                                 { yyval = xxparen(yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
-#line 2145 "y.tab.c"
     break;
 
   case 16:
-#line 382 "./gram.y"
                                                 { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2151 "y.tab.c"
     break;
 
   case 17:
-#line 383 "./gram.y"
                                                 { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2157 "y.tab.c"
     break;
 
   case 18:
-#line 384 "./gram.y"
                                                 { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2163 "y.tab.c"
     break;
 
   case 19:
-#line 385 "./gram.y"
                                                 { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2169 "y.tab.c"
     break;
 
   case 20:
-#line 386 "./gram.y"
                                                 { yyval = xxunary(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2175 "y.tab.c"
     break;
 
   case 21:
-#line 388 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2181 "y.tab.c"
     break;
 
   case 22:
-#line 389 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2187 "y.tab.c"
     break;
 
   case 23:
-#line 390 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2193 "y.tab.c"
     break;
 
   case 24:
-#line 391 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2199 "y.tab.c"
     break;
 
   case 25:
-#line 392 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2205 "y.tab.c"
     break;
 
   case 26:
-#line 393 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2211 "y.tab.c"
     break;
 
   case 27:
-#line 394 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2217 "y.tab.c"
     break;
 
   case 28:
-#line 395 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2223 "y.tab.c"
     break;
 
   case 29:
-#line 396 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2229 "y.tab.c"
     break;
 
   case 30:
-#line 397 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2235 "y.tab.c"
     break;
 
   case 31:
-#line 398 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2241 "y.tab.c"
     break;
 
   case 32:
-#line 399 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2247 "y.tab.c"
     break;
 
   case 33:
-#line 400 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2253 "y.tab.c"
     break;
 
   case 34:
-#line 401 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2259 "y.tab.c"
     break;
 
   case 35:
-#line 402 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2265 "y.tab.c"
     break;
 
   case 36:
-#line 403 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2271 "y.tab.c"
     break;
 
   case 37:
-#line 404 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2277 "y.tab.c"
     break;
 
   case 38:
-#line 405 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2283 "y.tab.c"
     break;
 
   case 39:
-#line 406 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2289 "y.tab.c"
     break;
 
   case 40:
-#line 407 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2295 "y.tab.c"
     break;
 
   case 41:
-#line 409 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2301 "y.tab.c"
     break;
 
   case 42:
-#line 410 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[0],yyvsp[-2]);	setId( yyval, (yyloc)); }
-#line 2307 "y.tab.c"
     break;
 
   case 43:
-#line 412 "./gram.y"
                                                 { yyval = xxdefun(yyvsp[-5],yyvsp[-3],yyvsp[0],&(yyloc)); 	setId( yyval, (yyloc)); }
-#line 2313 "y.tab.c"
     break;
 
   case 44:
-#line 413 "./gram.y"
                                                 { yyval = xxfuncall(yyvsp[-3],yyvsp[-1]);  setId( yyval, (yyloc)); modif_token( &(yylsp[-3]), SYMBOL_FUNCTION_CALL ) ; }
-#line 2319 "y.tab.c"
     break;
 
   case 45:
-#line 414 "./gram.y"
                                                 { yyval = xxif(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2325 "y.tab.c"
     break;
 
   case 46:
-#line 415 "./gram.y"
                                                                 { yyval = xxifelse(yyvsp[-4],yyvsp[-3],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2331 "y.tab.c"
     break;
 
   case 47:
-#line 416 "./gram.y"
                                                         { yyval = xxfor(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2337 "y.tab.c"
     break;
 
   case 48:
-#line 417 "./gram.y"
                                                 { yyval = xxwhile(yyvsp[-2],yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2343 "y.tab.c"
     break;
 
   case 49:
-#line 418 "./gram.y"
                                                         { yyval = xxrepeat(yyvsp[-1],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2349 "y.tab.c"
     break;
 
   case 50:
-#line 419 "./gram.y"
                                                 { yyval = xxsubscript(yyvsp[-4],yyvsp[-3],yyvsp[-2]);	setId( yyval, (yyloc)); }
-#line 2355 "y.tab.c"
     break;
 
   case 51:
-#line 420 "./gram.y"
                                                 { yyval = xxsubscript(yyvsp[-3],yyvsp[-2],yyvsp[-1]);	setId( yyval, (yyloc)); }
-#line 2361 "y.tab.c"
     break;
 
   case 52:
-#line 421 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
-#line 2367 "y.tab.c"
     break;
 
   case 53:
-#line 422 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ; }
-#line 2373 "y.tab.c"
     break;
 
   case 54:
-#line 423 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2379 "y.tab.c"
     break;
 
   case 55:
-#line 424 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2385 "y.tab.c"
     break;
 
   case 56:
-#line 425 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
-#line 2391 "y.tab.c"
     break;
 
   case 57:
-#line 426 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[-2]), SYMBOL_PACKAGE ) ;}
-#line 2397 "y.tab.c"
     break;
 
   case 58:
-#line 427 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2403 "y.tab.c"
     break;
 
   case 59:
-#line 428 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2409 "y.tab.c"
     break;
 
   case 60:
-#line 429 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2415 "y.tab.c"
     break;
 
   case 61:
-#line 430 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2421 "y.tab.c"
     break;
 
   case 62:
-#line 431 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);      setId( yyval, (yyloc)); modif_token( &(yylsp[0]), SLOT ) ; }
-#line 2427 "y.tab.c"
     break;
 
   case 63:
-#line 432 "./gram.y"
                                                 { yyval = xxbinary(yyvsp[-1],yyvsp[-2],yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2433 "y.tab.c"
     break;
 
   case 64:
-#line 433 "./gram.y"
                                                 { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2439 "y.tab.c"
     break;
 
   case 65:
-#line 434 "./gram.y"
                                                 { yyval = xxnxtbrk(yyvsp[0]);	setId( yyval, (yyloc)); }
-#line 2445 "y.tab.c"
     break;
 
   case 66:
-#line 438 "./gram.y"
                                                 { yyval = xxcond(yyvsp[-1]);   }
-#line 2451 "y.tab.c"
     break;
 
   case 67:
-#line 441 "./gram.y"
                                                 { yyval = xxifcond(yyvsp[-1]); }
-#line 2457 "y.tab.c"
     break;
 
   case 68:
-#line 444 "./gram.y"
                                                 { yyval = xxforcond(yyvsp[-3],yyvsp[-1]);	setId( yyval, (yyloc)); }
-#line 2463 "y.tab.c"
     break;
 
   case 69:
-#line 448 "./gram.y"
                                                 { yyval = xxexprlist0();	setId( yyval, (yyloc)); }
-#line 2469 "y.tab.c"
     break;
 
   case 70:
-#line 449 "./gram.y"
                                                 { yyval = xxexprlist1(yyvsp[0], &(yylsp[0])); }
-#line 2475 "y.tab.c"
     break;
 
   case 71:
-#line 450 "./gram.y"
                                                 { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
-#line 2481 "y.tab.c"
     break;
 
   case 72:
-#line 451 "./gram.y"
                                                 { yyval = yyvsp[-1];		setId( yyval, (yyloc)); }
-#line 2487 "y.tab.c"
     break;
 
   case 73:
-#line 452 "./gram.y"
                                                 { yyval = xxexprlist2(yyvsp[-2], yyvsp[0], &(yylsp[0])); }
-#line 2493 "y.tab.c"
     break;
 
   case 74:
-#line 453 "./gram.y"
                                                 { yyval = yyvsp[-1];}
-#line 2499 "y.tab.c"
     break;
 
   case 75:
-#line 456 "./gram.y"
                                                 { yyval = xxsublist1(yyvsp[0]);	  }
-#line 2505 "y.tab.c"
     break;
 
   case 76:
-#line 457 "./gram.y"
                                                 { yyval = xxsublist2(yyvsp[-3],yyvsp[0]); }
-#line 2511 "y.tab.c"
     break;
 
   case 77:
-#line 460 "./gram.y"
                                                 { yyval = xxsub0();	 }
-#line 2517 "y.tab.c"
     break;
 
   case 78:
-#line 461 "./gram.y"
                                                 { yyval = xxsub1(yyvsp[0], &(yylsp[0]));  }
-#line 2523 "y.tab.c"
     break;
 
   case 79:
-#line 462 "./gram.y"
                                                 { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; modif_token( &(yylsp[-1]), SYMBOL_SUB ) ; }
-#line 2529 "y.tab.c"
     break;
 
   case 80:
-#line 463 "./gram.y"
                                                 { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; modif_token( &(yylsp[-2]), SYMBOL_SUB ) ; }
-#line 2535 "y.tab.c"
     break;
 
   case 81:
-#line 464 "./gram.y"
                                                 { yyval = xxsymsub0(yyvsp[-1], &(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
-#line 2541 "y.tab.c"
     break;
 
   case 82:
-#line 465 "./gram.y"
                                                 { yyval = xxsymsub1(yyvsp[-2],yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
-#line 2547 "y.tab.c"
     break;
 
   case 83:
-#line 466 "./gram.y"
                                                 { yyval = xxnullsub0(&(yylsp[-1])); 	modif_token( &(yylsp[0]), EQ_SUB ) ; }
-#line 2553 "y.tab.c"
     break;
 
   case 84:
-#line 467 "./gram.y"
                                                 { yyval = xxnullsub1(yyvsp[0], &(yylsp[-2])); 	modif_token( &(yylsp[-1]), EQ_SUB ) ; }
-#line 2559 "y.tab.c"
     break;
 
   case 85:
-#line 470 "./gram.y"
                                                 { yyval = xxnullformal(); }
-#line 2565 "y.tab.c"
     break;
 
   case 86:
-#line 471 "./gram.y"
                                                 { yyval = xxfirstformal0(yyvsp[0]); 	modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
-#line 2571 "y.tab.c"
     break;
 
   case 87:
-#line 472 "./gram.y"
                                                 { yyval = xxfirstformal1(yyvsp[-2],yyvsp[0]); 	modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ; }
-#line 2577 "y.tab.c"
     break;
 
   case 88:
-#line 473 "./gram.y"
                                                 { yyval = xxaddformal0(yyvsp[-2],yyvsp[0], &(yylsp[0]));   modif_token( &(yylsp[0]), SYMBOL_FORMALS ) ; }
-#line 2583 "y.tab.c"
     break;
 
   case 89:
-#line 475 "./gram.y"
                                                 { yyval = xxaddformal1(yyvsp[-4],yyvsp[-2],yyvsp[0],&(yylsp[-2])); modif_token( &(yylsp[-2]), SYMBOL_FORMALS ) ; modif_token( &(yylsp[-1]), EQ_FORMALS ) ;}
-#line 2589 "y.tab.c"
     break;
 
   case 90:
-#line 478 "./gram.y"
                                                 { EatLines = 1; }
-#line 2595 "y.tab.c"
     break;
 
 
-#line 2599 "y.tab.c"
 
       default: break;
     }
@@ -2833,7 +2653,6 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 480 "./gram.y"
 
 
 
@@ -2897,8 +2716,6 @@ static int xxgetc(void)
     R_ParseContextLine = ParseState.xxlineno;    
 
     xxcharcount++;
-    // putchar(c);
-    // if (c == '\n') fputs("R:: ", stdout);
     return c;
 }
 
@@ -2920,8 +2737,6 @@ static int xxungetc(int c)
     R_ParseContextLast = (R_ParseContextLast + PARSE_CONTEXT_SIZE -1) % PARSE_CONTEXT_SIZE;
     if(npush >= PUSHBACK_BUFSIZE) return EOF;
     pushback[npush++] = c;
-    // putchar('\\');
-    // putchar('b');
     return c;
 }
 
@@ -2976,7 +2791,7 @@ static SEXP attachSrcrefs(SEXP val)
 	wholeFile.last_parsed = ParseState.xxparseno;
 	Rf_setAttrib(val, Symbols::WholeSrcrefSymbol, makeSrcref(&wholeFile, ParseState.SrcFile));
     }
-    REPROTECT(SrcRefs = nullptr, srindex);
+    REPROTECT(SrcRefs = R_NilValue, srindex);
     ParseState.didAttach = TRUE;
     UNPROTECT(2);
     return val;
@@ -2996,7 +2811,7 @@ static int xxvalue(SEXP v, int k, YYLTYPE *lloc)
 static SEXP xxnullformal()
 {
     SEXP ans;
-    PROTECT(ans = nullptr);
+    PROTECT(ans = R_NilValue);
     return ans;
 }
 
@@ -3007,7 +2822,7 @@ static SEXP xxfirstformal0(SEXP sym)
     if (GenerateCode)
 	PROTECT(ans = FirstArg(R_MissingArg, sym));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     return ans;
 }
 
@@ -3017,7 +2832,7 @@ static SEXP xxfirstformal1(SEXP sym, SEXP expr)
     if (GenerateCode)
 	PROTECT(ans = FirstArg(expr, sym));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(sym);
     return ans;
@@ -3031,7 +2846,7 @@ static SEXP xxaddformal0(SEXP formlist, SEXP sym, YYLTYPE *lloc)
 	PROTECT(ans = NextArg(formlist, R_MissingArg, sym));
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(sym);
     UNPROTECT_PTR(formlist);
     return ans;
@@ -3045,7 +2860,7 @@ static SEXP xxaddformal1(SEXP formlist, SEXP sym, SEXP expr, YYLTYPE *lloc)
 	PROTECT(ans = NextArg(formlist, expr, sym));
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(sym);
     UNPROTECT_PTR(formlist);
@@ -3059,11 +2874,11 @@ static SEXP xxexprlist0(void)
 	PROTECT(ans = NewList());
 	if (ParseState.keepSrcRefs) {
 	    Rf_setAttrib(ans, Symbols::SrcrefSymbol, SrcRefs);
-	    REPROTECT(SrcRefs = nullptr, srindex);
+	    REPROTECT(SrcRefs = R_NilValue, srindex);
 	}
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     return ans;
 }
 
@@ -3080,7 +2895,7 @@ static SEXP xxexprlist1(SEXP expr, YYLTYPE *lloc)
 	UNPROTECT_PTR(tmp);
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     return ans;
 }
@@ -3094,7 +2909,7 @@ static SEXP xxexprlist2(SEXP exprlist, SEXP expr, YYLTYPE *lloc)
 	PROTECT(ans = GrowList(exprlist, expr));
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(exprlist);
     return ans;
@@ -3104,9 +2919,9 @@ static SEXP xxsub0(void)
 {
     SEXP ans;
     if (GenerateCode)
-	PROTECT(ans = Rf_lang2(R_MissingArg,nullptr));
+	PROTECT(ans = Rf_lang2(R_MissingArg,R_NilValue));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     return ans;
 }
 
@@ -3114,9 +2929,9 @@ static SEXP xxsub1(SEXP expr, YYLTYPE *lloc)
 {
     SEXP ans;
     if (GenerateCode)
-	PROTECT(ans = TagArg(expr, nullptr, lloc));
+	PROTECT(ans = TagArg(expr, R_NilValue, lloc));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     return ans;
 }
@@ -3127,7 +2942,7 @@ static SEXP xxsymsub0(SEXP sym, YYLTYPE *lloc)
     if (GenerateCode)
 	PROTECT(ans = TagArg(R_MissingArg, sym, lloc));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(sym);
     return ans;
 }
@@ -3138,7 +2953,7 @@ static SEXP xxsymsub1(SEXP sym, SEXP expr, YYLTYPE *lloc)
     if (GenerateCode)
 	PROTECT(ans = TagArg(expr, sym, lloc));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(sym);
     return ans;
@@ -3147,22 +2962,22 @@ static SEXP xxsymsub1(SEXP sym, SEXP expr, YYLTYPE *lloc)
 static SEXP xxnullsub0(YYLTYPE *lloc)
 {
     SEXP ans;
-    UNPROTECT_PTR(nullptr);
+    UNPROTECT_PTR(R_NilValue);
     if (GenerateCode)
 	PROTECT(ans = TagArg(R_MissingArg, Rf_install("NULL"), lloc));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     return ans;
 }
 
 static SEXP xxnullsub1(SEXP expr, YYLTYPE *lloc)
 {
     SEXP ans = Rf_install("NULL");
-    UNPROTECT_PTR(nullptr);
+    UNPROTECT_PTR(R_NilValue);
     if (GenerateCode)
 	PROTECT(ans = TagArg(expr, ans, lloc));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     return ans;
 }
@@ -3174,7 +2989,7 @@ static SEXP xxsublist1(SEXP sub)
     if (GenerateCode)
 	PROTECT(ans = FirstArg(CAR(sub),CADR(sub)));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(sub);
     return ans;
 }
@@ -3185,7 +3000,7 @@ static SEXP xxsublist2(SEXP sublist, SEXP sub)
     if (GenerateCode)
 	PROTECT(ans = NextArg(sublist, CAR(sub), CADR(sub)));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(sub);
     UNPROTECT_PTR(sublist);
     return ans;
@@ -3209,7 +3024,7 @@ static SEXP xxif(SEXP ifsym, SEXP cond, SEXP expr)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang3(ifsym, cond, expr));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(cond);
     return ans;
@@ -3221,7 +3036,7 @@ static SEXP xxifelse(SEXP ifsym, SEXP cond, SEXP ifexpr, SEXP elseexpr)
     if( GenerateCode)
 	PROTECT(ans = Rf_lang4(ifsym, cond, ifexpr, elseexpr));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(elseexpr);
     UNPROTECT_PTR(ifexpr);
     UNPROTECT_PTR(cond);
@@ -3235,7 +3050,7 @@ static SEXP xxforcond(SEXP sym, SEXP expr)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang2(sym, expr));  /* rho change */
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(expr);
     UNPROTECT_PTR(sym);
     return ans;
@@ -3247,7 +3062,7 @@ static SEXP xxfor(SEXP forsym, SEXP forcond, SEXP body)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang4(forsym, CAR(forcond), CADR(forcond), body));  /* rho change */
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(body);
     UNPROTECT_PTR(forcond);
     return ans;
@@ -3259,7 +3074,7 @@ static SEXP xxwhile(SEXP whilesym, SEXP cond, SEXP body)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang3(whilesym, cond, body));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(body);
     UNPROTECT_PTR(cond);
     return ans;
@@ -3271,7 +3086,7 @@ static SEXP xxrepeat(SEXP repeatsym, SEXP body)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang2(repeatsym, body));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(body);
     return ans;
 }
@@ -3281,7 +3096,7 @@ static SEXP xxnxtbrk(SEXP keyword)
     if (GenerateCode)
 	PROTECT(keyword = Rf_lang1(keyword));
     else
-	PROTECT(keyword = nullptr);
+	PROTECT(keyword = R_NilValue);
     return keyword;
 }
 
@@ -3292,15 +3107,15 @@ static SEXP xxfuncall(SEXP expr, SEXP args)
 	if (Rf_isString(expr))
 	    expr = Rf_installTrChar(STRING_ELT(expr, 0));
 	PROTECT(expr);
-	if (Rf_length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == nullptr )
+	if (Rf_length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == R_NilValue )
 	    ans = Rf_lang1(expr);
 	else
-            ans = new CachingExpression(expr, SEXP_downcast<PairList*>(CDR(args)));
+	    ans = new CachingExpression(expr, SEXP_downcast<PairList*>(CDR(args)));
 	UNPROTECT(1);
 	PROTECT(ans);
     }
     else {
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     }
     UNPROTECT_PTR(args);
     UNPROTECT_PTR(sav_expr);
@@ -3327,10 +3142,10 @@ static SEXP xxdefun(SEXP fname, SEXP formals, SEXP body, YYLTYPE *lloc)
     	    srcref = makeSrcref(lloc, ParseState.SrcFile);
     	    ParseState.didAttach = TRUE;
     	} else
-    	    srcref = nullptr;
+    	    srcref = R_NilValue;
 	PROTECT(ans = Rf_lang4(fname, CDR(formals), body, srcref));
     } else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(body);
     UNPROTECT_PTR(formals);
     return ans;
@@ -3342,7 +3157,7 @@ static SEXP xxunary(SEXP op, SEXP arg)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang2(op, arg));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(arg);
     return ans;
 }
@@ -3353,7 +3168,7 @@ static SEXP xxbinary(SEXP n1, SEXP n2, SEXP n3)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang3(n1, n2, n3));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(n2);
     UNPROTECT_PTR(n3);
     return ans;
@@ -3365,11 +3180,15 @@ static SEXP xxparen(SEXP n1, SEXP n2)
     if (GenerateCode)
 	PROTECT(ans = Rf_lang2(n1, n2));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(n2);
     return ans;
 }
 
+
+/* This should probably use CONS rather than LCONS, but
+   it shouldn't matter and we would rather not meddle
+   See PR#7055 */
 
 static SEXP xxsubscript(SEXP a1, SEXP a2, SEXP a3)
 {
@@ -3377,7 +3196,7 @@ static SEXP xxsubscript(SEXP a1, SEXP a2, SEXP a3)
     if (GenerateCode)
       PROTECT(ans = new CachingExpression(a2, PairList::cons(a1, SEXP_downcast<PairList*>(CDR(a3)))));
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(a3);
     UNPROTECT_PTR(a1);
     return ans;
@@ -3413,7 +3232,7 @@ static SEXP xxexprlist(SEXP a1, YYLTYPE *lloc, SEXP a2)
 	}
     }
     else
-	PROTECT(ans = nullptr);
+	PROTECT(ans = R_NilValue);
     UNPROTECT_PTR(a2);
     return ans;
 }
@@ -3429,7 +3248,7 @@ static SEXP TagArg(SEXP arg, SEXP tag, YYLTYPE *lloc)
     case SYMSXP:
 	return Rf_lang2(arg, tag);
     default:
-	Rf_error(_("incorrect tag type at line %d"), lloc->first_line); return nullptr/* -Wall */;
+	Rf_error(_("incorrect tag type at line %d"), lloc->first_line); return R_NilValue/* -Wall */;
     }
 }
 
@@ -3546,29 +3365,29 @@ static void PutSrcRefState(SrcRefState *state);
 static void UseSrcRefState(SrcRefState *state);
 
 /* This is called once when R starts up. */
-attribute_hidden
+HIDDEN
 void InitParser(void)
 {
-    ParseState.data = NULL;
-    ParseState.ids = NULL;
+    ParseState.data = nullptr;
+    ParseState.ids = nullptr;
 }
 
 /* This is called each time a new parse sequence begins */
-attribute_hidden
+HIDDEN
 void R_InitSrcRefState(void)
 {
     if (busy) {
-        SrcRefState *prev = new SrcRefState;
+    	SrcRefState *prev = new SrcRefState;
     	PutSrcRefState(prev);
 	ParseState.prevState = prev;
-	ParseState.data = NULL;
-	ParseState.ids = NULL;
+	ParseState.data = nullptr;
+	ParseState.ids = nullptr;
     } else
-        ParseState.prevState = NULL;
+        ParseState.prevState = nullptr;
     ParseState.keepSrcRefs = FALSE;
     ParseState.didAttach = FALSE;
-    PROTECT_WITH_INDEX(ParseState.SrcFile = nullptr, &(ParseState.SrcFileProt));
-    PROTECT_WITH_INDEX(ParseState.Original = nullptr, &(ParseState.OriginalProt));
+    PROTECT_WITH_INDEX(ParseState.SrcFile = R_NilValue, &(ParseState.SrcFileProt));
+    PROTECT_WITH_INDEX(ParseState.Original = R_NilValue, &(ParseState.OriginalProt));
     ParseState.data_count = 0;
     ParseState.xxlineno = 1;
     ParseState.xxcolno = 0;
@@ -3577,7 +3396,7 @@ void R_InitSrcRefState(void)
     busy = TRUE;
 }
 
-attribute_hidden
+HIDDEN
 void R_FinalizeSrcRefState(void)
 {
     UNPROTECT_PTR(ParseState.SrcFile);
@@ -3588,7 +3407,7 @@ void R_FinalizeSrcRefState(void)
     	if (ParseState.prevState || DATA_COUNT > MAX_DATA_COUNT) {
 	    R_ReleaseObject(ParseState.data);
 	    R_ReleaseObject(ParseState.text);
-	    ParseState.data = NULL;
+	    ParseState.data = nullptr;
 	} else /* Remove all the strings from the text vector so they don't take up memory, and clean up data */
 	    for (int i=0; i < ParseState.data_count; i++) {
 	    	SET_STRING_ELT(ParseState.text, i, R_BlankString);
@@ -3598,7 +3417,7 @@ void R_FinalizeSrcRefState(void)
     if (ParseState.ids) {
 	if (ParseState.prevState || ID_COUNT > MAX_DATA_COUNT) {
 	    R_ReleaseObject(ParseState.ids);
-	    ParseState.ids = NULL;
+	    ParseState.ids = nullptr;
         } else {/* Remove the parent records */
             if (identifier > ID_COUNT) identifier = ID_COUNT;
             for (int i=0; i < identifier; i++)
@@ -3661,7 +3480,7 @@ static void ParseInit(void)
     contextp = contextstack;
     *contextp = ' ';
     SavedToken = 0;
-    SavedLval = nullptr;
+    SavedLval = R_NilValue;
     EatLines = 0;
     EndOfFile = 0;
     xxcharcount = 0;
@@ -3719,7 +3538,7 @@ static int file_getc(void)
 }
 
 /* used in main.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_Parse1File(FILE *fp, int gencode, ParseStatus *status)
 {
     {
@@ -3742,7 +3561,7 @@ static int buffer_getc(void)
 }
 
 /* Used only in main.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 {
     Rboolean keepSource = FALSE; 
@@ -3754,9 +3573,9 @@ SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 	    keepSource = Rboolean(Rf_asLogical(Rf_GetOption1(Rf_install("keep.source"))));
 	    if (keepSource) {
 		ParseState.keepSrcRefs = TRUE;
-		REPROTECT(ParseState.SrcFile = Rf_NewEnvironment(nullptr, nullptr, R_EmptyEnv), ParseState.SrcFileProt);
+		REPROTECT(ParseState.SrcFile = Rf_NewEnvironment(R_NilValue, R_NilValue, R_EmptyEnv), ParseState.SrcFileProt);
 		REPROTECT(ParseState.Original = ParseState.SrcFile, ParseState.OriginalProt);
-		PROTECT_WITH_INDEX(SrcRefs = nullptr, &srindex);
+		PROTECT_WITH_INDEX(SrcRefs = R_NilValue, &srindex);
 	    }
 	}
 	ParseInit();
@@ -3815,7 +3634,7 @@ static SEXP R_Parse(int n, ParseStatus *status, SEXP srcfile)
 
     if (Rf_isEnvironment(ParseState.SrcFile)) {
     	ParseState.keepSrcRefs = TRUE;
-	PROTECT_WITH_INDEX(SrcRefs = nullptr, &srindex);
+	PROTECT_WITH_INDEX(SrcRefs = R_NilValue, &srindex);
     }
 
     for(i = 0; ; ) {
@@ -3835,7 +3654,7 @@ static SEXP R_Parse(int n, ParseStatus *status, SEXP srcfile)
 	        finalizeData();
 	    Rf_ppsRestoreSize(savestack);
 	    R_FinalizeSrcRefState();	    
-	    return nullptr;
+	    return R_NilValue;
 	    break;
 	case PARSE_EOF:
 	    goto finish;
@@ -3860,7 +3679,7 @@ finish:
 }
 
 /* used in edit.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseFile(FILE *fp, int n, ParseStatus *status, SEXP srcfile)
 {
     GenerateCode = 1;
@@ -3884,7 +3703,7 @@ static int con_getc(void)
 }
 
 /* used in source.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile)
 {
     GenerateCode = 1;
@@ -3922,7 +3741,7 @@ static const char *Prompt(SEXP prompt, int type)
 }
 
 /* used in source.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt, 
 		   SEXP srcfile)
 {
@@ -3947,7 +3766,7 @@ SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt,
 
     if (Rf_isEnvironment(ParseState.SrcFile)) {
     	ParseState.keepSrcRefs = TRUE;
-	PROTECT_WITH_INDEX(SrcRefs = nullptr, &srindex);
+	PROTECT_WITH_INDEX(SrcRefs = R_NilValue, &srindex);
     }
 
     for(i = 0; ; ) {
@@ -3982,7 +3801,7 @@ SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt,
 	    R_IoBufferWriteReset(buffer);
 	    Rf_ppsRestoreSize(savestack);
 	    R_FinalizeSrcRefState();
-	    return nullptr;
+	    return R_NilValue;
 	    break;
 	case PARSE_EOF:
 	    goto finish;
@@ -4110,7 +3929,7 @@ static int KeywordLookup(const char *s)
 	if (streql(keywords[i].name, s)) {
 	    switch (keywords[i].token) {
 	    case NULL_CONST:
-		PROTECT(yylval = nullptr);
+		PROTECT(yylval = R_NilValue);
 		break;
 	    case NUM_CONST:
 		if(GenerateCode) {
@@ -4144,7 +3963,7 @@ static int KeywordLookup(const char *s)
 			break;
 		    }
 		} else
-		    PROTECT(yylval = nullptr);
+		    PROTECT(yylval = R_NilValue);
 		break;
 	    case FUNCTION:
 	    case WHILE:
@@ -4181,7 +4000,7 @@ static SEXP mkInt(const char *s)
 
 static SEXP mkComplex(const char *s)
 {
-    SEXP t = nullptr;
+    SEXP t = R_NilValue;
     double f;
     f = R_atof(s); /* FIXME: make certain the value is legitimate. */
 
@@ -4197,7 +4016,7 @@ static SEXP mkNA(void)
     return Rf_ScalarLogical(NA_LOGICAL);
 }
 
-attribute_hidden
+HIDDEN
 SEXP Rf_mkTrue(void)
 {
     return Rf_ScalarLogical(TRUE);
@@ -4314,7 +4133,7 @@ static void yyerror(const char *s)
 
 static void CheckFormalArgs(SEXP formlist, SEXP _new, YYLTYPE *lloc)
 {
-    while (formlist != nullptr) {
+    while (formlist != R_NilValue) {
 	if (TAG(formlist) == _new) {
 	    Rf_error(_("repeated formal argument '%s' on line %d"), Rf_EncodeChar(PRINTNAME(_new)),
 								 lloc->first_line);
@@ -4538,11 +4357,11 @@ static int NumericValue(int c)
     }
 
     if(c == 'i') {
-	yylval = GenerateCode ? mkComplex(yytext) : nullptr;
+	yylval = GenerateCode ? mkComplex(yytext) : R_NilValue;
     } else if(c == 'L' && asNumeric == 0) {
 	if(GenerateCode && seendot == 1 && seenexp == 0)
 	    Rf_warning(_("integer literal %s contains unnecessary decimal point"), yytext);
-	yylval = GenerateCode ? mkInt(yytext) : nullptr;
+	yylval = GenerateCode ? mkInt(yytext) : R_NilValue;
 #if 0  /* do this to make 123 integer not double */
     } else if(!(seendot || seenexp)) {
 	if(c != 'L') xxungetc(c);
@@ -4550,12 +4369,12 @@ static int NumericValue(int c)
 	    double a = R_atof(yytext);
 	    int b = (int) a;
 	    yylval = (a != (double) b) ? mkFloat(yytext) : mkInt(yytext);
-	} else yylval = nullptr;
+	} else yylval = R_NilValue;
 #endif
     } else {
 	if(c != 'L')
 	    xxungetc(c);
-	yylval = GenerateCode ? mkFloat(yytext) : nullptr;
+	yylval = GenerateCode ? mkFloat(yytext) : R_NilValue;
     }
 
     PROTECT(yylval);
@@ -4609,8 +4428,9 @@ static int mbcs_get_next2(int c, ucs_t *wc)
     if(utf8locale) {
 	clen = utf8clen(c);
 	for(i = 1; i < clen; i++) {
-	    s[i] = xxgetc();
-	    if(s[i] == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    c = xxgetc();
+	    if(c == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    s[i] = (char) c;
 	}
 	s[clen] ='\0'; /* x86 Solaris requires this */
 	res = Rf_mbtoucs(wc, s, clen);
@@ -4724,7 +4544,7 @@ static int StringValue(int c, Rboolean forSymbol)
 			CTEXT_POP();
 			if (i == 0) { /* was just \x */
 			    *ct = '\0';
-			    Rf_errorcall(nullptr, _("'\\x' used without hex digits in character string starting \"%s\""), currtext);
+			    Rf_errorcall(R_NilValue, _("'\\x' used without hex digits in character string starting \"%s\""), currtext);
 			}
 			break;
 		    }
@@ -4755,7 +4575,7 @@ static int StringValue(int c, Rboolean forSymbol)
 			CTEXT_POP();
 			if (i == 0) { /* was just \u */
 			    *ct = '\0';
-			    Rf_errorcall(nullptr, _("'\\u' used without hex digits in character string starting \"%s\""), currtext);
+			    Rf_errorcall(R_NilValue, _("'\\u' used without hex digits in character string starting \"%s\""), currtext);
 			}
 			break;
 		    }
@@ -4792,7 +4612,7 @@ static int StringValue(int c, Rboolean forSymbol)
 			CTEXT_POP();
 			if (i == 0) { /* was just \U */
 			    *ct = '\0';
-			    Rf_errorcall(nullptr, _("'\\U' used without hex digits in character string starting \"%s\""), currtext);
+			    Rf_errorcall(R_NilValue, _("'\\U' used without hex digits in character string starting \"%s\""), currtext);
 			}
 			break;
 		    }
@@ -4850,7 +4670,7 @@ static int StringValue(int c, Rboolean forSymbol)
 		    break;
 		default:
 		    *ct = '\0';
-		    Rf_errorcall(nullptr, _("'\\%c' is an unrecognized escape in character string starting \"%s\""), c, currtext);
+		    Rf_errorcall(R_NilValue, _("'\\%c' is an unrecognized escape in character string starting \"%s\""), c, currtext);
 		}
 	    }
 	} else if(mbcslocale) {
@@ -4896,7 +4716,7 @@ static int StringValue(int c, Rboolean forSymbol)
     yytext[0] = '\0';
     if (c == R_EOF) {
         if(stext != st0) free(stext);
-        PROTECT(yylval = nullptr);
+        PROTECT(yylval = R_NilValue);
     	return INCOMPLETE_STRING;
     } else {
     	CTEXT_PUSH(c);
@@ -4947,7 +4767,7 @@ static int SpecialValue(int c)
 }
 
 /* return 1 if name is a valid name 0 otherwise */
-attribute_hidden
+HIDDEN
 int Rf_isValidName(const char *name)
 {
     const char *p = name;
@@ -4981,7 +4801,7 @@ int Rf_isValidName(const char *name)
 
     if (streql(name, "...")) return 1;
 
-    for (i = 0; keywords[i].name != NULL; i++)
+    for (i = 0; keywords[i].name != nullptr; i++)
 	if (streql(keywords[i].name, name)) return 0;
 
     return 1;
@@ -5032,7 +4852,7 @@ static void setParseFilename(SEXP newname) {
     	if (Rf_isString(oldname) && Rf_length(oldname) > 0 &&
     	    strcmp(R_CHAR(STRING_ELT(oldname, 0)),
     	           R_CHAR(STRING_ELT(newname, 0))) == 0) return;
-	REPROTECT(ParseState.SrcFile = Rf_NewEnvironment(nullptr, nullptr, R_EmptyEnv), ParseState.SrcFileProt);
+	REPROTECT(ParseState.SrcFile = Rf_NewEnvironment(R_NilValue, R_NilValue, R_EmptyEnv), ParseState.SrcFileProt);
 	Rf_defineVar(Rf_install("filename"), newname, ParseState.SrcFile);
 	Rf_defineVar(Rf_install("original"), ParseState.Original, ParseState.SrcFile);
 
@@ -5083,6 +4903,7 @@ static SEXP install_and_save2(const char * text, const char * savetext)
     return Rf_install(text);
 }
 
+
 /* Split the input stream into tokens. */
 /* This is the lowest of the parsing levels. */
 
@@ -5094,7 +4915,7 @@ static int token(void)
     if (SavedToken) {
 	c = SavedToken;
 	yylval = SavedLval;
-	SavedLval = nullptr;
+	SavedLval = R_NilValue;
 	SavedToken = 0;
 	yylloc.first_line = xxlinesave;
 	yylloc.first_column = xxcolsave;
@@ -5675,7 +5496,6 @@ static void modif_token( yyltype* loc, int tok ){
 	}
 
 }
-
 
 /* this local version of Rf_lengthgets() always copies and doesn't fill with NA */
 static SEXP lengthgets2(SEXP x, int len) {

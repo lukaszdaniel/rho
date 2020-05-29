@@ -57,7 +57,7 @@ static Rboolean stackgrps = TRUE;
 static Rboolean sortStr = TRUE;
 // used by do_radixsort and [i|d|c]sort to reorder order.
 // not needed if narg==1
-static int *newo = NULL;
+static int *newo = nullptr;
 // =1, 0, -1 for TRUE, NA, FALSE respectively.
 // Value rewritten inside do_radixsort().
 static int nalast = -1;
@@ -70,8 +70,8 @@ static int order = 1;
 // (see setRange for details)
 #define N_RANGE 100000
 
-static SEXP *saveds = NULL;
-static R_len_t *savedtl = NULL, nalloc = 0, nsaved = 0;
+static SEXP *saveds = nullptr;
+static R_len_t *savedtl = nullptr, nalloc = 0, nsaved = 0;
 
 static void savetl_init()
 {
@@ -81,10 +81,10 @@ static void savetl_init()
     nsaved = 0;
     nalloc = 100;
     saveds = (SEXP *) malloc(nalloc * sizeof(SEXP));
-    if (saveds == NULL)
+    if (saveds == nullptr)
 	Rf_error("Could not allocate saveds in savetl_init");
     savedtl = (R_len_t *) malloc(nalloc * sizeof(R_len_t));
-    if (savedtl == NULL) {
+    if (savedtl == nullptr) {
 	free(saveds);
 	Rf_error("Could not allocate saveds in savetl_init");
     }
@@ -101,8 +101,8 @@ static void savetl_end()
     free(saveds);  // does nothing on NULL input
     free(savedtl);
     nsaved = nalloc = 0;
-    saveds = NULL;
-    savedtl = NULL;
+    saveds = nullptr;
+    savedtl = nullptr;
 }
 
 
@@ -112,13 +112,13 @@ static void savetl(SEXP s)
 	nalloc *= 2;
 	char *tmp;
 	tmp = static_cast<char *>(realloc(saveds, nalloc * sizeof(SEXP)));
-	if (tmp == NULL) {
+	if (tmp == nullptr) {
 	    savetl_end();
 	    Rf_error("Could not realloc saveds in savetl");
 	}
 	saveds = (SEXP *) tmp;
 	tmp = (char *) realloc(savedtl, nalloc * sizeof(R_len_t));
-	if (tmp == NULL) {
+	if (tmp == nullptr) {
 	    savetl_end();
 	    Rf_error("Could not realloc savedtl in savetl");
 	}
@@ -144,7 +144,7 @@ static void growstack(int newlen)
     if (newlen == 0) newlen = 100000;
     if (newlen > gsmaxalloc) newlen = gsmaxalloc;
     gs[flip] = static_cast<int *>(realloc(gs[flip], newlen * sizeof(int)));
-    if (gs[flip] == NULL)
+    if (gs[flip] == nullptr)
 	Error("Failed to realloc working memory stack to %d*4bytes (flip=%d)",
 	      newlen, flip);
     gsalloc[flip] = newlen;
@@ -186,8 +186,8 @@ static void gsfree()
 {
     free(gs[0]);
     free(gs[1]);
-    gs[0] = NULL;
-    gs[1] = NULL;
+    gs[0] = nullptr;
+    gs[1] = nullptr;
     flip = 0;
     gsalloc[0] = gsalloc[1] = 0;
     gsngrp[0] = gsngrp[1] = 0;
@@ -402,23 +402,23 @@ static unsigned int radixcounts[8][257] = { {0} };
 static int skip[8];
 /* global because iradix and iradix_r interact and are called repetitively.
    counts are set back to 0 after each use, to benefit from skipped radix. */
-static void *radix_xsub = NULL;
+static void *radix_xsub = nullptr;
 static size_t radix_xsuballoc = 0;
 
-static int *otmp = NULL, otmp_alloc = 0;
+static int *otmp = nullptr, otmp_alloc = 0;
 static void alloc_otmp(int n)
 {
     if (otmp_alloc >= n)
 	return;
     otmp = (int *) realloc(otmp, n * sizeof(int));
-    if (otmp == NULL)
+    if (otmp == nullptr)
 	Error("Failed to allocate working memory for otmp. Requested %d * %d bytes",
 	      n, sizeof(int));
     otmp_alloc = n;
 }
 
 // TO DO: save xtmp if possible, see allocs in do_radixsort
-static void *xtmp = NULL;
+static void *xtmp = nullptr;
 static int xtmp_alloc = 0;
 // TO DO: currently always the largest type (double) but
 //        could be int if that's all that's needed
@@ -427,7 +427,7 @@ static void alloc_xtmp(int n)
     if (xtmp_alloc >= n)
 	return;
     xtmp = (double *) realloc(xtmp, n * sizeof(double));
-    if (xtmp == NULL)
+    if (xtmp == nullptr)
 	Error("Failed to allocate working memory for xtmp. Requested %d * %d bytes",
 	      n, sizeof(double));
     xtmp_alloc = n;
@@ -906,10 +906,10 @@ static void dradix_r(unsigned char *xsub, int *osub, int n, int radix)
 // be suitable. Fixed precision such as 1.10, 1.15, 1.20, 1.25, 1.30
 // ... do use all bits so dradix skipping may not help.
 
-static int *cradix_counts = NULL;
+static int *cradix_counts = nullptr;
 static int cradix_counts_alloc = 0;
 static int maxlen = 1;
-static SEXP *cradix_xtmp = NULL;
+static SEXP *cradix_xtmp = nullptr;
 static int cradix_xtmp_alloc = 0;
 
 // same as StrCmp but also takes into account 'decreasing' and 'na.last' args.
@@ -1052,7 +1052,7 @@ static void cradix_r(SEXP * xsub, int n, int radix)
 	cradix_r(xsub + itmp, n - itmp, radix + 1);     // final group
 }
 
-static SEXP *ustr = NULL;
+static SEXP *ustr = nullptr;
 static int ustr_alloc = 0, ustr_n = 0;
 
 static void cgroup(SEXP * x, int *o, int n)
@@ -1094,7 +1094,7 @@ static void cgroup(SEXP * x, int *o, int n)
 	    if (ustr_alloc > n)
 		ustr_alloc = n;
 	    ustr = static_cast<SEXP *>(realloc(ustr, ustr_alloc * sizeof(SEXP)));
-	    if (ustr == NULL)
+	    if (ustr == nullptr)
 		Error("Unable to realloc %d * %d bytes in cgroup", ustr_alloc,
 		      sizeof(SEXP));
 	}
@@ -1124,13 +1124,13 @@ static void cgroup(SEXP * x, int *o, int n)
     ustr_n = 0;
 }
 
-static int *csort_otmp = NULL, csort_otmp_alloc = 0;
+static int *csort_otmp = nullptr, csort_otmp_alloc = 0;
 static void alloc_csort_otmp(int n)
 {
     if (csort_otmp_alloc >= n)
 	return;
     csort_otmp = (int *) realloc(csort_otmp, n * sizeof(int));
-    if (csort_otmp == NULL)
+    if (csort_otmp == nullptr)
 	Error
 	    ("Failed to allocate working memory for csort_otmp. Requested %d * %d bytes",
 	     n, sizeof(int));
@@ -1222,7 +1222,7 @@ static void csort_pre(SEXP * x, int n)
 	    if (ustr_alloc > old_un+n)
 		ustr_alloc = old_un + n;
 	    ustr = static_cast<SEXP *>(realloc(ustr, ustr_alloc * sizeof(SEXP)));
-	    if (ustr == NULL)
+	    if (ustr == nullptr)
 		Error("Failed to realloc ustr. Requested %d * %d bytes",
 		      ustr_alloc, sizeof(SEXP));
 	}
@@ -1549,13 +1549,13 @@ static void dsort(double *x, int *o, int n)
     }
 }
 
-SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n = -1, narg = 0, ngrp, tmp, *osub, thisgrpn;
     R_xlen_t nl = n;
     Rboolean isSorted = TRUE, retGrp;
     void *xd;
-    int *o = NULL;
+    int *o = nullptr;
 
     /* ML: FIXME: Here are just two of the dangerous assumptions here */
     if (sizeof(int) != 4) {
@@ -1702,19 +1702,19 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 
     int maxgrpn = gsmax[flip];   // biggest group in the first arg
-    void *xsub = NULL;           // local
+    void *xsub = nullptr;           // local
     int (*f) ();
     void (*g) ();
 
     if (narg > 1 && gsngrp[flip] < n) {
         // double is the largest type, 8
         xsub = (void *) malloc(maxgrpn * sizeof(double));
-        if (xsub == NULL)
+        if (xsub == nullptr)
             Error("Couldn't allocate xsub in do_radixsort, requested %d * %d bytes.",
                   maxgrpn, sizeof(double));
         // global variable, used by isort, dsort, sort and cgroup
         newo = (int *) malloc(maxgrpn * sizeof(int));
-        if (newo == NULL)
+        if (newo == nullptr)
             Error("Couldn't allocate newo in do_radixsort, requested %d * %d bytes.",
                   maxgrpn, sizeof(int));
     }
@@ -1869,7 +1869,7 @@ SEXP attribute_hidden do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     ustr_n = 0;
     savetl_end();
     free(ustr);
-    ustr = NULL;
+    ustr = nullptr;
     ustr_alloc = 0;
 
     if (retGrp) {

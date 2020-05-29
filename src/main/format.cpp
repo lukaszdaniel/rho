@@ -59,7 +59,7 @@ using namespace std;
 using namespace rho;
 
 /* this is just for conformity with other types */
-attribute_hidden
+HIDDEN
 void formatRaw(const Rbyte *x, R_xlen_t n, int *fieldwidth)
 {
     *fieldwidth = 2;

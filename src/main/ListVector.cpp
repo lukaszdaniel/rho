@@ -72,7 +72,7 @@ SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
     }
 }
 
-SEXP * NORET (VECTOR_PTR)(SEXP x)
+NORET SEXP * (VECTOR_PTR)(SEXP x)
 {
   Rf_error(_("not safe to return vector pointer"));
 }

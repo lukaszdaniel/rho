@@ -1193,7 +1193,7 @@ strptime_internal (const char *rp, const char *fmt, stm *tm,
   if nl_langinfo() has wchar_t versions (some OSes do, some do not).
 */
 
-attribute_hidden
+HIDDEN
 void dt_invalidate_locale() // used in platform.cpp
 {
     locale_strings_set = 0;

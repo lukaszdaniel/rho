@@ -98,7 +98,7 @@ static void namewalk(SEXP s, NameWalkData *d)
 
 /* Also does all.vars with functions=FALSE
    .Internal(all.names(expr, functions, max.names, unique)) */
-SEXP attribute_hidden do_allnames(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* expr_, rho::RObject* functions_, rho::RObject* max_names_, rho::RObject* unique_)
+HIDDEN SEXP do_allnames(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* expr_, rho::RObject* functions_, rho::RObject* max_names_, rho::RObject* unique_)
 {
     SEXP expr;
     int i, savecount;

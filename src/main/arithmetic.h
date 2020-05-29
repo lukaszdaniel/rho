@@ -44,13 +44,13 @@ SEXP R_binary(SEXP, SEXP, SEXP, SEXP);
 SEXP R_unary(SEXP, SEXP, SEXP);
 
 double R_pow(double x, double y);
-static R_INLINE double R_POW(double x, double y) /* handle x ^ 2 inline */
+R_INLINE static double R_POW(double x, double y) /* handle x ^ 2 inline */
 {
     return y == 2.0 ? x * x : R_pow(x, y);
 }
 
 /* some systems get this wrong, possibly depend on what libs are loaded */
-static R_INLINE double R_log(double x) {
+R_INLINE static double R_log(double x) {
     return x > 0 ? log(x) : x == 0 ? R_NegInf : R_NaN;
 }
 
@@ -59,7 +59,7 @@ static R_INLINE double R_log(double x) {
    optional in C99.  Some systems return -Inf for log(x < 0), e.g.
    libsunmath on Solaris.
 */
-static R_INLINE double logbase(double x, double base)
+R_INLINE static double logbase(double x, double base)
 {
 #ifdef HAVE_LOG10
     if(base == 10) return x > 0 ? log10(x) : x == 0 ? R_NegInf : R_NaN;
@@ -74,7 +74,7 @@ SEXP do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP env);
 
 /* for binary operations */
 /* adapted from Radford Neal's pqR */
-static R_INLINE SEXP R_allocOrReuseVector(SEXP s1, SEXP s2,
+R_INLINE static SEXP R_allocOrReuseVector(SEXP s1, SEXP s2,
 					  SEXPTYPE type , R_xlen_t n)
 {
     R_xlen_t n1 = XLENGTH(s1);

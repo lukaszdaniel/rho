@@ -38,7 +38,7 @@
 #include <Defn.h>
 #include "Fileio.h"
 
-attribute_hidden
+HIDDEN
 int R_fgetc(FILE *fp)
 {
 #ifdef Win32

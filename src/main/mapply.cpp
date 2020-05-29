@@ -38,7 +38,7 @@
 
 using namespace rho;
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_mapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP f = args[0], varyingArgs = args[1], constantArgs = args[2];

@@ -32,21 +32,20 @@
 #ifndef R_ERROR_H_
 #define R_ERROR_H_
 
-#ifdef  __cplusplus
+#ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <R_ext/Visibility.h>
 
-void NORET Rf_error(const char *, ...);
-void NORET UNIMPLEMENTED(const char *);
-void NORET WrongArgCount(const char *);
+NORET void Rf_error(const char*, ...);
+NORET void UNIMPLEMENTED(const char*);
+NORET void WrongArgCount(const char*);
 
-void	Rf_warning(const char *, ...);
-void 	R_ShowMessage(const char *s);
+void Rf_warning(const char*, ...);
+void R_ShowMessage(const char* s);
 
-
-#ifdef  __cplusplus
+#ifdef __cplusplus
 }
 #endif
 
@@ -54,6 +53,5 @@ void 	R_ShowMessage(const char *s);
 #define error Rf_error
 #define warning Rf_warning
 #endif
-
 
 #endif /* R_ERROR_H_ */

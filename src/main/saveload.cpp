@@ -1886,7 +1886,7 @@ static int defaultSaveVersion()
     if (dflt < 0) {
 	char *valstr = getenv("R_DEFAULT_SAVE_VERSION");
 	int val = -1;
-	if (valstr != NULL)
+	if (valstr != nullptr)
 	    val = atoi(valstr);
 	if (val == 2 || val == 3)
 	    dflt = val;
@@ -1898,7 +1898,7 @@ static int defaultSaveVersion()
 
 /* ----- E x t e r n a l -- I n t e r f a c e s ----- */
 
-void attribute_hidden R_SaveToFileV(SEXP obj, FILE *fp, int ascii, int version)
+HIDDEN void R_SaveToFileV(SEXP obj, FILE *fp, int ascii, int version)
 {
     SaveLoadData data = {{nullptr, 0, MAXELTSIZE}};
 
@@ -1930,7 +1930,7 @@ void attribute_hidden R_SaveToFileV(SEXP obj, FILE *fp, int ascii, int version)
     }
 }
 
-void attribute_hidden R_SaveToFile(SEXP obj, FILE *fp, int ascii)
+HIDDEN void R_SaveToFile(SEXP obj, FILE *fp, int ascii)
 {
     R_SaveToFileV(obj, fp, ascii, defaultSaveVersion());
 }
@@ -1938,7 +1938,7 @@ void attribute_hidden R_SaveToFile(SEXP obj, FILE *fp, int ascii)
     /* different handling of errors */
 
 #define return_and_free(X) {r = X; R_FreeStringBuffer(&data.buffer); return r;}
-SEXP attribute_hidden R_LoadFromFile(FILE *fp, int startup)
+HIDDEN SEXP R_LoadFromFile(FILE *fp, int startup)
 {
     struct R_inpstream_st in;
     int magic;
@@ -1990,7 +1990,7 @@ SEXP attribute_hidden R_LoadFromFile(FILE *fp, int startup)
 }
 
 /* Only used for version 1 saves */
-SEXP attribute_hidden do_save(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* file_, RObject* ascii_, RObject* version_, RObject* envir_, RObject* eval_promises_)
+HIDDEN SEXP do_save(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* file_, RObject* ascii_, RObject* version_, RObject* envir_, RObject* eval_promises_)
 {
     /* save(list, file, ascii, version, environment) */
 
@@ -2109,7 +2109,7 @@ static SEXP R_LoadSavedData(FILE *fp, SEXP aenv)
 }
 
 /* This is only used for version 1 or earlier formats */
-SEXP attribute_hidden do_load(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* envir_)
+HIDDEN SEXP do_load(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* envir_)
 {
     SEXP fname, aenv;
     GCStackRoot<> val;
@@ -2147,7 +2147,7 @@ SEXP attribute_hidden do_load(/*const*/ Expression* call, const BuiltInFunction*
 #define R_XDR_INTEGER_SIZE 4
 */
 
-void attribute_hidden R_XDREncodeDouble(double d, void *buf)
+HIDDEN void R_XDREncodeDouble(double d, void *buf)
 {
     XDR xdrs;
     int success;
@@ -2159,7 +2159,7 @@ void attribute_hidden R_XDREncodeDouble(double d, void *buf)
 	Rf_error(_("XDR write failed"));
 }
 
-double attribute_hidden R_XDRDecodeDouble(void *buf)
+HIDDEN double R_XDRDecodeDouble(void *buf)
 {
     XDR xdrs;
     double d;
@@ -2173,7 +2173,7 @@ double attribute_hidden R_XDRDecodeDouble(void *buf)
     return d;
 }
 
-void attribute_hidden R_XDREncodeInteger(int i, void *buf)
+HIDDEN void R_XDREncodeInteger(int i, void *buf)
 {
     XDR xdrs;
     int success;
@@ -2185,7 +2185,7 @@ void attribute_hidden R_XDREncodeInteger(int i, void *buf)
 	Rf_error(_("XDR write failed"));
 }
 
-int attribute_hidden R_XDRDecodeInteger(void *buf)
+HIDDEN int R_XDRDecodeInteger(void *buf)
 {
     XDR xdrs;
     int i, success;
@@ -2244,7 +2244,7 @@ void R_RestoreGlobalEnvFromFile(const char *name, Rboolean quiet)
    something like
 
 	magic <- if (ascii) "RDA3\n" else ...
-	writeChar(magic, con, eos = NULL)
+	writeChar(magic, con, eos = nullptr)
 	val <- lapply(list, get, envir = envir)
 	names(val) <- list
 	invisible(serialize(val, con, ascii = ascii))
@@ -2257,7 +2257,7 @@ void R_RestoreGlobalEnvFromFile(const char *name, Rboolean quiet)
    with either a pairlist or list.
 */
 
-SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* con_, RObject* ascii_, RObject* version_, RObject* envir_, RObject* eval_promises_)
+HIDDEN SEXP do_saveToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* list_, RObject* con_, RObject* ascii_, RObject* version_, RObject* envir_, RObject* eval_promises_)
 {
     /* saveToConn(list, conn, ascii, version, environment) */
 
@@ -2365,7 +2365,7 @@ SEXP attribute_hidden do_saveToConn(/*const*/ Expression* call, const BuiltInFun
 extern int R_ReadItemDepth;
 extern int R_InitReadItemDepth;
 
-SEXP attribute_hidden do_loadFromConn2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* envir_, RObject* verbose_)
+HIDDEN SEXP do_loadFromConn2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* envir_, RObject* verbose_)
 {
     /* 0 .. loadFromConn2(conn, environment, verbose) */
     /* 1 .. loadInfoFromConn2(conn) */

@@ -619,7 +619,7 @@ static RObject* NewName(RObject* base, RObject* tag, R_xlen_t seqno, int count)
 }
 
 /* also used in coerce.cpp */
-SEXP attribute_hidden Rf_ItemName(SEXP names, R_xlen_t i)
+HIDDEN SEXP Rf_ItemName(SEXP names, R_xlen_t i)
 {
   /* return  names[i]  if it is a character (>= 1 char), or NULL otherwise */
     if (names != nullptr &&
@@ -837,7 +837,7 @@ static RObject* c_Extract_opt(RObject* ans, Rboolean *recurse, Rboolean *usename
 */
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_c(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_c(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     /* Attempt method dispatch. */
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
@@ -955,7 +955,7 @@ static RObject* do_c_dflt(Expression* call, BuiltInFunction* op, ArgList&& argli
 } /* do_c */
 
 
-SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  recursive_, RObject*  use_names_)
+HIDDEN SEXP do_unlist(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  recursive_, RObject*  use_names_)
 {
     SEXP ans, t;
     R_xlen_t i, n = 0;
@@ -1092,7 +1092,7 @@ SEXP attribute_hidden do_unlist(/*const*/ Expression* call, const BuiltInFunctio
 
 /* cbind(deparse.level, ...) and rbind(deparse.level, ...) : */
 /* This is a special .Internal */
-SEXP attribute_hidden do_bind(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_bind(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP obj, rho;
     FunctionBase* method = nullptr;

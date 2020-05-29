@@ -143,8 +143,7 @@ std::vector<llvm::Value*> Compiler::castFunctionArguments(
 llvm::Value* Compiler::emitCallOrInvoke(llvm::Function* function,
 					llvm::ArrayRef<llvm::Value*> args)
 {
-    std::vector<llvm::Value*> type_checked_args = castFunctionArguments(
-	args, function);
+    std::vector<llvm::Value*> type_checked_args = castFunctionArguments(args, function);
 
     BasicBlock* exception_handler = m_context->getExceptionLandingPad();
     if (exception_handler) {

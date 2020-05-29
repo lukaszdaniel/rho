@@ -50,14 +50,14 @@ using namespace rho;
 
 int baseRegisterIndex = -1;
 
-GPar* dpptr(pGEDevDesc dd) {
+GPar* dpptr(GEDevDesc* dd) {
     if (baseRegisterIndex == -1)
 	Rf_error(_("the base graphics system is not registered"));
     baseSystemState *bss = static_cast<baseSystemState*>(dd->gesd[baseRegisterIndex]->systemSpecific);
     return &(bss->dp);
 }
 
-static SEXP R_INLINE getSymbolValue(SEXP symbol)
+R_INLINE static SEXP getSymbolValue(SEXP symbol)
 {
     if (TYPEOF(symbol) != SYMSXP)
 	Rf_error("argument to 'getSymbolValue' is not a symbol");
@@ -115,7 +115,7 @@ static int R_NumDevices = 1;
    process of being closed and destroyed.  We do this to allow for GUI
    callbacks starting to kill a device whilst another is being killed.
  */
-static pGEDevDesc R_Devices[R_MaxDevices];
+static GEDevDesc* R_Devices[R_MaxDevices];
 static Rboolean active[R_MaxDevices];
 
 /* The following are used in rho to protect the displayList and
@@ -149,7 +149,7 @@ int NumDevices(void)
     return R_NumDevices;
 }
 
-pGEDevDesc GEcurrentDevice(void)
+GEDevDesc* GEcurrentDevice(void)
 {
     /* If there are no active devices
      * check the options for a "default device".
@@ -197,7 +197,7 @@ pGEDevDesc GEcurrentDevice(void)
     return R_Devices[R_CurrentDevice];
 }
 
-pGEDevDesc GEgetDevice(int i)
+GEDevDesc* GEgetDevice(int i)
 {
     return R_Devices[i];
 }
@@ -251,7 +251,7 @@ int prevDevice(int from)
  * and you want to find the corresponding device number
  */
 
-int GEdeviceNumber(pGEDevDesc dd)
+int GEdeviceNumber(GEDevDesc* dd)
 {
     int i;
     for (i = 1; i < R_MaxDevices; i++)
@@ -262,7 +262,7 @@ int GEdeviceNumber(pGEDevDesc dd)
 /* This should be called if you have a pointer to a DevDesc
  * and you want to find the corresponding device number
  */
-int ndevNumber(pDevDesc dd)
+int ndevNumber(DevDesc* dd)
 {
     int i;
     for (i = 1; i < R_MaxDevices; i++)
@@ -279,10 +279,10 @@ int selectDevice(int devNum)
     if((devNum >= 0) && (devNum < R_MaxDevices) &&
        (R_Devices[devNum] != nullptr) && active[devNum])
     {
-	pGEDevDesc gdd;
+	GEDevDesc* gdd;
 
 	if (!NoDevices()) {
-	    pGEDevDesc oldd = GEcurrentDevice();
+	    GEDevDesc* oldd = GEcurrentDevice();
 	    if (oldd->dev->deactivate) oldd->dev->deactivate(oldd->dev);
 	}
 
@@ -315,7 +315,7 @@ void removeDevice(int devNum, Rboolean findNext)
     {
 	int i;
 	SEXP s;
-	pGEDevDesc g = R_Devices[devNum];
+	GEDevDesc* g = R_Devices[devNum];
 
 	active[devNum] = FALSE; /* stops it being selected again */
 	R_NumDevices--;
@@ -337,7 +337,7 @@ void removeDevice(int devNum, Rboolean findNext)
 
 		/* activate new current device */
 		if (R_CurrentDevice) {
-		    pGEDevDesc gdd = GEcurrentDevice();
+		    GEDevDesc* gdd = GEcurrentDevice();
 		    if(gdd->dev->activate) gdd->dev->activate(gdd->dev);
 		}
 	    }
@@ -348,7 +348,7 @@ void removeDevice(int devNum, Rboolean findNext)
     }
 }
 
-void GEkillDevice(pGEDevDesc gdd)
+void GEkillDevice(GEDevDesc* gdd)
 {
     removeDevice(GEdeviceNumber(gdd), TRUE);
 }
@@ -390,7 +390,7 @@ void Rf_KillAllDevices(void)
 }
 
 /* A common construction in some graphics devices */
-pGEDevDesc desc2GEDesc(pDevDesc dd)
+GEDevDesc* desc2GEDesc(DevDesc* dd)
 {
     int i;
     for (i = 1; i < R_MaxDevices; i++)
@@ -415,12 +415,12 @@ Rboolean R_CheckDeviceAvailableBool(void)
     else return TRUE;
 }
 
-void GEaddDevice(pGEDevDesc gdd)
+void GEaddDevice(GEDevDesc* gdd)
 {
     int i;
     Rboolean appnd;
     SEXP s, t;
-    pGEDevDesc oldd;
+    GEDevDesc* oldd;
 
     PROTECT(s = getSymbolValue(Symbols::DotDevicesSymbol));
 
@@ -474,14 +474,14 @@ void GEaddDevice(pGEDevDesc gdd)
 }
 
 /* convenience wrappers */
-void GEaddDevice2(pGEDevDesc gdd, const char *name)
+void GEaddDevice2(GEDevDesc* gdd, const char *name)
 {
     Rf_gsetVar(Symbols::DotDeviceSymbol, Rf_mkString(name), R_BaseEnv);
     GEaddDevice(gdd);
     GEinitDisplayList(gdd);
 }
 
-void GEaddDevice2f(pGEDevDesc gdd, const char *name, const char *file)
+void GEaddDevice2f(GEDevDesc* gdd, const char *name, const char *file)
 {
     SEXP f = PROTECT(Rf_mkString(name));
     if(file) {
@@ -497,15 +497,15 @@ void GEaddDevice2f(pGEDevDesc gdd, const char *name, const char *file)
 
 Rboolean Rf_GetOptionDeviceAsk(void); /* from options.cpp */
 
-/* Create a GEDevDesc, given a pDevDesc
+/* Create a GEDevDesc, given a DevDesc*
  */
-pGEDevDesc GEcreateDevDesc(pDevDesc dev)
+GEDevDesc* GEcreateDevDesc(DevDesc* dev)
 {
     /* Wrap the device description within a graphics engine
      * device description (add graphics engine information
      * to the device description).
      */
-    pGEDevDesc gdd = static_cast<GEDevDesc*>(calloc(1, sizeof(GEDevDesc)));
+    GEDevDesc* gdd = static_cast<GEDevDesc*>(calloc(1, sizeof(GEDevDesc)));
     /* NULL the gesd array
      */
     int i;
@@ -525,7 +525,7 @@ pGEDevDesc GEcreateDevDesc(pDevDesc dev)
 }
 
 
-void attribute_hidden Rf_InitGraphics(void)
+HIDDEN void Rf_InitGraphics(void)
 {
     R_Devices[0] = &nullDevice;
     active[0] = TRUE;
@@ -544,7 +544,7 @@ void attribute_hidden Rf_InitGraphics(void)
 }
 
 
-void NewFrameConfirm(pDevDesc dd)
+void NewFrameConfirm(DevDesc* dd)
 {
     if(!R_Interactive) return;
     /* dd->newFrameConfirm(dd) will either handle this, or return
@@ -558,14 +558,14 @@ void NewFrameConfirm(pDevDesc dd)
 
 // rho mutator functions:
 
-void setDisplayList(pGEDevDesc dev, SEXP newDisplayList)
+void setDisplayList(GEDevDesc* dev, SEXP newDisplayList)
 {
     dev->displayList = newDisplayList;
     if (dev->index >= 0)
 	displayListGuards[dev->index] = newDisplayList;
 }
 
-void saveSnapshot(pGEDevDesc dev, SEXP newSnapshot)
+void saveSnapshot(GEDevDesc* dev, SEXP newSnapshot)
 {
     dev->savedSnapshot = newSnapshot;
     if (dev->index >= 0)

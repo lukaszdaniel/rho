@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2000-2017   The R Core Team.
+ *  Copyright (C) 2000-2018   The R Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -111,7 +111,7 @@ using namespace rho;
 #include <trioremap.h>
 #endif
 
-int attribute_hidden R_OutputCon; /* used in printutils.cpp */
+HIDDEN int R_OutputCon; /* used in printutils.cpp */
 
 static void con_destroy(int i);
 
@@ -142,8 +142,8 @@ typedef long long int _lli_t;
 # include <Startup.h>
 #endif
 
-#define NCONNECTIONS 128 /* snow needs one per slave node */
-#define NSINKS 21
+constexpr int NCONNECTIONS = 128; /* snow needs one per slave node */
+constexpr int NSINKS = 21;
 
 static Rconnection Connections[NCONNECTIONS];
 static GCRoot<> OutTextData;
@@ -155,7 +155,7 @@ static int SinkCons[NSINKS], SinkConsClose[NSINKS], R_SinkSplit[NSINKS];
    does not try to close it after it is already closed.  And that id
    will be passed as a pointer, so it seemed easiest to use void *.
 */
-static void * current_id = nullptr;
+static void* current_id = nullptr;
 
 /* ------------- admin functions (see also at end) ----------------- */
 
@@ -196,8 +196,7 @@ Rconnection getConnection(int n)
 
 }
 
-attribute_hidden
-int getActiveSink(int n)
+HIDDEN int getActiveSink(int n)
 {
     if (n >= R_SinkNumber || n < 0)
 	return 0;
@@ -233,19 +232,17 @@ static void conFinalizer(SEXP ptr)
 
 
 /* for use in REvprintf */
-attribute_hidden
-Rconnection getConnection_no_err(int n)
+HIDDEN Rconnection getConnection_no_err(int n)
 {
     Rconnection con = nullptr;
 
-    if(n < 0 || n >= NCONNECTIONS || n == NA_INTEGER ||
-       !(con = Connections[n]))
+    if (n < 0 || n >= NCONNECTIONS || n == NA_INTEGER
+	|| !(con = Connections[n]))
 	return nullptr;
     return con;
-
 }
 
-static void NORET set_iconv_error(Rconnection con, const char* from, const char* to)
+[[noreturn]] static void set_iconv_error(Rconnection con, const char* from, const char* to)
 {
     char buf[100];
     snprintf(buf, 100, _("unsupported conversion from '%s' to '%s'"), from, to);
@@ -255,7 +252,7 @@ static void NORET set_iconv_error(Rconnection con, const char* from, const char*
 
 /* ------------------- buffering --------------------- */
 
-#define RBUFFCON_LEN_DEFAULT 4096
+constexpr size_t RBUFFCON_LEN_DEFAULT = 4096;
 
 static size_t buff_set_len(Rconnection con, size_t len) {
     size_t unread_len = 0;
@@ -350,7 +347,8 @@ static double buff_seek(Rconnection con, double where, int origin, int rw)
     return con->seek(con, where, origin, rw);
 }
 
-void set_buffer(Rconnection con) {
+void set_buffer(Rconnection con)
+{
     if (con->canread && con->text) {
 	buff_init(con);
     }
@@ -405,7 +403,7 @@ void set_iconv(Rconnection con)
 
 /* ------------------- null connection functions --------------------- */
 
-static Rboolean NORET null_open(Rconnection con)
+[[noreturn]] static Rboolean null_open(Rconnection con)
 {
     Rf_error(_("%s not enabled for this connection"), "open");
 }
@@ -420,7 +418,7 @@ static void null_destroy(Rconnection con)
     if(con->connprivate) free(con->connprivate);
 }
 
-static int NORET null_vfprintf(Rconnection con, const char *format, va_list ap)
+[[noreturn]] static int null_vfprintf(Rconnection con, const char *format, va_list ap)
 {
     Rf_error(_("%s not enabled for this connection"), "printing");
 }
@@ -446,9 +444,9 @@ static int NORET null_vfprintf(Rconnection con, const char *format, va_list ap)
 #endif
 
 #ifdef HAVE_VA_COPY
-# define BUFSIZE 10000
+constexpr size_t BUFSIZE = 10000;
 #else
-# define BUFSIZE 100000
+constexpr size_t BUFSIZE = 100000;
 #endif
 int dummy_vfprintf(Rconnection con, const char *format, va_list ap)
 {
@@ -463,7 +461,7 @@ int dummy_vfprintf(Rconnection con, const char *format, va_list ap)
     res = vsnprintf(buf, BUFSIZE, format, aq);
     va_end(aq);
 #ifdef HAVE_VASPRINTF
-    if(res >= BUFSIZE || res < 0) {
+    if(res >= int(BUFSIZE) || res < 0) {
 	res = vasprintf(&b, format, ap);
 	if (res < 0) {
 	    b = buf;
@@ -527,7 +525,7 @@ int dummy_fgetc(Rconnection con)
 
     if(con->inconv) {
 	if(con->navail <= 0) {
-	    unsigned int i, inew = 0;
+	    unsigned int inew = 0;
 	    char *p, *ob;
 	    const char *ib;
 	    size_t inb, onb, res;
@@ -542,7 +540,7 @@ int dummy_fgetc(Rconnection con)
 		checkBOM8 = TRUE;
 	    }
 	    p = con->iconvbuff + con->inavail;
-	    for(i = con->inavail; i < 25; i++) {
+	    for(auto i = con->inavail; i < 25; i++) {
 		c = buff_fgetc(con);
 		if(c == R_EOF){ con->EOF_signalled = TRUE; break; }
 		*p++ = char(c);
@@ -582,24 +580,25 @@ int dummy_fgetc(Rconnection con)
 	    con->navail = short(50 - onb);
 	}
 	con->navail--;
-	return *con->next++;
+	/* the cast prevents sign extension of 0xFF to -1 (R_EOF) */
+	return (unsigned char)*con->next++;
     } else if (con->buff)
 	return buff_fgetc(con);
     else
 	return con->fgetc_internal(con);
 }
 
-static int NORET null_fgetc(Rconnection con)
+[[noreturn]] static int null_fgetc(Rconnection con)
 {
     Rf_error(_("%s not enabled for this connection"), "'getc'");
 }
 
-static double NORET null_seek(Rconnection con, double where, int origin, int rw)
+[[noreturn]] static double null_seek(Rconnection con, double where, int origin, int rw)
 {
     Rf_error(_("%s not enabled for this connection"), "'seek'");
 }
 
-static void NORET null_truncate(Rconnection con)
+[[noreturn]] static void null_truncate(Rconnection con)
 {
     Rf_error(_("%s not enabled for this connection"), "truncation");
 }
@@ -609,13 +608,13 @@ static int null_fflush(Rconnection con)
     return 0;
 }
 
-static size_t NORET null_read(void *ptr, size_t size, size_t nitems,
+[[noreturn]] static size_t null_read(void *ptr, size_t size, size_t nitems,
 			Rconnection con)
 {
     Rf_error(_("%s not enabled for this connection"), "'read'");
 }
 
-static size_t NORET null_write(const void *ptr, size_t size, size_t nitems,
+[[noreturn]] static size_t null_write(const void *ptr, size_t size, size_t nitems,
 			 Rconnection con)
 {
     Rf_error(_("%s not enabled for this connection"), "'write'");
@@ -676,7 +675,7 @@ void init_con(Rconnection newconn, const char *description, int enc,
 size_t Rf_utf8towcs(wchar_t *wc, const char *s, size_t n);
 #endif
 
-typedef struct fileconn {
+struct fileconn {
     FILE *fp;
     OFF_T rpos, wpos;
     Rboolean last_was_write;
@@ -688,7 +687,8 @@ typedef struct fileconn {
     char wcbuf;
     char name[PATH_MAX+1];
 #endif
-} *Rfileconn;
+};
+typedef fileconn* Rfileconn;
 
 static Rboolean file_open(Rconnection con)
 {
@@ -1016,9 +1016,10 @@ static Rconnection newfile(const char *description, int enc, const char *mode,
 
 # include <errno.h>
 
-typedef struct fifoconn {
+struct fifoconn {
     int fd;
-} *Rfifoconn;
+};
+typedef fifoconn* Rfifoconn;
 
 
 static Rboolean fifo_open(Rconnection con)
@@ -1107,7 +1108,7 @@ static size_t fifo_read(void *ptr, size_t size, size_t nitems,
     Rfifoconn thisconn = static_cast<Rfifoconn>(con->connprivate);
 
     /* uses 'size_t' for len */
-    if (double(size) * double(nitems) > SSIZE_MAX)
+    if (double(size) * double(nitems) > double(SSIZE_MAX))
 	Rf_error(_("too large a block specified"));
     return read(thisconn->fd, ptr, size * nitems)/size;
 }
@@ -1118,7 +1119,7 @@ static size_t fifo_write(const void *ptr, size_t size, size_t nitems,
     Rfifoconn thisconn = static_cast<Rfifoconn>(con->connprivate);
 
     /* uses 'size_t' for len */
-    if (double(size) * double(nitems) > SSIZE_MAX)
+    if (double(size) * double(nitems) > double(SSIZE_MAX))
 	Rf_error(_("too large a block specified"));
     return write(thisconn->fd, ptr, size * nitems)/size;
 }
@@ -1135,11 +1136,12 @@ errno_t strcat_s(char *strDestination, size_t numberOfElements,
 		 const char *strSource);
 */
 
-typedef struct fifoconn
+struct fifoconn
 {
     HANDLE hdl_namedpipe;
     LPOVERLAPPED overlapped_write;
-} *Rfifoconn;
+};
+typedef fifoconn* Rfifoconn;
 
 static char* win_getlasterror_str(void)
 {
@@ -1389,7 +1391,7 @@ static Rconnection newfifo(const char *description, const char *mode)
     return newconn;
 }
 
-SEXP attribute_hidden do_fifo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* blocking_, RObject* encoding_)
+HIDDEN SEXP do_fifo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* blocking_, RObject* encoding_)
 {
 #if (defined(HAVE_MKFIFO) && defined(HAVE_FCNTL_H)) || defined(_WIN32)
     SEXP sfile, sopen, ans, connclass, enc;
@@ -1551,7 +1553,7 @@ extern Rconnection
 newWpipe(const char *description, int enc, const char *mode);
 #endif
 
-SEXP attribute_hidden do_pipe(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* encoding_)
+HIDDEN SEXP do_pipe(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* encoding_)
 {
     SEXP scmd, sopen, ans, connclass, enc;
     const char *file, *open;
@@ -1626,7 +1628,7 @@ SEXP attribute_hidden do_pipe(/*const*/ Expression* call, const BuiltInFunction*
 #include "gzio.h"
 
 /* needs to be declared before con_close1 */
-typedef struct gzconn {
+struct gzconn {
     Rconnection con;
     int cp; /* compression level */
     z_stream s;
@@ -1636,13 +1638,15 @@ typedef struct gzconn {
     int nsaved;
     char saved[2];
     Rboolean allow;
-} *Rgzconn;
+};
+typedef gzconn* Rgzconn;
 
 
-typedef struct gzfileconn {
+struct gzfileconn {
     gzFile fp;
     int compress;
-} *Rgzfileconn;
+};
+typedef gzfileconn* Rgzfileconn;
 
 static Rboolean gzfile_open(Rconnection con)
 {
@@ -1775,11 +1779,12 @@ static Rconnection newgzfile(const char *description, const char *mode,
 }
 
 #include <bzlib.h>
-typedef struct bzfileconn {
+struct bzfileconn {
     FILE *fp;
     BZFILE *bfp;
     int compress;
-} *Rbzfileconn;
+};
+typedef bzfileconn* Rbzfileconn;
 
 static Rboolean bzfile_open(Rconnection con)
 {
@@ -1961,7 +1966,7 @@ static Rconnection newbzfile(const char *description, const char *mode,
 
 #include <lzma.h>
 
-typedef struct xzfileconn {
+struct xzfileconn {
     FILE *fp;
     lzma_stream stream;
     lzma_action action;
@@ -1970,7 +1975,8 @@ typedef struct xzfileconn {
     lzma_filter filters[2];
     lzma_options_lzma opt_lzma;
     unsigned char buf[BUFSIZE];
-} *Rxzfileconn;
+};
+typedef xzfileconn* Rxzfileconn;
 
 static Rboolean xzfile_open(Rconnection con)
 {
@@ -2183,7 +2189,7 @@ newxzfile(const char *description, const char *mode, int type, int compress)
 }
 
 /* op 0 is gzfile, 1 is bzfile, 2 is xv/lzma */
-SEXP attribute_hidden do_gzfile(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* encoding_, RObject* compression_)
+HIDDEN SEXP do_gzfile(/*const*/ Expression* call, const BuiltInFunction* op, RObject* description_, RObject* open_, RObject* encoding_, RObject* compression_)
 {
     SEXP sfile, sopen, ans, connclass, enc;
     const char *file, *open;
@@ -2458,7 +2464,7 @@ static size_t clp_write(const void *ptr, size_t size, size_t nitems,
 			 Rconnection con)
 {
     Rclpconn thisconn = static_cast<clpconn*>(con->connprivate);
-    int i, len = int(size * nitems), used = 0;
+    int len = int(size * nitems), used = 0;
     char c, *p = static_cast<char *>(const_cast<void *>(ptr)), *q = thisconn->buff + thisconn->pos;
 
     if(!con->canwrite)
@@ -2466,7 +2472,7 @@ static size_t clp_write(const void *ptr, size_t size, size_t nitems,
     if (double(size) * double(nitems) > INT_MAX)
 	Rf_error(_("too large a block specified"));
 
-    for(i = 0; i < len; i++) {
+    for(auto i = 0; i < len; i++) {
 	if(thisconn->pos >= thisconn->len) break;
 	c = *p++;
 #ifdef Win32
@@ -2555,9 +2561,9 @@ static Rconnection newclp(const char *url, const char *inmode)
 
 /* ------------------- terminal connections --------------------- */
 
-static unsigned char  ConsoleBuf[CONSOLE_BUFFER_SIZE+1];
-static unsigned char *ConsoleBufp;
-static int  ConsoleBufCnt;
+static unsigned char ConsoleBuf[CONSOLE_BUFFER_SIZE + 1];
+static unsigned char* ConsoleBufp;
+static int ConsoleBufCnt;
 
 static int ConsoleGetchar(void)
 {
@@ -2568,7 +2574,8 @@ static int ConsoleGetchar(void)
 	    return R_EOF;
 	}
 	ConsoleBufp = ConsoleBuf;
-	ConsoleBufCnt = int(strlen(reinterpret_cast<char *>(ConsoleBuf))); // must be short
+	ConsoleBufCnt
+	    = int(strlen(reinterpret_cast<char*>(ConsoleBuf))); // must be short
 	ConsoleBufCnt--;
     }
     return *ConsoleBufp++;
@@ -2608,7 +2615,7 @@ static int stderr_fflush(Rconnection con)
 
 static Rconnection newterminal(const char *description, const char *mode)
 {
-    Rconnection newconn;
+    Rconn* newconn = nullptr;
     newconn = static_cast<Rconnection>(malloc(sizeof(struct Rconn)));
     if(!newconn) Rf_error(_("allocation of terminal connection failed"));
     newconn->connclass = static_cast<char *>(malloc(strlen("terminal") + 1));
@@ -2634,7 +2641,7 @@ static Rconnection newterminal(const char *description, const char *mode)
 }
 
 
-SEXP attribute_hidden do_stdin(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_stdin(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, connclass;
     Rconnection con = getConnection(0);
@@ -2648,7 +2655,7 @@ SEXP attribute_hidden do_stdin(/*const*/ Expression* call, const BuiltInFunction
     return ans;
 }
 
-SEXP attribute_hidden do_stdout(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_stdout(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, connclass;
     Rconnection con = getConnection(R_OutputCon);
@@ -2663,7 +2670,7 @@ SEXP attribute_hidden do_stdout(/*const*/ Expression* call, const BuiltInFunctio
 }
 
 
-SEXP attribute_hidden do_stderr(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_stderr(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, connclass;
     Rconnection con = getConnection(2);
@@ -2681,7 +2688,7 @@ SEXP attribute_hidden do_stderr(/*const*/ Expression* call, const BuiltInFunctio
 #ifdef Win32
 # include <io.h>
 #endif
-SEXP attribute_hidden do_isatty(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_isatty(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     int con;
     /* FIXME: is this correct for consoles? */
@@ -2693,12 +2700,13 @@ SEXP attribute_hidden do_isatty(/*const*/ Expression* call, const BuiltInFunctio
 
 /* Possible future redesign: store nbytes as TRUELENGTH */
 
-typedef struct rawconn {
-    SEXP data; /* all the data, stored as a raw vector */
+struct rawconn {
+    rho::RObject* data; /* all the data, stored as a raw vector */
     /* replace nbytes by TRUELENGTH in due course? */
-    size_t pos, nbytes; /* current pos and number of bytes
-			   (same pos for read and write) */
-} *Rrawconn;
+    size_t pos; /* current pos */
+    size_t nbytes; /* number of bytes (same pos for read and write) */
+};
+typedef rawconn* Rrawconn;
 
 
 /* copy a raw vector into a buffer */
@@ -2808,7 +2816,7 @@ static double raw_seek(Rconnection con, double where, int origin, int rw)
     return double(oldpos);
 }
 
-static Rconnection newraw(const char *description, SEXP raw, const char *mode)
+static Rconnection newraw(const char* description, SEXP raw, const char* mode)
 {
     Rconnection newconn;
 
@@ -2859,23 +2867,23 @@ static Rconnection newraw(const char *description, SEXP raw, const char *mode)
     return newconn;
 }
 
-SEXP attribute_hidden do_rawconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sfile, RObject* sraw, RObject* sopen)
+HIDDEN SEXP do_rawconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sfile, RObject* sraw, RObject* sopen)
 {
     SEXP ans, connclass;
     const char *desc, *open;
     int ncon;
     Rconnection con = nullptr;
 
-    if(!Rf_isString(sfile) || Rf_length(sfile) != 1)
+    if (!Rf_isString(sfile) || Rf_length(sfile) != 1)
 	Rf_error(_("invalid '%s' argument"), "description");
     desc = Rf_translateChar(STRING_ELT(sfile, 0));
-    if(!Rf_isString(sopen) || Rf_length(sopen) != 1)
+    if (!Rf_isString(sopen) || Rf_length(sopen) != 1)
 	Rf_error(_("invalid '%s' argument"), "open");
     open = R_CHAR(STRING_ELT(sopen, 0)); /* ASCII */
-    if(strchr(open, 't'))
+    if (strchr(open, 't'))
 	Rf_error(_("invalid '%s' argument"), "open");
     ncon = NextConnection();
-    if(TYPEOF(sraw) != RAWSXP)
+    if (TYPEOF(sraw) != RAWSXP)
 	Rf_error(_("invalid '%s' argument"), "raw");
     con = Connections[ncon] = newraw(desc, sraw, open);
 
@@ -2893,9 +2901,9 @@ SEXP attribute_hidden do_rawconnection(/*const*/ Expression* call, const BuiltIn
     return ans;
 }
 
-SEXP attribute_hidden do_rawconvalue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_rawconvalue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
-    Rconnection con=nullptr;
+    Rconnection con = nullptr;
     Rrawconn thisconn;
     SEXP ans;
 
@@ -2912,19 +2920,21 @@ SEXP attribute_hidden do_rawconvalue(/*const*/ Expression* call, const BuiltInFu
 
 /* ------------------- text connections --------------------- */
 
-typedef struct textconn {
+struct textconn {
     char *data;  /* all the data */
     size_t cur, nchars; /* current pos and number of chars */
     char save; /* pushback */
-} *Rtextconn;
+};
+typedef textconn* Rtextconn;
 
-typedef struct outtextconn {
+struct outtextconn {
     size_t len;  /* number of lines */
     SEXP namesymbol;
     SEXP data;
     char *lastline;
-    int lastlinelength; /* buffer size */
-} *Routtextconn;
+    size_t lastlinelength; /* buffer size */
+};
+typedef outtextconn* Routtextconn;
 
 /* read a R character vector into a buffer */
 static void text_init(Rconnection con, SEXP text, int type)
@@ -2935,12 +2945,12 @@ static void text_init(Rconnection con, SEXP text, int type)
     Rtextconn thisconn = static_cast<Rtextconn>(con->connprivate);
     const void *vmax = vmaxget();
 
-    for(R_xlen_t i = 0; i < nlines; i++)
+    for(auto i = 0; i < nlines; i++)
 	dnc +=
 	    double(strlen(type == 1 ? Rf_translateChar(STRING_ELT(text, i))
 			    : ((type == 3) ?Rf_translateCharUTF8(STRING_ELT(text, i))
 			       : R_CHAR(STRING_ELT(text, i))) ) + 1);
-    if (dnc >= std::numeric_limits<size_t>::max())
+    if (dnc >= double(std::numeric_limits<size_t>::max()))
 	Rf_error(_("too many characters for text connection"));
     else nchars = size_t(dnc);
     thisconn->data = static_cast<char *>(malloc(nchars+1));
@@ -2949,7 +2959,7 @@ static void text_init(Rconnection con, SEXP text, int type)
 	Rf_error(_("cannot allocate memory for text connection"));
     }
     char *t = thisconn->data;
-    for(R_xlen_t i = 0; i < nlines; i++) {
+    for(auto i = 0; i < nlines; i++) {
 	const char *s = (type == 1) ? Rf_translateChar(STRING_ELT(text, i))
 	    : ((type == 3) ? Rf_translateCharUTF8(STRING_ELT(text, i))
 	       : R_CHAR(STRING_ELT(text, i)));
@@ -3077,15 +3087,15 @@ static void outtext_destroy(Rconnection con)
     free(thisconn->lastline); free(thisconn);
 }
 
-#define LAST_LINE_LEN 256
+constexpr size_t LAST_LINE_LEN = 256;
 
 static int text_vfprintf(Rconnection con, const char *format, va_list ap)
 {
     Routtextconn thisconn = static_cast<Routtextconn>(con->connprivate);
     char buf[BUFSIZE], *b = buf, *p, *q;
     const void *vmax = nullptr;
-    int res = 0, buffree,
-	already = int(strlen(thisconn->lastline)); // we do not allow longer lines
+    int res = 0, buffree;
+	size_t already = strlen(thisconn->lastline); // we do not allow longer lines
     SEXP tmp;
 
     va_list aq;
@@ -3110,7 +3120,7 @@ static int text_vfprintf(Rconnection con, const char *format, va_list ap)
 	p = b + already;
 	vsprintf(p, format, ap);
     } else if(res < 0) { /* just a failure indication */
-#define NBUFSIZE (already + 100*BUFSIZE)
+	const size_t NBUFSIZE = (already + 100 * BUFSIZE);
 	vmax = vmaxget();
 	b = R_alloc(NBUFSIZE, sizeof(char));
 	strncpy(b, thisconn->lastline, NBUFSIZE);
@@ -3124,7 +3134,7 @@ static int text_vfprintf(Rconnection con, const char *format, va_list ap)
     }
 
     /* copy buf line-by-line to object */
-    for(p = b; ; p = q+1) {
+    for(auto p = b; ; p = q+1) {
 	q = Rf_strchr(p, '\n');
 	if(q) {
 	    int idx = ConnIndex(con);
@@ -3146,7 +3156,7 @@ static int text_vfprintf(Rconnection con, const char *format, va_list ap)
 	    UNPROTECT(1);
 	} else {
 	    /* retain the last line */
-	    if(int(strlen(p)) >= thisconn->lastlinelength) {
+	    if(strlen(p) >= thisconn->lastlinelength) {
 		size_t newlen = strlen(p) + 1;
 		if (newlen > INT_MAX) Rf_error("last line is too long");
 		void * tmp = realloc(thisconn->lastline, newlen);
@@ -3255,7 +3265,7 @@ static Rconnection newouttext(const char *description, SEXP stext,
     return newconn;
 }
 
-SEXP attribute_hidden do_textconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* nm_, RObject* object_, RObject* open_, RObject* env_, RObject* type_)
+HIDDEN SEXP do_textconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* nm_, RObject* object_, RObject* open_, RObject* env_, RObject* type_)
 {
     SEXP sfile, stext, sopen, ans, connclass, venv;
     const char *desc, *open;
@@ -3313,7 +3323,7 @@ SEXP attribute_hidden do_textconnection(/*const*/ Expression* call, const BuiltI
     return ans;
 }
 
-SEXP attribute_hidden do_textconvalue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_textconvalue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     Rconnection con=nullptr;
     Routtextconn thisconn;
@@ -3333,7 +3343,7 @@ SEXP attribute_hidden do_textconvalue(/*const*/ Expression* call, const BuiltInF
 
 
 /* socketConnection(host, port, server, blocking, open, encoding) */
-SEXP attribute_hidden do_sockconn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* host_, RObject* port_, RObject* server_, RObject* blocking_, RObject* open_, RObject* encoding_, RObject* timeout_)
+HIDDEN SEXP do_sockconn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* host_, RObject* port_, RObject* server_, RObject* blocking_, RObject* open_, RObject* encoding_, RObject* timeout_)
 {
     SEXP scmd, sopen, ans, connclass, enc;
     const char *host, *open;
@@ -3394,7 +3404,7 @@ SEXP attribute_hidden do_sockconn(/*const*/ Expression* call, const BuiltInFunct
 /* ------------------- unz connections  --------------------- */
 
 /* see dounzip.cpp for the details */
-SEXP attribute_hidden do_unz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sfile, RObject* sopen, RObject* enc)
+HIDDEN SEXP do_unz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* sfile, RObject* sopen, RObject* enc)
 {
     SEXP ans, connclass;
     const char *file, *open;
@@ -3441,7 +3451,7 @@ SEXP attribute_hidden do_unz(/*const*/ Expression* call, const BuiltInFunction* 
 
 /* -------------- open, close, seek, truncate, flush ------------------ */
 
-SEXP attribute_hidden do_open(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* open_, RObject* blocking_)
+HIDDEN SEXP do_open(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* open_, RObject* blocking_)
 {
     int i, block;
     Rconnection con=nullptr;
@@ -3475,7 +3485,7 @@ SEXP attribute_hidden do_open(/*const*/ Expression* call, const BuiltInFunction*
     return nullptr;
 }
 
-SEXP attribute_hidden do_isopen(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* rw_)
+HIDDEN SEXP do_isopen(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* rw_)
 {
     Rconnection con;
     int rw, res;
@@ -3492,7 +3502,7 @@ SEXP attribute_hidden do_isopen(/*const*/ Expression* call, const BuiltInFunctio
     return Rf_ScalarLogical(res);
 }
 
-SEXP attribute_hidden do_isincomplete(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_isincomplete(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     Rconnection con;
 
@@ -3502,7 +3512,7 @@ SEXP attribute_hidden do_isincomplete(/*const*/ Expression* call, const BuiltInF
     return Rf_ScalarLogical(con->incomplete != FALSE);
 }
 
-SEXP attribute_hidden do_isseekable(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_isseekable(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     Rconnection con;
 
@@ -3547,9 +3557,7 @@ static int con_close1(Rconnection con)
     con->description = nullptr;
     /* clear the pushBack */
     if(con->nPushBack > 0) {
-	int j;
-
-	for(j = 0; j < con->nPushBack; j++)
+	for(auto j = 0; j < con->nPushBack; j++)
 	    free(con->PushBack[j]);
 	free(con->PushBack);
     }
@@ -3584,7 +3592,7 @@ static void con_destroy(int i)
 }
 
 
-SEXP attribute_hidden do_close(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* dots_)
+HIDDEN SEXP do_close(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* dots_)
 {
     int i, j;
 
@@ -3611,7 +3619,7 @@ static double Rconn_seek(Rconnection con, double where, int origin, int rw) {
 }
 
 /* seek(con, where = numeric(), origin = "start", rw = "") */
-SEXP attribute_hidden do_seek(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection, RObject* where_, RObject* origin_, RObject* rw_)
+HIDDEN SEXP do_seek(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection, RObject* where_, RObject* origin_, RObject* rw_)
 {
     int origin, rw;
     Rconnection con = nullptr;
@@ -3635,7 +3643,7 @@ SEXP attribute_hidden do_seek(/*const*/ Expression* call, const BuiltInFunction*
 }
 
 /* truncate(con) */
-SEXP attribute_hidden do_truncate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_truncate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     Rconnection con = nullptr;
 
@@ -3646,7 +3654,7 @@ SEXP attribute_hidden do_truncate(/*const*/ Expression* call, const BuiltInFunct
     return nullptr;
 }
 
-SEXP attribute_hidden do_flush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
+HIDDEN SEXP do_flush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_)
 {
     Rconnection con = nullptr;
 
@@ -3708,7 +3716,7 @@ int Rconn_ungetc(int c, Rconnection con)
 
 /* read one line (without trailing newline) from con and store it in buf */
 /* return number of characters read, -1 on EOF */
-attribute_hidden
+HIDDEN
 size_t Rconn_getline(Rconnection con, char *buf, size_t bufsize)
 {
     int c;
@@ -3755,8 +3763,8 @@ int Rconn_printf(Rconnection con, const char *format, ...)
 }
 
 /* readLines(con = stdin(), n = 1, ok = TRUE, warn = TRUE) */
-#define BUF_SIZE 1000
-SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* n_, RObject* ok_, RObject* warn_, RObject* encoding_, RObject* skipNul_)
+constexpr size_t BUF_SIZE = 1000;
+HIDDEN SEXP do_readLines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* n_, RObject* ok_, RObject* warn_, RObject* encoding_, RObject* skipNul_)
 {
     SEXP ans = nullptr, ans2;
     int ok, warn, skipNul, c;
@@ -3820,7 +3828,7 @@ SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunc
 	for(nread = 0; nread < nnn; nread++) {
 	    if(nread >= nn) {
 		double dnn = 2.* nn;
-		if (dnn > R_XLEN_T_MAX) Rf_error("too many items");
+		if (dnn > double(R_XLEN_T_MAX)) Rf_error("too many items");
 		ans2 = Rf_allocVector(STRSXP, 2*nn);
 		for(i = 0; i < nn; i++)
 		    SET_STRING_ELT(ans2, i, STRING_ELT(ans, i));
@@ -3869,8 +3877,7 @@ SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunc
 	    } else {
 		nread++;
 		if(warn)
-		    Rf_warning(_("incomplete final line found on '%s'"),
-			    con->description);
+		    Rf_warning(_("incomplete final line found on '%s'"), con->description);
 	    }
 	}
     } catch (...) {
@@ -3890,7 +3897,7 @@ SEXP attribute_hidden do_readLines(/*const*/ Expression* call, const BuiltInFunc
 }
 
 /* writeLines(text, con = stdout(), sep = "\n", useBytes) */
-SEXP attribute_hidden do_writelines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* text_, RObject* con_, RObject* sep_, RObject* useBytes_)
+HIDDEN SEXP do_writelines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* text_, RObject* con_, RObject* sep_, RObject* useBytes_)
 {
     int con_num, useBytes;
     Rboolean wasopen;
@@ -4039,7 +4046,7 @@ static SEXP rawOneString(Rbyte *bytes, R_xlen_t nbytes, R_xlen_t *np)
 
 /* readBin(con, what, n, swap) */
 #define BLOCK 8096
-SEXP attribute_hidden do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* what_, RObject* n_, RObject* size_, RObject* signed_, RObject* endian_)
+HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* what_, RObject* n_, RObject* size_, RObject* signed_, RObject* endian_)
 {
     SEXP ans = nullptr, swhat;
     int size, signd, swap, sizedef= 4, mode = 1;
@@ -4305,12 +4312,12 @@ SEXP attribute_hidden do_readbin(/*const*/ Expression* call, const BuiltInFuncti
 }
 
 /* writeBin(object, con, size, swap, useBytes) */
-SEXP attribute_hidden do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* size_, RObject* endian_, RObject* useBytes_)
+HIDDEN SEXP do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* size_, RObject* endian_, RObject* useBytes_)
 {
     SEXP object, ans = nullptr;
     int i, j, size, swap, len, useBytes;
-    const char *s;
-    char *buf;
+    const char* s;
+    char* buf;
     Rboolean wasopen = TRUE, isRaw = FALSE;
     Rconnection con = nullptr;
 
@@ -4567,13 +4574,12 @@ SEXP attribute_hidden do_writebin(/*const*/ Expression* call, const BuiltInFunct
 }
 
 /* FIXME: could do any MBCS locale, but would need pushback */
-static SEXP
-readFixedString(Rconnection con, int len, int useBytes)
+static SEXP readFixedString(Rconnection con, int len, int useBytes)
 {
     SEXP ans;
-    char *buf;
-    int  m;
-    const void *vmax = vmaxget();
+    char* buf;
+    int m;
+    const void* vmax = vmaxget();
 
     if(utf8locale && !useBytes) {
 	int i, clen;
@@ -4608,12 +4614,11 @@ readFixedString(Rconnection con, int len, int useBytes)
     return ans;
 }
 
-static SEXP
-rawFixedString(Rbyte *bytes, int len, int nbytes, int *np, int useBytes)
+static SEXP rawFixedString(Rbyte *bytes, int len, int nbytes, int *np, int useBytes)
 {
-    char *buf;
+    char* buf;
     SEXP res;
-    const void *vmax = vmaxget();
+    const void* vmax = vmaxget();
 
     if(*np + len > nbytes) {
 	len = nbytes - *np;
@@ -4652,7 +4657,7 @@ rawFixedString(Rbyte *bytes, int len, int nbytes, int *np, int useBytes)
 
 
 /* readChar(con, nchars) */
-SEXP attribute_hidden do_readchar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* nchars_, RObject* useBytes_)
+HIDDEN SEXP do_readchar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* nchars_, RObject* useBytes_)
 {
     SEXP ans = nullptr, onechar, nchars;
     R_xlen_t i, n, m = 0;
@@ -4723,7 +4728,7 @@ SEXP attribute_hidden do_readchar(/*const*/ Expression* call, const BuiltInFunct
 }
 
 /* writeChar(object, con, nchars, sep, useBytes) */
-SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* nchars_, RObject* eos_, RObject* useBytes_)
+HIDDEN SEXP do_writechar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* nchars_, RObject* eos_, RObject* useBytes_)
 {
     SEXP object, nchars, sep, ans = nullptr, si;
     R_xlen_t i, n, len;
@@ -4792,9 +4797,9 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 	buf = static_cast<char *>(R_alloc(len + slen, sizeof(char)));
     } else {
 	double dlen = 0;
-	for (i = 0; i < n; i++)
+	for (auto i = 0; i < n; i++)
 	    dlen += double(INTEGER(nchars)[i] + slen);
-	if (dlen > R_XLEN_T_MAX)
+	if (dlen > double(R_XLEN_T_MAX))
 	    Rf_error("too much data for a raw vector on this platform");
 	len = R_xlen_t(dlen);
 	PROTECT(ans = Rf_allocVector(RAWSXP, len));
@@ -4816,7 +4821,7 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 
 
     try {
-	for(i = 0; i < n; i++) {
+	for(auto i = 0; i < n; i++) {
 	    len = INTEGER(nchars)[i];
 	    si = STRING_ELT(object, i);
 	    if(int(strlen(R_CHAR(si))) < LENGTH(si)) {
@@ -4852,10 +4857,10 @@ SEXP attribute_hidden do_writechar(/*const*/ Expression* call, const BuiltInFunc
 		if(len < static_cast<R_xlen_t>(lenc)) {
 		    if(mbcslocale) {
 			/* find out how many bytes we need to write */
-			size_t i, used;
+			size_t used;
 			const char *p = s;
 			mbs_init(&mb_st);
-			for(i = 0, lenb = 0; static_cast<R_xlen_t>(i) < len; i++) {
+			for(auto i = 0, lenb = 0; static_cast<R_xlen_t>(i) < len; i++) {
 			    used = Rf_mbrtowc(nullptr, p, MB_CUR_MAX, &mb_st);
 			    p += used;
 			    lenb += used;
@@ -4926,9 +4931,9 @@ void con_pushback(Rconnection con, Rboolean newLine, char *line)
 }
 
 
-SEXP attribute_hidden do_pushback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* data_, RObject* connection_, RObject* newLine_, RObject* encoding_)
+HIDDEN SEXP do_pushback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* data_, RObject* connection_, RObject* newLine_, RObject* encoding_)
 {
-    int i, n, nexists, newLine, type;
+    int n, nexists, newLine, type;
     Rconnection con = nullptr;
     SEXP stext;
     const char *p;
@@ -4955,7 +4960,7 @@ SEXP attribute_hidden do_pushback(/*const*/ Expression* call, const BuiltInFunct
 	if(!q) Rf_error(_("could not allocate space for pushback"));
 	con->PushBack = q;
 	q += nexists;
-	for(i = 0; i < n; i++) {
+	for(auto i = 0; i < n; i++) {
 	    p = type == 1 ? Rf_translateChar(STRING_ELT(stext, n - i - 1))
 			  : ((type == 3) ? Rf_translateCharUTF8(STRING_ELT(stext, n - i - 1))
 					 : R_CHAR(STRING_ELT(stext, n - i - 1)));
@@ -4971,7 +4976,7 @@ SEXP attribute_hidden do_pushback(/*const*/ Expression* call, const BuiltInFunct
     return nullptr;
 }
 
-SEXP attribute_hidden do_pushbacklength(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection_)
+HIDDEN SEXP do_pushbacklength(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection_)
 {
     Rconnection con = nullptr;
 
@@ -4979,15 +4984,14 @@ SEXP attribute_hidden do_pushbacklength(/*const*/ Expression* call, const BuiltI
     return Rf_ScalarInteger(con->nPushBack);
 }
 
-SEXP attribute_hidden do_clearpushback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection_)
+HIDDEN SEXP do_clearpushback(/*const*/ Expression* call, const BuiltInFunction* op, RObject* connection_)
 {
-    int j;
     Rconnection con = nullptr;
 
     con = getConnection(Rf_asInteger(connection_));
 
     if(con->nPushBack > 0) {
-	for(j = 0; j < con->nPushBack; j++) free(con->PushBack[j]);
+	for(auto j = 0; j < con->nPushBack; j++) free(con->PushBack[j]);
 	free(con->PushBack);
 	con->nPushBack = 0;
     }
@@ -5055,12 +5059,12 @@ switch_or_tee_stdout(int icon, int closeOnExit, int tee)
 }
 
 /* This is only used by cat() */
-Rboolean attribute_hidden switch_stdout(int icon, int closeOnExit)
+HIDDEN Rboolean switch_stdout(int icon, int closeOnExit)
 {
   return switch_or_tee_stdout(icon, closeOnExit, 0);
 }
 
-SEXP attribute_hidden do_sink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* append_, RObject* type_, RObject* split_)
+HIDDEN SEXP do_sink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* append_, RObject* type_, RObject* split_)
 {
   int icon, closeOnExit, errcon, tee;
 
@@ -5092,7 +5096,7 @@ SEXP attribute_hidden do_sink(/*const*/ Expression* call, const BuiltInFunction*
     return nullptr;
 }
 
-SEXP attribute_hidden do_sinknumber(/*const*/ Expression* call, const BuiltInFunction* op, RObject* type_)
+HIDDEN SEXP do_sinknumber(/*const*/ Expression* call, const BuiltInFunction* op, RObject* type_)
 {
     int errcon = Rf_asLogical(type_);
     if(errcon == NA_LOGICAL)
@@ -5103,16 +5107,18 @@ SEXP attribute_hidden do_sinknumber(/*const*/ Expression* call, const BuiltInFun
 #ifdef Win32
 void WinCheckUTF8(void)
 {
-    if(CharacterMode == RGui) WinUTF8out = (SinkCons[R_SinkNumber] == 1);
-    else WinUTF8out = FALSE;
+    if(CharacterMode == RGui)
+	WinUTF8out = (SinkCons[R_SinkNumber] == 1 ||
+	              SinkCons[R_SinkNumber] == 2);
+    else
+	WinUTF8out = FALSE;
 }
 #endif
 
 /* ------------------- admin functions  --------------------- */
 
-void attribute_hidden Rf_InitConnections()
+HIDDEN void Rf_InitConnections()
 {
-    int i;
     Connections[0] = newterminal("stdin", "r");
     Connections[0]->fgetc = stdin_fgetc;
     Connections[1] = newterminal("stdout", "w");
@@ -5121,28 +5127,28 @@ void attribute_hidden Rf_InitConnections()
     Connections[2] = newterminal("stderr", "w");
     Connections[2]->vfprintf = stderr_vfprintf;
     Connections[2]->fflush = stderr_fflush;
-    for(i = 3; i < NCONNECTIONS; i++) Connections[i] = nullptr;
+    for(auto i = 3; i < NCONNECTIONS; i++) Connections[i] = nullptr;
     R_OutputCon = 1;
     R_SinkNumber = 0;
     SinkCons[0] = 1; R_ErrorCon = 2;
 }
 
-SEXP attribute_hidden
-do_getallconnections(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_getallconnections(/*const*/ Expression* call, const BuiltInFunction* op)
 {
-    int i, j=0, n=0;
+    int j = 0, n = 0;
     SEXP ans;
-    for(i = 0; i < NCONNECTIONS; i++)
-	if(Connections[i]) n++;
+    for (auto i = 0; i < NCONNECTIONS; i++)
+	if (Connections[i])
+	    n++;
     PROTECT(ans = Rf_allocVector(INTSXP, n));
-    for(i = 0; i < NCONNECTIONS; i++)
-	if(Connections[i])
+    for (auto i = 0; i < NCONNECTIONS; i++)
+	if (Connections[i])
 	    INTEGER(ans)[j++] = i;
     UNPROTECT(1);
     return ans;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_getconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* what_)
 {
     SEXP ans, connclass;
@@ -5167,7 +5173,7 @@ do_getconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
     return ans;
 }
 
-SEXP attribute_hidden do_sumconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_)
+HIDDEN SEXP do_sumconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_)
 {
     SEXP ans, names, tmp;
     Rconnection Rcon;
@@ -5210,7 +5216,7 @@ R_newCurlUrl(const char *description, const char * const mode, int type);
 /* op = 0: .Internal( url(description, open, blocking, encoding, method))
    op = 1: .Internal(file(description, open, blocking, encoding, method, raw))
 */
-SEXP attribute_hidden do_url(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_url(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP scmd, sopen, ans, connclass, enc;
     const char *class2 = "url";
@@ -5638,10 +5644,10 @@ static size_t gzcon_read(void *ptr, size_t size, size_t nitems,
 	Rf_error(_("too large a block specified"));
     if (priv->nsaved >= 0) { /* non-compressed mode */
 	size_t len = size*nitems;
-	int i, nsaved = priv->nsaved;
+	int nsaved = priv->nsaved;
 	if (len == 0) return 0;
 	if (len >= 2) {
-	    for(i = 0; i < priv->nsaved; i++)
+	    for(auto i = 0; i < priv->nsaved; i++)
 		(static_cast<char *>(ptr))[i] = priv->saved[i];
 	    priv->nsaved = 0;
 	    return (nsaved + icon->read(static_cast<char *>(ptr)+nsaved, 1, len - nsaved,
@@ -5729,7 +5735,7 @@ static int gzcon_fgetc(Rconnection con)
 
 
 /* gzcon(con, level, allowNonCompressed) */
-SEXP attribute_hidden do_gzcon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* level_, RObject* allowNonCompressed_, RObject* text_)
+HIDDEN SEXP do_gzcon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* level_, RObject* allowNonCompressed_, RObject* text_)
 {
     SEXP ans, connclass;
     int icon, level, allow;
@@ -5844,7 +5850,7 @@ static inline unsigned int uiSwap (unsigned int x)
 
 /* These are all hidden and used only in serialize.cpp,
    so managing R_alloc stack is prudence. */
-attribute_hidden
+HIDDEN
 SEXP R_compress1(SEXP in)
 {
     const void *vmax = vmaxget();
@@ -5869,8 +5875,7 @@ SEXP R_compress1(SEXP in)
     return ans;
 }
 
-attribute_hidden
-SEXP R_decompress1(SEXP in, Rboolean *err)
+HIDDEN SEXP R_decompress1(SEXP in, Rboolean* err)
 {
     const void *vmax = vmaxget();
     uLong inlen, outlen;
@@ -5896,8 +5901,7 @@ SEXP R_decompress1(SEXP in, Rboolean *err)
     return ans;
 }
 
-attribute_hidden
-SEXP R_compress2(SEXP in)
+HIDDEN SEXP R_compress2(SEXP in)
 {
     const void *vmax = vmaxget();
     unsigned int inlen, outlen;
@@ -5929,8 +5933,7 @@ SEXP R_compress2(SEXP in)
     return ans;
 }
 
-attribute_hidden
-SEXP R_decompress2(SEXP in, Rboolean *err)
+HIDDEN SEXP R_decompress2(SEXP in, Rboolean* err)
 {
     const void *vmax = vmaxget();
     unsigned int inlen, outlen;
@@ -5974,7 +5977,7 @@ SEXP R_decompress2(SEXP in, Rboolean *err)
 }
 
 
-SEXP attribute_hidden do_sockselect(/*const*/ Expression* call, const BuiltInFunction* op, RObject* socklist_, RObject* write_, RObject* timeout_)
+HIDDEN SEXP do_sockselect(/*const*/ Expression* call, const BuiltInFunction* op, RObject* socklist_, RObject* write_, RObject* timeout_)
 {
     Rboolean immediate = FALSE;
     int nsock, i;
@@ -6036,8 +6039,7 @@ static void init_filters(void)
     */
 }
 
-attribute_hidden
-SEXP R_compress3(SEXP in)
+HIDDEN SEXP R_compress3(SEXP in)
 {
     const void *vmax = vmaxget();
     unsigned int inlen, outlen;
@@ -6078,8 +6080,7 @@ SEXP R_compress3(SEXP in)
     return ans;
 }
 
-attribute_hidden
-SEXP R_decompress3(SEXP in, Rboolean *err)
+HIDDEN SEXP R_decompress3(SEXP in, Rboolean* err)
 {
     const void *vmax = vmaxget();
     unsigned int inlen, outlen;
@@ -6144,7 +6145,7 @@ SEXP R_decompress3(SEXP in, Rboolean *err)
     return ans;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_memCompress(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* type_)
 {
     SEXP ans, from;
@@ -6223,7 +6224,7 @@ do_memCompress(/*const*/ Expression* call, const BuiltInFunction* op, RObject* f
     return ans;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_memDecompress(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* type_)
 {
     SEXP ans, from;

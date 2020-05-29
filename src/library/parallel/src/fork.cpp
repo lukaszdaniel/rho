@@ -1063,7 +1063,7 @@ SEXP mc_kill(SEXP sPid, SEXP sSig)
     return Rf_ScalarLogical(1);
 }
 
-SEXP NORET mc_exit(SEXP sRes)
+NORET SEXP mc_exit(SEXP sRes)
 {
     int res = Rf_asInteger(sRes);
 #ifdef MC_DEBUG

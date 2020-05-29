@@ -116,7 +116,7 @@ using namespace rho;
 # define SET_STDVEC_LENGTH(x, v) SETLENGTH(x, v)
 #endif
 
-static R_INLINE SEXP getNames(SEXP x)
+R_INLINE static SEXP getNames(SEXP x)
 {
     /* defer to getAttrib if a 'dim' attribute is present */
     for (SEXP attr = ATTRIB(x); attr != nullptr; attr = CDR(attr))
@@ -141,9 +141,9 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 {
     R_xlen_t len, newtruelen;
     SEXP newx, names, newnames;
-    static SEXP R_CheckBoundsSymbol = NULL;
+    static SEXP R_CheckBoundsSymbol = nullptr;
 
-    if (R_CheckBoundsSymbol == NULL)
+    if (R_CheckBoundsSymbol == nullptr)
 	R_CheckBoundsSymbol = Rf_install("check.bounds");
 
     /* Sanity Checks */
@@ -178,7 +178,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
     static double expand = 0;
     if (expand == 0) {
 	char *envval = getenv("R_EXPAND_FRAC");
-	expand = envval != NULL ? atof(envval) : expand_dflt;
+	expand = envval != nullptr ? atof(envval) : expand_dflt;
 	if (expand < 1 || expand > 2) {
 	    expand = expand_dflt;
 	    Rf_error("bad expand value");
@@ -187,7 +187,7 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 
     if (newlen > len) {
 	double expanded_nlen = newlen * expand;
-	if (expanded_nlen <= R_XLEN_T_MAX)
+	if (expanded_nlen <= double(R_XLEN_T_MAX))
 	    newtruelen = (R_xlen_t) expanded_nlen;
 	else
 	    newtruelen = newlen;
@@ -487,7 +487,7 @@ static int SubassignTypeFix(SEXP *x, SEXP *y, int level, SEXP call, SEXP rho)
 }
 
 #ifdef LONG_VECTOR_SUPPORT
-static R_INLINE R_xlen_t gi(SEXP indx, R_xlen_t i)
+R_INLINE static R_xlen_t gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL_ELT(indx, i);
@@ -497,7 +497,7 @@ static R_INLINE R_xlen_t gi(SEXP indx, R_xlen_t i)
 }
 #else
 #define R_SHORT_LEN_MAX INT_MAX
-static R_INLINE int gi(SEXP indx, R_xlen_t i)
+R_INLINE static int gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL_ELT(indx, i);
@@ -925,7 +925,7 @@ static SEXP listRemove(SEXP x, SEXP s, int ind)
 
 
 // For  x[s] <- y  --- extract (x, s, y)  and return the number of indices
-static R_INLINE int SubAssignArgs(PairList* args, SEXP *x, PairList** s, SEXP *y)
+R_INLINE static int SubAssignArgs(PairList* args, SEXP *x, PairList** s, SEXP *y)
 {
     if (CDR(args) == nullptr)
 	Rf_error(_("SubAssignArgs: invalid number of arguments"));
@@ -958,7 +958,7 @@ static R_INLINE int SubAssignArgs(PairList* args, SEXP *x, PairList** s, SEXP *y
 /* and the remainder of args have not.  If this was called directly */
 /* the CAR(args) and the last arg won't have been. */
 
-SEXP attribute_hidden do_subassign(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_subassign(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* expression = SEXP_downcast<Expression*>(call);
     const BuiltInFunction* function = SEXP_downcast<BuiltInFunction*>(op);
@@ -973,7 +973,7 @@ SEXP attribute_hidden do_subassign(SEXP call, SEXP op, SEXP args, SEXP rho)
         expression, function, arglist, envx);
 }
 
-SEXP attribute_hidden do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
+HIDDEN SEXP do_subassign_dflt(SEXP call, SEXP op, SEXP argsarg,
 					SEXP rho)
 {
     GCStackRoot<PairList> args(SEXP_downcast<PairList*>(argsarg));
@@ -1117,7 +1117,7 @@ static SEXP DeleteOneVectorListItem(SEXP x, R_xlen_t which)
  * args[1] =: x    = object being subscripted
  * args[2] =: subs = list of subscripts
  * args[3] =: y    = replacement values */
-SEXP attribute_hidden do_subassign2(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_subassign2(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* expression = SEXP_downcast<Expression*>(call);
     const BuiltInFunction* function = SEXP_downcast<BuiltInFunction*>(op);
@@ -1133,7 +1133,7 @@ SEXP attribute_hidden do_subassign2(SEXP call, SEXP op, SEXP args, SEXP rho)
         expression, function, arglist, envx);
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 {
     PairList* args = SEXP_downcast<PairList*>(argsarg);
@@ -1184,7 +1184,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
     dims = Rf_getAttrib(x, Symbols::DimSymbol);
     ndims = Rf_length(dims);
 
-    int *pdims = NULL;
+    int *pdims = nullptr;
     if (ndims > 0) {
 	if (TYPEOF(dims) == INTSXP)
 	    pdims = INTEGER(dims);
@@ -1477,7 +1477,7 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
    to get DispatchOrEval to work we need to first translate it
    to a string
 */
-SEXP attribute_hidden do_subassign3(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_subassign3(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP nlist = nullptr;
 

@@ -43,7 +43,7 @@
  * see also lgammacor() in ./lgammacor.cpp  which computes almost the same!
  */
 
-double attribute_hidden stirlerr(double n)
+HIDDEN double stirlerr(double n)
 {
 
 #define S0 0.083333333333333333333       /* 1/12 */

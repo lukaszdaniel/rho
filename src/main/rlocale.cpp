@@ -187,7 +187,7 @@ int Ri18n_wcwidth(Rwchar_t c)
 }
 
 /* Used in character.cpp, errors.cpp, ../gnuwin32/console.c */
-attribute_hidden
+HIDDEN
 int Ri18n_wcswidth (const wchar_t *s, size_t n)
 {
     int rs = 0;

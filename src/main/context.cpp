@@ -51,7 +51,7 @@ using namespace rho;
 /* negative n counts back from the current frame */
 /* positive n counts up from the globalEnv */
 
-SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
+HIDDEN SEXP R_sysframe(int n, ClosureContext *cptr)
 {
     if (n == 0)
 	return(R_GlobalEnv);
@@ -88,7 +88,7 @@ SEXP attribute_hidden R_sysframe(int n, ClosureContext *cptr)
 /* It would be much simpler if sysparent just returned cptr->sysparent */
 /* but then we wouldn't be compatible with S. */
 
-int attribute_hidden R_sysparent(int n, ClosureContext *cptr)
+HIDDEN int R_sysparent(int n, ClosureContext *cptr)
 {
     int j;
     SEXP s;
@@ -117,7 +117,7 @@ int attribute_hidden R_sysparent(int n, ClosureContext *cptr)
     return n;
 }
 
-int attribute_hidden Rf_framedepth(ClosureContext* cptr)
+HIDDEN int Rf_framedepth(ClosureContext* cptr)
 {
     int nframe = 0;
     while (cptr) {
@@ -139,7 +139,7 @@ static SEXP getCallWithSrcref(ClosureContext *cptr)
 	    return result;
 }
 
-SEXP attribute_hidden R_syscall(int n, ClosureContext* cptr)
+HIDDEN SEXP R_syscall(int n, ClosureContext* cptr)
 {
     /* negative n counts back from the current frame */
     /* positive n counts up from the globalEnv */
@@ -161,7 +161,7 @@ SEXP attribute_hidden R_syscall(int n, ClosureContext* cptr)
     return nullptr; /* just for -Wall */
 }
 
-SEXP attribute_hidden R_sysfunction(int n, ClosureContext* cptr)
+HIDDEN SEXP R_sysfunction(int n, ClosureContext* cptr)
 {
     if (n > 0)
 	n = Rf_framedepth(cptr) - n;
@@ -184,7 +184,7 @@ SEXP attribute_hidden R_sysfunction(int n, ClosureContext* cptr)
 /* functions to support looking up information about the browser */
 /* contexts that are in the evaluation stack */
 
-SEXP attribute_hidden do_sysbrowser(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_)
+HIDDEN SEXP do_sysbrowser(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_)
 {
     int n;
 
@@ -233,7 +233,7 @@ SEXP attribute_hidden do_sysbrowser(/*const*/ Expression* call, const BuiltInFun
 /* We don't want to count the closure that do_sys is contained in, so the */
 /* indexing is adjusted to handle this. */
 
-SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_sys(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     int i, n  = -1, nframe;
     SEXP rval, t;
@@ -312,7 +312,7 @@ SEXP attribute_hidden do_sys(/*const*/ Expression* call, const BuiltInFunction* 
     }
 }
 
-SEXP attribute_hidden do_parentframe(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_)
+HIDDEN SEXP do_parentframe(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_)
 {
     ClosureContext *cptr;
 

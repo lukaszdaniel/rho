@@ -125,65 +125,60 @@ static const char letters[] =
    __GT_DIR:            create a directory, which will be mode 0700.
 
    We use a clever algorithm to get hard-to-predict names. */
-static int
-gen_tempname (char *tmpl)
+static int gen_tempname(char* tmpl)
 {
-  int len;
-  char *XXXXXX;
-  static uint64_t value;
-  uint64_t random_time_bits;
-  int count, fd = -1;
-  int save_errno = errno;
+    size_t len;
+    char* XXXXXX;
+    static uint64_t value;
+    uint64_t random_time_bits;
+    int count, fd = -1;
+    int save_errno = errno;
 
-  len = int(strlen(tmpl));
-  if (len < 6 || strcmp (&tmpl[len - 6], "XXXXXX"))
-    {
-      __set_errno (EINVAL);
-      return -1;
-    }
-
-  /* This is where the Xs start.  */
-  XXXXXX = &tmpl[len - 6];
-
-  /* Get some more or less random data.  We need 36 bits. */
-  random_time_bits = TimeToSeed();
-  value += (random_time_bits << 8) ^ getpid ();
-
-  for (count = 0; count < TMP_MAX; value += 7777, ++count)
-    {
-      uint64_t v = value;
-
-      /* Fill in the random bits.  */
-      XXXXXX[0] = letters[v % 62];
-      v /= 62;
-      XXXXXX[1] = letters[v % 62];
-      v /= 62;
-      XXXXXX[2] = letters[v % 62];
-      v /= 62;
-      XXXXXX[3] = letters[v % 62];
-      v /= 62;
-      XXXXXX[4] = letters[v % 62];
-      v /= 62;
-      XXXXXX[5] = letters[v % 62];
-
-#ifdef Win32
-      fd = mkdir (tmpl);
-#else
-      fd = mkdir (tmpl, S_IRUSR | S_IWUSR | S_IXUSR);
-#endif
-
-      if (fd >= 0)
-	{
-	  __set_errno (save_errno);
-	  return fd;
-	}
-      else if (errno != EEXIST)
+    len = strlen(tmpl);
+    if (len < 6 || strcmp(&tmpl[len - 6], "XXXXXX")) {
+	__set_errno(EINVAL);
 	return -1;
     }
 
-  /* We got out of the loop because we ran out of combinations to try.  */
-  __set_errno (EEXIST);
-  return -1;
+    /* This is where the Xs start.  */
+    XXXXXX = &tmpl[len - 6];
+
+    /* Get some more or less random data.  We need 36 bits. */
+    random_time_bits = TimeToSeed();
+    value += (random_time_bits << 8) ^ getpid();
+
+    for (count = 0; count < TMP_MAX; value += 7777, ++count) {
+	uint64_t v = value;
+
+	/* Fill in the random bits.  */
+	XXXXXX[0] = letters[v % 62];
+	v /= 62;
+	XXXXXX[1] = letters[v % 62];
+	v /= 62;
+	XXXXXX[2] = letters[v % 62];
+	v /= 62;
+	XXXXXX[3] = letters[v % 62];
+	v /= 62;
+	XXXXXX[4] = letters[v % 62];
+	v /= 62;
+	XXXXXX[5] = letters[v % 62];
+
+#ifdef Win32
+	fd = mkdir(tmpl);
+#else
+	fd = mkdir(tmpl, S_IRUSR | S_IWUSR | S_IXUSR);
+#endif
+
+	if (fd >= 0) {
+	    __set_errno(save_errno);
+	    return fd;
+	} else if (errno != EEXIST)
+	    return -1;
+    }
+
+    /* We got out of the loop because we ran out of combinations to try.  */
+    __set_errno(EEXIST);
+    return -1;
 }
 
 /* Generate a unique temporary directory from TEMPLATE.
@@ -191,14 +186,13 @@ gen_tempname (char *tmpl)
    they are replaced with a string that makes the filename unique.
    The directory is created, mode 700, and its name is returned.
    (This function comes from OpenBSD.) */
-char *
-mkdtemp (char *Template)
+char* mkdtemp(char* Template)
 #ifdef __cplusplus
-	throw()
+    throw()
 #endif
 {
-  if (gen_tempname (Template))
-    return NULL;
-  else
-    return Template;
+    if (gen_tempname(Template))
+	return nullptr;
+    else
+	return Template;
 }

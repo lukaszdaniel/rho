@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-17 r7c8bdccf3a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-25 r74461) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -1057,8 +1057,7 @@ cbind(X, M) ~ M.user + Temp + M.user:Temp
 - M.user:Temp  1   8.4440 72.142
 + Soft         2   5.4952 75.193
 
-Call:  glm(formula = cbind(X, M) ~ M.user + Temp + M.user:Temp, family = binomial, 
-    data = detg1)
+Call:  glm(formula = cbind(X, M) ~ M.user + Temp + M.user:Temp, family = binomial, data = detg1)
 
 Coefficients:
     (Intercept)          M.userY          TempLow  M.userY:TempLow  
@@ -1117,7 +1116,7 @@ Residual Deviance: 5.656 	AIC: 71.35
 > 
 > gofX.manova <- manova(formula = cbind(A, B, C, D) ~ groups, data = gofX.df)
 > try(summary(gofX.manova))
-Error in summary.manova(gofX.manova) : residuals have rank 3 < 4
+Error in command 'summary.manova(gofX.manova)': residuals have rank 3 < 4
 > ## should fail with an error message `residuals have rank 3 < 4'
 > 
 > ## Prior to 1.3.0 dist did not handle missing values, and the
@@ -1224,10 +1223,10 @@ Apr 1921 10     11
 > 
 > ## PR 883 (cor(x,y) when is.null(y))
 > try(cov(rnorm(10), NULL))
-Error in cov(rnorm(10), NULL) : 
+Error in command 'cov(rnorm(10), NULL)': 
   supply both 'x' and 'y' or a matrix-like 'x'
 > try(cor(rnorm(10), NULL))
-Error in cor(rnorm(10), NULL) : 
+Error in command 'cor(rnorm(10), NULL)': 
   supply both 'x' and 'y' or a matrix-like 'x'
 > ## gave the variance and 1 respectively in 1.2.2.
 > 
@@ -1462,7 +1461,7 @@ Y    4   10   16   22
 > sink(type="message")
 > sink()
 > try(log("a"))
-Error in log("a") : non-numeric argument to mathematical function
+Error in command 'log("a")': non-numeric argument to mathematical function
 > 
 > ## capture all the output to a file.
 > zz <- file("all.Rout", open="wt")
@@ -1476,7 +1475,7 @@ Error in log("a") : non-numeric argument to mathematical function
      description class mode text isopen can read can write
 > stopifnot(nrow(foo) == 0)
 > try(log("a"))
-Error in log("a") : non-numeric argument to mathematical function
+Error in command 'log("a")': non-numeric argument to mathematical function
 > unlink("all.Rout")
 > ## many of these were untested before 1.4.0.
 > 
@@ -1743,15 +1742,14 @@ Sep 1961  20  30
 +        0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1,
 +        1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0)
 > try(glm(y ~ x, family = poisson(identity)))
-Error : no valid set of coefficients has been found: please supply starting values
+Error: no valid set of coefficients has been found: please supply starting values
 Additional warning message:
 In command 'log(y/mu)': NaNs produced
 > ## failed because start = NULL in 1.4.1
 > ## now gives useful error message
 > glm(y ~ x, family = poisson(identity), start = c(1,0))
 
-Call:  glm(formula = y ~ x, family = poisson(identity), start = c(1, 
-    0))
+Call:  glm(formula = y ~ x, family = poisson(identity), start = c(1, 0))
 
 Coefficients:
 (Intercept)            x  
@@ -1768,8 +1766,7 @@ Warning messages:
 > y <- rpois(100, pmax(3*x, 0))
 > glm(y ~ x, family = poisson(identity), start = c(1,0))
 
-Call:  glm(formula = y ~ x, family = poisson(identity), start = c(1, 
-    0))
+Call:  glm(formula = y ~ x, family = poisson(identity), start = c(1, 0))
 
 Coefficients:
 (Intercept)            x  
@@ -3240,11 +3237,11 @@ $wt.res
 > ## Indexing non-existent columns in a data frame
 > x <- data.frame(a = 1, b = 2)
 > try(x[c("a", "c")])
-Error in `[.data.frame`(x, c("a", "c")) : undefined columns selected
+Error in command '`[.data.frame`(x, c("a", "c"))': undefined columns selected
 > try(x[, c("a", "c")])
-Error in `[.data.frame`(x, , c("a", "c")) : undefined columns selected
+Error in command '`[.data.frame`(x, , c("a", "c"))': undefined columns selected
 > try(x[1, c("a", "c")])
-Error in `[.data.frame`(x, 1, c("a", "c")) : undefined columns selected
+Error in command '`[.data.frame`(x, 1, c("a", "c"))': undefined columns selected
 > ## Second succeeded, third gave uniformative error message in 1.7.x.
 > 
 > 
@@ -3361,7 +3358,7 @@ attr(,"contrasts")$x
 
 > lm.fit <- lm(y ~ x, data.frame(x=1:10, y=1:10))
 > try(predict(lm.fit, data.frame(x=NA)))
-Error : variable 'x' was fitted with type "numeric" but type "logical" was supplied
+Error: variable 'x' was fitted with type "numeric" but type "logical" was supplied
 > ## wrong answers in 1.8.0, refused to run in 1.8.1
 > 
 > 
@@ -4025,7 +4022,7 @@ attr(,".Environment")
 > ## negative subscripts could be mixed with NAs
 > x <- 1:3
 > try(x[-c(1, NA)])
-Error in x[-c(1, NA)] : only 0's may be mixed with negative subscripts
+Error in command 'x[-c(1, NA)]': only 0's may be mixed with negative subscripts
 > ## worked on some platforms, segfaulted on others in 1.8.1
 > 
 > 
@@ -4492,7 +4489,7 @@ y ~ x
 <none>              20.191 5.1555
 x       1    1.4798 21.671 4.4993
 > res <-  try(stats:::drop1.default(fit))
-Error in stats:::drop1.default(fit) : 
+Error in command 'stats:::drop1.default(fit)': 
   number of rows in use has changed: remove missing values?
 > stopifnot(inherits(res, "try-error"))
 > add1(fit, ~ . +x2)
@@ -4506,7 +4503,7 @@ x2      1  0.011746 17.593 5.5885
 Warning message:
 In command 'add1.lm(fit, ~. + x2)': using the 18/19 rows from a combined fit
 > res <-  try(stats:::add1.default(fit, ~ . +x2))
-Error in stats:::add1.default(fit, ~. + x2) : 
+Error in command 'stats:::add1.default(fit, ~. + x2)': 
   number of rows in use has changed: remove missing values?
 > stopifnot(inherits(res, "try-error"))
 > ## 2.0.1 ran and gave incorrect answers.
@@ -4603,19 +4600,19 @@ integer(0)
 > x[rbind(c(1,0), c(2,NA), c(1,2))]
 [1] NA  4
 > try(x[rbind(c(1,1), c(2,2), c(-1,2))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-1, 2))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-1, 2))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1), c(2,2), c(-2,2))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-2, 2))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-2, 2))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1), c(2,2), c(-3,2))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-3, 2))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-3, 2))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1), c(2,2), c(-4,2))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-4, 2))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-4, 2))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1), c(2,2), c(-1,-1))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-1, -1))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-1, -1))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1,1), c(2,2,2))])
 [1] 1 2 1 2 1 2
@@ -4623,10 +4620,10 @@ Error in x[rbind(c(1, 1), c(2, 2), c(-1, -1))] :
 > # verify that range checks are applied to negative indices
 > x <- matrix(1:6, ncol=3)
 > try(x[rbind(c(1,1), c(2,2), c(-3,3))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-3, 3))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-3, 3))]': 
   negative values are not allowed in a matrix subscript
 > try(x[rbind(c(1,1), c(2,2), c(-4,3))])
-Error in x[rbind(c(1, 1), c(2, 2), c(-4, 3))] : 
+Error in command 'x[rbind(c(1, 1), c(2, 2), c(-4, 3))]': 
   negative values are not allowed in a matrix subscript
 > ## generally allowed in 2.1.0.
 > 
@@ -4869,7 +4866,7 @@ coef[0] = 1
 > ## using NULL as a replacement value
 > DF <- data.frame(A=1:2, B=3:4)
 > try(DF[2, 1:3] <- NULL)
-Error in x[[jj]][iseq] <- vjj : replacement has length zero
+Error in command 'x[[jj]][iseq] <- vjj': replacement has length zero
 > ## wrong error message in R < 2.2.0
 > 
 > 
@@ -5026,7 +5023,7 @@ NULL
 > failure <- c(0,0,0,0,0,0,0,2,2)
 > predictor <- c(0, 5^(0:7))
 > try(glm(cbind(success,failure) ~ 0+predictor, family = binomial(link="log")))
-Error : no valid set of coefficients has been found: please supply starting values
+Error: no valid set of coefficients has been found: please supply starting values
 > # no coefficient is possible as the first case will have mu = 1
 > ## 2.2.1 gave a subscript out of range warning instead.
 > 
@@ -5036,13 +5033,13 @@ Error : no valid set of coefficients has been found: please supply starting valu
 > rownames(temp) <- as.character(1:5)
 > colnames(temp) <- as.character(1:4)
 > try(solve(temp))
-Error in solve.default(temp) : 'a' (5 x 4) must be square
+Error in command 'solve.default(temp)': 'a' (5 x 4) must be square
 > # also complex
 > try(solve(temp+0i))
-Error in solve.default(temp + (0+0i)) : 'a' (5 x 4) must be square
+Error in command 'solve.default(temp + (0+0i))': 'a' (5 x 4) must be square
 > # and non-comformant systems
 > try(solve(temp, diag(3)))
-Error in solve.default(temp, diag(3)) : 'a' (5 x 4) must be square
+Error in command 'solve.default(temp, diag(3))': 'a' (5 x 4) must be square
 > ## gave errors from rownames<- in 2.2.1
 > 
 > 
@@ -5240,21 +5237,21 @@ In command 'uniroot(ff, c(-10, 10), maxiter = 10)': _NOT_ converged in 10 iterat
 > 
 > ## prod etc on empty lists and raw vectors
 > try(min(list()))
-Error in min(list()) : invalid 'type' (list) of argument
+Error in command 'min(list())': invalid 'type' (list) of argument
 > try(max(list()))
-Error in max(list()) : invalid 'type' (list) of argument
+Error in command 'max(list())': invalid 'type' (list) of argument
 > try(sum(list()))
-Error in sum(list()) : invalid 'type' (list) of argument
+Error in command 'sum(list())': invalid 'type' (list) of argument
 > try(prod(list()))
-Error in prod(list()) : invalid 'type' (list) of argument
+Error in command 'prod(list())': invalid 'type' (list) of argument
 > try(min(raw()))
-Error in min(raw()) : invalid 'type' (raw) of argument
+Error in command 'min(raw())': invalid 'type' (raw) of argument
 > try(max(raw()))
-Error in max(raw()) : invalid 'type' (raw) of argument
+Error in command 'max(raw())': invalid 'type' (raw) of argument
 > try(sum(raw()))
-Error in sum(raw()) : invalid 'type' (raw) of argument
+Error in command 'sum(raw())': invalid 'type' (raw) of argument
 > try(prod(raw()))
-Error in prod(raw()) : invalid 'type' (raw) of argument
+Error in command 'prod(raw())': invalid 'type' (raw) of argument
 > ## Inf, -Inf, list(NULL) etc in 2.2.1
 > 
 > r <- hist(rnorm(100), plot = FALSE, breaks = 12,
@@ -5380,10 +5377,10 @@ I II III
 > 
 > ## removing variable from baseenv
 > try(remove("ls", envir=baseenv()))
-Error in remove("ls", envir = baseenv()) : 
+Error in command 'remove("ls", envir = baseenv())': 
   cannot remove variables from the base environment
 > try(remove("ls", envir=asNamespace("base")))
-Error in remove("ls", envir = asNamespace("base")) : 
+Error in command 'remove("ls", envir = asNamespace("base"))': 
   cannot remove variables from base namespace
 > ## no message in 2.3.1
 > 
@@ -5725,7 +5722,7 @@ list(a = NA, b = as.integer(NA), c = as.double(NA), d = as.complex(NA), e = 1., 
 > ## Ivo Welch, R-help, 2006-12-23.
 > d <- data.frame(y= runif(10), x=runif(10))
 > try(nls(y ~ 1/(1+x), data = d, start=list(x=0.5,y=0.5), trace=TRUE))
-Error in nls(y ~ 1/(1 + x), data = d, start = list(x = 0.5, y = 0.5),  : 
+Error in command 'nls(y ~ 1/(1 + x), data = d, start = list(x = 0.5, y = 0.5), trace = TRUE)': 
   no parameters to fit
 > ## changed in 2.4.1 patched
 > 
@@ -5743,7 +5740,7 @@ Levels: 2000-01-01 2001-01-01
 > ## manipulating rownames: problems in pre-2.5.0
 > A <- data.frame(a=character(0))
 > try(row.names(A) <- 1:10) # succeeded in Dec 2006
-Error in `.rowNamesDF<-`(x, value = value) : invalid 'row.names' length
+Error in command '`.rowNamesDF<-`(x, value = value)': invalid 'row.names' length
 > A <- list(a=1:3)
 > class(A) <- "data.frame"
 > row.names(A) <- letters[24:26] # failed at one point in Dec 2006
@@ -6089,7 +6086,7 @@ $`NA`
 > attr(x, NA_character_)
 NULL
 > try(attr(x, NA_character_) <- 5)
-Error in x <- `attr<-`(`*tmp*`, NA_character_, value = 5) : 
+Error in command 'x <- `attr<-`(`*tmp*`, NA_character_, value = 5)': 
   'name' must be non-null character string
 > ## prior to 2.5.0 NA was treated as "NA"
 > 
@@ -6129,12 +6126,12 @@ zero  one
 > set.seed(1)
 > X <- cbind(NA, 1:3, rnorm(3))
 > try(cor(X, use = "complete"))
-Error in cor(X, use = "complete") : no complete element pairs
+Error in command 'cor(X, use = "complete")': no complete element pairs
 > try(cor(X, use = "complete", method="spearman"))
-Error in cor(X, use = "complete", method = "spearman") : 
+Error in command 'cor(X, use = "complete", method = "spearman")': 
   no complete element pairs
 > try(cor(X, use = "complete", method="kendall"))
-Error in cor(X, use = "complete", method = "kendall") : 
+Error in command 'cor(X, use = "complete", method = "kendall")': 
   no complete element pairs
 > cor(X, use = "pair")
      [,1]       [,2]       [,3]
@@ -6268,7 +6265,7 @@ In command '`[<-.data.frame`(`*tmp*`, , 3, value = list(a = 1:3, b = 2:4))':
 > ## aggregate on an empty data frame (PR#13167)
 > z <- data.frame(a=integer(0), b=numeric(0))
 > try(aggregate(z, by=z[1], FUN=sum))
-Error in aggregate.data.frame(z, by = z[1], FUN = sum) : 
+Error in command 'aggregate.data.frame(z, by = z[1], FUN = sum)': 
   no rows to aggregate
 > ## failed in unlist in 2.8.0, now gives explicit message.
 > aggregate(data.frame(a=1:10)[F], list(rep(1:2, each=5)), sum)
@@ -6389,15 +6386,15 @@ function ()
 > print.function
 function (x, ...)  
  - attr(*, "srcref")= 'srcref' int [1:8] 1 19 1 63 19 63 1 1
-  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd65da850> 
+  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fab262abb60> 
 > f
 function ()  
  - attr(*, "srcref")= 'srcref' int [1:8] 1 17 1 28 17 28 1 1
-  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd66232b0> 
+  ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fab26f34110> 
  - attr(*, "note")= chr "just a note"
  - attr(*, "yada")=function ()  
   ..- attr(*, "srcref")= 'srcref' int [1:8] 2 24 2 48 24 48 2 2
-  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7f9bd66232b0> 
+  .. ..- attr(*, "srcfile")=Classes 'srcfilecopy', 'srcfile' <environment: 0x7fab26f34110> 
 > rm(print.function)
 > ## auto-printing and printing differed up to R 2.9.x
 > 
@@ -6489,11 +6486,11 @@ sample estimates:
 > bar <- as.data.frame(foo)
 > val <- integer(0)
 > try(bar$NewCol <- val)
-Error in `$<-.data.frame`(`*tmp*`, NewCol, value = integer(0)) : 
+Error in command '`$<-.data.frame`(`*tmp*`, NewCol, value = integer(0))': 
   replacement has 0 rows, data has 3
 > # similar, not in the report
 > try(bar[["NewCol"]] <- val)
-Error in `[[<-.data.frame`(`*tmp*`, "NewCol", value = integer(0)) : 
+Error in command '`[[<-.data.frame`(`*tmp*`, "NewCol", value = integer(0))': 
   replacement has 0 rows, data has 3
 > # [ ] is tricker, so just check the result is reasonable and prints
 > bar["NewCol"] <- val
@@ -6537,9 +6534,9 @@ cl :  language print("Boo !")
 > 
 > ## complete.cases with no input
 > try(complete.cases())
-Error in complete.cases() : no input has determined the number of cases
+Error in command 'complete.cases()': no input has determined the number of cases
 > try(complete.cases(list(), list()))
-Error in complete.cases(list(), list()) : 
+Error in command 'complete.cases(list(), list())': 
   no input has determined the number of cases
 > ## gave unhelpful messages in 2.10.0, silly results in pre-2.10.1
 > 
@@ -6547,9 +6544,9 @@ Error in complete.cases(list(), list()) :
 > ## error messages from (C-level) evalList
 > tst <- function(y) { stopifnot(is.numeric(y)); y+ 1 }
 > try(tst()) # even nicer since R 3.5.0's change to sequential stopifnot()
-Error in is.numeric(y) : argument "y" is missing, with no default
+Error in command 'is.numeric(y)': argument "y" is missing, with no default
 > try(c(1,,2))
-Error in c(1, , 2) : argument 2 is empty
+Error in command 'c(1, , 2)': argument 2 is empty
 > ## change in 2.8.0 made these less clear
 > 
 > 
@@ -6798,10 +6795,10 @@ Levels: a b c d e f g h i j k l m n o
 > 
 > ## Unwarranted conversion of logical values
 > try(double(FALSE))
-Error in double(FALSE) : invalid 'length' argument
+Error in command 'double(FALSE)': invalid 'length' argument
 > x <- 1:3
 > try(length(x) <- TRUE)
-Error in x <- `length<-`(`*tmp*`, value = TRUE) : invalid value
+Error in command 'x <- `length<-`(`*tmp*`, value = TRUE)': invalid value
 > ## coerced to integer in 2.13.x
 > 
 > 
@@ -6838,7 +6835,7 @@ Frequency = 1
 > ## explicit error message for silly input (tol = 0)
 > aa <- c(1, 2, 3, 8, 8, 8, 8, 8, 8, 8, 8, 8, 12, 13, 14)
 > try(smooth.spline(aa, seq_along(aa)))
-Error in smooth.spline(aa, seq_along(aa)) : 
+Error in command 'smooth.spline(aa, seq_along(aa))': 
   'tol' must be strictly positive and finite
 > fit <- smooth.spline(aa, seq_along(aa), tol = 0.1)
 > # actual output is too unstable to diff.
@@ -6898,10 +6895,10 @@ Asserted error: no method found for function 'show' and signature bar
 > ## corner cases for array
 > # allowed, gave non-array in 2.15.x
 > try(array(1, integer()))
-Error in array(1, integer()) : 'dims' cannot be of length 0
+Error in command 'array(1, integer())': 'dims' cannot be of length 0
 > # if no dims, an error to supply dimnames
 > try(array(1, integer(), list(1, 2)))
-Error in array(1, integer(), list(1, 2)) : 'dims' cannot be of length 0
+Error in command 'array(1, integer(), list(1, 2))': 'dims' cannot be of length 0
 > ##
 > 
 > 
@@ -7083,17 +7080,17 @@ In command 'pl$ab': partial match of 'ab' to 'abc'
 > 
 > ## seq() with NaN etc inputs now gives explicit error messages
 > try(seq(NaN))
-Error in seq.default(NaN) : 'from' must be a finite number
+Error in command 'seq.default(NaN)': 'from' must be a finite number
 > try(seq(to = NaN))
-Error in seq.default(to = NaN) : 'to' must be a finite number
+Error in command 'seq.default(to = NaN)': 'to' must be a finite number
 > try(seq(NaN, NaN))
-Error in seq.default(NaN, NaN) : 'from' must be a finite number
+Error in command 'seq.default(NaN, NaN)': 'from' must be a finite number
 > try(seq.int(NaN))
-Error in seq.int(NaN) : 'from' must be a finite number
+Error in command 'seq.int(NaN)': 'from' must be a finite number
 > try(seq.int(to = NaN))
-Error in seq.int(to = NaN) : 'to' must be a finite number
+Error in command 'seq.int(to = NaN)': 'to' must be a finite number
 > try(seq.int(NaN, NaN))
-Error in seq.int(NaN, NaN) : 'from' must be a finite number
+Error in command 'seq.int(NaN, NaN)': 'from' must be a finite number
 > ## R 3.0.1 gave messages from ':' or about negative-length vectors.
 > 
 > 
@@ -7309,10 +7306,10 @@ Warning messages:
 > 
 > ## Misuse of PR#15633
 > try(bartlett.test(yield ~ block*N, data = npk))
-Error in bartlett.test.formula(yield ~ block * N, data = npk) : 
+Error in command 'bartlett.test.formula(yield ~ block * N, data = npk)': 
   'formula' should be of the form response ~ group
 > try(fligner.test (yield ~ block*N, data = npk))
-Error in fligner.test.formula(yield ~ block * N, data = npk) : 
+Error in command 'fligner.test.formula(yield ~ block * N, data = npk)': 
   'formula' should be of the form response ~ group
 > ## used the first factor with an incorrect description in R < 3.0.3
 > 
@@ -7710,7 +7707,7 @@ a + b < c + d
 > quote(`!`(a < b))
 !a < b
 > quote(`<`(!b, !d))
-(!b) < (!d)
+(!b) < !d
 > quote(`&`(!b, !d))
 !b & !d
 > quote(`!`(a & b))
@@ -7749,6 +7746,21 @@ b = `?`(d)
 > dput(a)
 list(one = 1, two = )
 > ## deparsed two to quote()
+> 
+> ## Deparsing of repeated unary operators; the first 3 were "always" ok:
+> quote(~~x)
+~~x
+> quote(++x)
+++x
+> quote(--x)
+--x
+> quote(!!x) # was `!(!x)`
+!!x
+> quote(??x) # Suboptimal
+`?`(`?`(x))
+> quote(~+-!?x) # ditto: ....`?`(x)
+~+-!`?`(x)
+> ## `!` no longer produces parentheses now
 > 
 > 
 > ## summary.data.frame() with NAs in columns of class "Date" -- PR#16709
@@ -7918,7 +7930,7 @@ Kilroy was here! ... and I'm printed as well ...
 > ## without "{ .. }" :
 > stopifnot(exprs = 2 == 2)
 > try(stopifnot(exprs = 1 > 2))
-Error : 1 > 2 is not TRUE
+Error: 1 > 2 is not TRUE
 > ## passing an expression object:
 > stopifnot(exprs = expression(2 == 2, pi < 4))
 Error: expression(2 == 2, pi < 4) are not all TRUE

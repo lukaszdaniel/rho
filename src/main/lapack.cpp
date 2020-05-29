@@ -51,7 +51,7 @@ static void La_Init(void)
     return;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     if(!initialized) La_Init();

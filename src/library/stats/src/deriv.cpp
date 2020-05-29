@@ -792,7 +792,7 @@ SEXP doD(SEXP args)
 
 /* ------ FindSubexprs ------ and ------ Accumulate ------ */
 
-static void NORET InvalidExpression(const char *where)
+NORET static void InvalidExpression(const char *where)
 {
     Rf_error(_("invalid expression in '%s'"), where);
 }

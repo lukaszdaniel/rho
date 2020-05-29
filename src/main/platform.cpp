@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1998--2017 The R Core Team
+ *  Copyright (C) 1998--2018 The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -215,7 +215,7 @@ static void Init_R_Platform(SEXP rho)
     UNPROTECT(2);
 }
 
-void attribute_hidden Init_R_Variables(SEXP rho)
+HIDDEN void Init_R_Variables(SEXP rho)
 {
     Init_R_Machine(rho);
     Init_R_Platform(rho);
@@ -236,7 +236,7 @@ int static R_strieql(const char *a, const char *b)
 #endif
 
 static char native_enc[R_CODESET_MAX + 1];
-const char attribute_hidden *R_nativeEncoding(void)
+HIDDEN const char* R_nativeEncoding(void)
 {
     return native_enc;
 }
@@ -244,7 +244,7 @@ const char attribute_hidden *R_nativeEncoding(void)
 /* retrieves information about the current locale and
    sets the corresponding variables (known_to_be_utf8,
    known_to_be_latin1, utf8locale, latin1locale and mbcslocale) */
-void attribute_hidden R_check_locale(void)
+HIDDEN void R_check_locale(void)
 {
     known_to_be_utf8 = utf8locale = FALSE;
     known_to_be_latin1 = latin1locale = FALSE;
@@ -316,7 +316,7 @@ static char *R_Date(void)
     return s;
 }
 
-SEXP attribute_hidden do_date(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_date(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return Rf_mkString(R_Date());
 }
@@ -329,7 +329,7 @@ SEXP attribute_hidden do_date(/*const*/ Expression* call, const BuiltInFunction*
  */
 
 // .Internal so manages R_alloc stack used by acopy_string
-SEXP attribute_hidden do_fileshow(/*const*/ Expression* call, const BuiltInFunction* op, RObject* files_, RObject* header_, RObject* title_, RObject* delete_file_, RObject* pager_)
+HIDDEN SEXP do_fileshow(/*const*/ Expression* call, const BuiltInFunction* op, RObject* files_, RObject* header_, RObject* title_, RObject* delete_file_, RObject* pager_)
 {
     SEXP fn, tl, hd, pg;
     const char **f, **h, *t, *pager = nullptr /* -Wall */;
@@ -420,7 +420,7 @@ static int R_AppendFile(SEXP file1, SEXP file2)
     return status;
 }
 
-SEXP attribute_hidden do_fileappend(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file1_, RObject* file2_)
+HIDDEN SEXP do_fileappend(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file1_, RObject* file2_)
 {
     SEXP f1, f2, ans;
     int n, n1, n2;
@@ -477,7 +477,7 @@ done:
     return ans;
 }
 
-SEXP attribute_hidden do_filecreate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* showWarnings_)
+HIDDEN SEXP do_filecreate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* showWarnings_)
 {
     SEXP fn, ans;
     FILE *fp;
@@ -505,7 +505,7 @@ SEXP attribute_hidden do_filecreate(/*const*/ Expression* call, const BuiltInFun
     return ans;
 }
 
-SEXP attribute_hidden do_fileremove(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_)
+HIDDEN SEXP do_fileremove(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_)
 {
     SEXP f, ans;
     int i, n;
@@ -549,7 +549,7 @@ SEXP attribute_hidden do_fileremove(/*const*/ Expression* call, const BuiltInFun
 #endif
 #include <windows.h>
 typedef BOOLEAN (WINAPI *PCSL)(LPWSTR, LPWSTR, DWORD);
-static PCSL pCSL = NULL;
+static PCSL pCSL = nullptr;
 const char *formatError(DWORD res);  /* extra.c */
 /* Windows does not have link(), but it does have CreateHardLink() on NTFS */
 #undef HAVE_LINK
@@ -569,7 +569,7 @@ const char *formatError(DWORD res);  /* extra.c */
    have, and which many people report granting in the Policy Editor
    fails to work.
 */
-SEXP attribute_hidden do_filesymlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
+HIDDEN SEXP do_filesymlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
 {
     SEXP f1, f2;
     int n, n1, n2;
@@ -653,7 +653,7 @@ SEXP attribute_hidden do_filesymlink(/*const*/ Expression* call, const BuiltInFu
 }
 
 
-SEXP attribute_hidden do_filelink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
+HIDDEN SEXP do_filelink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
 {
     SEXP f1, f2;
     int n, n1, n2;
@@ -727,7 +727,7 @@ int Rwin_rename(char *from, char *to);  /* in src/gnuwin32/extra.c */
 int Rwin_wrename(const wchar_t *from, const wchar_t *to);
 #endif
 
-SEXP attribute_hidden do_filerename(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
+HIDDEN SEXP do_filerename(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
 {
     SEXP f1, f2, ans;
     int i, n1, n2;
@@ -813,7 +813,7 @@ SEXP attribute_hidden do_filerename(/*const*/ Expression* call, const BuiltInFun
 # define STAT_TIMESPEC_NS(st, st_xtim) ((st).st_xtim.st__tim.tv_nsec)
 #endif
 
-SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* extra_cols_)
+HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_, RObject* extra_cols_)
 {
     SEXP fn, ans, ansnames, fsize, mtime, ctime, atime, isdir,
 	mode, xxclass;
@@ -1034,7 +1034,7 @@ SEXP attribute_hidden do_fileinfo(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-SEXP attribute_hidden do_direxists(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_direxists(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP fn, ans;
 
@@ -1199,7 +1199,7 @@ list_files(const char *dnp, const char *stem, int *count, SEXP *pans,
 }
 #undef IF_MATCH_ADD_TO_ANS
 
-SEXP attribute_hidden do_listfiles(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* pattern_, RObject* all_files_, RObject* full_names_, RObject* recursive_, RObject* ignore_case_, RObject* include_dirs_, RObject* no_dots_)
+HIDDEN SEXP do_listfiles(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* pattern_, RObject* all_files_, RObject* full_names_, RObject* recursive_, RObject* ignore_case_, RObject* include_dirs_, RObject* no_dots_)
 {
     int countmax = 128;
 
@@ -1316,7 +1316,7 @@ static void list_dirs(const char *dnp, const char *nm,
     }
 }
 
-SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* full_names_, RObject* recursive_)
+HIDDEN SEXP do_listdirs(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* full_names_, RObject* recursive_)
 {
     PROTECT_INDEX idx;
     SEXP d, ans;
@@ -1347,23 +1347,23 @@ SEXP attribute_hidden do_listdirs(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-SEXP attribute_hidden do_Rhome(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_Rhome(/*const*/ Expression* call, const BuiltInFunction* op)
 {
-    char *path;
+    char* path;
     if (!(path = R_HomeDir()))
 	Rf_error(_("unable to determine R home location"));
     return Rf_mkString(path);
 }
 
 #ifdef Win32
-static Rboolean attribute_hidden R_WFileExists(const wchar_t *path)
+HIDDEN static Rboolean R_WFileExists(const wchar_t *path)
 {
     struct _stati64 sb;
     return _wstati64(path, &sb) == 0;
 }
 #endif
 
-SEXP attribute_hidden do_fileexists(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_)
+HIDDEN SEXP do_fileexists(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dots_)
 {
     SEXP file, ans;
     int i, nfile;
@@ -1391,12 +1391,13 @@ SEXP attribute_hidden do_fileexists(/*const*/ Expression* call, const BuiltInFun
     return ans;
 }
 
-#define CHOOSEBUFSIZE 1024
+constexpr size_t CHOOSEBUFSIZE = 1024;
 
 #ifndef Win32
-SEXP attribute_hidden do_filechoose(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_filechoose(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    int _new, len;
+    int _new;
+    size_t len;
     char buf[CHOOSEBUFSIZE];
     _new = Rf_asLogical(CAR(args));
     if ((len = R_ChooseFile(_new, buf, CHOOSEBUFSIZE)) == 0)
@@ -1417,7 +1418,7 @@ extern int winAccessW(const wchar_t *path, int mode);
 #endif
 
 /* we require 'access' as from 2.12.0 */
-SEXP attribute_hidden do_fileaccess(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* mode_)
+HIDDEN SEXP do_fileaccess(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* mode_)
 {
     SEXP fn, ans;
     int i, n, mode, modemask;
@@ -1517,7 +1518,7 @@ static int R_unlink(wchar_t *name, int recursive, int force)
 	   are detected as directories. */
 	if (isReparsePoint(name)) ans += delReparsePoint(name);
 	else if ((sb.st_mode & S_IFDIR) > 0) { /* a directory */
-	    if ((dir = _wopendir(name)) != NULL) {
+	    if ((dir = _wopendir(name)) != nullptr) {
 		while ((de = _wreaddir(dir))) {
 		    if (!wcscmp(de->d_name, L".") || !wcscmp(de->d_name, L".."))
 			continue;
@@ -1625,7 +1626,7 @@ static int R_unlink(const char *name, int recursive, int force)
 /* Note that wildcards are allowed in 'names' */
 #ifdef Win32
 # include <dos_wglob.h>
-SEXP attribute_hidden do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP  fn;
     int i, j, nfiles, res, failures = 0, recursive, force;
@@ -1663,7 +1664,7 @@ SEXP attribute_hidden do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
 #  include <glob.h>
 # endif
 
-SEXP attribute_hidden do_unlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* recursive_, RObject* force_)
+HIDDEN SEXP do_unlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* recursive_, RObject* force_)
 {
     SEXP  fn;
     int i, nfiles, failures = 0, recursive, force;
@@ -1712,7 +1713,7 @@ SEXP attribute_hidden do_unlink(/*const*/ Expression* call, const BuiltInFunctio
 }
 #endif
 
-SEXP attribute_hidden do_getlocale(/*const*/ Expression* call, const BuiltInFunction* op, RObject* category_)
+HIDDEN SEXP do_getlocale(/*const*/ Expression* call, const BuiltInFunction* op, RObject* category_)
 {
     int cat;
     char *p = nullptr;
@@ -1743,7 +1744,7 @@ SEXP attribute_hidden do_getlocale(/*const*/ Expression* call, const BuiltInFunc
 }
 
 /* Locale specs are always ASCII */
-SEXP attribute_hidden do_setlocale(/*const*/ Expression* call, const BuiltInFunction* op, RObject* category_, RObject* locale_)
+HIDDEN SEXP do_setlocale(/*const*/ Expression* call, const BuiltInFunction* op, RObject* category_, RObject* locale_)
 {
     SEXP locale = locale_, ans;
     int cat;
@@ -1805,7 +1806,7 @@ SEXP attribute_hidden do_setlocale(/*const*/ Expression* call, const BuiltInFunc
 #ifdef Win32
 /* this seems to exist in MinGW, but it does not work in Windows */
 	Rf_warning(_("LC_MESSAGES exists on Windows but is not operational"));
-	p = NULL;
+	p = nullptr;
 #else
 	p = setlocale(cat, R_CHAR(STRING_ELT(locale, 0)));
 #endif
@@ -1841,7 +1842,7 @@ SEXP attribute_hidden do_setlocale(/*const*/ Expression* call, const BuiltInFunc
 
 
 
-SEXP attribute_hidden do_localeconv(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_localeconv(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, ansnames;
     struct lconv *lc = localeconv();
@@ -1900,7 +1901,7 @@ SEXP attribute_hidden do_localeconv(/*const*/ Expression* call, const BuiltInFun
 }
 
 /* .Internal function for path.expand */
-SEXP attribute_hidden do_pathexpand(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
+HIDDEN SEXP do_pathexpand(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
 {
     SEXP fn, ans;
     int i, n;
@@ -1954,7 +1955,7 @@ static Rboolean R_can_use_X11(void)
 #endif
 
 /* only actually used on Unix */
-SEXP attribute_hidden do_capabilitiesX11(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_capabilitiesX11(/*const*/ Expression* call, const BuiltInFunction* op)
 {
 #ifdef Unix
     return Rf_ScalarLogical(R_can_use_X11());
@@ -1963,7 +1964,7 @@ SEXP attribute_hidden do_capabilitiesX11(/*const*/ Expression* call, const Built
 #endif
 }
 
-SEXP attribute_hidden do_capabilities(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_capabilities(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, ansnames;
     int i = 0;
@@ -2129,7 +2130,7 @@ SEXP attribute_hidden do_capabilities(/*const*/ Expression* call, const BuiltInF
     return ans;
 }
 
-SEXP attribute_hidden do_sysgetpid(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_sysgetpid(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return Rf_ScalarInteger(getpid());
 }
@@ -2143,7 +2144,7 @@ SEXP attribute_hidden do_sysgetpid(/*const*/ Expression* call, const BuiltInFunc
 */
 #ifndef Win32
 /* mkdir is defined in <sys/stat.h> */
-SEXP attribute_hidden do_dircreate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* showWarnings_, RObject* recursive_, RObject* mode_)
+HIDDEN SEXP do_dircreate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* showWarnings_, RObject* recursive_, RObject* mode_)
 {
     SEXP path;
     int res, show, recursive, mode, serrno = 0;
@@ -2202,7 +2203,7 @@ end:
 }
 #else /* Win32 */
 #include <io.h> /* mkdir is defined here */
-SEXP attribute_hidden do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP  path;
     wchar_t *p, dir[MAX_PATH];
@@ -2317,13 +2318,24 @@ static int do_copy(const wchar_t* from, const wchar_t* name, const wchar_t* to,
 	wsprintfW(dest, L"%ls%ls", to, name);
 	/* We could set the mode (only the 200 part matters) later */
 	res = _wmkdir(dest);
-	if (res && errno != EEXIST) {
-	    Rf_warning(_("problem creating directory %ls: %s"),
-		    dest, strerror(errno));
-	    return 1;
+	if (res) {
+	    if (errno == EEXIST) {
+		struct _stati64 dsb;
+		if (over && _wstati64(dest, &dsb) == 0 &&
+		   (dsb.st_mode & S_IFDIR) == 0) {
+
+		    Rf_warning(_("cannot overwrite non-directory %ls with directory %ls"),
+		            dest, this);
+		    return 1;
+		}
+	    } else {
+		Rf_warning(_("problem creating directory %ls: %s"),
+		          dest, strerror(errno));
+		return 1;
+	    }
 	}
 	// NB Windows' mkdir appears to require \ not /.
-	if ((dir = _wopendir(this)) != NULL) {
+	if ((dir = _wopendir(this)) != nullptr) {
 	    depth++;
 	    while ((de = _wreaddir(dir))) {
 		if (!wcscmp(de->d_name, L".") || !wcscmp(de->d_name, L".."))
@@ -2343,7 +2355,7 @@ static int do_copy(const wchar_t* from, const wchar_t* name, const wchar_t* to,
 	}
 	if(dates) copyFileTime(this, dest);
     } else { /* a file */
-	FILE *fp1 = NULL, *fp2 = NULL;
+	FILE *fp1 = nullptr, *fp2 = nullptr;
 	wchar_t buf[APPENDBUFSIZE];
 
 	nfail = 0;
@@ -2355,8 +2367,8 @@ static int do_copy(const wchar_t* from, const wchar_t* name, const wchar_t* to,
 	}
 	wsprintfW(dest, L"%ls%ls", to, name);
 	if (over || !R_WFileExists(dest)) { /* FIXME */
-	    if ((fp1 = _wfopen(this, L"rb")) == NULL ||
-		(fp2 = _wfopen(dest, L"wb")) == NULL) {
+	    if ((fp1 = _wfopen(this, L"rb")) == nullptr ||
+		(fp2 = _wfopen(dest, L"wb")) == nullptr) {
 		Rf_warning(_("problem copying %ls to %ls: %s"),
 			this, dest, strerror(errno));
 		nfail++;
@@ -2375,8 +2387,10 @@ static int do_copy(const wchar_t* from, const wchar_t* name, const wchar_t* to,
 	  nfail++;
 	  goto copy_error;
 	}
-	if(fp1) fclose(fp1); fp1 = NULL;
-	if(fp2) fclose(fp2); fp2 = NULL;
+	if(fp1) fclose(fp1);
+	fp1 = nullptr;
+	if(fp2) fclose(fp2);
+	fp2 = nullptr;
 	/* FIXME: perhaps manipulate mode as we do in Sys.chmod? */
 	if(perms) _wchmod(dest, sb.st_mode & 0777);
 	if(dates) copyFileTime(this, dest);
@@ -2388,7 +2402,7 @@ copy_error:
 }
 
 /* file.copy(files, dir, over, recursive=TRUE, perms), only */
-SEXP attribute_hidden do_filecopy(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_filecopy(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP fn, to, ans;
     wchar_t *p, dir[PATH_MAX], from[PATH_MAX], name[PATH_MAX];
@@ -2555,10 +2569,21 @@ static int do_copy(const char* from, const char* name, const char* to,
 	   we will fail to create files in that directory, so defer
 	   setting mode */
 	res = mkdir(dest, 0700);
-	if (res && errno != EEXIST) {
-	    Rf_warning(_("problem creating directory %s: %s"),
-		    thispath, strerror(errno));
-	    return 1;
+	if (res) {
+	    if (errno == EEXIST) {
+		struct stat dsb;
+		if (over && stat(dest, &dsb) == 0 &&
+		   (dsb.st_mode & S_IFDIR) == 0) {
+
+		    Rf_warning(_("cannot overwrite non-directory %s with directory %s"),
+		            dest, thispath);
+		    return 1;
+		}
+	    } else {
+		Rf_warning(_("problem creating directory %s: %s"),
+		        thispath, strerror(errno));
+		return 1;
+	    }
 	}
 	strcat(dest, "/");
 	if ((dir = opendir(thispath)) != nullptr) {
@@ -2613,7 +2638,7 @@ static int do_copy(const char* from, const char* name, const char* to,
 		nfail++;
 		goto copy_error;
 	    }
-	    if(fp2) {fclose(fp2); fp2 = NULL;}
+	    if(fp2) {fclose(fp2); fp2 = nullptr;}
 	    if(perms) chmod(dest, sb.st_mode & mask);
 	    if(dates) copyFileTime(thispath, dest);
 	} else if (!over)
@@ -2626,7 +2651,7 @@ copy_error:
 }
 
 /* file.copy(files, dir, recursive), only */
-SEXP attribute_hidden do_filecopy(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_, RObject* overwrite_, RObject* recursive_, RObject* copy_mode_, RObject* copy_date_)
+HIDDEN SEXP do_filecopy(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_, RObject* overwrite_, RObject* recursive_, RObject* copy_mode_, RObject* copy_date_)
 {
     SEXP fn, to, ans;
     char *p, dir[PATH_MAX], from[PATH_MAX], name[PATH_MAX];
@@ -2693,7 +2718,7 @@ SEXP attribute_hidden do_filecopy(/*const*/ Expression* call, const BuiltInFunct
 }
 #endif
 
-SEXP attribute_hidden do_l10n_info(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_l10n_info(/*const*/ Expression* call, const BuiltInFunction* op)
 {
 #ifdef Win32
     int len = 4;
@@ -2720,7 +2745,7 @@ SEXP attribute_hidden do_l10n_info(/*const*/ Expression* call, const BuiltInFunc
 
 /* do_normalizepath moved to util.cpp in R 2.13.0 */
 
-SEXP attribute_hidden do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_, RObject* mode_, RObject* use_umask_)
+HIDDEN SEXP do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_, RObject* mode_, RObject* use_umask_)
 {
 #ifdef HAVE_CHMOD
     SEXP paths, smode, ans;
@@ -2782,7 +2807,7 @@ SEXP attribute_hidden do_syschmod(/*const*/ Expression* call, const BuiltInFunct
 #endif
 }
 
-SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunction* op, RObject* mode_)
+HIDDEN SEXP do_sysumask(/*const*/ Expression* call, const BuiltInFunction* op, RObject* mode_)
 {
     SEXP ans;
     int mode;
@@ -2808,7 +2833,7 @@ SEXP attribute_hidden do_sysumask(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-SEXP attribute_hidden do_readlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_)
+HIDDEN SEXP do_readlink(/*const*/ Expression* call, const BuiltInFunction* op, RObject* paths_)
 {
     SEXP paths = paths_;
     if(!Rf_isString(paths))
@@ -2835,7 +2860,7 @@ SEXP attribute_hidden do_readlink(/*const*/ Expression* call, const BuiltInFunct
 }
 
 
-SEXP attribute_hidden do_Cstack_info(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_Cstack_info(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, nms;
 
@@ -2888,35 +2913,57 @@ static int winSetFileTime(const char *fn, double ftime)
 }
 #endif
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_setFileTime(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_, RObject* time_)
 {
-    const char *fn = Rf_translateChar(STRING_ELT(path_, 0));
-    double ftime = Rf_asReal(time_);
+    const char *fn;
+    double ftime;
     int res;
+    R_xlen_t n, m;
+    SEXP paths, times, ans;
+    const void *vmax;
 
-#ifdef Win32
-    res  = winSetFileTime(fn, ftime);
-#elif defined(HAVE_UTIMENSAT)
-    struct timespec times[2];
+    paths = path_;
+    if (!Rf_isString(paths))
+	Rf_error(_("invalid '%s' argument"), "path");
+    n = XLENGTH(paths);
+    PROTECT(times = Rf_coerceVector(time_, REALSXP));
+    m = XLENGTH(times);
+    if (!m && n) Rf_error(_("'%s' must be of length at least one"), "time");
+    
+    PROTECT(ans = Rf_allocVector(LGLSXP, n));
+    vmax = vmaxget();
+    for(R_xlen_t i = 0; i < n; i++) {
+	fn = Rf_translateChar(STRING_ELT(paths, i));
+	ftime = REAL(times)[i % m];
+	#ifdef Win32
+	    res = winSetFileTime(fn, ftime);
+	#elif defined(HAVE_UTIMENSAT)
+	    struct timespec times[2];
 
-    times[0].tv_sec = times[1].tv_sec = (int)ftime;
-    times[0].tv_nsec = times[1].tv_nsec = (int)(1e9*(ftime - (int)ftime));
+	    times[0].tv_sec = times[1].tv_sec = (int)ftime;
+	    times[0].tv_nsec = times[1].tv_nsec = (int)(1e9*(ftime - (int)ftime));
 
-    res = utimensat(AT_FDCWD, fn, times, 0) == 0;
-#elif defined(HAVE_UTIMES)
-    struct timeval times[2];
+	    res = utimensat(AT_FDCWD, fn, times, 0) == 0;
+	#elif defined(HAVE_UTIMES)
+	    struct timeval times[2];
 
-    times[0].tv_sec = times[1].tv_sec = (int)ftime;
-    times[0].tv_usec = times[1].tv_usec = (int)(1e6*(ftime - (int)ftime));
-    res = utimes(fn, times) == 0;
-#elif defined(HAVE_UTIME)
-    struct utimbuf settime;
+	    times[0].tv_sec = times[1].tv_sec = (int)ftime;
+	    times[0].tv_usec = times[1].tv_usec = (int)(1e6*(ftime - (int)ftime));
 
-    settime.actime = settime.modtime = (int)ftime;
-    res = utime(fn, &settime) == 0;
-#endif
-    return Rf_ScalarLogical(res);
+	    res = utimes(fn, times) == 0;
+	#elif defined(HAVE_UTIME)
+	    struct utimbuf settime;
+
+	    settime.actime = settime.modtime = (int)ftime;
+	    res = utime(fn, &settime) == 0;
+	#endif
+	LOGICAL(ans)[i] = (res == 0) ? FALSE : TRUE;
+	fn = nullptr;
+	vmaxset(vmax); // throws away result of translateChar
+    }
+    UNPROTECT(2); /* times, ans */
+    return ans;
 }
 
 #ifdef Win32
@@ -2935,7 +2982,7 @@ struct TMN_REPARSE_DATA_BUFFER
     WCHAR  PathBuffer[1024];
 };
 
-SEXP attribute_hidden do_mkjunction(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_mkjunction(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     wchar_t from[10000];
     const wchar_t *to;
@@ -3030,7 +3077,7 @@ extern void *dlsym(void *handle, const char *symbol);
    without loading any modules; libraries available via modules are
    treated individually (libcurlVersion(), La_version(), etc)
 */
-SEXP attribute_hidden
+HIDDEN SEXP
 do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = PROTECT(Rf_allocVector(STRSXP, 9));
@@ -3119,13 +3166,13 @@ do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 	   PLT is used on Linux and on Solaris when the main binary
 	   is _not_ position independent. PLT is not used on macOS.
 	*/
-	if (dgemm_addr != NULL) {
+	if (dgemm_addr != nullptr) {
 
 	    /* If dgemm_addr is NULL, dgemm is statically linked and
 	       we are on Linux. On Solaris, dgemm_addr is never NULL.
 	    */
 	    void *dgemm_next_addr = dlsym(RTLD_NEXT, dgemm_name);
-	    if (dgemm_next_addr != NULL)
+	    if (dgemm_next_addr != nullptr)
 
 		/* If dgemm_next_addr is NULL, dgemm is statically linked.
 		   Otherwise, it is linked dynamically and dgemm_next_addr
@@ -3154,7 +3201,7 @@ do_eSoftVersion(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* platform-specific */
 void Rsleep(double timeint);
 
-SEXP attribute_hidden do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     double time = Rf_asReal(CAR(args));
     if (ISNAN(time) || time < 0.)
@@ -3376,7 +3423,7 @@ machar(int *ibeta, int *it, int *irnd, int *ngrd, int *machep, int *negep,
 
 		a = z * one;
 		temp = z * t;
-		if (a+a == zero || fabs(z) >= y)
+		if (a+a == zero || std::abs(z) >= y)
 			break;
 		temp1 = temp * betain;
 		if (temp1 * beta == z)
@@ -3410,7 +3457,7 @@ machar(int *ibeta, int *it, int *irnd, int *ngrd, int *machep, int *negep,
 
 		a = y * one;
 		temp = y * t;
-		if (a+a == zero || fabs(y) >= *xmin)
+		if (a+a == zero || std::abs(y) >= *xmin)
 			goto L10;
 		k = k + 1;
 		temp1 = temp * betain;

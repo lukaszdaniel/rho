@@ -40,7 +40,7 @@
 #include <Rconnections.h>
 #include <IOStuff.h> // for R_ConsoleIob;
 
-SEXP attribute_hidden getParseContext(void)
+HIDDEN SEXP getParseContext(void)
 {
     int i, last = PARSE_CONTEXT_SIZE;
     char context[PARSE_CONTEXT_SIZE+1];
@@ -135,7 +135,7 @@ static SEXP tabExpand(SEXP strings)
     return result;
 }
 
-void NORET parseError(SEXP call, int linenum)
+NORET void parseError(SEXP call, int linenum)
 {
     SEXP context;
     int len, width;
@@ -193,7 +193,7 @@ void NORET parseError(SEXP call, int linenum)
  .Internal( parse(file, n, text, prompt, srcfile, encoding) )
  If there is text then that is read and the other arguments are ignored.
 */
-SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* n_, rho::RObject* text_, rho::RObject* prompt_, rho::RObject* srcfile_, rho::RObject* encoding_)
+HIDDEN SEXP do_parse(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* n_, rho::RObject* text_, rho::RObject* prompt_, rho::RObject* srcfile_, rho::RObject* encoding_)
 {
     SEXP text, prompt, s, source;
     Rconnection con;
@@ -214,7 +214,7 @@ SEXP attribute_hidden do_parse(/*const*/ rho::Expression* call, const rho::Built
     wasopen = con->isopen;
     num = Rf_asInteger(n_);
     if (num == 0)
-	return(Rf_allocVector(EXPRSXP, 0));
+	return Rf_allocVector(EXPRSXP, 0);
 
     PROTECT(text = Rf_coerceVector(text_, STRSXP));
     if(Rf_length(text_) && !Rf_length(text))

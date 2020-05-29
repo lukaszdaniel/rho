@@ -48,7 +48,7 @@
 
 using namespace rho;
 
-SEXP attribute_hidden do_split(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* f_)
+HIDDEN SEXP do_split(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* f_)
 {
     SEXP x, f, counts, vec, nm, nmj;
     Rboolean have_names;

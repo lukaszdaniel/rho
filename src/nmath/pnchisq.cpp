@@ -78,8 +78,7 @@ double pnchisq(double x, double df, double ncp, int lower_tail, int log_p)
     }
 }
 
-double attribute_hidden
-pnchisq_raw(double x, double f, double theta /* = ncp */,
+HIDDEN double pnchisq_raw(double x, double f, double theta /* = ncp */,
 	    double errmax, double reltol, int itrmax,
 	    Rboolean lower_tail, Rboolean log_p)
 {

@@ -64,7 +64,7 @@ static void R_wfixslash(wchar_t *s);
 extern "C" {
 #endif
 void F77_SYMBOL(rwarnc)(char *msg, int *nchar);
-void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar);
+NORET void F77_SYMBOL(rexitc)(char *msg, int *nchar);
 
 #ifdef __cplusplus
 }
@@ -241,7 +241,7 @@ static int findTypeInTypeTable(const SEXPTYPE t)
 }
 
 // called from main.cpp
-attribute_hidden
+HIDDEN
 void Rf_InitTypeTables(void) {
 
     /* Type2Table */
@@ -313,11 +313,11 @@ const char *Rf_type2char(const SEXPTYPE t) /* returns a char* */
 }
 
 #ifdef UNUSED
-SEXP NORET Rf_type2symbol(SEXPTYPE t)
+NORET SEXP Rf_type2symbol(SEXPTYPE t)
 {
     if (t >= 0 && t < MAX_NUM_SEXPTYPE) { /* FIXME: branch not really needed */
 	SEXP res = Type2Table[t].rsymName;
-	if (res != NULL) {
+	if (res != nullptr) {
 	    return res;
 	}
     }
@@ -325,8 +325,7 @@ SEXP NORET Rf_type2symbol(SEXPTYPE t)
 }
 #endif
 
-attribute_hidden
-void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
+NORET HIDDEN void UNIMPLEMENTED_TYPEt(const char* s, const SEXPTYPE t)
 {
     for (int i = 0; TypeTable[i].str; i++) {
 	if (TypeTable[i].type == int(t))
@@ -335,7 +334,7 @@ void NORET UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
     Rf_error(_("unimplemented type (%d) in '%s'\n"), t, s);
 }
 
-void NORET UNIMPLEMENTED_TYPE(const char *s, const SEXP x)
+NORET void UNIMPLEMENTED_TYPE(const char *s, const SEXP x)
 {
     UNIMPLEMENTED_TYPEt(s, TYPEOF(x));
 }
@@ -444,7 +443,7 @@ Rboolean Rf_StringFalse(const char* name)
 }
 
 /* used in bind.cpp and options.cpp */
-SEXP attribute_hidden Rf_EnsureString(SEXP s)
+HIDDEN SEXP Rf_EnsureString(SEXP s)
 {
     switch(TYPEOF(s)) {
     case SYMSXP:
@@ -472,7 +471,7 @@ void Rf_checkArityCall(SEXP op, SEXP args, SEXP call)
     func->checkNumArgs(listLength(arglist), callx);
 }
 
-void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
+HIDDEN void Rf_check1arg(SEXP arg, SEXP call,
 				   const char *formal)
 {
     SEXP tag = TAG(const_cast<RObject*>(arg));
@@ -485,7 +484,7 @@ void attribute_hidden Rf_check1arg(SEXP arg, SEXP call,
 		  supplied, formal);
 }
 
-void attribute_hidden Expression::check1arg(const char *formal) const
+HIDDEN void Expression::check1arg(const char *formal) const
 {
     auto args = getArgs();
     if (!args) {
@@ -519,7 +518,7 @@ SEXP Rf_nthcdr(SEXP s, int n)
 
 
 /* This is a primitive (with no arguments) */
-SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_nargs(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     ClosureContext *cptr = R_GlobalContext();
     int nargs = NA_INTEGER;
@@ -531,18 +530,18 @@ SEXP attribute_hidden do_nargs(/*const*/ Expression* call, const BuiltInFunction
 }
 
 template<typename T>
-void attribute_hidden setVector(T * vec, const int& len, const T& val) {
+HIDDEN void setVector(T * vec, const int& len, const T& val) {
 	for (int i = 0; i < len; i++) vec[i] = val;
 }
 /* formerly used in subscript.cpp, in Utils.h */
-void attribute_hidden Rf_setIVector(int * vec, int len, int val)
+HIDDEN void Rf_setIVector(int * vec, int len, int val)
 {
     setVector(vec, len, val);
 }
 
 
 /* unused in R, in Utils.h, apparently used in Rcpp  */
-void attribute_hidden Rf_setRVector(double * vec, int len, double val)
+HIDDEN void Rf_setRVector(double * vec, int len, double val)
 {
     setVector(vec, len, val);
 }
@@ -614,7 +613,7 @@ SEXP R_body_no_src(SEXP x) {
    The return value is a list with 4 elements (xi, yi, x.alone, y.alone),
    which are index vectors for rows of x or y.
 */
-SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction* op, RObject* xinds_, RObject* yinds_, RObject* all_x_, RObject* all_y_)
+HIDDEN SEXP do_merge(/*const*/ Expression* call, const BuiltInFunction* op, RObject* xinds_, RObject* yinds_, RObject* all_x_, RObject* all_y_)
 {
     SEXP xi, yi, ansx, ansy, ans;
     int nx = 0, ny = 0, i, j, k, nx_lone = 0, ny_lone = 0;
@@ -661,7 +660,7 @@ SEXP attribute_hidden do_merge(/*const*/ Expression* call, const BuiltInFunction
 	/* printf("i %d nnx %d j %d nny %d\n", i, nnx, j, nny); */
 	dnans += ((double)(nnx-i))*(nny-j);
     }
-    if (dnans > R_XLEN_T_MAX)
+    if (dnans > double(R_XLEN_T_MAX))
 	Rf_error(_("number of rows in the result exceeds maximum vector length"));
     R_xlen_t nans = (int) dnans;
 
@@ -732,7 +731,7 @@ SEXP static intern_getwd(void)
     return(rval);
 }
 
-SEXP attribute_hidden do_getwd(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_getwd(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     return(intern_getwd());
 }
@@ -742,7 +741,7 @@ SEXP attribute_hidden do_getwd(/*const*/ Expression* call, const BuiltInFunction
 # include <direct.h> /* for chdir, via io.h */
 #endif
 
-SEXP attribute_hidden do_setwd(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dir)
+HIDDEN SEXP do_setwd(/*const*/ Expression* call, const BuiltInFunction* op, RObject* dir)
 {
     if (!Rf_isValidString(dir))
 	Rf_error(_("character argument expected"));
@@ -773,7 +772,7 @@ SEXP attribute_hidden do_setwd(/*const*/ Expression* call, const BuiltInFunction
 /* remove portion of path before file separator if one exists */
 
 #ifdef Win32
-SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, s = nullptr;	/* -Wall */
     char sp[4*PATH_MAX+1];
@@ -806,7 +805,7 @@ SEXP attribute_hidden do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
     return(ans);
 }
 #else
-SEXP attribute_hidden do_basename(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
+HIDDEN SEXP do_basename(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
 {
     SEXP ans, s = nullptr;	/* -Wall */
     char  buf[PATH_MAX], *p, fsp = FILESEP[0];
@@ -845,7 +844,7 @@ SEXP attribute_hidden do_basename(/*const*/ Expression* call, const BuiltInFunct
    */
 
 #ifdef Win32
-SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, s = nullptr;	/* -Wall */
     wchar_t buf[PATH_MAX], *p;
@@ -871,7 +870,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 		while ( *(p = buf + wcslen(buf) - 1) == L'/'  && p > buf
 			&& (p > buf+2 || *(p-1) != L':')) *p = L'\0';
 		p = wcsrchr(buf, L'/');
-		if(p == NULL) wcscpy(buf, L".");
+		if(p == nullptr) wcscpy(buf, L".");
 		else {
 		    while(p > buf && *p == L'/'
 			  /* this covers both drives and network shares */
@@ -887,7 +886,7 @@ SEXP attribute_hidden do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
     return(ans);
 }
 #else
-SEXP attribute_hidden do_dirname(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
+HIDDEN SEXP do_dirname(/*const*/ Expression* call, const BuiltInFunction* op, RObject* path_)
 {
     SEXP ans, s = nullptr;	/* -Wall */
     char buf[PATH_MAX], *p, fsp = FILESEP[0];
@@ -910,7 +909,7 @@ SEXP attribute_hidden do_dirname(/*const*/ Expression* call, const BuiltInFuncti
 		/* remove trailing file separator(s) */
 		while ( *(p = buf + ll - 1) == fsp  && p > buf) *p = '\0';
 		p = Rf_strrchr(buf, fsp);
-		if(p == NULL)
+		if(p == nullptr)
 		    strcpy(buf, ".");
 		else {
 		    while(p > buf && *p == fsp) --p;
@@ -932,7 +931,7 @@ extern char *realpath(const char *path, char *resolved_path);
 #endif
 
 
-SEXP attribute_hidden do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_, rho::RObject* winslash_, rho::RObject* mustWork_)
+HIDDEN SEXP do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_, rho::RObject* winslash_, rho::RObject* mustWork_)
 {
     SEXP ans, paths = path_;
     int i, n = LENGTH(paths);
@@ -971,7 +970,7 @@ SEXP attribute_hidden do_normalizepath(rho::Expression* call, const rho::BuiltIn
 	if (OK) {
 	    if (path[0] == '/') strncpy(abspath, path, PATH_MAX);
 	    else {
-		OK = getcwd(abspath, PATH_MAX) != NULL;
+		OK = getcwd(abspath, PATH_MAX) != nullptr;
 		OK = OK && (strlen(path) + strlen(abspath) + 1 <= PATH_MAX);
 		if (OK) {strcat(abspath, "/"); strcat(abspath, path);}
 	    }
@@ -1023,7 +1022,7 @@ extern "C" const char *getTZinfo(void)
 
 
 /* encodeString(x, w, quote, justify) */
-SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* width_, RObject* quote_, RObject* na_encode_, RObject* justify_)
+HIDDEN SEXP do_encodeString(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* width_, RObject* quote_, RObject* na_encode_, RObject* justify_)
 {
     SEXP ans, x, s;
     R_xlen_t i, len;
@@ -1039,7 +1038,7 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
 	if(w != NA_INTEGER && w < 0)
 	    Rf_error(_("invalid '%s' value"), "width");
     }
-    findWidth = Rboolean((w == NA_INTEGER));
+    findWidth = Rboolean(w == NA_INTEGER);
     s = quote_;
     if(LENGTH(s) != 1 || TYPEOF(s) != STRSXP)
 	Rf_error(_("invalid '%s' value"), "quote");
@@ -1083,7 +1082,7 @@ SEXP attribute_hidden do_encodeString(/*const*/ Expression* call, const BuiltInF
     return ans;
 }
 
-SEXP attribute_hidden do_encoding(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_encoding(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans, x;
     R_xlen_t i, n;
@@ -1104,7 +1103,7 @@ SEXP attribute_hidden do_encoding(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_setencoding(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     SEXP x, enc, tmp;
     int m;
@@ -1139,7 +1138,7 @@ SEXP attribute_hidden do_setencoding(/*const*/ Expression* call, const BuiltInFu
     return x;
 }
 
-SEXP attribute_hidden Rf_markKnown(const char *s, SEXP ref)
+HIDDEN SEXP Rf_markKnown(const char *s, SEXP ref)
 {
     cetype_t ienc = CE_NATIVE;
     if(ENC_KNOWN(ref)) {
@@ -1164,7 +1163,7 @@ static const unsigned char utf8_table4[] = {
   2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
   3,3,3,3,3,3,3,3,4,4,4,4,5,5,5,5 };
 
-int attribute_hidden utf8clen(char c)
+HIDDEN int utf8clen(char c)
 {
     /* This allows through 8-bit chars 10xxxxxx, which are invalid */
     if ((c & 0xc0) != 0xc0) return 1;
@@ -1184,16 +1183,14 @@ utf8toutf16low(const char *s)
     return (unsigned int) LOW_SURROGATE_START | ((s[2] & 0x0F) << 6) | (s[3] & 0x3F);
 }
 
-Rwchar_t attribute_hidden
-utf8toucs32(wchar_t high, const char *s)
+HIDDEN Rwchar_t utf8toucs32(wchar_t high, const char *s)
 {
     return utf16toucs(high, utf8toutf16low(s));
 }
 
 /* These return the result in wchar_t.  If wchar_t is 16 bit (e.g. UTF-16LE on Windows
    only the high surrogate is returned; call utf8toutf16low next. */
-size_t attribute_hidden
-Rf_utf8toucs(wchar_t *wc, const char *s)
+HIDDEN size_t Rf_utf8toucs(wchar_t *wc, const char *s)
 {
     unsigned int byte;
     wchar_t local, *w;
@@ -1322,7 +1319,7 @@ static size_t Rwcrtomb32(char *s, Rwchar_t cvalue, size_t n)
    s can be a buffer of size n>=0 chars, or NULL.  If n=0 or s=NULL, nothing is written. 
    The return value is the number of chars including the terminating null.  If the
    buffer is not big enough, the result is truncated but still null-terminated */
-attribute_hidden // but used in windlgs
+HIDDEN // but used in windlgs
 size_t Rf_wcstoutf8(char *s, const wchar_t *wc, size_t n)
 {
     size_t m, res=0;
@@ -1379,7 +1376,7 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
     return used;
 }
 
-attribute_hidden
+HIDDEN
 Rboolean mbcsValid(const char *str)
 {
     return  Rboolean((int(mbstowcs(nullptr, str, 0)) >= 0));
@@ -1392,7 +1389,7 @@ Rboolean utf8Valid(const char *str)
     return  Rboolean(valid_utf8(str, strlen(str)) == 0);
 }
 
-SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, RObject* x)
+HIDDEN SEXP do_validUTF8(Expression* call, const BuiltInFunction* op, RObject* x)
 {
     if (!Rf_isString(x))
 	Rf_error(_("invalid '%s' argument"), "x");
@@ -1404,7 +1401,7 @@ SEXP attribute_hidden do_validUTF8(Expression* call, const BuiltInFunction* op, 
     return ans;
 }
 
-SEXP attribute_hidden do_validEnc(Expression* call, const BuiltInFunction* op, RObject* x)
+HIDDEN SEXP do_validEnc(Expression* call, const BuiltInFunction* op, RObject* x)
 {
     if (!Rf_isString(x))
 	Rf_error(_("invalid '%s' argument"), "x");
@@ -1467,8 +1464,8 @@ void R_fixslash(char *s)
 	}
     } else
 	for (; *p; p++) if (*p == '\\') *p = '/';
-	/* preserve network shares */
-	if(s[0] == '/' && s[1] == '/') s[0] = s[1] = '\\';
+    /* preserve network shares */
+    if(s[0] == '/' && s[1] == '/') s[0] = s[1] = '\\';
 }
 
 void R_UTF8fixslash(char *s)
@@ -1508,7 +1505,7 @@ void R_fixbackslash(char *s)
 
 extern "C" {
 
-void NORET F77_SYMBOL(rexitc)(char *msg, int *nchar)
+NORET void F77_SYMBOL(rexitc)(char *msg, int *nchar)
 {
     int nc = *nchar;
     char buf[256];
@@ -1617,7 +1614,7 @@ void *Rf_AdobeSymbol2utf8(char *work, const char *c0, int nwork)
     return static_cast<char *>(work);
 }
 
-int attribute_hidden Rf_AdobeSymbol2ucs2(int n)
+HIDDEN int Rf_AdobeSymbol2ucs2(int n)
 {
     if(n >= 32 && n < 256) return s2u[n-32];
     else return 0;
@@ -1793,7 +1790,7 @@ double R_atof(const char *str)
 
 /* enc2native and enc2utf8, but they are the same in a UTF-8 locale */
 /* primitive */
-SEXP attribute_hidden do_enc2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* ans)
+HIDDEN SEXP do_enc2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* ans)
 {
     SEXP el;
     R_xlen_t i;
@@ -1919,14 +1916,14 @@ const char* ucol_getLocaleByType(const UCollator *coll,
 #include <unicode/uiter.h>
 #endif
 
-static UCollator *collator = NULL;
+static UCollator *collator = nullptr;
 static int collationLocaleSet = 0;
 
 /* called from platform.cpp */
-void attribute_hidden resetICUcollator(void)
+HIDDEN void resetICUcollator(void)
 {
     if (collator) ucol_close(collator);
-    collator = NULL;
+    collator = nullptr;
     collationLocaleSet = 0;
 }
 
@@ -1987,7 +1984,7 @@ static const char *getLocale(void)
 }
 #endif
 
-SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP x;
     UErrorCode  status = U_ZERO_ERROR;
@@ -2005,7 +2002,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (streql(thiss, "locale")) {
 	    if (collator) {
 		ucol_close(collator);
-		collator = NULL;
+		collator = nullptr;
 	    }
 	    if(streql(s, "ASCII")) {
 		collationLocaleSet = 2;
@@ -2018,7 +2015,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 			Rf_error("failed to set ICU locale %s (%d)", s, status);
 		    collator = ucol_open(NULL, &status);
 		    if (U_FAILURE(status)) {
-			collator = NULL;
+			collator = nullptr;
 			Rf_error("failed to open ICU collator (%d)", status);
 		    }
 		}
@@ -2049,7 +2046,7 @@ SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const char *ans = "unknown", *res;
 
@@ -2071,7 +2068,7 @@ SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 /* Caller has to manage the R_alloc stack */
 /* NB: strings can have equal collation weight without being identical */
-attribute_hidden
+HIDDEN
 int Scollate(SEXP a, SEXP b)
 {
     if (!collationLocaleSet) {
@@ -2089,13 +2086,13 @@ int Scollate(SEXP a, SEXP b)
 		Rf_error("failed to set ICU locale (%d)", status);
 	    collator = ucol_open(NULL, &status);
 	    if (U_FAILURE(status)) {
-		collator = NULL;
+		collator = nullptr;
 		Rf_error("failed to open ICU collator (%d)", status);
 	    }
 	}
 	errno = errsv;
     }
-    if (collator == NULL)
+    if (collator == nullptr)
 	return collationLocaleSet == 2 ?
 	    strcmp(Rf_translateChar(a), Rf_translateChar(b)) :
 	    strcoll(Rf_translateChar(a), Rf_translateChar(b));
@@ -2113,18 +2110,18 @@ int Scollate(SEXP a, SEXP b)
 
 #else /* not USE_ICU */
 
-SEXP attribute_hidden do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_ICUset(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_warning(_("ICU is not supported on this build"));
     return nullptr;
 }
 
-SEXP attribute_hidden do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_ICUget(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     return Rf_mkString("ICU not in use");
 }
 
-void attribute_hidden resetICUcollator(void) {}
+HIDDEN void resetICUcollator(void) {}
 
 # ifdef Win32
 
@@ -2147,7 +2144,7 @@ int Scollate(SEXP a, SEXP b)
 }
 
 # else
-attribute_hidden
+HIDDEN
 int Scollate(SEXP a, SEXP b)
 {
     return strcoll(Rf_translateChar(a), Rf_translateChar(b));
@@ -2189,7 +2186,7 @@ bincode(double *x, R_xlen_t n, double *breaks, int nb,
 }
 
 /* 'breaks' cannot be a long vector as the return codes are integer. */
-SEXP attribute_hidden do_bincode(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* breaks_, RObject* right_, RObject* include_lowest_)
+HIDDEN SEXP do_bincode(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* breaks_, RObject* right_, RObject* include_lowest_)
 {
     SEXP x, breaks, right, lowest;
     x = x_;
@@ -2214,7 +2211,7 @@ SEXP attribute_hidden do_bincode(/*const*/ Expression* call, const BuiltInFuncti
     return codes;
 }
 
-SEXP attribute_hidden do_tabulate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* bin_, RObject* nbins_)
+HIDDEN SEXP do_tabulate(/*const*/ Expression* call, const BuiltInFunction* op, RObject* bin_, RObject* nbins_)
 {
     SEXP in = bin_, nbin = nbins_;
     if (TYPEOF(in) != INTSXP)  Rf_error("invalid input");
@@ -2248,7 +2245,7 @@ SEXP attribute_hidden do_tabulate(/*const*/ Expression* call, const BuiltInFunct
  *                         xt  x    right             inside       leftOp
  * x can be a long vector but xt cannot since the result is integer
 */
-SEXP attribute_hidden do_findinterval(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vec_, RObject* x_, RObject* rightmost_closed_, RObject* all_inside_, RObject* left_op_)
+HIDDEN SEXP do_findinterval(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vec_, RObject* x_, RObject* rightmost_closed_, RObject* all_inside_, RObject* left_op_)
 {
     SEXP xt, x, right, inside, leftOp;
     xt = vec_;
@@ -2289,7 +2286,7 @@ SEXP attribute_hidden do_findinterval(/*const*/ Expression* call, const BuiltInF
 # undef ERROR
 #endif
 #include <R_ext/Applic.h>
-SEXP attribute_hidden do_pretty(/*const*/ Expression* call, const BuiltInFunction* op, RObject* min_, RObject*  max_, RObject*  n_, RObject*  min_n_, RObject*  shrink_sml_, RObject*  bias_, RObject*  eps_correct_)
+HIDDEN SEXP do_pretty(/*const*/ Expression* call, const BuiltInFunction* op, RObject* min_, RObject*  max_, RObject*  n_, RObject*  min_n_, RObject*  shrink_sml_, RObject*  bias_, RObject*  eps_correct_)
 {
     SEXP ans, nm, hi;
     double l = Rf_asReal(min_);
@@ -2336,7 +2333,7 @@ static void
 str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 	   const char *format, const char *flag, char **result);
 
-SEXP attribute_hidden do_formatC(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  mode_, RObject*  width_, RObject*  digits_, RObject*  format_, RObject*  flag_, RObject*  i_strlen_)
+HIDDEN SEXP do_formatC(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  mode_, RObject*  width_, RObject*  digits_, RObject*  format_, RObject*  flag_, RObject*  i_strlen_)
 {
     SEXP x = x_;
     if (!Rf_isVector(x)) Rf_error(_("'x' must be a vector"));
@@ -2489,19 +2486,19 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 		    if(xx == 0.)
 			strcpy(result[i], "0");
 		    else {
-			/* This was iex= (int)floor(log10(fabs(xx)))
+			/* This was iex= (int)floor(log10(std::abs(xx)))
 			   That's wrong, as xx might get rounded up,
 			   and we do need some fuzz or 99.5 is correct.
 			*/
-			double xxx = fabs(xx), X;
-			iex = (int)floor(log10(xxx) + 1e-12);
+			double xxx = std::abs(xx), X;
+			iex = int(std::floor(std::log10(xxx) + 1e-12));
 			X = fround(xxx/Rexp10((double)iex) + 1e-12,
 				   (double)(dig-1));
 			if(iex > 0 &&  X >= 10) {
 			    xx = X * Rexp10((double)iex);
 			    iex++;
 			}
-			if(iex == -4 && fabs(xx)< 1e-4) {/* VERY rare case */
+			if(iex == -4 && std::abs(xx) < 1e-4) {/* VERY rare case */
 			    iex = -5;
 			}
 			if(iex < -4) {

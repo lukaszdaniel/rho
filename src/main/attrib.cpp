@@ -113,7 +113,7 @@ static bool isOneDimensionalArray(SEXP vec)
    conclude that the class attribute is nullptr.  If you want to
    rewrite this function to use such a pre-test, be sure to adjust
    serialize.cpp accordingly.  LT */
-SEXP attribute_hidden getAttrib0(SEXP vec, SEXP name)
+HIDDEN SEXP getAttrib0(SEXP vec, SEXP name)
 {
     SEXP s;
     int len, i, any;
@@ -195,7 +195,7 @@ SEXP Rf_getAttrib(SEXP vec, SEXP name)
 }
 
 // R's .row_names_info(x, type = 1L) := .Internal(shortRowNames(x, type)) :
-attribute_hidden
+HIDDEN
 SEXP do_shortRowNames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* type_)
 {
     /* return  n if the data frame 'vec' has c(NA, n) rownames;
@@ -218,7 +218,7 @@ SEXP do_shortRowNames(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 }
 
 /* This is allowed to change 'out' */
-attribute_hidden
+HIDDEN
 SEXP do_copyDFattr(/*const*/ Expression* call, const BuiltInFunction* op, RObject* xx_, RObject* x_)
 {
     SEXP in = xx_, out = x_;
@@ -381,12 +381,12 @@ static void checkNames(RObject* x, RObject* s)
 
 /* Time Series Parameters */
 
-static void NORET badtsp(void)
+[[noreturn]] static void badtsp(void)
 {
     Rf_error(_("invalid time series parameters specified"));
 }
 
-attribute_hidden
+HIDDEN
 SEXP Rf_tspgets(SEXP vec, SEXP val)
 {
     double start, end, frequency;
@@ -423,7 +423,7 @@ SEXP Rf_tspgets(SEXP vec, SEXP val)
     if (n == 0) Rf_error(_("cannot assign 'tsp' to zero-length vector"));
 
     /* FIXME:  1.e-5 should rather be == option('ts.eps') !! */
-    if (fabs(end - start - (n - 1)/frequency) > 1.e-5)
+    if (std::abs(end - start - (n - 1)/frequency) > 1.e-5)
 	badtsp();
 
     PROTECT(vec);
@@ -451,7 +451,7 @@ static RObject* commentgets(RObject* vec, RObject* comment)
     return nullptr;/*- just for -Wall */
 }
 
-SEXP attribute_hidden do_commentgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_commentgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     RObject* object = x_;
     RObject* comment = value_;
@@ -462,7 +462,7 @@ SEXP attribute_hidden do_commentgets(/*const*/ Expression* call, const BuiltInFu
     return object;
 }
 
-SEXP attribute_hidden do_comment(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_comment(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     return Rf_getAttrib(x_, Symbols::CommentSymbol);
 }
@@ -507,7 +507,7 @@ SEXP Rf_classgets(SEXP vec, SEXP klass)
 		if(!Rf_isNull(cld)) {
 		    PROTECT(cld);
 		    /* More efficient? can we protect? -- rather *assign* in method-ns?
-		       static SEXP oldCl = NULL;
+		       static SEXP oldCl = nullptr;
 		       if(!oldCl) oldCl = R_getClassDef("oldClass");
 		       if(!oldCl) oldCl = Rf_mkString("oldClass");
 		       PROTECT(oldCl);
@@ -530,7 +530,7 @@ SEXP Rf_classgets(SEXP vec, SEXP klass)
 }
 
 /* oldClass<-(), primitive */
-SEXP attribute_hidden do_classgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* new_class)
+HIDDEN SEXP do_classgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* new_class)
 {
     if (MAYBE_SHARED(object)) object = Rf_shallow_duplicate(object);
     if (Rf_length(new_class) == 0) new_class = nullptr;
@@ -542,7 +542,7 @@ SEXP attribute_hidden do_classgets(/*const*/ Expression* call, const BuiltInFunc
 }
 
 /* oldClass, primitive */
-SEXP attribute_hidden do_class(Expression* call, const BuiltInFunction* op, RObject* x)
+HIDDEN SEXP do_class(Expression* call, const BuiltInFunction* op, RObject* x)
 {
     SEXP s3class;
     if(IS_S4_OBJECT(x)) {
@@ -713,7 +713,7 @@ static RObject* createDefaultClass(RObject* part1, RObject* part2, RObject* part
     return res;
 }
 
-attribute_hidden
+HIDDEN
 void Rf_InitS3DefaultTypes()
 {
     for(int type = 0; type < MAX_NUM_SEXPTYPE; type++) {
@@ -758,7 +758,7 @@ void Rf_InitS3DefaultTypes()
 }
 
 /* Version for S3-dispatch */
-SEXP attribute_hidden R_data_class2 (SEXP obj)
+HIDDEN SEXP R_data_class2 (SEXP obj)
 {
     SEXP klass = Rf_getAttrib(obj, Symbols::ClassSymbol);
     if(Rf_length(klass) > 0) {
@@ -805,7 +805,7 @@ SEXP attribute_hidden R_data_class2 (SEXP obj)
 }
 
 // class(x)  &  .cache_class(classname, extendsForS3(.)) {called from methods} :
-SEXP attribute_hidden R_do_cache_data_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* klass, RObject* value)
+HIDDEN SEXP R_do_cache_data_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* klass, RObject* value)
 {
     call->check1arg("class");
     if(TYPEOF(klass) != STRSXP || LENGTH(klass) < 1)
@@ -814,14 +814,14 @@ SEXP attribute_hidden R_do_cache_data_class(/*const*/ Expression* call, const Bu
     return cache_class(class_str, value);
 }
 
-SEXP attribute_hidden R_do_data_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* klass)
+HIDDEN SEXP R_do_data_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* klass)
 {
     call->check1arg("x");
     return R_data_class(klass, FALSE);
 }
 
 /* names(object) <- name */
-SEXP attribute_hidden do_namesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_namesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     RObject* object = x_;
     RObject* names = value_;
@@ -934,7 +934,7 @@ SEXP Rf_namesgets(SEXP vec, SEXP val)
 #define isS4Environment(x) (TYPEOF(x) == S4SXP &&	\
 			    Rf_isEnvironment(R_getS4DataSlot(x, ENVSXP)))
 
-SEXP attribute_hidden do_names(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_names(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans;
     ans = x_;
@@ -947,7 +947,7 @@ SEXP attribute_hidden do_names(/*const*/ Expression* call, const BuiltInFunction
     return ans;
 }
 
-SEXP attribute_hidden do_dimnamesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* names_)
+HIDDEN SEXP do_dimnamesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* names_)
 {
     RObject* object = x_;
     if (MAYBE_SHARED(object)) object = Rf_shallow_duplicate(object);
@@ -1052,17 +1052,17 @@ SEXP Rf_dimnamesgets(SEXP vec, SEXP val)
     return vec;
 }
 
-SEXP attribute_hidden do_dimnames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_dimnames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     return Rf_getAttrib(x_, Symbols::DimNamesSymbol);
 }
 
-SEXP attribute_hidden do_dim(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_dim(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     return Rf_getAttrib(x_, Symbols::DimSymbol);
 }
 
-SEXP attribute_hidden do_dimgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_dimgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     SEXP x = x_;
     /* Duplication might be expensive */
@@ -1125,7 +1125,7 @@ SEXP Rf_dimgets(SEXP vec, SEXP val)
     return vec;
 }
 
-SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x)
+HIDDEN SEXP do_attributes(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x)
 {
     if (TYPEOF(x) == ENVSXP)
 	R_CheckStack(); /* in case attributes might lead to a cycle */
@@ -1173,7 +1173,7 @@ SEXP attribute_hidden do_attributes(/*const*/ Expression* call, const BuiltInFun
 }
 
 //  levels(.) <- newlevs :
-SEXP attribute_hidden do_levelsgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
+HIDDEN SEXP do_levelsgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* value_)
 {
     RObject* object = x_;
     RObject* levels = value_;
@@ -1186,7 +1186,7 @@ SEXP attribute_hidden do_levelsgets(/*const*/ Expression* call, const BuiltInFun
 }
 
 /* attributes(object) <- attrs */
-SEXP attribute_hidden do_attributesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* attrs)
+HIDDEN SEXP do_attributesgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* attrs)
 {
 /* NOTE: The following code ensures that when an attribute list */
 /* is attached to an object, that the "dim" attibute is always */
@@ -1284,7 +1284,7 @@ benchmarks.  There is still some inefficiency since using getAttrib
 means the attributes list will be searched twice, but this seems
 fairly minor.  LT */
 
-SEXP attribute_hidden do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP tag = nullptr, alist, ans, x, which, exact_;
     const char *str;
@@ -1398,14 +1398,14 @@ static void check_slot_assign(RObject* obj, RObject* input, RObject* value, RObj
 {
 	RObject* valueClass = PROTECT(R_data_class(value, FALSE));
 	RObject* objClass   = PROTECT(R_data_class(obj, FALSE));
-    static GCRoot<> checkAt = NULL;
+    static GCRoot<> checkAt = nullptr;
     // 'methods' may *not* be in search() ==> do as if calling  methods::checkAtAssignment(..)
     if(!isMethodsDispatchOn()) { // needed?
 	RObject* e = PROTECT(Rf_lang1(Rf_install("initMethodDispatch")));
 	Rf_eval(e, R_MethodsNamespace); // only works with methods loaded
 	UNPROTECT(1);
     }
-    if(checkAt == NULL)
+    if(checkAt == nullptr)
 	checkAt = Rf_findFun(Rf_install("checkAtAssignment"), R_MethodsNamespace);
     RObject* e = PROTECT(Rf_lang4(checkAt, objClass, input, valueClass));
     Rf_eval(e, env);
@@ -1413,7 +1413,7 @@ static void check_slot_assign(RObject* obj, RObject* input, RObject* value, RObj
 }
 
 
-SEXP attribute_hidden do_slotgets(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_slotgets(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     /*  attr@nlist  <-  value  */
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
@@ -1453,7 +1453,7 @@ SEXP attribute_hidden do_slotgets(SEXP call, SEXP op, SEXP args, SEXP env)
     return value;
 }
 
-SEXP attribute_hidden do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     /*  attr(x, which = "<name>")  <-  value  */
     SEXP obj = CAR(args);
@@ -1693,7 +1693,7 @@ SEXP R_do_slot_assign(SEXP obj, SEXP name, SEXP value) {
     return obj;
 }
 
-SEXP attribute_hidden do_AT(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_AT(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP  nlist, object, ans, klass;
 
@@ -1739,7 +1739,7 @@ SEXP attribute_hidden do_AT(SEXP call, SEXP op, SEXP args, SEXP env)
    (Obviously, this is another routine that has accumulated barnacles and
    should at some time be broken into separate parts.)
 */
-SEXP attribute_hidden
+HIDDEN SEXP
 R_getS4DataSlot(SEXP obj, SEXPTYPE type)
 {
   static Symbol* s_xData = Symbol::obtain(".xData");

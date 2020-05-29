@@ -104,7 +104,7 @@ amatch_regaparams(regaparams_t *params, int patlen,
     }
 }
 
-SEXP attribute_hidden do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern, rho::RObject* vec, rho::RObject* ignore_case_, rho::RObject* value_, rho::RObject* opt_costs, rho::RObject* opt_bounds, rho::RObject* useBytes_, rho::RObject* fixed_)
+HIDDEN SEXP do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern, rho::RObject* vec, rho::RObject* ignore_case_, rho::RObject* value_, rho::RObject* opt_costs, rho::RObject* opt_bounds, rho::RObject* useBytes_, rho::RObject* fixed_)
 {
     SEXP ind, ans;
     R_xlen_t i, j, n;
@@ -487,7 +487,7 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 
 #define OFFSETS(I, J, K)	INTEGER(offsets)[I + J * nx + K * nxy]
 
-SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* y_, rho::RObject* costs_, rho::RObject* counts_, rho::RObject* fixed_, rho::RObject* partial_, rho::RObject* ignore_case_, rho::RObject* useBytes_)
+HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* y_, rho::RObject* costs_, rho::RObject* counts_, rho::RObject* fixed_, rho::RObject* partial_, rho::RObject* ignore_case_, rho::RObject* useBytes_)
 {
     SEXP x, y;
     SEXP ans, counts, offsets, dimnames, names, elt;
@@ -733,7 +733,7 @@ SEXP attribute_hidden do_adist(/*const*/ rho::Expression* call, const rho::Built
     return ans;
 }
 
-SEXP attribute_hidden do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern, rho::RObject* vec, rho::RObject* opt_bounds, rho::RObject* opt_costs, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* use_bytes_)
+HIDDEN SEXP do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern, rho::RObject* vec, rho::RObject* opt_bounds, rho::RObject* opt_costs, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* use_bytes_)
 {
     SEXP ans, matchpos, matchlen;
 

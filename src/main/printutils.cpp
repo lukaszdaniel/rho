@@ -91,10 +91,10 @@ using namespace rho;
 #include <trioremap.h>
 #endif
 
-#define BUFSIZE 8192  /* used by Rprintf etc */
+constexpr size_t BUFSIZE = 8192;  /* used by Rprintf etc */
 
-attribute_hidden
-R_size_t R_Decode2Long(char *p, int *ierr)
+HIDDEN
+R_size_t R_Decode2Long(char* p, int* ierr)
 {
     R_size_t v = strtol(p, &p, 10);
     *ierr = 0;
@@ -104,19 +104,19 @@ R_size_t R_Decode2Long(char *p, int *ierr)
 	REprintf("R_Decode2Long(): v=%ld\n", v);
     // NOTE: currently, positive *ierr are not differentiated in the callers:
     if(p[0] == 'G') {
-	if((Giga * double(v)) > R_SIZE_T_MAX) { *ierr = 4; return(v); }
+	if((Giga * double(v)) > double(R_SIZE_T_MAX)) { *ierr = 4; return(v); }
 	return R_size_t(Giga) * v;
     }
     else if(p[0] == 'M') {
-	if((Mega * double(v)) > R_SIZE_T_MAX) { *ierr = 1; return(v); }
+	if((Mega * double(v)) > double(R_SIZE_T_MAX)) { *ierr = 1; return(v); }
 	return R_size_t(Mega) * v;
     }
     else if(p[0] == 'K') {
-	if((1024 * double(v)) > R_SIZE_T_MAX) { *ierr = 2; return(v); }
+	if((1024 * double(v)) > double(R_SIZE_T_MAX)) { *ierr = 2; return(v); }
 	return (1024*v);
     }
     else if(p[0] == 'k') {
-	if((1000 * double(v)) > R_SIZE_T_MAX) { *ierr = 3; return(v); }
+	if((1000 * double(v)) > double(R_SIZE_T_MAX)) { *ierr = 3; return(v); }
 	return (1000*v);
     }
     else {
@@ -128,7 +128,7 @@ R_size_t R_Decode2Long(char *p, int *ierr)
 /* There is no documented (or enforced) limit on 'w' here,
    so use snprintf */
 constexpr size_t NB = 1000; /* Same as deparse.cpp */
-const char *EncodeLogical(int x, int w)
+const char* EncodeLogical(int x, int w)
 {
     static char buff[NB];
     if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
@@ -138,7 +138,7 @@ const char *EncodeLogical(int x, int w)
     return buff;
 }
 
-const char *EncodeInteger(int x, int w)
+const char* EncodeInteger(int x, int w)
 {
     static char buff[NB];
     if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
@@ -147,18 +147,18 @@ const char *EncodeInteger(int x, int w)
     return buff;
 }
 
-attribute_hidden
-const char *Rf_EncodeRaw(Rbyte x, const char * prefix)
+HIDDEN
+const char* Rf_EncodeRaw(Rbyte x, const char* prefix)
 {
     static char buff[10];
     sprintf(buff, "%s%02x", prefix, x);
     return buff;
 }
 
-attribute_hidden
-const char *EncodeEnvironment(SEXP x)
+HIDDEN
+const char* EncodeEnvironment(SEXP x)
 {
-    const void *vmax = vmaxget();
+    const void* vmax = vmaxget();
     static char ch[1000];
     if (x == R_GlobalEnv)
 	sprintf(ch, "<environment: R_GlobalEnv>");
@@ -178,14 +178,15 @@ const char *EncodeEnvironment(SEXP x)
     return ch;
 }
 
-const char *EncodeReal(double x, int w, int d, int e, char cdec)
+const char* EncodeReal(double x, int w, int d, int e, char cdec)
 {
     char dec[2];
-    dec[0] = cdec; dec[1] = '\0';
+    dec[0] = cdec;
+    dec[1] = '\0';
     return EncodeReal0(x, w, d, e, dec);
 }
 
-const char *EncodeReal0(double x, int w, int d, int e, const char *dec)
+const char* EncodeReal0(double x, int w, int d, int e, const char* dec)
 {
     static char buff[NB], buff2[2*NB];
     char fmt[20], *out = buff;
@@ -227,8 +228,7 @@ const char *EncodeReal0(double x, int w, int d, int e, const char *dec)
     return out;
 }
 
-static const char
-*EncodeRealDrop0(double x, int w, int d, int e, const char *dec)
+static const char* EncodeRealDrop0(double x, int w, int d, int e, const char* dec)
 {
     static char buff[NB], buff2[2*NB];
     char fmt[20], *out = buff;
@@ -284,7 +284,7 @@ static const char
     return out;
 }
 
-SEXP attribute_hidden Rf_StringFromReal(double x, int *warn)
+HIDDEN SEXP Rf_StringFromReal(double x, int *warn)
 {
     int w, d, e;
     formatReal(&x, 1, &w, &d, &e, 0);
@@ -293,8 +293,8 @@ SEXP attribute_hidden Rf_StringFromReal(double x, int *warn)
 }
 
 
-attribute_hidden
-const char *Rf_EncodeReal2(double x, int w, int d, int e)
+HIDDEN
+const char* Rf_EncodeReal2(double x, int w, int d, int e)
 {
     static char buff[NB];
     char fmt[20];
@@ -331,9 +331,7 @@ void z_prec_r(Rcomplex *r, Rcomplex *x, double digits);
 #include "Rcomplex.h"
 
 constexpr size_t NB3 = NB + 3;
-const char
-*EncodeComplex(Rcomplex x, int wr, int dr, int er, int wi, int di, int ei,
-	       const char *dec)
+const char* EncodeComplex(Rcomplex x, int wr, int dr, int er, int wi, int di, int ei, const char* dec)
 {
     static char buff[NB3];
 
@@ -391,10 +389,10 @@ const char
 
    This supported embedded nuls when we had those.
  */
-attribute_hidden
+HIDDEN
 int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 {
-    const char *p = str;
+    const char* p = str;
     int len = 0, i;
 
     if(ienc == CE_BYTES) { // not currently used for that encoding
@@ -510,14 +508,14 @@ int Rstrwid(const char *str, int slen, cetype_t ienc, int quote)
 }
 
 /* Match what EncodeString does with encodings */
-attribute_hidden
+HIDDEN
 int Rstrlen(SEXP s, int quote)
 {
     cetype_t ienc = Rf_getCharCE(s);
     if (ienc == CE_UTF8 || ienc == CE_BYTES)
 	return Rstrwid(R_CHAR(s), LENGTH(s), ienc, quote);
-    const void *vmax = vmaxget();
-    const char *p = Rf_translateChar(s);
+    const void* vmax = vmaxget();
+    const char* p = Rf_translateChar(s);
     int len = Rstrwid(p, (int)strlen(p), CE_NATIVE, quote);
     vmaxset(vmax);
     return len;
@@ -533,8 +531,8 @@ int Rstrlen(SEXP s, int quote)
    format().
  */
 
-attribute_hidden
-const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
+HIDDEN
+const char* Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 {
     int b, b0, i, j, cnt;
     const char *p; char *q, buf[11];
@@ -548,8 +546,8 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
        passed on by EncodeElement -- so no way could be end user be
        responsible for freeing it.  However, this is not thread-safe. */
 
-    static R_StringBuffer gBuffer = {nullptr, 0, BUFSIZE};
-    R_StringBuffer *buffer = &gBuffer;
+    static R_StringBuffer gBuffer = { nullptr, 0, BUFSIZE };
+    R_StringBuffer* buffer = &gBuffer;
 
     if (s == NA_STRING) {
 	p = quote ? R_CHAR(R_print.na_string) : R_CHAR(R_print.na_string_noquote);
@@ -625,9 +623,9 @@ const char *Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
 
        +2 allows for quotes, +6 for UTF_8 escapes.
      */
-    if(5.*cnt + 8 > SIZE_MAX)
+    if (size_t(5 * cnt + 8) > R_SIZE_T_MAX)
 	Rf_error(_("too large string (nchar=%d) => 5*nchar + 8 > SIZE_MAX"));
-    size_t q_len = 5*(size_t)cnt + 8;
+    size_t q_len = 5 * (size_t)cnt + 8;
     if(q_len < size_t(w)) q_len = size_t(w);
     q = static_cast<char*>(R_AllocStringBuffer(q_len, buffer));
 
@@ -847,7 +845,7 @@ const char *EncodeElement0(SEXP x, int indx, int quote, const char *dec)
    any subsequent call to EncodeChar/EncodeString may happen. Note that
    particularly it is NOT safe to pass the result of EncodeChar as 3rd
    argument to errorcall (errorcall_cpy can be used instead). */
-//attribute_hidden
+//HIDDEN
 const char *Rf_EncodeChar(SEXP x)
 {
     return Rf_EncodeString(x, 0, 0, Rprt_adj_left);
@@ -953,9 +951,9 @@ void Rcons_vprintf(const char *format, va_list arg)
 #endif
 }
 
-void Rvprintf(const char *format, va_list arg)
+void Rvprintf(const char* format, va_list arg)
 {
-    int i=0, con_num=R_OutputCon;
+    int i = 0, con_num = R_OutputCon;
     Rconnection con;
 #ifdef HAVE_VA_COPY
     va_list argcopy;
@@ -964,7 +962,7 @@ void Rvprintf(const char *format, va_list arg)
 
     if (++printcount > 100) {
 	R_CheckUserInterrupt();
-	printcount = 0 ;
+	printcount = 0;
     }
 
     do{
@@ -982,9 +980,7 @@ void Rvprintf(const char *format, va_list arg)
 #ifndef HAVE_VA_COPY
       if (con_num>0) Rf_error("Internal error: this platform does not support split output");
 #endif
-    } while(con_num>0);
-
-
+    } while (con_num > 0);
 }
 
 /*
@@ -996,7 +992,7 @@ void Rvprintf(const char *format, va_list arg)
    It is also used in R_Suicide on Unix.
 */
 
-void REvprintf(const char *format, va_list arg)
+void REvprintf(const char* format, va_list arg)
 {
     if(R_ErrorCon != 2) {
 	Rconnection con = getConnection_no_err(R_ErrorCon);
@@ -1028,13 +1024,14 @@ void REvprintf(const char *format, va_list arg)
     }
 }
 
-int attribute_hidden Rf_IndexWidth(R_xlen_t n)
+HIDDEN int Rf_IndexWidth(R_xlen_t n)
 {
     return int(log10(n + 0.5) + 1);
 }
 
-void attribute_hidden VectorIndex(R_xlen_t i, int w)
+HIDDEN void VectorIndex(R_xlen_t i, int w)
 {
-/* print index label "[`i']" , using total width `w' (left filling blanks) */
-    Rprintf("%*s[%ld]", w-Rf_IndexWidth(i)-2, "", i);
+    /* print index label "[`i']" , using total width `w' (left filling blanks)
+     */
+    Rprintf("%*s[%ld]", w - Rf_IndexWidth(i) - 2, "", i);
 }

@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-17 r7c8bdccf3a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-31 r74500) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -287,8 +287,7 @@ t -1 -1 -1 -1
 > summary(anorex.1)
 
 Call:
-glm(formula = Postwt ~ Prewt + Treat + offset(Prewt), family = gaussian, 
-    data = anorexia)
+glm(formula = Postwt ~ Prewt + Treat + offset(Prewt), family = gaussian, data = anorexia)
 
 Deviance Residuals: 
      Min        1Q    Median        3Q       Max  

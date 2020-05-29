@@ -56,7 +56,7 @@
 using namespace std;
 using namespace rho;
 
-SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
     if ((n = Rf_length(args)) != 1)
@@ -103,7 +103,7 @@ SEXP attribute_hidden do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
     return rc;
 }
 
-SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
     if ((n = Rf_length(args)) != 1)
@@ -124,7 +124,7 @@ SEXP attribute_hidden do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
     return v;
 }
 
-SEXP attribute_hidden do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
@@ -195,7 +195,7 @@ SEXP attribute_hidden do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif // PROVENANCE_TRACKING
 }
 
-SEXP attribute_hidden do_provCommand(/*const*/ Expression* call,
+HIDDEN SEXP do_provCommand(/*const*/ Expression* call,
     const BuiltInFunction* op, Environment* rho, RObject* /* const* */ args,
     int num_args, const PairList* tags)
 {
@@ -218,7 +218,7 @@ SEXP attribute_hidden do_provCommand(/*const*/ Expression* call,
 #endif // PROVENANCE_TRACKING
 }
 
-SEXP attribute_hidden do_provenance_graph(/*const*/ Expression* call,
+HIDDEN SEXP do_provenance_graph(/*const*/ Expression* call,
     const BuiltInFunction* op, Environment* rho, RObject* const* args,
     int num_args, const PairList* tags)
 {

@@ -36,7 +36,7 @@
 #include "rho/RAllocStack.hpp"
 
 /* charToRaw works at byte level, ignores encoding */
-SEXP attribute_hidden do_charToRaw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_charToRaw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP ans, x = x_;
     int nc;
@@ -52,7 +52,7 @@ SEXP attribute_hidden do_charToRaw(/*const*/ rho::Expression* call, const rho::B
 }
 
 /* <UTF8>  rawToChar should work at byte level */
-SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_)
+HIDDEN SEXP do_rawToChar(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_)
 {
     SEXP ans, x = x_;
 
@@ -85,7 +85,7 @@ SEXP attribute_hidden do_rawToChar(/*const*/ rho::Expression* call, const rho::B
 }
 
 
-SEXP attribute_hidden do_rawShift(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* n_)
+HIDDEN SEXP do_rawShift(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* n_)
 {
     SEXP ans, x = x_;
     int shift = Rf_asInteger(n_);
@@ -106,7 +106,7 @@ SEXP attribute_hidden do_rawShift(/*const*/ rho::Expression* call, const rho::Bu
     return ans;
 }
 
-SEXP attribute_hidden do_rawToBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_rawToBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP ans, x = x_;
     R_xlen_t i, j = 0;
@@ -124,7 +124,7 @@ SEXP attribute_hidden do_rawToBits(/*const*/ rho::Expression* call, const rho::B
     return ans;
 }
 
-SEXP attribute_hidden do_intToBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_intToBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP ans, x;
     R_xlen_t i, j = 0;
@@ -143,7 +143,7 @@ SEXP attribute_hidden do_intToBits(/*const*/ rho::Expression* call, const rho::B
     return ans;
 }
 
-SEXP attribute_hidden do_packBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* type_)
+HIDDEN SEXP do_packBits(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* type_)
 {
     SEXP ans, x = x_, stype = type_;
     Rboolean useRaw;
@@ -239,7 +239,7 @@ static int mbrtoint(int *w, const char *s)
     /* return -2; not reached */
 }
 
-SEXP attribute_hidden do_utf8ToInt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_utf8ToInt(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP ans, x = x_;
     int tmp, used = 0; /* -Wall */
@@ -291,7 +291,7 @@ static size_t inttomb(char *s, const int wc)
 
 #include <R_ext/RS.h>  /* for Calloc/Free */
 
-SEXP attribute_hidden do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_, rho::RObject* allow_surrogate_pairs_)
+HIDDEN SEXP do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* multiple_, rho::RObject* allow_surrogate_pairs_)
 {
     SEXP ans, x;
     int multiple, s_pair;

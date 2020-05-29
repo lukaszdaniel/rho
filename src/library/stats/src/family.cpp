@@ -31,7 +31,7 @@
 
 static const double THRESH = 30.;
 static const double MTHRESH = -30.;
-static const double INVEPS = 1/DOUBLE_EPS;
+static const double INVEPS = 1 / DOUBLE_EPS;
 
 /**
  * Evaluate x/(1 - x). An inline function is used so that x is
@@ -41,10 +41,11 @@ static const double INVEPS = 1/DOUBLE_EPS;
  *
  * @return x/(1 - x)
  */
-static R_INLINE double x_d_omx(double x) {
+R_INLINE static double x_d_omx(double x)
+{
     if (x < 0 || x > 1)
 	Rf_error(_("Value %g out of range (0, 1)"), x);
-    return x/(1 - x);
+    return x / (1 - x);
 }
 
 /**
@@ -55,13 +56,13 @@ static R_INLINE double x_d_omx(double x) {
  *
  * @return x/(1 + x)
  */
-static R_INLINE double x_d_opx(double x) {return x/(1 + x);}
+R_INLINE static double x_d_opx(double x) {return x/(1 + x);}
 
 SEXP logit_link(SEXP mu)
 {
     int i, n = LENGTH(mu);
     SEXP ans = PROTECT(Rf_shallow_duplicate(mu));
-    double *rans = REAL(ans), *rmu=REAL(mu);
+    double *rans = REAL(ans), *rmu = REAL(mu);
 
     if (!n || !Rf_isReal(mu))
 	Rf_error(_("Argument %s must be a nonempty numeric vector"), "mu");
@@ -81,8 +82,8 @@ SEXP logit_linkinv(SEXP eta)
 	Rf_error(_("Argument %s must be a nonempty numeric vector"), "eta");
     for (i = 0; i < n; i++) {
 	double etai = reta[i], tmp;
-	tmp = (etai < MTHRESH) ? DOUBLE_EPS :
-	    ((etai > THRESH) ? INVEPS : exp(etai));
+	tmp = (etai < MTHRESH) ? DOUBLE_EPS
+			       : ((etai > THRESH) ? INVEPS : std::exp(etai));
 	rans[i] = x_d_opx(tmp);
     }
     UNPROTECT(1);
@@ -99,19 +100,19 @@ SEXP logit_mu_eta(SEXP eta)
 	Rf_error(_("Argument %s must be a nonempty numeric vector"), "eta");
     for (i = 0; i < n; i++) {
 	double etai = reta[i];
-	double opexp = 1 + exp(etai);
+	double opexp = 1 + std::exp(etai);
 
-	rans[i] = (etai > THRESH || etai < MTHRESH) ? DOUBLE_EPS :
-	    exp(etai)/(opexp * opexp);
+	rans[i] = (etai > THRESH || etai < MTHRESH)
+	    ? DOUBLE_EPS
+	    : std::exp(etai) / (opexp * opexp);
     }
     UNPROTECT(1);
     return ans;
 }
 
-static R_INLINE
-double y_log_y(double y, double mu)
+R_INLINE static double y_log_y(double y, double mu)
 {
-    return (y != 0.) ? (y * log(y/mu)) : 0;
+    return (y != 0.) ? (y * std::log(y / mu)) : 0;
 }
 
 SEXP binomial_dev_resids(SEXP y, SEXP mu, SEXP wt)

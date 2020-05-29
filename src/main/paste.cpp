@@ -64,7 +64,7 @@ static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 /* Note that NA_STRING is not handled separately here.  This is
    deliberate -- see ?paste -- and implicitly coerces it to "NA"
 */
-SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
+HIDDEN SEXP do_paste(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
 {
     SEXP ans, collapse, sep, x;
     int sepw, u_sepw;
@@ -290,7 +290,7 @@ SEXP attribute_hidden do_paste(/*const*/ rho::Expression* call, const rho::Built
     return ans;
 }
 
-SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* sep_)
+HIDDEN SEXP do_filepath(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* sep_)
 {
     SEXP ans, sep, x;
     int i, j, k, ln, maxlen, nx, nzero, pwidth, sepw;
@@ -378,7 +378,7 @@ SEXP attribute_hidden do_filepath(/*const*/ rho::Expression* call, const rho::Bu
 
 /* format.default(x, trim, digits, nsmall, width, justify, na.encode,
 		  scientific, decimal.mark) */
-SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject*  trim_, rho::RObject*  digits_, rho::RObject*  nsmall_, rho::RObject*  width_, rho::RObject*  justify_, rho::RObject*  na_encode_, rho::RObject*  scientific_, rho::RObject*  decimal_mark_)
+HIDDEN SEXP do_format(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject*  trim_, rho::RObject*  digits_, rho::RObject*  nsmall_, rho::RObject*  width_, rho::RObject*  justify_, rho::RObject*  na_encode_, rho::RObject*  scientific_, rho::RObject*  decimal_mark_)
 {
     SEXP l, x, y, swd;
     int il, digits, trim = 0, nsmall = 0, wd = 0, adj = -1, na, sci = 0;
@@ -607,7 +607,7 @@ SEXP attribute_hidden do_format(/*const*/ rho::Expression* call, const rho::Buil
  * for complex : 2 x 3 integers for (Re, Im)
  */
 
-SEXP attribute_hidden do_formatinfo(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* digits_, rho::RObject* nsmall_)
+HIDDEN SEXP do_formatinfo(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* digits_, rho::RObject* nsmall_)
 {
     SEXP x;
     int digits, nsmall, no = 1, w, d, e, wi, di, ei;

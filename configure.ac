@@ -1784,6 +1784,21 @@ R_STDCXX([11], [CXX11], [CXX])
 R_STDCXX([14], [CXX14], [CXX11])
 R_STDCXX([17], [CXX17], [CXX14])
 
+## Set default compiler to C++17 if available; otherwise C++14
+if test -n "${CXX}" && test -z "${CXXSTD}"; then
+  if test -n "${CXX17}"; then
+    CXX=${CXX17}
+    CXXSTD=${CXX17STD}
+    CXXFLAGS=${CXX17FLAGS}
+    CXXPICFLAGS=${CXX17PICFLAGS}
+  elif test -n "${CXX14}"; then
+    CXX=${CXX14}
+    CXXSTD=${CXX14STD}
+    CXXFLAGS=${CXX14FLAGS}
+    CXXPICFLAGS=${CXX14PICFLAGS}
+  fi
+fi   
+
 ### OpenMP.
 
 ## The basic checking is performed via AC_OPENMP added in Autoconf 2.62,

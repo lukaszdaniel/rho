@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -923,7 +923,7 @@ function(.Object, value) {
 [1] "f"
 > setMethod("f", c("numeric", "missing"), function(x, y) x)
 > try(?f(1))
-Error in .helpForCall(topicExpr, parent.frame()) : 
+Error in command '.helpForCall(topicExpr, parent.frame())': 
   no documentation for function 'f' and signature 'x = "numeric", y = "missing"'
 > 
 > ## "..." is not handled
@@ -931,7 +931,7 @@ Error in .helpForCall(topicExpr, parent.frame()) :
 [1] "f"
 > setMethod("f", "numeric", function(...) c(...))
 > try(?f(1,2))
-Error in .helpForCall(topicExpr, parent.frame()) : 
+Error in command '.helpForCall(topicExpr, parent.frame())': 
   no documentation for function 'f' and signature '... = "numeric"'
 > 
 > ## defaults in the generic formal arguments are not considered
@@ -939,7 +939,7 @@ Error in .helpForCall(topicExpr, parent.frame()) :
 [1] "f"
 > setMethod("f", c("numeric", "numeric"), function(x, y) x+y)
 > try(?f(1))
-Error in .helpForCall(topicExpr, parent.frame()) : 
+Error in command '.helpForCall(topicExpr, parent.frame())': 
   no documentation for function 'f' and signature 'x = "numeric", y = "numeric"'
 > 
 > ## Objects with S3 classes fail earlier
@@ -949,7 +949,7 @@ Error in .helpForCall(topicExpr, parent.frame()) :
 > setOldClass(c("foo", "numeric"))
 > n <- structure(1, class=c("foo", "numeric"))
 > try(?f(n))
-Error in .helpForCall(topicExpr, parent.frame()) : 
+Error in command '.helpForCall(topicExpr, parent.frame())': 
   no documentation for function 'f' and signature 'x = "numeric"'
 > ## different failures in R < 3.1.0.
 > 

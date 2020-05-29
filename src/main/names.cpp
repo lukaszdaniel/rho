@@ -914,12 +914,12 @@ BuiltInFunction::createLookupTables()
     return std::make_pair(primitive_function_cache, internal_function_cache);
 }
 
-SEXP attribute_hidden R_Primitive(const char *primname)
+HIDDEN SEXP R_Primitive(const char *primname)
 {
     return BuiltInFunction::obtainPrimitive(primname);
 }
 
-SEXP attribute_hidden do_primitive(/*const*/ Expression* call, const BuiltInFunction* op, RObject* name_)
+HIDDEN SEXP do_primitive(/*const*/ Expression* call, const BuiltInFunction* op, RObject* name_)
 {
     SEXP name, prim;
     name = name_;
@@ -946,7 +946,7 @@ static SEXP mkSymMarker(SEXP pname)
 #endif
 
 /* initialize the symbol table */
-void attribute_hidden Rf_InitNames()
+HIDDEN void Rf_InitNames()
 {
     // Logical constants.
     Logical::initialize();
@@ -962,7 +962,7 @@ void attribute_hidden Rf_InitNames()
 
 	/* Internal code for the ~ operator */
 
-SEXP attribute_hidden do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_tilde(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     if (Rf_isObject(call))
 	return Rf_duplicate(call);

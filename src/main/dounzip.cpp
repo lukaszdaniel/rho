@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  file dounzip.cpp
- *  first part Copyright (C) 2002-2017  The R Core Team
+ *  first part Copyright (C) 2002-2018  The R Core Team
  *  second part Copyright (C) 1998-2010 Gilles Vollant
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -71,11 +71,11 @@ static void setFileTime(const char *fn, uLong dosdate)
     FILETIME ftm, ftLocal;
 
     hFile = CreateFileA(fn, GENERIC_READ | GENERIC_WRITE,
-			0, NULL, OPEN_EXISTING, 0, NULL);
+			0, nullptr, OPEN_EXISTING, 0, nullptr);
     if (hFile == INVALID_HANDLE_VALUE) return;
     DosDateTimeToFileTime((WORD)(dosdate >> 16), (WORD)dosdate, &ftLocal);
     LocalFileTimeToFileTime(&ftLocal, &ftm);
-    SetFileTime(hFile, &ftm, NULL, &ftm);
+    SetFileTime(hFile, &ftm, nullptr, &ftm);
     CloseHandle(hFile);
 }
 #else
@@ -181,6 +181,8 @@ extract_one(unzFile uf, const char *const dest, const char * const filename,
 	/* Rprintf("extracting %s\n", outname); */
 	if (!overwrite && R_FileExists(outname)) {
 	    Rf_warning(_(" not overwriting file '%s"), outname);
+	    unzCloseCurrentFile(uf);
+	    return err;
 	}
 	fout = R_fopen(outname, "wb");
 	int serrno = errno;
@@ -476,18 +478,18 @@ static size_t unz_read(void *ptr, size_t size, size_t nitems,
     return unzReadCurrentFile(uf, ptr, static_cast<unsigned int>(size*nitems))/size;
 }
 
-static int NORET null_vfprintf(Rconnection con, const char *format, va_list ap)
+[[noreturn]] static int null_vfprintf(Rconnection con, const char *format, va_list ap)
 {
     Rf_error(_("printing not enabled for this connection"));
 }
 
-static size_t NORET null_write(const void *ptr, size_t size, size_t nitems,
+[[noreturn]] static size_t null_write(const void *ptr, size_t size, size_t nitems,
 			 Rconnection con)
 {
     Rf_error(_("write not enabled for this connection"));
 }
 
-static double NORET null_seek(Rconnection con, double where, int origin, int rw)
+[[noreturn]] static double null_seek(Rconnection con, double where, int origin, int rw)
 {
     Rf_error(_("seek not enabled for this connection"));
 }
@@ -497,7 +499,7 @@ static int null_fflush(Rconnection con)
     return 0;
 }
 
-Rconnection attribute_hidden
+HIDDEN Rconnection
 R_newunz(const char *description, const char *const mode)
 {
     Rconnection newconn;
@@ -507,14 +509,14 @@ R_newunz(const char *description, const char *const mode)
     if(!newconn->connclass) {
 	free(newconn);
 	Rf_error(_("allocation of 'unz' connection failed"));
-	/* for Solaris 12.5 */ newconn = NULL;
+	/* for Solaris 12.5 */ newconn = nullptr;
     }
     strcpy(newconn->connclass, "unz");
     newconn->description = static_cast<char *>(malloc(strlen(description) + 1));
     if(!newconn->description) {
 	free(newconn->connclass); free(newconn);
 	Rf_error(_("allocation of 'unz' connection failed"));
-	/* for Solaris 12.5 */ newconn = NULL;
+	/* for Solaris 12.5 */ newconn = nullptr;
     }
     init_con(newconn, description, CE_NATIVE, mode);
 
@@ -532,7 +534,7 @@ R_newunz(const char *description, const char *const mode)
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
 	Rf_error(_("allocation of 'unz' connection failed"));
-	/* for Solaris 12.5 */ newconn = NULL;
+	/* for Solaris 12.5 */ newconn = nullptr;
     }
     return newconn;
 }

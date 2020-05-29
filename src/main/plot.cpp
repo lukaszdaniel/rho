@@ -59,14 +59,14 @@ SEXP CreateAtVector(double *axp, double *usr, int nint, Rboolean logflag)
     double umin, umax, dn, rng, small;
     int i, n, ne;
     if (!logflag || axp[2] < 0) { /* --- linear axis --- Only use axp[] arg. */
-	n = int(fabs(axp[2]) + 0.25);/* >= 0 */
+	n = int(std::abs(axp[2]) + 0.25);/* >= 0 */
 	dn = max(1, n);
 	rng = axp[1] - axp[0];
-	small = fabs(rng)/(100.*dn);
+	small = std::abs(rng)/(100.*dn);
 	at = Rf_allocVector(REALSXP, n + 1);
 	for (i = 0; i <= n; i++) {
 	    REAL(at)[i] = axp[0] + (i / dn) * rng;
-	    if (fabs(REAL(at)[i]) < small)
+	    if (std::abs(REAL(at)[i]) < small)
 		REAL(at)[i] = 0;
 	}
     }

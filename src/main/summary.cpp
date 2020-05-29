@@ -418,7 +418,7 @@ static Rboolean cprod(SEXP sx, Rcomplex *value, Rboolean narm)
 }
 
 
-attribute_hidden
+HIDDEN
 SEXP fixup_NaRm(SEXP args)
 {
     SEXP t;
@@ -457,7 +457,7 @@ SEXP fixup_NaRm(SEXP args)
  * mean.default.
  */
 
-static R_INLINE SEXP logical_mean(SEXP x)
+R_INLINE static SEXP logical_mean(SEXP x)
 {
     R_xlen_t n = XLENGTH(x);
     LDOUBLE s = 0.0;
@@ -470,7 +470,7 @@ static R_INLINE SEXP logical_mean(SEXP x)
     return Rf_ScalarReal((double) (s/n));
 }
 
-static R_INLINE SEXP integer_mean(SEXP x)
+R_INLINE static SEXP integer_mean(SEXP x)
 {
     R_xlen_t n = XLENGTH(x);
     LDOUBLE s = 0.0;
@@ -483,7 +483,7 @@ static R_INLINE SEXP integer_mean(SEXP x)
     return Rf_ScalarReal((double) (s/n));
 }
 
-static R_INLINE SEXP real_mean(SEXP x)
+R_INLINE static SEXP real_mean(SEXP x)
 {
     R_xlen_t n = XLENGTH(x);
     LDOUBLE s = 0.0;
@@ -503,7 +503,7 @@ static R_INLINE SEXP real_mean(SEXP x)
     return Rf_ScalarReal((double) s);
 }
 
-static R_INLINE SEXP complex_mean(SEXP x)
+R_INLINE static SEXP complex_mean(SEXP x)
 {
     R_xlen_t n = XLENGTH(x);
     LDOUBLE s = 0.0, si = 0.0;
@@ -527,7 +527,7 @@ static R_INLINE SEXP complex_mean(SEXP x)
     return Rf_ScalarComplex(val);
 }
 
-SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     checkArity(op, args);
     if(PRIMVAL(op) == 1) { /* mean */
@@ -565,7 +565,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 
     if (ALTREP(CAR(args)) && CDDR(args) == nullptr &&
 	(CDR(args) == nullptr || TAG(CDR(args)) == R_NaRmSymbol)) {
-	SEXP toret = NULL;
+	SEXP toret = nullptr;
 	SEXP vec = CAR(args);
 	switch(PRIMVAL(op)) {
 	case 0:
@@ -589,7 +589,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	default:
 	    break;
 	}
-	if(toret != NULL) {
+	if(toret != nullptr) {
 	    UNPROTECT(1); /* args */
 	    return toret;
 	}
@@ -631,8 +631,10 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		complex_a = TRUE;
 		break;
 	    default:
-		a = CAR(a); goto invalid_type;
-            }
+		a = CAR(a);
+		Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		return nullptr;
+	    }
 	    a = CDR(a);
 	}
         if(complex_a) {
@@ -720,7 +722,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    else updated = smax(a, &stmp, narm);
 		    break;
 		default:
-		    goto invalid_type;
+		    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		    return nullptr;
 		}
 
 		if(updated) {/* 'a' had non-NA elements; --> "add" tmp or itmp*/
@@ -800,7 +803,7 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 				ans_type = REALSXP;
 				zcum.r = s;
 				DbgP2(" int_1 switch: zcum.r = s = %g\n", s);
-			    } else if(s < -LONG_INT_MAX || LONG_INT_MAX < s) {
+			    } else if(s < double(-LONG_INT_MAX) || double(LONG_INT_MAX) < s) {
 				use_isum = FALSE;
 				ans_type = REALSXP;
 				zcum.r = s;
@@ -857,7 +860,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    }
 		    break;
 		default:
-		    goto invalid_type;
+		    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		    return nullptr;
 		}
 
 		break;/* sum() part */
@@ -889,7 +893,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    }
 		    break;
 		default:
-		    goto invalid_type;
+		    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		    return nullptr;
 		}
 
 		break;/* prod() part */
@@ -906,7 +911,9 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 	    case NILSXP:  /* OK historically, e.g. PR#1283 */
 		break;
 	    case CPLXSXP:
-		if (iop == 2 || iop == 3) goto invalid_type;
+		if (iop == 2 || iop == 3)
+		    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		return nullptr;
 		break;
 	    case STRSXP:
 		if (iop == 2 || iop == 3) {
@@ -923,7 +930,8 @@ SEXP attribute_hidden do_summary(SEXP call, SEXP op, SEXP args, SEXP env)
 		    break;
 		}
 	    default:
-		goto invalid_type;
+		Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
+		return nullptr;
 	    }
 	    if(ans_type < TYPEOF(a) && ans_type != CPLXSXP) {
 		if(!empty && ans_type == INTSXP)
@@ -970,14 +978,10 @@ na_answer: /* only sum(INTSXP, ...) case currently used */
     }
     UNPROTECT(2); /* scum, args */
     return ans;
-
-invalid_type:
-    Rf_errorcall(call, R_MSG_type, Rf_type2char(TYPEOF(a)));
-    return nullptr;
 }/* do_summary */
 
 
-SEXP attribute_hidden do_range(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_range(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP ans;
 
@@ -1002,7 +1006,7 @@ SEXP attribute_hidden do_range(SEXP call, SEXP op, SEXP args, SEXP env)
 
 // which.min(x) : The index (starting at 1), of the first min(x) in x
 // which.max(x) : The index (starting at 1), of the first max(x) in x
-SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_first_min(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP sx = x_, ans;
     R_xlen_t i, n, indx = -1;
@@ -1094,7 +1098,7 @@ SEXP attribute_hidden do_first_min(/*const*/ Expression* call, const BuiltInFunc
 }
 
 /* which(x) : indices of non-NA TRUE values in x */
-SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_which(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP v, v_nms, ans, ans_nms = nullptr;
     int i, j = 0, len, *buf;
@@ -1134,7 +1138,7 @@ SEXP attribute_hidden do_which(/*const*/ Expression* call, const BuiltInFunction
 /* op = 0 is pmin, op = 1 is pmax
    NULL and logicals are handled as if they had been coerced to integer.
  */
-SEXP attribute_hidden do_pmin(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_pmin(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP x, ans;
     int narm;

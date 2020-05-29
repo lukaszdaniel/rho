@@ -184,7 +184,12 @@ Symbol* Symbol::make(const String* name)
 
 Symbol* Symbol::obtain(const std::string& name)
 {
-    GCStackRoot<const String> str(String::obtain(name));
+    return Symbol::obtainCE(name, CE_NATIVE);
+}
+
+Symbol* Symbol::obtainCE(const std::string& name, cetype_t enc)
+{
+    GCStackRoot<const String> str(String::obtain(name, enc));
     return Symbol::obtain(str);
 }
 

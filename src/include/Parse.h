@@ -65,28 +65,28 @@ struct SrcRefState {
 
 #ifdef __cplusplus
 extern "C" {
-#endif  // __cplusplus
+#endif // __cplusplus
 
 void InitParser(void);
 
 void R_InitSrcRefState(void);
 void R_FinalizeSrcRefState(void);
 
-SEXP R_Parse1Buffer(IoBuffer*, int, ParseStatus *); /* in ReplIteration,
-						       R_ReplDLLdo1 */
-SEXP R_ParseBuffer(IoBuffer*, int, ParseStatus *, SEXP, SEXP); /* in source.cpp */
-SEXP R_Parse1File(FILE*, int, ParseStatus *); /* in R_ReplFile */
-SEXP R_ParseFile(FILE*, int, ParseStatus *, SEXP);  /* in edit.cpp */
+SEXP R_Parse1Buffer(IoBuffer*, int, ParseStatus*); /* in ReplIteration,
+						      R_ReplDLLdo1 */
+SEXP R_ParseBuffer(IoBuffer*, int, ParseStatus*, SEXP, SEXP); /* in source.cpp */
+SEXP R_Parse1File(FILE*, int, ParseStatus*); /* in R_ReplFile */
+SEXP R_ParseFile(FILE*, int, ParseStatus*, SEXP); /* in edit.cpp */
 
 #ifndef HAVE_RCONNECTION_TYPEDEF
-typedef struct Rconn  *Rconnection;
+typedef struct Rconn* Rconnection;
 #define HAVE_RCONNECTION_TYPEDEF
 #endif
-SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile);
+SEXP R_ParseConn(Rconnection con, int n, ParseStatus* status, SEXP srcfile);
 
-	/* Report a parse error */
+/* Report a parse error */
 
-void NORET parseError(SEXP call, int linenum);
+NORET void parseError(SEXP call, int linenum);
 
 #ifdef __cplusplus
 }

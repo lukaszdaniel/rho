@@ -46,8 +46,7 @@
 # define DEBUG_q
 #endif
 
-attribute_hidden
-double qchisq_appr(double p, double nu, double g /* = log Gamma(nu/2) */,
+HIDDEN double qchisq_appr(double p, double nu, double g /* = log Gamma(nu/2) */,
 		   int lower_tail, int log_p, double tol /* EPS1 */)
 {
 #define C7	4.67

@@ -148,7 +148,7 @@ reg-plot-latin1.Rout: reg-plot-latin1.R
 	@($(ECHO) '.ptime <- proc.time(); gctorture()' ; \
 	  cat $< $(srcdir)/gct-foot.R) | $(R) > $@ 2>&1
 	@mv $@ $@.fail; Ro=`basename $@ .Rout-gct`.Rout; \
-	  if test ! -r $${Ro}; then $(MAKE) $(MK_EXTRA_FLAGS) $${Ro}; fi; \
+	  if test ! -r $${Ro}; then $(MK) $${Ro}; fi; \
 	  $(ECHO) $(ECHO_N) "  comparing '$@' to '$${Ro}' ...$(ECHO_C)"; \
 	  grep -v 'gctorture()' $@.fail | $(RDIFF) - $${Ro} 1 || exit 1; \
 	  mv $@.fail $@; \
@@ -165,35 +165,61 @@ R-valgrind = $(R) --debugger="valgrind --tool=memcheck"
 ## The definitions for Internet are in Makefile.{in,win}.
 ## (That's historical: they are currently the same.)
 all-basic-tests = rho rho2 testr Examples Specific Reg Internet
-test-all-basics: $(addprefix test-, $(all-basic-tests))
+test-all-basics:
+	@for name in $(all-basic-tests); do \
+	  $(MK) test-$${name} || exit 1; \
+	done
 
 ## if you change this, also edit Makefile.install
 ## The definitions for Standalone are in Makefile.{in,win}.
 all-devel-tests = DateTime Docs IsAs Random Demo Primitive Regexp \
     Internet2 CRANtools Segfault Standalone Packages
-test-all-devel: $(addprefix test-, $(all-devel-tests))
+test-all-devel:
+	@for name in $(all-devel-tests); do \
+	  $(MK) test-$${name} || exit 1; \
+	done
 
 test-Examples:
-	@(cd Examples && $(MAKE) $(MK_EXTRA_FLAGS) $@)
+	@(cd Examples && $(MK) $@)
 test-Examples-Recommended:
-	@(cd Examples && $(MAKE) $(MK_EXTRA_FLAGS) $@)
+	@(cd Examples && $(MK) $@)
 
-test-Specific-strict:
+test-Specific-strict: $(test-out-strict)
+test-Specific-sloppy: $(test-out-sloppy)
+test-Specific:
 	@$(ECHO) "running strict specific tests"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-strict) RVAL_IF_DIFF=1
-
-test-Specific-sloppy:
+	@$(MK) test-Specific-strict RVAL_IF_DIFF=1
 	@$(ECHO) "running sloppy specific tests"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-sloppy) RVAL_IF_DIFF=0
-	@$(MAKE) $(MK_EXTRA_FLAGS) test-TimeZone
+	@$(MK) test-Specific-sloppy RVAL_IF_DIFF=0
+	@$(MK) test-TimeZone
 
-test-Specific: test-Specific-strict test-Specific-sloppy
+test-Packages:
+	@if test -n "${TEST_MC_CORES}"; then \
+	  $(ECHO) "Using ${TEST_MC_CORES} cores to check packages"; \
+	  $(MK) -j ${TEST_MC_CORES} test-Packages2; \
+	else \
+	  $(MK) test-Packages1; \
+	fi
 
 ## R_PKGS_BASE is from ../share/make/vars.mk
-test-Packages:
-	touch $(R_PKGS_BASE:=.tsin)
-	+@$(MAKE) $(MK_EXTRA_FLAGS) $(R_PKGS_BASE:=.log)
+test-Packages1:
+	@for p in $(R_PKGS_BASE); do \
+	  $(ECHO) "checking package '$${p}'"; \
+	  _R_CHECK_FF_CALLS_=registration \
+	  _R_CHECK_CODE_USAGE_WITH_ONLY_BASE_ATTACHED_=true \
+	  $(top_builddir)/bin/R CMD check --install=skip --no-build-vignettes \
+	    $(top_srcdir)/src/library/$${p} || $(ECHO); \
+	done
+
+PKG_OBJECTS = $(R_PKGS_BASE:=.log)
+
+test-Packages2:
+	@for p in $(R_PKGS_BASE); do \
+	  touch $${p}.tsin; \
+	done
+	+@$(MK) stamp-Packages
 	@rm -f *.tsin
+stamp-Packages: $(PKG_OBJECTS)
 
 .tsin.log:
 	@$(ECHO) "begin checking package '`basename $@ .log`'"
@@ -212,56 +238,61 @@ test-DateTime:
 	@$(ECHO) "running tests of date-time printing"
 	@$(ECHO) "  expect platform-specific differences"
 	@$(RM) -f $(test-out-dt)
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-dt) RVAL_IF_DIFF=0
+	@$(MK) $(test-out-dt) RVAL_IF_DIFF=0
 
 ## This should be allowed to fail, visibly.
 test-TimeZone:
 	@$(ECHO) "checking Sys.timezone ..."
 	@$(RM) -f $(test-out-tz)
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-tz) || $(ECHO) "  Sys.timezone() appears unknown"
+	@$(MK) $(test-out-tz) || $(ECHO) "  Sys.timezone() appears unknown"
 
 test-Docs:
 	@$(ECHO) "running tests of documentation examples"
 	@cp ${top_srcdir}/doc/manual/*.R .
-	@$(MAKE) $(MK_EXTRA_FLAGS) R-intro.Rout RVAL_IF_DIFF=1
+	@$(MK) R-intro.Rout RVAL_IF_DIFF=0
 	@cp ${top_srcdir}/doc/manual/R-exts.c .
 	@$(top_builddir)/bin/R CMD SHLIB R-exts.c
-	@$(MAKE) $(MK_EXTRA_FLAGS) R-exts.Rout
+	@$(MK) R-exts.Rout
 	@rm R-exts.*
 
 test-Demo:
 	@$(ECHO) "running demos from base and stats"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-demo) RVAL_IF_DIFF=1
+	@$(MK) $(test-out-demo) RVAL_IF_DIFF=0
 
 test-IsAs:
 	@$(ECHO) "running tests of consistency of as/is.*"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-isas) RVAL_IF_DIFF=1
+	@$(MK) $(test-out-isas) RVAL_IF_DIFF=1
 
 ## As for test-Internet, allow to fail, possibly slowly
 test-Internet2:
 	@$(ECHO) "running more Internet and socket tests"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-internet2) RVAL_IF_DIFF=0
+	-@$(MK) $(test-out-internet2) RVAL_IF_DIFF=0
 
 test-CRANtools:
 	@$(ECHO) "running tests of CRAN tools"
 	@$(ECHO) "  (can be slow unless mirror is local)"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-CRANtools) RVAL_IF_DIFF=0
+	@$(MK) $(test-out-CRANtools) RVAL_IF_DIFF=0
 
 test-Large:
 	@$(ECHO) "running tests needing large amounts of processor memory"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-large) RVAL_IF_DIFF=0
+	@$(MK) $(test-out-large) RVAL_IF_DIFF=0
 
 test-Primitive:
 	@$(ECHO) "running tests of primitives"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-primitive) RVAL_IF_DIFF=1
+	@$(MK) $(test-out-primitive) RVAL_IF_DIFF=0
 
 test-Random:
 	@$(ECHO) "running tests of random deviate generation"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-random) RVAL_IF_DIFF=1
+	@$(MK) $(test-out-random) RVAL_IF_DIFF=1
 
 test-Reg:
 	@$(ECHO) "running regression tests ..."
-	$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-reg) $(test-out-reg3) RVAL_IF_DIFF=1
+	@if test -n "${TEST_MC_CORES}"; then \
+	  $(MK) -j ${TEST_MC_CORES} $(test-out-reg) RVAL_IF_DIFF=1; \
+	else \
+	  $(MK) $(test-out-reg) RVAL_IF_DIFF=1; \
+	fi
+	@$(MK) $(test-out-reg3) RVAL_IF_DIFF=0
 
 test-Regexp:
 	@$(ECHO) "running regexp regression tests"
@@ -270,7 +301,7 @@ test-Regexp:
 
 test-Segfault:
 	@$(ECHO) "running tests to possibly trigger segfaults"
-	@$(MAKE) $(MK_EXTRA_FLAGS) $(test-out-segfault) RVAL_IF_DIFF=0
+	@$(MK) $(test-out-segfault) RVAL_IF_DIFF=0
 	-@rm -Rf data dumpdata.R F.Rd c0.Rd df0.Rd l0.Rd m0.Rd Rprof.out Rplots* PACKAGES PACKAGES.gz FALSE-package.Rd FALSE.* ./-Ex.R
 
 ## Not run by any other target
@@ -402,10 +433,35 @@ test-undoc:
 	done
 
 test-Packages-Recommended:
+	@if test -n "${TEST_MC_CORES}"; then \
+	  $(ECHO) "Using ${TEST_MC_CORES} cores to check packages"; \
+	  $(MK) -j ${TEST_MC_CORES} test-Packages2-Recommended; \
+	else \
+	  $(MK) test-Packages1-Recommended; \
+	fi
+
+test-Packages1-Recommended:
 	@test -d RecPackages || mkdir RecPackages
-	@touch $(R_PKGS_RECOMMENDED:=.trin)
-	+@$(MAKE) $(MK_EXTRA_FLAGS) $(R_PKGS_RECOMMENDED:=.log)
+	@for p in $(R_PKGS_RECOMMENDED); do \
+	  rm -Rf RecPackages/$${p}; \
+	  gzip -dc "$(top_srcdir)/src/library/Recommended/$${p}.tgz" | \
+	    (cd RecPackages && $(TAR) xf -) ; \
+	  $(ECHO) "checking package '$${p}'"; \
+	  R_LIBS="$(top_builddir)/library:$${R_LIBS}" \
+	    _R_CHECK_FORCE_SUGGESTS_=FALSE $(R3) --install=skip \
+	    --library="$(top_builddir)/library" RecPackages/$${p} || $(ECHO); \
+	done
+
+PKG_ROBJECTS = $(R_PKGS_RECOMMENDED:=.log)
+
+test-Packages2-Recommended:
+	@test -d RecPackages || mkdir RecPackages
+	@for p in $(R_PKGS_RECOMMENDED); do \
+	  touch $${p}.trin; \
+	done
+	+@$(MK) stamp-Packages2
 	@rm -f *.trin
+stamp-Packages2: $(PKG_ROBJECTS)
 
 .trin.log:
 	@p=`basename $@ .log`; \

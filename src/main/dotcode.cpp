@@ -91,7 +91,7 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
 static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll);
 static SEXP pkgtrim(SEXP args, DllReference *dll);
 
-static R_INLINE Rboolean isNativeSymbolInfo(SEXP op)
+R_INLINE static Rboolean isNativeSymbolInfo(SEXP op)
 {
     /* was: Rf_inherits(op, "NativeSymbolInfo")
      * Rf_inherits() is slow because of string comparisons, so use
@@ -115,20 +115,19 @@ static R_INLINE Rboolean isNativeSymbolInfo(SEXP op)
 
    NB: in the last two cases it sets fun and symbol as well!
  */
-static void
-checkValidSymbolId(SEXP op, SEXP call, DL_FUNC *fun,
-		   R_RegisteredNativeSymbol *symbol, char *buf)
+static void checkValidSymbolId(SEXP op, SEXP call, DL_FUNC* fun,
+    R_RegisteredNativeSymbol* symbol, char* buf)
 {
     if (Rf_isValidString(op)) return;
 
     if(TYPEOF(op) == EXTPTRSXP) {
-	static SEXP native_symbol = NULL;
-	static SEXP registered_native_symbol = NULL;
-	if (native_symbol == NULL) {
+	static SEXP native_symbol = nullptr;
+	static SEXP registered_native_symbol = nullptr;
+	if (native_symbol == nullptr) {
 	    native_symbol = Rf_install("native symbol");
 	    registered_native_symbol = Rf_install("registered native symbol");
 	}
-	char *p = NULL;
+	char *p = nullptr;
 	if(R_ExternalPtrTag(op) == native_symbol)
 	   *fun = R_ExternalPtrAddrFn(op);
 	else if(R_ExternalPtrTag(op) == registered_native_symbol) {
@@ -187,11 +186,11 @@ checkValidSymbolId(SEXP op, SEXP call, DL_FUNC *fun,
     return; /* not reached */
 }
 
-attribute_hidden
+HIDDEN
 DL_FUNC R_dotCallFn(SEXP op, SEXP call, int nargs) {
-    R_RegisteredNativeSymbol symbol = {R_CALL_SYM, {NULL}, NULL};
-    DL_FUNC fun = NULL;
-    checkValidSymbolId(op, call, &fun, &symbol, NULL);
+    R_RegisteredNativeSymbol symbol = {R_CALL_SYM, {nullptr}, nullptr};
+    DL_FUNC fun = nullptr;
+    checkValidSymbolId(op, call, &fun, &symbol, nullptr);
     /* should check arg count here as well */
     return fun;
 }
@@ -496,7 +495,7 @@ static SEXP enctrim(SEXP args)
 
 
 
-SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     const char *sym, *type="", *pkg = "";
     int val = 1, nargs = Rf_length(args);
@@ -532,7 +531,7 @@ SEXP attribute_hidden do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 typedef SEXP (*R_ExternalRoutine)(SEXP);
 typedef SEXP (*R_ExternalRoutine2)(SEXP, SEXP, SEXP, SEXP);
 
-SEXP attribute_hidden do_External(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_External(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     DL_FUNC ofun = nullptr;
     SEXP retval;
@@ -566,9 +565,9 @@ SEXP attribute_hidden do_External(SEXP call, SEXP op, SEXP args, SEXP env)
 
 typedef SEXP (*VarFun)(...);
 
-SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
+HIDDEN SEXP R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 				  SEXP call) {
-    VarFun fun = NULL;
+    VarFun fun = nullptr;
     SEXP retval = nullptr;	/* -Wall */
     fun = (VarFun) ofun;
     switch (nargs) {
@@ -604,11 +603,11 @@ SEXP attribute_hidden R_doDotCall(DL_FUNC ofun, int nargs, SEXP *cargs,
 }
 
 /* .Call(name, <args>) */
-SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    DL_FUNC ofun = NULL;
+    DL_FUNC ofun = nullptr;
     SEXP retval, cargs[MAX_ARGS], pargs;
-    R_RegisteredNativeSymbol symbol = {R_CALL_SYM, {NULL}, NULL};
+    R_RegisteredNativeSymbol symbol = {R_CALL_SYM, {nullptr}, nullptr};
 
     int nargs;
     const void *vmax = vmaxget();
@@ -617,7 +616,7 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
     if (Rf_length(args) < 1) Rf_errorcall(call, _("'.NAME' is missing"));
     check1arg2(args, call, ".NAME");
 
-    args = resolveNativeRoutine(args, &ofun, &symbol, buf, NULL, NULL, call, env);
+    args = resolveNativeRoutine(args, &ofun, &symbol, buf, nullptr, nullptr, call, env);
     args = CDR(args);
 
     for(nargs = 0, pargs = args ; pargs != nullptr; pargs = CDR(pargs)) {
@@ -692,10 +691,10 @@ SEXP attribute_hidden do_dotcall(SEXP call, SEXP op, SEXP args, SEXP env)
 
 #include <R_ext/GraphicsEngine.h>
 
-SEXP attribute_hidden do_Externalgr(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_Externalgr(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP retval;
-    pGEDevDesc dd = GEcurrentDevice();
+    GEDevDesc* dd = GEcurrentDevice();
     Rboolean record = dd->recordGraphics;
     dd->recordGraphics = FALSE;
     PROTECT(retval = do_External(call, op, args, env));
@@ -709,10 +708,10 @@ SEXP attribute_hidden do_Externalgr(SEXP call, SEXP op, SEXP args, SEXP env)
     return retval;
 }
 
-SEXP attribute_hidden do_dotcallgr(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_dotcallgr(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP retval;
-    pGEDevDesc dd = GEcurrentDevice();
+    GEDevDesc* dd = GEcurrentDevice();
     Rboolean record = dd->recordGraphics;
     dd->recordGraphics = FALSE;
     PROTECT(retval = do_dotcall(call, op, args, env));
@@ -822,7 +821,7 @@ R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
 #define FILL 0xee
 #define NG 64
 
-SEXP attribute_hidden do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     void **cargs, **cargs0 = nullptr /* -Wall */;
     int naok, na, nargs, Fort;

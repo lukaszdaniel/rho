@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -2085,8 +2085,7 @@ ar(3) 0.6000000 0.3000 -0.2
 Single term additions
 
 Model:
-Fertility ~ Agriculture + Examination + Education + Catholic + 
-    Infant.Mortality
+Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality
                              Df Sum of Sq  RSS AIC
 <none>                                    2105 191
 I(Education^2)                1      11.8 2093 192
@@ -2104,8 +2103,7 @@ Catholic:Infant.Mortality     1       2.4 2103 193
 Single term deletions
 
 Model:
-Fertility ~ Agriculture + Examination + Education + Catholic + 
-    Infant.Mortality
+Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality
                  Df Sum of Sq  RSS AIC F value  Pr(>F)    
 <none>                        2105 191                    
 Agriculture       1       308 2413 195    5.99  0.0187 *  
@@ -3832,7 +3830,7 @@ sigma^2 estimated as 0.4566:  log likelihood = -101.2,  aic = 212.4
 > 
 > asOneSidedFormula("age")
 ~age
-<environment: 0x7f4bd4189300>
+<environment: 0x7f7ba3eb9a80>
 > asOneSidedFormula(~ age)
 ~age
 > 
@@ -4253,7 +4251,7 @@ X-squared = 2.5, df = 2, p-value = 0.2865
 > try(
 + chisq.test(x, p = p)                # gives an error
 + )
-Error in chisq.test(x, p = p) : probabilities must sum to 1.
+Error in command 'chisq.test(x, p = p)': probabilities must sum to 1.
 > chisq.test(x, p = p, rescale.p = TRUE)
 
 	Chi-squared test for given probabilities
@@ -4855,7 +4853,7 @@ Eductn -79.72951     NA     NA  92.456059     NA -2.781684
 Cathlc        NA     NA     NA         NA     NA        NA
 Infn.M  15.15619     NA     NA  -2.781684     NA  8.483802
 > try(cov(swM, use = "all")) # Error: missing obs...
-Error in cov(swM, use = "all") : missing observations in cov/cor
+Error in command 'cov(swM, use = "all")': missing observations in cov/cor
 > C2 <- cov(swM, use = "complete")
 > stopifnot(identical(C2, cov(swM, use = "na.or.complete")))
 > range(eigen(C2, only.values = TRUE)$values) # 6.46   1930
@@ -7051,8 +7049,8 @@ Residual Deviance: 32.45 	AIC: NA
 > # needs to set a starting value for the next fit
 > glm(y ~ x, family = quasi(variance = "mu(1-mu)", link = "logit"), start = c(0,1))
 
-Call:  glm(formula = y ~ x, family = quasi(variance = "mu(1-mu)", link = "logit"), 
-    start = c(0, 1))
+Call:  glm(formula = y ~ x, family = quasi(variance = "mu(1-mu)", link = "logit"), start = c(0, 
+    1))
 
 Coefficients:
 (Intercept)            x  
@@ -7409,7 +7407,7 @@ attr(,".Environment")
 > environment(as.formula("y ~ x"))
 <environment: R_GlobalEnv>
 > environment(as.formula("y ~ x", env = new.env()))
-<environment: 0x7f4bd4dc7620>
+<environment: 0x7f7ba458ad10>
 > 
 > 
 > ## Create a formula for a model with a large number of variables:
@@ -8314,7 +8312,7 @@ failed with message ‘the integral is probably divergent’
 > ## some functions do not handle vector input properly
 > f <- function(x) 2.0
 > try(integrate(f, 0, 1))
-Error in wk <- .External(C_call_dqags, ff, rho = environment(), as.double(lower),  : 
+Error in command 'wk <- .External(C_call_dqags, ff, rho = environment(), as.double(lower), as.double(upper), ': 
   evaluation of function gave a result of wrong length
 > integrate(Vectorize(f), 0, 1)  ## correct
 2 with absolute error < 2.2e-14
@@ -10472,7 +10470,7 @@ attr(,"class")
 [1] "omit"
 > stopifnot(all(na.omit(1:3) == 1:3))  # does not affect objects with no NA's
 > try(na.fail(DF))   #> Error: missing values in ...
-Error in na.fail.default(DF) : missing values in object
+Error in command 'na.fail.default(DF)': missing values in object
 > 
 > options("na.action")
 $na.action
@@ -10849,7 +10847,7 @@ a b
  residual sum-of-squares: 0.000524
 > ## terminates in an error, because convergence cannot be confirmed:
 > try(nls(y ~ a + b*x, start = list(a = 0.12345, b = 0.54321)))
-Error in convInfo <- .Call(C_nls_iter, m, ctrl, trace) : 
+Error in command 'convInfo <- .Call(C_nls_iter, m, ctrl, trace)': 
   number of iterations exceeded maximum of 50
 > 
 > ## the nls() internal cheap guess for starting values can be sufficient:
@@ -12064,12 +12062,12 @@ attr(,"class")
 $linkfun
 function (mu) 
 mu^lambda
-<environment: 0x7f4bd52be100>
+<environment: 0x7f7ba4059410>
 
 $linkinv
 function (eta) 
 pmax(eta^(1/lambda), .Machine$double.eps)
-<environment: 0x7f4bd52be100>
+<environment: 0x7f7ba4059410>
 
 > 
 > 
@@ -12614,33 +12612,33 @@ Cumulative Proportion  0.4173 0.6498 0.7569
 +        cat(fn, ":\n\t", deparse(args(f)), "\n")
 +        }, silent = TRUE)
 predict.Arima :
-	 function (object, n.ahead = 1L, newxreg = NULL, se.fit = TRUE,      ...)  NULL 
+	 function (object, n.ahead = 1L, newxreg = NULL, se.fit = TRUE, ...)  NULL 
 predict.HoltWinters :
-	 function (object, n.ahead = 1L, prediction.interval = FALSE,      level = 0.95, ...)  NULL 
+	 function (object, n.ahead = 1L, prediction.interval = FALSE, level = 0.95, ...)  NULL 
 predict.StructTS :
 	 function (object, n.ahead = 1L, se.fit = TRUE, ...)  NULL 
 predict.ar :
 	 function (object, newdata, n.ahead = 1L, se.fit = TRUE, ...)  NULL 
 predict.arima0 :
-	 function (object, n.ahead = 1L, newxreg = NULL, se.fit = TRUE,      ...)  NULL 
+	 function (object, n.ahead = 1L, newxreg = NULL, se.fit = TRUE, ...)  NULL 
 predict.bSpline :
 	 function (object, x, nseg = 50, deriv = 0, ...)  NULL 
 predict.bs :
 	 function (object, newx, ...)  NULL 
 predict.glm :
-	 function (object, newdata = NULL, type = c("link", "response",      "terms"), se.fit = FALSE, dispersion = NULL, terms = NULL,      na.action = na.pass, ...)  NULL 
+	 function (object, newdata = NULL, type = c("link", "response", "terms"), se.fit = FALSE,      dispersion = NULL, terms = NULL, na.action = na.pass, ...)  NULL 
 Warning: namespace ‘MASS’ is not available and has been replaced
 by .GlobalEnv when processing object ‘’
 predict.glmmPQL :
-	 function (object, newdata = NULL, type = c("link", "response"),      level = Q, na.action = na.pass, ...)  NULL 
+	 function (object, newdata = NULL, type = c("link", "response"), level = Q, na.action = na.pass,      ...)  NULL 
 Warning: namespace ‘MASS’ is not available and has been replaced
 by .GlobalEnv when processing object ‘’
 predict.lda :
-	 function (object, newdata, prior = object$prior, dimen, method = c("plug-in",      "predictive", "debiased"), ...)  NULL 
+	 function (object, newdata, prior = object$prior, dimen, method = c("plug-in", "predictive",      "debiased"), ...)  NULL 
 predict.lm :
-	 function (object, newdata, se.fit = FALSE, scale = NULL, df = Inf,      interval = c("none", "confidence", "prediction"), level = 0.95,      type = c("response", "terms"), terms = NULL, na.action = na.pass,      pred.var = res.var/weights, weights = 1, ...)  NULL 
+	 function (object, newdata, se.fit = FALSE, scale = NULL, df = Inf, interval = c("none",      "confidence", "prediction"), level = 0.95, type = c("response", "terms"), terms = NULL,      na.action = na.pass, pred.var = res.var/weights, weights = 1, ...)  NULL 
 predict.loess :
-	 function (object, newdata = NULL, se = FALSE, na.action = na.pass,      ...)  NULL 
+	 function (object, newdata = NULL, se = FALSE, na.action = na.pass, ...)  NULL 
 Warning: namespace ‘MASS’ is not available and has been replaced
 by .GlobalEnv when processing object ‘’
 predict.lqs :
@@ -12650,11 +12648,11 @@ by .GlobalEnv when processing object ‘’
 predict.mca :
 	 function (object, newdata, type = c("row", "factor"), ...)  NULL 
 predict.mlm :
-	 function (object, newdata, se.fit = FALSE, na.action = na.pass,      ...)  NULL 
+	 function (object, newdata, se.fit = FALSE, na.action = na.pass, ...)  NULL 
 predict.nbSpline :
 	 function (object, x, nseg = 50, deriv = 0, ...)  NULL 
 predict.nls :
-	 function (object, newdata, se.fit = FALSE, scale = NULL, df = Inf,      interval = c("none", "confidence", "prediction"), level = 0.95,      ...)  NULL 
+	 function (object, newdata, se.fit = FALSE, scale = NULL, df = Inf, interval = c("none",      "confidence", "prediction"), level = 0.95, ...)  NULL 
 predict.npolySpline :
 	 function (object, x, nseg = 50, deriv = 0, ...)  NULL 
 predict.ns :
@@ -12680,7 +12678,7 @@ predict.princomp :
 Warning: namespace ‘MASS’ is not available and has been replaced
 by .GlobalEnv when processing object ‘’
 predict.qda :
-	 function (object, newdata, prior = object$prior, method = c("plug-in",      "predictive", "debiased", "looCV"), ...)  NULL 
+	 function (object, newdata, prior = object$prior, method = c("plug-in", "predictive",      "debiased", "looCV"), ...)  NULL 
 Warning: namespace ‘MASS’ is not available and has been replaced
 by .GlobalEnv when processing object ‘’
 predict.rlm :
@@ -14077,8 +14075,11 @@ X-squared = 12.173, df = 1, p-value = 0.0004848
 > qqplot(qchisq(ppoints(500), df = 3), y,
 +        main = expression("Q-Q plot for" ~~ {chi^2}[nu == 3]))
 > qqline(y, distribution = function(p) qchisq(p, df = 3),
-+        prob = c(0.1, 0.6), col = 2)
++        probs = c(0.1, 0.6), col = 2)
 > mtext("qqline(*, dist = qchisq(., df=3), prob = c(0.1, 0.6))")
+> ## (Note that the above uses ppoints() with a = 1/2, giving the
+> ## probability points for quantile type 5: so theoretically, using
+> ## qqline(qtype = 5) might be preferable.) 
 > 
 > 
 > 
@@ -16190,7 +16191,7 @@ Step function with continuity 'f'= 0.2 ,  3 knots at
 > unclass(sfun0)
 function (v) 
 .approxfun(x, y, v, method, yleft, yright, f)
-<environment: 0x7f4bd4e85490>
+<environment: 0x7f7ba48a9190>
 attr(,"call")
 stepfun(1:3, y0, f = 0)
 > ls(envir = environment(sfun0))
@@ -17552,10 +17553,10 @@ Frequency = 1
 > f2 <- function(x) exp(-x)*(x - 12)
 > 
 > try(uniroot(f1, c(0,10)))
-Error in uniroot(f1, c(0, 10)) : 
+Error in command 'uniroot(f1, c(0, 10))': 
   f() values at end points not of opposite sign
 > try(uniroot(f2, c(0, 2)))
-Error in uniroot(f2, c(0, 2)) : 
+Error in command 'uniroot(f2, c(0, 2))': 
   f() values at end points not of opposite sign
 > ##--> error: f() .. end points not of opposite sign
 > 
@@ -18478,8 +18479,8 @@ F-statistic: 6.138 on 3 and 50 DF,  p-value: 0.00123
 > summary(model3)
 
 Call:
-glm(formula = cbind(ncases, ncontrols) ~ agegp + C(tobgp, , 1) + 
-    C(alcgp, , 1), family = binomial(), data = esoph)
+glm(formula = cbind(ncases, ncontrols) ~ agegp + C(tobgp, , 1) + C(alcgp, , 1), family = binomial(), 
+    data = esoph)
 
 Deviance Residuals: 
     Min       1Q   Median       3Q      Max  
@@ -18515,7 +18516,7 @@ Number of Fisher Scoring iterations: 6
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  12.163 0.204 12.367 0 0 
+Time elapsed:  12.807 0.24 13.047 0 0 
 > grDevices::dev.off()
 null device 
           1 

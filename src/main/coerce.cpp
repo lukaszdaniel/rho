@@ -88,7 +88,7 @@ namespace {
     }
 }
 
-void attribute_hidden Rf_CoercionWarning(int warn)
+HIDDEN void Rf_CoercionWarning(int warn)
 {
 /* FIXME: Use
    =====
@@ -104,28 +104,28 @@ void attribute_hidden Rf_CoercionWarning(int warn)
 	Rf_warning(_("out-of-range values treated as 0 in coercion to raw"));
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_LogicalFromInteger(int x, int *warn)
 {
     return (x == NA_INTEGER) ?
 	NA_LOGICAL : (x != 0);
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_LogicalFromReal(double x, int *warn)
 {
     return ISNAN(x) ?
 	NA_LOGICAL : (x != 0);
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_LogicalFromComplex(Rcomplex x, int *warn)
 {
     return (ISNAN(x.r) || ISNAN(x.i)) ?
 	NA_LOGICAL : (x.r != 0 || x.i != 0);
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_LogicalFromString(SEXP x, int *warn)
 {
     if (x != R_NaString) {
@@ -135,14 +135,14 @@ Rf_LogicalFromString(SEXP x, int *warn)
     return NA_LOGICAL;
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_IntegerFromLogical(int x, int *warn)
 {
     return (x == NA_LOGICAL) ?
 	NA_INTEGER : x;
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_IntegerFromReal(double x, int *warn)
 {
     if (ISNAN(x))
@@ -154,7 +154,7 @@ Rf_IntegerFromReal(double x, int *warn)
     return int(x);
 }
 
-int attribute_hidden
+HIDDEN int
 Rf_IntegerFromComplex(Rcomplex x, int *warn)
 {
     if (ISNAN(x.r) || ISNAN(x.i))
@@ -169,7 +169,7 @@ Rf_IntegerFromComplex(Rcomplex x, int *warn)
 }
 
 
-int attribute_hidden
+HIDDEN int
 Rf_IntegerFromString(SEXP x, int *warn)
 {
     double xdouble;
@@ -201,14 +201,14 @@ Rf_IntegerFromString(SEXP x, int *warn)
     return NA_INTEGER;
 }
 
-double attribute_hidden
+HIDDEN double
 Rf_RealFromLogical(int x, int *warn)
 {
     return (x == NA_LOGICAL) ?
 	NA_REAL : x;
 }
 
-double attribute_hidden
+HIDDEN double
 Rf_RealFromInteger(int x, int *warn)
 {
     if (x == NA_INTEGER)
@@ -217,7 +217,7 @@ Rf_RealFromInteger(int x, int *warn)
 	return x;
 }
 
-double attribute_hidden
+HIDDEN double
 Rf_RealFromComplex(Rcomplex x, int *warn)
 {
     if (ISNAN(x.r) || ISNAN(x.i))
@@ -229,7 +229,7 @@ Rf_RealFromComplex(Rcomplex x, int *warn)
     return x.r;
 }
 
-double attribute_hidden
+HIDDEN double
 Rf_RealFromString(SEXP x, int *warn)
 {
     double xdouble;
@@ -244,7 +244,7 @@ Rf_RealFromString(SEXP x, int *warn)
     return NA_REAL;
 }
 
-Rcomplex attribute_hidden
+HIDDEN Rcomplex
 Rf_ComplexFromLogical(int x, int *warn)
 {
     Rcomplex z;
@@ -259,7 +259,7 @@ Rf_ComplexFromLogical(int x, int *warn)
     return z;
 }
 
-Rcomplex attribute_hidden
+HIDDEN Rcomplex
 Rf_ComplexFromInteger(int x, int *warn)
 {
     Rcomplex z;
@@ -274,7 +274,7 @@ Rf_ComplexFromInteger(int x, int *warn)
     return z;
 }
 
-Rcomplex attribute_hidden
+HIDDEN Rcomplex
 Rf_ComplexFromReal(double x, int *warn)
 {
     Rcomplex z;
@@ -293,7 +293,7 @@ Rf_ComplexFromReal(double x, int *warn)
     return z;
 }
 
-Rcomplex attribute_hidden
+HIDDEN Rcomplex
 Rf_ComplexFromString(SEXP x, int *warn)
 {
     double xr, xi;
@@ -321,7 +321,7 @@ Rf_ComplexFromString(SEXP x, int *warn)
     return z;
 }
 
-SEXP attribute_hidden Rf_StringFromLogical(int x, int *warn)
+HIDDEN SEXP Rf_StringFromLogical(int x, int *warn)
 {
     int w;
     formatLogical(&x, 1, &w);
@@ -331,13 +331,13 @@ SEXP attribute_hidden Rf_StringFromLogical(int x, int *warn)
 
 /* The conversions for small non-negative integers are saved in a chache. */
 #define SFI_CACHE_SIZE 512
-static SEXP sficache = NULL;
+static SEXP sficache = nullptr;
 
-SEXP attribute_hidden Rf_StringFromInteger(int x, int *warn)
+HIDDEN SEXP Rf_StringFromInteger(int x, int *warn)
 {
     if (x == NA_INTEGER) return NA_STRING;
     else if (x >= 0 && x < SFI_CACHE_SIZE) {
-	if (sficache == NULL) {
+	if (sficache == nullptr) {
 	    sficache = Rf_allocVector(STRSXP, SFI_CACHE_SIZE);
 	    R_PreserveObject(sficache);
 	}
@@ -359,7 +359,7 @@ SEXP attribute_hidden Rf_StringFromInteger(int x, int *warn)
 
 // dropTrailing0 and StringFromReal moved to printutils.cpp
 
-SEXP attribute_hidden Rf_StringFromComplex(Rcomplex x, int *warn)
+HIDDEN SEXP Rf_StringFromComplex(Rcomplex x, int *warn)
 {
     int wr, dr, er, wi, di, ei;
     formatComplex(&x, 1, &wr, &dr, &er, &wi, &di, &ei, 0);
@@ -1376,7 +1376,7 @@ static SEXP ascommon(SEXP call, SEXP u, SEXPTYPE type)
     return u;/* -Wall */
 }
 
-SEXP attribute_hidden do_asCharacterFactor(Expression* call, const BuiltInFunction* op, RObject* x)
+HIDDEN SEXP do_asCharacterFactor(Expression* call, const BuiltInFunction* op, RObject* x)
 {
     return Rf_asCharacterFactor(x);
 }
@@ -1409,7 +1409,7 @@ SEXP Rf_asCharacterFactor(SEXP x)
 }
 
 
-SEXP attribute_hidden do_asatomic(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_asatomic(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP ans, x;
 
@@ -1451,7 +1451,7 @@ SEXP attribute_hidden do_asatomic(/*const*/ Expression* call, const BuiltInFunct
 
 /* NB: as.vector is used for several other as.xxxx, including
    as.expression, as.list, as.pairlist, as.symbol, (as.single) */
-SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* mode)
+HIDDEN SEXP do_asvector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* mode)
 {
     SEXP ans;
     SEXPTYPE type;
@@ -1524,7 +1524,7 @@ SEXP attribute_hidden do_asvector(/*const*/ Expression* call, const BuiltInFunct
 }
 
 
-SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* envir_)
+HIDDEN SEXP do_asfunction(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* envir_)
 {
     SEXP arglist, envir, names, args, pargs, body;
     int i, n;
@@ -1569,7 +1569,7 @@ SEXP attribute_hidden do_asfunction(/*const*/ Expression* call, const BuiltInFun
 
 
 /* primitive */
-SEXP attribute_hidden do_ascall(/*const*/ Expression* call, const BuiltInFunction* op, RObject* args)
+HIDDEN SEXP do_ascall(/*const*/ Expression* call, const BuiltInFunction* op, RObject* args)
 {
     SEXP ap, ans, names;
     int i, n;
@@ -1768,7 +1768,7 @@ Rcomplex Rf_asComplex(SEXP x)
 
 
 /* return the type (= "detailed mode") of the SEXP */
-SEXP attribute_hidden do_typeof(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_typeof(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     return Rf_type2rstr(TYPEOF(x_));
 }
@@ -1776,7 +1776,7 @@ SEXP attribute_hidden do_typeof(/*const*/ Expression* call, const BuiltInFunctio
 /* Define many of the <primitive> "is.xxx" functions :
    Note that  Rf_isNull, Rf_isNumeric, etc are defined in util.cpp or ../include/Rinlinedfuns.h
 */
-SEXP attribute_hidden do_is(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_is(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans;
     PROTECT(ans = Rf_allocVector(LGLSXP, 1));
@@ -1925,7 +1925,7 @@ SEXP attribute_hidden do_is(/*const*/ Expression* call, const BuiltInFunction* o
  */
 
 // is.vector(x, mode) :
-SEXP attribute_hidden do_isvector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* mode_)
+HIDDEN SEXP do_isvector(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* mode_)
 {
     SEXP ans, a, x;
     const char *stype;
@@ -1999,7 +1999,7 @@ namespace {
     }
 }
 
-static R_INLINE void copyDimAndNames(SEXP x, SEXP ans)
+R_INLINE static void copyDimAndNames(SEXP x, SEXP ans)
 {
     if (Rf_isVector(x)) {
 	/* PROTECT/UNPROTECT are probably not needed here */
@@ -2023,7 +2023,7 @@ static R_INLINE void copyDimAndNames(SEXP x, SEXP ans)
     }
 }
 
-SEXP attribute_hidden do_isna(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_isna(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans, x;
     R_xlen_t i, n;
@@ -2206,7 +2206,7 @@ static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
     return FALSE;
 } // anyNA()
 
-SEXP attribute_hidden do_anyNA(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_anyNA(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* callx = SEXP_downcast<const Expression*>(call);
     const BuiltInFunction* func = SEXP_downcast<const BuiltInFunction*>(op);
@@ -2243,7 +2243,7 @@ SEXP attribute_hidden do_anyNA(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP attribute_hidden do_isnan(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_isnan(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans, x;
     R_xlen_t i, n;
@@ -2284,7 +2284,7 @@ SEXP attribute_hidden do_isnan(/*const*/ Expression* call, const BuiltInFunction
     return ans;
 }
 
-SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_isfinite(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans, x, names, dims;
     R_xlen_t i, n;
@@ -2342,7 +2342,7 @@ SEXP attribute_hidden do_isfinite(/*const*/ Expression* call, const BuiltInFunct
     return ans;
 }
 
-SEXP attribute_hidden do_isinfinite(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_isinfinite(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP ans, x, names, dims;
     double xr, xi;
@@ -2409,7 +2409,7 @@ SEXP attribute_hidden do_isinfinite(/*const*/ Expression* call, const BuiltInFun
 }
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP rest, evargs, rfun, tmp;
 
@@ -2433,7 +2433,7 @@ SEXP attribute_hidden do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
     return (result);
 }
 
-SEXP attribute_hidden do_docall(/*const*/ Expression* call, const BuiltInFunction* op, RObject* what_, RObject* args_, RObject* envir_)
+HIDDEN SEXP do_docall(/*const*/ Expression* call, const BuiltInFunction* op, RObject* what_, RObject* args_, RObject* envir_)
 {
     SEXP c, fun, names, envir;
     int i, n;
@@ -2539,7 +2539,7 @@ SEXP Rf_substitute(SEXP lang, SEXP rho)
 /* Work through a list doing Rf_substitute on the
    elements taking particular care to handle '...' */
 
-SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
+HIDDEN SEXP Rf_substituteList(SEXP el, SEXP rho)
 {
     SEXP h, p = nullptr, res = nullptr;
 
@@ -2589,7 +2589,7 @@ SEXP attribute_hidden Rf_substituteList(SEXP el, SEXP rho)
 
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP expr, env;
     static GCRoot<ArgMatcher> matcher = new ArgMatcher({ "expr", "env" });
@@ -2618,7 +2618,7 @@ SEXP attribute_hidden do_substitute(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_quote(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_quote(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP val = CAR(args);
     /* Make sure expression has NAMED == NAMEDMAX before being returning
@@ -2774,13 +2774,13 @@ static SEXP R_set_class(SEXP obj, SEXP value, SEXP call)
     return obj;
 }
 
-SEXP attribute_hidden R_do_set_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* klass)
+HIDDEN SEXP R_do_set_class(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* klass)
 {
     return R_set_class(object, klass, call);
 }
 
 /* primitive */
-SEXP attribute_hidden do_storage_mode(/*const*/ Expression* call, const BuiltInFunction* op, RObject* obj, RObject* value)
+HIDDEN SEXP do_storage_mode(/*const*/ Expression* call, const BuiltInFunction* op, RObject* obj, RObject* value)
 {
 /* storage.mode(obj) <- value */
     SEXP ans;
@@ -2811,6 +2811,7 @@ SEXP attribute_hidden do_storage_mode(/*const*/ Expression* call, const BuiltInF
 
 const Symbol* ArgList::coerceTag(const RObject* tag)
 {
+	assert(tag);
     const char* symname = nullptr;
     if (tag->sexptype() == STRSXP) {
 	const StringVector* strv = static_cast<const StringVector*>(tag);

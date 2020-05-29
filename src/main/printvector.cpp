@@ -86,7 +86,7 @@ void printLogicalVector(const int *x, R_xlen_t n, int indx)
     Rprintf("\n");
 }
 
-attribute_hidden
+HIDDEN
 void printIntegerVector(const int *x, R_xlen_t n, int indx)
 {
     int w, labwidth=0, width;
@@ -106,7 +106,7 @@ void printIntegerVector(const int *x, R_xlen_t n, int indx)
 }
 
 // used in uncmin.c
-attribute_hidden
+HIDDEN
 void printRealVector(const double *x, R_xlen_t n, int indx)
 {
     int w, d, e, labwidth=0, width;
@@ -125,7 +125,7 @@ void printRealVector(const double *x, R_xlen_t n, int indx)
     Rprintf("\n");
 }
 
-attribute_hidden
+HIDDEN
 void printComplexVector(const Rcomplex *x, R_xlen_t n, int indx)
 {
     int w, wr, dr, er, wi, di, ei, labwidth=0, width;
@@ -344,7 +344,7 @@ static void printNamedRawVector(const Rbyte * x, int n, const StringVector* name
 		   Rprintf("%*s%s%*s", w - 2, "",
 			   Rf_EncodeRaw(x[k], ""), R_print.gap,""))
 
-attribute_hidden
+HIDDEN
 void printNamedVector(SEXP x, SEXP names, int quote, const char *title)
 {
     int n;

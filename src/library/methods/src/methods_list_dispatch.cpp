@@ -1046,7 +1046,7 @@ SEXP R_dispatchGeneric(SEXP fname, SEXP ev, SEXP fdef)
     }
     method = Rf_findVarInFrame(mtable, Rf_install(buf));
     vmaxset(vmax);
-    if(DUPLICATE_CLASS_CASE(method)) {
+    if(TYPEOF(method) == ENVSXP) {
 	PROTECT(method);
 	method = R_selectByPackage(method, classes, nargs);
 	UNPROTECT(1);

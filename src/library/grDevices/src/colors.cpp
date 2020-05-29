@@ -645,8 +645,7 @@ static int StrMatch(const char *s, const char *t)
  * Changed "white" to "grey" in the default palette
  * in response to user suggestion
  */
-attribute_hidden
-const char *DefaultPalette[] = {
+HIDDEN const char *DefaultPalette[] = {
     "black",
     "red",
     "green3",

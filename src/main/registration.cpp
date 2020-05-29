@@ -99,7 +99,7 @@ static R_FortranMethodDef fortranMethods[] = {
 
 #undef FALSE
 
-void attribute_hidden
+HIDDEN void
 R_init_base(DllInfo *dll)
 {
     R_registerRoutines(dll, nullptr, callMethods, fortranMethods, nullptr);

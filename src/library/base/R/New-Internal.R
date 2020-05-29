@@ -30,8 +30,8 @@ try <- function(expr, silent = FALSE,
             if (identical(call[[1L]], quote(doTryCatch)))
                 call <- sys.call(-4L)
             dcall <- deparse(call)[1L]
-            prefix <- paste("Error in", dcall, ": ")
-            LONG <- 75L # to match value in errors.c
+            prefix <- gettextf("Error in command '%s': ", paste(dcall, collapse = ""), domain = "R-base")
+            LONG <- getOption("width") - 5L # to match value in errors.c
             sm <- strsplit(conditionMessage(e), "\n")[[1L]]
             w <- 14L + nchar(dcall, type="w") + nchar(sm[1L], type="w")
             ## this could be NA if any of this is invalid in a MBCS
@@ -40,7 +40,7 @@ try <- function(expr, silent = FALSE,
             if (w > LONG)
                 prefix <- paste0(prefix, "\n  ")
         }
-        else prefix <- "Error : "
+        else prefix <- gettext("Error: ")
         msg <- paste0(prefix, conditionMessage(e), "\n")
         ## Store the error message for legacy uses of try() with
         ## geterrmessage().
@@ -130,7 +130,7 @@ rbind <- function(..., deparse.level = 1)
 }
 
 deparse <-
-    function(expr, width.cutoff = 60L,
+    function(expr, width.cutoff = getOption("width"),
 	     backtick = mode(expr) %in% c("call", "expression", "(", "function"),
 	     control = c("keepNA", "keepInteger", "niceNames", "showAttributes"),
              nlines = -1L)

@@ -177,7 +177,7 @@ int R_finite(double x) {
 
 /* Arithmetic Initialization */
 
-void attribute_hidden Rf_InitArithmetic()
+HIDDEN void Rf_InitArithmetic()
 {
     R_NaInt = INT_MIN;
     R_NaReal = R_ValueOfNA();
@@ -194,7 +194,7 @@ static double myfmod(double x1, double x2)
 {
     if (x2 == 0.0) return R_NaN;
     double q = x1 / x2, tmp = x1 - floor(q) * x2;
-    if(R_FINITE(q) && (fabs(q) > 1/R_AccuracyInfo.eps))
+    if(R_FINITE(q) && (std::abs(q) > 1/R_AccuracyInfo.eps))
 	Rf_warning(_("probable complete loss of accuracy in modulus"));
     q = floor(tmp/x2);
     return tmp - q * x2;
@@ -280,7 +280,7 @@ static SEXP real_binary(ARITHOP_TYPE, SEXP, SEXP);
 static SEXP integer_binary(ARITHOP_TYPE, SEXP, SEXP, SEXP);
 
 #if 0
-static R_INLINE SEXP ScalarValue1(SEXP x)
+R_INLINE static SEXP ScalarValue1(SEXP x)
 {
     if (NO_REFERENCES(x))
 	return x;
@@ -288,7 +288,7 @@ static R_INLINE SEXP ScalarValue1(SEXP x)
 	return Rf_allocVector(TYPEOF(x), 1);
 }
 
-static R_INLINE SEXP ScalarValue2(SEXP x, SEXP y)
+R_INLINE static SEXP ScalarValue2(SEXP x, SEXP y)
 {
     if (NO_REFERENCES(x))
 	return x;
@@ -345,7 +345,7 @@ namespace {
     }
 }
 
-SEXP attribute_hidden R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
+HIDDEN SEXP R_binary(SEXP call, SEXP op, SEXP xarg, SEXP yarg)
 {
     ARITHOP_TYPE oper = ARITHOP_TYPE(PRIMVAL(op));
 
@@ -478,7 +478,7 @@ SEXP logical_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
 
 }  // anonymous namespace
 
-SEXP attribute_hidden R_unary(SEXP call, SEXP op, SEXP s1)
+HIDDEN SEXP R_unary(SEXP call, SEXP op, SEXP s1)
 {
     ARITHOP_TYPE operation = ARITHOP_TYPE( PRIMVAL(op));
     switch (TYPEOF(s1)) {
@@ -754,7 +754,7 @@ static SEXP math1(SEXP sa, double (*f)(double), SEXP lcall)
     return result;
 }
 
-SEXP attribute_hidden do_math1(Expression* call, const BuiltInFunction* builtin,
+HIDDEN SEXP do_math1(Expression* call, const BuiltInFunction* builtin,
 			       RObject* x)
 {
     SEXP s;
@@ -815,7 +815,7 @@ SEXP attribute_hidden do_math1(Expression* call, const BuiltInFunction* builtin,
 }
 
 /* methods are allowed to have more than one arg */
-SEXP attribute_hidden do_trunc(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_trunc(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     call->check1arg("x"); // Checked _after_ internal dispatch.
     SEXP arg = nullptr;
@@ -833,7 +833,7 @@ SEXP attribute_hidden do_trunc(/*const*/ Expression* call, const BuiltInFunction
    both for integer/logical inputs and what it dispatches to for complex ones.
 */
 
-SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP x, s = nullptr /* -Wall */;
 
@@ -858,7 +858,7 @@ SEXP attribute_hidden do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	double *pa = REAL(s);
 	double *px = REAL(x);
 	for(i = 0 ; i < n ; i++)
-	    pa[i] = fabs(px[i]);
+	    pa[i] = std::abs(px[i]);
     } else if (Rf_isComplex(x)) {
 	SET_TAG(args, nullptr); /* cmathfuns want "z"; we might have "x" PR#16047 */
 	return do_cmathfuns(call, op, args, env);
@@ -987,7 +987,7 @@ static SEXP math2B(SEXP sa, SEXP sb, double (*f)(double, double, double *),
 #define Math2(A, FUN)	  math2(x, y, FUN, call);
 #define Math2B(A, FUN)	  math2B(x, y, FUN, call);
 
-SEXP attribute_hidden do_math2(Expression* call,
+HIDDEN SEXP do_math2(Expression* call,
 			       const BuiltInFunction* op,
 			       RObject* x, RObject* y)
 {
@@ -1020,7 +1020,7 @@ SEXP attribute_hidden do_math2(Expression* call,
 
 /* The S4 Math2 group, round and signif */
 /* This is a primitive SPECIALSXP with internal argument matching */
-SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     if (Rf_length(args) >= 2 &&
 	Rf_isSymbol(CADR(args)) && R_isMissing(CADR(args), env)) {
@@ -1064,7 +1064,7 @@ SEXP attribute_hidden do_Math2(SEXP call, SEXP op, SEXP args, SEXP env)
 }
 
 /* log{2,10} are builtins */
-SEXP attribute_hidden do_log1arg(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_log1arg(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP tmp = nullptr /* -Wall */;
 
@@ -1096,7 +1096,7 @@ SEXP attribute_hidden do_log1arg(/*const*/ Expression* call, const BuiltInFuncti
    matching. do_log_builtin is the BUILTIN version that expects
    evaluated arguments to be passed as 'args', expect that these may
    contain missing arguments.  */
-SEXP attribute_hidden do_log(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_log(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     Environment* envx = SEXP_downcast<Environment*>(env);
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
@@ -1107,7 +1107,7 @@ SEXP attribute_hidden do_log(SEXP call, SEXP op, SEXP args, SEXP env)
         SEXP_downcast<BuiltInFunction*>(op), arglist, envx);
 }
 
-SEXP attribute_hidden do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Expression* callx = SEXP_downcast<Expression*>(call);
     BuiltInFunction* builtin = SEXP_downcast<BuiltInFunction*>(op);
@@ -1282,7 +1282,7 @@ static SEXP math3B(SEXP sa, SEXP sb, SEXP sc,
 
 #define Math3B(A, FUN)  math3B (x, nu, expon_scaled, FUN, call);
 
-SEXP attribute_hidden do_math3(Expression* call,
+HIDDEN SEXP do_math3(Expression* call,
 			       const BuiltInFunction* op,
 			       RObject* x, RObject* nu,
 			       RObject* expon_scaled)

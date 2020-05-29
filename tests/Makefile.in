@@ -40,10 +40,10 @@ SUBDIRS_WITH_NO_BUILD = Pkgs
 ## GNU gettext disables LANGUAGE if LC_ALL=C, but other systems might not.
 R = LANGUAGE=en LC_ALL=C SRCDIR=$(srcdir) R_DEFAULT_PACKAGES= $(top_builddir)/bin/R --vanilla
 R2 = R_DEFAULT_PACKAGES= $(top_builddir)/bin/R --vanilla
-R3 = LANGUAGE=en LC_ALL=C $(top_builddir)/bin/R CMD check
+R3 = $(top_builddir)/bin/R CMD check
 RDIFF = $(top_builddir)/bin/R CMD Rdiff
 RDCONV = LC_CTYPE=C $(top_builddir)/bin/R CMD Rdconv
-MK_EXTRA_FLAGS =
+MK = $(MAKE)
 
 all check test-all-basics test-all-devel: Makefile $(srcdir)/Makefile.common
 
@@ -56,7 +56,7 @@ test-system2: $(srcdir)/test-system2.c
 
 ## Not run by any other target
 test-System: test-system2
-	@$(MAKE) test-system.Rout
+	-@$(MAKE) test-system.Rout
 
 test-rho:
 	cd rho && $(MAKE) check

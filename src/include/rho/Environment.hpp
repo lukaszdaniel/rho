@@ -468,7 +468,7 @@ namespace rho {
 	 *
 	 * (Used by downcast_to_env to report use of NULL environment.)
 	 */
-	static void NORET nullEnvironmentError();
+	NORET static void nullEnvironmentError();
     protected:
 	// Virtual function of GCNode:
 	void detachReferents() override;

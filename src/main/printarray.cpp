@@ -62,8 +62,7 @@ int Rstrwid(const char *str, int slen, cetype_t enc, int quote);  /* from printu
 #define strwidth(x) Rstrwid(x, (int) strlen(x), CE_NATIVE, 0)
 
 /* ceil_DIV(a,b) :=  ceil(a / b)  in _int_ arithmetic : */
-static R_INLINE
-int ceil_DIV(int a, int b)
+R_INLINE static int ceil_DIV(int a, int b)
 {
     div_t div_res = div(a, b);
     return div_res.quot + ((div_res.rem != 0) ? 1 : 0);
@@ -185,9 +184,9 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 
 #   define _PRINT_ROW_LAB			\
 						\
-    if (cn != NULL)				\
+    if (cn != nullptr)				\
 	Rprintf("%*s%s\n", rlabw, "", cn);	\
-    if (rn != NULL)				\
+    if (rn != nullptr)				\
 	Rprintf("%*s", -rlabw, rn);		\
     else					\
 	Rprintf("%*s", rlabw, "")
@@ -359,7 +358,7 @@ static void printRawMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 }
 
 /* rm and cn are found by GetMatrixDimnames so in native encoding */
-attribute_hidden
+HIDDEN
 void printMatrix(SEXP x, int offset, SEXP dim, int quote, int right,
 		 SEXP rl, SEXP cl, const char *rn, const char *cn)
 {
@@ -425,13 +424,13 @@ void printMatrix(SEXP x, int offset, SEXP dim, int quote, int right,
     vmaxset(vmax);
 }
 
-attribute_hidden
+HIDDEN
 void printArray(SEXP x, SEXP dim, int quote, int right, SEXP dimnames)
 {
 /* == printArray(.) */
     const void *vmax = vmaxget();
     int ndim = LENGTH(dim);
-    const char *rn = NULL, *cn = NULL;
+    const char *rn = nullptr, *cn = nullptr;
 
     if (ndim == 1)
 	printVector(x, 1, quote);

@@ -45,7 +45,7 @@
 /* this allows the opaque pointer definition to be made available 
    in Rinternals.h */
 #ifndef HAVE_RCONNECTION_TYPEDEF
-typedef struct Rconn  *Rconnection;
+typedef struct Rconn* Rconnection;
 #endif
 struct Rconn {
     char* connclass;

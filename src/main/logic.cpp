@@ -166,7 +166,7 @@ namespace {
 }  // anonymous namespace
 
 /* & | ! */
-SEXP attribute_hidden do_logic(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_logic(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     switch (op->variant()) {
     case 1:
@@ -189,7 +189,7 @@ SEXP attribute_hidden do_logic(/*const*/ Expression* call, const BuiltInFunction
 }
 
 /* && || */
-SEXP attribute_hidden do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
 {
 /*  &&	and  ||	 */
     SEXP s1, s2;
@@ -275,7 +275,7 @@ static Logical checkValues(int op, int na_rm, SEXP x, R_xlen_t n)
 }
 
 /* all, any */
-SEXP attribute_hidden do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_logic3(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP ans, s, t;
     int narm, has_na = 0;

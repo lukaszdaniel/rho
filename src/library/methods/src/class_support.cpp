@@ -24,7 +24,7 @@
 #include "localization.h"
 #include "methods.h"
 
-SEXP NORET R_dummy_extern_place()
+NORET SEXP R_dummy_extern_place()
 {
     Rf_error(_("calling the C routine used as an initializer for 'externalptr' objects"));
 }

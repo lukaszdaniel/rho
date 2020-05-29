@@ -71,8 +71,7 @@
  *  4) INITIALIZATION AND TERMINATION ACTIONS
  */
 
-attribute_hidden
-FILE *R_OpenInitFile(void)
+HIDDEN FILE *R_OpenInitFile(void)
 {
     char buf[PATH_MAX], *home, *p = getenv("R_PROFILE_USER");
     FILE *fp;
@@ -200,8 +199,7 @@ void R_setStartTime(void)
    clock ticks (which can overflow).  It is possible this version uses
    time() and so is in seconds.  But even Cygwin has gettimeofday.
  */
-attribute_hidden
-void R_getProcTime(double *data)
+HIDDEN void R_getProcTime(double *data)
 {
     /* docs say this is rounded to the nearest ms */
     double et = Rf_currentTime() - StartTime;
@@ -232,8 +230,7 @@ void R_getProcTime(double *data)
 
 /* used in memory.cpp */
 /* FIXME: maybe should try to find the increment for getrusage */
-attribute_hidden
-double R_getClockIncrement(void)
+HIDDEN double R_getClockIncrement(void)
 {
     return 1.0 / clk_tck;
 }
@@ -637,7 +634,7 @@ static void warn_status(const char *cmd, int res)
 }
 
 #define INTERN_BUFSIZE 8096
-SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP tlist = R_NilValue;
     int intern = 0;
@@ -802,7 +799,7 @@ SEXP attribute_hidden do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 #  include <pwd.h>
 # endif
 
-SEXP attribute_hidden do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, ansnames;
     struct utsname name;

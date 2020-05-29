@@ -343,10 +343,8 @@ Subscripting::canonicalize(const RObject* raw_indices, std::size_t range_size,
     }
 }
 
-void
-Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
-					  const VectorBase* v,
-					  const PairList* subscripts)
+void Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
+    const VectorBase* v, const PairList* subscripts)
 {
     const IntVector* dims = v->dimensions();
     if (!dims)
@@ -371,10 +369,8 @@ Subscripting::canonicalizeArraySubscripts(std::vector<Indices>* indicesvec,
 	Rf_error(_("too many subscripts"));
 }
 
-std::size_t
-Subscripting::createDimIndexers(DimIndexerVector* dimindexers,
-				const IntVector* source_dims,
-				const std::vector<Indices>& indicesvec)
+std::size_t Subscripting::createDimIndexers(DimIndexerVector* dimindexers,
+    const IntVector* source_dims, const std::vector<Indices>& indicesvec)
 {
     std::size_t ndims = source_dims->size();
     double dresultsize = 1.0;
@@ -383,7 +379,7 @@ Subscripting::createDimIndexers(DimIndexerVector* dimindexers,
 	DimIndexer& di = (*dimindexers)[d];
 	std::size_t dsz = indicesvec[d].size();
 	dresultsize *= double(dsz);
-	if (dresultsize > std::numeric_limits<size_t>::max())
+	if (dresultsize > double(std::numeric_limits<size_t>::max()))
 	    Rf_error(_("dimensions would exceed maximum size of array"));
 	resultsize *= dsz;
 	di.indexnum = 0;
@@ -538,7 +534,8 @@ void Subscripting::setVectorAttributes(VectorBase* subset,
 	    // Use row names if this is a one-dimensional array:
 	    const ListVector* dimnames = source->dimensionNames();
 	    if (dimnames && dimnames->size() == 1)
-		sourcenames = static_cast<const StringVector*>((*dimnames)[0].get());
+		sourcenames
+		    = static_cast<const StringVector*>((*dimnames)[0].get());
 	}
 	if (sourcenames)
 	    subset->setNames(vectorSubset(sourcenames, indices));

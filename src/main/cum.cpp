@@ -167,7 +167,7 @@ op = 2 is cumprod
 op = 3 is cummax
 op = 4 is cummin
 */
-SEXP attribute_hidden do_cum(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_cum(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     SEXP s, t, ans;
     R_xlen_t i, n;

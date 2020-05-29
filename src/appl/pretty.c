@@ -63,7 +63,7 @@
 
 #include <R_ext/Visibility.h>
 
-attribute_hidden
+HIDDEN
 double R_pretty(double *lo, double *up, int *ndiv, int min_n,
 		double shrink_sml, double high_u_fact[],
 		int eps_correction, int return_bounds)

@@ -81,10 +81,10 @@ struct LocalData {
     int quiet;
     int sepchar; /*  = 0 */      /* This gets compared to ints */
     char decchar; /* = '.' */    /* This only gets compared to chars */
-    const char *quoteset; /* = NULL */
+    const char *quoteset; /* = nullptr */
     int comchar; /* = NO_COMCHAR */
     int ttyflag; /* = 0 */
-    Rconnection con; /* = NULL */
+    Rconnection con; /* = nullptr */
     Rboolean wasopen; /* = FALSE */
     Rboolean escapes; /* = FALSE */
     int save; /* = 0; */
@@ -104,7 +104,7 @@ static SEXP insertString(char *str, LocalData *l)
     return Rf_mkCharCE(str, enc);
 }
 
-static R_INLINE Rboolean Rspace(unsigned int c)
+inline static Rboolean Rspace(unsigned int c)
 {
     if (c == ' ' || c == '\t' || c == '\n' || c == '\r') return TRUE;
 #ifdef Win32
@@ -172,14 +172,13 @@ static int Strtoi(const char *nptr, int base)
     return int(res);
 }
 
-static double
-Strtod (const char *nptr, char **endptr, Rboolean NA, LocalData *d)
+static double Strtod(const char* nptr, char** endptr, Rboolean NA, LocalData* d)
 {
     return R_strtod4(nptr, endptr, d->decchar, NA);
 }
 
-static Rcomplex
-strtoc(const char *nptr, char **endptr, Rboolean NA, LocalData *d)
+static Rcomplex strtoc(
+    const char* nptr, char** endptr, Rboolean NA, LocalData* d)
 {
     Rcomplex z;
     double x, y;
@@ -206,8 +205,7 @@ strtoc(const char *nptr, char **endptr, Rboolean NA, LocalData *d)
     return z;
 }
 
-static Rbyte
-strtoraw (const char *nptr, char **endptr)
+static Rbyte strtoraw(const char* nptr, char** endptr)
 {
     const char *p = nptr;
     int i, val = 0;
@@ -225,7 +223,7 @@ strtoraw (const char *nptr, char **endptr)
     return Rbyte( val);
 }
 
-static R_INLINE int scanchar_raw(LocalData *d)
+inline static int scanchar_raw(LocalData *d)
 {
     int c = (d->ttyflag) ? ConsoleGetcharWithPushBack(d->con) :
 	Rconn_fgetc(d->con);
@@ -240,7 +238,7 @@ static R_INLINE int scanchar_raw(LocalData *d)
     return c;
 }
 
-static R_INLINE void unscanchar(int c, LocalData *d)
+inline static void unscanchar(int c, LocalData *d)
 {
     d->save = c;
 }
@@ -248,7 +246,7 @@ static R_INLINE void unscanchar(int c, LocalData *d)
 /* For second bytes in a DBCS:
    should not be called when a char is saved, but be cautious
 */
-static R_INLINE int scanchar2(LocalData *d)
+R_INLINE static int scanchar2(LocalData *d)
 {
     int next;
     if (d->save) {
@@ -327,9 +325,7 @@ static int scanchar(Rboolean inQuote, LocalData *d)
    what if this appends to the existing content. Appears it writes in
    directly at position 0.
  */
-static char *
-fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
-	   R_StringBuffer *buffer)
+static char* fillBuffer(SEXPTYPE type, int strip, int* bch, LocalData* d, R_StringBuffer* buffer)
 {
 /* The basic reader function, called from scanVector() and scanFrame().
    Reads into _buffer_	which later will be read out by extractItem().
@@ -472,7 +468,7 @@ fillBuffer(SEXPTYPE type, int strip, int *bch, LocalData *d,
 /* If mode = 0 use for numeric fields where "" is NA
    If mode = 1 use for character fields where "" is verbatim unless
    na.strings includes "" */
-static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
+inline static int isNAstring(const char *buf, int mode, LocalData *d)
 {
     int i;
 
@@ -482,7 +478,7 @@ static R_INLINE int isNAstring(const char *buf, int mode, LocalData *d)
     return 0;
 }
 
-static R_INLINE void NORET expected(const char *what, char *got, LocalData *d)
+[[noreturn]] inline static void expected(const char *what, char *got, LocalData *d)
 {
     int c;
     if (d->ttyflag) { /* This is safe in a MBCS */
@@ -827,7 +823,7 @@ static SEXP scanFrame(SEXP what, int maxitems, int maxlines, int flush,
     return ans;
 }
 
-SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* what_, RObject* nmax_, RObject* sep_, RObject* dec_, RObject* quote_, RObject* skip_, RObject* nlines_, RObject* na_strings_, RObject* flush_, RObject* fill_, RObject* strip_white_, RObject* quiet_, RObject* blank_lines_skip_, RObject* multi_line_, RObject* comment_char_, RObject* allowEscapes_, RObject* encoding_, RObject* skipNul_)
+HIDDEN SEXP do_scan(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_, RObject* what_, RObject* nmax_, RObject* sep_, RObject* dec_, RObject* quote_, RObject* skip_, RObject* nlines_, RObject* na_strings_, RObject* flush_, RObject* fill_, RObject* strip_white_, RObject* quiet_, RObject* blank_lines_skip_, RObject* multi_line_, RObject* comment_char_, RObject* allowEscapes_, RObject* encoding_, RObject* skipNul_)
 {
     SEXP ans, file, sep, what, stripwhite, dec, quotes, comstr;
     int i, c, nlines, nmax, nskip, flush, fill, blskip, multiline,
@@ -995,7 +991,7 @@ SEXP attribute_hidden do_scan(/*const*/ Expression* call, const BuiltInFunction*
     return ans;
 }
 
-SEXP attribute_hidden do_readln(/*const*/ Expression* call, const BuiltInFunction* op, RObject* prompt_)
+HIDDEN SEXP do_readln(/*const*/ Expression* call, const BuiltInFunction* op, RObject* prompt_)
 {
     int c;
     char buffer[MAXELTSIZE], *bufp = buffer;

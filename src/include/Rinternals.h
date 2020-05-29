@@ -43,6 +43,7 @@
 #ifdef __cplusplus
 # include <cstdio>
 # include <climits>
+# include <limits>
 # include <cstddef>
 #else
 # include <stdio.h>
@@ -64,17 +65,42 @@
 typedef unsigned char Rbyte;
 
 /* type for length of (standard, not long) vectors etc */
+#ifdef __cplusplus
+using R_len_t = int;
+constexpr R_len_t R_LEN_T_MAX = std::numeric_limits<R_len_t>::max();
+#else
 typedef int R_len_t;
 #define R_LEN_T_MAX INT_MAX
-
+#endif
 /* both config.h and Rconfig.h set SIZEOF_SIZE_T, but Rconfig.h is
    skipped if config.h has already been included. */
 #ifndef R_CONFIG_H
 # include <Rconfig.h>
 #endif
 
+#if (SIZEOF_SIZE_T > 4)
+#define LONG_VECTOR_SUPPORT
+#endif
+
+#ifdef __cplusplus
+#ifdef LONG_VECTOR_SUPPORT
+using R_xlen_t = ptrdiff_t;
+constexpr R_xlen_t R_XLEN_T_MAX = std::numeric_limits<R_xlen_t>::max();
+constexpr int R_SHORT_LEN_MAX = std::numeric_limits<int>::max();
+#else
+using R_xlen_t = int;
+constexpr R_xlen_t R_XLEN_T_MAX = std::numeric_limits<R_xlen_t>::max();
+#endif
+#else // not __cplusplus
+#ifdef LONG_VECTOR_SUPPORT
 typedef ptrdiff_t R_xlen_t;
 #define R_XLEN_T_MAX PTRDIFF_MAX
+#define R_SHORT_LEN_MAX INT_MAX
+#else
+typedef int R_xlen_t;
+#define R_XLEN_T_MAX R_LEN_T_MAX
+#endif
+#endif
 
 #if defined(COMPILING_RHO) && defined(__cplusplus)
 namespace rho {
@@ -369,15 +395,14 @@ typedef union { VECTOR_SEXPREC s; double align; } SEXPREC_ALIGN;
 
 #endif
 /* Vector Access Macros */
-#if (R_XLEN_T_MAX > R_LEN_T_MAX)
-# define LONG_VECTOR_SUPPORT
-# define R_SHORT_LEN_MAX R_LEN_T_MAX
-# define IS_LONG_VEC(x) (XLENGTH(x) > R_SHORT_LEN_MAX)
+#ifdef LONG_VECTOR_SUPPORT
+#define IS_LONG_VEC(x) (XLENGTH(x) > R_SHORT_LEN_MAX)
 #else
-# define IS_LONG_VEC(x) 0
+#define IS_LONG_VEC(x) 0
 #endif
-//#define STDVEC_LENGTH(x) (((VECSEXP) (x))->vecsxp.length)
-//#define STDVEC_TRUELENGTH(x) (((VECSEXP) (x))->vecsxp.truelength)
+
+    //#define STDVEC_LENGTH(x) (((VECSEXP) (x))->vecsxp.length)
+    //#define STDVEC_TRUELENGTH(x) (((VECSEXP) (x))->vecsxp.truelength)
 #if 0
 #define SET_STDVEC_TRUELENGTH(x, v) (STDVEC_TRUELENGTH(x)=(v))
 #define SET_TRUELENGTH(x,v) do {				\
@@ -668,7 +693,7 @@ void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
 SEXP *(STRING_PTR)(SEXP x);
 const SEXP *(STRING_PTR_RO)(SEXP x);
-SEXP * NORET (VECTOR_PTR)(SEXP x);
+NORET SEXP * (VECTOR_PTR)(SEXP x);
 
 /* ALTREP support */
 void *(STDVEC_DATAPTR)(SEXP x);
@@ -711,7 +736,7 @@ SEXP INTEGER_MATCH(SEXP, SEXP, int, SEXP, SEXP, Rboolean);
 SEXP INTEGER_IS_NA(SEXP x);
 SEXP REAL_MATCH(SEXP, SEXP, int, SEXP, SEXP, Rboolean);
 
-R_xlen_t REAL_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, double *buf);
+R_xlen_t REAL_GET_REGION(SEXP sx, R_xlen_t i, R_xlen_t n, double* buf);
 int REAL_IS_SORTED(SEXP x);
 int REAL_NO_NA(SEXP x);
 SEXP REAL_IS_NA(SEXP x);
@@ -722,7 +747,7 @@ SEXP R_deferred_coerceToString(SEXP v, SEXP sp);
 SEXP R_virtrep_vec(SEXP, SEXP);
 
 #ifdef LONG_VECTOR_SUPPORT
-    R_len_t NORET R_BadLongVector(SEXP, const char *, int);
+NORET R_len_t R_BadLongVector(SEXP, const char *, int);
 #endif
 
 // Extract an item from an Expression (EXPRSXP, rho::ExpressionVector)
@@ -886,7 +911,7 @@ LibExtern SEXP	R_InBCInterpreter;  /* To be found in BC interp. state
 				       (marker) */
 LibExtern SEXP	R_CurrentExpression; /* Use current expression (marker) */
 #ifdef __MAIN__
-attribute_hidden
+HIDDEN
 #else
 extern
 #endif
@@ -1077,9 +1102,9 @@ void Rf_unprotect(int);
 #endif
 void Rf_unprotect_ptr(SEXP);
 
-//void NORET R_signal_protect_error(void);
-//void NORET R_signal_unprotect_error(void);
-//void NORET R_signal_reprotect_error(PROTECT_INDEX i);
+//NORET void R_signal_protect_error(void);
+//NORET void R_signal_unprotect_error(void);
+//NORET void R_signal_reprotect_error(PROTECT_INDEX i);
 
 #ifndef INLINE_PROTECT
 void R_ProtectWithIndex(SEXP, PROTECT_INDEX *);
@@ -1176,7 +1201,7 @@ SEXP R_tryCatch(SEXP (*)(void *), void *,       /* body closure*/
 SEXP R_tryCatchError(SEXP (*)(void *), void *,        /* body closure*/
 		     SEXP (*)(SEXP, void *), void *); /* handler closure */
 SEXP R_MakeUnwindCont();
-void NORET R_ContinueUnwind(SEXP cont);
+NORET void R_ContinueUnwind(SEXP cont);
 SEXP R_UnwindProtect(SEXP (*fun)(void *data), void *data,
                      void (*cleanfun)(void *data, Rboolean jump),
                      void *cleandata, SEXP cont);
@@ -1203,7 +1228,7 @@ Rboolean R_HasFancyBindings(SEXP rho);
 /* needed for R_load/savehistory handling in front ends */
 #include <R_ext/Visibility.h>
 
-void NORET Rf_errorcall(SEXP, const char *, ...);
+NORET void Rf_errorcall(SEXP, const char *, ...);
 void Rf_warningcall(SEXP, const char *, ...);
 void Rf_warningcall_immediate(SEXP, const char *, ...);
 
@@ -1716,7 +1741,7 @@ void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);
 
 /* macro version of R_CheckStack */
 #define R_CheckStack() do {						\
-	void NORET R_SignalCStackOverflow(intptr_t);				\
+	NORET void R_SignalCStackOverflow(intptr_t);				\
 	int dummy;							\
 	intptr_t usage = R_CStackDir * (R_CStackStart - (uintptr_t)&dummy); \
 	if(R_CStackLimit != (uintptr_t)(-1) && usage > ((intptr_t) R_CStackLimit)) \

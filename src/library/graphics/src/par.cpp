@@ -149,14 +149,13 @@ ParTable  [] = {
 
 static int ParCode(const char *what)
 {
-    int i;
-    for (i = 0; ParTable[i].name; i++)
+    for (int i = 0; ParTable[i].name; i++)
 	if (streql(what, ParTable[i].name)) return ParTable[i].code;
     return -1;
 }
 
 
-static void NORET par_error(const char *what)
+[[noreturn]] static void par_error(const char *what)
 {
     Rf_error(_("invalid value specified for graphical parameter \"%s\""),  what);
 }

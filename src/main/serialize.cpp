@@ -229,7 +229,7 @@ static int defaultSerializeVersion()
     if (dflt < 0) {
 	char *valstr = getenv("R_DEFAULT_SERIALIZE_VERSION");
 	int val = -1;
-	if (valstr != NULL)
+	if (valstr != nullptr)
 	    val = atoi(valstr);
 	if (val == 2 || val == 3)
 	    dflt = val;
@@ -881,8 +881,7 @@ static void OutStringVec(R_outpstream_t stream, SEXP s, HashTable* ref_table)
 
 constexpr R_xlen_t CHUNK_SIZE = 8096;
 
-static R_INLINE void
-OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
+R_INLINE static void OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -918,8 +917,7 @@ OutIntegerVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     }
 }
 
-static R_INLINE void
-OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
+R_INLINE static void OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -954,8 +952,7 @@ OutRealVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
     }
 }
 
-static R_INLINE void
-OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
+R_INLINE static void OutComplexVec(R_outpstream_t stream, SEXP s, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -1004,7 +1001,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
     if (ALTREP(s) && stream->version >= 3) {
 	SEXP info = ALTREP_SERIALIZED_CLASS(s);
 	SEXP state = ALTREP_SERIALIZED_STATE(s);
-	if (info != NULL && state != NULL) {
+	if (info != nullptr && state != nullptr) {
 	    int flags = PackFlags(ALTREP_SXP, LEVELS(s), OBJECT(s), 0, 0);
 	    PROTECT(state);
 	    PROTECT(info);
@@ -1248,7 +1245,7 @@ void R_Serialize(SEXP s, R_outpstream_t stream)
  * Unserialize Code
  */
 
-attribute_hidden int R_ReadItemDepth = 0, R_InitReadItemDepth;
+HIDDEN int R_ReadItemDepth = 0, R_InitReadItemDepth;
 static char lastname[8192];
 
 #define INITIAL_REFREAD_TABLE_SIZE 128
@@ -1308,8 +1305,7 @@ static SEXP InStringVec(R_inpstream_t stream, SEXP ref_table)
 }
 
 /* use static buffer to reuse storage */
-static R_INLINE void
-InIntegerVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
+R_INLINE static void InIntegerVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -1344,8 +1340,7 @@ InIntegerVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     }
 }
 
-static R_INLINE void
-InRealVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
+R_INLINE static void InRealVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -1380,8 +1375,7 @@ InRealVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
     }
 }
 
-static R_INLINE void
-InComplexVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
+R_INLINE static void InComplexVec(R_inpstream_t stream, SEXP obj, R_xlen_t length)
 {
     switch (stream->type) {
     case R_pstream_xdr_format:
@@ -2074,11 +2068,11 @@ SEXP R_Unserialize(R_inpstream_t stream)
     if (version == 3) {
 	if (stream->nat2nat_obj && stream->nat2nat_obj != (void *)-1) {
 	    Riconv_close(stream->nat2nat_obj);
-	    stream->nat2nat_obj = NULL;
+	    stream->nat2nat_obj = nullptr;
 	}
 	if (stream->nat2utf8_obj && stream->nat2utf8_obj != (void *)-1) {
 	    Riconv_close(stream->nat2utf8_obj);
-	    stream->nat2utf8_obj = NULL;
+	    stream->nat2utf8_obj = nullptr;
 	}
     }
     UNPROTECT(1);
@@ -2166,8 +2160,8 @@ R_InitInPStream(R_inpstream_t stream, R_pstream_data_t data,
     stream->InPersistHookFunc = phook;
     stream->InPersistHookData = pdata;
     stream->native_encoding[0] = 0;
-    stream->nat2nat_obj = NULL;
-    stream->nat2utf8_obj = NULL; 
+    stream->nat2nat_obj = nullptr;
+    stream->nat2utf8_obj = nullptr; 
 }
 
 void
@@ -2371,7 +2365,7 @@ static SEXP CallHook(SEXP x, SEXP fun)
 /* Used from saveRDS().
    This became public in R 2.13.0, and that version added support for
    connections internally */
-SEXP attribute_hidden
+HIDDEN SEXP
 do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* ascii_, RObject* version_, RObject* refhook_)
 {
     /* serializeToConn(object, conn, ascii, version, hook) */
@@ -2440,7 +2434,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 /* unserializeFromConn(conn, hook) used from readRDS().
    It became public in R 2.13.0, and that version added support for
    connections internally */
-SEXP attribute_hidden
+HIDDEN SEXP
 do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* refhook_)
 {
     /* 0 .. unserializeFromConn(conn, hook) */
@@ -2744,7 +2738,7 @@ R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
 }
 
 
-SEXP attribute_hidden R_unserialize(SEXP icon, SEXP fun)
+HIDDEN SEXP R_unserialize(SEXP icon, SEXP fun)
 {
     struct R_inpstream_st in;
     SEXP (*hook)(SEXP, SEXP);
@@ -2799,7 +2793,7 @@ static SEXP appendRawToFile(SEXP file, SEXP bytes)
 	       strerror(errno));
     }
 #else
-    if ((fp = R_fopen(R_CHAR(STRING_ELT(file, 0)), "r+b")) == NULL) {
+    if ((fp = R_fopen(R_CHAR(STRING_ELT(file, 0)), "r+b")) == nullptr) {
 	Rf_error( _("cannot open file '%s': %s"), R_CHAR(STRING_ELT(file, 0)),
 	       strerror(errno));
     }
@@ -2827,7 +2821,7 @@ static int used = 0;
 static char names[NC][PATH_MAX];
 static char *ptr[NC];
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_)
 {
     int i;
@@ -3020,7 +3014,7 @@ R_lazyLoadDBinsertValue(SEXP value, SEXP file, SEXP ascii,
    from a file, optionally decompresses, and unserializes the bytes.
    If the result is a promise, then the promise is forced. */
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* key_, RObject* file_, RObject* compressed_, RObject* hook_)
 {
     SEXP key, file, compsxp, hook;
@@ -3054,20 +3048,20 @@ do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     return val;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_getVarsFromFrame(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vars_, RObject* env_, RObject* force_promises_)
 {
     return R_getVarsFromFrame(vars_, env_, force_promises_);
 }
 
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_lazyLoadDBinsertValue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* value, RObject* file, RObject* ascii, RObject* compsxp, RObject* hook)
 {
     return R_lazyLoadDBinsertValue(value, file, ascii, compsxp, hook);
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_serialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection, RObject* type, RObject* version, RObject* hook)
 {
     if(op->variant() == 1)
@@ -3076,7 +3070,7 @@ do_serialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* obj
 	return R_serialize(object, connection, type, version, hook);
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_unserialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection)
 {
     return R_unserialize(object, connection);

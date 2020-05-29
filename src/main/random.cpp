@@ -198,7 +198,7 @@ static void FixupProb(double *p, int n, int require_k, Rboolean replace)
 /* do_sample - probability sampling with/without replacement.
    .Internal(sample(n, size, replace, prob))
 */
-SEXP attribute_hidden do_sample(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* size_, RObject* replace_, RObject* prob_)
+HIDDEN SEXP do_sample(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* size_, RObject* replace_, RObject* prob_)
 {
     SEXP x, y, sn, sk, prob, sreplace;
 

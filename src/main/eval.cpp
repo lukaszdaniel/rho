@@ -444,7 +444,7 @@ static void R_InitProfiling(SEXP filename, int append, double dinterval,
     DuplicateHandle(Proc, GetCurrentThread(), Proc, &MainThread,
 		    0, FALSE, DUPLICATE_SAME_ACCESS);
     wait = interval/1000;
-    if(!(ProfileEvent = CreateEvent(NULL, FALSE, FALSE, NULL)) ||
+    if(!(ProfileEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr)) ||
        (_beginthread(ProfileThread, 0, &wait) == -1))
 	R_Suicide("unable to create profiling thread");
     Sleep(wait/2); /* suspend this thread to ensure that the other one starts */
@@ -512,7 +512,7 @@ static SEXP forcePromise(SEXP e)
     return prom->force();
 }
 
-attribute_hidden
+HIDDEN
 void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 {
     /* If we have a valid srcref, use it */
@@ -535,7 +535,7 @@ void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 /* this function gets the srcref attribute from a statement block,
    and confirms it's in the expected format */
 
-static R_INLINE SEXP getBlockSrcrefs(SEXP call)
+R_INLINE static SEXP getBlockSrcrefs(SEXP call)
 {
     SEXP srcrefs = Rf_getAttrib(call, Symbols::SrcrefSymbol);
     if (TYPEOF(srcrefs) == VECSXP) return srcrefs;
@@ -545,7 +545,7 @@ static R_INLINE SEXP getBlockSrcrefs(SEXP call)
 /* this function extracts one srcref, and confirms the format */
 /* It assumes srcrefs has already been validated to be a VECSXP or NULL */
 
-static R_INLINE SEXP getSrcref(SEXP srcrefs, int ind)
+R_INLINE static SEXP getSrcref(SEXP srcrefs, int ind)
 {
     SEXP result;
     if (!Rf_isNull(srcrefs)
@@ -639,7 +639,7 @@ SEXP R_forceAndCall(SEXP e, int n, SEXP rho)
     return result;
 }
 
-SEXP attribute_hidden do_forceAndCall(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_forceAndCall(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n = Rf_asInteger(Rf_eval(CADR(call), rho));
     SEXP e = CDDR(call);
@@ -895,7 +895,7 @@ namespace {
     }
 }
 
-SEXP attribute_hidden do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP Cond, Stmt=nullptr;
     int vis=0;
@@ -933,7 +933,7 @@ SEXP attribute_hidden do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
 }
 
-SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> argsrt(args), rhort(rho);
 
@@ -1077,7 +1077,7 @@ SEXP attribute_hidden do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_for(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_for(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 
@@ -1139,7 +1139,7 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_while(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_while(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 
@@ -1201,7 +1201,7 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     return nullptr;
 }
 
-SEXP attribute_hidden do_repeat(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_repeat(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 
@@ -1209,7 +1209,7 @@ SEXP attribute_hidden do_repeat(SEXP call, SEXP op, SEXP args, SEXP rho)
 	[=]() { return do_repeat_impl(call, op, args, rho); });
 }
 
-SEXP attribute_hidden do_break(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_break(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
 
@@ -1227,7 +1227,7 @@ RObject* do_paren(Expression* call,
     return x_;
 }
 
-SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP s = nullptr;
     if (args != nullptr) {
@@ -1258,7 +1258,7 @@ SEXP attribute_hidden do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 
-SEXP attribute_hidden do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> v;
 
@@ -1279,7 +1279,7 @@ SEXP attribute_hidden do_return(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* Declared with a variable number of args in names.cpp */
-SEXP attribute_hidden do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_function(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> rval;
 
@@ -1569,7 +1569,7 @@ SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 /*  Assignment in its various forms  */
 
-SEXP attribute_hidden do_set(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_set(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP lhs, rhs;
 
@@ -1639,7 +1639,7 @@ static SEXP VectorToPairListNamed(SEXP x)
 /* "eval": Evaluate the first argument
    in the environment specified by the second argument. */
 
-SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP encl, x;
     volatile SEXP expr, env;
@@ -1755,7 +1755,7 @@ SEXP attribute_hidden do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* This is a special .Internal */
-SEXP attribute_hidden do_withVisible(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_withVisible(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP x, nm, ret;
 
@@ -1774,7 +1774,7 @@ SEXP attribute_hidden do_withVisible(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* This is a special .Internal */
-SEXP attribute_hidden do_recall(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_recall(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ClosureContext *cptr;
     SEXP s, ans ;
@@ -1833,7 +1833,7 @@ static bool isDefaultMethod(const Expression* call) {
  * Differs in that all arguments are evaluated
  * immediately, rather than after the call to R_possible_dispatch.
  */
-attribute_hidden
+HIDDEN
 int DispatchAnyOrEval(SEXP call, SEXP op, const char *generic, SEXP args,
 		      SEXP rho, SEXP *ans, int dropmissing, int argsevald)
 {
@@ -1878,7 +1878,7 @@ int DispatchAnyOrEval(SEXP call, SEXP op, const char *generic, SEXP args,
  * Functions that use this are:
  *   [, [[, $, [<-, [[<-, $<-, @<-, rep
  */
-attribute_hidden
+HIDDEN
 std::pair<bool, SEXP>
 Rf_DispatchOrEval(const Expression* call, const BuiltInFunction* func,
                   ArgList* arglist, Environment* callenv,
@@ -1942,7 +1942,7 @@ Rf_DispatchOrEval(const Expression* call, const BuiltInFunction* func,
     return std::make_pair(false, nullptr);
 }
 
-attribute_hidden
+HIDDEN
 std::pair<bool, SEXP>
 Rf_Dispatch(const Expression* call, const BuiltInFunction* func,
             const ArgList& arglist, Environment* callenv)
@@ -1981,7 +1981,7 @@ Rf_Dispatch(const Expression* call, const BuiltInFunction* func,
     return std::make_pair(false, nullptr);
 }
 
-attribute_hidden
+HIDDEN
 int Rf_DispatchGroup(const char* group, SEXP call, SEXP op, SEXP args, SEXP rho,
 		     SEXP *ans) {
   auto result = Rf_DispatchGroup(group,
@@ -1996,7 +1996,7 @@ int Rf_DispatchGroup(const char* group, SEXP call, SEXP op, SEXP args, SEXP rho,
 }
 
 
-attribute_hidden
+HIDDEN
 std::pair<bool, SEXP>
 Rf_DispatchGroup(const char *group, const Expression* call,
                  const BuiltInFunction* op,
@@ -2146,7 +2146,7 @@ SEXP R_ClosureExpr(SEXP p)
 }
 
 
-SEXP attribute_hidden do_loadfile(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_loadfile(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP file, s;
     FILE *fp;
@@ -2166,7 +2166,7 @@ SEXP attribute_hidden do_loadfile(/*const*/ Expression* call, const BuiltInFunct
     return s;
 }
 
-SEXP attribute_hidden do_savefile(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_savefile(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     FILE *fp;
 
@@ -2185,7 +2185,7 @@ SEXP attribute_hidden do_savefile(/*const*/ Expression* call, const BuiltInFunct
     return nullptr;
 }
 
-SEXP attribute_hidden do_setnumthreads(/*const*/ Expression* call, const BuiltInFunction* op, RObject* num_threads_)
+HIDDEN SEXP do_setnumthreads(/*const*/ Expression* call, const BuiltInFunction* op, RObject* num_threads_)
 {
     int old = R_num_math_threads, newi;
     newi = Rf_asInteger(num_threads_);
@@ -2194,7 +2194,7 @@ SEXP attribute_hidden do_setnumthreads(/*const*/ Expression* call, const BuiltIn
     return Rf_ScalarInteger(old);
 }
 
-SEXP attribute_hidden do_setmaxnumthreads(/*const*/ Expression* call, const BuiltInFunction* op, RObject* num_threads_)
+HIDDEN SEXP do_setmaxnumthreads(/*const*/ Expression* call, const BuiltInFunction* op, RObject* num_threads_)
 {
     int old = R_max_num_math_threads, newi;
     newi = Rf_asInteger(num_threads_);
@@ -2211,7 +2211,7 @@ SEXP attribute_hidden do_setmaxnumthreads(/*const*/ Expression* call, const Buil
    refers to a byte-code object (BCODESXPs) as key and to a deep copy of the
    object's constants as value. The head of the list has a nil payload
    instead of a weak reference, stays in the list forever, and is a GC root.*/
-static SEXP R_ConstantsRegistry = NULL;
+static SEXP R_ConstantsRegistry = nullptr;
 
 /* A potentially very verbose report for modified compiler constant. */
 static void reportModifiedConstant(SEXP crec, SEXP orig, SEXP copy, int idx)
@@ -2313,9 +2313,9 @@ static Rboolean checkConstantsInRecord(SEXP crec, Rboolean abortOnError)
 
 /* Checks if constants of any registered BCODESXP have been modified.
    Returns TRUE if the constants are ok, otherwise returns false or aborts.*/
-Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
+HIDDEN Rboolean R_checkConstants(Rboolean abortOnError)
 {
-    if (R_check_constants <= 0 || R_ConstantsRegistry == NULL)
+    if (R_check_constants <= 0 || R_ConstantsRegistry == nullptr)
 	return TRUE;
 
     static Rboolean checkingInProgress = FALSE;
@@ -2353,7 +2353,7 @@ Rboolean attribute_hidden R_checkConstants(Rboolean abortOnError)
     return constsOK;
 }
 
-SEXP attribute_hidden do_returnValue(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_returnValue(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     checkArity(op, args);
     return CAR(args); /* default */

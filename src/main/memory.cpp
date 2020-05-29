@@ -103,7 +103,7 @@ static void DEBUG_ADJUST_HEAP_PRINT(double node_occup, double vect_occup)
 
 /* Finalization and Weak References */
 
-SEXP attribute_hidden do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* e_, RObject* f_, RObject* onexit_)
+HIDDEN SEXP do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* e_, RObject* f_, RObject* onexit_)
 {
     int onexit;
 
@@ -136,7 +136,7 @@ void R_gc_torture(int gap, int wait, Rboolean inhibit)
     }
 }
 
-SEXP attribute_hidden do_gctorture(/*const*/ Expression* call, const BuiltInFunction* op, RObject* on_)
+HIDDEN SEXP do_gctorture(/*const*/ Expression* call, const BuiltInFunction* op, RObject* on_)
 {
     int gap;
     SEXP old = Rf_ScalarLogical(gc_force_wait > 0);
@@ -154,7 +154,7 @@ SEXP attribute_hidden do_gctorture(/*const*/ Expression* call, const BuiltInFunc
     return old;
 }
 
-SEXP attribute_hidden do_gctorture2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* step_, RObject* wait_, RObject* inhibit_release_)
+HIDDEN SEXP do_gctorture2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* step_, RObject* wait_, RObject* inhibit_release_)
 {
     int gap, wait;
     Rboolean inhibit;
@@ -168,7 +168,7 @@ SEXP attribute_hidden do_gctorture2(/*const*/ Expression* call, const BuiltInFun
     return old;
 }
 
-SEXP attribute_hidden do_gcinfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_)
+HIDDEN SEXP do_gcinfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_)
 {
     std::ostream* report_os = GCManager::setReporting(nullptr);
     int want_reporting = Rf_asLogical(verbose_);
@@ -181,7 +181,7 @@ SEXP attribute_hidden do_gcinfo(/*const*/ Expression* call, const BuiltInFunctio
 
 /* reports memory use to profiler in eval.cpp */
 
-void attribute_hidden get_current_mem(size_t *smallvsize,
+HIDDEN void get_current_mem(size_t *smallvsize,
 				      size_t *largevsize,
 				      size_t *nodes)
 {
@@ -192,7 +192,7 @@ void attribute_hidden get_current_mem(size_t *smallvsize,
     return;
 }
 
-SEXP attribute_hidden do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_, RObject* reset_, RObject* full_)
+HIDDEN SEXP do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_, RObject* reset_, RObject* full_)
 {
     std::ostream* report_os
 	= GCManager::setReporting(Rf_asLogical(verbose_) ? &std::cerr : nullptr);
@@ -217,7 +217,7 @@ SEXP attribute_hidden do_gc(/*const*/ Expression* call, const BuiltInFunction* o
 static double gctimes[5], gcstarttimes[5];
 static Rboolean gctime_enabled = FALSE;
 
-SEXP attribute_hidden do_gctime(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_gctime(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP ans;
     if (num_args == 0)
@@ -425,7 +425,7 @@ void R_gc(void)
 
 
 
-SEXP attribute_hidden do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, nms;
     constexpr int n = 24;
@@ -664,7 +664,7 @@ const SEXP *(STRING_PTR_RO)(SEXP x) {
     return STRING_PTR_RO(x);
 }
 
-SEXP * NORET (VECTOR_PTR)(SEXP x)
+NORET SEXP* (VECTOR_PTR)(SEXP x)
 {
   Rf_error(_("not safe to return vector pointer"));
 }
@@ -677,7 +677,7 @@ SEXP * NORET (VECTOR_PTR)(SEXP x)
 
 #ifndef R_MEMORY_PROFILING
 
-SEXP NORET do_Rprofmem(SEXP args)
+NORET SEXP do_Rprofmem(SEXP args)
 {
     Rf_error(_("memory profiling is not available on this system"));
 }
@@ -711,7 +711,7 @@ static void R_ReportAllocation(R_size_t size)
 
 static void R_EndMemReporting()
 {
-    if(R_MemReportingOutfile != NULL) {
+    if(R_MemReportingOutfile != nullptr) {
 	/* does not fclose always flush? */
 	fflush(R_MemReportingOutfile);
 	fclose(R_MemReportingOutfile);
@@ -724,9 +724,9 @@ static void R_EndMemReporting()
 static void R_InitMemReporting(SEXP filename, int append,
 			       R_size_t threshold)
 {
-    if(R_MemReportingOutfile != NULL) R_EndMemReporting();
+    if(R_MemReportingOutfile != nullptr) R_EndMemReporting();
     R_MemReportingOutfile = RC_fopen(filename, append ? "a" : "w", TRUE);
-    if (R_MemReportingOutfile == NULL)
+    if (R_MemReportingOutfile == nullptr)
 	Rf_error(_("Rprofmem: cannot open output file '%s'"), filename);
     MemoryBank::setMonitor(R_ReportAllocation, threshold);
 }
@@ -794,7 +794,7 @@ R_FreeStringBuffer(R_StringBuffer *buf)
     }
 }
 
-void attribute_hidden
+HIDDEN void
 R_FreeStringBufferL(R_StringBuffer *buf)
 {
     if (buf->bufsize > buf->defaultSize) {
@@ -807,7 +807,7 @@ R_FreeStringBufferL(R_StringBuffer *buf)
 /* ======== This needs direct access to gp field for efficiency ======== */
 
 /* this has NA_STRING = NA_STRING */
-attribute_hidden
+HIDDEN
 int Rf_Seql(SEXP a, SEXP b)
 {
     /* The only case where pointer comparisons do not suffice is where
@@ -828,7 +828,7 @@ int Rf_Seql(SEXP a, SEXP b)
 
 
 #ifdef LONG_VECTOR_SUPPORT
-R_len_t NORET R_BadLongVector(SEXP x, const char *file, int line)
+NORET R_len_t R_BadLongVector(SEXP x, const char *file, int line)
 {
     Rf_error(_("long vectors not supported yet: %s:%d"), file, line);
 }

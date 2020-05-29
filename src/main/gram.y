@@ -244,8 +244,9 @@ static int mbcs_get_next(int c, wchar_t *wc)
     if(utf8locale) {
 	clen = utf8clen((char) c);
 	for(size_t i = 1; i < clen; i++) {
-	    s[i] = (char) xxgetc();
-	    if(s[i] == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    c = xxgetc();
+	    if(c == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    s[i] = (char) c;
 	}
 	s[clen] ='\0'; /* x86 Solaris requires this */
 	res = (int) mbrtowc(wc, s, clen, NULL);
@@ -540,8 +541,6 @@ static int xxgetc(void)
     R_ParseContextLine = ParseState.xxlineno;    
 
     xxcharcount++;
-    // putchar(c);
-    // if (c == '\n') fputs("R:: ", stdout);
     return c;
 }
 
@@ -563,8 +562,6 @@ static int xxungetc(int c)
     R_ParseContextLast = (R_ParseContextLast + PARSE_CONTEXT_SIZE -1) % PARSE_CONTEXT_SIZE;
     if(npush >= PUSHBACK_BUFSIZE) return EOF;
     pushback[npush++] = c;
-    // putchar('\\');
-    // putchar('b');
     return c;
 }
 
@@ -938,7 +935,7 @@ static SEXP xxfuncall(SEXP expr, SEXP args)
 	if (Rf_length(CDR(args)) == 1 && CADR(args) == R_MissingArg && TAG(CDR(args)) == R_NilValue )
 	    ans = Rf_lang1(expr);
 	else
-            ans = new CachingExpression(expr, SEXP_downcast<PairList*>(CDR(args)));
+	    ans = new CachingExpression(expr, SEXP_downcast<PairList*>(CDR(args)));
 	UNPROTECT(1);
 	PROTECT(ans);
     }
@@ -1013,6 +1010,10 @@ static SEXP xxparen(SEXP n1, SEXP n2)
     return ans;
 }
 
+
+/* This should probably use CONS rather than LCONS, but
+   it shouldn't matter and we would rather not meddle
+   See PR#7055 */
 
 static SEXP xxsubscript(SEXP a1, SEXP a2, SEXP a3)
 {
@@ -1189,25 +1190,25 @@ static void PutSrcRefState(SrcRefState *state);
 static void UseSrcRefState(SrcRefState *state);
 
 /* This is called once when R starts up. */
-attribute_hidden
+HIDDEN
 void InitParser(void)
 {
-    ParseState.data = NULL;
-    ParseState.ids = NULL;
+    ParseState.data = nullptr;
+    ParseState.ids = nullptr;
 }
 
 /* This is called each time a new parse sequence begins */
-attribute_hidden
+HIDDEN
 void R_InitSrcRefState(void)
 {
     if (busy) {
-        SrcRefState *prev = new SrcRefState;
+    	SrcRefState *prev = new SrcRefState;
     	PutSrcRefState(prev);
 	ParseState.prevState = prev;
-	ParseState.data = NULL;
-	ParseState.ids = NULL;
+	ParseState.data = nullptr;
+	ParseState.ids = nullptr;
     } else
-        ParseState.prevState = NULL;
+        ParseState.prevState = nullptr;
     ParseState.keepSrcRefs = FALSE;
     ParseState.didAttach = FALSE;
     PROTECT_WITH_INDEX(ParseState.SrcFile = R_NilValue, &(ParseState.SrcFileProt));
@@ -1220,7 +1221,7 @@ void R_InitSrcRefState(void)
     busy = TRUE;
 }
 
-attribute_hidden
+HIDDEN
 void R_FinalizeSrcRefState(void)
 {
     UNPROTECT_PTR(ParseState.SrcFile);
@@ -1231,7 +1232,7 @@ void R_FinalizeSrcRefState(void)
     	if (ParseState.prevState || DATA_COUNT > MAX_DATA_COUNT) {
 	    R_ReleaseObject(ParseState.data);
 	    R_ReleaseObject(ParseState.text);
-	    ParseState.data = NULL;
+	    ParseState.data = nullptr;
 	} else /* Remove all the strings from the text vector so they don't take up memory, and clean up data */
 	    for (int i=0; i < ParseState.data_count; i++) {
 	    	SET_STRING_ELT(ParseState.text, i, R_BlankString);
@@ -1241,7 +1242,7 @@ void R_FinalizeSrcRefState(void)
     if (ParseState.ids) {
 	if (ParseState.prevState || ID_COUNT > MAX_DATA_COUNT) {
 	    R_ReleaseObject(ParseState.ids);
-	    ParseState.ids = NULL;
+	    ParseState.ids = nullptr;
         } else {/* Remove the parent records */
             if (identifier > ID_COUNT) identifier = ID_COUNT;
             for (int i=0; i < identifier; i++)
@@ -1362,7 +1363,7 @@ static int file_getc(void)
 }
 
 /* used in main.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_Parse1File(FILE *fp, int gencode, ParseStatus *status)
 {
     {
@@ -1385,7 +1386,7 @@ static int buffer_getc(void)
 }
 
 /* Used only in main.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_Parse1Buffer(IoBuffer *buffer, int gencode, ParseStatus *status)
 {
     Rboolean keepSource = FALSE; 
@@ -1503,7 +1504,7 @@ finish:
 }
 
 /* used in edit.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseFile(FILE *fp, int n, ParseStatus *status, SEXP srcfile)
 {
     GenerateCode = 1;
@@ -1527,7 +1528,7 @@ static int con_getc(void)
 }
 
 /* used in source.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseConn(Rconnection con, int n, ParseStatus *status, SEXP srcfile)
 {
     GenerateCode = 1;
@@ -1565,7 +1566,7 @@ static const char *Prompt(SEXP prompt, int type)
 }
 
 /* used in source.cpp */
-attribute_hidden
+HIDDEN
 SEXP R_ParseBuffer(IoBuffer *buffer, int n, ParseStatus *status, SEXP prompt, 
 		   SEXP srcfile)
 {
@@ -1840,7 +1841,7 @@ static SEXP mkNA(void)
     return Rf_ScalarLogical(NA_LOGICAL);
 }
 
-attribute_hidden
+HIDDEN
 SEXP Rf_mkTrue(void)
 {
     return Rf_ScalarLogical(TRUE);
@@ -2252,8 +2253,9 @@ static int mbcs_get_next2(int c, ucs_t *wc)
     if(utf8locale) {
 	clen = utf8clen(c);
 	for(i = 1; i < clen; i++) {
-	    s[i] = xxgetc();
-	    if(s[i] == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    c = xxgetc();
+	    if(c == R_EOF) Rf_error(_("EOF whilst reading MBCS char at line %d"), ParseState.xxlineno);
+	    s[i] = (char) c;
 	}
 	s[clen] ='\0'; /* x86 Solaris requires this */
 	res = Rf_mbtoucs(wc, s, clen);
@@ -2590,7 +2592,7 @@ static int SpecialValue(int c)
 }
 
 /* return 1 if name is a valid name 0 otherwise */
-attribute_hidden
+HIDDEN
 int Rf_isValidName(const char *name)
 {
     const char *p = name;
@@ -2624,7 +2626,7 @@ int Rf_isValidName(const char *name)
 
     if (streql(name, "...")) return 1;
 
-    for (i = 0; keywords[i].name != NULL; i++)
+    for (i = 0; keywords[i].name != nullptr; i++)
 	if (streql(keywords[i].name, name)) return 0;
 
     return 1;
@@ -2725,6 +2727,7 @@ static SEXP install_and_save2(const char * text, const char * savetext)
     strcpy(yytext, savetext);
     return Rf_install(text);
 }
+
 
 /* Split the input stream into tokens. */
 /* This is the lowest of the parsing levels. */
@@ -3318,7 +3321,6 @@ static void modif_token( yyltype* loc, int tok ){
 	}
 
 }
-
 
 /* this local version of Rf_lengthgets() always copies and doesn't fill with NA */
 static SEXP lengthgets2(SEXP x, int len) {

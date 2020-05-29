@@ -323,7 +323,7 @@ void process_user_Renviron()
     process_Renviron(s);
 }
 
-SEXP attribute_hidden do_readEnviron(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_)
+HIDDEN SEXP do_readEnviron(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* path_)
 {
     SEXP x = path_;
     if (Rf_length(x) != 1 || !Rf_isString(x))

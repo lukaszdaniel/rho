@@ -100,7 +100,7 @@ using namespace rho;
    that is not an issue -- and most sessions will not use PCRE with
    more than 10 strings.
  */
-static pcre_jit_stack *jit_stack = NULL; // allocated at first use.
+static pcre_jit_stack *jit_stack = nullptr; // allocated at first use.
 
 static void setup_jit(pcre_extra *re_pe)
 {
@@ -121,9 +121,9 @@ static void setup_jit(pcre_extra *re_pe)
 }
 
 
-/* we allow pat == NULL if the regex cannot be safely expressed
+/* we allow pat == nullptr if the regex cannot be safely expressed
    as a string (e.g., when using grepRaw) */
-static void NORET reg_report(int rc,  regex_t *reg, const char *pat)
+[[noreturn]] static void reg_report(int rc,  regex_t *reg, const char *pat)
 {
     char errbuf[1001];
     tre_regerror(rc, reg, errbuf, 1001);
@@ -257,7 +257,7 @@ set_pcre_recursion_limit(pcre_extra **re_pe_ptr, const long limit)
  * list is the collection of splits for the corresponding element of x.
 */
 
-SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* split_, rho::RObject* fixed_, rho::RObject* perl_, rho::RObject* useBytes_)
+HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* split_, rho::RObject* fixed_, rho::RObject* perl_, rho::RObject* useBytes_)
 {
     SEXP ans, tok, x;
     R_xlen_t i, itok, len, tlen;
@@ -289,7 +289,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
     len = XLENGTH(x);
     tlen = XLENGTH(tok);
 
-    /* treat split = NULL as split = "" */
+    /* treat split = nullptr as split = "" */
     if (!tlen) { tlen = 1; tok = Rf_mkString(""); }
 
     if (!useBytes) {
@@ -500,7 +500,7 @@ SEXP attribute_hidden do_strsplit(/*const*/ rho::Expression* call, const rho::Bu
 	    }
 	} else if (perl_opt) {
 	    pcre *re_pcre;
-	    pcre_extra *re_pe = NULL;
+	    pcre_extra *re_pe = nullptr;
 	    int erroffset, ovector[30];
 	    const char *errorptr;
 	    int options = 0;
@@ -890,7 +890,7 @@ static int fgrep_one_bytes(const char *pat, const char *target, int len,
     return -1;
 }
 
-SEXP attribute_hidden do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* x_, rho::RObject* ignore_case_, rho::RObject* value_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_, rho::RObject* invert_)
+HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* x_, rho::RObject* ignore_case_, rho::RObject* value_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_, rho::RObject* invert_)
 {
     SEXP pat, text, ind, ans;
     regex_t reg;
@@ -1213,7 +1213,7 @@ static R_size_t fgrepraw1(SEXP pat, SEXP text, R_size_t offset) {
 
 /* grepRaw(pattern, text, offset, ignore.case, fixed, value, all, invert) */
 // FIXME:  allow long vectors.
-SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* x_, rho::RObject* offset_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* value_, rho::RObject* all_, rho::RObject* invert_)
+HIDDEN SEXP do_grepraw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* x_, rho::RObject* offset_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* value_, rho::RObject* all_, rho::RObject* invert_)
 {
     SEXP pat, text, ans, res_head, res_tail;
     regex_t reg;
@@ -1437,7 +1437,8 @@ SEXP attribute_hidden do_grepraw(/*const*/ rho::Expression* call, const rho::Bui
 	    break;
 	if (!nmatches) eflags |= REG_NOTBOL;
 	if (res_ptr >= static_cast<R_size_t>(res_alloc)) {
-	    if (res_alloc < (2^24)) res_alloc <<= 1;
+	    if (res_alloc < (0x2 ^ 24))
+		res_alloc <<= 1;
 	    SETCDR(res_tail, Rf_list1(Rf_allocVector(INTSXP, res_alloc)));
 	    res_tail = CDR(res_tail);
 	    res_val = INTEGER(CAR(res_tail));
@@ -1661,7 +1662,7 @@ static int wcount_subs(const wchar_t *repl)
  * either once or globally.
  * The functions are loosely patterned on the "sub" and "gsub" in "nawk". */
 
-SEXP attribute_hidden do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* replacement_, rho::RObject* x_, rho::RObject* ignore_case_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_)
+HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* replacement_, rho::RObject* x_, rho::RObject* ignore_case_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
     SEXP pat, rep, text, ans;
     regex_t reg;
@@ -2511,7 +2512,7 @@ static SEXP gregexpr_BadStringAns(void)
     return ans;
 }
 
-SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_)
+HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* perl_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
     SEXP pat, text, ans, itype;
     regex_t reg;
@@ -2712,7 +2713,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 	    // initiialization needed for NA inputs: PR#16484
 	    for (i = 0 ; i < n * capture_count ; i++)
 		is[i] = il[i] = NA_INTEGER;
-	} else is = il = NULL; /* not actually used */
+	} else is = il = nullptr; /* not actually used */
 	vmax = vmaxget();
 	for (i = 0 ; i < n ; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
@@ -2854,7 +2855,7 @@ SEXP attribute_hidden do_regexpr(/*const*/ rho::Expression* call, const rho::Bui
 }
 
 // .Internal(regexec(pattern, text, ignore.case, fixed, useBytes)) :
-SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* useBytes_)
+HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* text_, rho::RObject* ignore_case_, rho::RObject* fixed_, rho::RObject* useBytes_)
 {
     SEXP pat, text, ans, matchpos, matchlen, itype;
     int opt_icase, opt_fixed, useBytes;
@@ -3041,7 +3042,7 @@ SEXP attribute_hidden do_regexec(/*const*/ rho::Expression* call, const rho::Bui
    PCRE_CONFIG_UNICODE_PROPERTIES had been added by 8.10,
    the earliest version we allow.
  */
-SEXP attribute_hidden do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_pcre_config(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     int res;
 

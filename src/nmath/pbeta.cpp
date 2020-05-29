@@ -37,8 +37,7 @@
 #include "nmath.h"
 #include "dpq.h"
 
-attribute_hidden
-double pbeta_raw(double x, double a, double b, int lower_tail, int log_p)
+HIDDEN double pbeta_raw(double x, double a, double b, int lower_tail, int log_p)
 {
     // treat limit cases correctly here:
     if(a == 0 || b == 0 || !R_FINITE(a) || !R_FINITE(b)) {

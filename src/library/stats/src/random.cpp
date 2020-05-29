@@ -53,7 +53,7 @@ static void fillWithNAs(SEXP x, R_xlen_t n, SEXPTYPE type) {
     Rf_warning(_("NAs produced"));
 }
 
-static R_INLINE R_xlen_t resultLength(SEXP lengthArgument) {
+R_INLINE static R_xlen_t resultLength(SEXP lengthArgument) {
     R_xlen_t n;
 
     if (!Rf_isVector(lengthArgument)) {
@@ -81,7 +81,7 @@ static R_INLINE R_xlen_t resultLength(SEXP lengthArgument) {
 
 /* random sampling from 1 parameter families. */
 
-static R_INLINE SEXP random1(SEXP sn, SEXP sa, ran1 fn, SEXPTYPE type)
+R_INLINE static SEXP random1(SEXP sn, SEXP sa, ran1 fn, SEXPTYPE type)
 {
     SEXP x, a;
     R_xlen_t n, na;
@@ -152,7 +152,7 @@ DEFRAND1_INT(rsignrank)
 
 /* random sampling from 2 parameter families. */
 
-static R_INLINE SEXP random2(SEXP sn, SEXP sa, SEXP sb, ran2 fn, SEXPTYPE type)
+R_INLINE static SEXP random2(SEXP sn, SEXP sa, SEXP sb, ran2 fn, SEXPTYPE type)
 {
     SEXP x, a, b;
     R_xlen_t n, na, nb;
@@ -232,7 +232,7 @@ DEFRAND2_REAL(rnbinom_mu)
 
 /* random sampling from 3 parameter families. */
 
-static R_INLINE SEXP random3(SEXP sn, SEXP sa, SEXP sb, SEXP sc, ran3 fn,
+R_INLINE static SEXP random3(SEXP sn, SEXP sa, SEXP sb, SEXP sc, ran3 fn,
 			     SEXPTYPE type)
 {
     SEXP x, a, b, c;

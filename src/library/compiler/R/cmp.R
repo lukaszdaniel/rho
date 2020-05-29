@@ -41,7 +41,7 @@ setCompilerOptions <- function(...) {
                    }
                },
                suppressAll = {
-                   if (isTRUE(op) || isFALSE(op)) {
+                   if (identical(op, TRUE) || identical(op, FALSE)) {
                        old <- c(old, list(suppressAll =
                                           compilerOptions$suppressAll))
                        newOptions$suppressAll <- op
@@ -56,7 +56,7 @@ setCompilerOptions <- function(...) {
                    }
                },
                suppressUndefined = {
-                   if (isTRUE(op) || isFALSE(op) ||
+                   if (identical(op, TRUE) || identical(op, FALSE) ||
                        is.character(op)) {
                        old <- c(old, list(suppressUndefined =
                                           compilerOptions$suppressUndefined))

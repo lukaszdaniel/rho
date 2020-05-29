@@ -109,7 +109,7 @@ static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 /* Most are vectorized */
 
 /* primitive */
-SEXP attribute_hidden do_nzchar(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_nzchar(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP x, ans;
 
@@ -239,7 +239,7 @@ int R_nchar(SEXP string, nchar_type type_,
     return NA_INTEGER; // -Wall
 } // R_nchar()
 
-SEXP attribute_hidden do_nchar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* stype, RObject* allowNA_, RObject* keepNA_)
+HIDDEN SEXP do_nchar(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* stype, RObject* allowNA_, RObject* keepNA_)
 {
     SEXP d, s, x;
 
@@ -318,7 +318,7 @@ static void substr(char *buf, const char *str, int ienc, int sa, int so,
     *buf = '\0';
 }
 
-SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* start_, RObject* stop_)
+HIDDEN SEXP do_substr(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* start_, RObject* stop_)
 {
     SEXP s;
     RObject* x = x_;
@@ -367,7 +367,7 @@ SEXP attribute_hidden do_substr(/*const*/ Expression* call, const BuiltInFunctio
 
 // .Internal( startsWith(x, prefix) )  and
 // .Internal( endsWith  (x, suffix) )
-SEXP attribute_hidden
+HIDDEN SEXP
 do_startsWith(Expression* call, const BuiltInFunction* op,
 	      RObject* x,
 	      RObject* Xfix /* 'prefix' or 'suffix' */)
@@ -521,7 +521,7 @@ substrset(char *buf, const char *const str, cetype_t ienc, size_t sa, size_t so,
     }
 }
 
-SEXP attribute_hidden do_substrgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* start_, RObject* stop_, RObject* value_)
+HIDDEN SEXP do_substrgets(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* start_, RObject* stop_, RObject* value_)
 {
     SEXP s, x, sa, so, value, el, v_el;
     R_xlen_t i, len;
@@ -819,7 +819,7 @@ donewsc:
     return ans;
 }
 
-SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunction* op, RObject* these_, RObject* minlength_, RObject* use_classes_)
+HIDDEN SEXP do_abbrev(/*const*/ Expression* call, const BuiltInFunction* op, RObject* these_, RObject* minlength_, RObject* use_classes_)
 {
     RObject* x = these_;
 
@@ -869,7 +869,7 @@ SEXP attribute_hidden do_abbrev(/*const*/ Expression* call, const BuiltInFunctio
     return ans;
 }
 
-SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* allow__)
+HIDDEN SEXP do_makenames(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* allow__)
 {
     SEXP arg, ans;
     R_xlen_t i, n;
@@ -970,7 +970,7 @@ SEXP attribute_hidden do_makenames(/*const*/ Expression* call, const BuiltInFunc
 }
 
 
-SEXP attribute_hidden do_tolower(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_tolower(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     SEXP x, y;
     R_xlen_t i, n;
@@ -1243,12 +1243,12 @@ tr_get_next_char_from_spec(struct tr_spec **p) {
 
 struct xtable_t { wchar_t c_old, c_new; };
 
-static R_INLINE int xtable_comp(const void *a, const void *b)
+R_INLINE static int xtable_comp(const void *a, const void *b)
 {
     return (static_cast<const xtable_t *>(a))->c_old - (static_cast<const xtable_t *>(b))->c_old;
 }
 
-static R_INLINE int xtable_key_comp(const void *a, const void *b)
+R_INLINE static int xtable_key_comp(const void *a, const void *b)
 {
     return *(static_cast<const wchar_t *>(a)) - (static_cast<const xtable_t *>(b))->c_old;
 }
@@ -1293,7 +1293,7 @@ static R_INLINE int xtable_key_comp(const void *a, const void *b)
     int comp;                                                  \
     l = 0;                                                     \
     u = _nmemb;                                                \
-    _rc = NULL;                                                \
+    _rc = nullptr;                                                \
     while (l < u)                                              \
     {                                                          \
 	idx = (l + u) / 2;                                     \
@@ -1310,7 +1310,7 @@ static R_INLINE int xtable_key_comp(const void *a, const void *b)
     }                                                          \
 }
 
-SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunction* op, RObject* old_, RObject* new_, RObject* x_)
+HIDDEN SEXP do_chartr(/*const*/ Expression* call, const BuiltInFunction* op, RObject* old_, RObject* new_, RObject* x_)
 {
     SEXP old, _new, x, y;
     R_xlen_t i, n;
@@ -1543,7 +1543,7 @@ SEXP attribute_hidden do_chartr(/*const*/ Expression* call, const BuiltInFunctio
     return(y);
 }
 
-SEXP attribute_hidden do_strtrim(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* width_)
+HIDDEN SEXP do_strtrim(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* width_)
 {
     SEXP s, x, width;
     R_xlen_t i, len;
@@ -1619,7 +1619,7 @@ static int strtoi(SEXP s, int base)
     return int(res);
 }
 
-SEXP attribute_hidden do_strtoi(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* base_)
+HIDDEN SEXP do_strtoi(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* base_)
 {
     SEXP ans, x, b;
     R_xlen_t i, n;
@@ -1645,7 +1645,7 @@ SEXP attribute_hidden do_strtoi(/*const*/ Expression* call, const BuiltInFunctio
 /* creates a new STRSXP which is a suffix of string, starting
    with given index; the result is returned unprotected  */
 
-SEXP attribute_hidden Rf_stringSuffix(SEXP string, int fromIndex) {
+HIDDEN SEXP Rf_stringSuffix(SEXP string, int fromIndex) {
 
     int origLen = LENGTH(string);
     int newLen = origLen - fromIndex;
@@ -1660,7 +1660,7 @@ SEXP attribute_hidden Rf_stringSuffix(SEXP string, int fromIndex) {
     return res;
 }
 
-SEXP attribute_hidden do_strrep(Expression* call, const BuiltInFunction* op, RObject* x, RObject* n)
+HIDDEN SEXP do_strrep(Expression* call, const BuiltInFunction* op, RObject* x, RObject* n)
 {
     SEXP d, s, el;
     R_xlen_t is, ix, in, ns, nx, nn;

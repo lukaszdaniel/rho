@@ -1870,7 +1870,7 @@ static int R_X11Err(Display *dsp, XErrorEvent *event)
 }
 
 
-static int NORET R_X11IOErr(Display *dsp)
+[[noreturn]] static int R_X11IOErr(Display *dsp)
 {
     Rf_error("X11 fatal IO error: please save work and shut down R");
 }

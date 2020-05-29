@@ -159,12 +159,12 @@ bool rho_runtime_loopExceptionIsNext(void* exception) {
 
 // In src/main/eval.cpp
 extern "C++"
-Rboolean asLogicalNoNA(SEXP s, SEXP call);
+Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho);
 extern "C++"
 SEXP applydefine(SEXP call, SEXP op, SEXP args, SEXP rho);
 
-bool rho_runtime_coerceToTrueOrFalse(RObject* object, Expression* call) {
-    return asLogicalNoNA(object, call);
+bool rho_runtime_coerceToTrueOrFalse(RObject* object, Expression* call, Environment* rho) {
+    return asLogicalNoNA(object, call, rho);
 }
 
 bool rho_runtime_is_function(RObject* object) {

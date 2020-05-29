@@ -69,14 +69,14 @@ extern "C" {
 
 #define NULL_USER_OBJECT	R_NilValue
 
-#define AS_LOGICAL(x)		Rf_coerceVector(x,LGLSXP)
-#define AS_INTEGER(x)		Rf_coerceVector(x,INTSXP)
-#define AS_NUMERIC(x)		Rf_coerceVector(x,REALSXP)
-#define AS_CHARACTER(x)		Rf_coerceVector(x,STRSXP)
-#define AS_COMPLEX(x)		Rf_coerceVector(x,CPLXSXP)
-#define AS_VECTOR(x)		Rf_coerceVector(x,VECSXP)
-#define AS_LIST(x)		Rf_coerceVector(x,VECSXP)
-#define AS_RAW(x)		Rf_coerceVector(x,RAWSXP)
+#define AS_LOGICAL(x)   Rf_coerceVector(x, LGLSXP)
+#define AS_INTEGER(x)   Rf_coerceVector(x, INTSXP)
+#define AS_NUMERIC(x)   Rf_coerceVector(x, REALSXP)
+#define AS_CHARACTER(x) Rf_coerceVector(x, STRSXP)
+#define AS_COMPLEX(x)   Rf_coerceVector(x, CPLXSXP)
+#define AS_VECTOR(x)    Rf_coerceVector(x, VECSXP)
+#define AS_LIST(x)      Rf_coerceVector(x, VECSXP)
+#define AS_RAW(x)       Rf_coerceVector(x, RAWSXP)
 
 #ifdef USE_RINTERNALS
 // This is not documented to be supported, and may not be in future

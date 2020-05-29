@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-17 r7c8bdccf3a) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-25 r74461) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -121,8 +121,8 @@ List of 2
 +     "\n\t starting with 'is.' :\t  ",
 +     sum(grepl("^is\\.", ls.base[base.is.f])), "\n", sep = "")
 
-Number of base objects:		1341
-Number of functions in base:	1296
+Number of base objects:		1343
+Number of functions in base:	1298
 	 starting with 'is.' :	  50
 
 > ## 0.14  : 31
@@ -781,7 +781,7 @@ Your balance is 120
 
 
 > try(ross$withdraw(500)) # no way..
-Error in ross$withdraw(500) : You don't have that much money!
+Error in command 'ross$withdraw(500)': You don't have that much money!
 
 
 
@@ -1224,8 +1224,7 @@ flld.c+                plot.axes = {})
 > summary(detg.m0)
 
 Call:
-glm(formula = Fr ~ M.user * Temp * Soft + Brand, family = poisson, 
-    data = detg)
+glm(formula = Fr ~ M.user * Temp * Soft + Brand, family = poisson, data = detg)
 
 Deviance Residuals: 
      Min        1Q    Median        3Q       Max  
@@ -1265,8 +1264,8 @@ Number of Fisher Scoring iterations: 4
 > summary(detg.mod)
 
 Call:
-glm(formula = terms(Fr ~ M.user * Temp * Soft + Brand * M.user * 
-    Temp, keep.order = TRUE), family = poisson, data = detg)
+glm(formula = terms(Fr ~ M.user * Temp * Soft + Brand * M.user * Temp, keep.order = TRUE), 
+    family = poisson, data = detg)
 
 Deviance Residuals: 
      Min        1Q    Median        3Q       Max  
@@ -1305,8 +1304,8 @@ Number of Fisher Scoring iterations: 4
 > summary(detg.mod, correlation = TRUE, symbolic.cor = TRUE)
 
 Call:
-glm(formula = terms(Fr ~ M.user * Temp * Soft + Brand * M.user * 
-    Temp, keep.order = TRUE), family = poisson, data = detg)
+glm(formula = terms(Fr ~ M.user * Temp * Soft + Brand * M.user * Temp, keep.order = TRUE), 
+    family = poisson, data = detg)
 
 Deviance Residuals: 
      Min        1Q    Median        3Q       Max  
@@ -1516,5 +1515,5 @@ sm     3    3    3    3    4    4    4    4    2     2     2
 > par(op)
 > 
 > cat("Time elapsed: ", proc.time() - .ptime, "\n")
-Time elapsed:  1.327 0.033 1.359 0 0 
+Time elapsed:  1.516 0.056 1.571 0 0 
 > 

@@ -145,7 +145,7 @@ double Rf_currentTime(void)
     return ans;
 }
 
-SEXP attribute_hidden do_systime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN SEXP do_systime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     return Rf_ScalarReal(Rf_currentTime());
 }
@@ -155,7 +155,7 @@ SEXP attribute_hidden do_systime(/*const*/ rho::Expression* call, const rho::Bui
 #endif
 
 /* For RNG.cpp, main.cpp, mkdtemp.cpp */
-attribute_hidden unsigned int TimeToSeed(void)
+HIDDEN unsigned int TimeToSeed(void)
 {
     unsigned int seed, pid = getpid();
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)

@@ -476,7 +476,7 @@ nlsb_iterate(double b[], double d[], double dr[], int iv[], int liv,
  *
  * @return element of list with name nm
  */
-static R_INLINE SEXP getElement(SEXP list, const char *nm)
+R_INLINE static SEXP getElement(SEXP list, const char *nm)
 {
     int i; SEXP names = Rf_getAttrib(list, R_NamesSymbol);
 
@@ -498,7 +498,7 @@ static R_INLINE SEXP getElement(SEXP list, const char *nm)
  *
  * @return a SEXP that points to a function
  */
-static R_INLINE SEXP getFunc(SEXP list, const char *enm, const char *lnm)
+R_INLINE static SEXP getFunc(SEXP list, const char *enm, const char *lnm)
 {
     SEXP ans;
     if (!Rf_isFunction(ans = getElement(list, enm)))

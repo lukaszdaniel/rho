@@ -158,7 +158,7 @@ void ArgMatcher::unusedArgsError(const ConsCell* unused_list)
 /* Returns the first exactly matching tag found. */
 /* Pattern is a symbol. */
 // Used for matching na.rm in logic.cpp and match.cpp.
-SEXP attribute_hidden Rf_matchArgExact(SEXP tag, SEXP *list)
+HIDDEN SEXP Rf_matchArgExact(SEXP tag, SEXP *list)
 {
     if (*list == nullptr)
 	return R_MissingArg;

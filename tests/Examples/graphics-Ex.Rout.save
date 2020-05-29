@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -261,6 +261,24 @@ Hair    Brown Blue Hazel Green
 > # one way to have a custom x axis
 > plot(1:10, xaxt = "n")
 > axis(1, xaxp = c(2, 9, 7))
+> 
+> ## Changing default gap between labels:
+> plot(0:100, type="n", axes=FALSE, ann=FALSE)
+> title(quote("axis(1, .., gap.axis = f)," ~~ f >= 0))
+> axis(2, at = 5*(0:20), las = 1, gap.axis = 1/4)
+> gaps <- c(4, 2, 1, 1/2, 1/4, 0.1, 0)
+> chG <- paste0(ifelse(gaps == 1, "default:  ", ""),
++               "gap.axis=", formatC(gaps))
+> jj <- seq_along(gaps)
+> linG <- -2.5*(jj-1)
+> for(j in jj) {
++     isD <- gaps[j] == 1 # is default
++     axis (1, at=5*(0:20), gap.axis = gaps[j], padj=-1, line = linG[j],
++           col.axis = if(isD) "forest green" else 1, font.axis= 1+isD)
++ }
+> mtext(chG, side=1, padj=-1, line = linG -1/2, cex=3/4,
++       col = ifelse(gaps == 1, "forest green", "blue3"))
+> ## now shrink the window (in x- and y-direction) and observe the axis labels drawn
 > 
 > 
 > 
@@ -3036,7 +3054,7 @@ function (xy = 1, warn.log = TRUE)
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  4.09 0.08 4.17 0 0 
+Time elapsed:  3.987 0.045 4.031 0 0 
 > grDevices::dev.off()
 null device 
           1 

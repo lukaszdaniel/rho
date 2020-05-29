@@ -50,11 +50,11 @@ static void GLPretty(double *ul, double *uh, int *n);
 void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
 {
 #define EPS_FAC_2 100
-    Rboolean swap = Rboolean(*min > *max);
+    bool swap = (*min > *max);
     double t_, min_o, max_o;
 
     if(swap) { /* Feature: in R, something like  xlim = c(100,0)  just works */
-	t_ = *min; *min = *max; *max = t_;
+	std::swap(*min, *max);
     }
     /* save only for the extreme case (EPS_FAC_2): */
     min_o = *min; max_o = *max;
@@ -63,67 +63,66 @@ void GAxisPars(double *min, double *max, int *n, Rboolean log, int axis)
 	/* Avoid infinities */
 	if(*max > 308) *max = 308;
 	if(*min < -307) *min = -307;
-	*min = Rexp10(*min);
-	*max = Rexp10(*max);
+	*min = std::pow(10.0, *min);
+	*max = std::pow(10.0, *max);
 	GLPretty(min, max, n);
     }
     else GEPretty(min, max, n);
 
     double tmp2 = EPS_FAC_2 * DBL_EPSILON;/* << prevent overflow in product below */
-    if(fabs(*max - *min) < (t_ = fmax2(fabs(*max), fabs(*min)))* tmp2) {
+    if(std::abs(*max - *min) < (t_ = std::max(std::abs(*max), std::abs(*min)))* tmp2) {
 	/* Treat this case somewhat similar to the (min ~= max) case above */
 	/* Too much accuracy here just shows machine differences */
 	Rf_warning(_("relative range of values =%4.0f * EPS, is small (axis %d)")
 		/*"to compute accurately"*/,
-		fabs(*max - *min) / (t_*DBL_EPSILON), axis);
+		std::abs(*max - *min) / (t_*DBL_EPSILON), axis);
 
 	/* No pretty()ing anymore */
 	*min = min_o;
 	*max = max_o;
-	double eps = .005 * fabs(*max - *min);/* .005: not to go to DBL_MIN/MAX */
+	double eps = .005 * std::abs(*max - *min);/* .005: not to go to DBL_MIN/MAX */
 	*min += eps;
 	*max -= eps;
 	if(log) {
-	    *min = Rexp10(*min);
-	    *max = Rexp10(*max);
+	    *min = std::pow(10.0, *min);
+	    *max = std::pow(10.0, *max);
 	}
 	*n = 1;
     }
     if(swap) {
-	t_ = *min; *min = *max; *max = t_;
+		std::swap(*min, *max);
     }
 }
 
 #define LPR_SMALL  2
 #define LPR_MEDIUM 3
 
-static void GLPretty(double *ul, double *uh, int *n)
+static void GLPretty(double* ul, double* uh, int* n)
 {
-/* Generate pretty tick values --	LOGARITHMIC scale
- * __ ul < uh __
- * This only does a very simple setup.
- * The real work happens when the axis is drawn. */
+    /* Generate pretty tick values --	LOGARITHMIC scale
+     * __ ul < uh __
+     * This only does a very simple setup.
+     * The real work happens when the axis is drawn. */
     int p1, p2;
     double dl = *ul, dh = *uh;
-    p1 = int(ceil(log10(dl)));
-    p2 = int(floor(log10(dh)));
-    if(p2 <= p1 &&  dh/dl > 10.0) {
-	p1 = int(ceil(log10(dl) - 0.5));
-	p2 = int(floor(log10(dh) + 0.5));
+    p1 = int(std::ceil(std::log10(dl)));
+    p2 = int(std::floor(std::log10(dh)));
+    if (p2 <= p1 && dh / dl > 10.0) {
+	p1 = int(std::ceil(std::log10(dl) - 0.5));
+	p2 = int(std::floor(std::log10(dh) + 0.5));
     }
 
     if (p2 <= p1) { /* floor(log10(uh)) <= ceil(log10(ul))
-			 * <==>	 log10(uh) - log10(ul) < 2
-			 * <==>		uh / ul	       < 100 */
+		     * <==>	 log10(uh) - log10(ul) < 2
+		     * <==>		uh / ul	       < 100 */
 	/* Very small range : Use tickmarks from a LINEAR scale
 	 *		      Splus uses n = 9 here, but that is dumb */
 	GPretty(ul, uh, n);
 	*n = -*n;
-    }
-    else { /* extra tickmarks --> CreateAtVector() in ./plot.cpp */
+    } else { /* extra tickmarks --> CreateAtVector() in ./plot.cpp */
 	/* round to nice "1e<N>" */
-	*ul = Rexp10((double)p1);
-	*uh = Rexp10((double)p2);
+	*ul = std::pow(10.0, p1);
+	*uh = std::pow(10.0, p2);
 	if (p2 - p1 <= LPR_SMALL)
 	    *n = 3; /* Small range :	Use 1,2,5,10 times 10^k tickmarks */
 	else if (p2 - p1 <= LPR_MEDIUM)

@@ -40,7 +40,7 @@
 
 using namespace rho;
 
-SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = nullptr;
 
@@ -77,7 +77,7 @@ SEXP attribute_hidden do_debug(SEXP call, SEXP op, SEXP args, SEXP rho)
 }
 
 /* primitives .primTrace() and .primUntrace() */
-SEXP attribute_hidden do_trace(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_trace(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     find_char_fun
 
@@ -100,7 +100,7 @@ SEXP attribute_hidden do_trace(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 /* maintain global trace & debug state */
 
-SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFunction* op, RObject* on_)
+HIDDEN SEXP do_traceOnOff(/*const*/ Expression* call, const BuiltInFunction* op, RObject* on_)
 {
     SEXP onOff = on_;
     bool trace = op->variant() == 0;  // Otherwise it's debug.
@@ -122,10 +122,10 @@ SEXP attribute_hidden do_traceOnOff(/*const*/ Expression* call, const BuiltInFun
 }
 
 // GUIs, packages, etc can query:
-Rboolean attribute_hidden
+HIDDEN Rboolean
 R_current_trace_state() { return Rboolean(FunctionBase::tracingEnabled()); }
 
-Rboolean attribute_hidden
+HIDDEN Rboolean
 R_current_debugging_state() { return Rboolean(Closure::debuggingEnabled()); }
 
 
@@ -133,7 +133,7 @@ R_current_debugging_state() { return Rboolean(Closure::debuggingEnabled()); }
 /* report when a traced object is duplicated */
 
 #ifdef R_MEMORY_PROFILING
-SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_tracemem(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP object;
     char buffer[21];
@@ -155,7 +155,7 @@ SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunct
 }
 
 
-SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_untracemem(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP object;
 
@@ -166,12 +166,12 @@ SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFun
 
 #else
 
-SEXP attribute_hidden do_tracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_tracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     Rf_errorcall(call, _("R was not compiled with support for memory profiling"));
 }
 
-SEXP attribute_hidden do_untracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_untracemem(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     Rf_errorcall(call, _("R was not compiled with support for memory profiling"));
 }

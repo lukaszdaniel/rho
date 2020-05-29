@@ -100,7 +100,7 @@ using namespace rho;
 
 static SEXP Options(void)
 {
-    static SEXP sOptions = NULL;
+    static SEXP sOptions = nullptr;
     if(!sOptions) sOptions = Rf_install(".Options");
     return sOptions;
 }
@@ -159,7 +159,7 @@ int Rf_GetOptionDigits(void)
     return d;
 }
 
-attribute_hidden
+HIDDEN
 int Rf_GetOptionCutoff(void)
 {
     int w;
@@ -171,7 +171,7 @@ int Rf_GetOptionCutoff(void)
     return w;
 }
 
-attribute_hidden
+HIDDEN
 Rboolean Rf_GetOptionDeviceAsk(void)
 {
     int ask;
@@ -226,7 +226,7 @@ static SEXP SetOption(SEXP tag, SEXP value)
 /* Set the width of lines for printing i.e. like options(width=...) */
 /* Returns the previous value for the options. */
 
-int attribute_hidden R_SetOptionWidth(int w)
+HIDDEN int R_SetOptionWidth(int w)
 {
     SEXP t, v;
     if (w < R_MIN_WIDTH_OPT) w = R_MIN_WIDTH_OPT;
@@ -238,7 +238,7 @@ int attribute_hidden R_SetOptionWidth(int w)
     return INTEGER(v)[0];
 }
 
-int attribute_hidden R_SetOptionWarn(int w)
+HIDDEN int R_SetOptionWarn(int w)
 {
     SEXP t, v;
 
@@ -252,7 +252,7 @@ int attribute_hidden R_SetOptionWarn(int w)
 /* Note that options are stored as a dotted pair list */
 /* This is barely historical, but is also useful. */
 
-void attribute_hidden Rf_InitOptions(void)
+HIDDEN void Rf_InitOptions(void)
 {
     SEXP val, v;
     const char *p = nullptr;
@@ -373,7 +373,7 @@ void attribute_hidden Rf_InitOptions(void)
 }
 
 
-SEXP attribute_hidden do_getOption(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_getOption(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP x = CAR(args);
     if (!Rf_isString(x) || LENGTH(x) != 1)
@@ -383,7 +383,7 @@ SEXP attribute_hidden do_getOption(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 
 /* This needs to manage R_Visible */
-SEXP attribute_hidden do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP names, value, options;
 

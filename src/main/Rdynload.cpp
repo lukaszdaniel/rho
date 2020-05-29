@@ -149,7 +149,7 @@ static int CountDLL = 0;
 #include <R_ext/Rdynload.h>
 
 /* Allocated in initLoadedDLL at R session start. Never free'd */
-static DllInfo* LoadedDLL = NULL;
+static DllInfo* LoadedDLL = nullptr;
 
 static int addDLL(char *dpath, const char *name, HINSTANCE handle);
 static SEXP Rf_MakeDLLInfo(DllInfo *info);
@@ -160,14 +160,14 @@ static SEXP createRSymbolObject(SEXP sname, DL_FUNC f,
 
 static DllInfo *R_RegisterDLL(HINSTANCE handle, const char *path);
 
-attribute_hidden OSDynSymbol Rf_osDynSymbol;
-attribute_hidden OSDynSymbol *R_osDynSymbol = &Rf_osDynSymbol;
+HIDDEN OSDynSymbol Rf_osDynSymbol;
+HIDDEN OSDynSymbol *R_osDynSymbol = &Rf_osDynSymbol;
 
 void R_init_base(DllInfo *); /* In registration.cpp */
 
 static void initLoadedDLL();
 
-void attribute_hidden
+HIDDEN void
 InitDynload()
 {
     initLoadedDLL();
@@ -181,7 +181,7 @@ InitDynload()
    called too early during startup to use Rf_error(.) */
 static void initLoadedDLL()
 {
-    if (CountDLL != 0 || LoadedDLL != NULL)
+    if (CountDLL != 0 || LoadedDLL != nullptr)
 	R_Suicide("DLL table corruption detected"); /* not translated */
 
     /* Note that it is likely that dlopen will use up at least one file
@@ -203,7 +203,7 @@ static void initLoadedDLL()
     */
 
     char *req = getenv("R_MAX_NUM_DLLS");
-    if (req != NULL) {
+    if (req != nullptr) {
 	/* set exactly the requested limit, or fail */
 	int reqlimit = atoi(req);
 	if (reqlimit < 100) {
@@ -255,7 +255,7 @@ static void initLoadedDLL()
 
     /* memory is set to zero */
     LoadedDLL = (DllInfo *) calloc(MaxNumDLLs, sizeof(DllInfo));
-    if (LoadedDLL == NULL)
+    if (LoadedDLL == nullptr)
 	R_Suicide(_("could not allocate space for DLL table"));
 }
 
@@ -569,7 +569,7 @@ found:
     return 1;
 }
 
-attribute_hidden
+HIDDEN
 DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all)
 {
 #ifdef CACHE_DLL_SYM
@@ -690,17 +690,16 @@ static DllInfo *R_RegisterDLL(HINSTANCE handle, const char *path)
 	info->forceSymbols = FALSE;
 	return info;
     } else
-	return NULL;
+	return nullptr;
 }
 
-static int
-addDLL(char *dpath, const char *DLLname, HINSTANCE handle)
+static int addDLL(char* dpath, const char* DLLname, HINSTANCE handle)
 {
     int ans = CountDLL;
-    char *name = static_cast<char *>(malloc(strlen(DLLname)+1));
-    if(name == nullptr) {
+    char* name = static_cast<char*>(malloc(strlen(DLLname) + 1));
+    if (name == nullptr) {
 	strcpy(DLLerror, _("could not allocate space for 'name'"));
-	if(handle)
+	if (handle)
 	    R_osDynSymbol->closeLibrary(handle);
 	free(dpath);
 	return 0;
@@ -721,7 +720,7 @@ addDLL(char *dpath, const char *DLLname, HINSTANCE handle)
     LoadedDLL[CountDLL].ExternalSymbols = nullptr;
     CountDLL++;
 
-    return(ans);
+    return (ans);
 }
 
 static Rf_DotCSymbol *
@@ -835,8 +834,7 @@ R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
     return nullptr;
 }
 
-DL_FUNC attribute_hidden
-R_dlsym(DllInfo *info, const char *name,
+HIDDEN DL_FUNC R_dlsym(DllInfo *info, const char *name,
 	R_RegisteredNativeSymbol *symbol)
 {
     size_t len = strlen(name) + 4;
@@ -952,7 +950,7 @@ static void GetFullDLLPath(SEXP call, char *buf, const char *const path)
   call routines from "incomplete" DLLs.
  */
 
-SEXP attribute_hidden do_dynload(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* local_, RObject* now_, RObject* dots_)
+HIDDEN SEXP do_dynload(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* local_, RObject* now_, RObject* dots_)
 {
     char buf[2 * PATH_MAX];
     DllInfo *info;
@@ -968,7 +966,7 @@ SEXP attribute_hidden do_dynload(/*const*/ Expression* call, const BuiltInFuncti
     return(Rf_MakeDLLInfo(info));
 }
 
-SEXP attribute_hidden do_dynunload(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
+HIDDEN SEXP do_dynunload(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_)
 {
     char buf[2 * PATH_MAX];
 
@@ -1158,7 +1156,7 @@ Rf_MakeDLLInfo(DllInfo *info)
   registered, we add a class identifying the interface type
   for which it is intended (i.e. .C(), .Call(), etc.)
  */
-SEXP attribute_hidden
+HIDDEN SEXP
 R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
 {
     const void *vmax = vmaxget();
@@ -1193,7 +1191,7 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
     return sym;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 R_getDllTable()
 {
     int i;
@@ -1348,7 +1346,7 @@ R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 }
 
 
-SEXP attribute_hidden
+HIDDEN SEXP
 R_getRegisteredRoutines(SEXP dll)
 {
     DllInfo *info;
@@ -1379,7 +1377,7 @@ R_getRegisteredRoutines(SEXP dll)
     return(ans);
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* name_, RObject* package_, RObject* with_registration_info_)
 {
     const char *package = "", *name;
@@ -1412,7 +1410,7 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 }
 
 /* .Internal(getLoadedDLLs()) */
-SEXP attribute_hidden
+HIDDEN SEXP
 do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, nm;
@@ -1441,7 +1439,7 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
     return ans;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_getRegisteredRoutines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* info_)
 {
     const char * const names[] = {".C", ".Call", ".Fortran", ".External"};

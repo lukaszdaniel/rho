@@ -47,7 +47,7 @@ extern "C"
 void R_CheckStack(void);
 #endif
 
-double attribute_hidden lfastchoose(double n, double k)
+HIDDEN double lfastchoose(double n, double k)
 {
     return -log(n + 1.) - lbeta(n - k + 1., k + 1.);
 }

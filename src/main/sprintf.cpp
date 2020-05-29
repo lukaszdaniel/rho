@@ -88,7 +88,7 @@ static Rboolean checkfmt(const char *fmt, const char *pattern)
     : Rf_translateChar(STRING_ELT(_STR_, _i_)))
 
 
-SEXP attribute_hidden do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
+HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
 {
     int i, nargs, cnt, v, thislen, nfmt, nprotect = 0;
     /* fmt2 is a copy of fmt with '*' expanded.

@@ -168,8 +168,9 @@ SEXP do_relop(/*const*/ Expression* call,
 		  _("comparison (%d) is possible only for atomic and list types"),
 		  op->variant());
 
-    if (TYPEOF(x) == EXPRSXP || TYPEOF(y) == EXPRSXP)
+    if (TYPEOF(x) == EXPRSXP || TYPEOF(y) == EXPRSXP) {
 	Rf_errorcall(call, _("comparison is not allowed for expressions"));
+    }
 
     /* ELSE :  x and y are both atomic or list */
 	checkOperandsConformable(SEXP_downcast<VectorBase*>(xarg), SEXP_downcast<VectorBase*>(yarg));
@@ -476,7 +477,7 @@ static SEXP bitwiseShiftR(SEXP a, SEXP b)
     return ans;
 }
 
-SEXP attribute_hidden do_bitwise(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* y_)
+HIDDEN SEXP do_bitwise(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* y_)
 {
     switch(op->variant()) {
     case 1:
@@ -493,7 +494,7 @@ SEXP attribute_hidden do_bitwise(/*const*/ Expression* call, const BuiltInFuncti
     return nullptr;  // unreachable.
 }
 
-SEXP attribute_hidden do_bitwise_not(/*const*/ Expression* call, const BuiltInFunction* op, RObject* a) {
+HIDDEN SEXP do_bitwise_not(/*const*/ Expression* call, const BuiltInFunction* op, RObject* a) {
     int np = 0;
     if(Rf_isReal(a)) {a = PROTECT(Rf_coerceVector(a, INTSXP)); np++;}
     R_xlen_t i, m = XLENGTH(a);

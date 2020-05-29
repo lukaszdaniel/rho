@@ -54,7 +54,7 @@ static bool neWithNaN(double x, double y, ne_strictness_type str);
 
 
 /* .Internal(identical(..)) */
-SEXP attribute_hidden do_identical(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_, rho::RObject* ignore_srcref_)
+HIDDEN SEXP do_identical(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x, rho::RObject* y, rho::RObject* num_eq_, rho::RObject* single_NA_, rho::RObject* attr_as_set_, rho::RObject* ignore_bytecode_, rho::RObject* ignore_env_, rho::RObject* ignore_srcref_)
 {
     int num_eq = 1, single_NA = 1, attr_as_set = 1, ignore_bytecode = 1,
 	ignore_env = 0, ignore_srcref = 1, flags;

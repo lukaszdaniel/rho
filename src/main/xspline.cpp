@@ -66,7 +66,7 @@ static double *ypoints;
 
 /* R_allocs or mallocs global arrays */
 static Rboolean
-add_point(double x, double y, pGEDevDesc dd)
+add_point(double x, double y, GEDevDesc* dd)
 {
     if (npoints >= max_points) {
 	int tmp_n;
@@ -88,7 +88,7 @@ add_point(double x, double y, pGEDevDesc dd)
 							  tmp_n, max_points,
 							  sizeof(double)));
 	}
-	if (tmp_px == NULL || tmp_py == NULL) {
+	if (tmp_px == nullptr || tmp_py == nullptr) {
 	    Rf_error(_("insufficient memory to allocate point array"));
 	}
 	xpoints = tmp_px;
@@ -216,7 +216,7 @@ positive_s2_influence(double k, double t, double s2, double *A1, double *A3)
 
 static void
 point_adding(double *A_blend, double *px, double *py,
-	     pGEDevDesc dd)
+	     GEDevDesc* dd)
 {
   double weights_sum;
 
@@ -244,7 +244,7 @@ step_computing(int k,
 	       double *px, double *py,
 	       double s1, double s2,
 	       double precision,
-               pGEDevDesc dd)
+               GEDevDesc* dd)
 {
   double A_blend[4];
   double xstart, ystart, xend, yend, xmid, ymid, xlength, ylength;
@@ -363,7 +363,7 @@ static void
 spline_segment_computing(double step, int k,
 			 double *px, double *py,
 			 double s1, double s2,
-			 pGEDevDesc dd)
+			 GEDevDesc* dd)
 {
   double A_blend[4];
   double t;
@@ -410,7 +410,7 @@ static void
 spline_last_segment_computing(double step, int k,
 			      double *px, double *py,
 			      double s1, double s2,
-			      pGEDevDesc dd)
+			      GEDevDesc* dd)
 {
   double A_blend[4];
   double t = 1;
@@ -473,7 +473,7 @@ static Rboolean
 compute_open_spline(int n, double *x, double *y, double *s,
 		    Rboolean repEnds,
 		    double precision,
-		    pGEDevDesc dd)
+		    GEDevDesc* dd)
 {
   int       k;
   double     step = 0.0 /* -Wall */;
@@ -483,8 +483,8 @@ compute_open_spline(int n, double *x, double *y, double *s,
 
   max_points = 0;
   npoints = 0;
-  xpoints = NULL;
-  ypoints = NULL;
+  xpoints = nullptr;
+  ypoints = nullptr;
 
   if (repEnds && n < 2)
       Rf_error(_("there must be at least two control points"));
@@ -535,7 +535,7 @@ compute_open_spline(int n, double *x, double *y, double *s,
 static Rboolean
 compute_closed_spline(int n, double *x, double *y, double *s,
 		      double precision,
-		      pGEDevDesc dd)
+		      GEDevDesc* dd)
 {
   int k;
   double step;
@@ -545,8 +545,8 @@ compute_closed_spline(int n, double *x, double *y, double *s,
 
   max_points = 0;
   npoints = 0;
-  xpoints = NULL;
-  ypoints = NULL;
+  xpoints = nullptr;
+  ypoints = nullptr;
 
   if (n < 3)
       Rf_error(_("There must be at least three control points"));

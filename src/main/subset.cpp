@@ -64,7 +64,7 @@ using namespace rho;
 #undef _S4_subsettable
 
 
-static R_INLINE SEXP VECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
+R_INLINE static SEXP VECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
     /* if RHS (container or element) has NAMED > 0 set NAMED = NAMEDMAX.
        Duplicating might be safer/more consistent (fix bug reported by
        Radford Neal; similar to PR15098) */
@@ -74,7 +74,7 @@ static R_INLINE SEXP VECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
     return val;
 }
 
-static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
+R_INLINE static SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
     /* if RHS (container or element) has NAMED > 0 set NAMED = NAMEDMAX.
        Duplicating might be safer/more consistent (fix bug reported by
        Radford Neal; similar to PR15098) */
@@ -122,7 +122,7 @@ static R_INLINE SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 	}					  \
     } while (0)
 
-SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
+HIDDEN SEXP Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
 {
     if (x == nullptr)
 	return x;
@@ -131,7 +131,7 @@ SEXP attribute_hidden Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
 
     if (ALTREP(x)) {
 	result = ALTVEC_EXTRACT_SUBSET(x, indx, call);
-	if (result != NULL)
+	if (result != nullptr)
 	    return result;
     }
 
@@ -365,7 +365,7 @@ static int ExtractExactArg(SEXP args)
 }
 
 /* The "[" subset operator. */
-SEXP attribute_hidden do_subset(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_subset(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* expression = SEXP_downcast<Expression*>(call);
     const BuiltInFunction* function = SEXP_downcast<BuiltInFunction*>(op);
@@ -386,7 +386,7 @@ SEXP attribute_hidden do_subset(SEXP call, SEXP op, SEXP args, SEXP rho)
         do_subset_dflt, expression, function, arglist, envx);
 }
 
-static R_INLINE R_xlen_t scalarIndex(SEXP s)
+R_INLINE static R_xlen_t scalarIndex(SEXP s)
 {
     if (ATTRIB(s) == nullptr)
 	switch (TYPEOF(s)) {
@@ -410,7 +410,7 @@ static R_INLINE R_xlen_t scalarIndex(SEXP s)
     else return -1;
 }
 
-SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     GCStackRoot<> argsrt(args);
 
@@ -596,7 +596,7 @@ SEXP attribute_hidden do_subset_dflt(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* The [[ subset operator.  It needs to be fast. */
 /* The arguments to this call are evaluated on entry. */
 
-SEXP attribute_hidden do_subset2(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_subset2(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     const Expression* expression = SEXP_downcast<Expression*>(call);
     const BuiltInFunction* function = SEXP_downcast<BuiltInFunction*>(op);
@@ -615,7 +615,7 @@ SEXP attribute_hidden do_subset2(SEXP call, SEXP op, SEXP args, SEXP rho)
         do_subset2_dflt, expression, function, arglist, envx);
 }
 
-SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
+HIDDEN SEXP do_subset2_dflt(SEXP call, SEXP op,
 				      SEXP argsarg, SEXP rho)
 {
     GCStackRoot<> args(argsarg);
@@ -787,12 +787,12 @@ SEXP attribute_hidden do_subset2_dflt(SEXP call, SEXP op,
     return ans;
 }
 
-SEXP attribute_hidden dispatch_subset2(SEXP x, R_xlen_t i, SEXP call, SEXP rho)
+HIDDEN SEXP dispatch_subset2(SEXP x, R_xlen_t i, SEXP call, SEXP rho)
 {
-    static SEXP bracket_op = NULL;
+    static SEXP bracket_op = nullptr;
     SEXP args, x_elt;
     if (Rf_isObject(x)) {
-        if (bracket_op == NULL)
+        if (bracket_op == nullptr)
             bracket_op = R_Primitive("[[");
         PROTECT(args = Rf_list2(x, Rf_ScalarReal(i + 1)));
         x_elt = do_subset2(call, bracket_op, args, rho);
@@ -845,7 +845,7 @@ pstrmatch(SEXP target, SEXP input, size_t slen)
     }
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 Rf_fixSubset3Args(SEXP call, SEXP args, SEXP env, SEXP* syminp)
 {
     SEXP input, nlist;
@@ -858,7 +858,7 @@ Rf_fixSubset3Args(SEXP call, SEXP args, SEXP env, SEXP* syminp)
     if (TYPEOF(nlist) == PROMSXP)
 	nlist = Rf_eval(nlist, env);
     if(Rf_isSymbol(nlist)) {
-	if (syminp != NULL)
+	if (syminp != nullptr)
 	    *syminp = nlist;
 	SET_STRING_ELT(input, 0, PRINTNAME(nlist));
     } else if(Rf_isString(nlist) )
@@ -885,7 +885,7 @@ Rf_fixSubset3Args(SEXP call, SEXP args, SEXP env, SEXP* syminp)
    We need to be sure to only evaluate the first argument.
    The second will be a symbol that needs to be matched, not evaluated.
 */
-SEXP attribute_hidden do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
 {
 	SEXP ans;
 	ArgList arglist(SEXP_downcast<PairList*>(Rf_fixSubset3Args(call, args, env, nullptr)), ArgList::RAW);
@@ -906,7 +906,7 @@ SEXP attribute_hidden do_subset3(SEXP call, SEXP op, SEXP args, SEXP env)
 }
 
 /* used in eval.cpp */
-SEXP attribute_hidden R_subset3_dflt(SEXP x, SEXP input, SEXP call)
+HIDDEN SEXP R_subset3_dflt(SEXP x, SEXP input, SEXP call)
 {
     SEXP y, nlist;
     size_t slen;

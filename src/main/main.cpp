@@ -73,7 +73,7 @@
 using namespace rho;
 
 #ifdef ENABLE_NLS
-void attribute_hidden nl_Rdummy(void)
+HIDDEN void nl_Rdummy(void)
 {
     /* force this in as packages use it */
     dgettext("R", "dummy - do not translate");
@@ -133,9 +133,9 @@ LibExport int R_num_math_threads = 1;
 LibExport int R_max_num_math_threads = 1;
 LibExport SEXP R_MethodsNamespace;
 LibExport AccuracyInfo R_AccuracyInfo;
-LibExport SEXP R_TrueValue = NULL;
-LibExport SEXP R_FalseValue = NULL;
-LibExport SEXP R_LogicalNAValue = NULL;
+LibExport SEXP R_TrueValue = nullptr;
+LibExport SEXP R_FalseValue = nullptr;
+LibExport SEXP R_LogicalNAValue = nullptr;
 LibExport Rboolean R_PCRE_use_JIT = TRUE;
 LibExport int R_PCRE_study = 10;
 LibExport int R_PCRE_limit_recursion;
@@ -159,44 +159,44 @@ double elapsedLimitValue = -1.0;
 
 // Data declared extern0 in Defn.h :
 
-attribute_hidden R_size_t R_VSize  = R_VSIZE;/* Initial size of the heap */
+HIDDEN R_size_t R_VSize  = R_VSIZE;/* Initial size of the heap */
 
-attribute_hidden int    R_EvalDepth     = 0; 	/* Evaluation recursion depth */
-attribute_hidden int	R_BrowseLines	= 0;	/* lines/per call in browser */
-attribute_hidden Rboolean R_KeepSource	= FALSE;	/* options(keep.source) */
-attribute_hidden Rboolean R_CBoundsCheck = FALSE;	/* options(CBoundsCheck) */
-attribute_hidden size_t	R_WarnLength	= 1000;	/* Error/warning max length */
-attribute_hidden MATPROD_TYPE R_Matprod = MATPROD_DEFAULT; /* options(matprod) */
-attribute_hidden int    R_nwarnings     = 50;
-attribute_hidden int	R_CStackDir	= 1;	/* C stack direction */
-attribute_hidden Rboolean R_WarnEscapes  = TRUE;   /* Warn on unrecognized escapes */
-attribute_hidden Rboolean R_Quiet	= FALSE;	/* Be as quiet as possible */
-attribute_hidden Rboolean R_Verbose	= FALSE;	/* Be verbose */
-attribute_hidden int	R_ErrorCon	= 2;	/* Error connection */
-attribute_hidden char   *Sys_TempDir	= nullptr;	/* Name of per-session dir
+HIDDEN int    R_EvalDepth     = 0; 	/* Evaluation recursion depth */
+HIDDEN int	R_BrowseLines	= 0;	/* lines/per call in browser */
+HIDDEN Rboolean R_KeepSource	= FALSE;	/* options(keep.source) */
+HIDDEN Rboolean R_CBoundsCheck = FALSE;	/* options(CBoundsCheck) */
+HIDDEN size_t	R_WarnLength	= 1000;	/* Error/warning max length */
+HIDDEN MATPROD_TYPE R_Matprod = MATPROD_DEFAULT; /* options(matprod) */
+HIDDEN int    R_nwarnings     = 50;
+HIDDEN int	R_CStackDir	= 1;	/* C stack direction */
+HIDDEN Rboolean R_WarnEscapes  = TRUE;   /* Warn on unrecognized escapes */
+HIDDEN Rboolean R_Quiet	= FALSE;	/* Be as quiet as possible */
+HIDDEN Rboolean R_Verbose	= FALSE;	/* Be verbose */
+HIDDEN int	R_ErrorCon	= 2;	/* Error connection */
+HIDDEN char   *Sys_TempDir	= nullptr;	/* Name of per-session dir
 						   if set by R itself */
-attribute_hidden char	R_StdinEnc[31]  = "";	/* Encoding assumed for stdin */
+HIDDEN char	R_StdinEnc[31]  = "";	/* Encoding assumed for stdin */
 int R_ParseError	= 0; /* Line where parse error occurred */
-attribute_hidden int	R_ParseErrorCol;    /* Column of start of token where parse error occurred */
-attribute_hidden SEXP	R_ParseErrorFile;   /* Source file where parse error was seen */
+HIDDEN int	R_ParseErrorCol;    /* Column of start of token where parse error occurred */
+HIDDEN SEXP	R_ParseErrorFile;   /* Source file where parse error was seen */
 char R_ParseErrorMsg[PARSE_ERROR_SIZE] = "";
 char R_ParseContext[PARSE_CONTEXT_SIZE] = "";
 int R_ParseContextLast = 0; /* last character in context buffer */
 int R_ParseContextLine; /* Line in file of the above */
-attribute_hidden int	R_CollectWarnings = 0;	/* the number of warnings */
+HIDDEN int	R_CollectWarnings = 0;	/* the number of warnings */
 GCRoot<ListVector>	R_Warnings;	    /* the warnings and their calls */
-attribute_hidden int	R_ShowErrorMessages = 1;     /* show error messages? */
-attribute_hidden Rboolean R_warn_partial_match_dollar = FALSE;
-attribute_hidden Rboolean R_warn_partial_match_attr = FALSE;
-attribute_hidden Rboolean R_ShowWarnCalls = FALSE;
-attribute_hidden Rboolean R_ShowErrorCalls = FALSE;
-attribute_hidden int R_NShowCalls = 50;
-attribute_hidden   Rboolean latin1locale = FALSE; /* is this a Latin-1 locale? */
+HIDDEN int	R_ShowErrorMessages = 1;     /* show error messages? */
+HIDDEN Rboolean R_warn_partial_match_dollar = FALSE;
+HIDDEN Rboolean R_warn_partial_match_attr = FALSE;
+HIDDEN Rboolean R_ShowWarnCalls = FALSE;
+HIDDEN Rboolean R_ShowErrorCalls = FALSE;
+HIDDEN int R_NShowCalls = 50;
+HIDDEN   Rboolean latin1locale = FALSE; /* is this a Latin-1 locale? */
 const char* OutDec = ".";  /* decimal point used for output */
-attribute_hidden Rboolean R_DisableNLinBrowser = FALSE;
-attribute_hidden char R_BrowserLastCommand = 'n';
-attribute_hidden int R_check_constants = 0;
-attribute_hidden int R_dec_min_exponent		= -308;
+HIDDEN Rboolean R_DisableNLinBrowser = FALSE;
+HIDDEN char R_BrowserLastCommand = 'n';
+HIDDEN int R_check_constants = 0;
+HIDDEN int R_dec_min_exponent		= -308;
 unsigned int max_contour_segments = 25000;
 Rboolean known_to_be_latin1 = FALSE;
 Rboolean known_to_be_utf8 = FALSE;
@@ -862,7 +862,7 @@ int R_SignalHandlers = 1;  /* Exposed in R_interface.h */ // 2007/07/23 arr
 const char* get_workspace_name();  /* from startup.cpp */
 
 extern "C"
-void attribute_hidden BindDomain(char *R_Home)
+HIDDEN void BindDomain(char *R_Home)
 {
 #ifdef ENABLE_NLS
     char localedir[PATH_MAX+20];
@@ -1032,7 +1032,7 @@ void setup_Rmainloop(void)
     if (R_SignalHandlers) init_signal_handlers();
 #else
     FILE *fp = R_OpenLibraryFile("base");
-    if (fp == NULL)
+    if (fp == nullptr)
 	R_Suicide(_("unable to open the base package\n"));
 
     try {
@@ -1299,9 +1299,9 @@ static void PrintCall(SEXP call, SEXP rho)
     R_BrowseLines = old_bl;
 }
 
-/* browser(text = "", condition = NULL, expr = TRUE, skipCalls = 0L)
+/* browser(text = "", condition = nullptr, expr = TRUE, skipCalls = 0L)
  * ------- but also called from ./eval.cpp */
-SEXP attribute_hidden do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int savestack;
     GCStackRoot<> topExp(R_CurrentExpr);
@@ -1417,7 +1417,7 @@ void R_dot_Last(void)
     UNPROTECT(1);
 }
 
-SEXP attribute_hidden do_quit(/*const*/ Expression* call, const BuiltInFunction* op, RObject* save_, RObject* status_, RObject* runLast_)
+HIDDEN SEXP do_quit(/*const*/ Expression* call, const BuiltInFunction* op, RObject* save_, RObject* status_, RObject* runLast_)
 {
     const char *tmp;
     SA_TYPE ask=SA_DEFAULT;
@@ -1782,7 +1782,7 @@ extern "C" {
     void F77_SYMBOL(intpr) (const char *, int *, int *, int *);
 }
 
-void attribute_hidden dummy12345(void)
+HIDDEN void dummy12345(void)
 {
     int i = 0;
     F77_CALL(intpr)("dummy", &i, &i, &i);

@@ -195,7 +195,7 @@ static FunctionBase* findFunWithBaseEnvAfterGlobalEnv(Symbol* symbol, Environmen
  *    3. fix up the argument list; it should be the arguments to the
  *	 generic matched to the formals of the method to be invoked */
 
-attribute_hidden
+HIDDEN
 SEXP R_LookupMethod(SEXP method, SEXP rho, SEXP callrho, SEXP defrho)
 {
     FunctionBase* val;
@@ -401,7 +401,7 @@ static std::string classTypeAsString(RObject* obj) {
 */
 
 /* This is a primitive SPECIALSXP */
-SEXP attribute_hidden do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_usemethod(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     Environment* argsenv = SEXP_downcast<Environment*>(env);
 
@@ -556,7 +556,7 @@ static FunctionBase* getPrimitive(Symbol* symbol)
 /* formals of the chosen method. */
 
 /* This is a special .Internal */
-SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     const PairList* callargs = SEXP_downcast<const PairList*>(args);
     Environment* callenv = SEXP_downcast<Environment*>(env);
@@ -901,7 +901,7 @@ SEXP attribute_hidden do_nextmethod(SEXP call, SEXP op, SEXP args, SEXP env)
 }
 
 /* primitive */
-SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object)
+HIDDEN SEXP do_unclass(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object)
 {
     switch(TYPEOF(object)) {
     case ENVSXP:
@@ -927,7 +927,7 @@ SEXP attribute_hidden do_unclass(/*const*/ Expression* call, const BuiltInFuncti
     except there is no translation.
 */
 
-Rboolean attribute_hidden inherits2(SEXP x, const char *what) {
+HIDDEN Rboolean inherits2(SEXP x, const char *what) {
     if (OBJECT(x)) {
 	SEXP klass;
 
@@ -1003,7 +1003,7 @@ static RObject* inherits3(RObject* x, RObject* what, RObject* which)
     return rval;
 }
 
-SEXP attribute_hidden do_inherits(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* what_, RObject* which_)
+HIDDEN SEXP do_inherits(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* what_, RObject* which_)
 {
     return inherits3(/* x = */ x_,
 		     /* what = */ what_,
@@ -1159,7 +1159,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
 }
 
 /* simpler version for internal use, in attrib.cpp and print.cpp */
-attribute_hidden
+HIDDEN
 Rboolean isMethodsDispatchOn(void)
 {
     return Rboolean(!(R_standardGeneric_ptr == nullptr || R_standardGeneric_ptr == dispatchNonGeneric));
@@ -1173,7 +1173,7 @@ Rboolean isMethodsDispatchOn(void)
    It seems it is not currently called with onOff = TRUE (and would
    not have worked prior to 3.0.2).
 */ 
-SEXP attribute_hidden do_S4on(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_S4on(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     if(num_args == 0) return Rf_ScalarLogical(isMethodsDispatchOn());
     UNPACK_VA_ARGS(num_args, (x));
@@ -1228,7 +1228,7 @@ static RObject* get_this_generic(RObject* const* args, int num_args);
 
 
 
-SEXP attribute_hidden do_standardGeneric(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_standardGeneric(/*const*/ Expression* call, const BuiltInFunction* op, Environment* env, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP arg, value, fdef; R_stdGen_ptr_t ptr = R_get_standardGeneric_ptr();
     call->check1arg("f");
@@ -1487,7 +1487,7 @@ static RObject* get_this_generic(RObject* const* args, int num_args)
 /* Could there be methods for this op?	Checks
    only whether methods are currently being dispatched and, if so,
    whether methods are currently defined for this op. */
-attribute_hidden
+HIDDEN
 bool R_has_methods(const BuiltInFunction* op)
 {
     R_stdGen_ptr_t ptr = R_get_standardGeneric_ptr(); int offset;
@@ -1530,7 +1530,7 @@ void R_set_quick_method_check(R_stdGen_ptr_t value)
    promises, but not from the other two: there all the arguments have
    already been evaluated.
  */
-std::pair<bool, SEXP> attribute_hidden
+HIDDEN std::pair<bool, SEXP>
 R_possible_dispatch(const rho::Expression* call, const rho::BuiltInFunction* op,
 		    const rho::ArgList& arglist, rho::Environment* callenv)
 {
@@ -1657,7 +1657,7 @@ SEXP R_do_new_object(SEXP class_def)
     return value;
 }
 
-Rboolean attribute_hidden R_seemsOldStyleS4Object(SEXP object)
+HIDDEN Rboolean R_seemsOldStyleS4Object(SEXP object)
 {
     SEXP klass;
     if(!Rf_isObject(object) || IS_S4_OBJECT(object)) return FALSE;
@@ -1668,7 +1668,7 @@ Rboolean attribute_hidden R_seemsOldStyleS4Object(SEXP object)
 	    Rf_getAttrib(klass, Symbols::PackageSymbol) != nullptr) ? TRUE: FALSE;
 }
 
-SEXP attribute_hidden do_setS4Object(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* flag_, RObject* complete_)
+HIDDEN SEXP do_setS4Object(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* flag_, RObject* complete_)
 {
     SEXP object = object_;
     int flag = Rf_asLogical(flag_), complete = Rf_asInteger(complete_);

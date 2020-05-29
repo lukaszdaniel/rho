@@ -43,7 +43,7 @@ using namespace rho;
 
    FUN must be unevaluated for use in e.g. bquote .
 */
-SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     PROTECT_INDEX px;
 
@@ -84,7 +84,7 @@ SEXP attribute_hidden do_lapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* .Internal(vapply(X, FUN, FUN.VALUE, USE.NAMES)) */
 
 /* This is a special .Internal */
-SEXP attribute_hidden do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, names = nullptr, rowNames = nullptr,
 	X, XX, FUN, value, dim_v;
@@ -320,7 +320,7 @@ static RObject* do_one(RObject* X, RObject* FUN, RObject* classes, RObject* defl
     else return Rf_lazy_duplicate(deflt);
 }
 
-SEXP attribute_hidden do_rapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_rapply(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP X, FUN, classes, deflt, how, ans, names;
     int i, n;
@@ -376,7 +376,7 @@ static Rboolean islistfactor(RObject* X)
 
 /* is this a tree with only factor leaves? */
 
-SEXP attribute_hidden do_islistfactor(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* recursive_)
+HIDDEN SEXP do_islistfactor(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* recursive_)
 {
     SEXP X;
     Rboolean lans = TRUE, recursive;

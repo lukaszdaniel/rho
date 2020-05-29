@@ -51,12 +51,12 @@
    As could mycpow, z_tan and some of the substitutes.
  */
 #ifdef __cplusplus
-static R_INLINE std::complex<double> toC99(const Rcomplex *x) {
+R_INLINE static std::complex<double> toC99(const Rcomplex *x) {
     std::complex<double> val(x->r, x->i);
     return val;
 }
 #else
-static R_INLINE double complex toC99(const Rcomplex *x)
+R_INLINE static double complex toC99(const Rcomplex *x)
 {
 #if __GNUC__
     double complex ans = (double complex) 0; /* -Wall */
@@ -70,16 +70,14 @@ static R_INLINE double complex toC99(const Rcomplex *x)
 #endif
 
 #ifdef __cplusplus
-static R_INLINE void
-SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, std::complex<double> value)
+R_INLINE static void SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, std::complex<double> value)
 {
     Rcomplex *ans = x+i;
     ans->r = value.real();
     ans->i = value.imag();
 }
 #else
-static R_INLINE void
-SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, double complex value)
+R_INLINE static void SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, double complex value)
 {
     Rcomplex *ans = x+i;
     ans->r = creal(value);
@@ -91,7 +89,7 @@ SET_C99_COMPLEX(Rcomplex *x, R_xlen_t i, double complex value)
 extern "C" {
 #endif
 
-void attribute_hidden z_prec_r(Rcomplex *r, const Rcomplex *x, double digits);
+HIDDEN void z_prec_r(Rcomplex *r, const Rcomplex *x, double digits);
 
 #ifdef __cplusplus
 }

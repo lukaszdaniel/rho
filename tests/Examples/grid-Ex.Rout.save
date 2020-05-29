@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -663,7 +663,7 @@ NULL
 > grid.edit("xa", gp = gpar(col="red"))
 > # won't work because no ticks (at is NULL)
 > try(grid.edit(gPath("xa", "ticks"), gp = gpar(col="green")))
-Error in editDLfromGPath(gPath, specs, strict, grep, global, redraw) : 
+Error in command 'editDLfromGPath(gPath, specs, strict, grep, global, redraw)': 
   'gPath' (xa::ticks) not found
 > grid.edit("xa", at = 1:4/5)
 > # Now it should work
@@ -2082,7 +2082,7 @@ vp1::vp2
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  4.036 0.032 4.068 0 0 
+Time elapsed:  4.154 0.04 4.197 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -77,7 +77,7 @@
 #define NINTERRUPT 10000000
 
 
-SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
+HIDDEN SEXP complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
 {
     R_xlen_t i, n;
     SEXP ans;
@@ -104,7 +104,7 @@ SEXP attribute_hidden complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
     return nullptr; /* -Wall */
 }
 
-static R_INLINE std::complex<double> R_cpow_n(std::complex<double> X, int k)
+R_INLINE static std::complex<double> R_cpow_n(std::complex<double> X, int k)
 {
     if(k == 0) return (std::complex<double>) 1.;
     else if(k == 1) return X;
@@ -193,7 +193,7 @@ static std::complex<double> mycpow (std::complex<double> X, std::complex<double>
 
 
 
-SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
+HIDDEN SEXP complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
 {
     R_xlen_t i, i1, i2, n, n1, n2;
     SEXP ans;
@@ -266,7 +266,7 @@ SEXP attribute_hidden complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
     return ans;
 }
 
-SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP x, y = nullptr;	/* -Wall*/
     R_xlen_t i, n;
@@ -361,7 +361,7 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	case 3:	/* Mod */
 	case 6:	/* abs */
 	    for(i = 0 ; i < n ; i++)
-		py[i] = fabs(px[i]);
+		py[i] = std::abs(px[i]);
 	    break;
 	}
 	UNPROTECT(1);
@@ -379,13 +379,13 @@ SEXP attribute_hidden do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 
 /* used in format.cpp and printutils.cpp */
 #define MAX_DIGITS 22
-void attribute_hidden z_prec_r(Rcomplex *r, const Rcomplex *x, double digits)
+HIDDEN void z_prec_r(Rcomplex *r, const Rcomplex *x, double digits)
 {
     double m = 0.0, m1, m2;
     int dig, mag;
 
     r->r = x->r; r->i = x->i;
-    m1 = fabs(x->r); m2 = fabs(x->i);
+    m1 = std::abs(x->r); m2 = std::abs(x->i);
     if(R_FINITE(m1)) m = m1;
     if(R_FINITE(m2) && m2 > m) m = m2;
     if (m == 0.0) return;
@@ -472,7 +472,7 @@ static std::complex<double> ctan(std::complex<double> z)
     y2 = 2.0 * cimag(z);
     den = cos(x2) + cosh(y2);
     /* any threshold between -log(DBL_EPSILON) and log(DBL_XMAX) will do*/
-    if (ISNAN(y2) || fabs(y2) < 50.0) ri = sinh(y2)/den;
+    if (ISNAN(y2) || std::abs(y2) < 50.0) ri = sinh(y2)/den;
     else ri = (y2 < 0 ? -1.0 : 1.0);
     return sin(x2)/den + ri * I;
 }
@@ -537,7 +537,7 @@ static std::complex<double> z_tan(std::complex<double> z)
 {
     double y = std::imag(z);
     std::complex<double> r = std::tan(z);
-    if(R_FINITE(y) && fabs(y) > 25.0) {
+    if(R_FINITE(y) && std::abs(y) > 25.0) {
 	/* at this point the real part is nearly zero, and the
 	   imaginary part is one: but some OSes get the imag as NaN */
 #ifdef __cplusplus
@@ -564,10 +564,10 @@ static std::complex<double> ctanh(std::complex<double> z)
 
 static std::complex<double> z_asin(std::complex<double> z)
 {
-    if(std::imag(z) == 0 && fabs(std::real(z)) > 1) {
+    if(std::imag(z) == 0 && std::abs(std::real(z)) > 1) {
 	double alpha, t1, t2, x = std::real(z), ri;
-	t1 = 0.5 * fabs(x + 1);
-	t2 = 0.5 * fabs(x - 1);
+	t1 = 0.5 * std::abs(x + 1);
+	t2 = 0.5 * std::abs(x - 1);
 	alpha = t1 + t2;
 	ri = log(alpha + sqrt(alpha*alpha - 1));
 	if(x > 1) ri *= -1;
@@ -578,13 +578,13 @@ static std::complex<double> z_asin(std::complex<double> z)
 
 static std::complex<double> z_acos(std::complex<double> z)
 {
-    if(std::imag(z) == 0 && fabs(std::real(z)) > 1) return M_PI_2 - z_asin(z);
+    if(std::imag(z) == 0 && std::abs(std::real(z)) > 1) return M_PI_2 - z_asin(z);
     return std::acos(z);
 }
 
 static std::complex<double> z_atan(std::complex<double> z)
 {
-    if(std::real(z) == 0 && fabs(std::imag(z)) > 1) {
+    if(std::real(z) == 0 && std::abs(std::imag(z)) > 1) {
 	double y = std::imag(z), rr, ri;
 	rr = (y > 0) ? M_PI_2 : -M_PI_2;
 	ri = 0.25 * log(((y + 1) * (y + 1))/((y - 1) * (y - 1)));
@@ -634,7 +634,7 @@ static std::complex<double> z_cosh(std::complex<double> z) { return std::cosh(z)
 static std::complex<double> z_sinh(std::complex<double> z) { return std::sinh(z); }
 static std::complex<double> z_tanh(std::complex<double> z) { return std::tanh(z); }
 
-SEXP attribute_hidden complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP complex_math1(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP x, y;
     R_xlen_t n;
@@ -716,7 +716,7 @@ static void z_atan2(Rcomplex *r, Rcomplex *csn, Rcomplex *ccs)
 	/* Complex Functions of Two Arguments */
 
 typedef void (*cm2_fun)(Rcomplex *, Rcomplex *, Rcomplex *);
-SEXP attribute_hidden complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     R_xlen_t i, n, na, nb, ia, ib;
     Rcomplex ai, bi, *y;
@@ -774,7 +774,7 @@ SEXP attribute_hidden complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
     return sy;
 }
 
-SEXP attribute_hidden do_complex(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_complex(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     /* complex(length, real, imaginary) */
     SEXP ans, re, im;
@@ -815,7 +815,7 @@ SEXP attribute_hidden do_complex(SEXP call, SEXP op, SEXP args, SEXP rho)
 static void R_cpolyroot(double *opr, double *opi, int *degree,
 			double *zeror, double *zeroi, Rboolean *fail);
 
-SEXP attribute_hidden do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP z, zr, zi, r, rr, ri;
     Rboolean fail;
@@ -1466,7 +1466,7 @@ double cpoly_cauchy(int n, double *pot, double *q)
 
     /* do Newton iteration until x converges to two decimal places. */
 
-    while (fabs(dx / x) > 0.005) {
+    while (std::abs(dx / x) > 0.005) {
 	q[0] = pot[0];
 	for(i = 1; i < n; i++)
 	    q[i] = q[i-1] * x + pot[i];
@@ -1540,7 +1540,7 @@ void cdivid(double ar, double ai, double br, double bi,
 	/* division by zero, c = infinity. */
 	*cr = *ci = R_PosInf;
     }
-    else if (fabs(br) >= fabs(bi)) {
+    else if (std::abs(br) >= std::abs(bi)) {
 	r = bi / br;
 	d = br + r * bi;
 	*cr = (ar + ai * r) / d;

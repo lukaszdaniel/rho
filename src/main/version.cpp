@@ -38,7 +38,7 @@
 
 using namespace rho;
 
-void attribute_hidden Rf_PrintGreeting(void)
+HIDDEN void Rf_PrintGreeting(void)
 {
     char buf[500];
 
@@ -57,7 +57,7 @@ Type 'contributors()' for more information and\n\
 Type 'q()' to quit R.\n\n"));
 }
 
-SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN SEXP do_version(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     SEXP value, names;
     char buf[128];
@@ -110,7 +110,7 @@ SEXP attribute_hidden do_version(/*const*/ rho::Expression* call, const rho::Bui
     return value;
 }
 
-void attribute_hidden Rf_PrintVersion(char *s, size_t len)
+HIDDEN void Rf_PrintVersion(char *s, size_t len)
 {
     PrintVersion_part_1(s, len);
 
@@ -122,7 +122,7 @@ void attribute_hidden Rf_PrintVersion(char *s, size_t len)
 	   "http://www.gnu.org/licenses/.\n");
 }
 
-void attribute_hidden Rf_PrintVersionString(char *s, size_t len)
+HIDDEN void Rf_PrintVersionString(char *s, size_t len)
 {
     if(R_SVN_BASEREVISION <= 0) {// 'svn info' failed in ../../Makefile.in
 	snprintf(s, len, "R version %s.%s %s (%s-%s-%s)",
@@ -140,7 +140,7 @@ void attribute_hidden Rf_PrintVersionString(char *s, size_t len)
     }
 }
 
-void attribute_hidden Rf_PrintRhoVersionString(char *s, size_t len)
+HIDDEN void Rf_PrintRhoVersionString(char *s, size_t len)
 {
     std::string git_revision = R_GIT_REVISION;
     if (git_revision == "unknown" || git_revision == "") {
@@ -160,7 +160,7 @@ void attribute_hidden Rf_PrintRhoVersionString(char *s, size_t len)
     }
 }
 
-void attribute_hidden PrintVersion_part_1(char *s, size_t len)
+HIDDEN void PrintVersion_part_1(char *s, size_t len)
 {
 #define SPRINTF_2(_FMT, _OBJ) snprintf(tmp, 128, _FMT, _OBJ); strcat(s, tmp)
     char tmp[128];
@@ -182,7 +182,7 @@ void attribute_hidden PrintVersion_part_1(char *s, size_t len)
     SPRINTF_2(" (%d-bit)\n", 8*int(sizeof(void *)));
 }
 
-SEXP attribute_hidden do_internalsID(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_internalsID(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     return Rf_mkString(R_INTERNALS_UUID);
 }

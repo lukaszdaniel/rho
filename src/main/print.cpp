@@ -1,6 +1,6 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
- *  Copyright (C) 2000-2017	The R Core Team.
+ *  Copyright (C) 2000-2018	The R Core Team.
  *  Copyright (C) 1995-1998	Robert Gentleman and Ross Ihaka.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
@@ -123,7 +123,7 @@ void Rf_PrintDefaults(void)
     R_print.cutoff = Rf_GetOptionCutoff();
 }
 
-SEXP attribute_hidden do_invisible(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_invisible(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     switch (num_args) {
     case 0:
@@ -141,7 +141,7 @@ SEXP attribute_hidden do_invisible(/*const*/ Expression* call, const BuiltInFunc
 }
 
 /* This is *only* called via outdated R_level prmatrix() : */
-SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* rowlab_, RObject* collab_, RObject* quote_, RObject* right_, RObject* na_print_)
+HIDDEN SEXP do_prmatrix(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* rowlab_, RObject* collab_, RObject* quote_, RObject* right_, RObject* na_print_)
 {
     int quote;
     SEXP x, rowlab, collab, naprint;
@@ -177,7 +177,7 @@ SEXP attribute_hidden do_prmatrix(/*const*/ Expression* call, const BuiltInFunct
 }/* do_prmatrix */
 
 /* .Internal( print.function(f, useSource, ...)) */
-SEXP attribute_hidden do_printfunction(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_printfunction(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     op->checkNumArgs(num_args, call);
     SEXP s = args[0];
@@ -237,7 +237,7 @@ void PrintLanguage(SEXP s, Rboolean useSource)
 
 /* .Internal(print.default(x, digits, quote, na.print, print.gap,
 			   right, max, useS4)) */
-SEXP attribute_hidden do_printdefault(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_printdefault(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP x, naprint;
     int tryS4;
@@ -492,11 +492,18 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		}
 		Rprintf("%s\n", tagbuf);
 		if(Rf_isObject(VECTOR_ELT(s, i))) {
+		    SEXP x = VECTOR_ELT(s, i);
+		    int nprot = 0;
+		    if (TYPEOF(x) == LANGSXP) {
+			// quote(x)  to not accidentally evaluate it with newcall() below:
+			x = PROTECT(Rf_lang2(R_Primitive("quote"), x)); nprot++;
+		    }
 		    /* need to preserve tagbuf */
 		    strcpy(save, tagbuf);
-		    SETCADR(newcall, VECTOR_ELT(s, i));
+		    SETCADR(newcall, x);
 		    Rf_eval(newcall, env);
 		    strcpy(tagbuf, save);
+		    UNPROTECT(nprot);
 		}
 		else Rf_PrintValueRec(VECTOR_ELT(s, i), env);
 		*ptag = '\0';
@@ -642,8 +649,14 @@ static void printList(SEXP s, SEXP env)
 	    }
 	    Rprintf("%s\n", tagbuf);
 	    if(Rf_isObject(CAR(s))) {
-		SETCADR(newcall, CAR(s));
+		SEXP x = CAR(s);
+		int nprot = 0;
+		if (TYPEOF(x) == LANGSXP) {
+		    x = PROTECT(Rf_lang2(R_Primitive("quote"), x)); nprot++;
+		}
+		SETCADR(newcall, x);
 		Rf_eval(newcall, env);
+		UNPROTECT(nprot);
 	    }
 	    else Rf_PrintValueRec(CAR(s),env);
 	    *ptag = '\0';
@@ -693,7 +706,7 @@ static void PrintSpecial(SEXP s)
     if(s2 != R_UnboundValue) {
 	SEXP t;
 	PROTECT(s2);
-	t = Rf_deparse1(s2, FALSE, DEFAULTDEPARSE);
+	t = Rf_deparse1m(s2, FALSE, DEFAULTDEPARSE); // or deparse1() ?
 	Rprintf("%s ", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	Rprintf(".Primitive(\"%s\")\n", PRIMNAME(s));
 	UNPROTECT(1);
@@ -706,7 +719,7 @@ static void PrintSpecial(SEXP s)
 
  * This is the "dispatching" function for  print.default()
  */
-void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
+HIDDEN void Rf_PrintValueRec(SEXP s, SEXP env)
 {
     SEXP t;
 
@@ -740,7 +753,7 @@ void attribute_hidden Rf_PrintValueRec(SEXP s, SEXP env)
 	break;
     case SYMSXP: /* Use deparse here to handle backtick quotification
 		  * of "weird names" */
-	t = Rf_deparse1(s, FALSE, SIMPLEDEPARSE);
+	t = Rf_deparse1(s, FALSE, SIMPLEDEPARSE); // TODO ? rather deparse1m()
 	Rprintf("%s\n", R_CHAR(STRING_ELT(t, 0))); /* translated */
 	break;
     case SPECIALSXP:
@@ -945,11 +958,16 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 		    na_width_noquote = R_print.na_width_noquote;
 		Rprt_adj right = Rprt_adj(R_print.right);
 
+		SEXP x = CAR(a);
+		int nprot = 0;
+		if (TYPEOF(x) == LANGSXP) {
+		    x = PROTECT(Rf_lang2(R_Primitive("quote"), x)); nprot++;
+		}
                 s = PROTECT(new Expression(Rf_install("print"),
-                                           { CAR(a), Rf_ScalarInteger(digits) }));
+                                           { x, Rf_ScalarInteger(digits) })); nprot++;
 		SET_TAG(CDDR(s), Rf_install("digits"));
 		Rf_eval(s, env);
-		UNPROTECT(1);
+		UNPROTECT(nprot);
 		R_print.quote = quote;
 		R_print.right = right;
 		R_print.digits = digits;
@@ -972,7 +990,7 @@ static void printAttributes(SEXP s, SEXP env, Rboolean useSlots)
 /* Print an S-expression using (possibly) local options.
    This is used for auto-printing from main.cpp */
 
-void attribute_hidden Rf_PrintValueEnv(SEXP s, SEXP env)
+HIDDEN void Rf_PrintValueEnv(SEXP s, SEXP env)
 {
     Rf_PrintDefaults();
     tagbuf[0] = '\0';
@@ -1035,7 +1053,7 @@ void R_PV(SEXP s)
 }
 
 
-void attribute_hidden Rf_CustomPrintValue(SEXP s, SEXP env)
+HIDDEN void Rf_CustomPrintValue(SEXP s, SEXP env)
 {
     tagbuf[0] = '\0';
     Rf_PrintValueRec(s, env);
@@ -1048,7 +1066,7 @@ void attribute_hidden Rf_CustomPrintValue(SEXP s, SEXP env)
 
 extern "C" {
 
-attribute_hidden
+HIDDEN
 int F77_NAME(dblep0) (const char *label, int *nchar, double *data, int *ndata)
 {
     int k, nc = *nchar;
@@ -1066,7 +1084,7 @@ int F77_NAME(dblep0) (const char *label, int *nchar, double *data, int *ndata)
     return(0);
 }
 
-attribute_hidden
+HIDDEN
 int F77_NAME(intpr0) (const char *label, int *nchar, int *data, int *ndata)
 {
     int k, nc = *nchar;
@@ -1084,7 +1102,7 @@ int F77_NAME(intpr0) (const char *label, int *nchar, int *data, int *ndata)
     return(0);
 }
 
-attribute_hidden
+HIDDEN
 int F77_NAME(realp0) (const char *label, int *nchar, float *data, int *ndata)
 {
     int k, nc = *nchar, nd = *ndata;
@@ -1112,7 +1130,7 @@ int F77_NAME(realp0) (const char *label, int *nchar, float *data, int *ndata)
 
 /* Fortran-callable error routine for lapack */
 
-void NORET F77_NAME(xerbla)(const char *srname, int *info)
+NORET void F77_NAME(xerbla)(const char *srname, int *info)
 {
    /* srname is not null-terminated.  It should be 6 characters. */
     char buf[7];

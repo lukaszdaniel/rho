@@ -511,7 +511,7 @@ static void Norm_kind(N01type kind)
 
 /*------ .Internal interface ------------------------*/
 
-SEXP attribute_hidden do_RNGkind (/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* kind_, rho::RObject* normal_kind_)
+HIDDEN SEXP do_RNGkind (/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* kind_, rho::RObject* normal_kind_)
 {
     SEXP ans, rng, norm;
 
@@ -533,7 +533,7 @@ SEXP attribute_hidden do_RNGkind (/*const*/ rho::Expression* call, const rho::Bu
 }
 
 
-SEXP attribute_hidden do_setseed (/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* seed_, rho::RObject* kind_, rho::RObject* normal_kind_)
+HIDDEN SEXP do_setseed (/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* seed_, rho::RObject* kind_, rho::RObject* normal_kind_)
 {
     SEXP skind, nkind;
     int seed;
@@ -794,10 +794,10 @@ static void RNG_Init_R_KT(Int32 seed)
    Knuth-TAOCP, Knuth-TAOCP-2002, and possibly the user-supplied ones
    have 31 or 32 bits bits of precision; the others are assumed to
    have at least at least 25. */
-static R_INLINE double ru()
+R_INLINE static double ru()
 {
     double U = 33554432.0;
-    return (floor(U*unif_rand()) + unif_rand())/U;
+    return (floor(U * unif_rand()) + unif_rand()) / U;
 }
 
 double R_unif_index(double dn)

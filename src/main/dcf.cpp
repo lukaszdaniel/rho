@@ -65,7 +65,7 @@ static char *Rconn_getline2(Rconnection con, char *buf, int bufsize)
 	}
     }
     if (!nbuf)
-    	return NULL;
+    	return nullptr;
     /* Make sure it is null-terminated even if file did not end with
      *  newline.
      */
@@ -73,7 +73,7 @@ static char *Rconn_getline2(Rconnection con, char *buf, int bufsize)
     return buf;
 }
 
-SEXP attribute_hidden do_readDCF(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* fields_, rho::RObject* keep_white_)
+HIDDEN SEXP do_readDCF(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* file_, rho::RObject* fields_, rho::RObject* keep_white_)
 {
     int nwhat, nret, nc, nr, m, k, lastm, need, i, n_eblanklines = 0;
     bool blank_skip, field_skip = false;

@@ -77,7 +77,7 @@ R_set_command_line_arguments(int argc, char **argv)
   The .Internal which returns the command line arguments that are stored
   in global variables.
  */
-SEXP attribute_hidden
+HIDDEN SEXP
 do_commandArgs(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     int i;

@@ -106,7 +106,7 @@ static size_t lhash(SEXP x, R_xlen_t indx, HashData *d)
     return size_t(xi);
 }
 
-static R_INLINE size_t ihash(SEXP x, R_xlen_t indx, HashData *d)
+R_INLINE static size_t ihash(SEXP x, R_xlen_t indx, HashData *d)
 {
     int xi = INTEGER_ELT(x, indx);
     if (xi == NA_INTEGER) return 0;
@@ -122,7 +122,7 @@ union foo {
     unsigned int u[2];
 };
 
-static R_INLINE size_t rhash(SEXP x, R_xlen_t indx, HashData *d)
+R_INLINE static size_t rhash(SEXP x, R_xlen_t indx, HashData *d)
 {
     /* There is a problem with signed 0s under IEC60559 */
     double xi = REAL_ELT(x, indx);
@@ -175,7 +175,7 @@ static size_t chash(SEXP x, R_xlen_t indx, HashData *d)
 
 /* Hash CHARSXP by address.  Hash values are int, For 64bit pointers,
  * we do (upper ^ lower) */
-static R_INLINE size_t cshash(SEXP x, R_xlen_t indx, HashData *d)
+R_INLINE static size_t cshash(SEXP x, R_xlen_t indx, HashData *d)
 {
     intptr_t z = intptr_t( STRING_ELT(x, indx));
     unsigned int z1 = static_cast<unsigned int>((z & 0xffffffff)), z2 = 0;
@@ -185,7 +185,7 @@ static R_INLINE size_t cshash(SEXP x, R_xlen_t indx, HashData *d)
     return scatter(z1 ^ z2, d);
 }
 
-static R_INLINE size_t shash(SEXP x, R_xlen_t indx, HashData *d)
+R_INLINE static size_t shash(SEXP x, R_xlen_t indx, HashData *d)
 {
     unsigned int k;
     const char *p;
@@ -689,7 +689,7 @@ R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
    .Internal(unique       (x, incomparables, fromLast, nmax))	  [op=1]
    .Internal(anyDuplicated(x, incomparables, fromLast))		  [op=2]
 */
-SEXP attribute_hidden do_duplicated(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_duplicated(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP dup, ans;
     int fromLast, nmax = NA_INTEGER;
@@ -822,18 +822,17 @@ static void UndoHashing(SEXP x, SEXP table, HashData *d)
     for (R_xlen_t i = 0; i < XLENGTH(x); i++) removeEntry(table, x, i, d);
 }
 
-#define DEFLOOKUP(NAME, HASHFUN, EQLFUN)			\
-    static R_INLINE int						\
-    NAME(SEXP table, SEXP x, R_xlen_t indx, HashData *d)	\
-    {								\
-	int *h = HTDATA_INT(d);					\
-	size_t i = HASHFUN(x, indx, d);				\
-	while (h[i] != NIL) {					\
-	    if (EQLFUN(table, h[i], x, indx))			\
-		return h[i] >= 0 ? h[i] + 1 : d->nomatch;	\
-	    i = (i + 1) % d->M;					\
-	}							\
-	return d->nomatch;					\
+#define DEFLOOKUP(NAME, HASHFUN, EQLFUN)                                       \
+    R_INLINE static int NAME(SEXP table, SEXP x, R_xlen_t indx, HashData* d)   \
+    {                                                                          \
+	int* h = HTDATA_INT(d);                                                \
+	size_t i = HASHFUN(x, indx, d);                                        \
+	while (h[i] != NIL) {                                                  \
+	    if (EQLFUN(table, h[i], x, indx))                                  \
+		return h[i] >= 0 ? h[i] + 1 : d->nomatch;                      \
+	    i = (i + 1) % d->M;                                                \
+	}                                                                      \
+	return d->nomatch;                                                     \
     }
 
 /* definitions to help the C compiler to inline of most important cases */
@@ -1044,7 +1043,7 @@ SEXP Rf_match(SEXP itable, SEXP ix, int nmatch)
 
 
 // .Internal(match(x, table, nomatch, incomparables)) :
-SEXP attribute_hidden do_match(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* table, RObject* nomatch_, RObject* incomparables)
+HIDDEN SEXP do_match(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x, RObject* table, RObject* nomatch_, RObject* incomparables)
 {
     if ((!Rf_isVector(x) && !Rf_isNull(x))
 	|| (!Rf_isVector(table) && !Rf_isNull(table)))
@@ -1074,7 +1073,7 @@ SEXP attribute_hidden do_match(/*const*/ Expression* call, const BuiltInFunction
  * Empty strings are unmatched			      BDR 2000/2/16
  */
 
-SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* table_, RObject* nomatch_, RObject* duplicates_ok_)
+HIDDEN SEXP do_pmatch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* table_, RObject* nomatch_, RObject* duplicates_ok_)
 {
     SEXP ans, input, target;
     int mtch, n_target, mtch_count, dups_ok, no_match;
@@ -1219,7 +1218,7 @@ SEXP attribute_hidden do_pmatch(/*const*/ Expression* call, const BuiltInFunctio
 /* Partial Matching of Strings */
 /* Based on Therneau's charmatch. */
 
-SEXP attribute_hidden do_charmatch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* table_, RObject* nomatch_)
+HIDDEN SEXP do_charmatch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* table_, RObject* nomatch_)
 {
     SEXP ans, input, target;
     const char *ss, *st;
@@ -1381,7 +1380,7 @@ static SEXP subDots(SEXP rho)
 }
 
 
-SEXP attribute_hidden do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
+HIDDEN SEXP do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     SEXP formals, actuals, rlist;
     SEXP funcall, f, b, rval, sysp, t1, t2, tail;
@@ -1642,7 +1641,7 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     return ans;
 }
 
-SEXP attribute_hidden do_rowsum(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* group_, RObject* unique_groups_, RObject* na_rm_, RObject* unique_group_names_)
+HIDDEN SEXP do_rowsum(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* group_, RObject* unique_groups_, RObject* na_rm_, RObject* unique_group_names_)
 {
     if(op->variant() == 1)
 	return rowsum_df(x_, group_, unique_groups_, na_rm_,
@@ -1688,7 +1687,7 @@ static SEXP duplicated2(SEXP x, HashData *d)
     return ans;
 }
 
-SEXP attribute_hidden do_makeunique(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* sep_)
+HIDDEN SEXP do_makeunique(/*const*/ Expression* call, const BuiltInFunction* op, RObject* names_, RObject* sep_)
 {
     SEXP names, sep, ans, dup, newx;
     int i, cnt, *cnts, dp;
@@ -1793,7 +1792,7 @@ SEXP Rf_csduplicated(SEXP x)
 #include <R_ext/Random.h>
 
 // sample.int(.) --> .Internal(sample2(n, size)) :
-SEXP attribute_hidden do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_, RObject* size_)
+HIDDEN SEXP do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* n_, RObject* size_)
 {
     SEXP ans;
     double dn = Rf_asReal(n_);

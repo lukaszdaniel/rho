@@ -43,14 +43,14 @@ using namespace std;
 using namespace rho;
 
 /* inline-able versions, used just once! */
-static R_INLINE Rboolean isUnordered_int(SEXP s)
+R_INLINE static Rboolean isUnordered_int(SEXP s)
 {
     return Rboolean(TYPEOF(s) == INTSXP
 		    && Rf_inherits(s, "factor")
 		    && !Rf_inherits(s, "ordered"));
 }
 
-static R_INLINE Rboolean isOrdered_int(SEXP s)
+R_INLINE static Rboolean isOrdered_int(SEXP s)
 {
     return Rboolean(TYPEOF(s) == INTSXP
 		    && Rf_inherits(s, "factor")

@@ -30,9 +30,8 @@
 #include <GraphicsBase.h>
 #include "localization.h"
 
-
-
-static R_INLINE GPar* dpSavedptr(pGEDevDesc dd) {
+R_INLINE static GPar* dpSavedptr(pGEDevDesc dd)
+{
     if (baseRegisterIndex == -1)
 	Rf_error(_("no base graphics system is registered"));
     baseSystemState *bss = static_cast<baseSystemState *>(dd->gesd[baseRegisterIndex]->systemSpecific);

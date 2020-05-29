@@ -581,8 +581,7 @@ static void Cd2fcn(int nr, int n, const double x[], double *h,
     }
 }
 
-
-static double *fixparam(SEXP p, int *n)
+static double* fixparam(SEXP p, int* n)
 {
     double *x;
     int i;
@@ -625,7 +624,7 @@ static double *fixparam(SEXP p, int *n)
 
 	/* Fatal errors - we don't deliver an answer */
 
-static void NORET opterror(int nerr)
+[[noreturn]] static void opterror(int nerr)
 {
     switch(nerr) {
     case -1:

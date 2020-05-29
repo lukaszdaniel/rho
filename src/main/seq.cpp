@@ -112,8 +112,8 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 
 static SEXP seq_colon(double n1, double n2, SEXP call)
 {
-    double r = fabs(n2 - n1);
-    if(r >= R_XLEN_T_MAX)
+    double r = std::abs(n2 - n1);
+    if(r >= double(R_XLEN_T_MAX))
 	Rf_errorcall(call, _("result would be too long a vector"));
 
     if (RHO_FALSE && n1 == (R_xlen_t) n1 && n2 == (R_xlen_t) n2)
@@ -134,7 +134,7 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
 	}
     }
     if (useInt) {
-	int in1 = (int)(n1);
+	int in1 = int(n1);
 	ans = Rf_allocVector(INTSXP, n);
 	if (n1 <= n2)
 	    //ans = R_compact_intrange((R_xlen_t) n1, (R_xlen_t)(n1 + n - 1));
@@ -164,13 +164,13 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
     return ans;
 }
 
-SEXP attribute_hidden do_colon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
+HIDDEN SEXP do_colon(/*const*/ Expression* call, const BuiltInFunction* op, RObject* from_, RObject* to_)
 {
     SEXP s1, s2;
     double n1, n2;
 
     if (Rf_inherits(from_, "factor") && Rf_inherits(to_, "factor"))
-	return(cross_colon(call, from_, to_));
+	return cross_colon(call, from_, to_);
 
     s1 = from_;
     s2 = to_;
@@ -274,7 +274,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
     for (i = 0; i < nc; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	if (ISNAN(REAL(t)[i]) || REAL(t)[i] <= -1 ||
-	    REAL(t)[i] >= R_XLEN_T_MAX+1.0)
+	    REAL(t)[i] >= double(R_XLEN_T_MAX) + 1.0)
 	    Rf_error(_("invalid '%s' value"), "times");
 	sna += (R_xlen_t) REAL(t)[i];
     }
@@ -285,7 +285,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
 	    Rf_error(_("invalid '%s' value"), "times");
 	sna += INTEGER(t)[i];
     }
-    if (sna > R_XLEN_T_MAX)
+    if (sna > double(R_XLEN_T_MAX))
 	Rf_error(_("invalid '%s' value"), "times");
     R_xlen_t na = (R_xlen_t) sna;
 /*    R_xlen_t ni = NINTERRUPT, ratio;
@@ -364,7 +364,7 @@ static SEXP rep3(SEXP s, R_xlen_t ns, R_xlen_t na)
 }
 
 // .Internal(rep.int(x, times))
-SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* times_)
+HIDDEN SEXP do_rep_int(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* times_)
 {
     SEXP s = x_, ncopy = times_;
     R_xlen_t nc;
@@ -388,12 +388,12 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
 	if (TYPEOF(ncopy) != INTSXP) {
 	    double snc = Rf_asReal(ncopy);
 	    if (!R_FINITE(snc) || snc <= -1. ||
-		(ns > 0 && snc >= R_XLEN_T_MAX + 1.))
+		(ns > 0 && snc >= double(R_XLEN_T_MAX) + 1.0))
 		Rf_error(_("invalid '%s' value"), "times");
 	    nc = ns == 0 ? 1 : (R_xlen_t) snc;
 	} else if ((nc = Rf_asInteger(ncopy)) == NA_INTEGER || nc < 0) // nc = 0 ok
 	    Rf_error(_("invalid '%s' value"), "times");
-	if ((double) nc * ns > R_XLEN_T_MAX)
+	if ((double) nc * ns > double(R_XLEN_T_MAX))
 	    Rf_error(_("invalid '%s' value"), "times");
 	PROTECT(a = rep3(s, ns, nc * ns));
     }
@@ -420,7 +420,7 @@ SEXP attribute_hidden do_rep_int(/*const*/ Expression* call, const BuiltInFuncti
     return a;
 }
 
-SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* length_out_)
+HIDDEN SEXP do_rep_len(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* length_out_)
 {
     R_xlen_t ns, na;
     SEXP a, s, len;
@@ -435,7 +435,7 @@ SEXP attribute_hidden do_rep_len(/*const*/ Expression* call, const BuiltInFuncti
 	Rf_error(_("invalid '%s' value"), "length.out");
     if (TYPEOF(len) != INTSXP) {
 	double sna = Rf_asReal(len);
-	if (ISNAN(sna) || sna <= -1. || sna >= R_XLEN_T_MAX + 1.)
+	if (ISNAN(sna) || sna <= -1. || sna >= double(R_XLEN_T_MAX) + 1.0)
 	    Rf_error(_("invalid '%s' value"), "length.out");
 	na = (R_xlen_t) sna;
     } else
@@ -634,7 +634,7 @@ static SEXP rep4(SEXP x, SEXP times, R_xlen_t len, R_xlen_t each, R_xlen_t nt)
    rep(1:3,,8) matches length.out */
 
 /* This is a primitive SPECIALSXP with internal argument matching */
-SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, x, times, length_out, each_, ignored;
     R_xlen_t i, lx, len = NA_INTEGER, each = 1, nt;
@@ -666,7 +666,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(length_out) != INTSXP) {
 	double slen = Rf_asReal(length_out);
 	if (R_FINITE(slen)) {
-	    if (slen <= -1 || slen >= R_XLEN_T_MAX+1.0)
+	    if (slen <= -1 || slen >= double(R_XLEN_T_MAX) + 1.0)
 		Rf_errorcall(call, _("invalid '%s' argument"), "length.out");
 	    len = R_xlen_t(slen);
 	} else
@@ -683,7 +683,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (TYPEOF(each_) != INTSXP) {
 	double seach = Rf_asReal(each_);
 	if (R_FINITE(seach)) {
-	    if (seach <= -1. || (lx > 0 && seach >= R_XLEN_T_MAX + 1.))
+	    if (seach <= -1. || (lx > 0 && seach >= double(R_XLEN_T_MAX) + 1.0))
 		Rf_errorcall(call, _("invalid '%s' argument"), "each");
 	    each = lx == 0 ? NA_INTEGER : (R_xlen_t) seach;
 	} else each = NA_INTEGER;
@@ -734,7 +734,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    R_xlen_t it;
 	    if (TYPEOF(times) == REALSXP) {
 		double rt = REAL(times)[0];
-		if (ISNAN(rt) || rt <= -1 || rt >= R_XLEN_T_MAX+1.0)
+		if (ISNAN(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
 		    Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		it = (R_xlen_t) rt;
 	    } else {
@@ -742,7 +742,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 		if (it == NA_INTEGER || it < 0)
 		    Rf_errorcall(call, _("invalid '%s' argument"), "times");
 	    }
-	    if ((double) lx * it * each > R_XLEN_T_MAX)
+	    if ((double) lx * it * each > double(R_XLEN_T_MAX))
 		Rf_errorcall(call, _("invalid '%s' argument"), "times");
 	    len = lx * it * each;
 	} else { // nt != 1
@@ -751,7 +751,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    if (TYPEOF(times) == REALSXP)
 		for(i = 0; i < nt; i++) {
 		    double rt = REAL(times)[i];
-		    if (ISNAN(rt) || rt <= -1 || rt >= R_XLEN_T_MAX+1.0)
+		    if (ISNAN(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
 			Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		    sum += (R_xlen_t) rt;
 		}
@@ -762,7 +762,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 			Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		    sum += it;
 		}
-	    if (sum > R_XLEN_T_MAX)
+	    if (sum > double(R_XLEN_T_MAX))
 		Rf_errorcall(call, _("invalid '%s' argument"), "times");
 	    len = (R_xlen_t) sum;
 	}
@@ -796,7 +796,7 @@ SEXP attribute_hidden do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
  */
 #define FEPS 1e-10
 /* to match seq.default */
-SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans = nullptr /* -Wall */, from, to, by, len, along, ignored;
     int nargs = Rf_length(args), lf;
@@ -888,7 +888,7 @@ SEXP attribute_hidden do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 		} else
 		    Rf_errorcall(call, _("invalid '(to - from)/by'"));
 	    }
-	    double dd = fabs(del)/fmax2(fabs(rto), fabs(rfrom));
+	    double dd = std::abs(del)/std::max(std::abs(rto), std::abs(rfrom));
 	    if(dd < 100 * DBL_EPSILON) {
 		ans = miss_from ? Rf_ScalarReal(rfrom) : from;
 		goto done;
@@ -1014,7 +1014,7 @@ done:
     return ans;
 }
 
-SEXP attribute_hidden do_seq_along(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
+HIDDEN SEXP do_seq_along(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     SEXP ans;
 
@@ -1046,7 +1046,7 @@ SEXP attribute_hidden do_seq_along(/*const*/ Expression* call, const BuiltInFunc
     return ans;
 }
 
-SEXP attribute_hidden do_seq_len(/*const*/ Expression* call, const BuiltInFunction* op, RObject* length_)
+HIDDEN SEXP do_seq_len(/*const*/ Expression* call, const BuiltInFunction* op, RObject* length_)
 {
     SEXP ans;
     R_xlen_t len;

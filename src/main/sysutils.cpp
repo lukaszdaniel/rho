@@ -80,7 +80,7 @@ bool R_FileExists(const char *path)
     return _stati64(R_ExpandFileName(path), &sb) == 0;
 }
 
-double attribute_hidden R_FileMtime(const char *path)
+HIDDEN double R_FileMtime(const char *path)
 {
     struct _stati64 sb;
     if (_stati64(R_ExpandFileName(path), &sb) != 0)
@@ -94,7 +94,7 @@ bool R_FileExists(const char *path)
     return (stat(R_ExpandFileName(path), &sb) == 0);
 }
 
-double attribute_hidden R_FileMtime(const char *path)
+HIDDEN double R_FileMtime(const char *path)
 {
     struct stat sb;
     if (stat(R_ExpandFileName(path), &sb) != 0)
@@ -107,7 +107,7 @@ double attribute_hidden R_FileMtime(const char *path)
      *  Unix file names which begin with "." are invisible.
      */
 
-bool attribute_hidden R_HiddenFile(const char* name)
+HIDDEN bool R_HiddenFile(const char* name)
 {
     if (name && name[0] != '.')
 		return false;
@@ -216,7 +216,7 @@ FILE *RC_fopen(const SEXP fn, const char *mode, const Rboolean expand)
 {
     wchar_t wmode[10];
 
-    if(fn == NA_STRING) return NULL;
+    if(fn == NA_STRING) return nullptr;
     mbstowcs(wmode, fixmode(mode), 10);
     return _wfopen(filenameToWchar(fn, expand), wmode);
 }
@@ -245,12 +245,12 @@ char *R_HomeDir(void)
 }
 
 /* This is a primitive (with no arguments) */
-SEXP attribute_hidden do_interactive(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN SEXP do_interactive(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     return Rf_ScalarLogical( (R_Interactive) ? 1 : 0 );
 }
 
-SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* check_)
+HIDDEN SEXP do_tempdir(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* check_)
 {
     Rboolean check = Rboolean(Rf_asLogical(check_));
     if(check && !isDir(R_TempDir)) {
@@ -261,7 +261,7 @@ SEXP attribute_hidden do_tempdir(/*const*/ rho::Expression* call, const rho::Bui
 }
 
 
-SEXP attribute_hidden do_tempfile(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* tmpdir_, rho::RObject* fileext_)
+HIDDEN SEXP do_tempfile(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* pattern_, rho::RObject* tmpdir_, rho::RObject* fileext_)
 {
     SEXP  ans, pattern, fileext, tempdir;
     const char *tn, *td, *te;
@@ -373,7 +373,7 @@ extern char ** environ;
 # include <windows.h> /* _wgetenv etc */
 #endif
 
-SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* symbol_, rho::RObject* default_value_)
+HIDDEN SEXP do_getenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* symbol_, rho::RObject* default_value_)
 {
     int i, j;
     SEXP ans;
@@ -389,13 +389,13 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 #ifdef Win32
 	int n = 0, N;
 	wchar_t **w;
-	for (i = 0, w = _wenviron; *w != NULL; i++, w++)
+	for (i = 0, w = _wenviron; *w != nullptr; i++, w++)
 	    n = max(n, wcslen(*w));
 	N = 4*n+1;
 	vector<char> bufv(N);
 	char* buf = &bufv[0];
 	PROTECT(ans = Rf_allocVector(STRSXP, i));
-	for (i = 0, w = _wenviron; *w != NULL; i++, w++) {
+	for (i = 0, w = _wenviron; *w != nullptr; i++, w++) {
 	    Rf_wcstoutf8(buf, *w, sizeof(buf));
 	    SET_STRING_ELT(ans, i, Rf_mkCharCE(buf, CE_UTF8));
 	}
@@ -412,7 +412,7 @@ SEXP attribute_hidden do_getenv(/*const*/ rho::Expression* call, const rho::Buil
 #ifdef Win32
 	    const wchar_t *wnm = Rf_wtransChar(STRING_ELT(CAR(args), j));
 	    wchar_t *w = _wgetenv(wnm);
-	    if (w == NULL)
+	    if (w == nullptr)
 		SET_STRING_ELT(ans, j, STRING_ELT(CADR(args), 0));
 	    else {
 		int n = wcslen(w), N = 4*n+1; /* UTF-16 maps to <= 4 UTF-8 */
@@ -465,7 +465,7 @@ static int Rputenv(const char *nm, const char *val)
 #endif
 
 
-SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* name_, rho::RObject* value_)
+HIDDEN SEXP do_setenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* name_, rho::RObject* value_)
 {
 #if defined(HAVE_PUTENV) || defined(HAVE_SETENV)
     int i, n;
@@ -502,7 +502,7 @@ SEXP attribute_hidden do_setenv(/*const*/ rho::Expression* call, const rho::Buil
 #endif
 }
 
-SEXP attribute_hidden do_unsetenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
+HIDDEN SEXP do_unsetenv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)
 {
     int i, n;
     SEXP ans, vars;
@@ -588,7 +588,7 @@ write_one (unsigned int namescount, const char * const *names, void *data)
 #include "RBufferUtils.h"
 
 /* iconv(x, from, to, sub, mark) */
-SEXP attribute_hidden do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* from_, rho::RObject* to_, rho::RObject* sub_, rho::RObject* mark_, rho::RObject* toRaw_)
+HIDDEN SEXP do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_, rho::RObject* from_, rho::RObject* to_, rho::RObject* sub_, rho::RObject* mark_, rho::RObject* toRaw_)
 {
     SEXP ans, x = x_, si;
     void * obj;
@@ -816,24 +816,25 @@ enum nttype_t {
 };
 
 /* Decides whether translation to native encoding is needed. */
-static R_INLINE nttype_t needsTranslation(rho::RObject* x) {
+R_INLINE static nttype_t needsTranslation(rho::String* x) {
 
-    if (IS_ASCII(x)) return NT_NONE;
-    if (IS_UTF8(x)) {
+    if(!x) return NT_NONE;
+    if (x->isASCII()) return NT_NONE;
+    if (x->isUTF8()) {
 	if (utf8locale || x == NA_STRING) return NT_NONE;
 	return NT_FROM_UTF8;
     }
-    if (IS_LATIN1(x)) {
+    if (x->isLATIN1()) {
 	if (x == NA_STRING || latin1locale) return NT_NONE;
 	return NT_FROM_LATIN1;
     }
-    if (IS_BYTES(x))
+    if (x->isBYTES())
 	Rf_error(_("translating strings with \"bytes\" encoding is not allowed"));
     return NT_NONE;
 }
 
-static void *latin1_obj = nullptr, *utf8_obj=nullptr, *ucsmb_obj=nullptr,
-    *ucsutf8_obj=nullptr;
+static void *latin1_obj = nullptr, *utf8_obj = nullptr, *ucsmb_obj = nullptr,
+	    *ucsutf8_obj = nullptr;
 
 /* Translates string in "ans" to native encoding returning it as string
    buffer "cbuff" */
@@ -945,10 +946,10 @@ next_char:
    R_alloc stack */
 const char *Rf_translateChar(SEXP x)
 {
-    if(TYPEOF(x) != CHARSXP)
+    if(!x || x->sexptype() != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
 	      "translateChar", Rf_type2char(TYPEOF(x)));
-    nttype_t t = needsTranslation(x);
+    nttype_t t = needsTranslation(SEXP_downcast<String*>(x));
     const char *ans = R_CHAR(x);
     assert(ans != nullptr);
     if (t == NT_NONE) return ans;
@@ -967,10 +968,10 @@ const char *Rf_translateChar(SEXP x)
 /* (Install)s (Tr)anslated (Char)acter String */
 SEXP Rf_installTrChar(SEXP x)
 {
-    if(TYPEOF(x) != CHARSXP)
+    if(!x || x->sexptype() != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
 	      "installTrChar", Rf_type2char(TYPEOF(x)));
-    nttype_t t = needsTranslation(x);
+    nttype_t t = needsTranslation(SEXP_downcast<String*>(x));
     if (t == NT_NONE) return Rf_installNoTrChar(x);
 
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
@@ -991,7 +992,7 @@ SEXP Rf_installChar(SEXP x)
    R_alloc stack */
 const char *Rf_translateChar0(SEXP x)
 {
-    if(TYPEOF(x) != CHARSXP)
+    if(!x || TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP"), "translateChar0");
     if(IS_BYTES(x)) return R_CHAR(x);
     return Rf_translateChar(x);
@@ -1007,7 +1008,7 @@ const char *Rf_translateCharUTF8(SEXP x)
     size_t inb, outb, res;
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
-    if(TYPEOF(x) != CHARSXP)
+    if(!x || TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
 	      "translateCharUTF8", Rf_type2char(TYPEOF(x)));
     if(x == NA_STRING) return ans;
@@ -1081,7 +1082,7 @@ static void *latin1_wobj = nullptr, *utf8_wobj=nullptr;
 
 /* This may return a R_alloc-ed result, so the caller has to manage the
    R_alloc stack */
-attribute_hidden /* but not hidden on Windows, where it was used in tcltk.cpp */
+HIDDEN /* but not hidden on Windows, where it was used in tcltk.cpp */
 const wchar_t *Rf_wtransChar(SEXP x)
 {
     void * obj;
@@ -1092,7 +1093,7 @@ const wchar_t *Rf_wtransChar(SEXP x)
     Rboolean knownEnc = FALSE;
     R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
 
-    if(TYPEOF(x) != CHARSXP)
+    if(!x || TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP"), "wtransChar");
 
     if(IS_BYTES(x))
@@ -1302,7 +1303,7 @@ void reEnc2(const char *x, char *y, int ny,
     const char *inbuf;
     char *outbuf;
     size_t inb, outb, res, top;
-    char *tocode = NULL, *fromcode = NULL;
+    char *tocode = nullptr, *fromcode = nullptr;
     char buf[20];
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
 
@@ -1407,7 +1408,7 @@ void reEnc2(const char *x, char *y, int ny,
     const char *inbuf;
     char *outbuf;
     size_t inb, outb, res, top;
-    char *tocode = NULL, *fromcode = NULL;
+    char *tocode = nullptr, *fromcode = nullptr;
     char buf[20];
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
 
@@ -1504,7 +1505,7 @@ next_char:
 }
 #endif
 
-void attribute_hidden
+HIDDEN void
 invalidate_cached_recodings(void)
 {
     if (latin1_obj) {
@@ -1595,8 +1596,7 @@ size_t Rf_ucstomb(char *s, const unsigned int wc)
 }
 
 /* used in plot.cpp for non-UTF-8 MBCS */
-size_t attribute_hidden
-Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
+HIDDEN size_t Rf_mbtoucs(unsigned int *wc, const char *s, size_t n)
 {
     unsigned int  wcs[2];
     char     buf[16];
@@ -1809,7 +1809,7 @@ void R_reInitTempDir(int die_on_fail)
     }
 }
 
-void attribute_hidden Rf_InitTempDir() {
+HIDDEN void Rf_InitTempDir() {
     R_reInitTempDir(/* die_on_fail = */ TRUE);
 }
 
@@ -1865,7 +1865,7 @@ char * R_tmpnam2(const char *prefix, const char *tempdir, const char *fileext)
     return res;
 }
 
-SEXP attribute_hidden do_proctime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN SEXP do_proctime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     SEXP ans, nm;
 
@@ -1883,7 +1883,7 @@ SEXP attribute_hidden do_proctime(/*const*/ rho::Expression* call, const rho::Bu
     return ans;
 }
 
-void attribute_hidden resetTimeLimits()
+HIDDEN void resetTimeLimits()
 {
     double data[5];
     R_getProcTime(data);
@@ -1902,7 +1902,7 @@ void attribute_hidden resetTimeLimits()
 	cpuLimit = cpuLimit2;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_, rho::RObject* transient_)
 {
     double cpu, elapsed, old_cpu = cpuLimitValue,
@@ -1928,7 +1928,7 @@ do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op,
     return nullptr;
 }
 
-SEXP attribute_hidden
+HIDDEN SEXP
 do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_)
 {
     double cpu, elapsed, data[5];
@@ -1965,7 +1965,7 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 #  define GLOB_QUOTE 0
 # endif
 #endif
-SEXP attribute_hidden do_glob(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* paths_, rho::RObject* dirmark_)
+HIDDEN SEXP do_glob(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* paths_, rho::RObject* dirmark_)
 {
     SEXP x, ans;
     R_xlen_t i, n;

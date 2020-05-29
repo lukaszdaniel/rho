@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1997--2017  The R Core Team
+ *  Copyright (C) 1997--2018  The R Core Team
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -692,7 +692,7 @@ static char UserRHome[MAX_PATH + 7];
 extern char *getRHOME(int), *getRUser(void); /* in rhome.c */
 void R_setStartTime(void);
 
-attribute_hidden
+HIDDEN
 void R_GetStackLimits()
 {
     int dummy;
@@ -748,7 +748,8 @@ void R_SetWin32(Rstart Rp)
 	strcpy(UserRHome, "HOME=");
 	strcat(UserRHome, getRUser());
 	putenv(UserRHome);
-    }    
+    }
+    putenv("MSYS2_ENV_CONV_EXCL=R_ARCH");
 
     
     /* This is here temporarily while the GCC version is chosen */

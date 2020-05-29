@@ -1,8 +1,8 @@
 
-Rho Under development (unstable) (2020-05-15 r344e8abc01) -- "R(C) -> Rho(C++)"
+Rho Under development (unstable) (2020-05-18 r207563e56d) -- "R(C) -> Rho(C++)"
 Rho Copyright (C) 2008-2014 Andrew R. Runnalls
 
-R Under development (unstable) (2018-03-15 r74410) -- "Frisbee Sailing"
+R Under development (unstable) (2018-04-20 r74620) -- "Frisbee Sailing"
 Copyright (C) 2020 The R Foundation for Statistical Computing
 Platform: x86_64-pc-linux-gnu (64-bit)
 
@@ -135,19 +135,19 @@ Type 'q()' to quit R.
 >   assertCondition( ""-1 ) # ok, any condition would satisfy this
 > 
 > try( assertCondition(sqrt(2), "warning") )
-Error in assertCondition(sqrt(2), "warning") : 
+Error in command 'assertCondition(sqrt(2), "warning")': 
   Failed to get warning in evaluating sqrt(2)
 > ## .. Failed to get warning in evaluating sqrt(2)
 >      assertCondition(sqrt("abc"), "error")   # ok
 > try( assertCondition(sqrt("abc"), "warning") )# -> error: had no warning
-Error in assertCondition(sqrt("abc"), "warning") : 
+Error in command 'assertCondition(sqrt("abc"), "warning")': 
   Got simpleError in evaluating sqrt("abc"); wanted warning
 >      assertCondition(sqrt("abc"), "error")
 >   ## identical to assertError() call above
 > 
 > assertCondition(matrix(1:5, 2,3), "warning")
 > try( assertCondition(matrix(1:8, 4,3), "error") )
-Error in assertCondition(matrix(1:8, 4, 3), "error") : 
+Error in command 'assertCondition(matrix(1:8, 4, 3), "error")': 
   Got simpleWarning in evaluating matrix(1:8, 4, 3); wanted error
 > ## .. Failed to get expected error ....
 > 
@@ -160,7 +160,7 @@ Error in assertCondition(matrix(1:8, 4, 3), "error") :
 >     assertCondition(ff(), "warning")
 > ## but assertWarning does not allow an error to follow
 > try(assertWarning(ff()))
-Error in assertWarning(ff()) : 
+Error in command 'assertWarning(ff())': 
   Got warning in evaluating ff(), but also an error
 >     assertCondition(ff(), "error")          # ok
 > assertCondition(ff(), "error", "warning") # ok (quietly, catching warning)
@@ -209,7 +209,7 @@ Error in assertWarning(ff()) :
 > bibstyle("unsorted", sortKeys = function(refs) seq_along(refs),
 +     fmtPrefix = function(paper) paste0("[", paper$.index, "]"),
 +        .init = TRUE)
-<environment: 0x7f7026dba680>
+<environment: 0x7f2af0439090>
 > print(refs, .bibstyle = "unsorted")
 [1] R Core Team (2013). _R: A Language and Environment for Statistical
 Computing_. R Foundation for Statistical Computing, Vienna, Austria.
@@ -1004,7 +1004,7 @@ List of 6
 > cleanEx()
 > options(digits = 7L)
 > base::cat("Time elapsed: ", proc.time() - base::get("ptime", pos = 'CheckExEnv'),"\n")
-Time elapsed:  0.297 0 0.298 0 0 
+Time elapsed:  0.295 0.004 0.299 0 0 
 > grDevices::dev.off()
 null device 
           1 

@@ -49,7 +49,7 @@
 
 using namespace rho;
 
-static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
+static R_StringBuffer cbuff = { nullptr, 0, MAXELTSIZE };
 
 #define _S4_rep_keepClass
 /* ==>  rep(<S4>, .) keeps class e.g., for list-like */
@@ -58,8 +58,8 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 {
     SEXP a, la, ls, lt, rs, rt;
     int i, j, k, n, nls, nlt;
-    char *cbuf;
-    const void *vmax = vmaxget();
+    char* cbuf;
+    const void* vmax = vmaxget();
 
     if (Rf_length(s) != Rf_length(t))
 	Rf_errorcall(call, _("unequal factor lengths"));
@@ -74,8 +74,8 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
     for (i = 0; i < n; i++) {
 	int vs = INTEGER(rs)[i];
 	int vt = INTEGER(rt)[i];
-	if ((vs == NA_INTEGER) || (vt == NA_INTEGER))
-	    INTEGER(a)[i] = NA_INTEGER;
+	if ((vs == R_NaInt) || (vt == R_NaInt))
+	    INTEGER(a)[i] = R_NaInt;
 	else
 	    INTEGER(a)[i] = vt + (vs - 1) * nlt;
     }
@@ -108,7 +108,7 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 }
 
 /* interval at which to check interrupts */
-#define NINTERRUPT 1000000U
+constexpr R_xlen_t NINTERRUPT = 1000000;
 
 static SEXP seq_colon(double n1, double n2, SEXP call)
 {
@@ -120,7 +120,7 @@ static SEXP seq_colon(double n1, double n2, SEXP call)
 	return R_compact_intrange((R_xlen_t) n1, (R_xlen_t) n2);
 
     SEXP ans;
-    R_xlen_t n = (R_xlen_t)(r + 1 + FLT_EPSILON);
+    R_xlen_t n = R_xlen_t(r + 1 + FLT_EPSILON);
 
     Rboolean useInt = Rboolean((n1 <= INT_MAX) &&  (n1 == (int) n1));
     if(useInt) {
@@ -190,7 +190,7 @@ HIDDEN SEXP do_colon(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 			     (int) n2), (int) n2);
     n1 = Rf_asReal(s1);
     n2 = Rf_asReal(s2);
-    if (ISNAN(n1) || ISNAN(n2))
+    if (std::isnan(n1) || std::isnan(n2))
 	Rf_errorcall(call, _("NA/NaN argument"));
     return seq_colon(n1, n2, call);
 }
@@ -273,7 +273,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
     if (TYPEOF(t) == REALSXP)
     for (i = 0; i < nc; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	if (ISNAN(REAL(t)[i]) || REAL(t)[i] <= -1 ||
+	if (std::isnan(REAL(t)[i]) || REAL(t)[i] <= -1 ||
 	    REAL(t)[i] >= double(R_XLEN_T_MAX) + 1.0)
 	    Rf_error(_("invalid '%s' value"), "times");
 	sna += (R_xlen_t) REAL(t)[i];
@@ -281,7 +281,7 @@ static SEXP rep2(SEXP s, SEXP ncopy)
     else
     for (i = 0; i < nc; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	if (INTEGER(t)[i] == NA_INTEGER || INTEGER(t)[i] < 0)
+	if (INTEGER(t)[i] == R_NaInt || INTEGER(t)[i] < 0)
 	    Rf_error(_("invalid '%s' value"), "times");
 	sna += INTEGER(t)[i];
     }
@@ -387,11 +387,11 @@ HIDDEN SEXP do_rep_int(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	R_xlen_t ns = Rf_xlength(s);
 	if (TYPEOF(ncopy) != INTSXP) {
 	    double snc = Rf_asReal(ncopy);
-	    if (!R_FINITE(snc) || snc <= -1. ||
+	    if (!std::isfinite(snc) || snc <= -1. ||
 		(ns > 0 && snc >= double(R_XLEN_T_MAX) + 1.0))
 		Rf_error(_("invalid '%s' value"), "times");
 	    nc = ns == 0 ? 1 : (R_xlen_t) snc;
-	} else if ((nc = Rf_asInteger(ncopy)) == NA_INTEGER || nc < 0) // nc = 0 ok
+	} else if ((nc = Rf_asInteger(ncopy)) == R_NaInt || nc < 0) // nc = 0 ok
 	    Rf_error(_("invalid '%s' value"), "times");
 	if ((double) nc * ns > double(R_XLEN_T_MAX))
 	    Rf_error(_("invalid '%s' value"), "times");
@@ -435,11 +435,11 @@ HIDDEN SEXP do_rep_len(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	Rf_error(_("invalid '%s' value"), "length.out");
     if (TYPEOF(len) != INTSXP) {
 	double sna = Rf_asReal(len);
-	if (ISNAN(sna) || sna <= -1. || sna >= double(R_XLEN_T_MAX) + 1.0)
+	if (std::isnan(sna) || sna <= -1. || sna >= double(R_XLEN_T_MAX) + 1.0)
 	    Rf_error(_("invalid '%s' value"), "length.out");
 	na = (R_xlen_t) sna;
     } else
-	if ((na = Rf_asInteger(len)) == NA_INTEGER || na < 0) /* na = 0 ok */
+	if ((na = Rf_asInteger(len)) == R_NaInt || na < 0) /* na = 0 ok */
 	    Rf_error(_("invalid '%s' value"), "length.out");
 
     if (TYPEOF(s) == NILSXP && na > 0)
@@ -637,7 +637,7 @@ static SEXP rep4(SEXP x, SEXP times, R_xlen_t len, R_xlen_t each, R_xlen_t nt)
 HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     SEXP ans, x, times, length_out, each_, ignored;
-    R_xlen_t i, lx, len = NA_INTEGER, each = 1, nt;
+    R_xlen_t i, lx, len = R_NaInt, each = 1, nt;
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::RAW);
 
     /* includes factors, POSIX[cl]t, Date */
@@ -665,15 +665,15 @@ HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (TYPEOF(length_out) != INTSXP) {
 	double slen = Rf_asReal(length_out);
-	if (R_FINITE(slen)) {
+	if (std::isfinite(slen)) {
 	    if (slen <= -1 || slen >= double(R_XLEN_T_MAX) + 1.0)
 		Rf_errorcall(call, _("invalid '%s' argument"), "length.out");
 	    len = R_xlen_t(slen);
 	} else
-	    len = NA_INTEGER;
+	    len = R_NaInt;
     } else {
 	len = Rf_asInteger(length_out);
-	if(len != NA_INTEGER && len < 0)
+	if(len != R_NaInt && len < 0)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "length.out");
     }
     if(Rf_length(length_out) != 1)
@@ -682,26 +682,26 @@ HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (TYPEOF(each_) != INTSXP) {
 	double seach = Rf_asReal(each_);
-	if (R_FINITE(seach)) {
+	if (std::isfinite(seach)) {
 	    if (seach <= -1. || (lx > 0 && seach >= double(R_XLEN_T_MAX) + 1.0))
 		Rf_errorcall(call, _("invalid '%s' argument"), "each");
-	    each = lx == 0 ? NA_INTEGER : (R_xlen_t) seach;
-	} else each = NA_INTEGER;
+	    each = lx == 0 ? R_NaInt : (R_xlen_t) seach;
+	} else each = R_NaInt;
     } else {
 	each = Rf_asInteger(each_);
-	if(each != NA_INTEGER && each < 0)
+	if(each != R_NaInt && each < 0)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "each");
     }
     if(Rf_length(each_) != 1)
 	Rf_warningcall(call, _("first element used of '%s' argument"), "each");
-    if(each == NA_INTEGER) each = 1;
+    if(each == R_NaInt) each = 1;
 
     if(lx == 0) {
 	if(len > 0 && x == nullptr)
 	    Rf_warningcall(call, "'x' is NULL so the result will be NULL");
 	SEXP a;
 	PROTECT(a = Rf_duplicate(x));
-	if(len != NA_INTEGER && len > 0 && x != nullptr)
+	if(len != R_NaInt && len > 0 && x != nullptr)
 	    a = Rf_xlengthgets(a, len);
 	UNPROTECT(3);
 	return a;
@@ -715,7 +715,7 @@ HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     int nprotect = 2;
     /* First find the final length using 'times' and 'each' */
-    if(len != NA_INTEGER) { /* takes precedence over times */
+    if(len != R_NaInt) { /* takes precedence over times */
 	nt = 1;
     } else {
 	double sum = 0;
@@ -734,12 +734,12 @@ HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    R_xlen_t it;
 	    if (TYPEOF(times) == REALSXP) {
 		double rt = REAL(times)[0];
-		if (ISNAN(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
+		if (std::isnan(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
 		    Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		it = (R_xlen_t) rt;
 	    } else {
 		it = INTEGER(times)[0];
-		if (it == NA_INTEGER || it < 0)
+		if (it == R_NaInt || it < 0)
 		    Rf_errorcall(call, _("invalid '%s' argument"), "times");
 	    }
 	    if ((double) lx * it * each > double(R_XLEN_T_MAX))
@@ -751,14 +751,14 @@ HIDDEN SEXP do_rep(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    if (TYPEOF(times) == REALSXP)
 		for(i = 0; i < nt; i++) {
 		    double rt = REAL(times)[i];
-		    if (ISNAN(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
+		    if (std::isnan(rt) || rt <= -1 || rt >= double(R_XLEN_T_MAX) + 1.0)
 			Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		    sum += (R_xlen_t) rt;
 		}
 	    else
 		for(i = 0; i < nt; i++) {
 		    int it = INTEGER(times)[i];
-		    if (it == NA_INTEGER || it < 0)
+		    if (it == R_NaInt || it < 0)
 			Rf_errorcall(call, _("invalid '%s' argument"), "times");
 		    sum += it;
 		}
@@ -801,7 +801,7 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
     SEXP ans = nullptr /* -Wall */, from, to, by, len, along, ignored;
     int nargs = Rf_length(args), lf;
     Rboolean One = Rboolean(nargs == 1);
-    R_xlen_t i, lout = NA_INTEGER;
+    R_xlen_t i, lout = R_NaInt;
 
     ArgList arglist(SEXP_downcast<PairList*>(args), ArgList::EVALUATED);
     auto dispatched = Rf_Dispatch(SEXP_downcast<Expression*>(call),
@@ -828,7 +828,7 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	lf = Rf_length(from);
 	if(lf == 1 && (TYPEOF(from) == INTSXP || TYPEOF(from) == REALSXP)) {
 	    double rfrom = Rf_asReal(from);
-	    if (!R_FINITE(rfrom))
+	    if (!std::isfinite(rfrom))
 		Rf_errorcall(call, _("'%s' must be a finite number"), "from");
 	    ans = seq_colon(1.0, rfrom, call);
 	}
@@ -846,7 +846,7 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	}
     } else if(len != R_MissingArg && len != nullptr) {
 	double rout = Rf_asReal(len);
-	if(ISNAN(rout) || rout <= -0.5)
+	if(std::isnan(rout) || rout <= -0.5)
 	    Rf_errorcall(call, _("'length.out' must be a non-negative number"));
 	if(Rf_length(len) != 1)
 	    Rf_warningcall(call, _("first element used of '%s' argument"),
@@ -854,20 +854,20 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	lout = R_xlen_t(ceil(rout));
     }
 
-    if(lout == NA_INTEGER) {
+    if(lout == R_NaInt) {
 	double rfrom, rto, rby = Rf_asReal(by);
 	if(miss_from) rfrom = 1.0;
 	else {
 	    if(Rf_length(from) != 1) Rf_errorcall(call, _("'%s' must be of length 1"), "from");
 	    rfrom = Rf_asReal(from);
-	    if(!R_FINITE(rfrom))
+	    if(!std::isfinite(rfrom))
 		Rf_errorcall(call, _("'%s' must be a finite number"), "from");
 	}
 	if(miss_to) rto = 1.0;
 	else {
 	    if(Rf_length(to) != 1) Rf_errorcall(call, _("'%s' must be of length 1"), "to");
 	    rto = Rf_asReal(to);
-	    if(!R_FINITE(rto))
+	    if(!std::isfinite(rto))
 		Rf_errorcall(call, _("'%s' must be a finite number"), "to");
 	}
 	if(by == R_MissingArg)
@@ -881,7 +881,7 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    /* printf("from = %f, to = %f, by = %f\n", rfrom, rto, rby); */
 	    double n = del/rby;
-	    if(!R_FINITE(n)) {
+	    if(!std::isfinite(n)) {
 		if(del == 0.0 && rby == 0.0) {
 		    ans = miss_from ? Rf_ScalarReal(rfrom) : from;
 		    goto done;
@@ -939,8 +939,8 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
 	double rfrom = Rf_asReal(from), rto = Rf_asReal(to), rby = 0; // -Wall
 	if(miss_to)   rto   = rfrom + (double)lout - 1;
 	if(miss_from) rfrom = rto   - (double)lout + 1;
-	if(!R_FINITE(rfrom)) Rf_errorcall(call, _("'%s' must be a finite number"), "from");
-	if(!R_FINITE(rto))   Rf_errorcall(call, _("'%s' must be a finite number"), "to");
+	if(!std::isfinite(rfrom)) Rf_errorcall(call, _("'%s' must be a finite number"), "from");
+	if(!std::isfinite(rto))   Rf_errorcall(call, _("'%s' must be a finite number"), "to");
 	if(lout > 2) rby = (rto - rfrom)/(double)(lout - 1);
 	if(rfrom <= INT_MAX && rfrom >= INT_MIN &&
 	   rto   <= INT_MAX && rto   >= INT_MIN &&
@@ -970,8 +970,8 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
     } else if (miss_to) {
 	double rfrom = Rf_asReal(from), rby = Rf_asReal(by), rto;
 	if(miss_from) rfrom = 1.0;
-	if(!R_FINITE(rfrom)) Rf_errorcall(call, _("'%s' must be a finite number"), "from");
-	if(!R_FINITE(rby))   Rf_errorcall(call, _("'%s' must be a finite number"), "by");
+	if(!std::isfinite(rfrom)) Rf_errorcall(call, _("'%s' must be a finite number"), "from");
+	if(!std::isfinite(rby))   Rf_errorcall(call, _("'%s' must be a finite number"), "by");
 	rto = rfrom + double(lout-1)*rby;
 	if(rby == int(rby) && rfrom <= INT_MAX && rfrom >= INT_MIN
 	   && rto <= INT_MAX && rto >= INT_MIN) {
@@ -990,8 +990,8 @@ HIDDEN SEXP do_seq(SEXP call, SEXP op, SEXP args, SEXP rho)
     } else if (miss_from) {
 	double rto = Rf_asReal(to), rby = Rf_asReal(by),
 	    rfrom = rto - double(lout-1)*rby;
-	if(!R_FINITE(rto)) Rf_errorcall(call, _("'%s' must be a finite number"), "to");
-	if(!R_FINITE(rby)) Rf_errorcall(call, _("'%s' must be a finite number"), "by");
+	if(!std::isfinite(rto)) Rf_errorcall(call, _("'%s' must be a finite number"), "to");
+	if(!std::isfinite(rby)) Rf_errorcall(call, _("'%s' must be a finite number"), "by");
 	if(rby == int(rby) && rfrom <= INT_MAX && rfrom >= INT_MIN
 	   && rto <= INT_MAX && rto >= INT_MIN) {
 	    ans = Rf_allocVector(INTSXP, lout);
@@ -1057,12 +1057,12 @@ HIDDEN SEXP do_seq_len(/*const*/ Expression* call, const BuiltInFunction* op, RO
 
  #ifdef LONG_VECTOR_SUPPORT
     double dlen = Rf_asReal(length_);
-    if(!R_FINITE(dlen) || dlen < 0)
+    if(!std::isfinite(dlen) || dlen < 0)
 	Rf_errorcall(call, _("argument must be coercible to non-negative integer"));
     len = R_xlen_t(dlen);
 #else
     len = Rf_asInteger(length_);
-    if(len == NA_INTEGER || len < 0)
+    if(len == R_NaInt || len < 0)
 	Rf_errorcall(call, _("argument must be coercible to non-negative integer"));
 #endif
 

@@ -133,7 +133,7 @@ QuartzDesc_t QuartzBitmap_DeviceCreate(void *dd, QuartzFunctions_t *fn, QuartzPa
     QuartzDesc_t ret = NULL;
     if (!qf) qf = fn;
     if(!type || strlen(type) == 0) type = "public.png";
-    if (!dpi) dpi=mydpi;
+    if (!dpi) dpi = mydpi;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_4
     /* We'll gladly support any image destination type */

@@ -144,7 +144,7 @@ using namespace rho;
    is being deferred until it is clearly needed.)
 
    CHARSXPs are now handled in a way that preserves both embedded null
-   characters and NA_STRING values.
+   characters and R_NaString values.
 
    The XDR save format now only uses the in-memory xdr facility for
    converting integers and doubles to a portable format.
@@ -227,7 +227,7 @@ static int defaultSerializeVersion()
     static int dflt = -1;
 
     if (dflt < 0) {
-	char *valstr = getenv("R_DEFAULT_SERIALIZE_VERSION");
+	char* valstr = getenv("R_DEFAULT_SERIALIZE_VERSION");
 	int val = -1;
 	if (valstr != nullptr)
 	    val = atoi(valstr);
@@ -277,7 +277,7 @@ static void OutInteger(R_outpstream_t stream, int i)
     switch (stream->type) {
     case R_pstream_ascii_format:
     case R_pstream_asciihex_format:
-	if (i == NA_INTEGER)
+	if (i == R_NaInt)
 	    Rsnprintf(buf, sizeof(buf), "NA\n");
 	else
 	    Rsnprintf(buf, sizeof(buf), "%d\n", i);
@@ -300,10 +300,10 @@ static void OutReal(R_outpstream_t stream, double d)
     char buf[128];
     switch (stream->type) {
     case R_pstream_ascii_format:
-	if (! R_FINITE(d)) {
+	if (! std::isfinite(d)) {
 	    if (ISNA(d))
 		Rsnprintf(buf, sizeof(buf), "NA\n");
-	    else if (ISNAN(d))
+	    else if (std::isnan(d))
 		Rsnprintf(buf, sizeof(buf), "NaN\n");
 	    else if (d < 0)
 		Rsnprintf(buf, sizeof(buf), "-Inf\n");
@@ -316,10 +316,10 @@ static void OutReal(R_outpstream_t stream, double d)
 	stream->OutBytes(stream, buf, int(strlen(buf)));
 	break;
     case R_pstream_asciihex_format:
-	if (! R_FINITE(d)) {
+	if (! std::isfinite(d)) {
 	    if (ISNA(d))
 		Rsnprintf(buf, sizeof(buf), "NA\n");
-	    else if (ISNAN(d))
+	    else if (std::isnan(d))
 		Rsnprintf(buf, sizeof(buf), "NaN\n");
 	    else if (d < 0)
 		Rsnprintf(buf, sizeof(buf), "-Inf\n");
@@ -410,7 +410,7 @@ static void OutString(R_outpstream_t stream, const char *s, int length)
  * Basic Input Routines
  */
 
-static void InWord(R_inpstream_t stream, char * buf, int size)
+static void InWord(R_inpstream_t stream, char* buf, int size)
 {
     int c, i;
     i = 0;
@@ -439,7 +439,7 @@ static int InInteger(R_inpstream_t stream)
 	InWord(stream, word, sizeof(word));
 	if(sscanf(word, "%s", buf) != 1) Rf_error(_("read error"));
 	if (streql(buf, "NA"))
-	    return NA_INTEGER;
+	    return R_NaInt;
 	else
 	    if(sscanf(buf, "%d", &i) != 1) Rf_error(_("read error"));
 	return i;
@@ -450,7 +450,7 @@ static int InInteger(R_inpstream_t stream)
 	stream->InBytes(stream, buf, R_XDR_INTEGER_SIZE);
 	return R_XDRDecodeInteger(buf);
     default:
-	return NA_INTEGER;
+	return R_NaInt;
     }
 }
 
@@ -470,7 +470,7 @@ static double InReal(R_inpstream_t stream)
 	InWord(stream, word, sizeof(word));
 	if(sscanf(word, "%s", buf) != 1) Rf_error(_("read error"));
 	if (streql(buf, "NA"))
-	    return NA_REAL;
+	    return R_NaReal;
 	else if (streql(buf, "NaN"))
 	    return R_NaN;
 	else if (streql(buf, "Inf"))
@@ -493,7 +493,7 @@ static double InReal(R_inpstream_t stream)
 	stream->InBytes(stream, buf, R_XDR_DOUBLE_SIZE);
 	return R_XDRDecodeDouble(buf);
     default:
-	return NA_REAL;
+	return R_NaReal;
     }
 }
 
@@ -509,10 +509,11 @@ static Rcomplex InComplex(R_inpstream_t stream)
    defined so the code in InString can match the code in
    saveload.cpp:InStringAscii--that way it is easier to match changes in
    one to the other. */
-typedef struct R_instring_stream_st {
+struct R_instring_stream_st {
     int last;
     R_inpstream_t stream;
-} *R_instring_stream_t;
+};
+using R_instring_stream_t = R_instring_stream_st*;
 
 static void InitInStringStream(R_instring_stream_t s, R_inpstream_t stream)
 {
@@ -526,8 +527,9 @@ static int GetChar(R_instring_stream_t s)
     if (s->last != EOF) {
 	c = s->last;
 	s->last = EOF;
+    } else {
+	c = s->stream->InChar(s->stream);
     }
-    else c = s->stream->InChar(s->stream);
     return c;
 }
 
@@ -1141,7 +1143,7 @@ static void WriteItem (SEXP s, HashTable* ref_table, R_outpstream_t stream)
 	    OutString(stream, PRIMNAME(s), int(strlen(PRIMNAME(s))));
 	    break;
 	case CHARSXP:
-	    if (s == NA_STRING)
+	    if (s == R_NaString)
 		OutInteger(stream, -1);
 	    else {
 		OutInteger(stream, LENGTH(s));
@@ -1421,12 +1423,11 @@ static int TryConvertString(void *obj, const char *inp, size_t inplen,
     return int(Riconv(obj, &inp, &inplen, &buf, bufleft));
 }
 
-static SEXP
-ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
+static SEXP ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
 {
     size_t buflen = inplen;
 
-    for(;;) {
+    while (true) {
 	size_t bufleft = buflen;
 	if (buflen < 1000) {
 	    char buf[buflen + 1];
@@ -1455,20 +1456,19 @@ ConvertChar(void *obj, char *inp, size_t inplen, cetype_t enc)
     }
 }
 
-static char *native_fromcode(R_inpstream_t stream)
+static char* native_fromcode(R_inpstream_t stream)
 {
-    char *from = stream->native_encoding;
+    char* from = stream->native_encoding;
 #ifdef HAVE_ICONV_CP1252
     if (!strcmp(from, "ISO-8859-1"))
-	from = (char *) "CP1252";
+	from = (char*)"CP1252";
 #endif
     return from;
 }
 
 /* Read string into pre-allocated buffer, convert encoding if necessary, and
    return a CHARSXP */
-static SEXP
-ReadChar(R_inpstream_t stream, char *buf, int length, int levs)
+static SEXP ReadChar(R_inpstream_t stream, char* buf, int length, int levs)
 { 
     InString(stream, buf, length);
     buf[length] = '\0';
@@ -1643,7 +1643,7 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	/* Let us suppose these will still be limited to 2^31 -1 bytes */
 	length = InInteger(stream);
 	if (length == -1)
-	    return NA_STRING;
+	    return R_NaString;
 	else {
 	    GCStackRoot<> str;
 	    //cetype_t enc = String::GPBits2Encoding(levs);
@@ -2108,7 +2108,7 @@ SEXP R_SerializeInfo(R_inpstream_t stream)
     SET_STRING_ELT(names, 2, Rf_mkChar("min_reader_version"));
     if (min_reader_version < 0)
 	/* unreleased version of R */
-	SET_VECTOR_ELT(ans, 2, Rf_ScalarString(NA_STRING));
+	SET_VECTOR_ELT(ans, 2, Rf_ScalarString(R_NaString));
     else { 
 	DecodeVersion(min_reader_version, &vv, &vp, &vs);
 	snprintf(buf, 128, "%d.%d.%d", vv, vp, vs);
@@ -2164,8 +2164,7 @@ R_InitInPStream(R_inpstream_t stream, R_pstream_data_t data,
     stream->nat2utf8_obj = nullptr; 
 }
 
-void
-R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
+void R_InitOutPStream(R_outpstream_t stream, R_pstream_data_t data,
 		 R_pstream_format_t type, int version,
 		 void (*outchar)(R_outpstream_t, int),
 		 void (*outbytes)(R_outpstream_t, const void *, int),
@@ -2365,8 +2364,7 @@ static SEXP CallHook(SEXP x, SEXP fun)
 /* Used from saveRDS().
    This became public in R 2.13.0, and that version added support for
    connections internally */
-HIDDEN SEXP
-do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* ascii_, RObject* version_, RObject* refhook_)
+HIDDEN SEXP do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object_, RObject* con_, RObject* ascii_, RObject* version_, RObject* refhook_)
 {
     /* serializeToConn(object, conn, ascii, version, hook) */
 
@@ -2384,7 +2382,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     if (TYPEOF(ascii_) != LGLSXP)
 	Rf_error(_("'ascii' must be logical"));
     ascii = Rboolean(INTEGER(ascii_)[0]);
-    if (ascii == NA_LOGICAL) type = R_pstream_asciihex_format;
+    if (ascii == R_NaLog) type = R_pstream_asciihex_format;
     else if (ascii) type = R_pstream_ascii_format;
     else type = R_pstream_xdr_format;
 
@@ -2392,7 +2390,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 	version = defaultSerializeVersion();
     else
 	version = Rf_asInteger(version_);
-    if (version == NA_INTEGER || version <= 0)
+    if (version == R_NaInt || version <= 0)
 	Rf_error(_("bad version value"));
     if (version < 2)
 	Rf_error(_("cannot save to connections in version %d format"), version);
@@ -2434,8 +2432,7 @@ do_serializeToConn(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
 /* unserializeFromConn(conn, hook) used from readRDS().
    It became public in R 2.13.0, and that version added support for
    connections internally */
-HIDDEN SEXP
-do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* refhook_)
+HIDDEN SEXP do_unserializeFromConn(/*const*/ Expression* call, const BuiltInFunction* op, RObject* con_, RObject* refhook_)
 {
     /* 0 .. unserializeFromConn(conn, hook) */
     /* 1 .. serializeInfoFromConn(conn) */
@@ -2495,7 +2492,7 @@ typedef struct bconbuf_st {
     Rconnection con;
     int count;
     unsigned char buf[BCONBUFSIZ];
-} *bconbuf_t;
+} * bconbuf_t;
 
 static void flush_bcon_buffer(bconbuf_t bb)
 {
@@ -2537,8 +2534,7 @@ static void InitBConOutPStream(R_outpstream_t stream, bconbuf_t bb,
 }
 
 /* only for use by serialize(), with binary write to a socket connection */
-static SEXP
-R_serializeb(SEXP object, SEXP icon, SEXP xdr, SEXP Sversion, SEXP fun)
+static SEXP R_serializeb(SEXP object, SEXP icon, SEXP xdr, SEXP Sversion, SEXP fun)
 {
     struct R_outpstream_st out;
     SEXP (*hook)(SEXP, SEXP);
@@ -2549,7 +2545,7 @@ R_serializeb(SEXP object, SEXP icon, SEXP xdr, SEXP Sversion, SEXP fun)
     if (Sversion == nullptr)
 	version = defaultSerializeVersion();
     else version = Rf_asInteger(Sversion);
-    if (version == NA_INTEGER || version <= 0)
+    if (version == R_NaInt || version <= 0)
 	Rf_error(_("bad version value"));
 
     hook = fun != nullptr ? CallHook : nullptr;
@@ -2570,20 +2566,20 @@ R_serializeb(SEXP object, SEXP icon, SEXP xdr, SEXP Sversion, SEXP fun)
 typedef struct membuf_st {
     R_size_t size;
     R_size_t count;
-    unsigned char *buf;
-} *membuf_t;
+    unsigned char* buf;
+} * membuf_t;
 
+constexpr size_t INCR = MAXELTSIZE;
 
-#define INCR MAXELTSIZE
 static void resize_buffer(membuf_t mb, R_size_t needed)
 {
     if(needed > R_XLEN_T_MAX)
 	Rf_error(_("serialization is too large to store in a raw vector"));
 #ifdef LONG_VECTOR_SUPPORT
     if(needed < 10000000) /* ca 10MB */
-	needed = (1+2*needed/INCR) * INCR;
+	needed = (1 + 2 * needed / INCR) * INCR;
     else
-	needed = (R_size_t)((1+1.2*(double)needed/INCR) * INCR);
+	needed = (R_size_t)((1 + 1.2 * (double)needed / INCR) * INCR);
 #else
     if(needed < 10000000) /* ca 10MB */
 	needed = (1+2*needed/INCR) * INCR;
@@ -2592,7 +2588,7 @@ static void resize_buffer(membuf_t mb, R_size_t needed)
     else if(needed < INT_MAX - INCR)
 	needed = (1+needed/INCR) * INCR;
 #endif
-    unsigned char *tmp = static_cast<unsigned char*>(realloc(mb->buf, needed));
+    unsigned char* tmp = static_cast<unsigned char*>(realloc(mb->buf, needed));
     if (tmp == nullptr) {
 	free(mb->buf); mb->buf = nullptr;
 	Rf_error(_("cannot allocate buffer"));
@@ -2686,8 +2682,7 @@ static SEXP CloseMemOutPStream(R_outpstream_t stream)
     return val;
 }
 
-static SEXP
-R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
+static SEXP R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
 {
     struct R_outpstream_st out;
     R_pstream_format_t type;
@@ -2697,7 +2692,7 @@ R_serialize(SEXP object, SEXP icon, SEXP ascii, SEXP Sversion, SEXP fun)
     if (Sversion == nullptr)
 	version = defaultSerializeVersion();
     else version = Rf_asInteger(Sversion);
-    if (version == NA_INTEGER || version <= 0)
+    if (version == R_NaInt || version <= 0)
 	Rf_error(_("bad version value"));
 
     hook = fun != nullptr ? CallHook : nullptr;
@@ -2821,8 +2816,7 @@ static int used = 0;
 static char names[NC][PATH_MAX];
 static char *ptr[NC];
 
-HIDDEN SEXP
-do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_)
+HIDDEN SEXP do_lazyLoadDBflush(/*const*/ Expression* call, const BuiltInFunction* op, RObject* file_)
 {
     int i;
     const char *cfile = R_CHAR(STRING_ELT(file_, 0));
@@ -2989,8 +2983,7 @@ SEXP R_decompress3(SEXP in, Rboolean *err);
    result to a file.  Returns the key position/length key for
    retrieving the value */
 
-static SEXP
-R_lazyLoadDBinsertValue(SEXP value, SEXP file, SEXP ascii,
+static SEXP R_lazyLoadDBinsertValue(SEXP value, SEXP file, SEXP ascii,
 			SEXP compsxp, SEXP hook)
 {
     PROTECT_INDEX vpi;
@@ -3014,8 +3007,7 @@ R_lazyLoadDBinsertValue(SEXP value, SEXP file, SEXP ascii,
    from a file, optionally decompresses, and unserializes the bytes.
    If the result is a promise, then the promise is forced. */
 
-HIDDEN SEXP
-do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* key_, RObject* file_, RObject* compressed_, RObject* hook_)
+HIDDEN SEXP do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObject* key_, RObject* file_, RObject* compressed_, RObject* hook_)
 {
     SEXP key, file, compsxp, hook;
     PROTECT_INDEX vpi;
@@ -3048,21 +3040,18 @@ do_lazyLoadDBfetch(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     return val;
 }
 
-HIDDEN SEXP
-do_getVarsFromFrame(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vars_, RObject* env_, RObject* force_promises_)
+HIDDEN SEXP do_getVarsFromFrame(/*const*/ Expression* call, const BuiltInFunction* op, RObject* vars_, RObject* env_, RObject* force_promises_)
 {
     return R_getVarsFromFrame(vars_, env_, force_promises_);
 }
 
 
-HIDDEN SEXP
-do_lazyLoadDBinsertValue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* value, RObject* file, RObject* ascii, RObject* compsxp, RObject* hook)
+HIDDEN SEXP do_lazyLoadDBinsertValue(/*const*/ Expression* call, const BuiltInFunction* op, RObject* value, RObject* file, RObject* ascii, RObject* compsxp, RObject* hook)
 {
     return R_lazyLoadDBinsertValue(value, file, ascii, compsxp, hook);
 }
 
-HIDDEN SEXP
-do_serialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection, RObject* type, RObject* version, RObject* hook)
+HIDDEN SEXP do_serialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection, RObject* type, RObject* version, RObject* hook)
 {
     if(op->variant() == 1)
 	return R_serializeb(object, connection, type, version, hook);
@@ -3070,8 +3059,7 @@ do_serialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* obj
 	return R_serialize(object, connection, type, version, hook);
 }
 
-HIDDEN SEXP
-do_unserialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection)
+HIDDEN SEXP do_unserialize(/*const*/ Expression* call, const BuiltInFunction* op, RObject* object, RObject* connection)
 {
     return R_unserialize(object, connection);
 }

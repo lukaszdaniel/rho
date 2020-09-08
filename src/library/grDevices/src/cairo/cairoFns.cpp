@@ -405,7 +405,7 @@ static SEXP Cairo_Cap(pDevDesc dd)
     cairo_surface_t* screen;
     cairo_format_t format;
     unsigned int *screenData;
-    SEXP dim, raster = R_NilValue;
+    SEXP dim, raster = nullptr;
     unsigned int *rint;
 
     screen = cairo_surface_reference(cairo_get_target(xd->cc));

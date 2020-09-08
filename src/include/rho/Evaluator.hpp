@@ -272,7 +272,7 @@ extern "C" {
 	using namespace rho;
 	Environment* env = nullptr;
 	if (e)
-	    env = SEXP_downcast<Environment*>(rho);	
+	    env = SEXP_downcast<Environment*>(rho);
 	return evaluate(e, env);
     }
 }

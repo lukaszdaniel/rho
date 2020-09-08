@@ -48,7 +48,7 @@ SEXP unit(double value, int unit)
     PROTECT(units = Rf_ScalarInteger(unit));
     /* NOTE that we do not set the "unit" attribute */
     Rf_setAttrib(u, Rf_install("valid.unit"), units);
-    Rf_setAttrib(u, Rf_install("data"), R_NilValue);
+    Rf_setAttrib(u, Rf_install("data"), nullptr);
     PROTECT(classname = Rf_mkString("unit"));
     Rf_classgets(u, classname);
     UNPROTECT(3);
@@ -82,7 +82,7 @@ SEXP unitData(SEXP unit, int index) {
     SEXP result;
     SEXP data = Rf_getAttrib(unit, Rf_install("data"));
     if (Rf_isNull(data))
-	result = R_NilValue;
+	result = nullptr;
     else if(TYPEOF(data) == VECSXP) {
 	/* Recycle data if necessary 
 	 */
@@ -90,7 +90,7 @@ SEXP unitData(SEXP unit, int index) {
 	result = VECTOR_ELT(data, index % n);
     } else {
 	Rf_warning("unit attribute 'data' is of incorrect type");
-	return R_NilValue;
+	return nullptr;
     }
     return result;
 }
@@ -450,10 +450,10 @@ double evaluateGrobUnit(double value, SEXP grob,
     LTransform transform, savedTransform;
     SEXP currentvp, currentgp;
     SEXP preFn,  postFn, findGrobFn;
-    SEXP evalFnx = R_NilValue, evalFny = R_NilValue;
+    SEXP evalFnx = nullptr, evalFny = nullptr;
     SEXP R_fcall0, R_fcall1, R_fcall2x, R_fcall2y, R_fcall3;
     SEXP savedgpar, savedgrob, updatedgrob;
-    SEXP unitx = R_NilValue, unity = R_NilValue;
+    SEXP unitx = nullptr, unity = nullptr;
     double result = 0.0;
     Rboolean protectedGrob = FALSE;
     /*
@@ -1910,7 +1910,7 @@ SEXP validUnits(SEXP units)
 {
     int i;
     int n = LENGTH(units);
-    SEXP answer = R_NilValue;
+    SEXP answer = nullptr;
     if (n > 0) {
 	if (Rf_isString(units)) {
 	    PROTECT(answer = Rf_allocVector(INTSXP, n));

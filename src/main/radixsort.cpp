@@ -212,16 +212,16 @@ static int nblock[NBLOCK];
 static int range, xmin; // used by both icount and do_radixsort
 static void setRange(int *x, int n)
 {
-    xmin = NA_INTEGER;
-    int xmax = NA_INTEGER;
+    xmin = R_NaInt;
+    int xmax = R_NaInt;
     double overflow;
 
     int i = 0;
-    while(i < n && x[i] == NA_INTEGER) i++;
+    while(i < n && x[i] == R_NaInt) i++;
     if (i < n) xmax = xmin = x[i];
     for (; i < n; i++) {
 	int tmp = x[i];
-	if (tmp == NA_INTEGER)
+	if (tmp == R_NaInt)
 	    continue;
 	if (tmp > xmax)
 	    xmax = tmp;
@@ -229,8 +229,8 @@ static void setRange(int *x, int n)
 	    xmin = tmp;
     }
     // all NAs, nothing to do
-    if (xmin == NA_INTEGER) {
-	range = NA_INTEGER;
+    if (xmin == R_NaInt) {
+	range = R_NaInt;
 	return;
     }
     // ex: x=c(-2147483647L, NA_integer_, 1L) results in overflowing int range.
@@ -248,11 +248,11 @@ static void setRange(int *x, int n)
 
 // x*order results in integer overflow when -1*NA,
 // so careful to avoid that here :
-static inline int icheck(int x)
+inline static int icheck(int x)
 {
     // if nalast == 1, NAs must go last.
-    return ((nalast != 1) ? ((x != NA_INTEGER) ? x*order : x) :
-	    ((x != NA_INTEGER) ? (x*order) - 1 : INT_MAX));
+    return ((nalast != 1) ? ((x != R_NaInt) ? x*order : x) :
+	    ((x != R_NaInt) ? (x*order) - 1 : INT_MAX));
 }
 
 
@@ -276,7 +276,7 @@ static void icount(int *x, int *o, int n)
 	// For nalast=NA case, we won't remove/skip NAs, rather set 'o' indices
 	// to 0. subset will skip them. We can't know how many NAs to skip
 	// beforehand - i.e. while allocating "ans" vector
-	if (x[i] == NA_INTEGER)
+	if (x[i] == R_NaInt)
 	    counts[napos]++;
 	else
 	    counts[x[i] - xmin]++;
@@ -307,14 +307,14 @@ static void icount(int *x, int *o, int n)
     for (int i = n - 1; i >= 0; i--) {
 	// This way na.last=TRUE/FALSE cases will have just a
 	// single if-check overhead.
-	o[--counts[(x[i] == NA_INTEGER) ? napos :
+	o[--counts[(x[i] == R_NaInt) ? napos :
 		   x[i] - xmin]] = (int) (i + 1);
     }
     // nalast = 1, -1 are both taken care already.
     if (nalast == 0)
 	// nalast = 0 is dealt with separately as it just sets o to 0
 	for (int i = 0; i < n; i++)
-	    o[i] = (x[o[i] - 1] == NA_INTEGER) ? 0 : o[i];
+	    o[i] = (x[o[i] - 1] == R_NaInt) ? 0 : o[i];
     // at those indices where x is NA. x[o[i]-1] because x is not modifed here.
 
     /* counts were cumulated above so leaves non zero.
@@ -324,7 +324,7 @@ static void icount(int *x, int *o, int n)
 	   doesn't matter if we set to 0 several times on any repeats */
 	counts[napos] = 0;
 	for (int i = 0; i < n; i++) {
-	    if (x[i] != NA_INTEGER)
+	    if (x[i] != R_NaInt)
 		counts[x[i] - xmin] = 0;
 	}
     } else
@@ -468,7 +468,7 @@ static void iradix(int *x, int *o, int n)
     int radix = 3;  // MSD
     while (radix >= 0 && skip[radix]) radix--;
     if (radix == -1) { // All radix are skipped; one number repeated n times.
-	if (nalast == 0 && x[0] == NA_INTEGER)
+	if (nalast == 0 && x[0] == R_NaInt)
 	    // all values are identical. return 0 if nalast=0 & all NA
 	    // because of 'return', have to take care of it here.
 	    for (int i = 0; i < n; i++)
@@ -551,7 +551,7 @@ static void iradix(int *x, int *o, int n)
     if (nalast == 0) // nalast = 1, -1 are both taken care already.
 	// nalast = 0 is dealt with separately as it just sets o to 0
 	for (int i = 0; i < n; i++)
-	    o[i] = (x[o[i] - 1] == NA_INTEGER) ? 0 : o[i];
+	    o[i] = (x[o[i] - 1] == R_NaInt) ? 0 : o[i];
     // at those indices where x is NA. x[o[i]-1] because x is not
     // modified by reference unlike iinsert or iradix_r
 }
@@ -642,9 +642,9 @@ static
 unsigned long long dtwiddle(void *p, int i, int order)
 {
     u.d = order * ((double *)p)[i]; // take care of 'order' at the beginning
-    if (R_FINITE(u.d)) {
+    if (std::isfinite(u.d)) {
 	u.ull = (u.d != 0.0) ? u.ull + ((u.ull & dmask1) << 1) : 0;
-    } else if (ISNAN(u.d)) {
+    } else if (std::isnan(u.d)) {
 	u.ull = 0;
 	return (nalast == 1 ? ~u.ull : u.ull);
     }
@@ -658,7 +658,7 @@ unsigned long long dtwiddle(void *p, int i, int order)
 static Rboolean dnan(void *p, int i)
 {
     u.d = ((double *) p)[i];
-    return Rboolean(ISNAN(u.d));
+    return Rboolean(std::isnan(u.d));
 }
 
 static unsigned long long (*twiddle) (void *, int, int);
@@ -915,21 +915,21 @@ static int cradix_xtmp_alloc = 0;
 // same as StrCmp but also takes into account 'decreasing' and 'na.last' args.
 static int StrCmp2(SEXP x, SEXP y)
 {
-    // same cached pointer (including NA_STRING == NA_STRING)
+    // same cached pointer (including R_NaString == R_NaString)
     if (x == y) return 0;
     // if x=NA, nalast=1 ? then x > y else x < y (Note: nalast == 0 is
     // already taken care of in 'csorted', won't be 0 here)
-    if (x == NA_STRING) return nalast;
-    if (y == NA_STRING) return -nalast;     // if y=NA, nalast=1 ? then y > x
+    if (x == R_NaString) return nalast;
+    if (y == R_NaString) return -nalast;     // if y=NA, nalast=1 ? then y > x
     return order*strcmp(R_CHAR(x), R_CHAR(y));  // same as explanation in StrCmp
 }
 
 static int StrCmp(SEXP x, SEXP y)            // also used by bmerge and chmatch
 {
-    // same cached pointer (including NA_STRING == NA_STRING)
+    // same cached pointer (including R_NaString == R_NaString)
     if (x == y) return 0;
-    if (x == NA_STRING) return -1;    // x < y
-    if (y == NA_STRING) return 1;     // x > y
+    if (x == R_NaString) return -1;    // x < y
+    if (y == R_NaString) return 1;     // x > y
     // assumes strings are in same encoding
     return strcmp(R_CHAR(x), R_CHAR(y));
 }
@@ -941,7 +941,7 @@ static void checkEncodings(SEXP x)
     cetype_t ce;
 
     int i;
-    for (i = 0; i < Rf_length(x) && STRING_ELT(x, i) == NA_STRING; i++);
+    for (i = 0; i < Rf_length(x) && STRING_ELT(x, i) == R_NaString; i++);
 
     if (i < Rf_length(x)) {
         ce = CHAR_ENCODING(STRING_ELT(x, i));
@@ -1003,7 +1003,7 @@ static void cradix_r(SEXP * xsub, int n, int radix)
 
     thiscounts = cradix_counts + radix * 256;
     for (int i = 0; i < n; i++) {
-	thisx = xsub[i] == NA_STRING ?
+	thisx = xsub[i] == R_NaString ?
 	    0 : (radix < LENGTH(xsub[i]) ?
 		 (unsigned char) (R_CHAR(xsub[i])[radix]) : 1);
 	thiscounts[ thisx ]++;   // 0 for NA,  1 for ""
@@ -1022,7 +1022,7 @@ static void cradix_r(SEXP * xsub, int n, int radix)
 	if (thiscounts[i])
 	    thiscounts[i] = (itmp += thiscounts[i]);
     for (int i = n - 1; i >= 0; i--) {
-	thisx = xsub[i] == NA_STRING ?
+	thisx = xsub[i] == R_NaString ?
 	    0 : (radix < LENGTH(xsub[i]) ?
 		 (unsigned char) (R_CHAR(xsub[i])[radix]) : 1);
 	int j = --thiscounts[thisx];
@@ -1150,7 +1150,7 @@ static void csort(SEXP * x, int *o, int n)
        otmp (and xtmp).  alloc_csort_otmp(n) is called from do_radixsort for
        either n=nrow if 1st arg, or n=maxgrpn if onwards args */
     for (int i = 0; i < n; i++)
-	csort_otmp[i] = (x[i] == NA_STRING) ? NA_INTEGER : -TRLEN(x[i]);
+	csort_otmp[i] = (x[i] == R_NaString) ? R_NaInt : -TRLEN(x[i]);
     if (nalast == 0 && n == 2) {
         // special case for nalast == 0. n == 1 is handled inside
         // do_radixsort. at least 1 will be NA here else use o from caller
@@ -1159,7 +1159,7 @@ static void csort(SEXP * x, int *o, int n)
             for (int i = 0; i < n; i++)
                 o[i] = i + 1;
         for (int i = 0;  i < n; i++)
-            if (csort_otmp[i] == NA_INTEGER)
+            if (csort_otmp[i] == R_NaInt)
                 o[i] = 0;
         push(1); push(1);
         return; 
@@ -1174,7 +1174,7 @@ static void csort(SEXP * x, int *o, int n)
         iinsert(csort_otmp, o, n);
     } else {
 	setRange(csort_otmp, n);
-	if (range == NA_INTEGER)
+	if (range == R_NaInt)
 	    Error("Internal error. csort's otmp contains all-NA");
 	int *target = (o[0] != -1) ? newo : o;
 	if (range <= N_RANGE)
@@ -1230,7 +1230,7 @@ static void csort_pre(SEXP * x, int n)
 	ustr[ustr_n++] = s;
 	// length on CHARSXP is the nchar of char * (excluding \0),
 	// and treats marked encodings as if ascii.
-	if (s != NA_STRING && LENGTH(s) > maxlen)
+	if (s != R_NaString && LENGTH(s) > maxlen)
 	    maxlen = LENGTH(s);
     }
     new_un = ustr_n;
@@ -1282,7 +1282,7 @@ static void csort_pre(SEXP * x, int n)
 
 // order = 1 is ascending and order=-1 is descending; also takes care
 // of na.last argument with check through 'icheck' Relies on
-// NA_INTEGER == INT_MIN, checked in init.cpp
+// R_NaInt == INT_MIN, checked in init.cpp
 static int isorted(int *x, int n)
 {
     int i = 1, j = 0;
@@ -1293,7 +1293,7 @@ static int isorted(int *x, int n)
     // no NAs ? continue to check rest of isorted - the same routine as usual
     if (nalast == 0) {
 	for (int k = 0; k < n; k++)
-	    if (x[k] != NA_INTEGER)
+	    if (x[k] != R_NaInt)
 		j++;
 	if (j == 0) {
 	    push(n);
@@ -1421,7 +1421,7 @@ static int csorted(SEXP *x, int n)
 	// no NAs  ? continue to check the rest of isorted -
 	//           the same routine as usual
 	for (int k = 0; k < n; k++)
-	    if (x[k] != NA_STRING)
+	    if (x[k] != R_NaString)
 		j++;
 	if (j == 0) {
 	    push(n);
@@ -1477,7 +1477,7 @@ static void isort(int *x, int *o, int n)
 		o[1] = 2;
 	    }
 	    for (int i = 0; i < n; i++)
-		if (x[i] == NA_INTEGER)
+		if (x[i] == R_NaInt)
 		    o[i] = 0;
 	    push(1); push(1);
 	    return;
@@ -1503,7 +1503,7 @@ static void isort(int *x, int *o, int n)
            first. 10,000 calls to setRange takes just 0.04s
            i.e. negligible. */
         setRange(x, n);
-        if (range == NA_INTEGER)
+        if (range == R_NaInt)
             Error("Internal error: isort passed all-NA. isorted should have caught this before this point");
         int *target = (o[0] != -1) ? newo : o;
         // was range < 10000 for subgroups, but 1e5 for the first
@@ -1565,7 +1565,7 @@ HIDDEN SEXP do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
         Rf_error("radix sort assumes sizeof(double) == 8");
     }
 
-    nalast = (Rf_asLogical(CAR(args)) == NA_LOGICAL) ? 0 :
+    nalast = (Rf_asLogical(CAR(args)) == R_NaLog) ? 0 :
 	(Rf_asLogical(CAR(args)) == TRUE) ? 1 : -1; // 1=TRUE, -1=FALSE, 0=NA
     args = CDR(args);
     SEXP decreasing = CAR(args);
@@ -1600,7 +1600,7 @@ HIDDEN SEXP do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (narg != Rf_length(decreasing))
 	Rf_error(_("length(decreasing) must match the number of order arguments"));
     for (int i = 0; i < narg; i++) {
-	if (LOGICAL(decreasing)[i] == NA_LOGICAL)
+	if (LOGICAL(decreasing)[i] == R_NaLog)
 	    Rf_error(_("'decreasing' elements must be TRUE or FALSE"));
     }
     order = Rf_asLogical(decreasing) ? -1 : 1;
@@ -1767,25 +1767,25 @@ HIDDEN SEXP do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    // more explanation)
 		    switch (TYPEOF(x)) {
 		    case INTSXP:
-			if (INTEGER(x)[o[i] - 1] == NA_INTEGER) {
+			if (INTEGER(x)[o[i] - 1] == R_NaInt) {
 			    isSorted = FALSE;
 			    o[i] = 0;
 			}
 			break;
 		    case LGLSXP:
-			if (LOGICAL(x)[o[i] - 1] == NA_LOGICAL) {
+			if (LOGICAL(x)[o[i] - 1] == R_NaLog) {
 			    isSorted = FALSE;
 			    o[i] = 0;
 			}
 			break;
 		    case REALSXP:
-			if (ISNAN(REAL(x)[o[i] - 1])) {
+			if (std::isnan(REAL(x)[o[i] - 1])) {
 			    isSorted = FALSE;
 			    o[i] = 0;
 			}
 			break;
 		    case STRSXP:
-			if (STRING_ELT(x, o[i] - 1) == NA_STRING) {
+			if (STRING_ELT(x, o[i] - 1) == R_NaString) {
 			    isSorted = FALSE;
 			    o[i] = 0;
                         } break;
@@ -1873,7 +1873,7 @@ HIDDEN SEXP do_radixsort(SEXP call, SEXP op, SEXP args, SEXP rho)
     ustr_alloc = 0;
 
     if (retGrp) {
-        int maxgrpn = NA_INTEGER;
+        int maxgrpn = R_NaInt;
         ngrp = gsngrp[flip];
         SEXP s_ends = Rf_install("ends");
         Rf_setAttrib(ans, s_ends, x = Rf_allocVector(INTSXP, ngrp));

@@ -63,7 +63,7 @@ using namespace rho;
 Rboolean Rf_NonNullStringMatch(SEXP s, SEXP t)
 {
     /* "" or NA string matches nothing */
-    if (s == NA_STRING || t == NA_STRING) return FALSE;
+    if (s == R_NaString || t == R_NaString) return FALSE;
     if (R_CHAR(s)[0] && R_CHAR(t)[0] && Rf_Seql(s, t))
 	return TRUE;
     else

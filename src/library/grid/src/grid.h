@@ -345,63 +345,63 @@ extern int L_nullLayoutMode;
 
 double pureNullUnitValue(SEXP unit, int index);
 
-int pureNullUnit(SEXP unit, int index, pGEDevDesc dd);
+int pureNullUnit(SEXP unit, int index, GEDevDesc* dd);
 
 double transformX(SEXP x, int index, LViewportContext vpc, 
 		  const pGEcontext gc,
 		  double widthCM, double heightCM,
 		  int nullLMode, int nullAMode,
-		  pGEDevDesc dd);
+		  GEDevDesc* dd);
 
 double transformY(SEXP y, int index, LViewportContext vpc,
 		  const pGEcontext gc,
 		  double widthCM, double heightCM,
 		  int nullLMode, int nullAMode,
-		  pGEDevDesc dd);
+		  GEDevDesc* dd);
 
 double transformWidth(SEXP width, int index, LViewportContext vpc,
 		      const pGEcontext gc,
 		      double widthCM, double heightCM,
 		      int nullLMode, int nullAMode,
-		      pGEDevDesc dd);
+		      GEDevDesc* dd);
 
 double transformHeight(SEXP height, int index, LViewportContext vpc,
 		       const pGEcontext gc,
 		       double widthCM, double heightCM,
 		       int nullLMode, int nullAMode,
-		       pGEDevDesc dd);
+		       GEDevDesc* dd);
 
 double transformXtoINCHES(SEXP x, int index, LViewportContext vpc,
 			  const pGEcontext gc,
 			  double widthCM, double heightCM,
-			  pGEDevDesc dd);
+			  GEDevDesc* dd);
 
 double transformYtoINCHES(SEXP y, int index, LViewportContext vpc,
 			  const pGEcontext gc,
 			  double widthCM, double heightCM,
-			  pGEDevDesc dd);
+			  GEDevDesc* dd);
 
 void transformLocn(SEXP x, SEXP y, int index, LViewportContext vpc,
 		   const pGEcontext gc,
 		   double widthCM, double heightCM,
-		   pGEDevDesc dd,
+		   GEDevDesc* dd,
 		   LTransform t,
 		   double *xx, double *yy);
 
 double transformWidthtoINCHES(SEXP w, int index, LViewportContext vpc,
 			      const pGEcontext gc,
 			      double widthCM, double heightCM,
-			      pGEDevDesc dd);
+			      GEDevDesc* dd);
 
 double transformHeighttoINCHES(SEXP h, int index, LViewportContext vpc,
 			       const pGEcontext gc,
 			       double widthCM, double heightCM,
-			       pGEDevDesc dd);
+			       GEDevDesc* dd);
 
 void transformDimn(SEXP w, SEXP h, int index, LViewportContext vpc,
 		   const pGEcontext gc,
 		   double widthCM, double heightCM,
-		   pGEDevDesc dd,
+		   GEDevDesc* dd,
 		   double rotationAngle,
 		   double *ww, double *hh);
 
@@ -409,13 +409,13 @@ double transformXYFromINCHES(double location, int unit,
 			     double scalemin, double scalemax,
 			     const pGEcontext gc,
 			     double thisCM, double otherCM,
-			     pGEDevDesc dd);
+			     GEDevDesc* dd);
 
 double transformWidthHeightFromINCHES(double value, int unit, 
 				      double scalemin, double scalemax,
 				      const pGEcontext gc,
 				      double thisCM, double otherCM,
-				      pGEDevDesc dd);
+				      GEDevDesc* dd);
 
 double transformXYtoNPC(double x, int from, double min, double max);
 
@@ -457,7 +457,7 @@ int intersect(LRect r1, LRect r2);
 void textRect(double x, double y, SEXP text, int i,
 	      const pGEcontext gc,
 	      double xadj, double yadj,
-	      double rot, pGEDevDesc dd, LRect *r);
+	      double rot, GEDevDesc* dd, LRect* r);
 
 /* From gpar.cpp */
 double gpFontSize(SEXP gp, int i);
@@ -490,9 +490,9 @@ SEXP gpFontSizeSXP(SEXP gp);
 
 SEXP gpLineHeightSXP(SEXP gp);
 
-void gcontextFromgpar(SEXP gp, int i, const pGEcontext gc, pGEDevDesc dd);
+void gcontextFromgpar(SEXP gp, int i, const pGEcontext gc, GEDevDesc* dd);
 
-void initGPar(pGEDevDesc dd);
+void initGPar(GEDevDesc* dd);
 
 /* From viewport.cpp */
 SEXP viewportX(SEXP vp);
@@ -561,12 +561,12 @@ void fillViewportContextFromViewport(SEXP vp, LViewportContext *vpc);
 
 void copyViewportContext(LViewportContext vpc1, LViewportContext *vpc2);
 
-void gcontextFromViewport(SEXP vp, const pGEcontext gc, pGEDevDesc dd);
+void gcontextFromViewport(SEXP vp, const pGEcontext gc, GEDevDesc* dd);
 
 void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
-			   pGEDevDesc dd);
+			   GEDevDesc* dd);
 
-void initVP(pGEDevDesc dd);
+void initVP(GEDevDesc* dd);
 
 /* From layout.cpp */
 Rboolean checkPosRowPosCol(SEXP viewport, SEXP parent);
@@ -576,7 +576,7 @@ void calcViewportLayout(SEXP viewport,
 			double parentHeightCM,
 			LViewportContext parentContext,
 			const pGEcontext parentgc,
-			pGEDevDesc dd);
+			GEDevDesc* dd);
 
 void calcViewportLocationFromLayout(SEXP layoutPosRow,
 				    SEXP layoutPosCol,
@@ -584,13 +584,13 @@ void calcViewportLocationFromLayout(SEXP layoutPosRow,
 				    LViewportLocation *vpl);
 
 /* From state.cpp */
-void initDL(pGEDevDesc dd);
+void initDL(GEDevDesc* dd);
 
-SEXP gridStateElement(pGEDevDesc dd, int elementIndex);
+SEXP gridStateElement(GEDevDesc* dd, int elementIndex);
 
-void setGridStateElement(pGEDevDesc dd, int elementIndex, SEXP value);
+void setGridStateElement(GEDevDesc* dd, int elementIndex, SEXP value);
 
-SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data);
+SEXP gridCallback(GEevent task, GEDevDesc* dd, SEXP data);
 
 extern int gridRegisterIndex;
 
@@ -599,17 +599,17 @@ extern int gridRegisterIndex;
 SEXP doSetViewport(SEXP vp, 
 		   Rboolean topLevelVP,
 		   Rboolean pushing,
-		   pGEDevDesc dd);
+		   GEDevDesc* dd);
 
-void getDeviceSize(pGEDevDesc dd, double *devWidthCM, double *devHeightCM); 
+void getDeviceSize(GEDevDesc* dd, double *devWidthCM, double *devHeightCM); 
 
 /* This is, confusingly, a wrapper for GEcurrentDevice */
-pGEDevDesc getDevice();
+GEDevDesc* getDevice();
 
-void dirtyGridDevice(pGEDevDesc dd);
+void dirtyGridDevice(GEDevDesc* dd);
 
 void getViewportTransform(SEXP currentvp, 
-			  pGEDevDesc dd, 
+			  GEDevDesc* dd, 
 			  double *vpWidthCM, double *vpHeightCM,
 			  LTransform transform, double *rotationAngle);
 

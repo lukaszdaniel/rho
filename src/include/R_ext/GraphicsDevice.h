@@ -874,7 +874,7 @@ int Rf_AdobeSymbol2ucs2(int n);  // arr 2008/07/10
 extern size_t Rf_ucstoutf8(char *s, const unsigned int c);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_GRAPHICSDEVICE_ */

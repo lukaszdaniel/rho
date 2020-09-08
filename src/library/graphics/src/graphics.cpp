@@ -41,7 +41,7 @@
 
 double R_Log10(double x)
 {
-    return (R_FINITE(x) && x > 0.0) ? log10(x) : NA_REAL;
+    return (std::isfinite(x) && x > 0.0) ? std::log10(x) : R_NaReal;
 }
 
 /*-------------------------------------------------------------------
@@ -124,152 +124,152 @@ GUnit GMapUnits(int Runits)
 
 static double xNDCtoDevUnits(double x, pGEDevDesc dd)
 {
-    return x*fabs(gpptr(dd)->ndc2dev.bx);
+    return x * fabs(gpptr(dd)->ndc2dev.bx);
 }
 
 static double yNDCtoDevUnits(double y, pGEDevDesc dd)
 {
-    return y*fabs(gpptr(dd)->ndc2dev.by);
+    return y * fabs(gpptr(dd)->ndc2dev.by);
 }
 
 static double xNICtoDevUnits(double x, pGEDevDesc dd)
 {
-    return x*fabs(gpptr(dd)->inner2dev.bx);
+    return x * fabs(gpptr(dd)->inner2dev.bx);
 }
 
 static double yNICtoDevUnits(double y, pGEDevDesc dd)
 {
-    return y*fabs(gpptr(dd)->inner2dev.by);
+    return y * fabs(gpptr(dd)->inner2dev.by);
 }
 
 static double xNFCtoDevUnits(double x, pGEDevDesc dd)
 {
-    return x*fabs(gpptr(dd)->fig2dev.bx);
+    return x * fabs(gpptr(dd)->fig2dev.bx);
 }
 
 static double yNFCtoDevUnits(double y, pGEDevDesc dd)
 {
-    return y*fabs(gpptr(dd)->fig2dev.by);
+    return y * fabs(gpptr(dd)->fig2dev.by);
 }
 
 static double xNPCtoDevUnits(double x, pGEDevDesc dd)
 {
-    return xNFCtoDevUnits(x*(gpptr(dd)->plt[1] - gpptr(dd)->plt[0]), dd);
+    return xNFCtoDevUnits(x * (gpptr(dd)->plt[1] - gpptr(dd)->plt[0]), dd);
 }
 
 static double yNPCtoDevUnits(double y, pGEDevDesc dd)
 {
-    return yNFCtoDevUnits(y*(gpptr(dd)->plt[3] - gpptr(dd)->plt[2]), dd);
+    return yNFCtoDevUnits(y * (gpptr(dd)->plt[3] - gpptr(dd)->plt[2]), dd);
 }
 
 static double xUsrtoDevUnits(double x, pGEDevDesc dd)
 {
-    return xNFCtoDevUnits(x*gpptr(dd)->win2fig.bx, dd);
+    return xNFCtoDevUnits(x * gpptr(dd)->win2fig.bx, dd);
 }
 
 static double yUsrtoDevUnits(double y, pGEDevDesc dd)
 {
-    return yNFCtoDevUnits(y*gpptr(dd)->win2fig.by, dd);
+    return yNFCtoDevUnits(y * gpptr(dd)->win2fig.by, dd);
 }
 
 static double xInchtoDevUnits(double x, pGEDevDesc dd)
 {
-    return xNDCtoDevUnits(x*gpptr(dd)->xNDCPerInch, dd);
+    return xNDCtoDevUnits(x * gpptr(dd)->xNDCPerInch, dd);
 }
 
 static double yInchtoDevUnits(double y, pGEDevDesc dd)
 {
-    return yNDCtoDevUnits(y*gpptr(dd)->yNDCPerInch, dd);
+    return yNDCtoDevUnits(y * gpptr(dd)->yNDCPerInch, dd);
 }
 
 static double xLinetoDevUnits(double x, pGEDevDesc dd)
 {
-    return xNDCtoDevUnits(x*gpptr(dd)->xNDCPerLine, dd);
+    return xNDCtoDevUnits(x * gpptr(dd)->xNDCPerLine, dd);
 }
 
 static double yLinetoDevUnits(double y, pGEDevDesc dd)
 {
-    return yNDCtoDevUnits(y*gpptr(dd)->yNDCPerLine, dd);
+    return yNDCtoDevUnits(y * gpptr(dd)->yNDCPerLine, dd);
 }
 
 static double xChartoDevUnits(double x, pGEDevDesc dd)
 {
-    return xNDCtoDevUnits(x*gpptr(dd)->cex*gpptr(dd)->xNDCPerChar, dd);
+    return xNDCtoDevUnits(x * gpptr(dd)->cex * gpptr(dd)->xNDCPerChar, dd);
 }
 
 static double yChartoDevUnits(double y, pGEDevDesc dd)
 {
-    return yNDCtoDevUnits(y*gpptr(dd)->cex*gpptr(dd)->yNDCPerChar, dd);
+    return yNDCtoDevUnits(y * gpptr(dd)->cex * gpptr(dd)->yNDCPerChar, dd);
 }
 
 static double xDevtoNDCUnits(double x, pGEDevDesc dd)
 {
-    return x/fabs(gpptr(dd)->ndc2dev.bx);
+    return x / fabs(gpptr(dd)->ndc2dev.bx);
 }
 
 static double yDevtoNDCUnits(double y, pGEDevDesc dd)
 {
-    return y/fabs(gpptr(dd)->ndc2dev.by);
+    return y / fabs(gpptr(dd)->ndc2dev.by);
 }
 
 static double xDevtoNICUnits(double x, pGEDevDesc dd)
 {
-    return x/fabs(gpptr(dd)->inner2dev.bx);
+    return x / fabs(gpptr(dd)->inner2dev.bx);
 }
 
 static double yDevtoNICUnits(double y, pGEDevDesc dd)
 {
-    return y/fabs(gpptr(dd)->inner2dev.by);
+    return y / fabs(gpptr(dd)->inner2dev.by);
 }
 
 static double xDevtoNFCUnits(double x, pGEDevDesc dd)
 {
-    return x/fabs(gpptr(dd)->fig2dev.bx);
+    return x / fabs(gpptr(dd)->fig2dev.bx);
 }
 
 static double yDevtoNFCUnits(double y, pGEDevDesc dd)
 {
-    return y/fabs(gpptr(dd)->fig2dev.by);
+    return y / fabs(gpptr(dd)->fig2dev.by);
 }
 
 static double xDevtoNPCUnits(double x, pGEDevDesc dd)
 {
-    return xDevtoNFCUnits(x, dd)/(gpptr(dd)->plt[1] - gpptr(dd)->plt[0]);
+    return xDevtoNFCUnits(x, dd) / (gpptr(dd)->plt[1] - gpptr(dd)->plt[0]);
 }
 
 static double yDevtoNPCUnits(double y, pGEDevDesc dd)
 {
-    return yDevtoNFCUnits(y, dd)/(gpptr(dd)->plt[3] - gpptr(dd)->plt[2]);
+    return yDevtoNFCUnits(y, dd) / (gpptr(dd)->plt[3] - gpptr(dd)->plt[2]);
 }
 
 static double xDevtoUsrUnits(double x, pGEDevDesc dd)
 {
-    return xDevtoNFCUnits(x, dd)/gpptr(dd)->win2fig.bx;
+    return xDevtoNFCUnits(x, dd) / gpptr(dd)->win2fig.bx;
 }
 
 static double yDevtoUsrUnits(double y, pGEDevDesc dd)
 {
-    return yDevtoNFCUnits(y, dd)/gpptr(dd)->win2fig.by;
+    return yDevtoNFCUnits(y, dd) / gpptr(dd)->win2fig.by;
 }
 
 static double xDevtoInchUnits(double x, pGEDevDesc dd)
 {
-    return xDevtoNDCUnits(x, dd)/gpptr(dd)->xNDCPerInch;
+    return xDevtoNDCUnits(x, dd) / gpptr(dd)->xNDCPerInch;
 }
 
 static double yDevtoInchUnits(double y, pGEDevDesc dd)
 {
-    return yDevtoNDCUnits(y, dd)/gpptr(dd)->yNDCPerInch;
+    return yDevtoNDCUnits(y, dd) / gpptr(dd)->yNDCPerInch;
 }
 
 static double xDevtoLineUnits(double x, pGEDevDesc dd)
 {
-    return xDevtoNDCUnits(x, dd)/gpptr(dd)->xNDCPerLine;
+    return xDevtoNDCUnits(x, dd) / gpptr(dd)->xNDCPerLine;
 }
 
 static double yDevtoLineUnits(double y, pGEDevDesc dd)
 {
-    return yDevtoNDCUnits(y, dd)/gpptr(dd)->yNDCPerLine;
+    return yDevtoNDCUnits(y, dd) / gpptr(dd)->yNDCPerLine;
 }
 
 /* NOTE that use the _current_ gpptr(dd)->cex here */
@@ -278,15 +278,15 @@ static double yDevtoLineUnits(double y, pGEDevDesc dd)
 
 static double xDevtoCharUnits(double x, pGEDevDesc dd)
 {
-    return xDevtoNDCUnits(x, dd)/(gpptr(dd)->cex * gpptr(dd)->xNDCPerChar);
+    return xDevtoNDCUnits(x, dd) / (gpptr(dd)->cex * gpptr(dd)->xNDCPerChar);
 }
 
 static double yDevtoCharUnits(double y, pGEDevDesc dd)
 {
-    return yDevtoNDCUnits(y, dd)/(gpptr(dd)->cex * gpptr(dd)->yNDCPerChar);
+    return yDevtoNDCUnits(y, dd) / (gpptr(dd)->cex * gpptr(dd)->yNDCPerChar);
 }
 
-NORET static void BadUnitsError(const char *where)
+NORET static void BadUnitsError(const char* where)
 {
     Rf_error(_("bad units specified in '%s'"), where);
 }
@@ -458,21 +458,21 @@ static double yNFCtoDev(double y, pGEDevDesc dd)
 
 static double xNPCtoDev(double x, pGEDevDesc dd)
 {
-    return xNFCtoDev(gpptr(dd)->plt[0] +
-		     x*(gpptr(dd)->plt[1] - gpptr(dd)->plt[0]), dd);
+    return xNFCtoDev(
+	gpptr(dd)->plt[0] + x * (gpptr(dd)->plt[1] - gpptr(dd)->plt[0]), dd);
 }
 
 static double yNPCtoDev(double y, pGEDevDesc dd)
 {
-    return yNFCtoDev(gpptr(dd)->plt[2] +
-		     y*(gpptr(dd)->plt[3] - gpptr(dd)->plt[2]), dd);
+    return yNFCtoDev(
+	gpptr(dd)->plt[2] + y * (gpptr(dd)->plt[3] - gpptr(dd)->plt[2]), dd);
 }
 
 static double xUsrtoDev(double x, pGEDevDesc dd)
 {
     if (gpptr(dd)->xlog)
 	x = R_Log10(x);
-    return xNFCtoDev(gpptr(dd)->win2fig.ax + x*gpptr(dd)->win2fig.bx, dd);
+    return xNFCtoDev(gpptr(dd)->win2fig.ax + x * gpptr(dd)->win2fig.bx, dd);
 }
 
 static double yUsrtoDev(double y, pGEDevDesc dd)
@@ -599,13 +599,13 @@ static double xDevtoOMA3(double x, pGEDevDesc dd)
 
 static double yDevtoOMA3(double y, pGEDevDesc dd)
 {
-    double line = (1.0 - yDevtoNDC(y, dd))/gpptr(dd)->yNDCPerLine;
+    double line = (1.0 - yDevtoNDC(y, dd)) / gpptr(dd)->yNDCPerLine;
     return gpptr(dd)->oma[2] - line;
 }
 
 static double xDevtoyOMA4(double x, pGEDevDesc dd)
 {
-    double line = (1.0 - xDevtoNDC(x, dd))/gpptr(dd)->xNDCPerLine;
+    double line = (1.0 - xDevtoNDC(x, dd)) / gpptr(dd)->xNDCPerLine;
     return gpptr(dd)->oma[3] - line;
 }
 
@@ -616,24 +616,24 @@ static double yDevtoxOMA4(double y, pGEDevDesc dd)
 
 double xDevtoNFC(double x, pGEDevDesc dd)
 {
-    return (x - gpptr(dd)->fig2dev.ax)/gpptr(dd)->fig2dev.bx;
+    return (x - gpptr(dd)->fig2dev.ax) / gpptr(dd)->fig2dev.bx;
 }
 
 double yDevtoNFC(double y, pGEDevDesc dd)
 {
-    return (y - gpptr(dd)->fig2dev.ay)/gpptr(dd)->fig2dev.by;
+    return (y - gpptr(dd)->fig2dev.ay) / gpptr(dd)->fig2dev.by;
 }
 
 double xDevtoNPC(double x, pGEDevDesc dd)
 {
-    return (xDevtoNFC(x, dd) - gpptr(dd)->plt[0])/
-	(gpptr(dd)->plt[1] - gpptr(dd)->plt[0]);
+    return (xDevtoNFC(x, dd) - gpptr(dd)->plt[0])
+	/ (gpptr(dd)->plt[1] - gpptr(dd)->plt[0]);
 }
 
 double yDevtoNPC(double y, pGEDevDesc dd)
 {
-    return (yDevtoNFC(y, dd) - gpptr(dd)->plt[2])/
-	(gpptr(dd)->plt[3] - gpptr(dd)->plt[2]);
+    return (yDevtoNFC(y, dd) - gpptr(dd)->plt[2])
+	/ (gpptr(dd)->plt[3] - gpptr(dd)->plt[2]);
 }
 
 /* a special case (NPC = normalised plot region coordinates) */
@@ -711,15 +711,12 @@ static double xDevtoyMAR4(double x, pGEDevDesc dd)
     return gpptr(dd)->mar[3] - line;
 }
 
-static double yDevtoxMAR4(double y, pGEDevDesc dd)
-{
-    return yDevtoUsr(y, dd);
-}
+static double yDevtoxMAR4(double y, pGEDevDesc dd) { return yDevtoUsr(y, dd); }
 
 /* the Convert function converts a LOCATION in the FROM coordinate */
 /* system to a LOCATION in the TO coordinate system */
 
-void GConvert(double *x, double *y, GUnit from, GUnit to, pGEDevDesc dd)
+void GConvert(double* x, double* y, GUnit from, GUnit to, pGEDevDesc dd)
 {
     double devx, devy;
 
@@ -954,9 +951,8 @@ double GConvertY(double y, GUnit from, GUnit to, pGEDevDesc dd)
 
 static double sum(double values[], int n, int cmValues[], int cmSum)
 {
-    int i;
     double s = 0;
-    for (i = 0; i < n; i++)
+    for (int i = 0; i < n; i++)
 	if ((cmSum && cmValues[i]) || (!cmSum && !cmValues[i]))
 	    s = s + values[i];
     return s;
@@ -969,7 +965,7 @@ static double sumWidths(pGEDevDesc dd)
 
 static double sumCmWidths(pGEDevDesc dd)
 {
-    return sum(gpptr(dd)->widths, gpptr(dd)->numcols,  gpptr(dd)->cmWidths, 1);
+    return sum(gpptr(dd)->widths, gpptr(dd)->numcols, gpptr(dd)->cmWidths, 1);
 }
 
 static double sumHeights(pGEDevDesc dd)
@@ -984,7 +980,7 @@ static double sumCmHeights(pGEDevDesc dd)
 
 static int tallLayout(double cmWidth, double cmHeight, pGEDevDesc dd)
 {
-    return (cmHeight/sumHeights(dd)) > (cmWidth/sumWidths(dd));
+    return (cmHeight / sumHeights(dd)) > (cmWidth / sumWidths(dd));
 }
 
 static void figureExtent(int *minCol, int *maxCol, int *minRow, int *maxRow,
@@ -1016,9 +1012,8 @@ static void figureExtent(int *minCol, int *maxCol, int *minRow, int *maxRow,
 
 static double sumRegions(double regions[], int from, int to)
 {
-    int i;
     double s = 0;
-    for (i = from; i < to + 1; i++)
+    for (int i = from; i < to + 1; i++)
 	s = s + regions[i];
     return s;
 }
@@ -1658,8 +1653,7 @@ void GMapWin2Fig(pGEDevDesc dd)
 /*  mapping -- Set up mappings between coordinate systems  */
 /*  This is the user's interface to the mapping routines above */
 
-static
-void mapping(pGEDevDesc dd, int which)
+static void mapping(pGEDevDesc dd, int which)
 {
     switch(which) {
     case 0:
@@ -2071,7 +2065,7 @@ void GSetupAxis(int axis, pGEDevDesc dd)
  * Called from baseCallback.
  */
 
-void GInit(GPar *dp)
+void GInit(GPar* dp)
 {
     dp->state = 0;
     dp->valid = FALSE;
@@ -2540,17 +2534,17 @@ void GLine(double x1, double y1, double x2, double y2, int coords, pGEDevDesc dd
    This assume that locator is running on only one device at a time, 
    which is currently safe.
 */
-static void (*old_close)(pDevDesc) = NULL;
+static void (*old_close)(pDevDesc) = nullptr;
 
-static void 
+static void
 #ifndef WIN32
-NORET 
+NORET
 #endif
 locator_close(pDevDesc dd)
 {
     if(old_close) old_close(dd);
     dd->close = old_close;
-    old_close = NULL;
+    old_close = nullptr;
     /* It's not safe to call Rf_error() in a Windows event handler, so 
        the GA_Close method records the close event separately.
     */
@@ -2561,7 +2555,7 @@ locator_close(pDevDesc dd)
 
 
 /* Read the current "pen" position. */
-Rboolean GLocator(double *x, double *y, int coords, pGEDevDesc dd)
+Rboolean GLocator(double* x, double* y, int coords, pGEDevDesc dd)
 {
   Rboolean ret;
   /* store original close handler (it will still be called on
@@ -2576,7 +2570,7 @@ Rboolean GLocator(double *x, double *y, int coords, pGEDevDesc dd)
   } else ret =  FALSE;
   /* restore original close handler */
   dd->dev->close = old_close;
-  old_close = NULL;
+  old_close = nullptr;
   return ret;
 
 }
@@ -2661,8 +2655,7 @@ struct GClipRect {
     double ymax;
 };
 
-static
-int inside (Edge b, double px, double py, GClipRect *clip)
+static int inside (Edge b, double px, double py, GClipRect *clip)
 {
     switch (b) {
     case Left:   if (px < clip->xmin) return 0; break;
@@ -2673,8 +2666,7 @@ int inside (Edge b, double px, double py, GClipRect *clip)
     return 1;
 }
 
-static
-int cross (Edge b, double x1, double y1, double x2, double y2,
+static int cross (Edge b, double x1, double y1, double x2, double y2,
 	   GClipRect *clip)
 {
     if (inside (b, x1, y1, clip) == inside (b, x2, y2, clip))
@@ -2682,8 +2674,7 @@ int cross (Edge b, double x1, double y1, double x2, double y2,
     else return 1;
 }
 
-static
-void intersect (Edge b, double x1, double y1, double x2, double y2,
+static void intersect (Edge b, double x1, double y1, double x2, double y2,
 		double *ix, double *iy, GClipRect *clip)
 {
     double m = 0;
@@ -2711,8 +2702,7 @@ void intersect (Edge b, double x1, double y1, double x2, double y2,
     }
 }
 
-static
-void clipPoint (Edge b, double x, double y,
+static void clipPoint (Edge b, double x, double y,
 		double *xout, double *yout, int *cnt, int store,
 		GClipRect *clip, GClipState *cs)
 {
@@ -2763,8 +2753,7 @@ void clipPoint (Edge b, double x, double y,
     }
 }
 
-static
-void closeClip (double *xout, double *yout, int *cnt, int store,
+static void closeClip (double *xout, double *yout, int *cnt, int store,
 		GClipRect *clip, GClipState *cs)
 {
     double ix = 0.0, iy = 0.0 /* -Wall */;

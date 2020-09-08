@@ -43,7 +43,7 @@ typedef struct {
 R_LapackRoutines *R_setLapackRoutines(R_LapackRoutines *routines);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_LAPACK_MODULE_H */

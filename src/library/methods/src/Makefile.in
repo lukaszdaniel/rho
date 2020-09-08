@@ -14,8 +14,8 @@ R_SHARE_DIR = $(R_HOME)/share
 R_INCLUDE_DIR = $(R_HOME)/include
 
 SOURCES_C = 
-SOURCES_CXX = utils.cpp do_substitute_direct.cpp init.cpp methods_list_dispatch.cpp \
-  slot.cpp class_support.cpp tests.cpp
+SOURCES_CXX = do_substitute_direct.cpp init.cpp methods_list_dispatch.cpp \
+  slot.cpp class_support.cpp tests.cpp utils.cpp
 SOURCES_F =
 DEPENDS = $(SOURCES_C:.c=.d) $(SOURCES_CXX:.cpp=.d)
 OBJECTS = $(SOURCES_C:.c=.o) $(SOURCES_CXX:.cpp=.o) $(SOURCES_F:.f=.o)

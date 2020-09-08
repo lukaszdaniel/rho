@@ -108,7 +108,7 @@ SEXP dirchmod(SEXP dr, SEXP gwsxp)
 	Rf_error(_("invalid '%s' argument"), "dir");
     chmod_one(Rf_translateChar(STRING_ELT(dr, 0)), Rf_asLogical(gwsxp));
 
-    return R_NilValue;
+    return nullptr;
 }
 
 #if defined(BUFSIZ) && (BUFSIZ > 512)

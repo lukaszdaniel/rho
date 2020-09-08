@@ -110,8 +110,9 @@ HIDDEN void nl_Rdummy(void)
 LibExport double R_NaN;		/* IEEE NaN */
 LibExport double R_PosInf;	/* IEEE Inf */
 LibExport double R_NegInf;	/* IEEE -Inf */
-LibExport double R_NaReal;	/* NA_REAL: IEEE */
-LibExport int	 R_NaInt;	/* NA_INTEGER:= INT_MIN currently */
+LibExport double R_NaReal;	/* R_NaReal: IEEE */
+LibExport int	 R_NaInt;	/* R_NaInt:= INT_MIN currently */
+LibExport int	 R_NaLog;	/* R_NaInt:= INT_MIN currently */
 
 // Data declared LibExtern in Rinternals.h :
 
@@ -228,7 +229,7 @@ static RObject* R_ReplFile_impl(FILE *fp, SEXP rho)
 
     R_InitSrcRefState();
     savestack = ProtectStack::size();
-    for(;;) {
+    while (true) {
 	ProtectStack::restoreSize(savestack);
 	R_CurrentExpr = R_Parse1File(fp, 1, &status);
 	switch (status) {
@@ -458,8 +459,8 @@ static RObject* R_ReplConsole_impl(SEXP rho, int savestack)
     /* stopgap measure if line > CONSOLE_BUFFER_SIZE chars */
     state.bufp = state.buf;
     if(R_Verbose)
-	REprintf(" >R_ReplConsole(): before \"for(;;)\" {main.cpp}\n");
-    for(;;) {
+	REprintf(" >R_ReplConsole(): before \"while (true)\" {main.cpp}\n");
+    while (true) {
 	status = Rf_ReplIteration(rho, savestack, &state);
 	if(status < 0) {
 	  if (state.status == PARSE_INCOMPLETE)
@@ -1293,7 +1294,7 @@ static void PrintCall(SEXP call, SEXP rho)
 {
     int old_bl = R_BrowseLines,
 	blines = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.max.lines")));
-    if(blines != NA_INTEGER && blines > 0)
+    if(blines != R_NaInt && blines > 0)
 	R_BrowseLines = blines;
     Rf_PrintValueRec(call, rho);
     R_BrowseLines = old_bl;
@@ -1444,12 +1445,12 @@ HIDDEN SEXP do_quit(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     else
 	Rf_error(_("unrecognized value of 'save'"));
     status = Rf_asInteger(status_);
-    if (status == NA_INTEGER) {
+    if (status == R_NaInt) {
 	Rf_warning(_("invalid 'status', 0 assumed"));
 	status = 0;
     }
     runLast = Rf_asLogical(runLast_);
-    if (runLast == NA_LOGICAL) {
+    if (runLast == R_NaLog) {
 	Rf_warning(_("invalid 'runLast', FALSE assumed"));
 	runLast = 0;
     }
@@ -1612,7 +1613,7 @@ R_removeTaskCallback(SEXP which)
 	    val = Rf_removeTaskCallbackByName(R_CHAR(STRING_ELT(which, 0)));
     } else {
 	id = Rf_asInteger(which);
-	if (id != NA_INTEGER) val = Rf_removeTaskCallbackByIndex(id - 1);
+	if (id != R_NaInt) val = Rf_removeTaskCallbackByIndex(id - 1);
 	else val = FALSE;
     }
     return Rf_ScalarLogical(val);

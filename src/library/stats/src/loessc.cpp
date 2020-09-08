@@ -83,8 +83,7 @@ static void loess_free(void)
     Free(iv);
 }
 
-void
-loess_raw(double *y, double *x, double *weights, double *robust, int *d,
+void loess_raw(double *y, double *x, double *weights, double *robust, int *d,
 	  int *n, double *span, int *degree, int *nonparametric,
 	  int *drop_square, int *sum_drop_sqr, double *cell,
 	  char **surf_stat, double *surface, int *parameter,
@@ -208,8 +207,7 @@ loess_ifit(int *parameter, int *a, double *xi, double *vert,
     loess_free();
 }
 
-void
-loess_ise(double *y, double *x, double *x_evaluate, double *weights,
+void loess_ise(double *y, double *x, double *x_evaluate, double *weights,
 	  double *span, int *degree, int *nonparametric,
 	  int *drop_square, int *sum_drop_sqr, double *cell,
 	  int *d, int *n, int *m, double *fit, double *L)

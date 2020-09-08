@@ -50,8 +50,7 @@ static const unsigned char fillbuf[64] = { 0x80, 0 /* , 0, 0, ...  */ };
 
 /* Initialize structure containing state of computation.
    (RFC 1321, 3.3: Step 3)  */
-static void
-md5_init_ctx (struct md5_ctx *ctx)
+static void md5_init_ctx (struct md5_ctx *ctx)
 {
   ctx->A = 0x67452301;
   ctx->B = 0xefcdab89;
@@ -67,8 +66,7 @@ md5_init_ctx (struct md5_ctx *ctx)
 
    IMPORTANT: On some systems it is required that RESBUF is correctly
    aligned for a 32 bits value.  */
-static void *
-md5_read_ctx (const struct md5_ctx *ctx, void *resbuf)
+static void *md5_read_ctx (const struct md5_ctx *ctx, void *resbuf)
 {
   ((md5_uint32 *) resbuf)[0] = SWAP (ctx->A);
   ((md5_uint32 *) resbuf)[1] = SWAP (ctx->B);
@@ -168,8 +166,7 @@ md5_stream (FILE *stream, void *resblock)
    result is always in little endian byte order, so that a byte-wise
    output yields to the wanted ASCII representation of the message
    digest.  */
-static void *
-md5_buffer (const char *buffer, size_t len, void *resblock)
+static void *md5_buffer (const char *buffer, size_t len, void *resblock)
 {
   struct md5_ctx ctx;
 
@@ -239,8 +236,7 @@ static void
 /* Process LEN bytes of BUFFER, accumulating context into CTX.
    It is assumed that LEN % 64 == 0.  */
 
-static void
-md5_process_block (const void *buffer, size_t len, struct md5_ctx *ctx)
+static void md5_process_block (const void *buffer, size_t len, struct md5_ctx *ctx)
 {
   md5_uint32 correct_words[16];
   const md5_uint32 *words = static_cast<const md5_uint32 *>(buffer);

@@ -55,7 +55,7 @@ static RObject* row_names_gets(RObject* vec, RObject* val)
     if (vec == nullptr)
 	Rf_error(_("attempt to set an attribute on NULL"));
 
-    if(Rf_isReal(val) && LENGTH(val) == 2 && ISNAN(REAL(val)[0]) ) {
+    if(Rf_isReal(val) && LENGTH(val) == 2 && std::isnan(REAL(val)[0]) ) {
 	/* This should not happen, but if a careless user dput()s a
 	   data frame and sources the result, it will */
 	PROTECT(val = Rf_coerceVector(val, INTSXP));
@@ -67,7 +67,7 @@ static RObject* row_names_gets(RObject* vec, RObject* val)
     if(Rf_isInteger(val)) {
 	bool OK_compact = true;
 	int i, n = LENGTH(val);
-	if(n == 2 && INTEGER(val)[0] == NA_INTEGER) {
+	if(n == 2 && INTEGER(val)[0] == R_NaInt) {
 	    n = INTEGER(val)[1];
 	} else if (n > 2) {
 	    for(i = 0; i < n; i++)
@@ -79,7 +79,7 @@ static RObject* row_names_gets(RObject* vec, RObject* val)
 	if(OK_compact) {
 	    /* we hide the length in an impossible integer vector */
 	    PROTECT(val = Rf_allocVector(INTSXP, 2));
-	    INTEGER(val)[0] = NA_INTEGER;
+	    INTEGER(val)[0] = R_NaInt;
 	    INTEGER(val)[1] = n;
 	    vec->setAttribute(Symbols::RowNamesSymbol, val);
 	    ans = val;
@@ -179,7 +179,7 @@ SEXP Rf_getAttrib(SEXP vec, SEXP name)
     /* special test for c(NA, n) rownames of data frames: */
     if (name == Symbols::RowNamesSymbol) {
 	SEXP s = getAttrib0(vec, Symbols::RowNamesSymbol);
-	if(Rf_isInteger(s) && LENGTH(s) == 2 && INTEGER(s)[0] == NA_INTEGER) {
+	if(Rf_isInteger(s) && LENGTH(s) == 2 && INTEGER(s)[0] == R_NaInt) {
 	    int n = abs(INTEGER(s)[1]);
 	    if (n > 0) {
 		//  s = R_compact_intrange(1, n);
@@ -210,7 +210,7 @@ SEXP do_shortRowNames(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	Rf_error(_("invalid '%s' argument"), "type");
 
     if(type >= 1) {
-	int n = (Rf_isInteger(s) && LENGTH(s) == 2 && INTEGER(s)[0] == NA_INTEGER)
+	int n = (Rf_isInteger(s) && LENGTH(s) == 2 && INTEGER(s)[0] == R_NaInt)
 	    ? INTEGER(s)[1] : (Rf_isNull(s) ? 0 : LENGTH(s));
 	ans = Rf_ScalarInteger((type == 1) ? n : abs(n));
     }
@@ -411,12 +411,12 @@ SEXP Rf_tspgets(SEXP vec, SEXP val)
 	frequency = REAL(val)[2];
     }
     else {
-	start = (INTEGER(val)[0] == NA_INTEGER) ?
-	    NA_REAL : INTEGER(val)[0];
-	end = (INTEGER(val)[1] == NA_INTEGER) ?
-	    NA_REAL : INTEGER(val)[1];
-	frequency = (INTEGER(val)[2] == NA_INTEGER) ?
-	    NA_REAL : INTEGER(val)[2];
+	start = (INTEGER(val)[0] == R_NaInt) ?
+	    R_NaReal : INTEGER(val)[0];
+	end = (INTEGER(val)[1] == R_NaInt) ?
+	    R_NaReal : INTEGER(val)[1];
+	frequency = (INTEGER(val)[2] == R_NaInt) ?
+	    R_NaReal : INTEGER(val)[2];
     }
     if (frequency <= 0) badtsp();
     n = Rf_nrows(vec);
@@ -639,10 +639,10 @@ static RObject* cache_class(const char *class_str, RObject* klass)
 	R_PreserveObject(R_S4_extends_table);
     }
     if(Rf_isNull(klass)) { /* retrieve cached value */
-	RObject* val = Rf_findVarInFrame(R_S4_extends_table, Rf_install(class_str));
+	RObject* val = Rf_findVarInFrame(R_S4_extends_table, rho::Symbol::obtain(class_str));
 	return (val == R_UnboundValue) ? klass : val;
     }
-    Rf_defineVar(Rf_install(class_str), klass, R_S4_extends_table);
+    Rf_defineVar(rho::Symbol::obtain(class_str), klass, R_S4_extends_table);
     return klass;
 }
 
@@ -662,7 +662,7 @@ static RObject* S4_extends(RObject* klass, bool use_tab) {
     }
     class_str = Rf_translateChar(STRING_ELT(klass, 0)); /* TODO: include package attr. */
     if(use_tab) {
-	val = Rf_findVarInFrame(R_S4_extends_table, Rf_install(class_str));
+	val = Rf_findVarInFrame(R_S4_extends_table, rho::Symbol::obtain(class_str));
 	vmaxset(vmax);
 	if(val != R_UnboundValue)
 	    return val;
@@ -1100,8 +1100,8 @@ SEXP Rf_dimgets(SEXP vec, SEXP val)
 	Rf_error(_("length-0 dimension vector is invalid"));
     total = 1;
     for (i = 0; i < ndim; i++) {
-	/* need this test first as NA_INTEGER is < 0 */
-	if (INTEGER(val)[i] == NA_INTEGER)
+	/* need this test first as R_NaInt is < 0 */
+	if (INTEGER(val)[i] == R_NaInt)
 	    Rf_error(_("the dims contain missing values"));
 	if (INTEGER(val)[i] < 0)
 	    Rf_error(_("the dims contain negative values"));
@@ -1310,10 +1310,10 @@ HIDDEN SEXP do_attr(SEXP call, SEXP op, SEXP args, SEXP env)
 
     if(exact_ != R_MissingArg) {
 	exact = Rf_asLogical(exact_);
-	if(exact == NA_LOGICAL) exact = 0;
+	if(exact == R_NaLog) exact = 0;
     }
 
-    if(STRING_ELT(which, 0) == NA_STRING) {
+    if(STRING_ELT(which, 0) == R_NaString) {
 	UNPROTECT(1);
 	return nullptr;
     }
@@ -1469,7 +1469,7 @@ HIDDEN SEXP do_attrgets(SEXP call, SEXP op, SEXP args, SEXP env)
     SEXP ignored, name, value;
     matcher->match(arglist, { &ignored, &name, &value });
 
-    if (!Rf_isValidString(name) || STRING_ELT(name, 0) == NA_STRING)
+    if (!Rf_isValidString(name) || STRING_ELT(name, 0) == R_NaString)
 	Rf_error(_("'name' must be non-null character string"));
     /* TODO?  if (Rf_isFactor(obj) && streql(Rf_asChar(name), "levels"))
      * ---         if(Rf_any_duplicated(CADDR(args)))

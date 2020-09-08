@@ -24,9 +24,7 @@
 #include <math.h> // for isfinite
 #include <Rinternals.h>
 #include <R_ext/Applic.h>
-
 #include "localization.h"
-
 
 /* called via .External(.) :*/
 SEXP call_dqags(SEXP args);

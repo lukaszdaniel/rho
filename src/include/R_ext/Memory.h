@@ -59,7 +59,7 @@ char*	S_alloc(long, int);
 char*	S_realloc(char *, long, long, int);
 
 #ifdef  __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_EXT_MEMORY_H_ */

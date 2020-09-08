@@ -190,7 +190,7 @@ HIDDEN SEXP do_deparse(/*const*/ Expression* call, const BuiltInFunction* op, RO
     int cut0 = DEFAULT_Cutoff();
     if(!Rf_isNull(width_cutoff_)) {
 	cut0 = Rf_asInteger(width_cutoff_);
-	if(cut0 == NA_INTEGER || cut0 < int(MIN_Cutoff) || cut0 > int(MAX_Cutoff)) {
+	if(cut0 == R_NaInt || cut0 < int(MIN_Cutoff) || cut0 > int(MAX_Cutoff)) {
 	    Rf_warning(_("invalid 'cutoff' value for 'deparse', using default"));
 	    cut0 = DEFAULT_Cutoff();
 	}
@@ -198,7 +198,7 @@ HIDDEN SEXP do_deparse(/*const*/ Expression* call, const BuiltInFunction* op, RO
     int backtick = Rf_isNull(backtick_) ? 0 : Rf_asLogical(backtick_);
     int opts = Rf_isNull(control_) ? SHOWATTRIBUTES : Rf_asInteger(control_);
     int nlines = Rf_asInteger(nlines_);
-    if (nlines == NA_INTEGER) nlines = -1;
+    if (nlines == R_NaInt) nlines = -1;
     return deparse1WithCutoff(expr, FALSE, cut0, Rboolean(backtick), opts, nlines);
 }
 
@@ -208,7 +208,7 @@ SEXP Rf_deparse1m(SEXP call, Rboolean abbrev, int opts)
     Rboolean backtick = TRUE;
     int old_bl = R_BrowseLines,
         blines = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.max.lines")));
-    if (blines != NA_INTEGER && blines > 0)
+    if (blines != R_NaInt && blines > 0)
         R_BrowseLines = blines;
     SEXP result = deparse1WithCutoff(call, abbrev, DEFAULT_Cutoff(), backtick,
 				     opts, 0);
@@ -464,7 +464,7 @@ HIDDEN SEXP do_dump(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 	Rf_error(_("invalid '%s' argument"), "envir");
     int opts = Rf_asInteger(opts_);
     /* <NOTE>: change this if extra options are added */
-    if(opts == NA_INTEGER || opts < 0 || opts > 2048)
+    if(opts == R_NaInt || opts < 0 || opts > 2048)
 	Rf_error(_("'opts' should be small non-negative integer"));
     // evaluate :
     if (!Rf_asLogical(evaluate_)) opts |= DELAYPROMISES;
@@ -678,7 +678,7 @@ static bool anyNA_chr(SEXP x)
     if(TYPEOF(x) == STRSXP) {
 	R_xlen_t i, n = Rf_xlength(x);
 	for (i = 0; i < n; i++) {
-	    if (STRING_ELT(x, i) == NA_STRING)
+	    if (STRING_ELT(x, i) == R_NaString)
 		return true;
 	}
     }
@@ -693,7 +693,7 @@ static Rboolean anyNA_or_all0_chr(SEXP x)
 	R_xlen_t i, n = Rf_xlength(x);
 	Rboolean all_0 = TRUE;
 	for (i = 0; i < n; i++) {
-	    if (STRING_ELT(x, i) == NA_STRING)
+	    if (STRING_ELT(x, i) == R_NaString)
 		return TRUE;
 	    else if (all_0 && *R_CHAR(STRING_ELT(x, i))) /* length test */
 		all_0 = FALSE;
@@ -1530,7 +1530,7 @@ static void deparse2buff(SEXP s, LocalParseData *d)
 /* If there is a string array active point to that, and */
 /* otherwise we are counting lines so don't do anything. */
 
-static inline void writeline(LocalParseData *d)
+inline static void writeline(LocalParseData *d)
 {
     if (d->strvec != nullptr && d->linenumber < d->maxlines)
 	SET_STRING_ELT(d->strvec, d->linenumber, Rf_mkChar(d->buffer.data));
@@ -1542,7 +1542,7 @@ static inline void writeline(LocalParseData *d)
     d->startline = TRUE;
 }
 
-static inline void print2buff(const char *strng, LocalParseData *d)
+inline static void print2buff(const char *strng, LocalParseData *d)
 {
     size_t tlen, bufflen;
 
@@ -1585,7 +1585,7 @@ static const char *EncodeNonFiniteComplexElement(Rcomplex x, char* buff)
     return buff;
 }
 
-static inline void deparse2buf_name(SEXP nv, int i, LocalParseData *d) {
+inline static void deparse2buf_name(SEXP nv, int i, LocalParseData *d) {
     if (!Rf_isNull(nv) && !Rf_isNull(STRING_ELT(nv, i))
 	&& *R_CHAR(STRING_ELT(nv, i))) { /* length test */
 	/* d->opts = SIMPLEDEPARSE; This seems pointless */
@@ -1620,11 +1620,11 @@ static void vector2buff(SEXP vector, LocalParseData *d)
     if(TYPEOF(vector) == INTSXP) {
 	int *vec = INTEGER(vector), d_i;
 	intSeq = (tlen > 1 &&
-		  vec[0] != NA_INTEGER &&
-		  vec[1] != NA_INTEGER &&
+		  vec[0] != R_NaInt &&
+		  vec[1] != R_NaInt &&
 		  abs(d_i = vec[1] - vec[0]) == 1);
 	if(intSeq) for(i = 2; i < tlen; i++) {
-	    if((vec[i] == NA_INTEGER) || (vec[i] - vec[i-1]) != d_i) {
+	    if((vec[i] == R_NaInt) || (vec[i] - vec[i-1]) != d_i) {
 		intSeq = FALSE;
 		break;
 	    }
@@ -1683,7 +1683,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    Rboolean addL = Rboolean(d->opts & KEEPINTEGER && !(d->opts & S_COMPAT));
 	    allNA = (d->opts & KEEPNA) || addL;
 	    for(i = 0; i < tlen; i++)
-		if(vec[i] != NA_INTEGER) {
+		if(vec[i] != R_NaInt) {
 		    allNA = false;
 		    break;
 		}
@@ -1695,12 +1695,12 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    for (i = 0; i < tlen; i++) {
 		if(do_names) // put '<tag> = '
 		    deparse2buf_name(nv, i, d);
-		if(allNA && vec[i] == NA_INTEGER) {
+		if(allNA && vec[i] == R_NaInt) {
 		    print2buff("NA_integer_", d);
 		} else {
 		    strp = EncodeElement(vector, i, quote, '.');
 		    print2buff(strp, d);
-		    if(addL && vec[i] != NA_INTEGER) print2buff("L", d);
+		    if(addL && vec[i] != R_NaInt) print2buff("L", d);
 		}
 		if (i < (tlen - 1)) print2buff(", ", d);
 		if (tlen > 1 && d->len > d->cutoff) writeline(d);
@@ -1734,7 +1734,7 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 	    }
 	} else if((d->opts & KEEPNA) && TYPEOF(vector) == STRSXP) {
 	    for(i = 0; i < tlen; i++)
-		if(STRING_ELT(vector, i) != NA_STRING) {
+		if(STRING_ELT(vector, i) != R_NaString) {
 		    allNA = false;
 		    break;
 		}
@@ -1757,12 +1757,12 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 			&& ISNA(COMPLEX(vector)[i].i)) ) {
 		strp = allNA ? "NA_complex_" : EncodeElement(vector, i, quote, '.');
 	    } else if(TYPEOF(vector) == CPLXSXP &&
-		      (ISNAN(COMPLEX(vector)[i].r) || !R_FINITE(COMPLEX(vector)[i].i)) ) {
+		      (std::isnan(COMPLEX(vector)[i].r) || !std::isfinite(COMPLEX(vector)[i].i)) ) {
 		if (!buff)
 		    buff = static_cast<char *>(alloca(NB2));
 		strp = EncodeNonFiniteComplexElement(COMPLEX(vector)[i], buff);
 	    } else if (allNA && TYPEOF(vector) == STRSXP &&
-		       STRING_ELT(vector, i) == NA_STRING) {
+		       STRING_ELT(vector, i) == R_NaString) {
 		strp = "NA_character_";
 	    } else if (TYPEOF(vector) == REALSXP && (d->opts & S_COMPAT)) {
 		int w, d, e;
@@ -1783,28 +1783,28 @@ static void vector2buff(SEXP vector, LocalParseData *d)
 		double x = REAL(vector)[i];
 		// Windows warns here, but incorrectly as this is C99
 		// and the snprintf used from trio is compliant.
-		if (R_FINITE(x)) {
+		if (std::isfinite(x)) {
 		    snprintf(hex, 32, "%a", x);
 		    strp = hex;
 		} else
 		    strp = EncodeElement(vector, i, quote, '.');
 	    } else if (TYPEOF(vector) == REALSXP && (d->opts & DIGITS16)) {
 		double x = REAL(vector)[i];
-		if (R_FINITE(x)) {
+		if (std::isfinite(x)) {
 		    snprintf(hex, 32, "%.17g", x);
 		    strp = hex;
 		} else
 		    strp = EncodeElement(vector, i, quote, '.');
 	    } else if (TYPEOF(vector) == CPLXSXP && (d->opts & HEXNUMERIC)) {
 		Rcomplex z =  COMPLEX(vector)[i];
-		if (R_FINITE(z.r) && R_FINITE(z.i)) {
+		if (std::isfinite(z.r) && std::isfinite(z.i)) {
 		    snprintf(hex, 64, "%a + %ai", z.r, z.i);
 		    strp = hex;
 		} else
 		    strp = EncodeElement(vector, i, quote, '.');
 	    } else if (TYPEOF(vector) == CPLXSXP && (d->opts & DIGITS16)) {
 		Rcomplex z =  COMPLEX(vector)[i];
-		if (R_FINITE(z.r) && R_FINITE(z.i)) {
+		if (std::isfinite(z.r) && std::isfinite(z.i)) {
 		    snprintf(hex, 64, "%.17g%+.17gi", z.r, z.i);
 		    strp = hex;
 		} else

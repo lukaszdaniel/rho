@@ -164,7 +164,7 @@ int Rf_GetOptionCutoff(void)
 {
     int w;
     w = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.cutoff")));
-    if (w == NA_INTEGER || w <= 0) {
+    if (w == R_NaInt || w <= 0) {
 	Rf_warning(_("invalid 'deparse.cutoff', used 60"));
 	w = 60;
     }
@@ -176,7 +176,7 @@ Rboolean Rf_GetOptionDeviceAsk(void)
 {
     int ask;
     ask = Rf_asLogical(Rf_GetOption1(Rf_install("device.ask.default")));
-    if(ask == NA_LOGICAL) {
+    if(ask == R_NaLog) {
 	Rf_warning(_("invalid value for \"device.ask.default\", using FALSE"));
 	return FALSE;
     }
@@ -357,7 +357,7 @@ HIDDEN void Rf_InitOptions(void)
     v = CDR(v);
 
     SET_TAG(v, Rf_install("PCRE_limit_recursion"));
-    R_PCRE_limit_recursion = NA_LOGICAL;
+    R_PCRE_limit_recursion = R_NaLog;
     SETCAR(v, Rf_ScalarLogical(R_PCRE_limit_recursion));
     v = CDR(v);
 
@@ -512,13 +512,13 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "editor") && Rf_isString(argi)) {
 		SEXP s =  Rf_asChar(argi);
-		if (s == NA_STRING || LENGTH(s) == 0)
+		if (s == R_NaString || LENGTH(s) == 0)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarString(s)));
 	    }
 	    else if (streql(R_CHAR(namei), "continue")) {
 		SEXP s =  Rf_asChar(argi);
-		if (s == NA_STRING || LENGTH(s) == 0)
+		if (s == R_NaString || LENGTH(s) == 0)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		/* We want to make sure these are in the native encoding */
 		SET_VECTOR_ELT(value, i,
@@ -526,7 +526,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "prompt")) {
 		SEXP s =  Rf_asChar(argi);
-		if (s == NA_STRING || LENGTH(s) == 0)
+		if (s == R_NaString || LENGTH(s) == 0)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		/* We want to make sure these are in the native encoding */
 		SET_VECTOR_ELT(value, i,
@@ -612,7 +612,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "max.contour.segments")) {
 		int k = Rf_asInteger(argi);
-		if (k < 0) // also many times above: rely on  NA_INTEGER  <  <finite_int>
+		if (k < 0) // also many times above: rely on  R_NaInt  <  <finite_int>
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		max_contour_segments = k;
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
@@ -662,7 +662,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "showNCalls")) {
 		int k = Rf_asInteger(argi);
-		if (k < 30 || k > 500 || k == NA_INTEGER || LENGTH(argi) != 1)
+		if (k < 30 || k > 500 || k == R_NaInt || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		R_NShowCalls = k;
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarInteger(k)));
@@ -674,7 +674,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		if (TYPEOF(argi) != LGLSXP || LENGTH(argi) != 1)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		int k = Rf_asLogical(argi);
-		if (k == NA_LOGICAL)
+		if (k == R_NaLog)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		R_DisableNLinBrowser = Rboolean(k);
 		SET_VECTOR_ELT(value, i, SetOption(tag, Rf_ScalarLogical(k)));
@@ -688,7 +688,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "matprod")) {
 		SEXP s = Rf_asChar(argi);
-		if (s == NA_STRING || LENGTH(s) == 0)
+		if (s == R_NaString || LENGTH(s) == 0)
 		    Rf_error(_("invalid value for '%s'"), R_CHAR(namei));
 		if (streql(R_CHAR(s), "default"))
 		    R_Matprod = MATPROD_DEFAULT;
@@ -724,7 +724,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (streql(R_CHAR(namei), "PCRE_use_JIT")) {
 		int use_JIT = Rf_asLogical(argi);
-		R_PCRE_use_JIT = Rboolean(use_JIT > 0); // NA_LOGICAL is < 0
+		R_PCRE_use_JIT = Rboolean(use_JIT > 0); // R_NaLog is < 0
 		SET_VECTOR_ELT(value, i, 
 			       SetOption(tag, Rf_ScalarLogical(R_PCRE_use_JIT)));
 	    }
@@ -747,7 +747,7 @@ HIDDEN SEXP do_options(SEXP call, SEXP op, SEXP args, SEXP rho)
 		Rf_error(_("\"par.ask.default\" has been replaced by \"device.ask.default\""));
 	    }
 
-	    SET_VECTOR_ELT(value, i, Rf_duplicate(CAR(FindTaggedItem(options, Rf_install(tag)))));
+	    SET_VECTOR_ELT(value, i, Rf_duplicate(CAR(FindTaggedItem(options, rho::Symbol::obtain(tag)))));
 	    SET_STRING_ELT(names, i, STRING_ELT(argi, 0));
 	    R_Visible = TRUE;
 	}

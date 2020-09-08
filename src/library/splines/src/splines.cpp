@@ -106,8 +106,7 @@ basis_funcs(splPTR sp, double x, double *b)
 }
 
 /* "slow" evaluation of (derivative of) basis functions */
-static double
-evaluate(splPTR sp, double x, int nder)
+static double evaluate(splPTR sp, double x, int nder)
 {
     volatile double *lpt, *rpt, *apt, *ti = sp->knots + sp->curs;
     int inner, outer = sp->ordm1;

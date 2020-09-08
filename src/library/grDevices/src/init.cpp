@@ -50,7 +50,7 @@ static SEXP cairoProps(SEXP in)
 	    0
 #endif
 	    );
-    return R_NilValue;
+    return nullptr;
 }
 #endif
 

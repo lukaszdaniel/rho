@@ -250,13 +250,13 @@ SEXP C_filledcontour(SEXP args)
     gpptr(dd)->col = colsave;
     gpptr(dd)->xpd = xpdsave;
     UNPROTECT(5);
-    return R_NilValue;
+    return nullptr;
 
  badxy:
     Rf_error(_("invalid x / y values or limits"));
  badlev:
     Rf_error(_("invalid contour levels: must be strictly increasing"));
-    return R_NilValue;  /* never used; to keep -Wall happy */
+    return nullptr;  /* never used; to keep -Wall happy */
 }
 
 
@@ -321,7 +321,7 @@ SEXP C_image(SEXP args)
     gpptr(dd)->col = colsave;
     gpptr(dd)->xpd = xpdsave;
     UNPROTECT(4);
-    return R_NilValue;
+    return nullptr;
 }
 
 	/*  P e r s p e c t i v e   S u r f a c e   P l o t s  */
@@ -602,7 +602,7 @@ static void DrawFacets(double *z, double *x, double *y, int nx, int ny,
 		    newcol = R_RGB(r, g, b);
 		    GPolygon(nv, xx, yy, USER, newcol, border, dd);
 		}
-	    } else 
+	    } else
 		GPolygon(nv, xx, yy, USER, newcol, border, dd);
 	}
     }
@@ -664,7 +664,7 @@ static int LimitCheck(double *lim, double *c, double *s)
    their outside toward the eye are drawn.  This lets us carry
    out hidden line removal by drawing any faces which will be
    obscured before the surface, and those which will not be
-   obscured after the surface. 
+   obscured after the surface.
 
    Unfortunately as PR#202 showed, this is simplistic as the surface
    can go outside the box.
@@ -703,7 +703,7 @@ static short int Edge[6][4] = {
 };
 
 
-static void PerspBox(int front, double *x, double *y, double *z, 
+static void PerspBox(int front, double *x, double *y, double *z,
 		     char *EdgeDone, pGEDevDesc dd)
 {
     Vector3d u0, v0, u1, v1, u2, v2, u3, v3;
@@ -820,7 +820,7 @@ static void PerspAxis(double *x, double *y, double *z,
     Vector3d u1={0.,0.,0.,0.}, u2={0.,0.,0.,0.}, u3={0.,0.,0.,0.}, v1, v2, v3;
     double tickLength = .03; /* proportion of axis length */
     double min, max, d_frac;
-    double *range = NULL; /* -Wall */
+    double *range = nullptr; /* -Wall */
     double axp[3];
     int nint, i;
     SEXP at, lab;
@@ -1502,7 +1502,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 		xend = end->x1;
 		yend = end->y1;
 	    }
-	    end->next = NULL; /* <<< new for 1.2.3 */
+	    end->next = nullptr; /* <<< new for 1.2.3 */
 	    ii = i; jj = j;
 	    xend = seglist->x0;
 	    yend = seglist->y0;
@@ -1619,7 +1619,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 			    /** Test corners for intersection with previous labels **/
 			    label2 = labelList;
 			    result = 0;
-			    while ((result == 0) && (label2 != R_NilValue)) {
+			    while ((result == 0) && (label2 != nullptr)) {
 				result = TestLabelIntersection(label1, CAR(label2));
 				label2 = CDR(label2);
 			    }
@@ -1683,7 +1683,7 @@ static void contour(SEXP x, int nx, SEXP y, int ny, SEXP z,
 			    /** Test corners for intersection with previous labels **/
 			    label2 = labelList;
 			    result = 0;
-			    while ((result == 0) && (label2 != R_NilValue)) {
+			    while ((result == 0) && (label2 != nullptr)) {
 				result = TestLabelIntersection(label1, CAR(label2));
 				label2 = CDR(label2);
 			    }
@@ -1865,7 +1865,7 @@ SEXP C_contour(SEXP args)
     Rboolean drawLabels;
     double labcex;
     pGEDevDesc dd = GEcurrentDevice();
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
 
     GCheckState(dd);
 
@@ -1967,7 +1967,7 @@ SEXP C_contour(SEXP args)
 	else
 	    Rf_warning(_("all z values are NA"));
 	UNPROTECT(8);
-	return R_NilValue;
+	return nullptr;
     }
 
     /* change to 1e-3, reconsidered because of PR#897
@@ -1987,7 +1987,7 @@ SEXP C_contour(SEXP args)
 
     for (i = 0; i < nx; i++)
 	for (j = 0; j < ny; j++)
-	    ctr_SegDB[i + j * nx] = NULL;
+	    ctr_SegDB[i + j * nx] = nullptr;
 
     /* Draw the contours -- note the heap release */
 
@@ -1995,7 +1995,7 @@ SEXP C_contour(SEXP args)
     colsave = gpptr(dd)->col;
     lwdsave = gpptr(dd)->lwd;
     cexsave = gpptr(dd)->cex;
-    labelList = PROTECT(R_NilValue);
+    labelList = PROTECT(nullptr);
 
 
     /* draw contour for levels[i] */
@@ -2027,6 +2027,6 @@ SEXP C_contour(SEXP args)
 	strncpy(gpptr(dd)->family, familysave, 201);
 	gpptr(dd)->font = fontsave;
     }
-    UNPROTECT(9); /* x y z c vfont col lty lwd labellist */
+    UNPROTECT(9); /* x y z c vfont col lty lwd labelList */
     return result;
 }

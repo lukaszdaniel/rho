@@ -309,7 +309,7 @@ SEXP countfields(SEXP args)
     Rboolean dbcslocale = Rboolean(MB_CUR_MAX == 2);
     LocalData data = {NULL, 0, 0, '.', NULL, NO_COMCHAR, 0, NULL, FALSE,
 		      FALSE, 0, FALSE,	 FALSE};
-    data.NAstrings = R_NilValue;
+    data.NAstrings = nullptr;
 
     args = CDR(args);
 
@@ -376,7 +376,7 @@ SEXP countfields(SEXP args)
 
     data.save = 0;
 
-    for (;;) {
+    while(true) {
 	c = scanchar(Rboolean(inquote), &data);
 	if (c == R_EOF)	 {
 	    if (nfields != 0)
@@ -466,7 +466,7 @@ SEXP countfields(SEXP args)
 
     if (nlines < 0) {
 	UNPROTECT(1);
-	return R_NilValue;
+	return nullptr;
     }
     if (nlines == blocksize) {
 	UNPROTECT(1);
@@ -555,7 +555,7 @@ SEXP typeconvert(SEXP call, SEXP op, SEXP args, SEXP env)
     typeInfo.isinteger = TRUE;
     typeInfo.isreal = TRUE;
     typeInfo.iscomplex = TRUE;
-    data.NAstrings = R_NilValue;
+    data.NAstrings = nullptr;
 
     args = CDR(args);
 
@@ -756,7 +756,7 @@ SEXP menu(SEXP choices)
     char buffer[MAXELTSIZE], *bufp = buffer;
     LocalData data = {NULL, 0, 0, '.', NULL, NO_COMCHAR, 0, NULL, FALSE,
 		      FALSE, 0, FALSE, FALSE};
-    data.NAstrings = R_NilValue;
+    data.NAstrings = nullptr;
 
 
     if (!Rf_isString(choices))
@@ -793,14 +793,14 @@ SEXP menu(SEXP choices)
 #define BUF_SIZE 1000
 SEXP readtablehead(SEXP args)
 {
-    SEXP file, comstr, ans = R_NilValue, ans2, quotes, sep;
+    SEXP file, comstr, ans = nullptr, ans2, quotes, sep;
     int nlines, i, c, quote = 0, nread, nbuf, buf_size = BUF_SIZE,
 	blskip, skipNul;
     const char *p; char *buf;
     Rboolean empty, skip, firstnonwhite;
     LocalData data = {NULL, 0, 0, '.', NULL, NO_COMCHAR, 0, NULL, FALSE,
 		      FALSE, 0, FALSE, FALSE, FALSE};
-    data.NAstrings = R_NilValue;
+    data.NAstrings = nullptr;
 
     args = CDR(args);
 
@@ -993,8 +993,7 @@ static Rboolean isna(SEXP x, int indx)
 }
 
 /* a version of EncodeElement with different escaping of char strings */
-static const char
-*EncodeElement2(SEXP x, int indx, Rboolean quote,
+static const char* EncodeElement2(SEXP x, int indx, Rboolean quote,
 		Rboolean qmethod, R_StringBuffer *buff, const char *dec)
 {
     int nbuf;
@@ -1025,7 +1024,7 @@ static const char
 struct wt_info {
     Rboolean wasopen;
     Rconnection con;
-    R_StringBuffer *buf;
+    R_StringBuffer* buf;
     int savedigits;
 };
 
@@ -1120,7 +1119,7 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 		    Rf_error(_("corrupt data frame -- length of column %d does not not match nrows"), j+1);
 		if(Rf_inherits(xj, "factor")) {
 		    levels[j] = Rf_getAttrib(xj, R_LevelsSymbol);
-		} else levels[j] = R_NilValue;
+		} else levels[j] = nullptr;
 	    }
 
 	    for(int i = 0; i < nr; i++) {
@@ -1192,5 +1191,5 @@ SEXP writetable(SEXP call, SEXP op, SEXP args, SEXP env)
 	throw;
     }
     wt_cleanup(&wi);
-    return R_NilValue;
+    return nullptr;
 }

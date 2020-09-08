@@ -131,7 +131,7 @@ constexpr size_t NB = 1000; /* Same as deparse.cpp */
 const char* EncodeLogical(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_LOGICAL) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+    if(x == R_NaLog) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
     else if(x) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "TRUE");
     else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "FALSE");
     buff[NB-1] = '\0';
@@ -141,7 +141,7 @@ const char* EncodeLogical(int x, int w)
 const char* EncodeInteger(int x, int w)
 {
     static char buff[NB];
-    if(x == NA_INTEGER) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
+    if(x == R_NaInt) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
     else snprintf(buff, NB, "%*d", min(w, int(NB-1)), x);
     buff[NB-1] = '\0';
     return buff;
@@ -193,9 +193,9 @@ const char* EncodeReal0(double x, int w, int d, int e, const char* dec)
 
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
-    if (!R_FINITE(x)) {
+    if (!std::isfinite(x)) {
 	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(std::isnan(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
@@ -235,9 +235,9 @@ static const char* EncodeRealDrop0(double x, int w, int d, int e, const char* de
 
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
-    if (!R_FINITE(x)) {
+    if (!std::isfinite(x)) {
 	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(std::isnan(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
@@ -288,7 +288,7 @@ HIDDEN SEXP Rf_StringFromReal(double x, int *warn)
 {
     int w, d, e;
     formatReal(&x, 1, &w, &d, &e, 0);
-    if (ISNA(x)) return NA_STRING;
+    if (ISNA(x)) return R_NaString;
     else return Rf_mkChar(EncodeRealDrop0(x, w, d, e, OutDec));
 }
 
@@ -301,9 +301,9 @@ const char* Rf_EncodeReal2(double x, int w, int d, int e)
 
     /* IEEE allows signed zeros (yuck!) */
     if (x == 0.0) x = 0.0;
-    if (!R_FINITE(x)) {
+    if (!std::isfinite(x)) {
 	if(ISNA(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), R_CHAR(R_print.na_string));
-	else if(ISNAN(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
+	else if(std::isnan(x)) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "NaN");
 	else if(x > 0) snprintf(buff, NB, "%*s", min(w, int(NB-1)), "Inf");
 	else snprintf(buff, NB, "%*s", min(w, int(NB-1)), "-Inf");
     }
@@ -549,7 +549,7 @@ const char* Rf_EncodeString(SEXP s, int w, int quote, Rprt_adj justify)
     static R_StringBuffer gBuffer = { nullptr, 0, BUFSIZE };
     R_StringBuffer* buffer = &gBuffer;
 
-    if (s == NA_STRING) {
+    if (s == R_NaString) {
 	p = quote ? R_CHAR(R_print.na_string) : R_CHAR(R_print.na_string_noquote);
 	cnt = i = int(quote ? strlen(R_CHAR(R_print.na_string)) :
 		      strlen(R_CHAR(R_print.na_string_noquote)));

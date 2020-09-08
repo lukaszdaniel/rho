@@ -21,7 +21,6 @@
 #include <R_ext/Boolean.h>
 #include <R_ext/GraphicsEngine.h> /* for DevDesc */
 
-
 SEXP R_CreateAtVector(SEXP axp, SEXP usr, SEXP nint, SEXP is_log);
 SEXP R_GAxisPars(SEXP usr, SEXP is_log, SEXP nintLog);
 

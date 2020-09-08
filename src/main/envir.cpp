@@ -159,9 +159,6 @@ RObject* Frame::Binding::unforcedValue() const
     return ans;
 }
 
-/* Macro version of isNull for only the test against nullptr */
-#define ISNULL(x) ((x) == nullptr)
-
 /*----------------------------------------------------------------------
 
   String Hashing
@@ -415,8 +412,7 @@ namespace {
     }
 }
 
-HIDDEN SEXP
-Rf_findVar1(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits)
+HIDDEN SEXP Rf_findVar1(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -466,8 +462,7 @@ namespace {
     }
 }
 
-static SEXP
-findVar1mode(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits,
+static SEXP findVar1mode(SEXP symbol, SEXP rho, SEXPTYPE mode, int inherits,
              bool doGet)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
@@ -545,8 +540,7 @@ SEXP ddfind(int i, SEXP rho)
     return nullptr;
 }
 
-HIDDEN
-SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
+HIDDEN SEXP Rf_ddfindVar(SEXP symbol, SEXP rho)
 {
     int i = ddVal(symbol);
     return ddfind(i, rho);
@@ -614,8 +608,7 @@ SEXP dynamicfindVar(SEXP symbol, ClosureContext *cptr)
   This could call findVar1.  NB: they behave differently on failure.
 */
 
-HIDDEN
-SEXP Rf_findFun3(SEXP symbol, SEXP rho, SEXP call)
+HIDDEN SEXP Rf_findFun3(SEXP symbol, SEXP rho, SEXP call)
 {
     const Symbol* sym = SEXP_downcast<Symbol*>(symbol);
     Environment* env = SEXP_downcast<Environment*>(rho);
@@ -744,7 +737,7 @@ HIDDEN SEXP do_assign(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     if (!aenv)
 	Rf_error(_("invalid '%s' argument"), "envir");
     ginherits = Rf_asLogical(inherits_);
-    if (ginherits == NA_LOGICAL)
+    if (ginherits == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "inherits");
     if (ginherits)
 	Rf_setVar(name, val, aenv);
@@ -834,12 +827,12 @@ HIDDEN SEXP do_remove(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	Rf_error(_("invalid '%s' argument"), "envir");
 
     ginherits = Rf_asLogical(inherits_);
-    if (ginherits == NA_LOGICAL)
+    if (ginherits == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "inherits");
 
     for (int i = 0; i < LENGTH(name); i++) {
 	done = 0;
-	tsym = SEXP_downcast<Symbol*>(Rf_install(Rf_translateChar(STRING_ELT(name, i))));
+	tsym = SEXP_downcast<Symbol*>(rho::Symbol::obtain(Rf_translateChar(STRING_ELT(name, i))));
 	tenv = envarg;
 	while (tenv != R_EmptyEnv) {
 	    done = RemoveVariable(tsym, tenv);
@@ -912,7 +905,7 @@ static RObject* do_get_common(Expression* call, const BuiltInFunction* op,
     }
 
     ginherits = Rf_asLogical(inherits);
-    if (ginherits == NA_LOGICAL)
+    if (ginherits == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "inherits");
 
     /* Search for the object */
@@ -1028,7 +1021,7 @@ HIDDEN SEXP do_mget(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 	Rf_error(_("wrong length for '%s' argument"), "ifnotfound");
 
     ginherits = Rf_asLogical(inherits);
-    if (ginherits == NA_LOGICAL)
+    if (ginherits == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "inherits");
 
     PROTECT(ans = Rf_allocVector(VECSXP, nvals));
@@ -1069,17 +1062,17 @@ HIDDEN SEXP do_mget(/*const*/ Expression* call, const BuiltInFunction* op, RObje
   It is also called in arithmetic.cpp. for e.g. do_log
 */
 
-static SEXP findRootPromise(SEXP p) {
+static SEXP findRootPromise(SEXP p)
+{
     if (TYPEOF(p) == PROMSXP) {
-        while(TYPEOF(PREXPR(p)) == PROMSXP) {
-            p = PREXPR(p);
-        }
+	while (TYPEOF(PREXPR(p)) == PROMSXP) {
+	    p = PREXPR(p);
+	}
     }
     return p;
 }
 
-HIDDEN int
-R_isMissing(SEXP symbol, SEXP rho)
+HIDDEN int R_isMissing(SEXP symbol, SEXP rho)
 {
     if (!rho)
 	return 0;
@@ -1195,7 +1188,7 @@ HIDDEN SEXP do_attach(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     GCStackRoot<Environment> env_to_attach;
 
     int pos = Rf_asInteger(pos_);
-    if (pos == NA_INTEGER)
+    if (pos == R_NaInt)
 	Rf_error(_("'pos' must be an integer"));
 
     if (!Rf_isValidStringF(name_))
@@ -1360,8 +1353,7 @@ static int BuiltinSize(int all, int intern)
     return count;
 }
 
-static void
-BuiltinNames(int all, int intern, SEXP names, int *indx)
+static void BuiltinNames(int all, int intern, SEXP names, int *indx)
 {
     StringVector* sv = SEXP_downcast<StringVector*>(names);
     Symbol::const_iterator end = Symbol::end();
@@ -1378,10 +1370,10 @@ HIDDEN SEXP do_ls(/*const*/ Expression* call, const BuiltInFunction* op, RObject
     RObject* env = envir_;
 
     int all = Rf_asLogical(all_names_);
-    if (all == NA_LOGICAL) all = 0;
+    if (all == R_NaLog) all = 0;
 
     int sort_nms = Rf_asLogical(sorted_); /* sorted = TRUE/FALSE */
-    if (sort_nms == NA_LOGICAL) sort_nms = 0;
+    if (sort_nms == R_NaLog) sort_nms = 0;
 
     return R_lsInternal3(env, Rboolean(all), Rboolean(sort_nms));
 }
@@ -1419,10 +1411,10 @@ HIDDEN SEXP do_env2list(/*const*/ Expression* call, const BuiltInFunction* op, R
 	Rf_error(_("argument must be an environment"));
 
     int all = Rf_asLogical(all_names_); /* all.names = TRUE/FALSE */
-    if (all == NA_LOGICAL) all = 0;
+    if (all == R_NaLog) all = 0;
 
     int sort_nms = Rf_asLogical(sorted_); /* sorted = TRUE/FALSE */
-    if (sort_nms == NA_LOGICAL) sort_nms = 0;
+    if (sort_nms == R_NaLog) sort_nms = 0;
 
     GCStackRoot<Frame> frame(env->frame());
     std::vector<const Symbol*> syms = frame->symbols(all, sort_nms);
@@ -1462,11 +1454,11 @@ HIDDEN SEXP do_eapply(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* 'all.names' : */
     all = Rf_asLogical(Rf_eval(CADDR(args), rho));
-    if (all == NA_LOGICAL) all = 0;
+    if (all == R_NaLog) all = 0;
 
     /* 'USE.NAMES' : */
     useNms = Rf_asLogical(Rf_eval(CADDDR(args), rho));
-    if (useNms == NA_LOGICAL) useNms = 0;
+    if (useNms == R_NaLog) useNms = 0;
 
     GCStackRoot<> framelist(FRAME(env));
 
@@ -1533,7 +1525,7 @@ HIDDEN SEXP do_builtins(/*const*/ Expression* call, const BuiltInFunction* op, R
     SEXP ans;
     int intern, nelts;
     intern = Rf_asLogical(internal_);
-    if (intern == NA_INTEGER) intern = 0;
+    if (intern == R_NaInt) intern = 0;
     nelts = BuiltinSize(1, intern);
     ans = Rf_allocVector(STRSXP, nelts);
     nelts = 0;
@@ -1562,7 +1554,7 @@ static SEXP pos2env(int pos, SEXP call)
     SEXP env;
     ClosureContext *cptr;
 
-    if (pos == NA_INTEGER || pos < -1 || pos == 0) {
+    if (pos == R_NaInt || pos < -1 || pos == 0) {
 	Rf_errorcall(call, _("invalid '%s' argument"), "pos");
 	env = call;/* just for -Wall */
     }
@@ -1628,8 +1620,7 @@ static SEXP matchEnvir(SEXP call, const char *what)
 }
 
 /* This is primitive */
-HIDDEN SEXP
-do_as_environment(/*const*/ Expression* call, const BuiltInFunction* op, RObject* arg)
+HIDDEN SEXP do_as_environment(/*const*/ Expression* call, const BuiltInFunction* op, RObject* arg)
 {
     if(Rf_isEnvironment(arg))
 	return arg;
@@ -1949,7 +1940,7 @@ SEXP R_FindNamespace(SEXP info)
     return val;
 }
 
-Environment*  Environment::findNamespace(const StringVector* spec)
+Environment* Environment::findNamespace(const StringVector* spec)
 {
     RObject* ans = R_FindNamespace(const_cast<StringVector*>(spec));
     return SEXP_downcast<Environment*>(ans);

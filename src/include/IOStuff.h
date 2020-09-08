@@ -43,10 +43,6 @@
 
 #define IOBSIZE 4096
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct BufferListItem {
 	unsigned char			buf[IOBSIZE];
 	struct BufferListItem	*next;
@@ -64,7 +60,7 @@ typedef struct IoBuffer {
 
 
 typedef struct TextBuffer {
-	void    *vmax;			        /* Memory stack top */
+	void	*vmax;				/* Memory stack top */
 	unsigned char	*buf;			/* Line buffer */
 	unsigned char	*bufp;			/* Line buffer location */
 	SEXP	text;				/* String Vector */
@@ -78,6 +74,10 @@ extern
 HIDDEN
 #endif
 IoBuffer R_ConsoleIob;	    			/* Console IO Buffer */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*- some of these really could be void */
 int R_IoBufferInit(IoBuffer*);
@@ -94,7 +94,7 @@ int R_TextBufferFree(TextBuffer*);
 int R_TextBufferGetc(TextBuffer*);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
-#endif /* not R_IOSTUFF_H */
+#endif /* R_IOSTUFF_H */

@@ -35,9 +35,10 @@
 #include <Defn.h>
 #include <R_ext/GraphicsEngine.h>
 
+/* same as src/library/grDevices/src/colors.cpp */
 typedef unsigned int (*F1)(SEXP x, int i, unsigned int bg);
-typedef const char * (*F2)(unsigned int col);
-typedef unsigned int (*F3)(const char *s);
+typedef const char* (*F2)(unsigned int col);
+typedef unsigned int (*F3)(const char* s);
 typedef void (*F4)(Rboolean save);
 
 static F1 ptr_RGBpar3;
@@ -85,8 +86,7 @@ unsigned int R_GE_str2col(const char *s)
 }
 
 /* used in engine.cpp */
-HIDDEN
-void savePalette(Rboolean save)
+HIDDEN void savePalette(Rboolean save)
 {
     if (!ptr_savePalette) Rf_error("package grDevices must be loaded");
     (ptr_savePalette)(save);

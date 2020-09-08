@@ -123,7 +123,7 @@ struct NodeInfo {
 
 #ifndef INT_32_BITS
 /* The way XDR is used pretty much assumes that int is 32 bits and
-   maybe even 2's complement representation--without that, NA_INTEGER
+   maybe even 2's complement representation--without that, R_NaInt
    is not likely to be preserved properly.  Since 32 bit ints (and 2's
    complement) are pretty much universal, we can worry about that when
    the need arises.  To be safe, we signal a compiler error if int is
@@ -213,7 +213,7 @@ static int AsciiInInteger(FILE *fp, SaveLoadData *d)
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(d->smbuf, "NA"))
-	return NA_INTEGER;
+	return R_NaInt;
     else {
 	res = sscanf(d->smbuf, "%d", &x);
 	if(res != 1) Rf_error(_("read error"));
@@ -227,7 +227,7 @@ static double AsciiInReal(FILE *fp, SaveLoadData *d)
     int res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(d->smbuf, "NA"))
-	x = NA_REAL;
+	x = R_NaReal;
     else if (streql(d->smbuf, "Inf"))
 	x = R_PosInf;
     else if (streql(d->smbuf, "-Inf"))
@@ -245,7 +245,7 @@ static Rcomplex AsciiInComplex(FILE *fp, SaveLoadData *d)
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(d->smbuf, "NA"))
-	x.r = NA_REAL;
+	x.r = R_NaReal;
     else if (streql(d->smbuf, "Inf"))
 	x.r = R_PosInf;
     else if (streql(d->smbuf, "-Inf"))
@@ -258,7 +258,7 @@ static Rcomplex AsciiInComplex(FILE *fp, SaveLoadData *d)
     res = fscanf(fp, SMBUF_SIZED_STRING, d->smbuf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(d->smbuf, "NA"))
-	x.i = NA_REAL;
+	x.i = R_NaReal;
     else if (streql(d->smbuf, "Inf"))
 	x.i = R_PosInf;
     else if (streql(d->smbuf, "-Inf"))
@@ -708,7 +708,7 @@ static SEXP DataLoad(FILE *fp, int startup, InputRoutines *m,
 	j = m->InInteger(fp, d);
 	node.OldOffset[j] = m->InInteger(fp, d);
 	R_AllocStringBuffer(MAXELTSIZE - 1, &(d->buffer));
-	SET_VECTOR_ELT(node.NewAddress, j, Rf_install(m->InString(fp, d)));
+	SET_VECTOR_ELT(node.NewAddress, j, rho::Symbol::obtain(m->InString(fp, d)));
     }
 
     /* build the full forwarding table */
@@ -1353,7 +1353,7 @@ static SEXP NewDataLoad (FILE *fp, InputRoutines *m, SaveLoadData *d)
 
 	/* Read back and install symbols */
 	for (count = 0; count < sym_count; ++count) {
-	    SET_VECTOR_ELT(sym_table, count, Rf_install(m->InString(fp, d)));
+	    SET_VECTOR_ELT(sym_table, count, rho::Symbol::obtain(m->InString(fp, d)));
 	}
 	/* Allocate the environments */
 	for (count = 0; count < env_count; ++count) {
@@ -1404,7 +1404,7 @@ static void OutNewlineAscii(FILE *fp, SaveLoadData *unused)
 
 static void OutIntegerAscii(FILE *fp, int x, SaveLoadData *unused)
 {
-    if (x == NA_INTEGER) fprintf(fp, "NA");
+    if (x == R_NaInt) fprintf(fp, "NA");
     else fprintf(fp, "%d", x);
 }
 
@@ -1415,7 +1415,7 @@ static int InIntegerAscii(FILE *fp, SaveLoadData *unused)
     res = fscanf(fp, "%127s", buf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(buf, "NA"))
-	return NA_INTEGER;
+	return R_NaInt;
     else {
 	res = sscanf(buf, "%d", &x);
 	if(res != 1) Rf_error(_("read error"));
@@ -1515,8 +1515,8 @@ static char *InStringAscii(FILE *fp, SaveLoadData *unused)
 
 static void OutDoubleAscii(FILE *fp, double x, SaveLoadData *unused)
 {
-    if (!R_FINITE(x)) {
-	if (ISNAN(x)) fprintf(fp, "NA");
+    if (!std::isfinite(x)) {
+	if (std::isnan(x)) fprintf(fp, "NA");
 	else if (x < 0) fprintf(fp, "-Inf");
 	else fprintf(fp, "Inf");
     }
@@ -1532,7 +1532,7 @@ static double InDoubleAscii(FILE *fp, SaveLoadData *unused)
     res = fscanf(fp, "%127s", buf);
     if(res != 1) Rf_error(_("read error"));
     if (streql(buf, "NA"))
-	x = NA_REAL;
+	x = R_NaReal;
     else if (streql(buf, "Inf"))
 	x = R_PosInf;
     else if (streql(buf, "-Inf"))
@@ -1546,7 +1546,7 @@ static double InDoubleAscii(FILE *fp, SaveLoadData *unused)
 
 static void OutComplexAscii(FILE *fp, Rcomplex x, SaveLoadData *unused)
 {
-    if (ISNAN(x.r) || ISNAN(x.i))
+    if (std::isnan(x.r) || std::isnan(x.i))
 	fprintf(fp, "NA NA");
     else {
 	OutDoubleAscii(fp, x.r, unused);
@@ -2008,13 +2008,13 @@ HIDDEN SEXP do_save(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
-    if (version == NA_INTEGER || version <= 0)
+    if (version == R_NaInt || version <= 0)
 	Rf_error(_("invalid '%s' argument"), "version");
     source = envir_;
     if (source != nullptr && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "environment");
     ep = Rf_asLogical(eval_promises_);
-    if (ep == NA_LOGICAL)
+    if (ep == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "eval.promises");
 
     fp = RC_fopen(STRING_ELT(file_, 0), "wb", TRUE);
@@ -2283,7 +2283,7 @@ HIDDEN SEXP do_saveToConn(/*const*/ Expression* call, const BuiltInFunction* op,
 	version = defaultSaveVersion();
     else
 	version = Rf_asInteger(version_);
-    if (version == NA_INTEGER || version <= 0)
+    if (version == R_NaInt || version <= 0)
 	Rf_error(_("invalid '%s' argument"), "version");
     if (version < 2)
 	Rf_error(_("cannot save to connections in version %d format"), version);
@@ -2291,7 +2291,7 @@ HIDDEN SEXP do_saveToConn(/*const*/ Expression* call, const BuiltInFunction* op,
     if (source != nullptr && TYPEOF(source) != ENVSXP)
 	Rf_error(_("invalid '%s' argument"), "environment");
     ep = Rf_asLogical(eval_promises_);
-    if (ep == NA_LOGICAL)
+    if (ep == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "eval.promises");
 
     wasopen = con->isopen;
@@ -2309,7 +2309,7 @@ HIDDEN SEXP do_saveToConn(/*const*/ Expression* call, const BuiltInFunction* op,
     strcpy(magic, "RD??\n");
 	if (ascii) {
 	    magic[2] = 'A';
-	    type = (ascii == NA_LOGICAL) ?
+	    type = (ascii == R_NaLog) ?
 		R_pstream_asciihex_format : R_pstream_ascii_format;
 	}
     else {

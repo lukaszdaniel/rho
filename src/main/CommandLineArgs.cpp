@@ -60,8 +60,7 @@ static int    NumCommandLineArgs = 0;
 static char **CommandLineArgs = nullptr;
 
 
-void
-R_set_command_line_arguments(int argc, char **argv)
+void R_set_command_line_arguments(int argc, char **argv)
 {
     int i;
 
@@ -77,8 +76,7 @@ R_set_command_line_arguments(int argc, char **argv)
   The .Internal which returns the command line arguments that are stored
   in global variables.
  */
-HIDDEN SEXP
-do_commandArgs(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN SEXP do_commandArgs(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     int i;
     SEXP vals;
@@ -95,8 +93,7 @@ do_commandArgs(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 extern Rboolean R_LoadRconsole;
 #endif
 
-void
-R_common_command_line(int *pac, char **argv, Rstart Rp)
+void R_common_command_line(int *pac, char **argv, Rstart Rp)
 {
     int ac = *pac, newac = 1;	/* argv[0] is process name */
     char *p, **av = argv, msg[1024];

@@ -23,7 +23,6 @@
 #include <config.h>
 #endif
 
-#define NO_NLS
 #include <Defn.h>
 #include <float.h>		/* for DBL_MAX */
 #include <R_ext/Applic.h>	/* for optif9, fdhess */
@@ -33,7 +32,6 @@
 #include "stats.h" // R_zeroin2
 
 #include "localization.h"
-
 
 
 /* Formerly in src/appl/fmim.c */
@@ -116,7 +114,7 @@ double Brent_fmin(double ax, double bx, double (*f)(double, void *),
 
 /*  main loop starts here ----------------------------------- */
 
-    for(;;) {
+    while (true) {
 	xm = (a + b) * .5;
 	tol1 = eps * fabs(x) + tol3;
 	t2 = tol1 * 2.;
@@ -273,7 +271,7 @@ SEXP do_fmin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("invalid '%s' value"), "tol");
 
     info.R_env = rho;
-    PROTECT(info.R_fcall = Rf_lang2(v, R_NilValue));
+    PROTECT(info.R_fcall = Rf_lang2(v, nullptr));
     PROTECT(res = Rf_allocVector(REALSXP, 1));
     REAL(res)[0] = Brent_fmin(xmin, xmax,
 			      (double (*)(double, void*)) fcn1, &info, tol);
@@ -373,7 +371,7 @@ SEXP zeroin2(SEXP call, SEXP op, SEXP args, SEXP rho)
     if (iter <= 0) Rf_error(_("'maxiter' must be positive"));
 
     info.R_env = rho;
-    PROTECT(info.R_fcall = Rf_lang2(v, R_NilValue)); /* the info used in fcn2() */
+    PROTECT(info.R_fcall = Rf_lang2(v, nullptr)); /* the info used in fcn2() */
     PROTECT(res = Rf_allocVector(REALSXP, 3));
     REAL(res)[0] =
 	R_zeroin2(xmin, xmax, f_ax, f_bx, (double (*)(double, void*)) fcn2,
@@ -713,7 +711,7 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
     v = CAR(args);
     if (!Rf_isFunction(v))
 	Rf_error(_("attempt to minimize non-function"));
-    PROTECT(state->R_fcall = Rf_lang2(v, R_NilValue));
+    PROTECT(state->R_fcall = Rf_lang2(v, nullptr));
     args = CDR(args);
 
     /* `p' : inital parameter value */
@@ -780,13 +778,13 @@ SEXP nlm(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(value = Rf_eval(state->R_fcall, state->R_env));
 
     v = Rf_getAttrib(value, R_gradientSymbol);
-    if (v != R_NilValue) {
+    if (v != nullptr) {
 	if (LENGTH(v) == n && (Rf_isReal(v) || Rf_isInteger(v))) {
 	    iagflg = 1;
 	    state->have_gradient = 1;
 	    v = Rf_getAttrib(value, R_hessianSymbol);
 
-	    if (v != R_NilValue) {
+	    if (v != nullptr) {
 		if (LENGTH(v) == (n * n) && (Rf_isReal(v) || Rf_isInteger(v))) {
 		    iahflg = 1;
 		    state->have_hessian = 1;

@@ -124,7 +124,7 @@ SEXP setup_starma(SEXP na, SEXP x, SEXP pn, SEXP xreg, SEXP pm,
     for(i = 0; i < n; i++) G->w[i] = G->wkeep[i] = rx[i];
     for(i = 0; i < n*m; i++) G->reg[i] = rxreg[i];
     Starma_tag = Rf_install("STARMA_TAG");
-    res = R_MakeExternalPtr(G, Starma_tag, R_NilValue);
+    res = R_MakeExternalPtr(G, Starma_tag, nullptr);
     return res;
 }
 
@@ -136,7 +136,7 @@ SEXP free_starma(SEXP pG)
     Free(G->xnext); Free(G->xrow); Free(G->rbar);
     Free(G->w); Free(G->wkeep); Free(G->resid); Free(G->phi); Free(G->theta);
     Free(G->reg); Free(G);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP Starma_method(SEXP pG, SEXP method)
@@ -144,7 +144,7 @@ SEXP Starma_method(SEXP pG, SEXP method)
     GET_STARMA;
 
     G->method = Rf_asInteger(method);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP Dotrans(SEXP pG, SEXP x)
@@ -161,7 +161,7 @@ SEXP set_trans(SEXP pG, SEXP ptrans)
     GET_STARMA;
 
     G->trans = Rf_asInteger(ptrans);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP arma0fa(SEXP pG, SEXP inparams)

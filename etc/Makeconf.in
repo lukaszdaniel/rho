@@ -72,6 +72,7 @@ JAVA_CPPFLAGS = @JAVA_CPPFLAGS0@
 JAVA_LIBS = @JAVA_LIBS0@
 JAVA_LD_LIBRARY_PATH = @JAVA_LD_LIBRARY_PATH@
 LAPACK_LIBS = @LAPACK_LIBS@
+LDFLAGS = @LDFLAGS@
 ## we only need this is if it is external, as otherwise link to R
 LIBINTL= @LIBINTL@
 LIBM = @LIBM@
@@ -82,7 +83,6 @@ LIBS = @LIBS@
 ## needed by R CMD config
 LIBnn = @LIBnn@
 LIBTOOL = $(SHELL) "$(R_HOME)/bin/libtool"
-LDFLAGS = @LDFLAGS@
 LTO = @LTOALL@
 ## needed to build applications linking to static libR
 MAIN_LD = @MAIN_LD@

@@ -233,7 +233,7 @@ SEXP L_setGPar(SEXP gpars)
      */
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_GPAR, gpars);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getGPar(void) 
@@ -262,7 +262,7 @@ SEXP L_setGPsaved(SEXP gpars)
      */
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_GPSAVED, gpars);
-    return R_NilValue;
+    return nullptr;
 }
 
 void initGPar(pGEDevDesc dd)

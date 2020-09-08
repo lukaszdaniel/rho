@@ -201,14 +201,14 @@ HIDDEN R_xlen_t Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos,
     case INTSXP:
 	{
 	    int i = INTEGER_ELT(s, pos);
-	    if (i != NA_INTEGER)
+	    if (i != R_NaInt)
 		indx = integerOneIndex(i, len, call);
 	    break;
 	}
     case REALSXP:
     {
 	double dblind = REAL_ELT(s, pos);
-	if(!ISNAN(dblind)) {
+	if(!std::isnan(dblind)) {
 	    /* see comment above integerOneIndex */
 	    if (dblind > 0) indx = R_xlen_t(dblind - 1);
 	    else if (dblind == 0 || len < 2) {
@@ -224,7 +224,7 @@ HIDDEN R_xlen_t Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos,
     case STRSXP:
 	{
 	    /* NA matches nothing */
-	    if (STRING_ELT(s, pos) == NA_STRING)
+	    if (STRING_ELT(s, pos) == R_NaString)
 		break;
 	    /* "" matches nothing: see names.Rd */
 	    if (!R_CHAR(STRING_ELT(s, pos))[0])
@@ -234,7 +234,7 @@ HIDDEN R_xlen_t Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos,
 	    vmax = vmaxget();
 	    const char *ss = Rf_translateChar(STRING_ELT(s, pos));
 	    for (R_xlen_t i = 0; i < Rf_xlength(names); i++)
-		if (STRING_ELT(names, i) != NA_STRING) {
+		if (STRING_ELT(names, i) != R_NaString) {
 		    if (streql(Rf_translateChar(STRING_ELT(names, i)), ss)) {
 			indx = i;
 			break;
@@ -244,7 +244,7 @@ HIDDEN R_xlen_t Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos,
 	    if (pok && indx < 0) {
 		size_t len = strlen(ss);
 		for(R_xlen_t i = 0; i < Rf_xlength(names); i++) {
-		    if (STRING_ELT(names, i) != NA_STRING) {
+		    if (STRING_ELT(names, i) != R_NaString) {
 			const char* cur_name = Rf_translateChar(STRING_ELT(names, i));
 			if (streqln(cur_name, ss, len)) {
 			    if (indx == -1) {/* first one */
@@ -277,7 +277,7 @@ HIDDEN R_xlen_t Rf_get1index(SEXP s, SEXP names, R_xlen_t len, int pok, int pos,
     case SYMSXP:
 	vmax = vmaxget();
 	for (R_xlen_t i = 0; i < Rf_xlength(names); i++)
-	    if (STRING_ELT(names, i) != NA_STRING &&
+	    if (STRING_ELT(names, i) != R_NaString &&
 		streql(Rf_translateChar(STRING_ELT(names, i)),
 		       R_CHAR(PRINTNAME(s)))) {
 		indx = i;
@@ -390,7 +390,7 @@ HIDDEN SEXP Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 		const double *ps = REAL_RO(s);
 		for (int j = 0; j < ndim; j++) {
 		    double k = ps[i + j * NR];
-		    if(ISNAN(k)) {rv[i] = NA_REAL; break;}
+		    if(std::isnan(k)) {rv[i] = R_NaReal; break;}
 		    if(k < 0) {
 			ECALL(call, _("negative values are not allowed in a matrix subscript"));
 		    }
@@ -409,7 +409,7 @@ HIDDEN SEXP Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 		R_xlen_t tdim = 1;
 		for (int j = 0; j < ndim; j++) {
 		    int k = ps[i + j * NR];
-		    if(k == NA_INTEGER) {rv[i] = NA_REAL; break;}
+		    if(k == R_NaInt) {rv[i] = R_NaReal; break;}
 		    if(k < 0) {
 			ECALL(call, _("negative values are not allowed in a matrix subscript"));
 		    }
@@ -434,7 +434,7 @@ HIDDEN SEXP Rf_mat2indsub(SEXP dims, SEXP s, SEXP call)
 	    int tdim = 1;
 	    for (int j = 0; j < ndim; j++) {
 		int k = ps[i + j * NR];
-		if(k == NA_INTEGER) {iv[i] = NA_INTEGER; break;}
+		if(k == R_NaInt) {iv[i] = R_NaInt; break;}
 		if(k < 0) {
 		    ECALL(call, _("negative values are not allowed in a matrix subscript"));
 		}
@@ -478,7 +478,7 @@ HIDDEN SEXP Rf_strmat2intmat(SEXP s, SEXP dnamelist, SEXP call)
 	    v = INTEGER_ELT(sicol, j);
 	    idx = j + (i * NR);
 	    s_elt = STRING_ELT(s, idx);
-	    if (s_elt == NA_STRING) v = NA_INTEGER;
+	    if (s_elt == R_NaString) v = R_NaInt;
 	    if (!R_CHAR(s_elt)[0]) v = 0; /* disallow "" match */
 	    if (v == 0) Rf_errorcall(call, _("subscript out of bounds"));
 	    psi[idx] = v;
@@ -510,8 +510,7 @@ static SEXP nullSubscript(R_xlen_t n)
 }
 
 
-static SEXP
-logicalSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
+static SEXP logicalSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 {
     bool canstretch = (*stretch != 0);
     *stretch = 0;
@@ -537,8 +536,7 @@ static SEXP integerSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch
     return Rf_coerceVector(pr.first, INTSXP);
 }
 
-static SEXP
-realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
+static SEXP realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 {
     R_xlen_t i;
     int canstretch;
@@ -551,7 +549,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
     const double *ps = REAL_RO(s);
     for (i = 0; i < ns; i++) {
 	ii = ps[i];
-	if (R_FINITE(ii)) {
+	if (std::isfinite(ii)) {
 	    if (ii < min) min = ii;
 	    if (ii > max) max = ii;
 	} else isna = TRUE;
@@ -578,7 +576,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 	    for (i = 0; i < nx; i++) pindx[i] = 1;
 	    for (i = 0; i < ns; i++) {
 		dx = ps[i];
-		if (R_FINITE(dx) && dx != 0  && -dx <= nx) {
+		if (std::isfinite(dx) && dx != 0  && -dx <= nx) {
 		    ix = R_xlen_t(-dx - 1);
 		    pindx[ix] = 0;
 		}
@@ -599,13 +597,13 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 	for (i = 0; i < ns; i++) {
 	    double ds = ps[i];
 #ifdef OLDCODE_LONG_VECTOR
-	    if (!R_FINITE(ds)) {
+	    if (!std::isfinite(ds)) {
 		if (ds > INT_MAX) int_ok = FALSE;
 		cnt++;
 	    } else if (R_xlen_t(ds) != 0) cnt++;
 #else
-	    if (R_FINITE(ds) && ds > INT_MAX) int_ok = FALSE;
-	    if (!R_FINITE(ds) || (R_xlen_t) ds != 0) cnt++;
+	    if (std::isfinite(ds) && ds > INT_MAX) int_ok = FALSE;
+	    if (!std::isfinite(ds) || (R_xlen_t) ds != 0) cnt++;
 #endif
 	}
 	if (int_ok) {
@@ -614,7 +612,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 	    for (i = 0, cnt = 0; i < ns; i++) {
 		double ds = ps[i];
 		int ia;
-		if (!R_FINITE(ds)) ia = NA_INTEGER;
+		if (!std::isfinite(ds)) ia = R_NaInt;
 		else ia = int(ds);
 		if (ia != 0) pindx[cnt++] = ia;
 	    }
@@ -623,7 +621,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
 	    double *pindx = REAL(indx);
 	    for (i = 0, cnt = 0; i < ns; i++) {
 		double ds = ps[i];
-		if (!R_FINITE(ds) || (R_xlen_t) ds != 0) pindx[cnt++] = ds;
+		if (!std::isfinite(ds) || (R_xlen_t) ds != 0) pindx[cnt++] = ds;
 	    }
 	}
 	return indx;
@@ -640,8 +638,7 @@ realSubscript(SEXP s, R_xlen_t ns, R_xlen_t nx, R_xlen_t *stretch, SEXP call)
  * setting the element of the newnames vector to NULL.
 */
 
-static SEXP
-stringSubscript(SEXP sarg, R_xlen_t ns, R_xlen_t nx, SEXP namesarg,
+static SEXP stringSubscript(SEXP sarg, R_xlen_t ns, R_xlen_t nx, SEXP namesarg,
 		R_xlen_t *stretch, SEXP call)
 {
     bool canstretch = (*stretch != 0);
@@ -665,8 +662,7 @@ stringSubscript(SEXP sarg, R_xlen_t ns, R_xlen_t nx, SEXP namesarg,
     x is the array to be subscripted.
 */
 
-HIDDEN SEXP
-int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
+HIDDEN SEXP int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
 {
     R_xlen_t stretch = 0;
     int ns = Rf_length(s);
@@ -707,8 +703,7 @@ int_arraySubscript(int dim, SEXP s, SEXP dims, SEXP x, SEXP call)
 typedef SEXP AttrGetter(SEXP x, SEXP data);
 typedef SEXP (*StringEltGetter)(SEXP x, int i);
 
-SEXP
-Rf_arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
+SEXP Rf_arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
 	       StringEltGetter strg, SEXP x)
 {
     return int_arraySubscript(dim, s, dims, x, nullptr);
@@ -722,8 +717,7 @@ Rf_arraySubscript(int dim, SEXP s, SEXP dims, AttrGetter dng,
    otherwise, stretch returns the new required length for x
 */
 
-HIDDEN SEXP
-Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
+HIDDEN SEXP Rf_makeSubscript(SEXP x, SEXP s, R_xlen_t *stretch, SEXP call)
 {
     if (! (Rf_isVector(x) || Rf_isList(x) || Rf_isLanguage(x))) {
 	ECALL(call, _("subscripting on non-vector"));

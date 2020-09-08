@@ -34,7 +34,6 @@ enum R_SM_ENDRULE {
 
 #include "localization.h"
 
-
 static double med3(double u, double v, double w)
 {
     /* Median(u,v,w): */

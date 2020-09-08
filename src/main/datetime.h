@@ -64,5 +64,5 @@ extern size_t
 R_strftime(char * const s, const size_t maxsize, const char *const format,
 	   const stm *const t);
 #ifdef __cplusplus
-}  // extern "C"
+} //extern "C"
 #endif

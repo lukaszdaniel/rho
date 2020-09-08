@@ -10,7 +10,7 @@
     R_xlen_t i, i1;
     MOD_ITERATE1(nobs, nfac, i, i1, {
 	int j = INTEGER(f)[i1];
-	if (j != NA_INTEGER) {
+	if (j != R_NaInt) {
 	    /* protect against malformed factors */
 	    if (j > nlevs || j < 1) Rf_error(_("factor has bad level"));
 	    _L_INTEG_(counts)[j - 1]++;
@@ -32,7 +32,7 @@
     for (int i = 0; i < nlevs; i++) _L_INTEG_(counts)[i] = 0;
     MOD_ITERATE1(nobs, nfac, i, i1, {
 	int j = INTEGER(f)[i1];
-	if (j != NA_INTEGER) {
+	if (j != R_NaInt) {
 	    _L_int_ k = (_L_int_)_L_INTEG_(counts)[j - 1];
 	    switch (TYPEOF(x)) {
 	    case LGLSXP:

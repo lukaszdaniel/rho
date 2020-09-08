@@ -746,5 +746,5 @@ SEXP PicTeX(SEXP args)
 	GEaddDevice2f(dd, "pictex", file);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }

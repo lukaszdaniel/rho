@@ -102,7 +102,7 @@ typedef struct {
 R_InternetRoutines *R_setInternetRoutines(R_InternetRoutines *routines);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
-#endif /* ifndef R_INTERNET_MODULE_H */
+#endif /* R_INTERNET_MODULE_H */

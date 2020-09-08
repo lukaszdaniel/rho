@@ -45,7 +45,7 @@ static SEXP makeRTclObject(Tcl_Obj *tclobj)
 {
     SEXP obj;
 
-    PROTECT(obj = R_MakeExternalPtr(tclobj, R_NilValue, R_NilValue));
+    PROTECT(obj = R_MakeExternalPtr(tclobj, nullptr, nullptr));
     Tcl_IncrRefCount(tclobj);
     R_RegisterCFinalizer(obj, RTcl_dec_refcount);
     UNPROTECT(1);
@@ -59,13 +59,13 @@ static int R_eval(ClientData clientData,
 {
     ParseStatus status;
     int i;
-    SEXP text, expr, ans=R_NilValue /* -Wall */;
+    SEXP text, expr, ans=nullptr /* -Wall */;
 
     text = PROTECT(Rf_allocVector(STRSXP, argc - 1));
     for (i = 1 ; i < argc ; i++)
 	SET_STRING_ELT(text, i-1, Rf_mkChar(argv[i]));
 
-    expr = PROTECT(R_ParseVector(text, -1, &status, R_NilValue));
+    expr = PROTECT(R_ParseVector(text, -1, &status, nullptr));
     if (status != PARSE_OK) {
 	UNPROTECT(2);
 	Tcl_SetResult(interp, _("parse error in R expression"), TCL_STATIC);
@@ -114,7 +114,7 @@ static int R_call(ClientData clientData,
 
     SEXP s_try = Rf_install("try");
 
-    alist = R_NilValue;
+    alist = nullptr;
     for (i = argc - 1 ; i > 1 ; i--){
 	PROTECT(alist);
 	alist = CONS(Rf_mkString(argv[i]), alist);
@@ -124,7 +124,7 @@ static int R_call(ClientData clientData,
     sscanf(argv[1], "%p", &fun);
 
     expr = LCONS( (SEXP)fun, alist);
-    PROTECT(expr = LCONS(s_try, LCONS(expr, R_NilValue)));
+    PROTECT(expr = LCONS(s_try, LCONS(expr, nullptr)));
 
     R_Busy(1);
     PROTECT(ans = Rf_eval(expr, R_GlobalEnv));
@@ -150,7 +150,7 @@ static int R_call_lang(ClientData clientData,
     sscanf(argv[2], "%p", &env);
 
     SEXP s_try = Rf_install("try");
-    expr = LCONS(s_try, CONS(expr, R_NilValue));
+    expr = LCONS(s_try, CONS(expr, nullptr));
     PROTECT((SEXP)expr);
 
     R_Busy(1);
@@ -297,7 +297,7 @@ SEXP RTcl_AssignObjToVar(SEXP args)
 		  (Tcl_Obj *) R_ExternalPtrAddr(CADDR(args)),
 		  0);
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -410,7 +410,7 @@ SEXP RTcl_ObjAsDoubleVector(SEXP args)
     /* Then try as list */
     ret = Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem);
     if (ret != TCL_OK) /* didn't work, return NULL */
-	return R_NilValue;
+	return nullptr;
 
     ans = Rf_allocVector(REALSXP, count);
     for (i = 0 ; i < count ; i++){
@@ -473,7 +473,7 @@ SEXP RTcl_ObjAsIntVector(SEXP args)
     /* Then try as list */
     ret = Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem);
     if (ret != TCL_OK) /* didn't work, return NULL */
-	return R_NilValue;
+	return nullptr;
 
     ans = Rf_allocVector(INTSXP, count);
     for (i = 0 ; i < count ; i++){
@@ -526,7 +526,7 @@ SEXP RTcl_ObjAsRawVector(SEXP args)
 
     /* Then try as list */
     if (Tcl_ListObjGetElements(RTcl_interp, obj, &count, &elem)
-	!= TCL_OK) return R_NilValue;
+	!= TCL_OK) return nullptr;
 
     PROTECT(ans = Rf_allocVector(VECSXP, count));
     for (i = 0 ; i < count ; i++) {
@@ -570,7 +570,7 @@ SEXP RTcl_GetArrayElem(SEXP args)
     vmaxset(vmax);
 
     if (tclobj == NULL)
-	return R_NilValue;
+	return nullptr;
     else
 	return makeRTclObject(tclobj);
 }
@@ -591,7 +591,7 @@ SEXP RTcl_SetArrayElem(SEXP args)
     Tcl_SetVar2Ex(RTcl_interp, xstr, istr, value, 0);
 
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP RTcl_RemoveArrayElem(SEXP args)
@@ -608,7 +608,7 @@ SEXP RTcl_RemoveArrayElem(SEXP args)
     Tcl_UnsetVar2(RTcl_interp, xstr, istr, 0);
     vmaxset(vmax);
 
-    return R_NilValue;
+    return nullptr;
 }
 
 static void callback_closure(char * buf, int buflen, SEXP closure)
@@ -620,7 +620,7 @@ static void callback_closure(char * buf, int buflen, SEXP closure)
 
     snprintf(buf, buflen, "R_call %p", (void *) closure);
 
-    while ( formals != R_NilValue )
+    while ( formals != nullptr )
     {
 	if (TAG(formals) ==  R_DotsSymbol) break;
 	snprintf(tmp, 20, " %%%s", R_CHAR(PRINTNAME(TAG(formals))));
@@ -710,7 +710,7 @@ void tcltk_init(int *TkUp)
     }
 #if !defined(Win32) && !defined(HAVE_AQUA)
     else
-	Rf_warningcall(R_NilValue, _("no DISPLAY variable so Tk is not available"));
+	Rf_warningcall(nullptr, _("no DISPLAY variable so Tk is not available"));
 #endif
 
     Tcl_CreateCommand(RTcl_interp,

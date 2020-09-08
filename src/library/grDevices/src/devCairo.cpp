@@ -54,7 +54,7 @@ SEXP devCairo(SEXP args)
 {
     if (Load_Rcairo_Dll() < 0) Rf_warning("failed to load cairo DLL");
     else (R_devCairo)(args);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP cairoVersion(void)

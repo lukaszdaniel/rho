@@ -56,7 +56,7 @@ HIDDEN SEXP R_sysframe(int n, ClosureContext *cptr)
     if (n == 0)
 	return(R_GlobalEnv);
 
-    if (n == NA_INTEGER) Rf_error(_("NA argument is invalid"));
+    if (n == R_NaInt) Rf_error(_("NA argument is invalid"));
 
     if (n > 0)
 	n = Rf_framedepth(cptr) - n;
@@ -252,7 +252,7 @@ HIDDEN SEXP do_sys(/*const*/ Expression* call, const BuiltInFunction* op, int nu
 
     switch (op->variant()) {
     case 1: /* parent */
-	if(n == NA_INTEGER)
+	if(n == R_NaInt)
 	    Rf_error(_("invalid '%s' argument"), "n");
 	i = nframe = Rf_framedepth(cptr);
 	/* This is a pretty awful kludge, but the alternative would be
@@ -261,11 +261,11 @@ HIDDEN SEXP do_sys(/*const*/ Expression* call, const BuiltInFunction* op, int nu
 	    i = R_sysparent(nframe - i + 1, cptr);
 	return Rf_ScalarInteger(i);
     case 2: /* call */
-	if(n == NA_INTEGER)
+	if(n == R_NaInt)
 	    Rf_error(_("invalid '%s' argument"), "which");
 	return R_syscall(n, cptr);
     case 3: /* frame */
-	if(n == NA_INTEGER)
+	if(n == R_NaInt)
 	    Rf_error(_("invalid '%s' argument"), "which");
 	return R_sysframe(n, cptr);
     case 4: /* sys.nframe */
@@ -303,7 +303,7 @@ HIDDEN SEXP do_sys(/*const*/ Expression* call, const BuiltInFunction* op, int nu
 	    INTEGER(rval)[i] = R_sysparent(nframe - i, cptr);
 	return rval;
     case 9: /* sys.function */
-	if(n == NA_INTEGER)
+	if(n == R_NaInt)
 	    Rf_error(_("invalid '%s' value"), "which");
 	return(R_sysfunction(n, cptr));
     default:
@@ -318,7 +318,7 @@ HIDDEN SEXP do_parentframe(/*const*/ Expression* call, const BuiltInFunction* op
 
     int n = Rf_asInteger(n_);
 
-    if(n == NA_INTEGER || n < 1 )
+    if(n == R_NaInt || n < 1 )
 	Rf_error(_("invalid '%s' value"), "n");
 
     cptr = R_GlobalContext();

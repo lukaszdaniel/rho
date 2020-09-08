@@ -512,8 +512,7 @@ static SEXP forcePromise(SEXP e)
     return prom->force();
 }
 
-HIDDEN
-void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
+HIDDEN void Rf_SrcrefPrompt(const char * prefix, SEXP srcref)
 {
     /* If we have a valid srcref, use it */
     if (srcref && srcref != nullptr) {
@@ -562,7 +561,7 @@ static void PrintCall(SEXP call, SEXP rho)
 {
     int old_bl = R_BrowseLines,
         blines = Rf_asInteger(Rf_GetOption1(Rf_install("deparse.max.lines")));
-    if(blines != NA_INTEGER && blines > 0)
+    if(blines != R_NaInt && blines > 0)
 	R_BrowseLines = blines;
     Rf_PrintValueRec(call, rho);
     R_BrowseLines = old_bl;
@@ -780,17 +779,17 @@ static SEXP assignCall(SEXP op, SEXP symbol, SEXP fun,
 /* rho only needed for _R_CHECK_LENGTH_1_CONDITION_=package:name */
 Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 {
-    int cond = NA_LOGICAL;
+    int cond = R_NaLog;
 
     /* handle most common special case directly */
     if (IS_SCALAR(s, LGLSXP)) {
 	cond = SCALAR_LVAL(s);
-	if (cond != NA_LOGICAL)
+	if (cond != R_NaLog)
 	    return Rboolean(cond);
     }
     else if (IS_SCALAR(s, INTSXP)) {
 	int val = SCALAR_IVAL(s);
-	if (val != NA_INTEGER)
+	if (val != R_NaInt)
 	    return Rboolean(val != 0);
     }
 
@@ -840,14 +839,14 @@ Rboolean asLogicalNoNA(SEXP s, SEXP call, SEXP rho)
 	    cond = LOGICAL(s)[0];
 	    break;
 	case INTSXP:
-	    cond = INTEGER(s)[0]; /* relies on NA_INTEGER == NA_LOGICAL */
+	    cond = INTEGER(s)[0]; /* relies on R_NaInt == R_NaLog */
 	    break;
 	default:
 	    cond = Rf_asLogical(s);
 	}
     }
 
-    if (cond == NA_LOGICAL) {
+    if (cond == R_NaLog) {
 	char *msg = len ? (Rf_isLogical(s) ?
 				 _("missing value where TRUE/FALSE needed") :
 				 _("argument is not interpretable as logical")) :
@@ -1686,7 +1685,7 @@ HIDDEN SEXP do_eval(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (Rf_length(env) != 1)
 	    Rf_error(_("numeric 'envir' arg not of length one"));
 	frame = Rf_asInteger(env);
-	if (frame == NA_INTEGER)
+	if (frame == R_NaInt)
 	    Rf_error(_("invalid '%s' argument of type '%s'"),
 		  "envir", Rf_type2char(TYPEOF(env)));
 	PROTECT(env = R_sysframe(frame, R_GlobalContext()));

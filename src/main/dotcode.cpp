@@ -84,8 +84,7 @@ constexpr size_t MaxSymbolBytes = 1024;
 #define MAX_ARGS 65
 
 /* This looks up entry points in DLLs in a platform specific way. */
-static DL_FUNC
-R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
+static DL_FUNC R_FindNativeSymbolFromDLL(char *name, DllReference *dll,
 			  R_RegisteredNativeSymbol *symbol, SEXP env);
 
 static SEXP naokfind(SEXP args, int * len, int *naok, DllReference *dll);
@@ -205,8 +204,7 @@ DL_FUNC R_dotCallFn(SEXP op, SEXP call, int nargs) {
   and look there.
 */
 
-static SEXP
-resolveNativeRoutine(SEXP args, DL_FUNC *fun,
+static SEXP resolveNativeRoutine(SEXP args, DL_FUNC *fun,
 		     R_RegisteredNativeSymbol *symbol, char *buf,
 		     int *nargs, int *naok, SEXP call, SEXP env)
 {
@@ -229,7 +227,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     if(symbol->type == R_C_SYM || symbol->type == R_FORTRAN_SYM) {
 	/* And that also looks for PACKAGE = */
 	args = naokfind(CDR(args), nargs, naok, &dll);
-	if(*naok == NA_LOGICAL)
+	if(*naok == R_NaLog)
 	    Rf_errorcall(call, _("invalid '%s' value"), "naok");
 	if(*nargs > MAX_ARGS)
 	    Rf_errorcall(call, _("too many arguments in foreign function call"));
@@ -331,9 +329,7 @@ resolveNativeRoutine(SEXP args, DL_FUNC *fun,
     return args; /* -Wall */
 }
 
-
-static Rboolean
-checkNativeType(int targetType, int actualType)
+static Rboolean checkNativeType(int targetType, int actualType)
 {
     if(targetType > 0) {
 	if(targetType == INTSXP || targetType == LGLSXP) {
@@ -342,23 +338,20 @@ checkNativeType(int targetType, int actualType)
 	return(Rboolean(targetType == actualType));
     }
 
-    return(TRUE);
+    return TRUE;
 }
 
-
-static Rboolean
-comparePrimitiveTypes(R_NativePrimitiveArgType type, SEXP s)
+static Rboolean comparePrimitiveTypes(R_NativePrimitiveArgType type, SEXP s)
 {
    SEXPTYPE stype = SEXPTYPE(type);
    if(stype == ANYSXP || TYPEOF(s) == stype)
-      return(TRUE);
+      return TRUE;
 
    if(type == SINGLESXP)
       return(Rboolean(Rf_asLogical(Rf_getAttrib(s, Rf_install("Csingle"))) == TRUE));
 
-   return(FALSE);
+   return FALSE;
 }
-
 
 /* Foreign Function Interface.  This code allows a user to call C */
 /* or Fortran code which is either statically or dynamically linked. */
@@ -492,8 +485,6 @@ static SEXP enctrim(SEXP args)
     }
     return args;
 }
-
-
 
 HIDDEN SEXP do_isloaded(SEXP call, SEXP op, SEXP args, SEXP env)
 {
@@ -956,7 +947,7 @@ HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		int *iptr = INTEGER(s);
 		if (!naok)
 		    for (R_xlen_t i = 0 ; i < n ; i++)
-			if(iptr[i] == NA_INTEGER)
+			if(iptr[i] == R_NaInt)
 			    Rf_error(_("NAs in foreign function call (arg %d)"), na + 1);
 		if (copy) {
 		    char *ptr = R_alloc(n * sizeof(int) + 2 * NG, 1);
@@ -981,7 +972,7 @@ HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		double *rptr = REAL(s);
 		if (!naok)
 		    for (R_xlen_t i = 0 ; i < n ; i++)
-			if(!R_FINITE(rptr[i]))
+			if(!std::isfinite(rptr[i]))
 			    Rf_error(_("NA/NaN/Inf in foreign function call (arg %d)"), na + 1);
 		if (Rf_asLogical(Rf_getAttrib(s, CSingSymbol)) == 1) {
 		    float *sptr = static_cast<float*>(RHO_alloc(n, sizeof(float)));
@@ -1013,7 +1004,7 @@ HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		Rcomplex *zptr = COMPLEX(s);
 		if (!naok)
 		    for (R_xlen_t i = 0 ; i < n ; i++)
-			if(!R_FINITE(zptr[i].r) || !R_FINITE(zptr[i].i))
+			if(!std::isfinite(zptr[i].r) || !std::isfinite(zptr[i].i))
 			    Rf_error(_("complex NA/NaN/Inf in foreign function call (arg %d)"), na + 1);
 		if (copy) {
 		    char *ptr = R_alloc(n * sizeof(Rcomplex) + 2 * NG, 1);
@@ -1211,7 +1202,7 @@ HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		int *iptr = (int*) ptr, tmp;
 		for (R_xlen_t i = 0 ; i < n ; i++) {
 		    tmp =  iptr[i];
-		    LOGICAL(s)[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
+		    LOGICAL(s)[i] = (tmp == R_NaInt || tmp == 0) ? tmp : 1;
 		}
 		ptr += n * sizeof(int);
 		for (int i = 0; i < NG;  i++)
@@ -1229,7 +1220,7 @@ HIDDEN SEXP do_dotCode(SEXP call, SEXP op, SEXP args, SEXP env)
 		int *iptr = (int *)p, tmp;
 		for (R_xlen_t i = 0 ; i < n ; i++) {
 		    tmp =  iptr[i];
-		    iptr[i] = (tmp == NA_INTEGER || tmp == 0) ? tmp : 1;
+		    iptr[i] = (tmp == R_NaInt || tmp == 0) ? tmp : 1;
 		}
 	    }
 	    break;
@@ -1487,7 +1478,7 @@ void call_R(char *func, long nargs, void **arguments, char **modes,
 	    Rf_error(_("mode '%s' is not supported in call_R"), modes[i]);
 	}
 	if(names && names[i])
-	    SET_TAG(pcall, Rf_install(names[i]));
+	    SET_TAG(pcall, rho::Symbol::obtain(names[i]));
 	ENSURE_NAMEDMAX(CAR(pcall));
     }
     PROTECT(s = Rf_eval(call, R_GlobalEnv));

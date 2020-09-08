@@ -98,10 +98,12 @@
 # include <sys/time.h>
 #endif
 
+using namespace rho;
+
 extern "C"
 double Rf_currentTime(void)
 {
-    double ans = NA_REAL;
+    double ans = R_NaReal;
 
 #ifdef HAVE_TIMESPEC_GET
     struct timespec tp;
@@ -138,14 +140,14 @@ double Rf_currentTime(void)
        http://www.mail-archive.com/leapsecs@rom.usno.navy.mil/msg00109.html
        https://en.wikipedia.org/wiki/Unix_time
     */
-    if (!ISNAN(ans)) {
+    if (!std::isnan(ans)) {
 	ans -= n_leapseconds;
     }
 #endif
     return ans;
 }
 
-HIDDEN SEXP do_systime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
+HIDDEN rho::RObject* do_systime(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op)
 {
     return Rf_ScalarReal(Rf_currentTime());
 }

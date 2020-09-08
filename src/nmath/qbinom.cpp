@@ -33,15 +33,14 @@
 #include "nmath.h"
 #include "dpq.h"
 
-static double
-do_search(double y, double *z, double p, double n, double pr, double incr)
+static double do_search(double y, double *z, double p, double n, double pr, double incr)
 {
     if(*z >= p) {
 			/* search to the left */
 #ifdef DEBUG_qbinom
 	REprintf("\tnew z=%7g >= p = %7g  --> search to left (y--) ..\n", z,p);
 #endif
-	for(;;) {
+	while (true) {
 	    double newz;
 	    if(y == 0 ||
 	       (newz = pbinom(y - incr, n, pr, /*l._t.*/TRUE, /*log_p*/FALSE)) < p)
@@ -54,7 +53,7 @@ do_search(double y, double *z, double p, double n, double pr, double incr)
 #ifdef DEBUG_qbinom
 	REprintf("\tnew z=%7g < p = %7g  --> search to right (y++) ..\n", z,p);
 #endif
-	for(;;) {
+	while (true) {
 	    y = fmin2(y + incr, n);
 	    if(y == n ||
 	       (*z = pbinom(y, n, pr, /*l._t.*/TRUE, /*log_p*/FALSE)) >= p)

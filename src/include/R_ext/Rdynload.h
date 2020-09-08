@@ -41,7 +41,7 @@
 #include <R_ext/Boolean.h>
 
 /* called with a variable argument set */
-typedef void * (*DL_FUNC)();
+typedef void* (*DL_FUNC)();
 
 typedef unsigned int R_NativePrimitiveArgType;
 
@@ -55,23 +55,21 @@ typedef unsigned int R_NativePrimitiveArgType;
  these definitions.
 */
 typedef struct {
-    const char *name;
-    DL_FUNC     fun;
-    int         numArgs;
-    R_NativePrimitiveArgType *types;
+    const char* name;
+    DL_FUNC fun;
+    int numArgs;
+    R_NativePrimitiveArgType* types;
 } R_CMethodDef;
 
 typedef R_CMethodDef R_FortranMethodDef;
 
-
 typedef struct {
-    const char *name;
-    DL_FUNC     fun;
-    int         numArgs;
+    const char* name;
+    DL_FUNC fun;
+    int numArgs;
 } R_CallMethodDef;
 
 typedef R_CallMethodDef R_ExternalMethodDef;
-
 
 typedef struct _DllInfo DllInfo;
 
@@ -87,22 +85,19 @@ int R_registerRoutines(DllInfo *info, const R_CMethodDef * const croutines,
 		       const R_FortranMethodDef * const fortranRoutines,
 		       const R_ExternalMethodDef * const externalRoutines);
 
-Rboolean R_useDynamicSymbols(DllInfo *info, Rboolean value);
-Rboolean R_forceSymbols(DllInfo *info, Rboolean value);
+Rboolean R_useDynamicSymbols(DllInfo* info, Rboolean value);
+Rboolean R_forceSymbols(DllInfo* info, Rboolean value);
 
-DllInfo *R_getDllInfo(const char *name);
+DllInfo* R_getDllInfo(const char* name);
 
 /* To be used by applications embedding R to register their symbols
    that are not related to any dynamic module */
-DllInfo *R_getEmbeddingDllInfo(void);
+DllInfo* R_getEmbeddingDllInfo(void);
 
 typedef struct Rf_RegisteredNativeSymbol R_RegisteredNativeSymbol;
 typedef enum {R_ANY_SYM=0, R_C_SYM, R_CALL_SYM, R_FORTRAN_SYM, R_EXTERNAL_SYM} NativeSymbolType;
 
-
-DL_FUNC R_FindSymbol(const char *, const char *,
-		       R_RegisteredNativeSymbol *symbol);
-
+DL_FUNC R_FindSymbol(const char*, const char*, R_RegisteredNativeSymbol* symbol);
 
 /* Interface for exporting and importing functions from one package
    for use from C code in a package.  The registration part probably
@@ -114,7 +109,7 @@ void R_RegisterCCallable(const char *package, const char *name, DL_FUNC fptr);
 DL_FUNC R_GetCCallable(const char *package, const char *name);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_EXT_DYNLOAD_H_ */

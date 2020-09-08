@@ -112,12 +112,12 @@ void Dprintf(char *format, ...) {
    marks, hence there is also ppid field in child entries.
 */
 typedef struct child_info {
-    pid_t pid;      /* child's pid */
-    int pfd, sifd;  /* master's ends of pipes */
-    int detached;   /* run with mcfork(estranged=TRUE) or manually removed */
-    int waitedfor;  /* the child has been reaped */
-    pid_t ppid;     /* parent's pid when the child/mark is created */
-    struct child_info *next;
+    pid_t pid; /* child's pid */
+    int pfd, sifd; /* master's ends of pipes */
+    int detached; /* run with mcfork(estranged=TRUE) or manually removed */
+    int waitedfor; /* the child has been reaped */
+    pid_t ppid; /* parent's pid when the child/mark is created */
+    struct child_info* next;
 } child_info_t;
 
 static child_info_t *children; /* in master, linked list of details of children */
@@ -147,7 +147,7 @@ static void wait_for_child_ci(child_info_t *ci) {
     }
 }
 
-static void block_sigchld(sigset_t *oldset)
+static void block_sigchld(sigset_t* oldset)
 {
     sigset_t ss;
     sigemptyset(&ss);
@@ -155,13 +155,13 @@ static void block_sigchld(sigset_t *oldset)
     sigprocmask(SIG_BLOCK, &ss, oldset);
 }
 
-static void restore_sigchld(sigset_t *oldset)
+static void restore_sigchld(sigset_t* oldset)
 {
     sigprocmask(SIG_SETMASK, oldset, NULL);
 }
 
 /* must not be called from a signal handler */
-static void close_fds_child_ci(child_info_t *ci)
+static void close_fds_child_ci(child_info_t* ci)
 {
     /* note the check and close is not atomic */
     if (ci->pfd > 0) { close(ci->pfd); ci->pfd = -1; }
@@ -169,7 +169,7 @@ static void close_fds_child_ci(child_info_t *ci)
 }
 
 /* must only be called on attached child */
-static void kill_and_detach_child_ci(child_info_t *ci, int sig)
+static void kill_and_detach_child_ci(child_info_t* ci, int sig)
 {
     /* need to atomically wait and set detached */
     sigset_t ss;
@@ -191,13 +191,13 @@ static void kill_and_detach_child_ci(child_info_t *ci, int sig)
 }
 
 /* must only be called on attached child */
-static void terminate_and_detach_child_ci(child_info_t *ci)
+static void terminate_and_detach_child_ci(child_info_t* ci)
 {
     kill_and_detach_child_ci(ci, SIGUSR1);
 }
 
 /* must only be called on a detached child */
-static void kill_detached_child_ci(child_info_t *ci, int sig)
+static void kill_detached_child_ci(child_info_t* ci, int sig)
 {
     /* need to atomically check waitedfor and kill */
     sigset_t ss;
@@ -221,7 +221,7 @@ static void kill_detached_child_ci(child_info_t *ci, int sig)
 /* detach and terminate a child */
 static int rm_child(int pid)
 {
-    child_info_t *ci = children;
+    child_info_t* ci = children;
 #ifdef MC_DEBUG
     Dprintf("removing child %d\n", pid);
 #endif
@@ -280,7 +280,7 @@ static void compact_children() {
 /* insert a cleanup mark into children */
 SEXP mc_prepare_cleanup()
 {
-    child_info_t *ci;
+    child_info_t* ci;
 
     compact_children();
     ci = (child_info_t*) malloc(sizeof(child_info_t));
@@ -292,7 +292,7 @@ SEXP mc_prepare_cleanup()
     ci->next = children;
     children = ci;
 
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Terminate and detach all children up to the first cleanup mark. Compact
@@ -400,7 +400,7 @@ SEXP mc_cleanup(SEXP sKill, SEXP sDetach, SEXP sShutdown)
 	    if (now - before > 10) { /* give up after 10 seconds */
 		REprintf(_("Error while shutting down parallel: unable to terminate some child processes\n"));
 		restore_sig_handler();
-		return R_NilValue;
+		return nullptr;
 	    }
 	}
 	restore_sig_handler();
@@ -408,7 +408,7 @@ SEXP mc_cleanup(SEXP sKill, SEXP sDetach, SEXP sShutdown)
 	Dprintf("process %d parallel shutdown ok\n", getpid());
 #endif
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 #ifndef STDIN_FILENO
@@ -595,7 +595,7 @@ SEXP mc_close_stdout(SEXP toNULL)
 	} else close(STDOUT_FILENO);
     } else
 	close(STDOUT_FILENO);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* not used */
@@ -609,7 +609,7 @@ SEXP mc_close_stderr(SEXP toNULL)
 	} else close(STDERR_FILENO);
     } else
 	close(STDERR_FILENO);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* not used */
@@ -626,11 +626,11 @@ SEXP mc_close_fds(SEXP sFDS)
 /* Read from descriptor with restart on signal interrupt. While we register
    SIGCHLD with SA_RESTART, some other package might register a signal
    without it. */
-static ssize_t readrep(int fildes, void *buf, size_t nbyte)
+static ssize_t readrep(int fildes, void* buf, size_t nbyte)
 {
     size_t rbyte = 0;
-    char *ptr = (char *)buf;
-    for(;;) {
+    char* ptr = (char*)buf;
+    while (true) {
 	ssize_t r = read(fildes, ptr + rbyte, nbyte - rbyte);
 	if (r == -1) {
 	    if (errno == EINTR)
@@ -649,11 +649,11 @@ static ssize_t readrep(int fildes, void *buf, size_t nbyte)
 /* Write to descriptor with restart on signal interrupt. While we register
    SIGCHLD with SA_RESTART, some other package might register a signal
    without it. */
-static ssize_t writerep(int fildes, const void *buf, size_t nbyte)
+static ssize_t writerep(int fildes, const void* buf, size_t nbyte)
 {
     size_t wbyte = 0;
     const char *ptr = (const char *)buf;
-    for(;;) {
+    while (true) {
 	ssize_t w = write(fildes, ptr + wbyte, nbyte - wbyte);
 	if (w == -1) {
 	    if (errno == EINTR)
@@ -713,7 +713,7 @@ SEXP mc_send_child_stdin(SEXP sPid, SEXP what)
     if (!is_master) 
 	Rf_error(_("only the master process can send data to a child process"));
     if (TYPEOF(what) != RAWSXP) Rf_error("what must be a raw vector");
-    child_info_t *ci = children;
+    child_info_t* ci = children;
     pid_t ppid = getpid();
     while (ci) {
 	if (!ci->detached && ci->pid == pid && ci->ppid == ppid) break;
@@ -721,8 +721,8 @@ SEXP mc_send_child_stdin(SEXP sPid, SEXP what)
     }
     if (!ci || ci->sifd < 0) Rf_error(_("child %d does not exist"), pid);
     R_xlen_t  len = XLENGTH(what);
-    unsigned char *b = RAW(what);
-    unsigned int fd = ci -> sifd;
+    unsigned char* b = RAW(what);
+    unsigned int fd = ci->sifd;
     for (R_xlen_t i = 0; i < len;) {
 	ssize_t n = writerep(fd, b + i, len - i);
 	if (n < 1) Rf_error(_("write error"));
@@ -732,7 +732,7 @@ SEXP mc_send_child_stdin(SEXP sPid, SEXP what)
 }
 
 /* some systems have FD_COPY */
-void fdcopy(fd_set *dst, fd_set *src, int nfds)
+void fdcopy(fd_set* dst, fd_set* src, int nfds)
 {
     FD_ZERO(dst);
     for(int i = 0; i < nfds; i++)
@@ -796,7 +796,7 @@ SEXP mc_select_children(SEXP sTimeout, SEXP sWhich)
 #endif
 
     if (maxfd == -1)
-	return R_NilValue; /* NULL signifies no children to tend to */
+	return nullptr; /* NULL signifies no children to tend to */
 
     if (timeout == 0) {
 	/* polling */
@@ -811,7 +811,7 @@ SEXP mc_select_children(SEXP sTimeout, SEXP sWhich)
 	fd_set savefs;
 	fdcopy(&savefs, &fs, maxfd + 1);
 
-	for(;;) {
+	while (true) {
 	    R_ProcessEvents();
 	    /* re-set tv as it may get updated by select */
 	    if (R_wait_usec > 0) {
@@ -874,7 +874,7 @@ static SEXP read_child_ci(child_info_t *ci)
 {
     if (ci->detached)
 	/* should not happen */
-	return R_NilValue; /* not visible to R code */
+	return nullptr; /* not visible to R code */
 
     R_xlen_t len;
     int fd = ci->pfd;
@@ -927,7 +927,7 @@ SEXP mc_read_child(SEXP sPid)
 #ifdef MC_DEBUG
     if (!ci) Dprintf("read_child(%d) - pid is not in the list of children\n", pid);
 #endif
-    if (!ci) return R_NilValue; /* if the child doesn't exist anymore, returns NULL */
+    if (!ci) return nullptr; /* if the child doesn't exist anymore, returns NULL */
     return read_child_ci(ci);	
 }
 
@@ -962,7 +962,7 @@ SEXP mc_read_children(SEXP sTimeout)
 #ifdef MC_DEBUG
     Dprintf("read_children: maxfd=%d, timeout=%d:%d\n", maxfd, (int)tv.tv_sec, (int)tv.tv_usec);
 #endif
-    if (maxfd == 0) return R_NilValue; /* NULL signifies no children to tend to */
+    if (maxfd == 0) return nullptr; /* NULL signifies no children to tend to */
     sr = R_SelectEx(maxfd+1, &fs, 0, 0, tvp, NULL);
 #ifdef MC_DEBUG
     Dprintf("sr = %d\n", sr);
@@ -1119,7 +1119,7 @@ SEXP mc_interactive(SEXP sWhat) {
 
 /* req is one-based, cpu_set is zero-based */
 SEXP mc_affinity(SEXP req) {
-    if (req != R_NilValue && TYPEOF(req) != INTSXP && TYPEOF(req) != REALSXP)
+    if (req != nullptr && TYPEOF(req) != INTSXP && TYPEOF(req) != REALSXP)
 	Rf_error(_("invalid CPU affinity specification"));
     if (TYPEOF(req) == REALSXP)
 	req = Rf_coerceVector(req, INTSXP);
@@ -1162,9 +1162,9 @@ SEXP mc_affinity(SEXP req) {
 	cpu_set_t cs;
 	CPU_ZERO(&cs);
 	if (sched_getaffinity(0, sizeof(cs), &cs)) {
-	    if (req == R_NilValue)
+	    if (req == nullptr)
 		Rf_error(_("retrieving CPU affinity set failed"));
-	    return R_NilValue;
+	    return nullptr;
 	} else {
 	    SEXP res = Rf_allocVector(INTSXP, CPU_COUNT(&cs));
 	    int i, *v = INTEGER(res);
@@ -1178,7 +1178,7 @@ SEXP mc_affinity(SEXP req) {
 #else /* ! WORKING_MC_AFFINITY */
 
 SEXP mc_affinity(SEXP req) {
-    return R_NilValue;
+    return nullptr;
 }
 
 #endif /* WORKING_MC_AFFINITY */

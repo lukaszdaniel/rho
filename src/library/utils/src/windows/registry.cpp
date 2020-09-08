@@ -85,7 +85,7 @@ static SEXP mkCharUcs(wchar_t *name)
 
 static SEXP readRegistryKey1(HKEY hkey, const wchar_t *name)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     LONG res;
     DWORD type, size0 = 10000, size = size0;
     BYTE data[10000], *d = data;
@@ -194,7 +194,7 @@ static SEXP readRegistryKey(HKEY hkey, int depth, int view)
 	/* now sort by name */
 	PROTECT(sind = Rf_allocVector(INTSXP, nval));  indx = INTEGER(sind);
 	for (i = 0; i < nval; i++) indx[i] = i;
-	orderVector1(indx, nval, nm0, TRUE, FALSE, R_NilValue);
+	orderVector1(indx, nval, nm0, TRUE, FALSE, nullptr);
 	for (i = 0; i < nval; i++, k++) {
 	    SET_VECTOR_ELT(ans, k, VECTOR_ELT(ans0, indx[i]));
 	    if (LENGTH(tmp = STRING_ELT(nm0, indx[i])))
@@ -221,7 +221,7 @@ static SEXP readRegistryKey(HKEY hkey, int depth, int view)
 	/* now sort by name */
 	PROTECT(sind = Rf_allocVector(INTSXP, nsubkeys));  indx = INTEGER(sind);
 	for (i = 0; i < nsubkeys; i++) indx[i] = i;
-	orderVector1(indx, nsubkeys, nm0, TRUE, FALSE, R_NilValue);
+	orderVector1(indx, nsubkeys, nm0, TRUE, FALSE, nullptr);
 	for (i = 0; i < nsubkeys; i++, k++) {
 	    SET_VECTOR_ELT(ans, k, VECTOR_ELT(ans0, indx[i]));
 	    SET_STRING_ELT(nm, k, STRING_ELT(nm0, indx[i]));

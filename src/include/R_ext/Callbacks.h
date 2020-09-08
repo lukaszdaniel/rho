@@ -120,7 +120,7 @@ struct  _R_ObjectTable{
 
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_CALLBACKS_H */

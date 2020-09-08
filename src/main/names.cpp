@@ -954,7 +954,7 @@ HIDDEN void Rf_InitNames()
     /* String constants (CHARSXP values) */
     String::initialize();
     Symbol::initialize();
-    R_print.na_string = NA_STRING;
+    R_print.na_string = R_NaString;
 #if RHO_FALSE
     R_init_altrep();
 #endif

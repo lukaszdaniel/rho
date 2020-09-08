@@ -53,22 +53,22 @@ R_xlen_t asVecSize(SEXP x)
 	case INTSXP:
 	{
 	    int res = INTEGER(x)[0];
-	    if(res == NA_INTEGER) Rf_error(_("vector size cannot be NA"));
+	    if(res == R_NaInt) Rf_error(_("vector size cannot be NA"));
 	    return R_xlen_t(res);
 	}
 	case REALSXP:
 	{
 	    double d = REAL(x)[0];
-	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
-	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	    if(std::isnan(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	    if(!std::isfinite(d)) Rf_error(_("vector size cannot be infinite"));
 	    if(d > double(R_XLEN_T_MAX)) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t(d);
 	}
 	case STRSXP:
 	{
 	    double d = Rf_asReal(x);
-	    if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
-	    if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	    if(std::isnan(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	    if(!std::isfinite(d)) Rf_error(_("vector size cannot be infinite"));
 	    if(d > double(R_XLEN_T_MAX)) Rf_error(_("vector size specified is too large"));
 	    return R_xlen_t(d);
 	}
@@ -142,13 +142,13 @@ HIDDEN SEXP do_onexit(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if (argList_ != R_MissingArg) {
 	addit = Rf_asLogical(Rf_eval(argList_, rho));
-	if (addit == NA_INTEGER)
+	if (addit == R_NaInt)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "add");
     }
 
     if (after_ != R_MissingArg) {
 	after = Rf_asLogical(Rf_eval(after_, rho));
-	if (after == NA_INTEGER)
+	if (after == R_NaInt)
 	    Rf_errorcall(call, _("invalid '%s' argument"), "lifo");
     }
 
@@ -203,7 +203,7 @@ HIDDEN SEXP do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 			   &xp);
 
 	if (TYPEOF(env) == PROMSXP) REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
-	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
+	PROTECT(s2 = Rf_findVarInFrame3(env, rho::Symbol::obtain(nm), TRUE));
 	if(s2 != R_UnboundValue) {
 	    s = Rf_duplicate(s2);
 	    SET_BODY(s, nullptr);
@@ -215,7 +215,7 @@ HIDDEN SEXP do_args(SEXP call, SEXP op, SEXP args, SEXP rho)
 	REPROTECT(env = Rf_findVarInFrame3(R_BaseEnv, Rf_install(".GenericArgsEnv"),
 					TRUE), xp);
 	if (TYPEOF(env) == PROMSXP) REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
-	PROTECT(s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE));
+	PROTECT(s2 = Rf_findVarInFrame3(env, rho::Symbol::obtain(nm), TRUE));
 	if(s2 != R_UnboundValue) {
 	    s = Rf_mkCLOSXP(FORMALS(s2), nullptr, R_GlobalEnv);
 	    UNPROTECT(2);
@@ -300,7 +300,7 @@ HIDDEN SEXP do_newenv(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 
     if( hash ) {
 	PROTECT(size = Rf_coerceVector(size_, INTSXP));
-	if (INTEGER(size)[0] == NA_INTEGER)
+	if (INTEGER(size)[0] == R_NaInt)
 	    INTEGER(size)[0] = 0; /* so it will use the internal default */
 	ans = R_NewHashedEnv(enclos, size);
 	UNPROTECT(1);
@@ -519,7 +519,7 @@ HIDDEN SEXP do_cat(/*const*/ Expression* call, const BuiltInFunction* op, RObjec
     lablen = Rf_length(labs);
 
     append = Rf_asLogical(append_);
-    if (append == NA_LOGICAL)
+    if (append == R_NaLog)
 	Rf_error(_("invalid '%s' specification"), "append");
 
     ci.wasopen = con->isopen;
@@ -771,7 +771,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
-		INTEGER(rval)[i] = NA_INTEGER;
+		INTEGER(rval)[i] = R_NaInt;
 	break;
     case REALSXP:
 	for (i = 0; i < len; i++)
@@ -781,7 +781,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
-		REAL(rval)[i] = NA_REAL;
+		REAL(rval)[i] = R_NaReal;
 	break;
     case CPLXSXP:
 	for (i = 0; i < len; i++)
@@ -791,8 +791,8 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else {
-		COMPLEX(rval)[i].r = NA_REAL;
-		COMPLEX(rval)[i].i = NA_REAL;
+		COMPLEX(rval)[i].r = R_NaReal;
+		COMPLEX(rval)[i].i = R_NaReal;
 	    }
 	break;
     case STRSXP:
@@ -803,7 +803,7 @@ SEXP Rf_xlengthgets(SEXP x, R_xlen_t len)
 		    SET_STRING_ELT(names, i, STRING_ELT(xnames, i));
 	    }
 	    else
-		SET_STRING_ELT(rval, i, NA_STRING);
+		SET_STRING_ELT(rval, i, R_NaString);
 	break;
     case LISTSXP:
 	for (t = rval; t != nullptr; t = CDR(t), x = CDR(x)) {
@@ -989,7 +989,7 @@ HIDDEN SEXP do_switch(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    /* fall through to error */
 	} else { /* Treat as numeric */
 	    argval = Rf_asInteger(x);
-	    if (argval != NA_INTEGER && argval >= 1 && argval <= Rf_length(w)) {
+	    if (argval != R_NaInt && argval >= 1 && argval <= Rf_length(w)) {
 		SEXP alt = CAR(Rf_nthcdr(w, argval - 1));
 		if (alt == R_MissingArg)
 		    Rf_error("empty alternative in numeric switch");

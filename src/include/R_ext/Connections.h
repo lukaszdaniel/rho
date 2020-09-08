@@ -65,7 +65,7 @@ struct Rconn {
     int (*fflush)(struct Rconn *);
     size_t (*read)(void *, size_t, size_t, struct Rconn *);
     size_t (*write)(const void *, size_t, size_t, struct Rconn *);
-    int nPushBack, posPushBack; /* number of lines, position on top line */
+    size_t nPushBack, posPushBack; /* number of lines, position on top line */
     char **PushBack;
     int save, save2;
     char encname[101];
@@ -78,7 +78,11 @@ struct Rconn {
     Rboolean UTF8out;
     void *id;
     void *ex_ptr;
+#ifdef __cplusplus
     void *connprivate;
+#else
+    void *private;
+#endif
     int status; /* for pipes etc */
     unsigned char *buff;
     size_t buff_len, buff_stored_len, buff_pos;
@@ -94,7 +98,7 @@ size_t R_WriteConnection(Rconnection con, const void *buf, size_t n);
 Rconnection R_GetConnection(SEXP sConn); // added in R 3.3.0
 
 #ifdef  __cplusplus
-}
+} //extern "C"
 #endif
 
-#endif
+#endif /* R_EXT_CONNECTIONS_H_ */

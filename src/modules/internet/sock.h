@@ -30,7 +30,6 @@
 */
 #include <sys/types.h>
 
-
 typedef unsigned short Sock_port_t;
 
 typedef struct Sock_error_st {
@@ -67,4 +66,3 @@ ssize_t R_SockWrite(int sockp, const void *buf, size_t len, int timeout);
 /* from Rhttpd.cpp */
 int in_R_HTTPDCreate(const char *ip, int port);
 void in_R_HTTPDStop(void);
-

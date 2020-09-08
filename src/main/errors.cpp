@@ -334,7 +334,7 @@ static void vwarningcall_dflt(SEXP call, const char *format, va_list ap)
 
     w = Rf_asInteger(Rf_GetOption1(Rf_install("warn")));
 
-    if( w == NA_INTEGER ) /* set to a sensible value */
+    if( w == R_NaInt ) /* set to a sensible value */
 	w = 0;
 
     if( w <= 0 && immediateWarning ) w = 1;
@@ -634,21 +634,21 @@ static int allowedConstsChecks = 1000;
 	const char *head = _("Error in command:"), *tail = "\n  ";
 	SEXP srcloc = nullptr; // -Wall
 	size_t len = 0;	// indicates if srcloc has been set
-	int nprotect = 0, skip = NA_INTEGER;
+	int nprotect = 0, skip = R_NaInt;
 	SEXP opt = Rf_GetOption1(Rf_install("show.error.locations"));
 	if (!Rf_isNull(opt)) {
 	    if (TYPEOF(opt) == STRSXP && Rf_length(opt) == 1) {
 	    	if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("top")), opt, FALSE)) skip = 0;
 	    	else if (Rf_pmatch(Rf_ScalarString(Rf_mkChar("bottom")), opt, FALSE)) skip = -1;
 	    } else if (TYPEOF(opt) == LGLSXP)
-	    	skip = Rf_asLogical(opt) == 1 ? 0 : NA_INTEGER;
+	    	skip = Rf_asLogical(opt) == 1 ? 0 : R_NaInt;
 	    else
 	    	skip = Rf_asInteger(opt);
 	}
 
 	const char *dcall = R_CHAR(STRING_ELT(Rf_deparse1s(call), 0));
 	snprintf(tmp2, BUFSIZE,  _("Error in command '%s': "), dcall); 
-	if (skip != NA_INTEGER) {
+	if (skip != R_NaInt) {
 	    PROTECT(srcloc = GetSrcLoc(R_GetCurrentSrcref(skip)));
 	    nprotect++;
 	    len = strlen(R_CHAR(STRING_ELT(srcloc, 0)));
@@ -967,7 +967,7 @@ HIDDEN SEXP do_gettext(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	}
     } else if(Rf_isString(dots_))
 	domain = Rf_translateChar(STRING_ELT(dots_,0));
-    else if(Rf_isLogical(dots_) && LENGTH(dots_) == 1 && LOGICAL(dots_)[0] == NA_LOGICAL) ;
+    else if(Rf_isLogical(dots_) && LENGTH(dots_) == 1 && LOGICAL(dots_)[0] == R_NaLog) ;
     else Rf_error(_("invalid '%s' value"), "domain");
 
     if(strlen(domain)) {
@@ -1035,7 +1035,7 @@ HIDDEN SEXP do_ngettext(/*const*/ Expression* call, const BuiltInFunction* op, R
     SEXP msg1 = msg1_, msg2 = msg2_;
     int n = Rf_asInteger(n_);
 
-    if(n == NA_INTEGER || n < 0) Rf_error(_("invalid '%s' argument"), "n");
+    if(n == R_NaInt || n < 0) Rf_error(_("invalid '%s' argument"), "n");
     if(!Rf_isString(msg1) || LENGTH(msg1) != 1)
 	Rf_error(_("'%s' must be a character string"), "msg1");
     if(!Rf_isString(msg2) || LENGTH(msg2) != 1)
@@ -1073,7 +1073,7 @@ HIDDEN SEXP do_ngettext(/*const*/ Expression* call, const BuiltInFunction* op, R
 	}
     } else if(Rf_isString(sdom))
 	domain = R_CHAR(STRING_ELT(sdom,0));
-    else if(Rf_isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == NA_LOGICAL) ;
+    else if(Rf_isLogical(sdom) && LENGTH(sdom) == 1 && LOGICAL(sdom)[0] == R_NaLog) ;
     else Rf_error(_("invalid '%s' value"), "domain");
 
     /* libintl seems to malfunction if given a message of "" */
@@ -1330,7 +1330,7 @@ HIDDEN SEXP do_traceback(/*const*/ Expression* call, const BuiltInFunction* op, 
 
     skip = Rf_asInteger(x_);
 
-    if (skip == NA_INTEGER || skip < 0 )
+    if (skip == R_NaInt || skip < 0 )
 	Rf_error(_("invalid '%s' value"), "skip");
 
     return R_GetTraceback(skip);

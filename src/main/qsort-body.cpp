@@ -98,7 +98,7 @@
 	    }
 	}
 
-	for(;;) { /*L50:*/
+	while (true) { /*L50:*/
 	    do l--;  while (v[l] > vt);
 
 #ifdef qsort_Index

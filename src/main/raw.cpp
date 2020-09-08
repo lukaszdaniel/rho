@@ -59,7 +59,7 @@ HIDDEN SEXP do_rawToChar(/*const*/ rho::Expression* call, const rho::BuiltInFunc
     if (!isRaw(x))
 	Rf_error(_("argument 'x' must be a raw vector"));
     int multiple = Rf_asLogical(multiple_);
-    if (multiple == NA_LOGICAL)
+    if (multiple == R_NaLog)
 	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
     if (multiple) {
 	R_xlen_t i, nc = XLENGTH(x);
@@ -93,7 +93,7 @@ HIDDEN SEXP do_rawShift(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 
     if (!isRaw(x))
 	Rf_error(_("argument 'x' must be a raw vector"));
-    if (shift == NA_INTEGER || shift < -8 || shift > 8)
+    if (shift == R_NaInt || shift < -8 || shift > 8)
 	Rf_error(_("argument 'shift' must be a small integer"));
     PROTECT(ans = Rf_duplicate(x));
     if (shift > 0)
@@ -169,7 +169,7 @@ HIDDEN SEXP do_packBits(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    btmp |= RAW(x)[8*i + k] & 0x1;
 		else if (Rf_isLogical(x) || Rf_isInteger(x)) {
 		    int j = INTEGER(x)[8*i+k];
-		    if (j == NA_INTEGER)
+		    if (j == R_NaInt)
 			Rf_error(_("argument 'x' must not contain NAs"));
 		    btmp |= j & 0x1;
 		}
@@ -183,7 +183,7 @@ HIDDEN SEXP do_packBits(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    itmp |= RAW(x)[32*i + k] & 0x1;
 		else if (Rf_isLogical(x) || Rf_isInteger(x)) {
 		    int j = INTEGER(x)[32*i+k];
-		    if (j == NA_INTEGER)
+		    if (j == R_NaInt)
 			Rf_error(_("argument 'x' must not contain NAs"));
 		    itmp |= j & 0x1;
 		}
@@ -249,9 +249,9 @@ HIDDEN SEXP do_utf8ToInt(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	Rf_error(_("argument must be a character vector of length 1"));
     if (LENGTH(x) > 1)
 	Rf_warning(_("argument should be a character vector of length 1\nall but the first element will be ignored"));
-    if (STRING_ELT(x, 0) == NA_STRING) return Rf_ScalarInteger(NA_INTEGER);
+    if (STRING_ELT(x, 0) == R_NaString) return Rf_ScalarInteger(R_NaInt);
     const char *s = R_CHAR(STRING_ELT(x, 0));
-    if (!utf8Valid(s)) return Rf_ScalarInteger(NA_INTEGER);
+    if (!utf8Valid(s)) return Rf_ScalarInteger(R_NaInt);
     nc = XLENGTH(STRING_ELT(x, 0)); /* ints will be shorter */
     int *ians = static_cast<int *>(RHO_alloc(nc, sizeof(int)));
     for (i = 0, j = 0; i < nc; i++) {
@@ -302,10 +302,10 @@ HIDDEN SEXP do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunc
     if (!Rf_isInteger(x))
 	Rf_error(_("argument 'x' must be an integer vector"));
     multiple = Rf_asLogical(multiple_);
-    if (multiple == NA_LOGICAL)
+    if (multiple == R_NaLog)
 	Rf_error(_("argument 'multiple' must be TRUE or FALSE"));
     s_pair = Rf_asLogical(allow_surrogate_pairs_);
-    if (s_pair == NA_LOGICAL)
+    if (s_pair == R_NaLog)
 	Rf_error(_("argument 'allow_surrogate_pairs' must be TRUE or FALSE"));
     if (multiple) {
 	if (s_pair)
@@ -314,10 +314,10 @@ HIDDEN SEXP do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	PROTECT(ans = Rf_allocVector(STRSXP, nc));
 	for (i = 0; i < nc; i++) {
 	    int this_ = INTEGER(x)[i];
-	    if (this_ == NA_INTEGER 
+	    if (this_ == R_NaInt 
 		|| (this_ >= 0xD800 && this_ <= 0xDFFF) 
 		|| this_ > 0x10FFFF)
-		SET_STRING_ELT(ans, i, NA_STRING);
+		SET_STRING_ELT(ans, i, R_NaString);
 	    else {
 		used = inttomb(buf, this_);
 		buf[used] = '\0';
@@ -331,7 +331,7 @@ HIDDEN SEXP do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	/* Note that this gives zero length for input '0', so it is omitted */
 	for (i = 0, len = 0; i < nc; i++) {
 	    int this_ = INTEGER(x)[i];
-	    if (this_ == NA_INTEGER 
+	    if (this_ == R_NaInt 
 		|| (this_ >= 0xDC00 && this_ <= 0xDFFF)
 		|| this_ > 0x10FFFF) {
 		haveNA = TRUE;
@@ -349,7 +349,7 @@ HIDDEN SEXP do_intToUtf8(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	}
 	if (haveNA) {
 	    UNPROTECT(1);
-	    return Rf_ScalarString(NA_STRING);
+	    return Rf_ScalarString(R_NaString);
 	}
 	if (len >= 10000) {
 	    tmp = Calloc(len+1, char);

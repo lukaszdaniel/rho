@@ -2155,7 +2155,7 @@ yyreduce:
     break;
 
   case 4:
-                                                        { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
+                                                        { PROTECT(parseState.Value = nullptr);  YYABORT; }
     break;
 
   case 5:
@@ -2259,7 +2259,7 @@ yyreduce:
     break;
 
   case 30:
-                                                { yyval = xxmarkup(R_NilValue, yyvsp[0], STATIC, &(yyloc)); }
+                                                { yyval = xxmarkup(nullptr, yyvsp[0], STATIC, &(yyloc)); }
     break;
 
   case 31:
@@ -2319,7 +2319,7 @@ yyreduce:
     break;
 
   case 45:
-                                                { yyval = xxmarkup2(yyvsp[-1], yyvsp[0], R_NilValue, 1, STATIC, &(yyloc)); }
+                                                { yyval = xxmarkup2(yyvsp[-1], yyvsp[0], nullptr, 1, STATIC, &(yyloc)); }
     break;
 
   case 46:
@@ -2327,7 +2327,7 @@ yyreduce:
     break;
 
   case 47:
-                                                { yyval = xxmarkup(yyvsp[0], R_NilValue, STATIC, &(yyloc)); }
+                                                { yyval = xxmarkup(yyvsp[0], nullptr, STATIC, &(yyloc)); }
     break;
 
   case 48:
@@ -2400,7 +2400,7 @@ yyreduce:
     	    					      Rf_warning(_("bad markup (extra space?) at %s:%d:%d"), 
     	    					            parseState.xxBasename, (yylsp[0]).first_line, (yylsp[0]).first_column); 
      						  else
-    	    					      Rf_warningcall(R_NilValue, _("bad markup (extra space?) at %s:%d:%d"), 
+    	    					      Rf_warningcall(nullptr, _("bad markup (extra space?) at %s:%d:%d"), 
     	    					            parseState.xxBasename, (yylsp[0]).first_line, (yylsp[0]).first_column); 
 						}
     break;
@@ -3132,7 +3132,7 @@ static void xxWarnNewline()
 	    Rf_warning(_("newline within quoted string at %s:%d"), 
 		    parseState.xxBasename, parseState.xxNewlineInString);
 	else
-	    Rf_warningcall(R_NilValue,
+	    Rf_warningcall(nullptr,
 			_("newline within quoted string at %s:%d"), 
 			parseState.xxBasename, parseState.xxNewlineInString);
     }
@@ -3284,7 +3284,7 @@ static SEXP mkString2(const char *s, size_t len)
 
 static SEXP NewList(void)
 {
-    SEXP s = CONS(R_NilValue, R_NilValue);
+    SEXP s = CONS(nullptr, nullptr);
     SETCAR(s, s);
     return s;
 }
@@ -3295,7 +3295,7 @@ static SEXP GrowList(SEXP l, SEXP s)
 {
     SEXP tmp;
     PROTECT(s);
-    tmp = CONS(s, R_NilValue);
+    tmp = CONS(s, nullptr);
     UNPROTECT(1);
     SETCDR(CAR(l), tmp);
     SETCAR(l, tmp);
@@ -3338,7 +3338,7 @@ static SEXP ParseRd(ParseStatus *status, SEXP srcfile, Rboolean fragment, SEXP m
     PROTECT(parseState.xxMacroList = R_NewHashedEnv(macros, Rf_ScalarInteger(0)));
     UNPROTECT_PTR(macros);
 
-    parseState.Value = R_NilValue;
+    parseState.Value = nullptr;
 
     if (yyparse()) *status = PARSE_ERROR;
     else *status = PARSE_OK;
@@ -3568,14 +3568,14 @@ static SEXP InstallKeywords()
 
 static int KeywordLookup(const char *s)
 {
-    SEXP rec = Rf_findVar(Rf_install(s), parseState.xxMacroList);
+    SEXP rec = Rf_findVar(rho::Symbol::obtain(s), parseState.xxMacroList);
     if (rec == R_UnboundValue) return UNKNOWN;
     else return INTEGER(rec)[0];
 }
 
 static SEXP UserMacroLookup(const char *s)
 {
-    SEXP rec = Rf_findVar(Rf_install(s), parseState.xxMacroList);
+    SEXP rec = Rf_findVar(rho::Symbol::obtain(s), parseState.xxMacroList);
     if (rec == R_UnboundValue) Rf_error(_("Unable to find macro %s"), s);
     PROTECT(rec);
     SEXP res = Rf_getAttrib(rec, Rf_install("definition"));
@@ -3700,10 +3700,10 @@ static void yyerror(const char *s)
 		    ParseErrorFilename, yylloc.first_line, ParseErrorMsg);
     } else {
 	if (yylloc.first_line != yylloc.last_line)
-	    Rf_warningcall(R_NilValue, "%s:%d-%d: %s", 
+	    Rf_warningcall(nullptr, "%s:%d-%d: %s", 
 		    ParseErrorFilename, yylloc.first_line, yylloc.last_line, ParseErrorMsg);
 	else
-	    Rf_warningcall(R_NilValue, "%s:%d: %s", 
+	    Rf_warningcall(nullptr, "%s:%d: %s", 
 			ParseErrorFilename, yylloc.first_line, ParseErrorMsg);
     }
 }
@@ -4172,7 +4172,7 @@ SEXP parseRd(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     args = CDR(args);
 
-    SEXP s = R_NilValue, source;
+    SEXP s = nullptr, source;
     Rconnection con;
     Rboolean wasopen, fragment;
     int ifile, wcall;

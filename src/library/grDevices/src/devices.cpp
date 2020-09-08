@@ -37,12 +37,10 @@
 #include <R_ext/GraphicsEngine.h>
 #include "localization.h"
 
-
-
-#define checkArity_length 			\
-    args = CDR(args);		       	       	\
-    if(!LENGTH(CAR(args)))	       	       	\
-	Rf_error(_("argument must have positive length"))
+#define checkArity_length                                                      \
+    args = CDR(args);                                                          \
+    if (!LENGTH(CAR(args)))                                                    \
+    Rf_error(_("argument must have positive length"))
 
 SEXP devcontrol(SEXP args)
 {
@@ -67,7 +65,7 @@ SEXP devcopy(SEXP args)
 {
     checkArity_length;
     GEcopyDisplayList(INTEGER(CAR(args))[0] - 1);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP devcur(SEXP args)
@@ -104,7 +102,7 @@ SEXP devoff(SEXP args)
 {
     checkArity_length;
     killDevice(INTEGER(CAR(args))[0] - 1);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP devsize(SEXP args)

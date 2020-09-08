@@ -33,12 +33,11 @@
 #include "nmath.h"
 #include "dpq.h"
 
-static double
-do_search(double y, double *z, double p, double lambda, double incr)
+static double do_search(double y, double *z, double p, double lambda, double incr)
 {
     if(*z >= p) {
 			/* search to the left */
-	for(;;) {
+	while (true) {
 	    if(y == 0 ||
 	       (*z = ppois(y - incr, lambda, /*l._t.*/TRUE, /*log_p*/FALSE)) < p)
 		return y;
@@ -47,7 +46,7 @@ do_search(double y, double *z, double p, double lambda, double incr)
     }
     else {		/* search to the right */
 
-	for(;;) {
+	while (true) {
 	    y = y + incr;
 	    if((*z = ppois(y, lambda, /*l._t.*/TRUE, /*log_p*/FALSE)) >= p)
 		return y;

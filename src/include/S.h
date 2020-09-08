@@ -71,17 +71,14 @@ extern double norm_rand(void);
 /* Macros for S/R Compatibility */
 
 #ifdef __cplusplus
-}  // extern "C"
+} //extern "C"
 #endif
 #include <R_ext/RS.h>
 /* for PROBLEM ... Calloc, Realloc, Free, Memcpy, F77_xxxx */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* S4 uses macros equivalent to */
-#define Salloc(n,t) (t*)S_alloc(n, sizeof(t))
-#define Srealloc(p,n,old,t) (t*)S_realloc(p,n,old,sizeof(t))
+#define Salloc(n, t) (t *)S_alloc(n, sizeof(t))
+#define Srealloc(p, n, old, t) (t *)S_realloc(p, n, old, sizeof(t))
 
 /* S's complex is different, and is a define to S_complex now */
 typedef struct {
@@ -99,8 +96,4 @@ typedef struct {
 #define call_S call_R
 #endif
 
-#ifdef __cplusplus
-}  // extern "C"
-#endif
-
-#endif /* !R_S_H */
+#endif /* R_S_H */

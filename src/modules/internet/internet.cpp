@@ -88,7 +88,6 @@ static void *in_R_FTPOpen2(const char *url);
 #define Ri_FTPClose in_R_FTPClose
 #endif
 
-
 #include <Rmodules/Rinternet.h>
 
 #ifdef HAVE_UNISTD_H
@@ -348,8 +347,7 @@ static size_t url_read2(void *ptr, size_t size, size_t nitems,
 }
 #endif
 
-static Rconnection 
-in_R_newurl(const char *description, const char * const mode, int type)
+static Rconnection in_R_newurl(const char *description, const char * const mode, int type)
 {
     Rconnection newconn;
 
@@ -589,8 +587,8 @@ static SEXP in_do_download(SEXP args)
 		    setprogressbar(pbar.pb, 0);
 		    settext(pbar.wprog, "Download progress");
 		    show(pbar.wprog);
-		    begincontext(&(pbar.cntxt), Content::CCODE, R_NilValue, R_NilValue,
-				 R_NilValue, R_NilValue, R_NilValue);
+		    begincontext(&(pbar.cntxt), Content::CCODE, nullptr, nullptr,
+				 nullptr, nullptr, nullptr);
 		    pbar.cntxt.cend = &doneprogressbar;
 		    pbar.cntxt.cenddata = &pbar;
 		    pbar.pc = 0;
@@ -702,8 +700,8 @@ static SEXP in_do_download(SEXP args)
 		show(pbar.wprog);
 
 		/* set up a context which will close progressbar on error. */
-		begincontext(&(pbar.cntxt), Context::CCODE, R_NilValue, R_NilValue,
-			     R_NilValue, R_NilValue, R_NilValue);
+		begincontext(&(pbar.cntxt), Context::CCODE, nullptr, nullptr,
+			     nullptr, nullptr, nullptr);
 		pbar.cntxt.cend = &doneprogressbar;
 		pbar.cntxt.cenddata = &pbar;
 		pbar.pc = 0;
@@ -1087,11 +1085,7 @@ extern "C" {
 #endif
 }
 
-void
-#ifdef HAVE_VISIBILITY_ATTRIBUTE
-__attribute__ ((visibility ("default")))
-#endif
-R_init_internet(DllInfo *info)
+VISIBLE void R_init_internet(DllInfo *info)
 {
     R_InternetRoutines *tmp;
     tmp = R_Calloc(1, R_InternetRoutines);

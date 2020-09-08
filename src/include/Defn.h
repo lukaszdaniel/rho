@@ -48,13 +48,9 @@
 #ifndef DEFN_H_
 #define DEFN_H_
 
-/* seems unused */
-#define COUNTING
-
-#define BYTECODE
-
-/* probably no longer needed */
-#define NEW_CONDITION_HANDLING
+#ifdef USE_RINTERNALS
+#undef USE_RINTERNALS
+#endif
 
 #ifdef __cplusplus
 #include <iostream>
@@ -65,7 +61,7 @@
 #define rhoLOG(x) std::cout << x << std::endl;
 
 namespace rho {
-    class BuiltInFunction;
+class BuiltInFunction;
 }
 #endif
 
@@ -92,14 +88,16 @@ namespace rho {
 #endif
 #endif
 
-#define MAXELTSIZE 8192 /* Used as a default for string buffer sizes,
+#ifdef __cplusplus
+constexpr size_t MAXELTSIZE = 8192; /* Used as a default for string buffer sizes,
 			   and occasionally as a limit. */
+#endif
 
 #include <R_ext/Complex.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
-void Rf_CoercionWarning(int);/* warning code */
+void Rf_CoercionWarning(int); /* warning code */
 int Rf_LogicalFromInteger(int, int*);
 int Rf_LogicalFromReal(double, int*);
 int Rf_LogicalFromComplex(Rcomplex, int*);
@@ -113,7 +111,7 @@ Rcomplex Rf_ComplexFromLogical(int, int*);
 Rcomplex Rf_ComplexFromInteger(int, int*);
 Rcomplex Rf_ComplexFromReal(double, int*);
 #ifdef __cplusplus
-}  /* extern "C" */
+} //extern "C"
 #endif
 
 #define CALLED_FROM_DEFN_H 1
@@ -203,7 +201,7 @@ extern void R_WaitEvent(void);
 #endif
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} //extern "C"
 #endif
 
 #ifdef R_USE_SIGNALS
@@ -269,7 +267,7 @@ constexpr R_size_t R_SIZE_T_MAX = std::numeric_limits<R_size_t>::max();
 #else
 typedef size_t R_size_t;
 #define R_SIZE_T_MAX SIZE_MAX
-#endif /* __cplusplus */
+#endif // __cplusplus
 #else
 #error SIZE_MAX is required for C99
 #endif
@@ -429,7 +427,7 @@ typedef struct {
 } PPinfo;
 
 /* The type definitions for the table of built-in functions. */
-/* This table can be found in ../main/names.c */
+/* This table can be found in ../main/names.cpp */
 typedef struct {
     char   *name;    /* print name */
     CCODE  cfun;     /* c-code address */
@@ -474,11 +472,12 @@ typedef struct {
 
 /* Vector Heap Structure */
 /* sizeof(VECREC) is used for some backwards-compatibility purposes in rho, and that's all. */
-typedef struct {
-	union {
-		SEXP		backpointer;
-		double		align;
-	} u;
+typedef struct
+{
+    union {
+        SEXP backpointer;
+        double align;
+    } u;
 } VECREC, *VECP;
 
 /* Primitive Access Macros */
@@ -527,12 +526,12 @@ inline size_t PTR2VEC(int n)
 #define LOCK_BINDING(b) ((b)->sxpinfo.gp |= BINDING_LOCK_MASK)
 #define UNLOCK_BINDING(b) ((b)->sxpinfo.gp &= (~BINDING_LOCK_MASK))
 
-#define BASE_SYM_CACHED_MASK (1<<13)
+#define BASE_SYM_CACHED_MASK (1 << 13)
 #define SET_BASE_SYM_CACHED(b) ((b)->sxpinfo.gp |= BASE_SYM_CACHED_MASK)
 #define UNSET_BASE_SYM_CACHED(b) ((b)->sxpinfo.gp &= (~BASE_SYM_CACHED_MASK))
 #define BASE_SYM_CACHED(b) ((b)->sxpinfo.gp & BASE_SYM_CACHED_MASK)
 
-#define SPECIAL_SYMBOL_MASK (1<<12)
+#define SPECIAL_SYMBOL_MASK (1 << 12)
 #define SET_SPECIAL_SYMBOL(b) ((b)->sxpinfo.gp |= SPECIAL_SYMBOL_MASK)
 #define UNSET_SPECIAL_SYMBOL(b) ((b)->sxpinfo.gp &= (~SPECIAL_SYMBOL_MASK))
 #define IS_SPECIAL_SYMBOL(b) ((b)->sxpinfo.gp & SPECIAL_SYMBOL_MASK)
@@ -546,14 +545,13 @@ typedef struct VECREC *VECP;
 int (PRIMOFFSET)(SEXP x);
 void (SET_PRIMOFFSET)(SEXP x, int v);
 
-#define PRIMFUN(x)	(R_FunTab[PRIMOFFSET(x)].cfun)
-#define PRIMNAME(x)	(R_FunTab[PRIMOFFSET(x)].name)
-#define PRIMVAL(x)	(R_FunTab[PRIMOFFSET(x)].code)
-#define PRIMARITY(x)	(R_FunTab[PRIMOFFSET(x)].arity)
-#define PPINFO(x)	(R_FunTab[PRIMOFFSET(x)].gram)
-#define PRIMPRINT(x)	(((R_FunTab[PRIMOFFSET(x)].eval)/100)%10)
-#define PRIMINTERNAL(x) (((R_FunTab[PRIMOFFSET(x)].eval)%100)/10)
-
+#define PRIMFUN(x) (R_FunTab[PRIMOFFSET(x)].cfun)
+#define PRIMNAME(x) (R_FunTab[PRIMOFFSET(x)].name)
+#define PRIMVAL(x) (R_FunTab[PRIMOFFSET(x)].code)
+#define PRIMARITY(x) (R_FunTab[PRIMOFFSET(x)].arity)
+#define PPINFO(x) (R_FunTab[PRIMOFFSET(x)].gram)
+#define PRIMPRINT(x) (((R_FunTab[PRIMOFFSET(x)].eval) / 100) % 10)
+#define PRIMINTERNAL(x) (((R_FunTab[PRIMOFFSET(x)].eval) % 100) / 10)
 
 Rboolean (IS_ACTIVE_BINDING)(SEXP b);
 Rboolean (BINDING_IS_LOCKED)(SEXP b);
@@ -589,12 +587,13 @@ Rboolean (NO_SPECIAL_SYMBOLS)(SEXP b);
    compiled 'for' loops. This could be used more extensively in the
    future.
 */
-typedef struct {
+typedef struct
+{
     int tag;
     union {
-	int ival;
-	double dval;
-	SEXP sxpval;
+        int ival;
+        double dval;
+        SEXP sxpval;
     } u;
 } R_bcstack_t;
 # define PARTIALSXP_MASK (~255)
@@ -662,20 +661,20 @@ typedef struct RCNTXT {
  */
 enum {
     CTXT_TOPLEVEL = 0,
-    CTXT_NEXT	  = 1,
-    CTXT_BREAK	  = 2,
-    CTXT_LOOP	  = 3,	/* break OR next target */
+    CTXT_NEXT = 1,
+    CTXT_BREAK = 2,
+    CTXT_LOOP = 3, /* break OR next target */
     CTXT_FUNCTION = 4,
-    CTXT_CCODE	  = 8,
-    CTXT_RETURN	  = 12,
-    CTXT_BROWSER  = 16,
-    CTXT_GENERIC  = 20,
-    CTXT_RESTART  = 32,
-    CTXT_BUILTIN  = 64, /* used in profiling */
-    CTXT_UNWIND   = 128
+    CTXT_CCODE = 8,
+    CTXT_RETURN = 12,
+    CTXT_BROWSER = 16,
+    CTXT_GENERIC = 20,
+    CTXT_RESTART = 32,
+    CTXT_BUILTIN = 64, /* used in profiling */
+    CTXT_UNWIND = 128
 };
 
-/*
+/*    1 2 4 8 ...
 TOP   0 0 0 0 0 0  = 0
 NEX   1 0 0 0 0 0  = 1
 BRE   0 1 0 0 0 0  = 2
@@ -696,11 +695,18 @@ BUI   0 0 0 0 0 0 0 1 = 64
 #endif
 
 /* Miscellaneous Definitions */
-inline Rboolean streql(const char *s, const char *t) { return (Rboolean) (strcmp(s, t) == 0); }
-inline Rboolean streqln(const char *s, const char *t, size_t n) { return (Rboolean) (strncmp(s, t, n) == 0); }
+inline Rboolean streql(const char* s, const char* t)
+{
+    return (Rboolean)(strcmp(s, t) == 0);
+}
+inline Rboolean streqln(const char* s, const char* t, size_t n)
+{
+    return (Rboolean)(strncmp(s, t, n) == 0);
+}
 
 /* Arithmetic and Relation Operators */
-typedef enum {
+typedef enum
+{
     PLUSOP = 1,
     MINUSOP,
     TIMESOP,
@@ -710,7 +716,8 @@ typedef enum {
     IDIVOP
 } ARITHOP_TYPE;
 
-typedef enum {
+typedef enum
+{
     EQOP = 1,
     NEOP,
     LTOP,
@@ -719,11 +726,12 @@ typedef enum {
     GTOP
 } RELOP_TYPE;
 
-typedef enum {
+typedef enum
+{
     MATPROD_DEFAULT = 1,
     MATPROD_INTERNAL,
     MATPROD_BLAS,
-    MATPROD_DEFAULT_SIMD  /* experimental */
+    MATPROD_DEFAULT_SIMD /* experimental */
 } MATPROD_TYPE;
 
 /* File Handling */
@@ -978,7 +986,7 @@ extern HIDDEN int R_PCRE_limit_recursion;
 #undef INI_as
 #endif
 
-#define checkArity(a,b) Rf_checkArityCall(a,b,call)
+#define checkArity(a, b) Rf_checkArityCall(a, b, call)
 
 /*--- FUNCTIONS ------------------------------------------------------ */
 
@@ -1183,7 +1191,8 @@ Rboolean R_GetVarLocMISSING(R_varloc_t);
 //void R_SetVarLocValue(R_varloc_t, SEXP);
 
 /* deparse option bits: change do_dump if more are added */
-enum DeparseOptionBits {
+enum DeparseOptionBits
+{
     KEEPINTEGER = 1,
     QUOTEEXPRESSIONS = 2,
     SHOWATTRIBUTES = 4,
@@ -1198,7 +1207,7 @@ enum DeparseOptionBits {
     /* common combinations of the above */
     SIMPLEDEPARSE = 0,
     DEFAULTDEPARSE = 1089, /* KEEPINTEGER | KEEPNA | NICE_NAMES, used for calls */
-    FORSOURCING = 95 /* not DELAYPROMISES, used in edit.cpp */
+    FORSOURCING = 95       /* not DELAYPROMISES, used in edit.cpp */
 };
 
 /* Coercion functions */
@@ -1268,7 +1277,7 @@ void R_InitialData(void);
 Rboolean inherits2(SEXP, const char*);
 
 #ifdef __cplusplus
-}  // extern "C"
+}  //extern "C"
 #endif
 
 #ifdef __cplusplus
@@ -1439,7 +1448,8 @@ R_size_t R_Decode2Long(char* p, int* ierr);
 void R_SetPPSize(R_size_t);
 
 /* ../../main/printutils.cpp : */
-typedef enum {
+typedef enum
+{
     Rprt_adj_left = 0,
     Rprt_adj_right = 1,
     Rprt_adj_centre = 2,
@@ -1567,11 +1577,7 @@ extern void *alloca(size_t);
 #endif
 
 /* Required by C99, but might be slow */
-#ifdef HAVE_LONG_DOUBLE
-# define LDOUBLE long double
-#else
-# define LDOUBLE double
-#endif
+#include <R_ext/Ldouble.h>
 
 /* int_fast64_t is required by C99/C11
    Alternative would be to use intmax_t.
@@ -1600,7 +1606,7 @@ SEXP do_pgsub(SEXP pat, SEXP rep, SEXP vec,
 	      int global, int igcase_opt, int useBytes);
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} //extern "C"
 #endif
 #endif /* DEFN_H_ */
 /*

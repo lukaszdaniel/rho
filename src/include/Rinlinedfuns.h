@@ -463,7 +463,7 @@ INLINE_FUN SEXP STRING_ELT(SEXP x, R_xlen_t i) {
     if (ALTREP(x))
 	return ALTSTRING_ELT(x, i);
     else {
-	SEXP *ps = (SEXP *) STDVEC_DATAPTR(x);
+	SEXP* ps = (SEXP*)STDVEC_DATAPTR(x);
 	return ps[i];
     }
 }
@@ -1021,8 +1021,7 @@ INLINE_FUN SEXP Rf_mkString(const char *s)
 }
 
 /* index of a given C string in (translated) R string vector  */
-INLINE_FUN int
-Rf_stringPositionTr(SEXP string, const char *translatedElement) {
+INLINE_FUN int Rf_stringPositionTr(SEXP string, const char *translatedElement) {
 
     int slen = LENGTH(string);
     int i;
@@ -1055,7 +1054,7 @@ INLINE_FUN SEXP R_FixupRHS(SEXP x, SEXP y)
 }
 
 #ifdef __cplusplus
-} /* extern "C" */
+} //extern "C"
 #endif
 
 #endif /* R_INLINES_H_ */

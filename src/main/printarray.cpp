@@ -74,7 +74,7 @@ static void MatrixColumnLabel(SEXP cl, int j, int w)
 {
     if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
-	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
+	int l = (tmp == R_NaString) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("%*s%s", w-l, "",
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_left));
     }
@@ -87,7 +87,7 @@ static void RightMatrixColumnLabel(SEXP cl, int j, int w)
 {
     if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
-	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
+	int l = (tmp == R_NaString) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	/* This does not work correctly at least on FC3
 	Rprintf("%*s", R_print.gap+w,
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_right)); */
@@ -103,7 +103,7 @@ static void LeftMatrixColumnLabel(SEXP cl, int j, int w)
 {
     if (!Rf_isNull(cl)) {
 	SEXP tmp = STRING_ELT(cl, j);
-	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
+	int l = (tmp == R_NaString) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("%*s%s%*s", R_print.gap, "",
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_left), w-l, "");
     }
@@ -116,7 +116,7 @@ static void MatrixRowLabel(SEXP rl, int i, int rlabw, int lbloff)
 {
     if (!Rf_isNull(rl)) {
 	SEXP tmp = STRING_ELT(rl, i);
-	int l = (tmp == NA_STRING) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
+	int l = (tmp == R_NaString) ? R_print.na_width_noquote : Rstrlen(tmp, 0);
 	Rprintf("\n%*s%s%*s", lbloff, "",
 		Rf_EncodeString(tmp, l, 0, Rprt_adj_left),
 		rlabw-l-lbloff, "");
@@ -167,7 +167,7 @@ static void printLogicalMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 									\
 	if (!Rf_isNull(cl)) {						\
 	    const void *vmax = vmaxget();				\
-	    if(STRING_ELT(cl, j) == NA_STRING)				\
+	    if(STRING_ELT(cl, j) == R_NaString)				\
 		clabw = R_print.na_width_noquote;			\
 	    else clabw = strwidth(Rf_translateChar(STRING_ELT(cl, j)));	\
 	    vmaxset(vmax);						\
@@ -289,7 +289,7 @@ static void printComplexMatrix(SEXP sx, int offset, int r_pr, int r, int c,
 
     _PRINT_MATRIX_( , STD_ColumnLabels,
 		   if (ISNA(x[i + j * r].r) || ISNA(x[i + j * r].i))
-		       Rprintf("%s", EncodeReal0(NA_REAL, w[j], 0, 0, OutDec));
+		       Rprintf("%s", EncodeReal0(R_NaReal, w[j], 0, 0, OutDec));
 		   else
 		       /* Note that the label printing may modify w[j], so wr[j] is not 
 		          necessarily still valid, and we use w[j] - wi[j] - 2  */
@@ -308,7 +308,7 @@ void formatString(StringVector::const_iterator begin,
     int l;
 
     for (auto item = begin; item != end; ++item) {
-	if (*item == NA_STRING) {
+	if (*item == R_NaString) {
 	    l = quote ? R_print.na_width : R_print.na_width_noquote;
 	} else l = Rstrlen(*item, quote) + (quote ? 2 : 0);
 	if (l > xmax) xmax = l;

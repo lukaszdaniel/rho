@@ -61,7 +61,6 @@
 
 //#include <rlocale.h> /* To get the correct linkage for locale2charset */
 
-
 /* name_value struct */
 struct name_value {
     const char *name;

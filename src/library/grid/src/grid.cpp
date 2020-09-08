@@ -66,13 +66,13 @@ SEXP L_initGrid(SEXP GridEvalEnv)
 {
     R_gridEvalEnv = GridEvalEnv;
     GEregisterSystem(gridCallback, &gridRegisterIndex);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_killGrid() 
 {
     GEunregisterSystem(gridRegisterIndex);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Get the current device (the graphics engine creates one if nec.)
@@ -121,7 +121,7 @@ SEXP L_gridDirty()
      */
     pGEDevDesc dd = getDevice();
     dirtyGridDevice(dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 void getViewportContext(SEXP vp, LViewportContext *vpc)
@@ -341,7 +341,7 @@ SEXP L_setviewport(SEXP invp, SEXP hasParent)
      */
     setGridStateElement(dd, GSS_VP, pushedvp);
     UNPROTECT(3);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* 
@@ -408,7 +408,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
     int n = LENGTH(childnames);
     int count = 0;
     Rboolean found = FALSE;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     PROTECT(childnames);
     PROTECT(result);
     while (count < n && !found) {
@@ -426,7 +426,7 @@ static SEXP findInChildren(SEXP name, SEXP strict, SEXP children, int depth)
 	PROTECT(zeroDepth = Rf_allocVector(INTSXP, 1));
 	INTEGER(zeroDepth)[0] = 0;
 	SET_VECTOR_ELT(temp, 0, zeroDepth);
-	SET_VECTOR_ELT(temp, 1, R_NilValue);
+	SET_VECTOR_ELT(temp, 1, nullptr);
 	UNPROTECT(2);
 	result = temp;
     }
@@ -460,7 +460,7 @@ static SEXP findViewport(SEXP name, SEXP strict, SEXP vp, int depth)
      */
     if (noChildren(viewportChildren(vp))) {
 	SET_VECTOR_ELT(result, 0, zeroDepth);
-	SET_VECTOR_ELT(result, 1, R_NilValue);
+	SET_VECTOR_ELT(result, 1, nullptr);
     } else if (childExists(name, viewportChildren(vp))) {
 	SET_VECTOR_ELT(result, 0, curDepth);
 	SET_VECTOR_ELT(result, 1, 
@@ -476,7 +476,7 @@ static SEXP findViewport(SEXP name, SEXP strict, SEXP vp, int depth)
 	 */
 	if (LOGICAL(strict)[0]) {
 	    SET_VECTOR_ELT(result, 0, zeroDepth);
-	    SET_VECTOR_ELT(result, 1, R_NilValue);
+	    SET_VECTOR_ELT(result, 1, nullptr);
 	} else {
 	    result = findInChildren(name, strict, viewportChildren(vp),
 				    depth + 1);
@@ -564,7 +564,7 @@ static SEXP findvppathInChildren(SEXP path, SEXP name,
     int n = LENGTH(childnames);
     int count = 0;
     Rboolean found = FALSE;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     PROTECT(childnames);
     PROTECT(result);
     while (count < n && !found) {
@@ -584,7 +584,7 @@ static SEXP findvppathInChildren(SEXP path, SEXP name,
 	PROTECT(zeroDepth = Rf_allocVector(INTSXP, 1));
 	INTEGER(zeroDepth)[0] = 0;
 	SET_VECTOR_ELT(temp, 0, zeroDepth);
-	SET_VECTOR_ELT(temp, 1, R_NilValue);
+	SET_VECTOR_ELT(temp, 1, nullptr);
 	UNPROTECT(2);
 	result = temp;
     }
@@ -606,7 +606,7 @@ static SEXP findvppath(SEXP path, SEXP name, SEXP strict,
      */
     if (noChildren(viewportChildren(vp))) {
 	SET_VECTOR_ELT(result, 0, zeroDepth);
-	SET_VECTOR_ELT(result, 1, R_NilValue);
+	SET_VECTOR_ELT(result, 1, nullptr);
 
     } 
     /* 
@@ -645,7 +645,7 @@ SEXP L_downvppath(SEXP path, SEXP name, SEXP strict)
      */
     SEXP found, vp;
     int depth = 1;
-    PROTECT(found = findvppath(path, name, strict, R_NilValue, gvp, depth));
+    PROTECT(found = findvppath(path, name, strict, nullptr, gvp, depth));
     if (INTEGER(VECTOR_ELT(found, 0))[0]) {
 	vp = doSetViewport(VECTOR_ELT(found, 1), FALSE, FALSE, dd);
 	/* Set the value of the current viewport for the current device
@@ -737,7 +737,7 @@ SEXP L_unsetviewport(SEXP n)
      */
     getDeviceSize(dd, &devWidthCM, &devHeightCM);
     if (deviceChanged(devWidthCM, devHeightCM, newvp))
-	calcViewportTransform(newvp, viewportParent(newvp), Rboolean(1), dd);
+	calcViewportTransform(newvp, viewportParent(newvp), TRUE, dd);
     /* 
      * Enforce the current viewport settings
      */
@@ -766,8 +766,8 @@ SEXP L_unsetviewport(SEXP n)
      * remove the PROTECTive benefit of newvp pointing
      * to part of the (global) grid state
      */
-    SET_VECTOR_ELT(gvp, PVP_PARENT, R_NilValue);
-    return R_NilValue;
+    SET_VECTOR_ELT(gvp, PVP_PARENT, nullptr);
+    return nullptr;
 }
 
 /* This is similar to L_unsetviewport, except that it will NOT 
@@ -800,7 +800,7 @@ SEXP L_upviewport(SEXP n)
      */
     getDeviceSize(dd, &devWidthCM, &devHeightCM);
     if (deviceChanged(devWidthCM, devHeightCM, newvp))
-	calcViewportTransform(newvp, viewportParent(newvp), Rboolean(1), dd);
+	calcViewportTransform(newvp, viewportParent(newvp), TRUE, dd);
     /* 
      * Enforce the current viewport settings
      */
@@ -828,7 +828,7 @@ SEXP L_upviewport(SEXP n)
      * list works 
      */
     setGridStateElement(dd, GSS_VP, newvp);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getDisplayList() 
@@ -845,7 +845,7 @@ SEXP L_setDisplayList(SEXP dl)
      */
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_DL, dl);
-    return R_NilValue;
+    return nullptr;
 }
 
 /*
@@ -875,7 +875,7 @@ SEXP L_setDLelt(SEXP value)
     PROTECT(dl = gridStateElement(dd, GSS_DL));
     SET_VECTOR_ELT(dl, INTEGER(gridStateElement(dd, GSS_DLINDEX))[0], value);
     UNPROTECT(1);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getDLindex()
@@ -892,7 +892,7 @@ SEXP L_setDLindex(SEXP index)
      */
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_DLINDEX, index);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getDLon()
@@ -928,7 +928,7 @@ SEXP L_setEngineDLon(SEXP value)
      */
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_ENGINEDLON, value);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getCurrentGrob() 
@@ -941,7 +941,7 @@ SEXP L_setCurrentGrob(SEXP value)
 {
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_CURRGROB, value);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_getEngineRecording() 
@@ -954,7 +954,7 @@ SEXP L_setEngineRecording(SEXP value)
 {
     pGEDevDesc dd = getDevice();
     setGridStateElement(dd, GSS_ENGINERECORDING, value);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_currentGPar()
@@ -982,7 +982,7 @@ SEXP L_newpagerecording()
 	    dd = GEcurrentDevice();
     }
     GEinitDisplayList(dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_newpage()
@@ -1014,28 +1014,28 @@ SEXP L_newpage()
 	gcontextFromgpar(currentgp, 0, &gc, dd);
 	GENewPage(&gc, dd);
     }
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_initGPar()
 {
     pGEDevDesc dd = getDevice();
     initGPar(dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_initViewportStack()
 {
     pGEDevDesc dd = getDevice();
     initVP(dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_initDisplayList()
 {
     pGEDevDesc dd = getDevice();
     initDL(dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 void getViewportTransform(SEXP currentvp, 
@@ -1049,7 +1049,7 @@ void getViewportTransform(SEXP currentvp,
     if (deviceChanged(devWidthCM, devHeightCM, currentvp)) {
 	/* IF the device has changed, recalculate the viewport transform
 	 */
-	calcViewportTransform(currentvp, viewportParent(currentvp), Rboolean(1), dd); 
+	calcViewportTransform(currentvp, viewportParent(currentvp), TRUE, dd); 
     }
     for (i=0; i<3; i++)
 	for (j=0; j<3; j++)
@@ -1764,7 +1764,7 @@ SEXP L_moveTo(SEXP x, SEXP y)
     REAL(devloc)[0] = xx;
     REAL(devloc)[1] = yy;
     UNPROTECT(2);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_lineTo(SEXP x, SEXP y, SEXP arrow)
@@ -1823,7 +1823,7 @@ SEXP L_lineTo(SEXP x, SEXP y, SEXP arrow)
 	GEMode(0, dd);
     }
     UNPROTECT(2);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* We are assuming here that the R code has checked that x and y 
@@ -1920,7 +1920,7 @@ SEXP L_lines(SEXP x, SEXP y, SEXP index, SEXP arrow)
 	vmaxset(vmax);
     }
     GEMode(0, dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* We are assuming here that the R code has checked that x and y 
@@ -1937,8 +1937,8 @@ SEXP gridXspline(SEXP x, SEXP y, SEXP s, SEXP o, SEXP a, SEXP rep, SEXP index,
     R_GE_gcontext gc;
     LTransform transform;
     SEXP currentvp, currentgp;
-    SEXP tracePts = R_NilValue;
-    SEXP result = R_NilValue;
+    SEXP tracePts = nullptr;
+    SEXP result = nullptr;
     double edgex, edgey;
     double xmin = DOUBLE_XMAX;
     double xmax = -DOUBLE_XMAX;
@@ -2137,7 +2137,7 @@ SEXP gridXspline(SEXP x, SEXP y, SEXP s, SEXP o, SEXP a, SEXP rep, SEXP index,
 SEXP L_xspline(SEXP x, SEXP y, SEXP s, SEXP o, SEXP a, SEXP rep, SEXP index) 
 {
     gridXspline(x, y, s, o, a, rep, index, 0, TRUE, FALSE);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_xsplineBounds(SEXP x, SEXP y, SEXP s, SEXP o, SEXP a, SEXP rep, 
@@ -2217,7 +2217,7 @@ SEXP L_segments(SEXP x0, SEXP y0, SEXP x1, SEXP y1, SEXP arrow)
 	}
     }
     GEMode(0, dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 static int getArrowN(SEXP x1, SEXP x2, SEXP xnm1, SEXP xn, 
@@ -2275,7 +2275,7 @@ SEXP L_arrows(SEXP x1, SEXP x2, SEXP xnm1, SEXP xn,
     R_GE_gcontext gc;
     LTransform transform;
     SEXP currentvp, currentgp;
-    SEXP devloc = R_NilValue; /* -Wall */
+    SEXP devloc = nullptr; /* -Wall */
     /* Get the current device 
      */
     pGEDevDesc dd = getDevice();
@@ -2363,7 +2363,7 @@ SEXP L_arrows(SEXP x1, SEXP x2, SEXP xnm1, SEXP xn,
 	    UNPROTECT(1);
     }
     GEMode(0, dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_polygon(SEXP x, SEXP y, SEXP index)
@@ -2436,7 +2436,7 @@ SEXP L_polygon(SEXP x, SEXP y, SEXP index)
 	vmaxset(vmax);
     }
     GEMode(0, dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 static SEXP gridCircle(SEXP x, SEXP y, SEXP r, 
@@ -2450,7 +2450,7 @@ static SEXP gridCircle(SEXP x, SEXP y, SEXP r,
     R_GE_gcontext gc;
     LTransform transform;
     SEXP currentvp, currentgp;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     double xmin = DOUBLE_XMAX;
     double xmax = -DOUBLE_XMAX;
     double ymin = DOUBLE_XMAX;
@@ -2574,7 +2574,7 @@ static SEXP gridCircle(SEXP x, SEXP y, SEXP r,
 SEXP L_circle(SEXP x, SEXP y, SEXP r)
 {
     gridCircle(x, y, r, 0, TRUE);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_circleBounds(SEXP x, SEXP y, SEXP r, SEXP theta)
@@ -2596,7 +2596,7 @@ static SEXP gridRect(SEXP x, SEXP y, SEXP w, SEXP h,
     R_GE_gcontext gc;
     LTransform transform;
     SEXP currentvp, currentgp;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     double edgex, edgey;
     double xmin = DOUBLE_XMAX;
     double xmax = -DOUBLE_XMAX;
@@ -2805,7 +2805,7 @@ static SEXP gridRect(SEXP x, SEXP y, SEXP w, SEXP h,
 SEXP L_rect(SEXP x, SEXP y, SEXP w, SEXP h, SEXP hjust, SEXP vjust) 
 {
     gridRect(x, y, w, h, hjust, vjust, 0, TRUE);
-    return R_NilValue;    
+    return nullptr;    
 }
 
 SEXP L_rectBounds(SEXP x, SEXP y, SEXP w, SEXP h, SEXP hjust, SEXP vjust,
@@ -2878,7 +2878,7 @@ SEXP L_path(SEXP x, SEXP y, SEXP index, SEXP rule)
     GEPath(xx, yy, npoly, nper, Rboolean(INTEGER(rule)[0]), &gc, dd);
     vmaxset(vmax);
     GEMode(0, dd);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* FIXME: need to add L_rasterBounds */
@@ -3002,7 +3002,7 @@ SEXP L_raster(SEXP raster, SEXP x, SEXP y, SEXP w, SEXP h,
     }
     GEMode(0, dd);
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_cap()
@@ -3062,7 +3062,7 @@ static SEXP gridText(SEXP label, SEXP x, SEXP y, SEXP hjust, SEXP vjust,
     LViewportContext vpc;
     R_GE_gcontext gc;
     LTransform transform;
-    SEXP txt, result = R_NilValue;
+    SEXP txt, result = nullptr;
     double edgex, edgey;
     double xmin = DOUBLE_XMAX;
     double xmax = -DOUBLE_XMAX;
@@ -3278,7 +3278,7 @@ SEXP L_text(SEXP label, SEXP x, SEXP y, SEXP hjust, SEXP vjust,
 	    SEXP rot, SEXP checkOverlap)
 {
     gridText(label, x, y, hjust, vjust, rot, checkOverlap, 0, TRUE);
-    return R_NilValue;    
+    return nullptr;    
 }
 
 /*
@@ -3381,7 +3381,7 @@ SEXP L_points(SEXP x, SEXP y, SEXP pch, SEXP size)
 	}
     GEMode(0, dd);
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP L_clip(SEXP x, SEXP y, SEXP w, SEXP h, SEXP hjust, SEXP vjust) 
@@ -3454,7 +3454,7 @@ SEXP L_clip(SEXP x, SEXP y, SEXP w, SEXP h, SEXP hjust, SEXP vjust)
         Rf_warning(_("unable to clip to rotated rectangle"));
     }
     GEMode(0, dd);
-    return R_NilValue;    
+    return nullptr;    
 }
 
 SEXP L_pretty(SEXP scale) {
@@ -3555,7 +3555,7 @@ SEXP L_locnBounds(SEXP x, SEXP y, SEXP theta)
     R_GE_gcontext gc;
     LTransform transform;
     SEXP currentvp, currentgp;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     const void *vmax;
     double xmin = DOUBLE_XMAX;
     double xmax = -DOUBLE_XMAX;
@@ -3640,10 +3640,10 @@ SEXP L_stringMetric(SEXP label)
     LTransform transform;
     SEXP currentvp, currentgp;
     SEXP txt;
-    SEXP result = R_NilValue;
-    SEXP ascent = R_NilValue;
-    SEXP descent = R_NilValue;
-    SEXP width = R_NilValue;
+    SEXP result = nullptr;
+    SEXP ascent = nullptr;
+    SEXP descent = nullptr;
+    SEXP width = nullptr;
     const void *vmax;
     double asc, dsc, wid;
     /* Get the current device 

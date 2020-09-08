@@ -128,7 +128,7 @@ SEXP delim_match(SEXP x, SEXP delims)
 		if(used == 0) break;
 		s += used;
 	    } else
-		s++; 
+		s++;
 	    pos++;
 	}
 	if(end > -1) {
@@ -192,7 +192,7 @@ check_nonASCII(SEXP text, SEXP ignore_quotes)
 
 SEXP check_nonASCII2(SEXP text)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     int i, m = 0, m_all = 100, *ind, *ians, yes;
     const char *p;
 

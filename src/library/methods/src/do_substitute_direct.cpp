@@ -34,9 +34,9 @@ SEXP do_substitute_direct(SEXP f, SEXP env)
 {
     SEXP s;
     if (TYPEOF(env) == VECSXP)
-	env = Rf_NewEnvironment(R_NilValue, Rf_VectorToPairList(env), R_BaseEnv);
+	env = Rf_NewEnvironment(nullptr, Rf_VectorToPairList(env), R_BaseEnv);
     else if (TYPEOF(env) == LISTSXP)
-	env = Rf_NewEnvironment(R_NilValue, Rf_duplicate(env), R_BaseEnv);
+	env = Rf_NewEnvironment(nullptr, Rf_duplicate(env), R_BaseEnv);
     if(TYPEOF(env) != ENVSXP)
 	Rf_error(_("invalid list for substitution"));
     PROTECT(env);

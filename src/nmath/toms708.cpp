@@ -740,7 +740,9 @@ static double bfrac(double a, double b, double x, double y, double lambda,
     }
 #ifdef DEBUG_bratio
     else
-	REprintf("\n");
+	{
+		{REprintf("\n")};
+	}
 #endif
 
     c = lambda + 1.;
@@ -944,7 +946,6 @@ static double brcmp1(int mu, double a, double b, double x, double y, int give_lo
  * ----------------------------------------------------------------------- */
 
 //    static double const__ = M_1_SQRT_2PI; //.398942280401433; /* == 1/sqrt(2*pi); */
-    /* R has  M_1_SQRT_2PI */
 
     /* Local variables */
     double c, t, u, v, z, a0, b0, apb;

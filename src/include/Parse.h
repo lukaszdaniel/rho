@@ -89,7 +89,7 @@ SEXP R_ParseConn(Rconnection con, int n, ParseStatus* status, SEXP srcfile);
 NORET void parseError(SEXP call, int linenum);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* not R_PARSE_H */

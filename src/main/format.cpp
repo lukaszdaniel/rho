@@ -69,7 +69,7 @@ void formatRaw(const Rbyte *x, R_xlen_t n, int *fieldwidth)
 unsigned int rho::stringWidth(unsigned int minwidth, const String* string)
 {
     unsigned int width = R_print.na_width_noquote;
-    if (string != NA_STRING)
+    if (string != R_NaString)
 	width = Rstrlen(const_cast<String*>(string), false);
     return max(minwidth, width);
 }
@@ -79,7 +79,7 @@ unsigned int rho::stringWidthQuote(unsigned int minwidth,
 				   const String* string)
 {
     unsigned int width = R_print.na_width;
-    if (string != NA_STRING)
+    if (string != R_NaString)
 	width = Rstrlen(const_cast<String*>(string), true) + 2;
     return max(minwidth, width);
 }
@@ -88,7 +88,7 @@ void formatLogical(const int *x, R_xlen_t n, int *fieldwidth)
 {
     *fieldwidth = 1;
     for(R_xlen_t i = 0 ; i < n; i++) {
-	if (x[i] == NA_LOGICAL) {
+	if (x[i] == R_NaLog) {
 	    if(*fieldwidth < R_print.na_width)
 		*fieldwidth =  R_print.na_width;
 	} else if (x[i] != 0 && *fieldwidth < 4) {
@@ -107,7 +107,7 @@ void formatInteger(const int *x, R_xlen_t n, int *fieldwidth)
     int l;
 
     for (R_xlen_t i = 0; i < n; i++) {
-	if (x[i] == NA_INTEGER)
+	if (x[i] == R_NaInt)
 	    naflag = 1;
 	else {
 	    if (x[i] < xmin) xmin = x[i];
@@ -336,9 +336,9 @@ void formatReal(const double *x, R_xlen_t n, int *w, int *d, int *e, int nsmall)
     mnl = INT_MAX;
 
     for (R_xlen_t i = 0; i < n; i++) {
-	if (!R_FINITE(x[i])) {
+	if (!std::isfinite(x[i])) {
 	    if(ISNA(x[i])) naflag = 1;
-	    else if(ISNAN(x[i])) nanflag = 1;
+	    else if(std::isnan(x[i])) nanflag = 1;
 	    else if(x[i] > 0) posinf = 1;
 	    else neginf = 1;
 	} else {
@@ -442,8 +442,8 @@ void formatComplex(const Rcomplex *x, R_xlen_t n, int *wr, int *dr, int *er,
 	} else {
 	    /* real part */
 
-	    if(!R_FINITE(tmp.r)) {
-		if (ISNAN(tmp.r)) rnanflag = 1;
+	    if(!std::isfinite(tmp.r)) {
+		if (std::isnan(tmp.r)) rnanflag = 1;
 		else if (tmp.r > 0) rposinf = 1;
 		else rneginf = 1;
 	    } else {
@@ -468,8 +468,8 @@ void formatComplex(const Rcomplex *x, R_xlen_t n, int *wr, int *dr, int *er,
 	    /* this is always unsigned */
 	    /* we explicitly put the sign in when we print */
 
-	    if(!R_FINITE(tmp.i)) {
-		if (ISNAN(tmp.i)) inanflag = 1;
+	    if(!std::isfinite(tmp.i)) {
+		if (std::isnan(tmp.i)) inanflag = 1;
 		else iposinf = 1;
 	    } else {
 		if(x[i].i != 0) all_im_zero = FALSE;

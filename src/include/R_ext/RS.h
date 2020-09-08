@@ -53,7 +53,6 @@ extern "C" {
 #include <R_ext/Error.h>	/* for error and warning */
 
 #ifndef STRICT_R_HEADERS
-
 #define R_PROBLEM_BUFSIZE	4096
 /* Parentheses added for FC4 with gcc4 and -D_FORTIFY_SOURCE=2 */
 #define PROBLEM			{char R_problem_buf[R_PROBLEM_BUFSIZE];(sprintf)(R_problem_buf,
@@ -64,7 +63,6 @@ extern "C" {
 #define LOCAL_EVALUATOR		/**/
 #define NULL_ENTRY		/**/
 #define WARN			WARNING(NULL)
-
 #endif
 
 /* S Like Memory Management */
@@ -130,7 +128,7 @@ void	call_R(char*, long, void**, char**, long*, char**, long, char**);
 #endif
 
 #ifdef  __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_RS_H */

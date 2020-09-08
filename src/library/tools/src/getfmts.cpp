@@ -25,12 +25,9 @@
 
 #include <Defn.h>
 #include "RBufferUtils.h"
-
 #include "localization.h"
 
-
-
-#define MAXLINE MAXELTSIZE
+constexpr size_t MAXLINE = MAXELTSIZE;
 #define MAXNARGS 100
 /*               ^^^ not entirely arbitrary, but strongly linked to allowing %$1 to %$99 !*/
 
@@ -42,8 +39,8 @@
 SEXP getfmts(SEXP format)
 {
     int cnt, v, nfmt;
-    char fmt[MAXLINE+1], bit[MAXLINE+1];
-    const char *formatString;
+    char fmt[MAXLINE + 1], bit[MAXLINE + 1];
+    const char* formatString;
     size_t n, cur, chunk, maxlen = 0;
 
     int nthis, nstar;
@@ -70,8 +67,8 @@ SEXP getfmts(SEXP format)
 	Rf_error(_("'fmt' length exceeds maximal format length %d"), MAXLINE);
     /* process the format string */
     for (cur = 0, cnt = 0; cur < n; cur += chunk) {
-	const char *curFormat = formatString + cur;
-	char *starc;
+	const char* curFormat = formatString + cur;
+	char* starc;
 	if (formatString[cur] == '%') { /* handle special format command */
 
 	    if (cur < n - 1 && formatString[cur + 1] == '%') {
@@ -127,7 +124,7 @@ SEXP getfmts(SEXP format)
 			nstar = cnt++;
 		    }
 
-		    if (Rf_strchr(starc+1, '*'))
+		    if (Rf_strchr(starc + 1, '*'))
 			Rf_error(_("at most one asterisk '*' is supported in each conversion specification"));
 
 		    SET_RESULT(nstar, "*");
@@ -144,7 +141,7 @@ SEXP getfmts(SEXP format)
 	    }
 	}
 	else { /* not '%' : handle string part */
-	    char *ch = Rf_strchr(curFormat, '%'); /* MBCS-aware version used */
+	    char* ch = Rf_strchr(curFormat, '%'); /* MBCS-aware version used */
 	    chunk = (ch) ? (size_t) (ch - curFormat) : strlen(curFormat);
 	    strncpy(bit, curFormat, chunk);
 	    bit[chunk] = '\0';

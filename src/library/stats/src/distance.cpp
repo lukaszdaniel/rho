@@ -29,6 +29,7 @@
 #include <Rmath.h>
 #include "stats.h"
 #include "localization.h"
+#include "rho/Symbol.hpp"
 
 #ifdef _OPENMP
 # include <R_ext/MathThreads.h>
@@ -41,7 +42,7 @@
 #define both_non_NA(a,b) (!ISNAN(a) && !ISNAN(b))
 #endif
 
-static double R_euclidean(double *x, int nr, int nc, int i1, int i2)
+static double R_euclidean(double* x, int nr, int nc, int i1, int i2)
 {
     double dev, dist;
     int count, j;
@@ -64,7 +65,7 @@ static double R_euclidean(double *x, int nr, int nc, int i1, int i2)
     return sqrt(dist);
 }
 
-static double R_maximum(double *x, int nr, int nc, int i1, int i2)
+static double R_maximum(double* x, int nr, int nc, int i1, int i2)
 {
     double dev, dist;
     int count, j;
@@ -87,7 +88,7 @@ static double R_maximum(double *x, int nr, int nc, int i1, int i2)
     return dist;
 }
 
-static double R_manhattan(double *x, int nr, int nc, int i1, int i2)
+static double R_manhattan(double* x, int nr, int nc, int i1, int i2)
 {
     double dev, dist;
     int count, j;
@@ -105,12 +106,14 @@ static double R_manhattan(double *x, int nr, int nc, int i1, int i2)
 	i1 += nr;
 	i2 += nr;
     }
-    if(count == 0) return NA_REAL;
-    if(count != nc) dist /= ((double)count/nc);
+    if (count == 0)
+	return NA_REAL;
+    if (count != nc)
+	dist /= ((double)count / nc);
     return dist;
 }
 
-static double R_canberra(double *x, int nr, int nc, int i1, int i2)
+static double R_canberra(double* x, int nr, int nc, int i1, int i2)
 {
     double dev, dist, sum, diff;
     int count, j;
@@ -139,7 +142,7 @@ static double R_canberra(double *x, int nr, int nc, int i1, int i2)
     return dist;
 }
 
-static double R_dist_binary(double *x, int nr, int nc, int i1, int i2)
+static double R_dist_binary(double* x, int nr, int nc, int i1, int i2)
 {
     int total, count, dist;
     int j;
@@ -165,12 +168,14 @@ static double R_dist_binary(double *x, int nr, int nc, int i1, int i2)
 	i2 += nr;
     }
 
-    if(total == 0) return NA_REAL;
-    if(count == 0) return 0;
-    return (double) dist / count;
+    if (total == 0)
+	return NA_REAL;
+    if (count == 0)
+	return 0;
+    return (double)dist / count;
 }
 
-static double R_minkowski(double *x, int nr, int nc, int i1, int i2, double p)
+static double R_minkowski(double* x, int nr, int nc, int i1, int i2, double p)
 {
     double dev, dist;
     int count, j;
@@ -188,20 +193,28 @@ static double R_minkowski(double *x, int nr, int nc, int i1, int i2, double p)
 	i1 += nr;
 	i2 += nr;
     }
-    if(count == 0) return NA_REAL;
-    if(count != nc) dist /= ((double)count/nc);
-    return R_pow(dist, 1.0/p);
+    if (count == 0)
+	return NA_REAL;
+    if (count != nc)
+	dist /= ((double)count / nc);
+    return R_pow(dist, 1.0 / p);
 }
 
-enum Distance { EUCLIDEAN=1, MAXIMUM, MANHATTAN, CANBERRA, BINARY, MINKOWSKI };
+enum Distance {
+    EUCLIDEAN = 1,
+    MAXIMUM,
+    MANHATTAN,
+    CANBERRA,
+    BINARY,
+    MINKOWSKI
+};
 /* == 1,2,..., defined by order in the R function dist */
 
-void R_distance(double *x, int *nr, int *nc, double *d, int *diag,
-		int *method, double *p)
+void R_distance(double* x, int* nr, int* nc, double* d, int* diag, int* method, double* p)
 {
     int dc, i, j;
     size_t  ij;  /* can exceed 2^31 - 1 */
-    double (*distfun)(double*, int, int, int, int) = NULL;
+    double (*distfun)(double*, int, int, int, int) = nullptr;
 #ifdef _OPENMP
     int nthreads;
 #endif
@@ -287,7 +300,7 @@ SEXP Cdist(SEXP x, SEXP smethod, SEXP attrs, SEXP p)
     /* tack on attributes */
     SEXP names = Rf_getAttrib(attrs, R_NamesSymbol);
     for (int i = 0; i < LENGTH(attrs); i++)
-	Rf_setAttrib(ans, Rf_install(Rf_translateChar(STRING_ELT(names, i))),
+	Rf_setAttrib(ans, rho::Symbol::obtain(Rf_translateChar(STRING_ELT(names, i))),
 		  VECTOR_ELT(attrs, i));
     UNPROTECT(2);
     return ans;

@@ -65,7 +65,7 @@
 
 HIDDEN
 double R_pretty(double *lo, double *up, int *ndiv, int min_n,
-		double shrink_sml, double high_u_fact[],
+		double shrink_sml, const double high_u_fact[],
 		int eps_correction, int return_bounds)
 {
 /* From version 0.65 on, we had rounding_eps := 1e-5, before, r..eps = 0

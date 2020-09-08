@@ -141,7 +141,7 @@ void printComplexVector(const Rcomplex *x, R_xlen_t n, int indx)
 	    DO_newline;
 	}
 	if (ISNA(x[i].r) || ISNA(x[i].i))
-	    Rprintf("%s", EncodeReal0(NA_REAL, w, 0, 0, OutDec));
+	    Rprintf("%s", EncodeReal0(R_NaReal, w, 0, 0, OutDec));
 	else
 	    Rprintf("%s", EncodeComplex(x[i], wr + R_print.gap , dr, er,
 					wi, di, ei, OutDec));
@@ -305,7 +305,7 @@ static void printNamedRealVector(const double * x, int n, const StringVector* na
 
 #undef P_IMAG_NA
 #define P_IMAG_NA				\
-	    if(ISNAN(x[k].i))			\
+	    if(std::isnan(x[k].i))			\
 		Rprintf("+%si", "NaN");		\
 	    else
 
@@ -314,7 +314,7 @@ static void printNamedComplexVector(const Rcomplex * x, int n, const StringVecto
 	{ /* PRINT_1 */
 	    if(j) Rprintf("%*s", R_print.gap, "");
 	    if (ISNA(x[j].r) || ISNA(x[j].i)) {
-		Rprintf("%s", EncodeReal0(NA_REAL, w, 0, 0, OutDec));
+		Rprintf("%s", EncodeReal0(R_NaReal, w, 0, 0, OutDec));
 	    }
 	    else {
 		Rprintf("%s", EncodeReal0(x[k].r, wr, dr, er, OutDec));

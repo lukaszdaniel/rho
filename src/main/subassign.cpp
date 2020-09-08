@@ -215,27 +215,27 @@ static SEXP EnlargeVector(SEXP x, R_xlen_t newlen)
 	for (R_xlen_t i = 0; i < len; i++)
 	    INTEGER0(newx)[i] = INTEGER_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++)
-	    INTEGER0(newx)[i] = NA_INTEGER;
+	    INTEGER0(newx)[i] = R_NaInt;
 	break;
     case REALSXP:
 	for (R_xlen_t i = 0; i < len; i++)
 	    REAL0(newx)[i] = REAL_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++)
-	    REAL0(newx)[i] = NA_REAL;
+	    REAL0(newx)[i] = R_NaReal;
 	break;
     case CPLXSXP:
 	for (R_xlen_t i = 0; i < len; i++)
 	    COMPLEX0(newx)[i] = COMPLEX_ELT(x, i);
 	for (R_xlen_t i = len; i < newtruelen; i++) {
-	    COMPLEX0(newx)[i].r = NA_REAL;
-	    COMPLEX0(newx)[i].i = NA_REAL;
+	    COMPLEX0(newx)[i].r = R_NaReal;
+	    COMPLEX0(newx)[i].i = R_NaReal;
 	}
 	break;
     case STRSXP:
 	for (R_xlen_t i = 0; i < len; i++)
 	    SET_STRING_ELT(newx, i, STRING_ELT(x, i));
 	for (R_xlen_t i = len; i < newtruelen; i++)
-	    SET_STRING_ELT(newx, i, NA_STRING); /* was R_BlankString  < 1.6.0 */
+	    SET_STRING_ELT(newx, i, R_NaString); /* was R_BlankString  < 1.6.0 */
 	break;
     case EXPRSXP:
 	for (R_xlen_t i = 0; i < len; i++)
@@ -491,7 +491,7 @@ R_INLINE static R_xlen_t gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL_ELT(indx, i);
-	return R_FINITE(d) ? R_xlen_t(d) : NA_INTEGER;
+	return std::isfinite(d) ? R_xlen_t(d) : R_NaInt;
     } else
 	return INTEGER_ELT(indx, i);
 }
@@ -501,7 +501,7 @@ R_INLINE static int gi(SEXP indx, R_xlen_t i)
 {
     if (TYPEOF(indx) == REALSXP) {
 	double d = REAL_ELT(indx, i);
-	if (!R_FINITE(d) || d < -R_SHORT_LEN_MAX || d > R_SHORT_LEN_MAX) return NA_INTEGER;
+	if (!std::isfinite(d) || d < -R_SHORT_LEN_MAX || d > R_SHORT_LEN_MAX) return R_NaInt;
 	return int(d);
     } else
 	return INTEGER_ELT(indx, i);
@@ -877,7 +877,7 @@ static SEXP SimpleListAssign(SEXP call, SEXP x, SEXP s, SEXP y, int ind)
 
     if (n == 1) {
 	ii = Rf_asInteger(indx);
-	if (ii != NA_INTEGER) {
+	if (ii != R_NaInt) {
 	    ii = ii - 1;
 	    SEXP xi = Rf_nthcdr(x, ii % nx);
 	    SETCAR(xi, y);
@@ -905,7 +905,7 @@ static SEXP listRemove(SEXP x, SEXP s, int ind)
 	size_t ns = iv->size();
 	for (size_t i = 0; i < ns; ++i) {
 	    int ii = (*iv)[i];
-	    if (ii != NA_INTEGER) vcc[ii-1] = nullptr;
+	    if (ii != R_NaInt) vcc[ii-1] = nullptr;
 	}
     }
     // Restring the pearls:
@@ -1289,8 +1289,8 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	case 1410:	/* real	     <- logical	  */
 	case 1413:	/* real	     <- integer	  */
 
-	    if (INTEGER_ELT(y, 0) == NA_INTEGER)
-		REAL(x)[offset] = NA_REAL;
+	    if (INTEGER_ELT(y, 0) == R_NaInt)
+		REAL(x)[offset] = R_NaReal;
 	    else
 		REAL(x)[offset] = INTEGER_ELT(y, 0);
 	    break;
@@ -1304,9 +1304,9 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	case 1510:	/* complex   <- logical	  */
 	case 1513:	/* complex   <- integer	  */
 
-	    if (INTEGER_ELT(y, 0) == NA_INTEGER) {
-		COMPLEX(x)[offset].r = NA_REAL;
-		COMPLEX(x)[offset].i = NA_REAL;
+	    if (INTEGER_ELT(y, 0) == R_NaInt) {
+		COMPLEX(x)[offset].r = R_NaReal;
+		COMPLEX(x)[offset].i = R_NaReal;
 	    }
 	    else {
 		COMPLEX(x)[offset].r = INTEGER_ELT(y, 0);
@@ -1317,8 +1317,8 @@ do_subassign2_dflt(SEXP call, SEXP op, SEXP argsarg, SEXP rho)
 	case 1514:	/* complex   <- real	  */
 
 	    if (ISNA(REAL_ELT(y, 0))) {
-		COMPLEX(x)[offset].r = NA_REAL;
-		COMPLEX(x)[offset].i = NA_REAL;
+		COMPLEX(x)[offset].r = R_NaReal;
+		COMPLEX(x)[offset].i = R_NaReal;
 	    }
 	    else {
 		COMPLEX(x)[offset].r = REAL_ELT(y, 0);

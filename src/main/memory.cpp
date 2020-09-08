@@ -113,7 +113,7 @@ HIDDEN SEXP do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op,
 	Rf_error(_("second argument must be a function"));
 
     onexit = Rf_asLogical(onexit_);
-    if(onexit == NA_LOGICAL)
+    if(onexit == R_NaLog)
 	Rf_error(_("third argument must be 'TRUE' or 'FALSE'"));
 
     R_RegisterFinalizerEx(e_, f_, Rboolean(onexit));
@@ -128,10 +128,10 @@ HIDDEN SEXP do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op,
 // NB: all these are loose wheels in rho.
 void R_gc_torture(int gap, int wait, Rboolean inhibit)
 {
-    if (gap != NA_INTEGER && gap >= 0)
+    if (gap != R_NaInt && gap >= 0)
 	gc_force_wait = gc_force_gap = gap;
     if (gap > 0) {
-	if (wait != NA_INTEGER && wait > 0)
+	if (wait != R_NaInt && wait > 0)
 	    gc_force_wait = wait;
     }
 }
@@ -143,7 +143,7 @@ HIDDEN SEXP do_gctorture(/*const*/ Expression* call, const BuiltInFunction* op, 
 
     if (Rf_isLogical(on_)) {
 	Rboolean on = Rboolean(Rf_asLogical(on_));
-	if (on == NA_LOGICAL) gap = NA_INTEGER;
+	if (on == R_NaLog) gap = R_NaInt;
 	else if (on) gap = 1;
 	else gap = 0;
     }
@@ -172,7 +172,7 @@ HIDDEN SEXP do_gcinfo(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 {
     std::ostream* report_os = GCManager::setReporting(nullptr);
     int want_reporting = Rf_asLogical(verbose_);
-    if (want_reporting != NA_LOGICAL)
+    if (want_reporting != R_NaLog)
 	GCManager::setReporting(want_reporting ? &std::cerr : nullptr);
     else
 	GCManager::setReporting(report_os);
@@ -203,7 +203,7 @@ HIDDEN SEXP do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject
     GCManager::setReporting(report_os);
     GCStackRoot<> value(Rf_allocVector(REALSXP, 6));
     REAL(value)[0] = GCNode::numNodes();
-    REAL(value)[1] = NA_REAL;
+    REAL(value)[1] = R_NaReal;
     REAL(value)[2] = GCManager::maxNodes();
     /* next four are in 0.1MB, rounded up */
     REAL(value)[3] = 0.1*ceil(10. * MemoryBank::bytesAllocated()/Mega);
@@ -444,9 +444,9 @@ HIDDEN SEXP do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* 
 /* S-like wrappers for calloc, realloc and free that check for error
    conditions */
 
-void *R_chk_calloc(std::size_t nelem, std::size_t elsize)
+void* R_chk_calloc(std::size_t nelem, std::size_t elsize)
 {
-    void *p;
+    void* p;
 #ifndef HAVE_WORKING_CALLOC
     if(nelem == 0)
 	return(NULL);
@@ -458,9 +458,9 @@ void *R_chk_calloc(std::size_t nelem, std::size_t elsize)
     return(p);
 }
 
-void *R_chk_realloc(void *ptr, std::size_t size)
+void* R_chk_realloc(void* ptr, std::size_t size)
 {
-    void *p;
+    void* p;
     /* Protect against broken realloc */
     if(ptr) p = realloc(ptr, size); else p = malloc(size);
     if(!p)
@@ -469,7 +469,7 @@ void *R_chk_realloc(void *ptr, std::size_t size)
     return(p);
 }
 
-void R_chk_free(void *ptr)
+void R_chk_free(void* ptr)
 {
     /* S-PLUS warns here, but there seems no reason to do so */
     /* if(!ptr) Rf_warning("attempt to free NULL pointer by Free"); */
@@ -484,7 +484,10 @@ void R_chk_free(void *ptr)
    Added to API in R 3.4.0.
    Work around casting issues: works where it is needed.
  */
-typedef union {void *p; DL_FUNC fn;} fn_ptr;
+typedef union {
+    void* p;
+    DL_FUNC fn;
+} fn_ptr;
 
 SEXP R_MakeExternalPtrFn(DL_FUNC p, SEXP tag, SEXP prot)
 {
@@ -546,7 +549,7 @@ void (SETALTREP)(SEXP x, int v) { SETALTREP(x, v); }
 #endif
 
 #if RHO_FALSE
-void *(STDVEC_DATAPTR)(SEXP x)
+void*(STDVEC_DATAPTR)(SEXP x)
 {
     if (ALTREP(x))
 	Rf_error("cannot get STDVEC_DATAPTR from ALTREP object");
@@ -557,7 +560,8 @@ void *(STDVEC_DATAPTR)(SEXP x)
     return STDVEC_DATAPTR(x);
 }
 
-int *(LOGICAL)(SEXP x) {
+int*(LOGICAL)(SEXP x)
+{
     if(TYPEOF(x) != LGLSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
@@ -566,7 +570,8 @@ int *(LOGICAL)(SEXP x) {
 }
 #endif
 
-const int *(LOGICAL_RO)(SEXP x) {
+const int*(LOGICAL_RO)(SEXP x)
+{
     if(TYPEOF(x) != LGLSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
@@ -576,7 +581,8 @@ const int *(LOGICAL_RO)(SEXP x) {
 
 /* Maybe this should exclude logicals, but it is widely used */
 #if RHO_FALSE
-int *(INTEGER)(SEXP x) {
+int*(INTEGER)(SEXP x)
+{
     if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
@@ -585,7 +591,8 @@ int *(INTEGER)(SEXP x) {
 }
 #endif
 
-const int *(INTEGER_RO)(SEXP x) {
+const int*(INTEGER_RO)(SEXP x)
+{
     if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
@@ -594,7 +601,8 @@ const int *(INTEGER_RO)(SEXP x) {
 }
 
 #if RHO_FALSE
-Rbyte *(RAW)(SEXP x) {
+Rbyte*(RAW)(SEXP x)
+{
     if(TYPEOF(x) != RAWSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
@@ -603,7 +611,8 @@ Rbyte *(RAW)(SEXP x) {
 }
 #endif
 
-const Rbyte *(RAW_RO)(SEXP x) {
+const Rbyte*(RAW_RO)(SEXP x)
+{
     if(TYPEOF(x) != RAWSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
@@ -621,7 +630,8 @@ double *(REAL)(SEXP x) {
 }
 #endif
 
-const double *(REAL_RO)(SEXP x) {
+const double*(REAL_RO)(SEXP x)
+{
     if(TYPEOF(x) != REALSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
@@ -639,7 +649,8 @@ Rcomplex *(COMPLEX)(SEXP x) {
 }
 #endif
 
-const Rcomplex *(COMPLEX_RO)(SEXP x) {
+const Rcomplex*(COMPLEX_RO)(SEXP x)
+{
     if(TYPEOF(x) != CPLXSXP)
 	Rf_error("%s() can only be applied to a '%s', not a '%s'",
 	      "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
@@ -755,37 +766,39 @@ SEXP do_Rprofmem(SEXP args)
 
 #include "RBufferUtils.h"
 
-void *R_AllocStringBuffer(std::size_t blen, R_StringBuffer *buf)
+void* R_AllocStringBuffer(std::size_t blen, R_StringBuffer* buf)
 {
     std::size_t blen1, bsize = buf->defaultSize;
 
     /* for backwards compatibility, this used to free the buffer */
-    if(blen == std::size_t(-1)) {
+    if (blen == std::size_t(-1)) {
 	Rf_error("R_AllocStringBuffer( (size_t)-1 ) is no longer allowed");
     }
 
-    if(blen * sizeof(char) < buf->bufsize) return buf->data;
+    if (blen * sizeof(char) < buf->bufsize)
+	return buf->data;
     blen1 = blen = (blen + 1) * sizeof(char);
     blen = (blen / bsize) * bsize;
-    if(blen < blen1) blen += bsize;
+    if (blen < blen1)
+	blen += bsize;
 
-    if(buf->data == nullptr) {
-	buf->data = static_cast<char *>(malloc(blen));
+    if (buf->data == nullptr) {
+	buf->data = static_cast<char*>(malloc(blen));
 	buf->data[0] = '\0';
     } else
-	buf->data = static_cast<char *>(realloc(buf->data, blen));
+	buf->data = static_cast<char*>(realloc(buf->data, blen));
     buf->bufsize = blen;
-    if(!buf->data) {
+    if (!buf->data) {
 	buf->bufsize = 0;
 	/* don't translate internal error message */
-	Rf_error("could not allocate memory (%u Mb) in C function 'R_AllocStringBuffer'",
-	      static_cast<unsigned int>(blen)/1024/1024);
+	Rf_error("could not allocate memory (%u MB) in C function "
+		 "'R_AllocStringBuffer'",
+	    static_cast<unsigned int>(blen) / 1024 / 1024);
     }
     return buf->data;
 }
 
-void
-R_FreeStringBuffer(R_StringBuffer *buf)
+void R_FreeStringBuffer(R_StringBuffer* buf)
 {
     if (buf->data != nullptr) {
 	free(buf->data);
@@ -794,8 +807,7 @@ R_FreeStringBuffer(R_StringBuffer *buf)
     }
 }
 
-HIDDEN void
-R_FreeStringBufferL(R_StringBuffer *buf)
+HIDDEN void R_FreeStringBufferL(R_StringBuffer* buf)
 {
     if (buf->bufsize > buf->defaultSize) {
 	free(buf->data);
@@ -806,7 +818,7 @@ R_FreeStringBufferL(R_StringBuffer *buf)
 
 /* ======== This needs direct access to gp field for efficiency ======== */
 
-/* this has NA_STRING = NA_STRING */
+/* this has R_NaString = R_NaString */
 HIDDEN
 int Rf_Seql(SEXP a, SEXP b)
 {
@@ -833,5 +845,3 @@ NORET R_len_t R_BadLongVector(SEXP x, const char *file, int line)
     Rf_error(_("long vectors not supported yet: %s:%d"), file, line);
 }
 #endif
-
-

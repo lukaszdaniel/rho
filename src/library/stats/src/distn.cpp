@@ -51,7 +51,7 @@
 	UNPROTECT(1);					\
 	return(sy);					\
     }							\
-    n = (na < nb) ? nb : na;				\
+    n = std::max(na, nb);				\
     PROTECT(sa = Rf_coerceVector(sa, REALSXP));		\
     PROTECT(sb = Rf_coerceVector(sb, REALSXP));		\
     PROTECT(sy = Rf_allocVector(REALSXP, n));		\
@@ -438,11 +438,11 @@ extern void wilcox_free(void);
 SEXP stats_signrank_free(void)
 {
     signrank_free();
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP stats_wilcox_free(void)
 {
     wilcox_free();
-    return R_NilValue;
+    return nullptr;
 }

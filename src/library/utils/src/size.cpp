@@ -23,10 +23,6 @@
  *  https://www.R-project.org/Licenses/
  */
 
-
-/* We need to know the sizes of certain internal structures */
-//#define USE_RINTERNALS
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -160,5 +156,5 @@ static R_size_t objectsize(SEXP s)
 
 SEXP objectSize(SEXP x)
 {
-    return Rf_ScalarReal(double(objectsize(x)) );
+    return Rf_ScalarReal(double(objectsize(x)));
 }

@@ -216,7 +216,7 @@ FILE *RC_fopen(const SEXP fn, const char *mode, const Rboolean expand)
 {
     wchar_t wmode[10];
 
-    if(fn == NA_STRING) return nullptr;
+    if(fn == R_NaString) return nullptr;
     mbstowcs(wmode, fixmode(mode), 10);
     return _wfopen(filenameToWchar(fn, expand), wmode);
 }
@@ -225,7 +225,7 @@ FILE *RC_fopen(const SEXP fn, const char *mode, const Rboolean expand)
 {
     const void *vmax = vmaxget();
     const char *filename = Rf_translateChar(fn), *res;
-    if(fn == NA_STRING || !filename) return nullptr;
+    if(fn == R_NaString || !filename) return nullptr;
     if(expand) res = R_ExpandFileName(filename);
     else res = filename;
     vmaxset(vmax);
@@ -566,15 +566,13 @@ HIDDEN SEXP do_unsetenv(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 #ifdef HAVE_ICONVLIST
 static unsigned int cnt;
 
-static int
-count_one (unsigned int namescount, const char * const *names, void *data)
+static int count_one (unsigned int namescount, const char * const *names, void *data)
 {
     cnt += namescount;
     return 0;
 }
 
-static int
-write_one (unsigned int namescount, const char * const *names, void *data)
+static int write_one (unsigned int namescount, const char * const *names, void *data)
 {
   unsigned int i;
   SEXP ans = (SEXP) data;
@@ -622,13 +620,13 @@ HIDDEN SEXP do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	to = R_CHAR(STRING_ELT(to_, 0));
 	if(!Rf_isString(sub_) || Rf_length(sub_) != 1)
 	    Rf_error(_("invalid '%s' argument"), "sub");
-	if(STRING_ELT(sub_, 0) == NA_STRING) sub = nullptr;
+	if(STRING_ELT(sub_, 0) == R_NaString) sub = nullptr;
 	else sub = Rf_translateChar(STRING_ELT(sub_, 0));
 	mark = Rf_asLogical(mark_);
-	if(mark == NA_LOGICAL)
+	if(mark == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "mark");
 	toRaw = Rf_asLogical(toRaw_);
-	if(toRaw == NA_LOGICAL)
+	if(toRaw == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "toRaw");
 	/* some iconv's allow "UTF8", but libiconv does not */
 	if(streql(from, "UTF8") || streql(from, "utf8") ) from = "UTF-8";
@@ -671,7 +669,7 @@ HIDDEN SEXP do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	    if (isRawlist) {
 		si = VECTOR_ELT(x, i);
 		if (TYPEOF(si) == NILSXP) {
-		    if (!toRaw) SET_STRING_ELT(ans, i, NA_STRING);
+		    if (!toRaw) SET_STRING_ELT(ans, i, R_NaString);
 		    continue;
 		} else if (TYPEOF(si) != RAWSXP) {
 		    Riconv_close(obj);
@@ -679,8 +677,8 @@ HIDDEN SEXP do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 		}
 	    } else {
 		si = STRING_ELT(x, i);
-		if (si == NA_STRING) {
-		    if(!toRaw) SET_STRING_ELT(ans, i, NA_STRING);
+		if (si == R_NaString) {
+		    if(!toRaw) SET_STRING_ELT(ans, i, R_NaString);
 		    continue;
 		}
 	    }
@@ -741,7 +739,7 @@ HIDDEN SEXP do_iconv(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 		    }
 		    SET_STRING_ELT(ans, i,
 				   Rf_mkCharLenCE(cbuff.data, int(nout), ienc));
-		} else SET_STRING_ELT(ans, i, NA_STRING);
+		} else SET_STRING_ELT(ans, i, R_NaString);
 	    }
 	}
 	Riconv_close(obj);
@@ -806,7 +804,7 @@ size_t Riconv (void *cd, const char **inbuf, size_t *inbytesleft,
 
 int Riconv_close (void *cd)
 {
-    return iconv_close(iconv_t( cd));
+    return iconv_close(iconv_t(cd));
 }
 
 enum nttype_t {
@@ -821,11 +819,11 @@ R_INLINE static nttype_t needsTranslation(rho::String* x) {
     if(!x) return NT_NONE;
     if (x->isASCII()) return NT_NONE;
     if (x->isUTF8()) {
-	if (utf8locale || x == NA_STRING) return NT_NONE;
+	if (utf8locale || x == R_NaString) return NT_NONE;
 	return NT_FROM_UTF8;
     }
     if (x->isLATIN1()) {
-	if (x == NA_STRING || latin1locale) return NT_NONE;
+	if (x == R_NaString || latin1locale) return NT_NONE;
 	return NT_FROM_LATIN1;
     }
     if (x->isBYTES())
@@ -977,7 +975,7 @@ SEXP Rf_installTrChar(SEXP x)
     R_StringBuffer cbuff = {NULL, 0, MAXELTSIZE};
     translateToNative(R_CHAR(x), &cbuff, t);
 
-    SEXP Sans = Rf_install(cbuff.data);
+    SEXP Sans = rho::Symbol::obtain(cbuff.data);
     R_FreeStringBuffer(&cbuff);
     return Sans;
 }
@@ -1011,7 +1009,7 @@ const char *Rf_translateCharUTF8(SEXP x)
     if(!x || TYPEOF(x) != CHARSXP)
 	Rf_error(_("'%s' must be called on a CHARSXP, but got '%s'"),
 	      "translateCharUTF8", Rf_type2char(TYPEOF(x)));
-    if(x == NA_STRING) return ans;
+    if(x == R_NaString) return ans;
     if(IS_UTF8(x)) return ans;
     if(IS_ASCII(x)) return ans;
     if(IS_BYTES(x))
@@ -1902,8 +1900,7 @@ HIDDEN void resetTimeLimits()
 	cpuLimit = cpuLimit2;
 }
 
-HIDDEN SEXP
-do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_, rho::RObject* transient_)
+HIDDEN SEXP do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_, rho::RObject* transient_)
 {
     double cpu, elapsed, old_cpu = cpuLimitValue,
 	old_elapsed = elapsedLimitValue;
@@ -1913,9 +1910,9 @@ do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op,
     elapsed = Rf_asReal(elapsed_);
     transient = Rf_asLogical(transient_);
 
-    if (R_FINITE(cpu) && cpu > 0) cpuLimitValue = cpu; else cpuLimitValue = -1;
+    if (std::isfinite(cpu) && cpu > 0) cpuLimitValue = cpu; else cpuLimitValue = -1;
 
-    if (R_FINITE(elapsed) && elapsed > 0) elapsedLimitValue = elapsed;
+    if (std::isfinite(elapsed) && elapsed > 0) elapsedLimitValue = elapsed;
     else elapsedLimitValue = -1;
 
     resetTimeLimits();
@@ -1928,8 +1925,7 @@ do_setTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op,
     return nullptr;
 }
 
-HIDDEN SEXP
-do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_)
+HIDDEN SEXP do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* cpu_, rho::RObject* elapsed_)
 {
     double cpu, elapsed, data[5];
 
@@ -1937,7 +1933,7 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     elapsed = Rf_asReal(elapsed_);
     R_getProcTime(data);
 
-    if (R_FINITE(cpu) && cpu > 0)
+    if (std::isfinite(cpu) && cpu > 0)
 #ifdef Win32
 	cpuLimit2 = cpu + data[0] + data[1];
 #else
@@ -1945,7 +1941,7 @@ do_setSessionTimeLimit(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 #endif
     else cpuLimit2 = -1;
 
-    if (R_FINITE(elapsed) && elapsed > 0) elapsedLimit2 = elapsed + data[2];
+    if (std::isfinite(elapsed) && elapsed > 0) elapsedLimit2 = elapsed + data[2];
     else elapsedLimit2 = -1;
 
     return nullptr;
@@ -1979,7 +1975,7 @@ HIDDEN SEXP do_glob(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	Rf_error(_("invalid '%s' argument"), "paths");
     if (!XLENGTH(x)) return Rf_allocVector(STRSXP, 0);
     dirmark = Rf_asLogical(dirmark_);
-    if (dirmark == NA_LOGICAL)
+    if (dirmark == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "dirmark");
 #ifndef GLOB_MARK
     if (dirmark)
@@ -1988,7 +1984,7 @@ HIDDEN SEXP do_glob(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 
     for (i = 0; i < XLENGTH(x); i++) {
 	SEXP el = STRING_ELT(x, i);
-	if (el == NA_STRING) continue;
+	if (el == R_NaString) continue;
 #ifdef Win32
 	res = dos_wglob(filenameToWchar(el, FALSE),
 			(dirmark ? GLOB_MARK : 0) |
@@ -2035,4 +2031,13 @@ HIDDEN SEXP do_glob(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 #endif
     if (initialized) globfree(&globbuf);
     return ans;
+}
+
+extern "C" HIDDEN int R_isatty(int fd)
+{
+#ifdef _WIN32
+    if (R_is_redirection_tty(fd))
+        return 1;
+#endif
+    return isatty(fd);
 }

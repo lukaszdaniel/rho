@@ -145,7 +145,7 @@ static int ConsoleGetcharWithPushBack(Rconnection con)
     if(con->nPushBack > 0) {
 	curLine = con->PushBack[con->nPushBack-1];
 	c = curLine[con->posPushBack++];
-	if(con->posPushBack >= int(strlen(curLine))) {
+	if(con->posPushBack >= strlen(curLine)) {
 	    /* last character on a line, so pop the line */
 	    free(curLine);
 	    con->nPushBack--;
@@ -157,7 +157,7 @@ static int ConsoleGetcharWithPushBack(Rconnection con)
 	return ConsoleGetchar();
 }
 
-/* Like strtol, but for ints not longs and returns NA_INTEGER on overflow */
+/* Like strtol, but for ints not longs and returns R_NaInt on overflow */
 static int Strtoi(const char *nptr, int base)
 {
     long res;
@@ -165,10 +165,10 @@ static int Strtoi(const char *nptr, int base)
 
     errno = 0;
     res = strtol(nptr, &endp, base);
-    if (*endp != '\0') res = NA_INTEGER;
+    if (*endp != '\0') res = R_NaInt;
     /* next can happen on a 64-bit platform */
-    if (res > INT_MAX || res < INT_MIN) res = NA_INTEGER;
-    if (errno == ERANGE) res = NA_INTEGER;
+    if (res > INT_MAX || res < INT_MIN) res = R_NaInt;
+    if (errno == ERANGE) res = R_NaInt;
     return int(res);
 }
 
@@ -177,8 +177,7 @@ static double Strtod(const char* nptr, char** endptr, Rboolean NA, LocalData* d)
     return R_strtod4(nptr, endptr, d->decchar, NA);
 }
 
-static Rcomplex strtoc(
-    const char* nptr, char** endptr, Rboolean NA, LocalData* d)
+static Rcomplex strtoc(const char* nptr, char** endptr, Rboolean NA, LocalData* d)
 {
     Rcomplex z;
     double x, y;
@@ -496,7 +495,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	break;
     case LGLSXP:
 	if (isNAstring(buffer, 0, d))
-	    LOGICAL(ans)[i] = NA_INTEGER;
+	    LOGICAL(ans)[i] = R_NaInt;
 	else {
 	    int tr = Rf_StringTrue(buffer), fa = Rf_StringFalse(buffer);
 	    if(tr || fa) LOGICAL(ans)[i] = tr;
@@ -505,16 +504,16 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	break;
     case INTSXP:
 	if (isNAstring(buffer, 0, d))
-	    INTEGER(ans)[i] = NA_INTEGER;
+	    INTEGER(ans)[i] = R_NaInt;
 	else {
 	    INTEGER(ans)[i] = Strtoi(buffer, 10);
-	    if (INTEGER(ans)[i] == NA_INTEGER)
+	    if (INTEGER(ans)[i] == R_NaInt)
 		expected("an integer", buffer, d);
 	}
 	break;
     case REALSXP:
 	if (isNAstring(buffer, 0, d))
-	    REAL(ans)[i] = NA_REAL;
+	    REAL(ans)[i] = R_NaReal;
 	else {
 	    REAL(ans)[i] = Strtod(buffer, &endp, TRUE, d);
 	    if (!Rf_isBlankString(endp))
@@ -523,7 +522,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	break;
     case CPLXSXP:
 	if (isNAstring(buffer, 0, d))
-	    COMPLEX(ans)[i].r = COMPLEX(ans)[i].i = NA_REAL;
+	    COMPLEX(ans)[i].r = COMPLEX(ans)[i].i = R_NaReal;
 	else {
 	    COMPLEX(ans)[i] = strtoc(buffer, &endp, TRUE, d);
 	    if (!Rf_isBlankString(endp))
@@ -532,7 +531,7 @@ static void extractItem(char *buffer, SEXP ans, int i, LocalData *d)
 	break;
     case STRSXP:
 	if (isNAstring(buffer, 1, d))
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	    SET_STRING_ELT(ans, i, R_NaString);
 	else
 	    SET_STRING_ELT(ans, i, insertString(buffer, d));
 	break;
@@ -857,12 +856,12 @@ HIDDEN SEXP do_scan(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     if(streql(encoding, "UTF-8"))  data.isUTF8 = TRUE;
     skipNul = Rf_asLogical(skipNul_);
 
-    if (data.quiet == NA_LOGICAL)		data.quiet = 0;
-    if (blskip == NA_LOGICAL)			blskip = 1;
-    if (multiline == NA_LOGICAL)		multiline = 1;
-    if (nskip < 0 || nskip == NA_INTEGER)	nskip = 0;
-    if (nlines < 0 || nlines == NA_INTEGER)	nlines = 0;
-    if (nmax < 0 || nmax == NA_INTEGER)		nmax = 0;
+    if (data.quiet == R_NaLog)		data.quiet = 0;
+    if (blskip == R_NaLog)			blskip = 1;
+    if (multiline == R_NaLog)		multiline = 1;
+    if (nskip < 0 || nskip == R_NaInt)	nskip = 0;
+    if (nlines < 0 || nlines == R_NaInt)	nlines = 0;
+    if (nmax < 0 || nmax == R_NaInt)		nmax = 0;
 
     if (TYPEOF(stripwhite) != LGLSXP)
 	Rf_error(_("invalid '%s' argument"), "strip.white");
@@ -911,10 +910,10 @@ HIDDEN SEXP do_scan(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     if (strlen(p) > 1)
 	Rf_error(_("invalid '%s' argument"), "comment.char");
     else if (strlen(p) == 1) data.comchar = static_cast<unsigned char>(*p);
-    if(escapes == NA_LOGICAL)
+    if(escapes == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "allowEscapes");
     data.escapes = Rboolean(escapes != 0);
-    if(skipNul == NA_LOGICAL)
+    if(skipNul == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "skipNul");
     data.skipNul = Rboolean(skipNul != 0);
 

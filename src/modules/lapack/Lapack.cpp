@@ -163,7 +163,7 @@ static SEXP La_rs(SEXP x, SEXP only_values)
 {
     int *xdims, n, lwork, info = 0, ov;
     char jobv[2] = "U", uplo[2] = "L", range[2] = "A";
-    SEXP z = R_NilValue;
+    SEXP z = nullptr;
     double *work, *rx, *rvalues, tmp, *rz = NULL;
     int liwork, *iwork, itmp, m;
     double vl = 0.0, vu = 0.0, abstol = 0.0;
@@ -183,8 +183,8 @@ static SEXP La_rs(SEXP x, SEXP only_values)
 	x = Rf_coerceVector(x, REALSXP);
 	rx = REAL(x);
     } else {
-	rx = (double *) R_alloc(n * (size_t) n, sizeof(double));
-	Memcpy(rx, REAL(x), (size_t) n * n);
+	rx = (double*)R_alloc(n * (size_t)n, sizeof(double));
+	Memcpy(rx, REAL(x), (size_t)n * n);
     }
     PROTECT(x);
     SEXP values = PROTECT(Rf_allocVector(REALSXP, n));
@@ -194,7 +194,7 @@ static SEXP La_rs(SEXP x, SEXP only_values)
 	z = PROTECT(Rf_allocMatrix(REALSXP, n, n));
 	rz = REAL(z);
     }
-    isuppz = (int *) R_alloc(2*(size_t)n, sizeof(int));
+    isuppz = (int*)R_alloc(2 * (size_t)n, sizeof(int));
     /* ask for optimal size of work arrays */
     lwork = -1; liwork = -1;
     F77_CALL(dsyevr)(jobv, range, uplo, &n, rx, &n,
@@ -206,8 +206,8 @@ static SEXP La_rs(SEXP x, SEXP only_values)
     lwork = (int) tmp;
     liwork = itmp;
 
-    work = (double *) R_alloc(lwork, sizeof(double));
-    iwork = (int *) R_alloc(liwork, sizeof(int));
+    work = (double*)R_alloc(lwork, sizeof(double));
+    iwork = (int*)R_alloc(liwork, sizeof(int));
     F77_CALL(dsyevr)(jobv, range, uplo, &n, rx, &n,
 		     &vl, &vu, &il, &iu, &abstol, &m, rvalues,
 		     rz, &n, isuppz,
@@ -288,8 +288,8 @@ static SEXP La_rg(SEXP x, SEXP only_values)
 	jobVR[0] = 'V';
 	right = (double *) R_alloc(n * (size_t)n, sizeof(double));
     }
-    wR = (double *) R_alloc(n, sizeof(double));
-    wI = (double *) R_alloc(n, sizeof(double));
+    wR = (double*)R_alloc(n, sizeof(double));
+    wI = (double*)R_alloc(n, sizeof(double));
     /* ask for optimal size of work array */
     lwork = -1;
     F77_CALL(dgeev)(jobVL, jobVR, &n, xvals, &n, wR, wI,
@@ -315,7 +315,7 @@ static SEXP La_rg(SEXP x, SEXP only_values)
     SET_STRING_ELT(nm, 0, Rf_mkChar("values"));
     SET_STRING_ELT(nm, 1, Rf_mkChar("vectors"));
     Rf_setAttrib(ret, R_NamesSymbol, nm);
-    SET_VECTOR_ELT(ret, 1, R_NilValue);
+    SET_VECTOR_ELT(ret, 1, nullptr);
     if (complexValues) {
 	SEXP val = Rf_allocVector(CPLXSXP, n);
 	for (i = 0; i < n; i++) {
@@ -505,7 +505,7 @@ static SEXP La_zgecon(SEXP A, SEXP norm)
 
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -540,7 +540,7 @@ static SEXP La_ztrcon(SEXP A, SEXP norm)
     return val;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -588,7 +588,7 @@ static SEXP La_solve_cmplx(SEXP A, SEXP Bin)
     Bin = PROTECT(Rf_coerceVector(Bin, CPLXSXP));
     Memcpy(COMPLEX(B), COMPLEX(Bin), (size_t)n * p);
 
-    ipiv = (int *) R_alloc(n, sizeof(int));
+    ipiv = (int*)R_alloc(n, sizeof(int));
 
     /* work on a copy of A */
     if(TYPEOF(A) != CPLXSXP) {
@@ -609,7 +609,7 @@ static SEXP La_solve_cmplx(SEXP A, SEXP Bin)
     return B;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -669,7 +669,7 @@ static SEXP La_qr_cmplx(SEXP Ain)
     return val;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -713,7 +713,7 @@ static SEXP qr_coef_cmplx(SEXP Q, SEXP Bin)
     return B;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -755,7 +755,7 @@ static SEXP qr_qy_cmplx(SEXP Q, SEXP Bin, SEXP trans)
     return B;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -821,7 +821,7 @@ static SEXP La_svd_cmplx(SEXP jobu, SEXP x, SEXP s, SEXP u, SEXP v)
     return val;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -878,7 +878,7 @@ static SEXP La_rs_cmplx(SEXP xin, SEXP only_values)
     return ret;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -890,7 +890,7 @@ static SEXP La_rg_cmplx(SEXP x, SEXP only_values)
     Rcomplex *work, *left, *right, *xvals, tmp;
     double *rwork;
     char jobVL[2] = "N", jobVR[2] = "N";
-    SEXP ret, nm, values, val = R_NilValue;
+    SEXP ret, nm, values, val = nullptr;
 
     xdims = INTEGER(Rf_coerceVector(Rf_getAttrib(x, R_DimSymbol), INTSXP));
     n = xdims[0];
@@ -938,7 +938,7 @@ static SEXP La_rg_cmplx(SEXP x, SEXP only_values)
     return ret;
 #else
     Rf_error(_("Fortran complex functions are not available on this platform"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 #endif
 }
 
@@ -1009,7 +1009,7 @@ static SEXP La_chol2inv(SEXP A, SEXP size)
     int sz = Rf_asInteger(size);
     if (sz == NA_INTEGER || sz < 1) {
 	Rf_error(_("'size' argument must be a positive integer"));
-	return R_NilValue; /* -Wall */
+	return nullptr; /* -Wall */
     } else {
 	SEXP ans, Amat = A; /* -Wall: we initialize here as for the 1x1 case */
 	int m = 1, n = 1, nprot = 0;
@@ -1319,7 +1319,7 @@ static SEXP det_ge_real(SEXP Ain, SEXP logarithm)
 
 static SEXP mod_do_lapack(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
 
     switch(PRIMVAL(op)) {
     case 0: ans = La_qr_cmplx(CAR(args)); break;

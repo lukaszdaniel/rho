@@ -60,8 +60,6 @@ strsplit grep [g]sub [g]regexpr
 #endif
 
 
-/* interval at which to check interrupts */
-#define NINTERRUPT 1000000
 
 /* How many encoding warnings to give */
 #define NWARN 5
@@ -89,12 +87,15 @@ strsplit grep [g]sub [g]regexpr
 using namespace std;
 using namespace rho;
 
+/* interval at which to check interrupts */
+constexpr R_xlen_t NINTERRUPT = 1000000;
+
 /* 
    Default maximum stack size: note this is reserved but not allocated
    until needed.  The help says 1M suffices, but we found more was
    needed for strings around a million bytes.
 */
-#define JIT_STACK_MAX 64*1024*1024
+constexpr int JIT_STACK_MAX = 64 * 1024 * 1024;
 /* 
    This will stay reserved until the end of the sesiion, but at 64MB
    that is not an issue -- and most sessions will not use PCRE with
@@ -147,17 +148,16 @@ static SEXP mkCharWLen(const wchar_t *wc, int nc)
     return Rf_mkCharLenCE(xi, int(nb-1), CE_UTF8);
 }
 
-static SEXP mkCharW(const wchar_t *wc)
+static SEXP mkCharW(const wchar_t* wc)
 {
     size_t nb = Rf_wcstoutf8(nullptr, wc, INT_MAX);
-    char *xi = static_cast<char *>(Calloc(nb, char));
+    char* xi = static_cast<char*>(Calloc(nb, char));
     SEXP ans;
     Rf_wcstoutf8(xi, wc, nb);
     ans = Rf_mkCharCE(xi, CE_UTF8);
     Free(xi);
     return ans;
 }
-
 
 static void pcre_exec_error(int rc, R_xlen_t i)
 {
@@ -263,9 +263,10 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
     R_xlen_t i, itok, len, tlen;
     size_t j, ntok;
     int fixed_opt, perl_opt, useBytes;
-    char *pt = nullptr; wchar_t *wpt = nullptr;
+    char* pt = nullptr;
+    wchar_t* wpt = nullptr;
     const char *buf, *split = "", *bufp = nullptr;
-    const unsigned char *tables = nullptr;
+    const unsigned char* tables = nullptr;
     Rboolean use_UTF8 = FALSE, haveBytes = FALSE;
     const void *vmax, *vmax2;
     int nwarn = 0;
@@ -275,9 +276,9 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
     fixed_opt = Rf_asLogical(fixed_);
     perl_opt = Rf_asLogical(perl_);
     useBytes = Rf_asLogical(useBytes_);
-    if (fixed_opt == NA_INTEGER) fixed_opt = 0;
-    if (perl_opt == NA_INTEGER) perl_opt = 0;
-    if (useBytes == NA_INTEGER) useBytes = 0;
+    if (fixed_opt == R_NaInt) fixed_opt = 0;
+    if (perl_opt == R_NaInt) perl_opt = 0;
+    if (useBytes == R_NaInt) useBytes = 0;
     if (fixed_opt && perl_opt) {
 	Rf_warning(_("argument '%s' will be ignored"), "perl = TRUE");
 	perl_opt = 0;
@@ -327,7 +328,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
     for (itok = 0; itok < tlen; itok++) {
 	SEXP thiss = STRING_ELT(tok, itok);
 
-	if (thiss == NA_STRING) { /* NA token doesn't split */
+	if (thiss == R_NaString) { /* NA token doesn't split */
 	    for (i = itok; i < len; i += tlen)
 		SET_VECTOR_ELT(ans, i, Rf_ScalarString(STRING_ELT(x, i)));
 	    continue;
@@ -335,8 +336,8 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
-		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+		if (STRING_ELT(x, i) == R_NaString) {
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 		    continue;
 		}
 		if (useBytes)
@@ -346,7 +347,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		} else {
@@ -354,7 +355,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		}
@@ -377,7 +378,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 			    SET_STRING_ELT(t, j, Rf_mkCharCE(bf, CE_UTF8));
 			}
 		    } else if ((nt = mbstowcs(nullptr, buf, 0)) < 0) {
-			PROTECT(t = Rf_ScalarString(NA_STRING));
+			PROTECT(t = Rf_ScalarString(R_NaString));
 		    } else {
 			ntok = nt;
 			mbs_init(&mb_st);
@@ -424,8 +425,8 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
-		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+		if (STRING_ELT(x, i) == R_NaString) {
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 		    continue;
 		}
 
@@ -436,7 +437,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		} else {
@@ -444,7 +445,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		}
@@ -499,10 +500,10 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		vmaxset(vmax2);
 	    }
 	} else if (perl_opt) {
-	    pcre *re_pcre;
-	    pcre_extra *re_pe = nullptr;
+	    pcre* re_pcre;
+	    pcre_extra* re_pe = nullptr;
 	    int erroffset, ovector[30];
-	    const char *errorptr;
+	    const char* errorptr;
 	    int options = 0;
 
 	    if (use_UTF8) options = PCRE_UTF8;
@@ -534,7 +535,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    if (errorptr)
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
-	    if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	    if(R_PCRE_limit_recursion == R_NaLog) {
 		// use recursion limit only on long strings
 		Rboolean use = FALSE;
 		for (i = 0 ; i < len ; i++)
@@ -550,8 +551,8 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
-		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+		if (STRING_ELT(x, i) == R_NaString) {
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 		    continue;
 		}
 
@@ -562,7 +563,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (!utf8Valid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid UTF-8"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		} else {
@@ -570,7 +571,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		}
@@ -648,8 +649,8 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
-		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+		if (STRING_ELT(x, i) == R_NaString) {
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 		    continue;
 		}
 		wbuf = Rf_wtransChar(STRING_ELT(x, i));
@@ -719,8 +720,8 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    vmax2 = vmaxget();
 	    for (i = itok; i < len; i += tlen) {
 		SEXP t;
-		if (STRING_ELT(x, i) == NA_STRING) {
-		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+		if (STRING_ELT(x, i) == R_NaString) {
+		    SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 		    continue;
 		}
 		/* never use_UTF8 */
@@ -731,7 +732,7 @@ HIDDEN SEXP do_strsplit(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 		    if (mbcslocale && !mbcsValid(buf)) {
 			if(nwarn++ < NWARN)
 			    Rf_warning(_("input string %d is invalid in this locale"), i+1);
-			SET_VECTOR_ELT(ans, i, Rf_ScalarString(NA_STRING));
+			SET_VECTOR_ELT(ans, i, Rf_ScalarString(R_NaString));
 			continue;
 		    }
 		}
@@ -897,10 +898,10 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     R_xlen_t i, j, n;
     int nmatches = 0, ov[3], rc;
     int igcase_opt, value_opt, perl_opt, fixed_opt, useBytes, invert;
-    const char *spat = nullptr;
-    pcre *re_pcre = nullptr /* -Wall */;
-    pcre_extra *re_pe = nullptr;
-    const unsigned char *tables = nullptr /* -Wall */;
+    const char* spat = nullptr;
+    pcre* re_pcre = nullptr /* -Wall */;
+    pcre_extra* re_pe = nullptr;
+    const unsigned char* tables = nullptr /* -Wall */;
     Rboolean use_UTF8 = FALSE, use_WC =  FALSE;
     const void *vmax;
     int nwarn = 0;
@@ -913,12 +914,12 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     fixed_opt = Rf_asLogical(fixed_);
     useBytes = Rf_asLogical(useBytes_);
     invert = Rf_asLogical(invert_);
-    if (igcase_opt == NA_INTEGER) igcase_opt = 0;
-    if (value_opt == NA_INTEGER) value_opt = 0;
-    if (perl_opt == NA_INTEGER) perl_opt = 0;
-    if (fixed_opt == NA_INTEGER) fixed_opt = 0;
-    if (useBytes == NA_INTEGER) useBytes = 0;
-    if (invert == NA_INTEGER) invert = 0;
+    if (igcase_opt == R_NaInt) igcase_opt = 0;
+    if (value_opt == R_NaInt) value_opt = 0;
+    if (perl_opt == R_NaInt) perl_opt = 0;
+    if (fixed_opt == R_NaInt) fixed_opt = 0;
+    if (useBytes == R_NaInt) useBytes = 0;
+    if (invert == R_NaInt) invert = 0;
     if (fixed_opt && igcase_opt)
 	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
@@ -935,17 +936,17 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	Rf_error(_("invalid '%s' argument"), "text");
 
     n = XLENGTH(text);
-    if (STRING_ELT(pat, 0) == NA_STRING) {
+    if (STRING_ELT(pat, 0) == R_NaString) {
 	if (value_opt) {
 	    SEXP nmold = Rf_getAttrib(text, Symbols::NamesSymbol);
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
-	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
+	    for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, R_NaString);
 	    if (!Rf_isNull(nmold))
 		Rf_setAttrib(ans, Symbols::NamesSymbol, Rf_duplicate(nmold));
 	    UNPROTECT(2); /* ans, nmold */
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
-	    for (i = 0; i < n; i++)  INTEGER(ans)[i] = NA_INTEGER;
+	    for (i = 0; i < n; i++)  INTEGER(ans)[i] = R_NaInt;
 	}
 	return ans;
     }
@@ -954,7 +955,7 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
-		if(STRING_ELT(text, i) == NA_STRING) continue;
+		if(STRING_ELT(text, i) == R_NaString) continue;
 		if (!IS_ASCII(STRING_ELT(text, i))) {
 		    onlyASCII = FALSE;
 		    break;
@@ -1027,7 +1028,7 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
 	}
-	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	if(R_PCRE_limit_recursion == R_NaLog) {
 	    // use recursion limit only on long strings
 	    Rboolean use = FALSE;
 	    for (i = 0 ; i < n ; i++)
@@ -1054,7 +1055,7 @@ HIDDEN SEXP do_grep(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	LOGICAL(ind)[i] = 0;
-	if (STRING_ELT(text, i) != NA_STRING) {
+	if (STRING_ELT(text, i) != R_NaString) {
 	    const char *s = nullptr;
 	    if (useBytes)
 		s = R_CHAR(STRING_ELT(text, i));
@@ -1233,11 +1234,11 @@ HIDDEN SEXP do_grepraw(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     value = Rf_asLogical(value_);
     all = Rf_asLogical(all_);
     invert = Rf_asLogical(invert_);
-    if (igcase_opt == NA_INTEGER) igcase_opt = 0;
-    if (fixed_opt == NA_INTEGER) fixed_opt = 0;
-    if (all == NA_INTEGER) all = 0;
-    if (value == NA_INTEGER) value = 0;
-    if (invert == NA_INTEGER) invert = 0;
+    if (igcase_opt == R_NaInt) igcase_opt = 0;
+    if (fixed_opt == R_NaInt) fixed_opt = 0;
+    if (all == R_NaInt) all = 0;
+    if (value == R_NaInt) value = 0;
+    if (invert == R_NaInt) invert = 0;
     if (fixed_opt && igcase_opt)
 	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
 
@@ -1546,7 +1547,7 @@ static char *string_adj(char *target, const char *orig, const char *repl,
 }
 
 /* used for single-byte locales, and UTF-8 for perl = TRUE */
-static int count_subs(const char *repl)
+static int count_subs(const char* repl)
 {
     int i = 0;
     const char *p = repl;
@@ -1566,7 +1567,7 @@ char *pcre_string_adj(char *target, const char *orig, const char *repl,
 		      int *ovec, Rboolean use_UTF8)
 {
     int i, k, nb;
-    const char *p = repl;
+    const char* p = repl;
     char *t = target, c;
     Rboolean upper = FALSE, lower = FALSE;
 
@@ -1625,8 +1626,8 @@ static wchar_t *wstring_adj(wchar_t *target, const wchar_t *orig,
 			    const wchar_t *repl, regmatch_t *regmatch)
 {
     int i, k;
-    const wchar_t *p = repl;
-    wchar_t *t = target;
+    const wchar_t* p = repl;
+    wchar_t* t = target;
 
     while (*p) {
 	if (*p == L'\\') {
@@ -1646,7 +1647,7 @@ static wchar_t *wstring_adj(wchar_t *target, const wchar_t *orig,
 static int wcount_subs(const wchar_t *repl)
 {
     int i = 0;
-    const wchar_t *p = repl;
+    const wchar_t* p = repl;
     while (*p) {
 	if (*p == '\\') {
 	    if ('1' <= p[1] && p[1] <= '9') {i++; p += 2;}
@@ -1674,9 +1675,9 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     const char *spat = nullptr, *srep = nullptr, *s = nullptr;
     size_t patlen = 0, replen = 0;
     Rboolean use_UTF8 = FALSE, use_WC = FALSE;
-    const wchar_t *wrep = nullptr;
-    pcre *re_pcre = nullptr;
-    pcre_extra *re_pe  = nullptr;
+    const wchar_t* wrep = nullptr;
+    pcre* re_pcre = nullptr;
+    pcre_extra* re_pe = nullptr;
     const unsigned char *tables = nullptr;
     const void *vmax = vmaxget();
 
@@ -1690,10 +1691,10 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     perl_opt = Rf_asLogical(perl_);
     fixed_opt = Rf_asLogical(fixed_);
     useBytes = Rf_asLogical(useBytes_);
-    if (igcase_opt == NA_INTEGER) igcase_opt = 0;
-    if (perl_opt == NA_INTEGER) perl_opt = 0;
-    if (fixed_opt == NA_INTEGER) fixed_opt = 0;
-    if (useBytes == NA_INTEGER) useBytes = 0;
+    if (igcase_opt == R_NaInt) igcase_opt = 0;
+    if (perl_opt == R_NaInt) perl_opt = 0;
+    if (fixed_opt == R_NaInt) fixed_opt = 0;
+    if (useBytes == R_NaInt) useBytes = 0;
     if (fixed_opt && igcase_opt)
 	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
@@ -1715,9 +1716,9 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 
     n = XLENGTH(text);
     /* This contradicts the code below that has NA matching NA */
-    if (STRING_ELT(pat, 0) == NA_STRING) {
+    if (STRING_ELT(pat, 0) == R_NaString) {
 	PROTECT(ans = Rf_allocVector(STRSXP, n));
-	for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, NA_STRING);
+	for (i = 0; i < n; i++)  SET_STRING_ELT(ans, i, R_NaString);
 	UNPROTECT(1);
 	return ans;
     }
@@ -1726,7 +1727,7 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
-		if(STRING_ELT(text, i) == NA_STRING) continue;
+		if(STRING_ELT(text, i) == R_NaString) continue;
 		if (!IS_ASCII(STRING_ELT(text, i))) {
 		    onlyASCII = FALSE;
 		    break;
@@ -1808,7 +1809,7 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
 	}
-	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	if(R_PCRE_limit_recursion == R_NaLog) {
 	    // use recursion limit only on long strings
 	    Rboolean use = FALSE;
 	    for (i = 0 ; i < n ; i++)
@@ -1841,8 +1842,8 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	/* NA pattern was handled above */
-	if (STRING_ELT(text, i) == NA_STRING) {
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if (STRING_ELT(text, i) == R_NaString) {
+	    SET_STRING_ELT(ans, i, R_NaString);
 	    continue;
 	}
 
@@ -1864,8 +1865,8 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	    st = fgrep_one_bytes(spat, s, ns, Rboolean(useBytes), use_UTF8);
 	    if (st < 0)
 		SET_STRING_ELT(ans, i, STRING_ELT(text, i));
-	    else if (STRING_ELT(rep, 0) == NA_STRING)
-		SET_STRING_ELT(ans, i, NA_STRING);
+	    else if (STRING_ELT(rep, 0) == R_NaString)
+		SET_STRING_ELT(ans, i, R_NaString);
 	    else {
 		if (global) { /* need to find max number of matches */
 		    const char *ss= s;
@@ -1954,8 +1955,8 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	   pcre_exec_error(ncap, i);
 	   if (nmatch == 0)
 	       SET_STRING_ELT(ans, i, STRING_ELT(text, i));
-	   else if (STRING_ELT(rep, 0) == NA_STRING)
-	       SET_STRING_ELT(ans, i, NA_STRING);
+	   else if (STRING_ELT(rep, 0) == R_NaString)
+	       SET_STRING_ELT(ans, i, R_NaString);
 	   else {
 	       /* copy the tail */
 	       if (nns < (u - cbuf) + (ns-offset)+1) {
@@ -2024,8 +2025,8 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 
 	    if (nmatch == 0)
 		SET_STRING_ELT(ans, i, STRING_ELT(text, i));
-	    else if (STRING_ELT(rep, 0) == NA_STRING)
-		SET_STRING_ELT(ans, i, NA_STRING);
+	    else if (STRING_ELT(rep, 0) == R_NaString)
+		SET_STRING_ELT(ans, i, R_NaString);
 	    else {
 		/* copy the tail */
 		if (nns < (u - cbuf) + (ns-offset)+1) {
@@ -2087,8 +2088,8 @@ HIDDEN SEXP do_gsub(/*const*/ rho::Expression* call, const rho::BuiltInFunction*
 	    }
 	    if (nmatch == 0)
 		SET_STRING_ELT(ans, i, STRING_ELT(text, i));
-	    else if (STRING_ELT(rep, 0) == NA_STRING)
-		SET_STRING_ELT(ans, i, NA_STRING);
+	    else if (STRING_ELT(rep, 0) == R_NaString)
+		SET_STRING_ELT(ans, i, R_NaString);
 	    else {
 		/* copy the tail */
 		if (nns < (u - cbuf) + (ns-offset)+1) {
@@ -2330,13 +2331,13 @@ ovector_extract_start_length(Rboolean use_UTF8,int *ovector,
 	if (st > 0) {
 	    *mptr = 1 + getNc(string, st);
 	    if (*mptr <= 0) { /* an invalid string */
-		*mptr = NA_INTEGER;
+		*mptr = R_NaInt;
 		foundAll = TRUE; /* if we get here, we are done */
 	    }
 	}
 	*lenptr = getNc(string + st, *lenptr);
 	if (*lenptr < 0) {/* an invalid string */
-	    *lenptr = NA_INTEGER;
+	    *lenptr = R_NaInt;
 	    foundAll = TRUE;
 	}
     }
@@ -2519,16 +2520,16 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     regmatch_t regmatch[10];
     R_xlen_t i, n;
     int rc, igcase_opt, perl_opt, fixed_opt, useBytes;
-    const char *spat = nullptr; /* -Wall */
-    const char *s = nullptr;
-    pcre *re_pcre = nullptr /* -Wall */;
-    pcre_extra *re_pe = nullptr;
-    const unsigned char *tables = nullptr /* -Wall */;
+    const char* spat = nullptr; /* -Wall */
+    const char* s = nullptr;
+    pcre* re_pcre = nullptr /* -Wall */;
+    pcre_extra* re_pe = nullptr;
+    const unsigned char* tables = nullptr /* -Wall */;
     Rboolean use_UTF8 = FALSE, use_WC = FALSE;
-    const void *vmax;
+    const void* vmax;
     int capture_count, *ovector = nullptr, ovector_size = 0, /* -Wall */
 	name_count, name_entry_size, info_code;
-    char *name_table;
+    char* name_table;
     SEXP capture_names = nullptr;
     int nwarn = 0;
 
@@ -2538,10 +2539,10 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     perl_opt = Rf_asLogical(perl_);
     fixed_opt = Rf_asLogical(fixed_);
     useBytes = Rf_asLogical(useBytes_);
-    if (igcase_opt == NA_INTEGER) igcase_opt = 0;
-    if (perl_opt == NA_INTEGER) perl_opt = 0;
-    if (fixed_opt == NA_INTEGER) fixed_opt = 0;
-    if (useBytes == NA_INTEGER) useBytes = 0;
+    if (igcase_opt == R_NaInt) igcase_opt = 0;
+    if (perl_opt == R_NaInt) perl_opt = 0;
+    if (fixed_opt == R_NaInt) fixed_opt = 0;
+    if (useBytes == R_NaInt) useBytes = 0;
     if (fixed_opt && igcase_opt)
 	Rf_warning(_("argument '%s' will be ignored"), "ignore.case = TRUE");
     if (fixed_opt && perl_opt) {
@@ -2550,7 +2551,7 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     }
 
     /* Note that excluding NAs differs from grep/sub */
-    if (!Rf_isString(pat) || LENGTH(pat) < 1 || STRING_ELT(pat, 0) == NA_STRING)
+    if (!Rf_isString(pat) || LENGTH(pat) < 1 || STRING_ELT(pat, 0) == R_NaString)
 	Rf_error(_("invalid '%s' argument"), "pattern");
     if (LENGTH(pat) > 1)
 	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
@@ -2565,7 +2566,7 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if (onlyASCII)
 	    for (i = 0; i < n; i++) {
-		if(STRING_ELT(text, i) == NA_STRING) continue;
+		if(STRING_ELT(text, i) == R_NaString) continue;
 		if (!IS_ASCII(STRING_ELT(text, i))) {
 		    onlyASCII = FALSE;
 		    break;
@@ -2640,7 +2641,7 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 		Rf_warning(_("PCRE pattern study error\n\t'%s'\n"), errorptr);
 	    else if(R_PCRE_use_JIT) setup_jit(re_pe);
 	}
-	if(R_PCRE_limit_recursion == NA_LOGICAL) {
+	if(R_PCRE_limit_recursion == R_NaLog) {
 	    // use recursion limit only on long strings
 	    Rboolean use = FALSE;
 	    for (i = 0 ; i < n ; i++)
@@ -2712,13 +2713,13 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 	    il = INTEGER(capturelen);
 	    // initiialization needed for NA inputs: PR#16484
 	    for (i = 0 ; i < n * capture_count ; i++)
-		is[i] = il[i] = NA_INTEGER;
+		is[i] = il[i] = R_NaInt;
 	} else is = il = nullptr; /* not actually used */
 	vmax = vmaxget();
 	for (i = 0 ; i < n ; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    if (STRING_ELT(text, i) == NA_STRING) {
-		INTEGER(matchlen)[i] = INTEGER(ans)[i] = NA_INTEGER;
+	    if (STRING_ELT(text, i) == R_NaString) {
+		INTEGER(matchlen)[i] = INTEGER(ans)[i] = R_NaInt;
 	    } else {
 		if (useBytes)
 		    s = R_CHAR(STRING_ELT(text, i));
@@ -2806,7 +2807,7 @@ HIDDEN SEXP do_regexpr(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 	vmax = vmaxget();
 	for (i = 0 ; i < n ; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	    if (STRING_ELT(text, i) == NA_STRING) {
+	    if (STRING_ELT(text, i) == R_NaString) {
 		elt = gregexpr_NAInputAns();
 	    } else {
 		if (fixed_opt || perl_opt) {
@@ -2862,11 +2863,11 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 
     Rboolean use_WC = FALSE;
     const char *s, *t;
-    const void *vmax = nullptr;
+    const void* vmax = nullptr;
 
     regex_t reg;
     size_t nmatch;
-    regmatch_t *pmatch;
+    regmatch_t* pmatch;
     R_xlen_t i, n;
     int j, so;
     int rc, cflags = REG_EXTENDED;
@@ -2877,9 +2878,9 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     opt_fixed = Rf_asLogical(fixed_);
     useBytes = Rf_asLogical(useBytes_);
 
-    if(opt_icase == NA_INTEGER) opt_icase = 0;
-    if(opt_fixed == NA_INTEGER) opt_fixed = 0;
-    if(useBytes == NA_INTEGER) useBytes = 0;
+    if(opt_icase == R_NaInt) opt_icase = 0;
+    if(opt_fixed == R_NaInt) opt_fixed = 0;
+    if(useBytes == R_NaInt) useBytes = 0;
     if(opt_fixed && opt_icase) {
 	Rf_warning(_("argument '%s' will be ignored"),
 		"ignore.case = TRUE");
@@ -2890,7 +2891,7 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 
     if(!Rf_isString(pat) ||
        (LENGTH(pat) < 1) ||
-       (STRING_ELT(pat, 0) == NA_STRING))
+       (STRING_ELT(pat, 0) == R_NaString))
 	Rf_error(_("invalid '%s' argument"), "pattern");
     if(LENGTH(pat) > 1)
 	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
@@ -2906,7 +2907,7 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 	Rboolean onlyASCII = Rboolean(IS_ASCII(STRING_ELT(pat, 0)));
 	if(onlyASCII)
 	    for(i = 0; i < n; i++) {
-		if(STRING_ELT(text, i) == NA_STRING) continue;
+		if(STRING_ELT(text, i) == R_NaString) continue;
 		if (!IS_ASCII(STRING_ELT(text, i))) {
 		    onlyASCII = FALSE;
 		    break;
@@ -2915,7 +2916,7 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 	useBytes = onlyASCII;
     }
     if(!useBytes) {
-        Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
+	Rboolean haveBytes = Rboolean(IS_BYTES(STRING_ELT(pat, 0)));
 	if(!haveBytes)
 	    for(i = 0; i < n; i++) {
 		if(IS_BYTES(STRING_ELT(text, i))) {
@@ -2929,10 +2930,10 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     }
 
     if(!useBytes) {
-        use_WC = Rboolean(!IS_ASCII(STRING_ELT(pat, 0)));
+	use_WC = Rboolean(!IS_ASCII(STRING_ELT(pat, 0)));
 	if(!use_WC) {
 	    for(i = 0 ; i < n ; i++) {
-		if(STRING_ELT(text, i) == NA_STRING) continue;
+		if(STRING_ELT(text, i) == R_NaString) continue;
 		if(!IS_ASCII(STRING_ELT(text, i))) {
 		    use_WC = TRUE;
 		    break;
@@ -2959,17 +2960,17 @@ HIDDEN SEXP do_regexec(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 
     nmatch = reg.re_nsub + 1;
 
-    pmatch = static_cast<regmatch_t *>(malloc(nmatch * sizeof(regmatch_t)));
+    pmatch = static_cast<regmatch_t*>(malloc(nmatch * sizeof(regmatch_t)));
 
     PROTECT(ans = Rf_allocVector(VECSXP, n));
 
     for(i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	if(STRING_ELT(text, i) == NA_STRING) {
-	    PROTECT(matchpos = Rf_ScalarInteger(NA_INTEGER));
+	if(STRING_ELT(text, i) == R_NaString) {
+	    PROTECT(matchpos = Rf_ScalarInteger(R_NaInt));
 	    SEXP s_match_length = Rf_install("match.length");
 	    Rf_setAttrib(matchpos, s_match_length ,
-		      Rf_ScalarInteger(NA_INTEGER));
+		      Rf_ScalarInteger(R_NaInt));
 	    SET_VECTOR_ELT(ans, i, matchpos);
 	    UNPROTECT(1);
 	} else {

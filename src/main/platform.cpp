@@ -354,7 +354,7 @@ HIDDEN SEXP do_fileshow(/*const*/ Expression* call, const BuiltInFunction* op, R
     h = static_cast<const char**>(RHO_alloc(n, sizeof(char*)));
     for (i = 0; i < n; i++) {
 	SEXP el = STRING_ELT(fn, i);
-	if (!Rf_isNull(el) && el != NA_STRING)
+	if (!Rf_isNull(el) && el != R_NaString)
 #ifdef Win32
 	    f[i] = Rf_acopy_string(reEnc(R_CHAR(el), Rf_getCharCE(el), CE_UTF8, 1));
 #else
@@ -362,7 +362,7 @@ HIDDEN SEXP do_fileshow(/*const*/ Expression* call, const BuiltInFunction* op, R
 #endif
 	else
 	    Rf_error(_("invalid filename specification"));
-	if (STRING_ELT(hd, i) != NA_STRING)
+	if (STRING_ELT(hd, i) != R_NaString)
 	    h[i] = Rf_acopy_string(Rf_translateChar(STRING_ELT(hd, i)));
 	else
 	    Rf_error(_("invalid '%s' argument"), "headers");
@@ -373,7 +373,7 @@ HIDDEN SEXP do_fileshow(/*const*/ Expression* call, const BuiltInFunction* op, R
 	t = "";
     if (Rf_isValidStringF(pg)) {
 	SEXP pg0 = STRING_ELT(pg, 0);
-	if (pg0 != NA_STRING)
+	if (pg0 != R_NaString)
 	    pager = Rf_acopy_string(R_CHAR(pg0));
 	else
 	    Rf_error(_("invalid '%s' argument"), "pager");
@@ -443,12 +443,12 @@ HIDDEN SEXP do_fileappend(/*const*/ Expression* call, const BuiltInFunction* op,
 	char buf[APPENDBUFSIZE];
         size_t nchar;
 	int status = 0;
-	if (STRING_ELT(f1, 0) == NA_STRING ||
+	if (STRING_ELT(f1, 0) == R_NaString ||
 	    !(fp1 = RC_fopen(STRING_ELT(f1, 0), "ab", TRUE)))
 	   goto done;
 	for (int i = 0; i < n; i++) {
 	    status = 0;
-	    if (STRING_ELT(f2, i) == NA_STRING ||
+	    if (STRING_ELT(f2, i) == R_NaString ||
 	       !(fp2 = RC_fopen(STRING_ELT(f2, i), "rb", TRUE))) continue;
 	    while ((nchar = fread(buf, 1, APPENDBUFSIZE, fp2)) == APPENDBUFSIZE)
 		if (fwrite(buf, 1, APPENDBUFSIZE, fp1) != APPENDBUFSIZE)
@@ -487,12 +487,12 @@ HIDDEN SEXP do_filecreate(/*const*/ Expression* call, const BuiltInFunction* op,
     if (!Rf_isString(fn))
 	Rf_error(_("invalid filename argument"));
     show = Rf_asLogical(showWarnings_);
-    if (show == NA_LOGICAL) show = 0;
+    if (show == R_NaLog) show = 0;
     n = Rf_length(fn);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
 	LOGICAL(ans)[i] = 0;
-	if (STRING_ELT(fn, i) == NA_STRING) continue;
+	if (STRING_ELT(fn, i) == R_NaString) continue;
 	if ((fp = RC_fopen(STRING_ELT(fn, i), "w", TRUE)) != nullptr) {
 	    LOGICAL(ans)[i] = 1;
 	    fclose(fp);
@@ -515,7 +515,7 @@ HIDDEN SEXP do_fileremove(/*const*/ Expression* call, const BuiltInFunction* op,
     n = Rf_length(f);
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
-	if (STRING_ELT(f, i) != NA_STRING) {
+	if (STRING_ELT(f, i) != R_NaString) {
 	    LOGICAL(ans)[i] =
 #ifdef Win32
 		(_wremove(filenameToWchar(STRING_ELT(f, i), TRUE)) == 0);
@@ -600,8 +600,8 @@ HIDDEN SEXP do_filesymlink(/*const*/ Expression* call, const BuiltInFunction* op
 #ifdef HAVE_SYMLINK
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
-	if (STRING_ELT(f1, i%n1) == NA_STRING ||
-	    STRING_ELT(f2, i%n2) == NA_STRING)
+	if (STRING_ELT(f1, i%n1) == R_NaString ||
+	    STRING_ELT(f2, i%n2) == R_NaString)
 	    LOGICAL(ans)[i] = 0;
 	else {
 #ifdef Win32
@@ -675,8 +675,8 @@ HIDDEN SEXP do_filelink(/*const*/ Expression* call, const BuiltInFunction* op, R
 #ifdef HAVE_LINK
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
-	if (STRING_ELT(f1, i%n1) == NA_STRING ||
-	    STRING_ELT(f2, i%n2) == NA_STRING)
+	if (STRING_ELT(f1, i%n1) == R_NaString ||
+	    STRING_ELT(f2, i%n2) == R_NaString)
 	    LOGICAL(ans)[i] = 0;
 	else {
 #ifdef Win32
@@ -750,8 +750,8 @@ HIDDEN SEXP do_filerename(/*const*/ Expression* call, const BuiltInFunction* op,
 	Rf_error(_("'from' and 'to' are of different lengths"));
     PROTECT(ans = Rf_allocVector(LGLSXP, n1));
     for (i = 0; i < n1; i++) {
-	if (STRING_ELT(f1, i) == NA_STRING ||
-	    STRING_ELT(f2, i) == NA_STRING) {
+	if (STRING_ELT(f1, i) == R_NaString ||
+	    STRING_ELT(f2, i) == R_NaString) {
 	    LOGICAL(ans)[i] = 0;
 	    continue;
 	}
@@ -832,7 +832,7 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
     if (!Rf_isString(fn))
 	Rf_error(_("invalid filename argument"));
     int extras = Rf_asInteger(extra_cols_);
-    if(extras == NA_INTEGER)
+    if(extras == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "extra_cols");
     int n = Rf_length(fn), ncols = 6;
     if(extras) {
@@ -888,7 +888,7 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
 #else
 	const char *efn = R_ExpandFileName(Rf_translateChar(STRING_ELT(fn, i)));
 #endif
-	if (STRING_ELT(fn, i) != NA_STRING &&
+	if (STRING_ELT(fn, i) != R_NaString &&
 #ifdef Win32
 	    _wstati64(wfn, &sb)
 #else
@@ -940,9 +940,9 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
 		    Rf_warning(_("cannot open file '%ls': %s"),
 		            wfn, formatError(GetLastError()));
 		if (!success) {
-		    REAL(mtime)[i] = NA_REAL;
-		    REAL(ctime)[i] = NA_REAL;
-		    REAL(atime)[i] = NA_REAL;	
+		    REAL(mtime)[i] = R_NaReal;
+		    REAL(ctime)[i] = R_NaReal;
+		    REAL(atime)[i] = R_NaReal;	
 	        }
 	    }
 #else	    REAL(mtime)[i] = double(sb.st_mtime);
@@ -970,7 +970,7 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
 		else {
 		    struct passwd *stpwd = getpwuid(sb.st_uid);
 		    SET_STRING_ELT(uname, i,
-				   stpwd ? Rf_mkChar(stpwd->pw_name): NA_STRING);
+				   stpwd ? Rf_mkChar(stpwd->pw_name): R_NaString);
 		}
 
 		if (i && INTEGER(gid)[i - 1] == (int) sb.st_gid)
@@ -978,7 +978,7 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
 		else {
 		    struct group *stgrp = getgrgid(sb.st_gid);
 		    SET_STRING_ELT(grname, i,
-				   stgrp ? Rf_mkChar(stgrp->gr_name): NA_STRING);
+				   stgrp ? Rf_mkChar(stgrp->gr_name): R_NaString);
 		}
 #endif
 #ifdef Win32
@@ -1008,21 +1008,21 @@ HIDDEN SEXP do_fileinfo(/*const*/ Expression* call, const BuiltInFunction* op, R
 #endif
 	    }
 	} else {
-	    REAL(fsize)[i] = NA_REAL;
-	    LOGICAL(isdir)[i] = NA_INTEGER;
-	    INTEGER(mode)[i]  = NA_INTEGER;
-	    REAL(mtime)[i] = NA_REAL;
-	    REAL(ctime)[i] = NA_REAL;
-	    REAL(atime)[i] = NA_REAL;
+	    REAL(fsize)[i] = R_NaReal;
+	    LOGICAL(isdir)[i] = R_NaInt;
+	    INTEGER(mode)[i]  = R_NaInt;
+	    REAL(mtime)[i] = R_NaReal;
+	    REAL(ctime)[i] = R_NaReal;
+	    REAL(atime)[i] = R_NaReal;
 	    if (extras) {
 #ifdef UNIX_EXTRAS
-		INTEGER(uid)[i] = NA_INTEGER;
-		INTEGER(gid)[i] = NA_INTEGER;
-		SET_STRING_ELT(uname, i, NA_STRING);
-		SET_STRING_ELT(grname, i, NA_STRING);
+		INTEGER(uid)[i] = R_NaInt;
+		INTEGER(gid)[i] = R_NaInt;
+		SET_STRING_ELT(uname, i, R_NaString);
+		SET_STRING_ELT(grname, i, R_NaString);
 #endif
 #ifdef Win32
-		SET_STRING_ELT(exe, i, NA_STRING);
+		SET_STRING_ELT(exe, i, R_NaString);
 #endif
 	    }
 	}
@@ -1065,7 +1065,7 @@ HIDDEN SEXP do_direxists(SEXP call, SEXP op, SEXP args, SEXP rho)
 #else
 	const char *efn = R_ExpandFileName(Rf_translateChar(STRING_ELT(fn, i)));
 #endif
-	if (STRING_ELT(fn, i) != NA_STRING &&
+	if (STRING_ELT(fn, i) != R_NaString &&
 #ifdef Win32
 	    _wstati64(wfn, &sb)
 #else
@@ -1207,27 +1207,27 @@ HIDDEN SEXP do_listfiles(/*const*/ Expression* call, const BuiltInFunction* op, 
     if (!Rf_isString(d)) Rf_error(_("invalid '%s' argument"), "path");
     SEXP p = pattern_;
     Rboolean pattern = FALSE;
-    if (Rf_isString(p) && Rf_length(p) >= 1 && STRING_ELT(p, 0) != NA_STRING)
+    if (Rf_isString(p) && Rf_length(p) >= 1 && STRING_ELT(p, 0) != R_NaString)
 	pattern = TRUE;
     else if (!Rf_isNull(p) && !(Rf_isString(p) && Rf_length(p) < 1))
 	Rf_error(_("invalid '%s' argument"), "pattern");
     int allfiles = Rf_asLogical(all_files_);
-    if (allfiles == NA_LOGICAL)
+    if (allfiles == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "all.files");
     int fullnames = Rf_asLogical(full_names_);
-    if (fullnames == NA_LOGICAL)
+    if (fullnames == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "full.names");
     int recursive = Rf_asLogical(recursive_);
-    if (recursive == NA_LOGICAL)
+    if (recursive == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "recursive");
     int igcase = Rf_asLogical(ignore_case_);
-    if (igcase == NA_LOGICAL)
+    if (igcase == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "ignore.case");
     int idirs = Rf_asLogical(include_dirs_);
-    if (idirs == NA_LOGICAL)
+    if (idirs == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "include.dirs");
     int nodots = Rf_asLogical(no_dots_);
-    if (nodots == NA_LOGICAL)
+    if (nodots == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "no..");
 
     int flags = REG_EXTENDED;
@@ -1240,7 +1240,7 @@ HIDDEN SEXP do_listfiles(/*const*/ Expression* call, const BuiltInFunction* op, 
     PROTECT_WITH_INDEX(ans = Rf_allocVector(STRSXP, countmax), &idx);
     int count = 0;
     for (int i = 0; i < LENGTH(d) ; i++) {
-	if (STRING_ELT(d, i) == NA_STRING) continue;
+	if (STRING_ELT(d, i) == R_NaString) continue;
 	const char *dnp = R_ExpandFileName(Rf_translateChar(STRING_ELT(d, i)));
 	list_files(dnp, fullnames ? dnp : nullptr, &count, &ans, Rboolean(allfiles),
 		   Rboolean(recursive), pattern ? &reg : nullptr, &countmax, idx,
@@ -1327,16 +1327,16 @@ HIDDEN SEXP do_listdirs(/*const*/ Expression* call, const BuiltInFunction* op, R
     d = path_;
     if (!Rf_isString(d)) Rf_error(_("invalid '%s' argument"), "directory");
     fullnames = Rf_asLogical(full_names_);
-    if (fullnames == NA_LOGICAL)
+    if (fullnames == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "full.names");
     recursive = Rf_asLogical(recursive_);
-    if (recursive == NA_LOGICAL)
+    if (recursive == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "recursive");
 
     PROTECT_WITH_INDEX(ans = Rf_allocVector(STRSXP, countmax), &idx);
     count = 0;
     for (i = 0; i < LENGTH(d) ; i++) {
-	if (STRING_ELT(d, i) == NA_STRING) continue;
+	if (STRING_ELT(d, i) == R_NaString) continue;
 	dnp = R_ExpandFileName(Rf_translateChar(STRING_ELT(d, i)));
 	list_dirs(dnp, "", Rboolean(fullnames), &count, &ans, &countmax, idx, Rboolean(recursive));
     }
@@ -1373,7 +1373,7 @@ HIDDEN SEXP do_fileexists(/*const*/ Expression* call, const BuiltInFunction* op,
     ans = PROTECT(Rf_allocVector(LGLSXP, nfile));
     for (i = 0; i < nfile; i++) {
 	LOGICAL(ans)[i] = 0;
-	if (STRING_ELT(file, i) != NA_STRING) {
+	if (STRING_ELT(file, i) != R_NaString) {
 #ifdef Win32
 	    /* Package XML sends arbitrarily long strings to file.exists! */
 	    size_t len = strlen(R_CHAR(STRING_ELT(file, i)));
@@ -1435,7 +1435,7 @@ HIDDEN SEXP do_fileaccess(/*const*/ Expression* call, const BuiltInFunction* op,
     if (mode & 4) modemask |= R_OK;
     PROTECT(ans = Rf_allocVector(INTSXP, n));
     for (i = 0; i < n; i++)
-	if (STRING_ELT(fn, i) != NA_STRING) {
+	if (STRING_ELT(fn, i) != R_NaString) {
 	    INTEGER(ans)[i] =
 #ifdef Win32
 		winAccessW(filenameToWchar(STRING_ELT(fn, i), TRUE), modemask);
@@ -1639,13 +1639,13 @@ HIDDEN SEXP do_unlink(SEXP call, SEXP op, SEXP args, SEXP env)
 	if (!Rf_isString(fn))
 	    Rf_error(_("invalid '%s' argument"), "x");
 	recursive = Rf_asLogical(CADR(args));
-	if (recursive == NA_LOGICAL)
+	if (recursive == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "recursive");
 	force = Rf_asLogical(CADDR(args));
-	if (force == NA_LOGICAL)
+	if (force == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "force");
 	for (i = 0; i < nfiles; i++) {
-	    if (STRING_ELT(fn, i) != NA_STRING) {
+	    if (STRING_ELT(fn, i) != R_NaString) {
 		names = filenameToWchar(STRING_ELT(fn, i), TRUE);
 		//Rprintf("do_unlink(%ls)\n", names);
 		res = dos_wglob(names, GLOB_NOCHECK, NULL, &globbuf);
@@ -1681,13 +1681,13 @@ HIDDEN SEXP do_unlink(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	if (!Rf_isString(fn))
 	    Rf_error(_("invalid '%s' argument"), "x");
 	recursive = Rf_asLogical(recursive_);
-	if (recursive == NA_LOGICAL)
+	if (recursive == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "recursive");
 	force = Rf_asLogical(force_);
-	if (force == NA_LOGICAL)
+	if (force == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "force");
 	for (i = 0; i < nfiles; i++) {
-	    if (STRING_ELT(fn, i) != NA_STRING) {
+	    if (STRING_ELT(fn, i) != R_NaString) {
 		names = R_ExpandFileName(Rf_translateChar(STRING_ELT(fn, i)));
 #if defined(HAVE_GLOB)
 		res = glob(names, GLOB_NOCHECK, nullptr, &globbuf);
@@ -1719,7 +1719,7 @@ HIDDEN SEXP do_getlocale(/*const*/ Expression* call, const BuiltInFunction* op, 
     char *p = nullptr;
 
     cat = Rf_asInteger(category_);
-    if (cat == NA_INTEGER || cat < 0)
+    if (cat == R_NaInt || cat < 0)
 	Rf_error(_("invalid '%s' argument"), "category");
     switch(cat) {
     case 1: cat = LC_ALL; break;
@@ -1737,9 +1737,9 @@ HIDDEN SEXP do_getlocale(/*const*/ Expression* call, const BuiltInFunction* op, 
 #ifdef LC_MEASUREMENT
     case 9: cat = LC_MEASUREMENT; break;
 #endif
-    default: cat = NA_INTEGER;
+    default: cat = R_NaInt;
     }
-    if (cat != NA_INTEGER) p = setlocale(cat, nullptr);
+    if (cat != R_NaInt) p = setlocale(cat, nullptr);
     return Rf_mkString(p ? p : "");
 }
 
@@ -1751,7 +1751,7 @@ HIDDEN SEXP do_setlocale(/*const*/ Expression* call, const BuiltInFunction* op, 
     const char *p;
 
     cat = Rf_asInteger(category_);
-    if (cat == NA_INTEGER || cat < 0)
+    if (cat == R_NaInt || cat < 0)
 	Rf_error(_("invalid '%s' argument"), "category");
     if (!Rf_isString(locale) || LENGTH(locale) != 1)
 	Rf_error(_("invalid '%s' argument"), "locale");
@@ -1913,7 +1913,7 @@ HIDDEN SEXP do_pathexpand(/*const*/ Expression* call, const BuiltInFunction* op,
     PROTECT(ans = Rf_allocVector(STRSXP, n));
     for (i = 0; i < n; i++) {
 	SEXP tmp = STRING_ELT(fn, i);
-	if (tmp != NA_STRING) {
+	if (tmp != R_NaString) {
 #ifndef Win32
 	    tmp = Rf_markKnown(R_ExpandFileName(Rf_translateChar(tmp)), tmp);
 #else
@@ -1970,7 +1970,7 @@ HIDDEN SEXP do_capabilities(/*const*/ Expression* call, const BuiltInFunction* o
     int i = 0;
 #ifdef Unix
 # ifdef HAVE_X11
-    int X11 = NA_LOGICAL;
+    int X11 = R_NaLog;
 # else
     int X11 = FALSE;
 # endif
@@ -2153,13 +2153,13 @@ HIDDEN SEXP do_dircreate(/*const*/ Expression* call, const BuiltInFunction* op, 
     path = path_;
     if (!Rf_isString(path) || Rf_length(path) != 1)
 	Rf_error(_("invalid '%s' argument"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING) return Rf_ScalarLogical(FALSE);
+    if (STRING_ELT(path, 0) == R_NaString) return Rf_ScalarLogical(FALSE);
     show = Rf_asLogical(showWarnings_);
-    if (show == NA_LOGICAL) show = 0;
+    if (show == R_NaLog) show = 0;
     recursive = Rf_asLogical(recursive_);
-    if (recursive == NA_LOGICAL) recursive = 0;
+    if (recursive == R_NaLog) recursive = 0;
     mode = Rf_asInteger(mode_);
-    if (mode == NA_LOGICAL) mode = 0777;
+    if (mode == R_NaLog) mode = 0777;
     strcpy(dir, R_ExpandFileName(Rf_translateChar(STRING_ELT(path, 0))));
     /* remove trailing slashes */
     p = dir + strlen(dir) - 1;
@@ -2212,11 +2212,11 @@ HIDDEN SEXP do_dircreate(SEXP call, SEXP op, SEXP args, SEXP env)
     path = CAR(args);
     if (!Rf_isString(path) || Rf_length(path) != 1)
 	Rf_error(_("invalid '%s' argument"), "path");
-    if (STRING_ELT(path, 0) == NA_STRING) return Rf_ScalarLogical(FALSE);
+    if (STRING_ELT(path, 0) == R_NaString) return Rf_ScalarLogical(FALSE);
     show = Rf_asLogical(CADR(args));
-    if (show == NA_LOGICAL) show = 0;
+    if (show == R_NaLog) show = 0;
     recursive = Rf_asLogical(CADDR(args));
-    if (recursive == NA_LOGICAL) recursive = 0;
+    if (recursive == R_NaLog) recursive = 0;
     p = filenameToWchar(STRING_ELT(path, 0), TRUE);
     if (wcslen(p) >= MAX_PATH)
     	Rf_error(_("'%s' too long"), "path");
@@ -2419,16 +2419,16 @@ HIDDEN SEXP do_filecopy(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (!Rf_isString(to) || LENGTH(to) != 1)
 	    Rf_error(_("invalid '%s' argument"), "to");
 	over = Rf_asLogical(CAR(args)); args = CDR(args);
-	if (over == NA_LOGICAL)
+	if (over == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "overwrite");
 	recursive = Rf_asLogical(CAR(args)); args = CDR(args);
-	if (recursive == NA_LOGICAL)
+	if (recursive == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "recursive");
 	perms = Rf_asLogical(CAR(args)); args = CDR(args);
-	if (perms == NA_LOGICAL)
+	if (perms == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "copy.mode");
 	dates = Rf_asLogical(CAR(args));
-	if (dates == NA_LOGICAL)
+	if (dates == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "copy.dates");
 	p = filenameToWchar(STRING_ELT(to, 0), TRUE);
 	if (wcslen(p) >= PATH_MAX)
@@ -2438,7 +2438,7 @@ HIDDEN SEXP do_filecopy(SEXP call, SEXP op, SEXP args, SEXP rho)
 	if (*(dir + (wcslen(dir) - 1)) !=  L'\\')
 	    wcsncat(dir, L"\\", PATH_MAX);
 	for (i = 0; i < nfiles; i++) {
-	    if (STRING_ELT(fn, i) != NA_STRING) {
+	    if (STRING_ELT(fn, i) != R_NaString) {
 	    	p = filenameToWchar(STRING_ELT(fn, i), TRUE);
 	    	if (wcslen(p) >= PATH_MAX)
 	    	    Rf_error(_("'%s' path too long"), "from");
@@ -2667,16 +2667,16 @@ HIDDEN SEXP do_filecopy(/*const*/ Expression* call, const BuiltInFunction* op, R
 	if (!Rf_isString(to) || LENGTH(to) != 1)
 	    Rf_error(_("invalid '%s' argument"), "to");
 	over = Rf_asLogical(overwrite_);
-	if (over == NA_LOGICAL)
+	if (over == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "overwrite");
 	recursive = Rf_asLogical(recursive_);
-	if (recursive == NA_LOGICAL)
+	if (recursive == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "recursive");
 	perms = Rf_asLogical(copy_mode_);
-	if (perms == NA_LOGICAL)
+	if (perms == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "copy.mode");
 	dates = Rf_asLogical(copy_date_);
-	if (dates == NA_LOGICAL)
+	if (dates == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "copy.dates");
 	const char* q = R_ExpandFileName(Rf_translateChar(STRING_ELT(to, 0)));
 	if(strlen(q) > PATH_MAX - 2) // allow for '/' and terminator
@@ -2686,7 +2686,7 @@ HIDDEN SEXP do_filecopy(/*const*/ Expression* call, const BuiltInFunction* op, R
 	if (*(dir + (strlen(dir) - 1)) !=  '/')
 	    strcat(dir, "/");
 	for (i = 0; i < nfiles; i++) {
-	    if (STRING_ELT(fn, i) != NA_STRING) {
+	    if (STRING_ELT(fn, i) != R_NaString) {
 		strncpy(from,
 			R_ExpandFileName(Rf_translateChar(STRING_ELT(fn, i))),
 			PATH_MAX);
@@ -2761,7 +2761,7 @@ HIDDEN SEXP do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, R
     m = LENGTH(smode);
     if(!m && n) Rf_error(_("'mode' must be of length at least one"));
     int useUmask = Rf_asLogical(use_umask_);
-    if (useUmask == NA_LOGICAL)
+    if (useUmask == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "use_umask");
 #ifdef HAVE_UMASK
     um = umask(0); umask(um);
@@ -2769,7 +2769,7 @@ HIDDEN SEXP do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, R
     PROTECT(ans = Rf_allocVector(LGLSXP, n));
     for (i = 0; i < n; i++) {
 	mode_t mode = mode_t( modes[i % m]);
-	if (int(mode) == NA_INTEGER) mode = 0777;
+	if (int(mode) == R_NaInt) mode = 0777;
 #ifdef HAVE_UMASK
 	if(useUmask) mode = mode & ~um;
 #endif
@@ -2779,7 +2779,7 @@ HIDDEN SEXP do_syschmod(/*const*/ Expression* call, const BuiltInFunction* op, R
 	*/
 	mode = (mode & 0200) ? (_S_IWRITE | _S_IREAD): _S_IREAD;
 #endif
-	if (STRING_ELT(paths, i) != NA_STRING) {
+	if (STRING_ELT(paths, i) != R_NaString) {
 #ifdef Win32
 	    res = _wchmod(filenameToWchar(STRING_ELT(paths, i), TRUE), mode);
 #else
@@ -2815,7 +2815,7 @@ HIDDEN SEXP do_sysumask(/*const*/ Expression* call, const BuiltInFunction* op, R
 
     mode = Rf_asInteger(mode_);
 #ifdef HAVE_UMASK
-    if (mode == NA_INTEGER) {
+    if (mode == R_NaInt) {
 	res = umask(0);
 	umask(res);
 	R_Visible = TRUE;
@@ -2852,7 +2852,7 @@ HIDDEN SEXP do_readlink(/*const*/ Expression* call, const BuiltInFunction* op, R
 	    Rf_warning("possible truncation of value for element %d", i + 1);
 	} else if (res >= 0) SET_STRING_ELT(ans, i, Rf_mkChar(buf));
 	else if (errno == EINVAL) SET_STRING_ELT(ans, i, Rf_mkChar(""));
-	else SET_STRING_ELT(ans, i,  NA_STRING);
+	else SET_STRING_ELT(ans, i,  R_NaString);
     }
 #endif
     UNPROTECT(1);
@@ -2867,8 +2867,8 @@ HIDDEN SEXP do_Cstack_info(/*const*/ Expression* call, const BuiltInFunction* op
     PROTECT(ans = Rf_allocVector(INTSXP, 4));
     PROTECT(nms = Rf_allocVector(STRSXP, 4));
     /* FIXME: could be out of range */
-    INTEGER(ans)[0] = (R_CStackLimit == uintptr_t(-1)) ? NA_INTEGER : int(R_CStackLimit);
-    INTEGER(ans)[1] = (R_CStackLimit ==  uintptr_t(-1)) ? NA_INTEGER : int
+    INTEGER(ans)[0] = (R_CStackLimit == uintptr_t(-1)) ? R_NaInt : int(R_CStackLimit);
+    INTEGER(ans)[1] = (R_CStackLimit ==  uintptr_t(-1)) ? R_NaInt : int
 	(R_CStackDir * (R_CStackStart - uintptr_t( &ans)));
     INTEGER(ans)[2] = R_CStackDir;
     INTEGER(ans)[3] = StackChecker::depth();
@@ -3204,7 +3204,7 @@ void Rsleep(double timeint);
 HIDDEN SEXP do_syssleep(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     double time = Rf_asReal(CAR(args));
-    if (ISNAN(time) || time < 0.)
+    if (std::isnan(time) || time < 0.)
 	Rf_error(_("invalid '%s' value"), "time");
     Rsleep(time);
     return nullptr;
@@ -3360,7 +3360,7 @@ machar(int *ibeta, int *it, int *irnd, int *ngrd, int *machep, int *negep,
 	for(i=1 ; i<=*negep ; i++)
 		a = a * betain;
 	b = a;
-	for(;;) {
+	while (true) {
 		temp = one - a;
 		if (temp - one != zero)
 			break;
@@ -3380,7 +3380,7 @@ machar(int *ibeta, int *it, int *irnd, int *ngrd, int *machep, int *negep,
 
 	*machep = -*it - 3;
 	a = b;
-	for(;;) {
+	while (true) {
 		temp = one + a;
 		if (temp - one != zero)
 			break;
@@ -3415,7 +3415,7 @@ machar(int *ibeta, int *it, int *irnd, int *ngrd, int *machep, int *negep,
 	z = betain;
 	t = one + *eps;
 	nxres = 0;
-	for(;;) {
+	while (true) {
 		y = z;
 		z = y * y;
 

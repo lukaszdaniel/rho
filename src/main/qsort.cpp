@@ -46,8 +46,8 @@
 using namespace rho;
 
 #ifdef LONG_VECTOR_SUPPORT
-static void R_qsort_R(double *v, double *I, size_t i, size_t j);
-static void R_qsort_int_R(int *v, double *I, size_t i, size_t j);
+static void R_qsort_R(double* v, double* I, size_t i, size_t j);
+static void R_qsort_int_R(int* v, double* I, size_t i, size_t j);
 #endif
 
 /* R function  qsort(x, index.return) */

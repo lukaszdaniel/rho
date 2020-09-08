@@ -46,7 +46,6 @@
 #include <R_ext/Complex.h>	/* for Rcomplex */
 #include <R_ext/BLAS.h>
 
-
 /*
   LAPACK function names are [dz]<name>(), where d denotes the real
   version of the function, z the complex version.  (Only
@@ -3122,7 +3121,7 @@ F77_NAME(zlahrd)(int *n, int *k, int *nb,
 
 
 #ifdef	__cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* R_LAPACK_H */

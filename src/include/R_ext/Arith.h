@@ -49,8 +49,9 @@ LibExtern double R_PosInf;	/* IEEE Inf */
 LibExtern double R_NegInf;	/* IEEE -Inf */
 LibExtern double R_NaReal;	/* NA_REAL: IEEE */
 LibExtern int	 R_NaInt;	/* NA_INTEGER:= INT_MIN currently */
+LibExtern int	 R_NaLog;	/* NA_INTEGER:= INT_MIN currently */
 
-#define NA_LOGICAL	R_NaInt
+#define NA_LOGICAL	R_NaLog
 #define NA_INTEGER	R_NaInt
 /* #define NA_FACTOR	R_NaInt  unused */
 #define NA_REAL		R_NaReal
@@ -63,7 +64,7 @@ int R_IsNA(double);		/* True for R's NA only */
 int R_IsNaN(double);		/* True for special NaN, *not* for NA */
 int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #define ISNA(x)	       R_IsNA(x)
@@ -78,7 +79,7 @@ int R_finite(double);		/* True if none of NA, NaN, +/-Inf */
   int R_isnancpp(double); /* in arithmetic.cpp */
 #  define ISNAN(x)     R_isnancpp(x)
 #else
-#  define ISNAN(x)     (isnan(x)!=0)
+#  define ISNAN(x)     (isnan(x) != 0)
 #endif
 
 /* The following is only defined inside R */

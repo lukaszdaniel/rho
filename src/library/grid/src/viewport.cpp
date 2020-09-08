@@ -249,7 +249,7 @@ void calcViewportTransform(SEXP vp, SEXP parent, Rboolean incremental,
 	 * If necessary, recalculate the parent transform (etc ...)
 	 */
 	if (!incremental)
-	    calcViewportTransform(parent, viewportParent(parent), Rboolean(0), dd);
+	    calcViewportTransform(parent, viewportParent(parent), FALSE, dd);
 	/* Get information required to transform viewport location
 	 */
 	parentWidthCM = REAL(viewportWidthCM(parent))[0];

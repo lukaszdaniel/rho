@@ -26,11 +26,8 @@
 #endif
 
 /* Required by C99 but might be slow */
-#ifdef HAVE_LONG_DOUBLE
-#  define LDOUBLE long double
-#else
-#  define LDOUBLE double
-#endif
+#include <R_ext/Ldouble.h>
+#include <R_ext/Minmax.h>
 
 /* To ensure atanpi, cospi,  sinpi, tanpi are defined */
 # ifndef __STDC_WANT_IEC_60559_FUNCS_EXT__
@@ -80,15 +77,16 @@ extern "C"
 void R_CheckUserInterrupt(void);
 /* Ei-ji Nakama reported that AIX 5.2 has calloc as a macro and objected
    to redefining it.  Tests added for 2.2.1 */
-#ifdef calloc
-# undef calloc
-#endif
-#define calloc R_chk_calloc
-#ifdef free
-# undef free
-#endif
-#define free R_chk_free
+// #ifdef calloc
+// # undef calloc
+// #endif
+// #define calloc R_chk_calloc
+// #ifdef free
+// # undef free
+// #endif
+// #define free R_chk_free
 
+/* Localization */
 #include <Localization.h>
 
 #else

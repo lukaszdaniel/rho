@@ -1613,7 +1613,7 @@ yyreduce:
     break;
 
   case 4:
-                                                { PROTECT(parseState.Value = R_NilValue);  YYABORT; }
+                                                { PROTECT(parseState.Value = nullptr);  YYABORT; }
     break;
 
   case 5:
@@ -2181,7 +2181,7 @@ static SEXP mkString2(const char *s, size_t len)
 
 static SEXP NewList(void)
 {
-    SEXP s = CONS(R_NilValue, R_NilValue);
+    SEXP s = CONS(nullptr, nullptr);
     SETCAR(s, s);
     return s;
 }
@@ -2192,7 +2192,7 @@ static SEXP GrowList(SEXP l, SEXP s)
 {
     SEXP tmp;
     PROTECT(s);
-    tmp = CONS(s, R_NilValue);
+    tmp = CONS(s, nullptr);
     UNPROTECT(1);
     SETCDR(CAR(l), tmp);
     SETCAR(l, tmp);
@@ -2242,7 +2242,7 @@ static SEXP ParseLatex(ParseStatus *status, SEXP srcfile)
 
     npush = 0;
 
-    parseState.Value = R_NilValue;
+    parseState.Value = nullptr;
 
     if (yyparse()) *status = PARSE_ERROR;
     else *status = PARSE_OK;
@@ -2638,7 +2638,7 @@ SEXP parseLatex(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     args = CDR(args);
 
-    SEXP s = R_NilValue, source, text;
+    SEXP s = nullptr, source, text;
     ParseStatus status;
 
 #if DEBUGMODE

@@ -268,7 +268,7 @@ int Rf_isBasicClass(const char *ss) {
     }
     if(s_S3table == R_UnboundValue)
       return FALSE; /* too screwed up to do conversions */
-    return Rf_findVarInFrame3(s_S3table, Rf_install(ss), FALSE) != R_UnboundValue;
+    return Rf_findVarInFrame3(s_S3table, rho::Symbol::obtain(ss), FALSE) != R_UnboundValue;
 }
 
 
@@ -1139,7 +1139,7 @@ static SEXP R_isMethodsDispatchOn(SEXP onOff)
     int ival = !(old == nullptr || old == dispatchNonGeneric);
     if(Rf_length(onOff) > 0) {
 	Rboolean onOffValue = Rboolean(Rf_asLogical(onOff));
-	if(onOffValue == NA_INTEGER)
+	if(onOffValue == R_NaInt)
 	    Rf_error(_("'onOff' must be TRUE or FALSE"));
 	else if(onOffValue == FALSE)
 	    R_set_standardGeneric_ptr(nullptr, R_GlobalEnv);
@@ -1672,9 +1672,9 @@ HIDDEN SEXP do_setS4Object(/*const*/ Expression* call, const BuiltInFunction* op
 {
     SEXP object = object_;
     int flag = Rf_asLogical(flag_), complete = Rf_asInteger(complete_);
-    if(Rf_length(flag_) != 1 || flag == NA_INTEGER)
+    if(Rf_length(flag_) != 1 || flag == R_NaInt)
 	Rf_error("invalid '%s' argument", "flag");
-    if(complete == NA_INTEGER)
+    if(complete == R_NaInt)
 	Rf_error("invalid '%s' argument", "complete");
     if(flag == Rboolean(IS_S4_OBJECT(object)))
 	return object;

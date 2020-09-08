@@ -123,7 +123,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     nactualdots = 0;
     for (i = 0; i < ndots; i++)
-	if (VECTOR_ELT(dots, i) != R_NilValue) nactualdots++;
+	if (VECTOR_ELT(dots, i) != nullptr) nactualdots++;
 
     /* Assemble the base data frame. */
 
@@ -136,7 +136,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     for (i = 0,j = 0; i < ndots; i++) {
 	const char *ss;
-	if (VECTOR_ELT(dots, i) == R_NilValue) continue;
+	if (VECTOR_ELT(dots, i) == nullptr) continue;
 	ss = Rf_translateChar(STRING_ELT(dotnames, i));
 	if(strlen(ss) + 3 > 256) Rf_error(_("overlong names in '%s'"), ss);
 	snprintf(buf, 256, "(%s)", ss);
@@ -202,7 +202,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* Do the subsetting, if required. */
     /* Need to save and restore 'most' attributes */
 
-    if (subset != R_NilValue) {
+    if (subset != nullptr) {
 	PROTECT(tmp=Rf_install("[.data.frame"));
 	PROTECT(tmp=LCONS(tmp,Rf_list4(data,subset,R_MissingArg,Rf_mkFalse())));
 	data = Rf_eval(tmp, rho);
@@ -214,7 +214,7 @@ SEXP modelframe(SEXP call, SEXP op, SEXP args, SEXP rho)
     /* finally, we run na.action on the data frame */
     /* usually, this will be na.omit */
 
-    if (na_action != R_NilValue) {
+    if (na_action != nullptr) {
 	/* some na.actions need this to distinguish responses from
 	   explanatory variables */
 	Rf_setAttrib(data, Rf_install("terms"), terms);
@@ -328,8 +328,8 @@ static char *AppendInteger(char *buf, int i)
 static SEXP ColumnNames(SEXP x)
 {
     SEXP dn = Rf_getAttrib(x, R_DimNamesSymbol);
-    if (dn == R_NilValue || Rf_length(dn) < 2)
-	return R_NilValue;
+    if (dn == nullptr || Rf_length(dn) < 2)
+	return nullptr;
     else
 	return VECTOR_ELT(dn, 1);
 }
@@ -634,7 +634,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 			    bufp = AppendString(bufp, addp);
 			else
 			    Rf_warning(_("term names will be truncated"));
-			if (x == R_NilValue) {
+			if (x == nullptr) {
 			    if(strlen(buf) + 10 < BUFSIZE)
 				bufp = AppendInteger(bufp, indx % ll + 1);
 			    else
@@ -657,7 +657,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 			else
 			    Rf_warning(_("term names will be truncated"));
 			if (ll > 1) {
-			    if (x == R_NilValue) {
+			    if (x == nullptr) {
 				if(strlen(buf) + 10 < BUFSIZE)
 				    bufp = AppendInteger(bufp, indx % ll + 1);
 				else
@@ -695,7 +695,7 @@ SEXP modelmatrix(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     /* b) Now loop over the model terms */
 
-    contrast = R_NilValue;	/* -Wall */
+    contrast = nullptr;	/* -Wall */
     for (k = 0; k < nterms; k++) {
 	if (k == rhs_response) continue;
 	for (i = 0; i < nVar; i++) {
@@ -872,7 +872,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 	}
 	else {
 	    op = object;
-	    while(op != R_NilValue) {
+	    while(op != nullptr) {
 		SETCAR(op, ExpandDots(CAR(op), value));
 		op = CDR(op);
 	    }
@@ -884,7 +884,7 @@ static SEXP ExpandDots(SEXP object, SEXP value)
 
  badformula:
     Rf_error(_("invalid formula in 'update'"));
-    return R_NilValue; /*NOTREACHED*/
+    return nullptr; /*NOTREACHED*/
 }
 
 SEXP updateform(SEXP old, SEXP newf)
@@ -1052,12 +1052,12 @@ static int InstallVar(SEXP var)
 	Rf_error(_("invalid term in model formula"));
     /* Lookup/Install it */
     indx = 0;
-    for (v = varlist; CDR(v) != R_NilValue; v = CDR(v)) {
+    for (v = varlist; CDR(v) != nullptr; v = CDR(v)) {
 	indx++;
 	if (MatchVar(var, CADR(v)))
 	    return indx;
     }
-    SETCDR(v, CONS(var, R_NilValue));
+    SETCDR(v, CONS(var, nullptr));
     return indx + 1;
 }
 
@@ -1071,7 +1071,7 @@ static void CheckRHS(SEXP v)
 {
     int i, j;
     SEXP s, t;
-    while ((Rf_isList(v) || Rf_isLanguage(v)) && v != R_NilValue) {
+    while ((Rf_isList(v) || Rf_isLanguage(v)) && v != nullptr) {
 	CheckRHS(CAR(v));
 	v = CDR(v);
     }
@@ -1109,7 +1109,7 @@ static void ExtractVars(SEXP formula, int checkonly)
     if (Rf_isSymbol(formula)) {
 	if (formula == dotSymbol) haveDot = TRUE;
 	if (!checkonly) {
-	    if (formula == dotSymbol && framenames != R_NilValue) {
+	    if (formula == dotSymbol && framenames != nullptr) {
 		haveDot = TRUE;
 		for (i = 0; i < Rf_length(framenames); i++) {
 		    v = Rf_installTrChar(STRING_ELT(framenames, i));
@@ -1282,15 +1282,15 @@ static int TermEqual(SEXP term1, SEXP term2)
 
 static SEXP StripTerm(SEXP term, SEXP list)
 {
-    SEXP root = R_NilValue, prev = R_NilValue;
+    SEXP root = nullptr, prev = nullptr;
     if (TermZero(term))
 	intercept = 0;
-    while (list != R_NilValue) {
+    while (list != nullptr) {
 	if (TermEqual(term, CAR(list))) {
-	    if (prev != R_NilValue)
+	    if (prev != nullptr)
 		SETCDR(prev, CDR(list));
 	} else {
-	    if (root == R_NilValue)
+	    if (root == nullptr)
 		root = list;
 	    prev = list;
 	}
@@ -1306,10 +1306,10 @@ static SEXP StripTerm(SEXP term, SEXP list)
 static SEXP TrimRepeats(SEXP list)
 {
     // Drop zero terms at the start of the list.
-    while (list != R_NilValue && TermZero(CAR(list))) {
+    while (list != nullptr && TermZero(CAR(list))) {
 	list = CDR(list);
     }
-    if (list == R_NilValue || CDR(list) == R_NilValue)
+    if (list == nullptr || CDR(list) == nullptr)
 	return list;
 
     PROTECT(list);
@@ -1319,7 +1319,7 @@ static SEXP TrimRepeats(SEXP list)
     int i_p1 = 1, *is_duplicate = LOGICAL(duplicate_sexp);
 
     // Remove the zero terms and duplicates from the list.
-    for (SEXP current = list; CDR(current) != R_NilValue; i_p1++) {
+    for (SEXP current = list; CDR(current) != nullptr; i_p1++) {
 	SEXP next = CDR(current);
 	if (is_duplicate[i_p1] || TermZero(CAR(next))) {
 	    // Remove the node from the list.
@@ -1367,8 +1367,8 @@ static SEXP InteractTerms(SEXP left, SEXP right)
     PROTECT(right = EncodeVars(right));
     PROTECT(term = Rf_allocList(Rf_length(left) * Rf_length(right)));
     t = term;
-    for (l = left; l != R_NilValue; l = CDR(l))
-	for (r = right; r != R_NilValue; r = CDR(r)) {
+    for (l = left; l != nullptr; l = CDR(l))
+	for (r = right; r != nullptr; r = CDR(r)) {
 	    SETCAR(t, OrBits(CAR(l), CAR(r)));
 	    t = CDR(t);
 	}
@@ -1388,8 +1388,8 @@ static SEXP CrossTerms(SEXP left, SEXP right)
     PROTECT(right = EncodeVars(right));
     PROTECT(term = Rf_allocList(Rf_length(left) * Rf_length(right)));
     t = term;
-    for (l = left; l != R_NilValue; l = CDR(l))
-	for (r = right; r != R_NilValue; r = CDR(r)) {
+    for (l = left; l != nullptr; l = CDR(l))
+	for (r = right; r != nullptr; r = CDR(r)) {
 	    SETCAR(t, OrBits(CAR(l), CAR(r)));
 	    t = CDR(t);
 	}
@@ -1411,15 +1411,15 @@ static SEXP PowerTerms(SEXP left, SEXP right)
     ip = Rf_asInteger(right);
     if (ip==NA_INTEGER || ip <= 1)
 	Rf_error(_("invalid power in formula"));
-    term = R_NilValue;		/* -Wall */
+    term = nullptr;		/* -Wall */
     PROTECT(left = EncodeVars(left));
     right = left;
     for (i=1; i < ip; i++)  {
 	PROTECT(right);
 	PROTECT(term = Rf_allocList(Rf_length(left) * Rf_length(right)));
 	t = term;
-	for (l = left; l != R_NilValue; l = CDR(l))
-	    for (r = right; r != R_NilValue; r = CDR(r)) {
+	for (l = left; l != nullptr; l = CDR(l))
+	    for (r = right; r != nullptr; r = CDR(r)) {
 		SETCAR(t, OrBits(CAR(l), CAR(r)));
 		t = CDR(t);
 	    }
@@ -1443,12 +1443,12 @@ static SEXP InTerms(SEXP left, SEXP right)
     PROTECT(right = EncodeVars(right));
     PROTECT(term = AllocTerm());
     /* Bitwise or of all terms on right */
-    for (t = right; t != R_NilValue; t = CDR(t)) {
+    for (t = right; t != nullptr; t = CDR(t)) {
 	for (i = 0; i < nwords; i++)
 	    INTEGER(term)[i] = INTEGER(term)[i] | INTEGER(CAR(t))[i];
     }
     /* Now bitwise or with each term on the left */
-    for (t = left; t != R_NilValue; t = CDR(t))
+    for (t = left; t != nullptr; t = CDR(t))
 	for (i = 0; i < nwords; i++)
 	    INTEGER(CAR(t))[i] = INTEGER(term)[i] | INTEGER(CAR(t))[i];
     UNPROTECT(3);
@@ -1467,12 +1467,12 @@ static SEXP NestTerms(SEXP left, SEXP right)
     PROTECT(right = EncodeVars(right));
     PROTECT(term = AllocTerm());
     /* Bitwise or of all terms on left */
-    for (t = left; t != R_NilValue; t = CDR(t)) {
+    for (t = left; t != nullptr; t = CDR(t)) {
 	for (i = 0; i < nwords; i++)
 	    INTEGER(term)[i] = INTEGER(term)[i] | INTEGER(CAR(t))[i];
     }
     /* Now bitwise or with each term on the right */
-    for (t = right; t != R_NilValue; t = CDR(t))
+    for (t = right; t != nullptr; t = CDR(t))
 	for (i = 0; i < nwords; i++)
 	    INTEGER(CAR(t))[i] = INTEGER(term)[i] | INTEGER(CAR(t))[i];
     UNPROTECT(3);
@@ -1492,7 +1492,7 @@ static SEXP DeleteTerms(SEXP left, SEXP right)
     parity = 1-parity;
     PROTECT(right = EncodeVars(right));
     parity = 1-parity;
-    for (t = right; t != R_NilValue; t = CDR(t))
+    for (t = right; t != nullptr; t = CDR(t))
 	left = StripTerm(CAR(t), left);
     UNPROTECT(2);
     return left;
@@ -1508,22 +1508,22 @@ static SEXP EncodeVars(SEXP formula)
     int len;
 
     if (Rf_isNull(formula))
-	return R_NilValue;
+	return nullptr;
 
     if (isOne(formula)) {
 	if (parity) intercept = 1;
 	else intercept = 0;
-	return R_NilValue;
+	return nullptr;
     }
     else if (isZero(formula)) {
 	if (parity) intercept = 0;
 	else intercept = 1;
-	return R_NilValue;
+	return nullptr;
     }
     if (Rf_isSymbol(formula)) {
-	if (formula == dotSymbol && framenames != R_NilValue) {
+	if (formula == dotSymbol && framenames != nullptr) {
 	    /* prior to 1.7.0 this made term.labels in reverse order. */
-	    SEXP r = R_NilValue, v = R_NilValue; /* -Wall */
+	    SEXP r = nullptr, v = nullptr; /* -Wall */
 	    int i, j; const char *c;
 	    const void *vmax = vmaxget();
 
@@ -1535,11 +1535,11 @@ static SEXP EncodeVars(SEXP formula)
 		    if(streql(c, Rf_translateChar(STRING_ELT(framenames, j))))
 			Rf_error(_("duplicated name '%s' in data frame using '.'"),
 			      c);
-		int cIndex = InstallVar(Rf_install(c));
+		int cIndex = InstallVar(rho::Symbol::obtain(c));
 		term = AllocTerm();
 		SetBit(term, cIndex, 1);
-		if(i == 0) PROTECT(v = r = Rf_cons(term, R_NilValue));
-		else {SETCDR(v, CONS(term, R_NilValue)); v = CDR(v);}
+		if(i == 0) PROTECT(v = r = Rf_cons(term, nullptr));
+		else {SETCDR(v, CONS(term, nullptr)); v = CDR(v);}
 	    }
 	    UNPROTECT(1);
 	    vmaxset(vmax);
@@ -1549,7 +1549,7 @@ static SEXP EncodeVars(SEXP formula)
 	    int formulaIndex = InstallVar(formula);
 	    term = AllocTerm();
 	    SetBit(term, formulaIndex, 1);
-	    return CONS(term, R_NilValue);
+	    return CONS(term, nullptr);
 	}
     }
     if (Rf_isLanguage(formula)) {
@@ -1583,7 +1583,7 @@ static SEXP EncodeVars(SEXP formula)
 	}
 	if (CAR(formula) == minusSymbol) {
 	    if (len == 2)
-		return DeleteTerms(R_NilValue, CADR(formula));
+		return DeleteTerms(nullptr, CADR(formula));
 	    return DeleteTerms(CADR(formula), CADDR(formula));
 	}
 	if (CAR(formula) == parenSymbol) {
@@ -1592,10 +1592,10 @@ static SEXP EncodeVars(SEXP formula)
 	int formulaIndex = InstallVar(formula);
 	term = AllocTerm();
 	SetBit(term, formulaIndex, 1);
-	return CONS(term, R_NilValue);
+	return CONS(term, nullptr);
     }
     Rf_error(_("invalid model formula in EncodeVars"));
-    return R_NilValue;/*NOTREACHED*/
+    return nullptr;/*NOTREACHED*/
 }
 
 
@@ -1698,14 +1698,14 @@ SEXP termsform(SEXP args)
     data = CAR(a);
     a = CDR(a);
     if (Rf_isNull(data) || Rf_isEnvironment(data))
-	framenames = R_NilValue;
+	framenames = nullptr;
     else if (Rf_isFrame(data))
 	framenames = Rf_getAttrib(data, R_NamesSymbol);
     else
 	Rf_error(_("'data' argument is of the wrong type"));
     PROTECT_WITH_INDEX(framenames, &vpi);
 
-    if (framenames != R_NilValue) {
+    if (framenames != nullptr) {
 	if(Rf_length(framenames)) hadFrameNames = TRUE;
 	if (Rf_length(CAR(args)) == 3)
 	    CheckRHS(CADR(CAR(args)));
@@ -1733,7 +1733,7 @@ SEXP termsform(SEXP args)
     intercept = 1;
     parity = 1;
     response = 0;
-    PROTECT(varlist = LCONS(Rf_install("list"), R_NilValue));
+    PROTECT(varlist = LCONS(Rf_install("list"), nullptr));
     ExtractVars(CAR(args), 1);
     UNPROTECT(1);
     SETCAR(a, varlist);
@@ -1769,7 +1769,7 @@ SEXP termsform(SEXP args)
     /* Step 2a: Compute variable names */
 
     PROTECT(varnames = Rf_allocVector(STRSXP, nvar));
-    for (v = CDR(varlist), i = 0; v != R_NilValue; v = CDR(v))
+    for (v = CDR(varlist), i = 0; v != nullptr; v = CDR(v))
 	SET_STRING_ELT(varnames, i++, STRING_ELT(Rf_deparse1line(CAR(v), FALSE), 0));
 
     /* Step 2b: Find and remove any offset(s) */
@@ -1820,7 +1820,7 @@ SEXP termsform(SEXP args)
 	PROTECT(pattern = Rf_allocVector(VECSXP, nterm));
 	PROTECT(sCounts = Rf_allocVector(INTSXP, nterm));
 	counts = INTEGER(sCounts);
-	for (call = formula, n = 0; call != R_NilValue; call = CDR(call), n++) {
+	for (call = formula, n = 0; call != nullptr; call = CDR(call), n++) {
 	    SET_VECTOR_ELT(pattern, n, CAR(call));
 	    counts[n] = BitCount(CAR(call));
 	}
@@ -1857,7 +1857,7 @@ SEXP termsform(SEXP args)
 	    INTEGER(pattern)[i] = 0;
 	PROTECT(term = AllocTerm());
 	n = 0;
-	for (call = formula; call != R_NilValue; call = CDR(call)) {
+	for (call = formula; call != nullptr; call = CDR(call)) {
 	    for (i = 1; i <= nvar; i++) {
 		if (GetBit(CAR(call), i))
 		    INTEGER(pattern)[i-1+n*nvar] =
@@ -1877,7 +1877,7 @@ SEXP termsform(SEXP args)
 
     PROTECT(termlabs = Rf_allocVector(STRSXP, nterm));
     n = 0;
-    for (call = formula; call != R_NilValue; call = CDR(call)) {
+    for (call = formula; call != nullptr; call = CDR(call)) {
 	l = 0;
 	for (i = 1; i <= nvar; i++) {
 	    if (GetBit(CAR(call), i)) {
@@ -1913,13 +1913,13 @@ SEXP termsform(SEXP args)
 
     /* If there are specials stick them in here */
 
-    if (specials != R_NilValue) {
+    if (specials != nullptr) {
 	const void *vmax = vmaxget();
 	i = Rf_length(specials);
 	PROTECT(v = Rf_allocList(i));
 	for (j = 0, t = v; j < i; j++, t = CDR(t)) {
 	    const char *ss = Rf_translateChar(STRING_ELT(specials, j));
-	    SET_TAG(t, Rf_install(ss));
+	    SET_TAG(t, rho::Symbol::obtain(ss));
 	    n = int(strlen(ss));
 	    SETCAR(t, Rf_allocVector(INTSXP, 0));
 	    k = 0;
@@ -1938,7 +1938,7 @@ SEXP termsform(SEXP args)
 			}
 		}
 	    }
-	    else SETCAR(t, R_NilValue);
+	    else SETCAR(t, nullptr);
 	}
 	SETCAR(a, v);
 	SET_TAG(a, Rf_install("specials"));
@@ -1976,7 +1976,7 @@ SEXP termsform(SEXP args)
     n = 0;
     {
 	int *ia = INTEGER(CAR(a)), *iord = INTEGER(ord);
-	for (call = formula; call != R_NilValue; call = CDR(call), n++)
+	for (call = formula; call != nullptr; call = CDR(call), n++)
 	    ia[n] = iord[n];
     }
 
@@ -1994,7 +1994,7 @@ SEXP termsform(SEXP args)
     SETCAR(a, Rf_mkString("terms"));
     SET_TAG(a, R_ClassSymbol);
 
-    SETCDR(a, R_NilValue);  /* truncate if necessary */
+    SETCDR(a, nullptr);  /* truncate if necessary */
     SET_ATTRIB(ans, attributes);
     UNPROTECT(5);
     return ans;

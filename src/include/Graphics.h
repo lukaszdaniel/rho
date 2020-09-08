@@ -281,7 +281,7 @@ extern "C" {
 
 /* NOTE: during replays, call == R_NilValue;
    ----  the following adds readability: */
-Rboolean GRecording(SEXP, pGEDevDesc);
+Rboolean GRecording(SEXP, GEDevDesc*);
 
 /* Default the settings for general graphical parameters
  * (i.e., defaults that do not depend on the device type: */
@@ -293,10 +293,10 @@ void copyGPar(GPar *, GPar *);
 double R_Log10(double);
 
 /* from par.cpp, called in plot.cpp, plot3d.cpp */
-void ProcessInlinePars(SEXP, pGEDevDesc);
+void ProcessInlinePars(SEXP, GEDevDesc*);
 
 /* from device.cpp */
-void recordGraphicOperation(SEXP, SEXP, pGEDevDesc);
+void recordGraphicOperation(SEXP, SEXP, GEDevDesc*);
 
 /* some functions that plot.cpp needs to share with plot3d.cpp */
 SEXP FixupCol(SEXP, unsigned int);
@@ -310,11 +310,11 @@ SEXP labelformat(SEXP);
  *
  * from graphics.cpp, used in plot.cpp, plotmath.cpp
  */
-void gcontextFromGP(pGEcontext gc, pGEDevDesc dd);
+void gcontextFromGP(pGEcontext gc, GEDevDesc* dd);
 
 /* From base.cpp */
-GPar* gpptr(pGEDevDesc dd);
-GPar* dpptr(pGEDevDesc dd);
+GPar* gpptr(GEDevDesc* dd);
+GPar* dpptr(GEDevDesc* dd);
 
 #ifdef __cplusplus
 }

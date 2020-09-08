@@ -82,7 +82,7 @@ void printRealVector   (const double *, R_xlen_t, int);
 void printComplexVector(const Rcomplex *, R_xlen_t, int);
 
 #ifdef  __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* PRTUTIL_H_ */

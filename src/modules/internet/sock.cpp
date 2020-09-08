@@ -139,7 +139,7 @@ int Sock_open(Sock_port_t port, Sock_error_t perr)
        pp. 305, Windows sockets are quite happy to allow two servers
        to use the same IPADDR/port, with unpredictable results, if
        SO_REUSEADDR is set.  So setting this option on Windows is not
-       a good idea.  It is unclear whether it is possible on WIndows
+       a good idea.  It is unclear whether it is possible on Windows
        to establish a new server socket while a connection from a
        previous server socket is still active.
 

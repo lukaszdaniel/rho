@@ -276,7 +276,7 @@ void QuartzDevice_ReplayDisplayList(QuartzDesc_t desc)
     pGEDevDesc gdd = desc2GEDesc(qd->dev);
     qd->redraw = 1;
     /* CHECK this */
-    if(gdd->displayList != R_NilValue) GEplayDisplayList(gdd);
+    if(gdd->displayList != nullptr) GEplayDisplayList(gdd);
     qd->redraw = 0;
     qd->dirty = _dirty; /* we do NOT change the dirty flag */
 }
@@ -290,9 +290,9 @@ void* QuartzDevice_GetSnapshot(QuartzDesc_t desc, int last)
 	snap = desc2GEDesc(qd->dev)->savedSnapshot;
     else
 	snap = GEcreateSnapshot(gd);
-    if (R_NilValue == VECTOR_ELT(snap, 0))
+    if (nullptr == VECTOR_ELT(snap, 0))
 	snap = 0;
-    return (snap == R_NilValue) ? 0 : snap;
+    return (snap == nullptr) ? 0 : snap;
 }
 
 void QuartzDevice_RestoreSnapshot(QuartzDesc_t desc, void* snap)
@@ -301,7 +301,7 @@ void QuartzDevice_RestoreSnapshot(QuartzDesc_t desc, void* snap)
     pGEDevDesc gd  = GEgetDevice(ndevNumber(qd->dev));
     if(NULL == snap) return; /*Aw, hell no!*/
     PROTECT((SEXP)snap);
-    if(R_NilValue == VECTOR_ELT(snap,0))
+    if(nullptr == VECTOR_ELT(snap,0))
         Rf_warning("Tried to restore an empty snapshot?");
     qd->redraw = 1;
     GEplaySnapshot((SEXP)snap, gd);
@@ -1097,7 +1097,7 @@ static void RQuartz_Raster(unsigned int *raster, int w, int h,
 
 static SEXP RQuartz_Cap(pDevDesc dd)
 {
-    SEXP raster = R_NilValue;
+    SEXP raster = nullptr;
     DRAWSPEC;
     if (!ctx) NOCTXR(raster);
 
@@ -1491,7 +1491,7 @@ SEXP Quartz(SEXP args)
 	GEinitDisplayList(dd);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 #include <sys/sysctl.h>
@@ -1609,7 +1609,7 @@ SEXP makeQuartzDefault() {
 SEXP Quartz(SEXP args)
 {
     Rf_warning(_("Quartz device is not available on this platform"));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP makeQuartzDefault() {

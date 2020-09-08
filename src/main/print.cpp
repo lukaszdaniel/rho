@@ -105,7 +105,7 @@ RObject* getNaStringNoQuote() {
    alter there if you alter this */
 void Rf_PrintDefaults(void)
 {
-    R_print.na_string = NA_STRING;
+    R_print.na_string = R_NaString;
     R_print.na_string_noquote = getNaStringNoQuote();
     R_print.na_width = int(strlen(R_CHAR(R_print.na_string)));
     R_print.na_width_noquote = int(strlen(R_CHAR(R_print.na_string_noquote)));
@@ -113,9 +113,9 @@ void Rf_PrintDefaults(void)
     R_print.right = Rprt_adj_left;
     R_print.digits = Rf_GetOptionDigits();
     R_print.scipen = Rf_asInteger(Rf_GetOption1(Rf_install("scipen")));
-    if (R_print.scipen == NA_INTEGER) R_print.scipen = 0;
+    if (R_print.scipen == R_NaInt) R_print.scipen = 0;
     R_print.max = Rf_asInteger(Rf_GetOption1(Rf_install("max.print")));
-    if (R_print.max == NA_INTEGER || R_print.max < 0) R_print.max = 99999;
+    if (R_print.max == R_NaInt || R_print.max < 0) R_print.max = 99999;
     else if(R_print.max == INT_MAX) R_print.max--; // so we can add
     R_print.gap = 1;
     R_print.width = Rf_GetOptionWidth();
@@ -223,14 +223,12 @@ static void PrintLanguageEtc(SEXP s, Rboolean useSource, Rboolean isClosure)
     }
 }
 
-static
-void PrintClosure(SEXP s, Rboolean useSource)
+static void PrintClosure(SEXP s, Rboolean useSource)
 {
     PrintLanguageEtc(s, useSource, TRUE);
 }
 
-static
-void PrintLanguage(SEXP s, Rboolean useSource)
+static void PrintLanguage(SEXP s, Rboolean useSource)
 {
     PrintLanguageEtc(s, useSource, FALSE);
 }
@@ -249,7 +247,7 @@ HIDDEN SEXP do_printdefault(/*const*/ Expression* call, const BuiltInFunction* o
 
     if(!Rf_isNull(args[0])) {
 	R_print.digits = Rf_asInteger(args[0]);
-	if (R_print.digits == NA_INTEGER ||
+	if (R_print.digits == R_NaInt ||
 	    R_print.digits < R_MIN_DIGITS_OPT ||
 	    R_print.digits > R_MAX_DIGITS_OPT)
 	    Rf_error(_("invalid '%s' argument"), "digits");
@@ -257,7 +255,7 @@ HIDDEN SEXP do_printdefault(/*const*/ Expression* call, const BuiltInFunction* o
     args = (args + 1);
 
     R_print.quote = Rf_asLogical(args[0]);
-    if(R_print.quote == NA_LOGICAL)
+    if(R_print.quote == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "quote");
     args = (args + 1);
 
@@ -273,32 +271,32 @@ HIDDEN SEXP do_printdefault(/*const*/ Expression* call, const BuiltInFunction* o
 
     if(!Rf_isNull(args[0])) {
 	R_print.gap = Rf_asInteger(args[0]);
-	if (R_print.gap == NA_INTEGER || R_print.gap < 0)
+	if (R_print.gap == R_NaInt || R_print.gap < 0)
 	    Rf_error(_("'gap' must be non-negative integer"));
     }
     args = (args + 1);
 
     R_print.right = Rprt_adj(Rf_asLogical(args[0])); /* Should this be Rf_asInteger()? */
-    if(R_print.right == NA_LOGICAL)
+    if(R_print.right == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "right");
     args = (args + 1);
 
     if(!Rf_isNull(args[0])) {
 	R_print.max = Rf_asInteger(args[0]);
-	if(R_print.max == NA_INTEGER || R_print.max < 0)
+	if(R_print.max == R_NaInt || R_print.max < 0)
 	    Rf_error(_("invalid '%s' argument"), "max");
 	else if(R_print.max == INT_MAX) R_print.max--; // so we can add
     }
     args = (args + 1);
 
     R_print.useSource = Rf_asLogical(args[0]);
-    if(R_print.useSource == NA_LOGICAL)
+    if(R_print.useSource == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "useSource");
     if(R_print.useSource) R_print.useSource = USESOURCE;
     args = (args + 1);
 
     tryS4 = Rf_asLogical(args[0]);
-    if(tryS4 == NA_LOGICAL)
+    if(tryS4 == R_NaLog)
 	Rf_error(_("invalid 'tryS4' internal argument"));
 
     if(tryS4 && IS_S4_OBJECT(x) && isMethodsDispatchOn())
@@ -390,7 +388,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		    if (ISNA(x[0].r) || ISNA(x[0].i))
 			/* formatReal(NA) --> w=R_print.na_width, d=0, e=0 */
 			snprintf(pbuf, 115, "%s",
-				 EncodeReal0(NA_REAL, R_print.na_width, 0, 0, OutDec));
+				 EncodeReal0(R_NaReal, R_print.na_width, 0, 0, OutDec));
 		    else {
 			formatComplex(x, 1, &wr, &dr, &er, &wi, &di, &ei, 0);
 			snprintf(pbuf, 115, "%s",
@@ -440,8 +438,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 	    const char *rn, *cn;
 	    Rf_GetMatrixDimnames(s, &rl, &cl, &rn, &cn);
 	    /* as from 1.5.0: don't quote here as didn't in array case */
-	    printMatrix(t, 0, dims, 0, R_print.right, rl, cl,
-			rn, cn);
+	    printMatrix(t, 0, dims, 0, R_print.right, rl, cl, rn, cn);
 	}
 	else {
 	    names = Rf_GetArrayDimnames(s);
@@ -474,7 +471,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		    } else {
 			/* we need to distinguish character NA from "NA", which
 			   is a valid (if non-syntactic) name */
-			if (STRING_ELT(names, i) == NA_STRING)
+			if (STRING_ELT(names, i) == R_NaString)
 			    sprintf(ptag, "$<NA>");
 			else if( Rf_isValidName(ss) )
 			    sprintf(ptag, "$%s", ss);
@@ -525,7 +522,7 @@ static void PrintGenericVector(SEXP s, SEXP env)
 		    char str[201];
 		    const char *ss = Rf_translateChar(STRING_ELT(klass, 0));
 		    snprintf(str, 200, ".__C__%s", ss);
-		    if(Rf_findVar(Rf_install(str), env) != R_UnboundValue)
+		    if(Rf_findVar(rho::Symbol::obtain(str), env) != R_UnboundValue)
 			className = ss;
 		}
 	    }
@@ -632,7 +629,7 @@ static void printList(SEXP s, SEXP env)
 		} else {
 		    /* we need to distinguish character NA from "NA", which
 		       is a valid (if non-syntactic) name */
-		    if (PRINTNAME(TAG(s)) == NA_STRING)
+		    if (PRINTNAME(TAG(s)) == R_NaString)
 			sprintf(ptag, "$<NA>");
 		    else if( Rf_isValidName(R_CHAR(PRINTNAME(TAG(s)))) )
 			sprintf(ptag, "$%s", R_CHAR(PRINTNAME(TAG(s))));
@@ -694,14 +691,14 @@ static void PrintSpecial(SEXP s)
 					     Rf_install(".ArgsEnv"), TRUE),
 		       &xp);
     if (TYPEOF(env) == PROMSXP) REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
-    s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE);
+    s2 = Rf_findVarInFrame3(env, rho::Symbol::obtain(nm), TRUE);
     if(s2 == R_UnboundValue) {
 	REPROTECT(env = Rf_findVarInFrame3(R_BaseEnv,
 					Rf_install(".GenericArgsEnv"), TRUE),
 		  xp);
 	if (TYPEOF(env) == PROMSXP)
 	    REPROTECT(env = Rf_eval(env, R_BaseEnv), xp);
-	s2 = Rf_findVarInFrame3(env, Rf_install(nm), TRUE);
+	s2 = Rf_findVarInFrame3(env, rho::Symbol::obtain(nm), TRUE);
     }
     if(s2 != R_UnboundValue) {
 	SEXP t;

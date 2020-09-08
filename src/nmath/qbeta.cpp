@@ -119,8 +119,8 @@ HIDDEN void qbeta_raw(double alpha, double p, double q, int lower_tail, int log_
     volatile double u, xinbta;
     double u_n;
     Rboolean
-    bad_u = Rboolean(0),
-    bad_init = Rboolean(0);
+    bad_u = FALSE,
+    bad_init = FALSE;
     double wprev = 0., prev = 1., adj = 1.;
     // Assuming p >= 0, q >= 0  here ...
 

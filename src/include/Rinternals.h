@@ -17,7 +17,7 @@
  *  This file is part of R. R is distributed under the terms of the
  *  GNU General Public License, either Version 2, June 1991 or Version 3,
  *  June 2007. See doc/COPYRIGHTS for details of the copyright status of R.
- *  
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -40,6 +40,10 @@
 #ifndef R_INTERNALS_H_
 #define R_INTERNALS_H_
 
+#ifdef USE_RINTERNALS
+#undef USE_RINTERNALS
+#endif
+
 #ifdef __cplusplus
 # include <cstdio>
 # include <climits>
@@ -54,7 +58,8 @@
 #include <R_ext/Arith.h>
 #include <R_ext/Boolean.h>
 #include <R_ext/Complex.h>
-#include <R_ext/Error.h>  // includes NORET macro
+#include <R_ext/Error.h>
+#include <R_ext/Visibility.h>  // includes NORET macro
 #include <R_ext/Memory.h>
 #include <R_ext/Utils.h>
 #include <R_ext/Print.h>
@@ -62,7 +67,11 @@
 
 #include <R_ext/libextern.h>
 
+#ifdef __cplusplus
+using Rbyte = unsigned char;
+#else
 typedef unsigned char Rbyte;
+#endif
 
 /* type for length of (standard, not long) vectors etc */
 #ifdef __cplusplus
@@ -1241,7 +1250,7 @@ double R_XDRDecodeDouble(void *buf);
 void R_XDREncodeInteger(int i, void *buf);
 int R_XDRDecodeInteger(void *buf);
 
-typedef void *R_pstream_data_t;
+typedef void* R_pstream_data_t;
 
 typedef enum {
     R_pstream_any_format,
@@ -1251,29 +1260,29 @@ typedef enum {
     R_pstream_asciihex_format
 } R_pstream_format_t;
 
-typedef struct R_outpstream_st *R_outpstream_t;
+typedef struct R_outpstream_st* R_outpstream_t;
 struct R_outpstream_st {
     R_pstream_data_t data;
     R_pstream_format_t type;
     int version;
     void (*OutChar)(R_outpstream_t, int);
-    void (*OutBytes)(R_outpstream_t, const void *, int);
+    void (*OutBytes)(R_outpstream_t, const void*, int);
     SEXP (*OutPersistHookFunc)(SEXP, SEXP);
     SEXP OutPersistHookData;
 };
 
-typedef struct R_inpstream_st *R_inpstream_t;
+typedef struct R_inpstream_st* R_inpstream_t;
 #define R_CODESET_MAX 63
 struct R_inpstream_st {
     R_pstream_data_t data;
     R_pstream_format_t type;
     int (*InChar)(R_inpstream_t);
-    void (*InBytes)(R_inpstream_t, void *, int);
+    void (*InBytes)(R_inpstream_t, void*, int);
     SEXP (*InPersistHookFunc)(SEXP, SEXP);
     SEXP InPersistHookData;
     char native_encoding[R_CODESET_MAX + 1];
-    void *nat2nat_obj;
-    void *nat2utf8_obj;
+    void* nat2nat_obj;
+    void* nat2utf8_obj;
 };
 
 void R_InitInPStream(R_inpstream_t stream, R_pstream_data_t data,
@@ -1678,21 +1687,21 @@ void R_ProtectWithIndex(SEXP, PROTECT_INDEX *);
 void R_Reprotect(SEXP, PROTECT_INDEX);
 # endif
 SEXP R_FixupRHS(SEXP x, SEXP y);
-void *(DATAPTR)(SEXP x);
-const void *(DATAPTR_RO)(SEXP x);
-const void *(DATAPTR_OR_NULL)(SEXP x);
-const int *(LOGICAL_OR_NULL)(SEXP x);
-const int *(INTEGER_OR_NULL)(SEXP x);
-const double *(REAL_OR_NULL)(SEXP x);
-const Rcomplex *(COMPLEX_OR_NULL)(SEXP x);
-const Rbyte *(RAW_OR_NULL)(SEXP x);
-void *(STDVEC_DATAPTR)(SEXP x);
-int (INTEGER_ELT)(SEXP x, R_xlen_t i);
-double (REAL_ELT)(SEXP x, R_xlen_t i);
-int (LOGICAL_ELT)(SEXP x, R_xlen_t i);
-Rcomplex (COMPLEX_ELT)(SEXP x, R_xlen_t i);
-Rbyte (RAW_ELT)(SEXP x, R_xlen_t i);
-SEXP (STRING_ELT)(SEXP x, R_xlen_t i);
+void*(DATAPTR)(SEXP x);
+const void*(DATAPTR_RO)(SEXP x);
+const void*(DATAPTR_OR_NULL)(SEXP x);
+const int*(LOGICAL_OR_NULL)(SEXP x);
+const int*(INTEGER_OR_NULL)(SEXP x);
+const double*(REAL_OR_NULL)(SEXP x);
+const Rcomplex*(COMPLEX_OR_NULL)(SEXP x);
+const Rbyte*(RAW_OR_NULL)(SEXP x);
+void*(STDVEC_DATAPTR)(SEXP x);
+int(INTEGER_ELT)(SEXP x, R_xlen_t i);
+double(REAL_ELT)(SEXP x, R_xlen_t i);
+int(LOGICAL_ELT)(SEXP x, R_xlen_t i);
+Rcomplex(COMPLEX_ELT)(SEXP x, R_xlen_t i);
+Rbyte(RAW_ELT)(SEXP x, R_xlen_t i);
+SEXP(STRING_ELT)(SEXP x, R_xlen_t i);
 double SCALAR_DVAL(SEXP x);
 int SCALAR_LVAL(SEXP x);
 int SCALAR_IVAL(SEXP x);
@@ -1706,11 +1715,11 @@ SEXP R_altrep_data2(SEXP x);
 void R_set_altrep_data1(SEXP x, SEXP v);
 void R_set_altrep_data2(SEXP x, SEXP v);
 SEXP ALTREP_CLASS(SEXP x);
-int *LOGICAL0(SEXP x);
-int *INTEGER0(SEXP x);
-double *REAL0(SEXP x);
-Rcomplex *COMPLEX0(SEXP x);
-Rbyte *RAW0(SEXP x);
+int* LOGICAL0(SEXP x);
+int* INTEGER0(SEXP x);
+double* REAL0(SEXP x);
+Rcomplex* COMPLEX0(SEXP x);
+Rbyte* RAW0(SEXP x);
 void SET_LOGICAL_ELT(SEXP x, R_xlen_t i, int v);
 void SET_INTEGER_ELT(SEXP x, R_xlen_t i, int v);
 void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);
@@ -1752,7 +1761,7 @@ void SET_REAL_ELT(SEXP x, R_xlen_t i, double v);
 
 
 #ifdef __cplusplus
-}  // extern "C"
+} //extern "C"
 #endif
 
 #endif /* R_INTERNALS_H_ */

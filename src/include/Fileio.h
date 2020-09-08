@@ -17,7 +17,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *                2007 R Core Team
+ *                2007--2019  R Core Team
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,18 +37,19 @@
 /* Internal header, not installed */
 
 #ifndef RFILEIO_H_
-
 #define RFILEIO_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int	R_fgetc(FILE*);
-FILE *	R_fopen(const char *filename, const char *mode);
+int R_fgetc(FILE *);
+FILE *R_fopen(const char *filename, const char *mode);
+int R_isatty(int fd);
+int R_is_redirection_tty(int fd);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
-#endif
+#endif /* RFILEIO_H_ */

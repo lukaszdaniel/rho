@@ -424,7 +424,7 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
     strncpy(fg, "black", 256);
     /* and then try to get it from .PostScript.Options */
     s = Rf_findVar(Rf_install(".PostScript.Options"), xd->psenv);
-    if ((s != R_UnboundValue) && (s != R_NilValue)) {
+    if ((s != R_UnboundValue) && (s != nullptr)) {
 	SEXP names = Rf_getAttrib(s, R_NamesSymbol);
 	int i, done;
 	for (i = 0, done = 0; (done<  4) && (i < Rf_length(s)) ; i++) {
@@ -455,7 +455,7 @@ static void SaveAsPostscript(pDevDesc dd, const char *fn)
 		       fromDeviceHeight(toDeviceHeight(-1.0, GE_NDC, gdd),
 					GE_INCHES, gdd),
 		       (double)0, ((gadesc*) dd->deviceSpecific)->basefontsize,
-		       0, 1, 0, "", "R Graphics Output", R_NilValue, "rgb",
+		       0, 1, 0, "", "R Graphics Output", nullptr, "rgb",
 		       TRUE, xd->fillOddEven))
 	/* horizontal=F, onefile=F, pagecentre=T, print.it=F */
 	PrivateCopyDevice(dd, ndd, "postscript");
@@ -492,7 +492,7 @@ static void SaveAsPDF(pDevDesc dd, const char *fn)
     strncpy(bg, "transparent", 256);
     strncpy(fg, "black", 256);
     /* and then try to get it from .PDF.Options */
-    if ((s != R_UnboundValue) && (s != R_NilValue)) {
+    if ((s != R_UnboundValue) && (s != nullptr)) {
 	SEXP names = Rf_getAttrib(s, R_NamesSymbol);
 	for (int i = 0; i < Rf_length(s) ; i++) {
 	    if(streql("family", R_CHAR(STRING_ELT(names, i))))
@@ -512,7 +512,7 @@ static void SaveAsPDF(pDevDesc dd, const char *fn)
 			fromDeviceHeight(toDeviceHeight(-1.0, GE_NDC, gdd),
 					 GE_INCHES, gdd),
 			((gadesc*) dd->deviceSpecific)->basefontsize,
-			1, 0, "R Graphics Output", R_NilValue, 1, 4,
+			1, 0, "R Graphics Output", nullptr, 1, 4,
 			"rgb", TRUE, TRUE, xd->fillOddEven, useCompression))
 	PrivateCopyDevice(dd, ndd, "PDF");
 }
@@ -1095,7 +1095,7 @@ static void grpopupact(control m)
 		  if(pCURRENTPOS<0) pCURRENTPOS=0;\
 		  if(pCURRENTPOS>pNUMPLOTS-1) pCURRENTPOS=pNUMPLOTS-1;\
 		  Replay(dd,vDL);SETDL;}
-#define pEXIST ((vDL!=R_UnboundValue) && (vDL!=R_NilValue))
+#define pEXIST ((vDL!=R_UnboundValue) && (vDL!=nullptr))
 #define pMUSTEXIST if(!pEXIST){R_ShowMessage(_("no plot history!"));return;}
 
 
@@ -1115,7 +1115,7 @@ static SEXP NewPlotHistory(int n)
     pMAXPLOTS = n;
     pCURRENTPOS = -1;
     for (i = 0; i < n; i++)
-	SET_VECTOR_ELT(pHISTORY, i, R_NilValue);
+	SET_VECTOR_ELT(pHISTORY, i, nullptr);
     PROTECT(class = Rf_mkString("SavedPlots"));
     Rf_classgets(vDL, class);
     SETDL;
@@ -1144,11 +1144,11 @@ static SEXP GrowthPlotHistory(SEXP vDL)
 static void AddtoPlotHistory(SEXP snapshot, int replace)
 {
     int   where;
-    SEXP  class;
+    SEXP  class_;
 
     GETDL;
     PROTECT(snapshot);
-/*    if (dl == R_NilValue) {
+/*    if (dl == nullptr) {
 	R_ShowMessage("Display list is void!");
 	return;
 	} */
@@ -1163,8 +1163,8 @@ static void AddtoPlotHistory(SEXP snapshot, int replace)
     else
 	where = pNUMPLOTS;
 
-    PROTECT(class = Rf_mkString("recordedplot"));
-    Rf_classgets(snapshot, class);
+    PROTECT(class_ = Rf_mkString("recordedplot"));
+    Rf_classgets(snapshot, class_);
     SET_VECTOR_ELT(pHISTORY, where, snapshot);
     pCURRENTPOS = where;
     if (!replace) pNUMPLOTS += 1;
@@ -1246,7 +1246,7 @@ static void menuprev(control m)
     if (pNUMPLOTS) {
 	if (xd->recording && xd->needsave) {
 	    pGEDevDesc gdd = desc2GEDesc(dd);
-	    if (gdd->displayList != R_NilValue) {
+	    if (gdd->displayList != nullptr) {
 		AddtoPlotHistory(GEcreateSnapshot(gdd), 0);
 		xd->needsave = FALSE;
 		vDL = Rf_findVar(Rf_install(".SavedPlots"), R_GlobalEnv);
@@ -1260,18 +1260,18 @@ static void menuprev(control m)
 
 static void menugrclear(control m)
 {
-    Rf_defineVar(Rf_install(".SavedPlots"), R_NilValue, R_GlobalEnv);
+    Rf_defineVar(Rf_install(".SavedPlots"), nullptr, R_GlobalEnv);
 }
 
 static void menugvar(control m)
 {
-    SEXP  vDL;
-    char *v = askstring(G_("Variable name"), "");
-    pDevDesc dd = (pDevDesc) getdata(m);
+    SEXP vDL;
+    char* v = askstring(G_("Variable name"), "");
+    pDevDesc dd = (pDevDesc)getdata(m);
 
     if (!v)
 	return;
-    vDL = Rf_findVar(Rf_install(v), R_GlobalEnv);
+    vDL = Rf_findVar(rho::Symbol::obtain(v), R_GlobalEnv);
     pMUSTEXIST;
     pCHECK;
     if (!pNUMPLOTS) {
@@ -1285,7 +1285,7 @@ static void menugvar(control m)
 
 static void menusvar(control m)
 {
-    char *v;
+    char* v;
 
     GETDL;
     pMUSTEXIST;
@@ -1293,7 +1293,7 @@ static void menusvar(control m)
     v = askstring(G_("Name of variable to save to"), "");
     if (!v)
 	return;
-    Rf_defineVar(Rf_install(v), vDL, R_GlobalEnv);
+    Rf_defineVar(rho::Symbol::obtain(v), vDL, R_GlobalEnv);
 }
 /* end of plot history */
 
@@ -1329,8 +1329,8 @@ static void menufit(control m)
 
 static void menufix(control m)
 {
-    pDevDesc dd = (pDevDesc) getdata(m);
-    gadesc *xd = (gadesc *) dd->deviceSpecific;
+    pDevDesc dd = (pDevDesc)getdata(m);
+    gadesc* xd = (gadesc*)dd->deviceSpecific;
 
     uncheck(xd->mR);
     uncheck(xd->mfit);
@@ -1360,8 +1360,8 @@ static R_KeyName getKeyName(int key)
 
 static void CHelpKeyIn(control w, int key)
 {
-    pDevDesc dd = (pDevDesc) getdata(w);
-    gadesc *xd = (gadesc *) dd->deviceSpecific;
+    pDevDesc dd = (pDevDesc)getdata(w);
+    gadesc* xd = (gadesc*)dd->deviceSpecific;
 
     R_KeyName keyname;
 
@@ -1422,7 +1422,7 @@ static void NHelpKeyIn(control w, int key)
 	if (ggetkeystate() != CtrlKey) return;
 	key = 'A' + key - 1;
 	if (key == 'C') menuclpbm(xd->mclpbm);
-	if (desc2GEDesc(dd)->displayList == R_NilValue) return;
+	if (desc2GEDesc(dd)->displayList == nullptr) return;
 	if (key == 'W') menuclpwm(xd->mclpwm);
 	else if (key == 'P') menuprint(xd->mprint);
     }
@@ -1437,7 +1437,7 @@ static void mbarf(control m)
     if (pEXIST && !xd->replaying) {
 	enable(xd->mnext);
 	enable(xd->mprev);
-	if (pCURRENTPOS >= 0 && desc2GEDesc(dd)->displayList != R_NilValue)
+	if (pCURRENTPOS >= 0 && desc2GEDesc(dd)->displayList != nullptr)
 	    enable(xd->mreplace);
 	else
 	    disable(xd->mreplace);
@@ -1454,7 +1454,7 @@ static void mbarf(control m)
 	enable(xd->mgvar);
     else
 	disable(xd->mgvar);
-    if (!xd->replaying && desc2GEDesc(dd)->displayList != R_NilValue) {
+    if (!xd->replaying && desc2GEDesc(dd)->displayList != nullptr) {
 	enable(xd->madd);
 	enable(xd->mprint);
 	enable(xd->mpng);
@@ -2974,7 +2974,7 @@ static void GA_Raster(unsigned int *raster, int w, int h,
 static SEXP GA_Cap(pDevDesc dd)
 {
     gadesc *xd = (gadesc *) dd->deviceSpecific;
-    SEXP dim, raster = R_NilValue;
+    SEXP dim, raster = nullptr;
     image img = NULL;
     byte *screenData;
 
@@ -3148,8 +3148,8 @@ static Rboolean GA_Locator(double *x, double *y, pDevDesc dd)
     setstatus(G_("Locator is active"));
 
     /* set up a context which will clean up if there's an error */
-    begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_NilValue, R_NilValue,
-		 R_NilValue, R_NilValue);
+    begincontext(&cntxt, CTXT_CCODE, nullptr, nullptr, nullptr,
+		 nullptr, nullptr);
     cntxt.cend = &donelocator;
     cntxt.cenddata = xd;
     xd->cntxt = (void *) &cntxt;
@@ -3454,7 +3454,7 @@ SEXP savePlot(SEXP args)
     } else if (streql(tp, "wmf") || streql(tp, "emf")) {
 	if(strlen(fn) > 512) {
 	    askok(G_("file path selected is too long: only 512 bytes are allowed"));
-	    return R_NilValue;
+	    return nullptr;
 	}
 	snprintf(display, 550, "win.metafile:%s", fn);
 	SaveAsWin(dd, display, restoreConsole);
@@ -3464,7 +3464,7 @@ SEXP savePlot(SEXP args)
 	SaveAsPDF(dd, fn);
     } else
 	Rf_error(_("unknown type in savePlot"));
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -3748,7 +3748,7 @@ SEXP devga(SEXP args)
 	GEaddDevice2f(gdd, type, file);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 static void GA_onExit(pDevDesc dd)
@@ -3873,7 +3873,7 @@ SEXP devCairo(SEXP args)
     if (!Load_Rcairo_Dll())
 	Rf_error("unable to load winCairo.dll: was it built?");
     else (R_devCairo)(args);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP cairoVersion(void)

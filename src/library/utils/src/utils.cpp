@@ -79,7 +79,7 @@ SEXP crc64(SEXP in)
 
 SEXP nsl(SEXP hostname)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     const char *name; char ip[] = "xxx.xxx.xxx.xxx";
     struct hostent *hp;
 
@@ -107,7 +107,7 @@ SEXP nsl(SEXP hostname)
 SEXP nsl(SEXP hostname)
 {
     Rf_warning(_("nsl() is not supported on this platform"));
-    return R_NilValue;
+    return nullptr;
 }
 #endif
 

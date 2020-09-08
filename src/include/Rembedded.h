@@ -46,7 +46,7 @@ extern void Rf_endEmbeddedR(int fatal);
 #endif
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 int Rf_initialize_R(int ac, char **av);
 void setup_Rmainloop(void);
@@ -56,7 +56,7 @@ extern "C" {
 extern void R_ReplDLLinit(void);
 extern int R_ReplDLLdo1(void);
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 void R_setStartTime(void);  /* 2007/06/11 arr: also prototyped in Rinterface.h */
 #ifdef __cplusplus
@@ -70,7 +70,7 @@ extern void R_CleanTempDir(void);
 LibExtern char *R_TempDir;    
 extern void R_SaveGlobalEnv(void);
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #ifdef _WIN32

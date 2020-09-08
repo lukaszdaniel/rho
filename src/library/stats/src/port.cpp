@@ -329,8 +329,7 @@ int F77_NAME(stopx)(void)
     return 0;			/* interrupts are caught elsewhere */
 }
 
-static
-double* check_gv(SEXP gr, SEXP hs, SEXP rho, int n, double *gv, double *hv)
+static double* check_gv(SEXP gr, SEXP hs, SEXP rho, int n, double *gv, double *hv)
 {
     SEXP gval = PROTECT(Rf_coerceVector(PROTECT(Rf_eval(gr, rho)), REALSXP));
     if (LENGTH(gval) != n)
@@ -385,7 +384,7 @@ nlminb_iterate(double b[], double d[], double fx, double g[], double h[],
 SEXP port_ivset(SEXP kind, SEXP iv, SEXP v)
 {
     Rf_divset(Rf_asInteger(kind), INTEGER(iv), LENGTH(iv), LENGTH(v), REAL(v));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP port_nlminb(SEXP fn, SEXP gr, SEXP hs, SEXP rho,
@@ -404,9 +403,9 @@ SEXP port_nlminb(SEXP fn, SEXP gr, SEXP hs, SEXP rho,
 	Rf_error(_("'rho' must be an environment"));
     if (!Rf_isReal(d) || n < 1)
 	Rf_error(_("'d' must be a nonempty numeric vector"));
-    if (hs != R_NilValue && gr == R_NilValue)
+    if (hs != nullptr && gr == nullptr)
 	Rf_error(_("When Hessian defined must also have gradient defined"));
-    if (R_NilValue == (xpt = Rf_findVarInFrame(rho, dot_par_symbol)) ||
+    if (nullptr == (xpt = Rf_findVarInFrame(rho, dot_par_symbol)) ||
 	!Rf_isReal(xpt) || LENGTH(xpt) != n)
 	Rf_error(_("environment 'rho' must contain a numeric vector '.par' of length %d"),
 	      n);
@@ -424,9 +423,9 @@ SEXP port_nlminb(SEXP fn, SEXP gr, SEXP hs, SEXP rho,
 	    }
 	} else Rf_error(_("'lower' and 'upper' must be numeric vectors"));
     }
-    if (gr != R_NilValue) {
+    if (gr != nullptr) {
 	g = (double *)R_alloc(n, sizeof(double));
-	if (hs != R_NilValue)
+	if (hs != nullptr)
 	    h = (double *)R_alloc((n * (n + 1))/2, sizeof(double));
     }
 
@@ -451,7 +450,7 @@ SEXP port_nlminb(SEXP fn, SEXP gr, SEXP hs, SEXP rho,
     } while(INTEGER(iv)[0] < 3);
 
     UNPROTECT(1); /* xpt */
-    return R_NilValue;
+    return nullptr;
 }
 
 void
@@ -485,7 +484,7 @@ R_INLINE static SEXP getElement(SEXP list, const char *nm)
     for (i = 0; i < LENGTH(list); i++)
 	if (streql(R_CHAR(STRING_ELT(names, i)), nm)) /* ASCII only */
 	    return(VECTOR_ELT(list, i));
-    return R_NilValue;
+    return nullptr;
 }
 
 /**
@@ -627,5 +626,5 @@ SEXP port_nlsb(SEXP m, SEXP d, SEXP gg, SEXP iv, SEXP v,
     } while(INTEGER(iv)[0] < 3);
 
     UNPROTECT(6);
-    return R_NilValue;
+    return nullptr;
 }

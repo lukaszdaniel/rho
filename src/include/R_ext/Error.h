@@ -46,7 +46,7 @@ void Rf_warning(const char*, ...);
 void R_ShowMessage(const char* s);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #ifndef R_NO_REMAP

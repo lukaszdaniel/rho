@@ -80,11 +80,11 @@ KalmanLike(SEXP sy, SEXP mod, SEXP sUP, SEXP op, SEXP update)
     double *y = REAL(sy), *Z = REAL(sZ), *T = REAL(sT), *V = REAL(sV),
 	*P = REAL(sP), *a = REAL(sa), *Pnew = REAL(sPn), h = Rf_asReal(sh);
 
-    double *anew = (double *) R_alloc(p, sizeof(double));
-    double *M = (double *) R_alloc(p, sizeof(double));
-    double *mm = (double *) R_alloc(p * p, sizeof(double));
+    double* anew = (double*)R_alloc(p, sizeof(double));
+    double* M = (double*)R_alloc(p, sizeof(double));
+    double* mm = (double*)R_alloc(p * p, sizeof(double));
     // These are only used if(lop), but avoid -Wall trouble
-    SEXP ans = R_NilValue, resid = R_NilValue, states = R_NilValue;
+    SEXP ans = nullptr, resid = nullptr, states = nullptr;
     if(lop) {
 	PROTECT(ans = Rf_allocVector(VECSXP, 3));
 	SET_VECTOR_ELT(ans, 1, resid = Rf_allocVector(REALSXP, n));
@@ -155,7 +155,7 @@ KalmanLike(SEXP sy, SEXP mod, SEXP sUP, SEXP op, SEXP update)
 	    if(lop) rr[l] = NA_REAL;
 	}
 	if(lop) {
-	    double *rs = REAL(states);
+	    double* rs = REAL(states);
 	    for (int j = 0; j < p; j++) rs[l + n*j] = a[j];
 	}
     }
@@ -174,8 +174,7 @@ KalmanLike(SEXP sy, SEXP mod, SEXP sUP, SEXP op, SEXP update)
     }
 }
 
-SEXP
-KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
+SEXP KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
 {
     SEXP sZ = getListElement(mod, "Z"), sa = getListElement(mod, "a"), 
 	sP = getListElement(mod, "P"), sT = getListElement(mod, "T"), 
@@ -187,7 +186,7 @@ KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
 	TYPEOF(sT) != REALSXP || TYPEOF(sV) != REALSXP)
 	Rf_error(_("invalid argument type"));
 
-    SEXP ssa, ssP, ssPn, res, states = R_NilValue, sN;
+    SEXP ssa, ssP, ssPn, res, states = nullptr, sN;
     int n = LENGTH(sy), p = LENGTH(sa);
     double *y = REAL(sy), *Z = REAL(sZ), *a, *P,
 	*T = REAL(sT), *V = REAL(sV), h = Rf_asReal(sh), *Pnew;
@@ -210,15 +209,15 @@ KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
     Nt = REAL(sN);
 
     double *anew, *mm, *M;
-    anew = (double *) R_alloc(p, sizeof(double));
-    M = (double *) R_alloc(p, sizeof(double));
-    mm = (double *) R_alloc(p * p, sizeof(double));
+    anew = (double*)R_alloc(p, sizeof(double));
+    M = (double*)R_alloc(p, sizeof(double));
+    mm = (double*)R_alloc(p * p, sizeof(double));
 
-    Pt = (double *) R_alloc(n * p * p, sizeof(double));
-    gains = (double *) R_alloc(n, sizeof(double));
-    resids = (double *) R_alloc(n, sizeof(double));
-    Mt = (double *) R_alloc(n * p, sizeof(double));
-    L = (double *) R_alloc(p * p, sizeof(double));
+    Pt = (double*)R_alloc(n * p * p, sizeof(double));
+    gains = (double*)R_alloc(n, sizeof(double));
+    resids = (double*)R_alloc(n, sizeof(double));
+    Mt = (double*)R_alloc(n * p, sizeof(double));
+    L = (double*)R_alloc(p * p, sizeof(double));
 
     for (int l = 0; l < n; l++) {
 	for (int i = 0; i < p; i++) {
@@ -277,7 +276,7 @@ KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
     }
 
     /* rt stores r_{t-1} */
-    rt = (double *) R_alloc(n * p, sizeof(double));
+    rt = (double*)R_alloc(n * p, sizeof(double));
     for (int l = n - 1; l >= 0; l--) {
 	if (!ISNAN(gains[l])) {
 	    gn = 1/gains[l];
@@ -359,8 +358,7 @@ KalmanSmooth(SEXP sy, SEXP mod, SEXP sUP)
 }
 
 
-SEXP
-KalmanFore(SEXP nahead, SEXP mod, SEXP update)
+SEXP KalmanFore(SEXP nahead, SEXP mod, SEXP update)
 {
     mod = PROTECT(Rf_duplicate(mod));
     SEXP sZ = getListElement(mod, "Z"), sa = getListElement(mod, "a"), 
@@ -431,8 +429,7 @@ KalmanFore(SEXP nahead, SEXP mod, SEXP update)
     return res;
 }
 
-
-static void partrans(int p, double *raw, double *new_)
+static void partrans(int p, double* raw, double* new_)
 {
     int j, k;
     double a, work[100];
@@ -588,8 +585,7 @@ SEXP ARIMA_Gradtrans(SEXP in, SEXP sarma)
 }
 
 
-SEXP
-ARIMA_Like(SEXP sy, SEXP mod, SEXP sUP, SEXP giveResid)
+SEXP ARIMA_Like(SEXP sy, SEXP mod, SEXP sUP, SEXP giveResid)
 {
     SEXP sPhi = getListElement(mod, "phi"), 
 	sTheta = getListElement(mod, "theta"), 
@@ -603,7 +599,7 @@ ARIMA_Like(SEXP sy, SEXP mod, SEXP sUP, SEXP giveResid)
 	TYPEOF(sP) != REALSXP || TYPEOF(sPn) != REALSXP)
 	Rf_error(_("invalid argument type"));
 
-    SEXP res, nres, sResid = R_NilValue;
+    SEXP res, nres, sResid = nullptr;
     int n = LENGTH(sy), rd = LENGTH(sa), p = LENGTH(sPhi),
 	q = LENGTH(sTheta), d = LENGTH(sDelta), r = rd - d;
     double *y = REAL(sy), *a = REAL(sa), *P = REAL(sP), *Pnew = REAL(sPn);
@@ -745,11 +741,10 @@ ARIMA_Like(SEXP sy, SEXP mod, SEXP sUP, SEXP giveResid)
 
 /* do differencing here */
 /* arma is p, q, sp, sq, ns, d, sd */
-SEXP
-ARIMA_CSS(SEXP sy, SEXP sarma, SEXP sPhi, SEXP sTheta,
+SEXP ARIMA_CSS(SEXP sy, SEXP sarma, SEXP sPhi, SEXP sTheta,
 	  SEXP sncond, SEXP giveResid)
 {
-    SEXP res, sResid = R_NilValue;
+    SEXP res, sResid = nullptr;
     double ssq = 0.0, *y = REAL(sy), tmp;
     double *phi = REAL(sPhi), *theta = REAL(sTheta), *w, *resid;
     int n = LENGTH(sy), *arma = INTEGER(sarma), p = LENGTH(sPhi),
@@ -815,8 +810,7 @@ SEXP TSconv(SEXP a, SEXP b)
 
 /* based on code from AS154 */
 
-static void
-inclu2(size_t np, double *xnext, double *xrow, double ynext,
+static void inclu2(size_t np, double *xnext, double *xrow, double ynext,
        double *d, double *rbar, double *thetab)
 {
     double cbar, sbar, di, xi, xk, rbthis, dpi;

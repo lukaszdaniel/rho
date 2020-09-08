@@ -83,7 +83,7 @@ SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return (*ptr->X11)(call, op, args, rho);
     else {
 	Rf_error(_("X11 module cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -95,7 +95,7 @@ SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 	return (*ptr->saveplot)(call, op, args, rho);
     else {
 	Rf_error(_("X11 module cannot be loaded"));
-	return R_NilValue;
+	return nullptr;
     }
 }
 
@@ -151,13 +151,13 @@ HIDDEN Rboolean R_access_X11(void)
 SEXP do_X11(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_error(_("X11 is not available"));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP do_saveplot(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_error(_("X11 is not available"));
-    return R_NilValue;
+    return nullptr;
 }
 
 extern "C"

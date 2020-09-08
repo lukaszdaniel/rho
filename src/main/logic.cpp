@@ -221,8 +221,8 @@ HIDDEN SEXP do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
 	    ans = FALSE;
 	else {
 	    get_2nd;
-	    if (x1 == NA_LOGICAL)
-	        ans = (x2 == NA_LOGICAL || x2) ? NA_LOGICAL : x2;
+	    if (x1 == R_NaLog)
+	        ans = (x2 == R_NaLog || x2) ? R_NaLog : x2;
 	    else /* x1 == TRUE */
 		ans = x2;
 	}
@@ -232,8 +232,8 @@ HIDDEN SEXP do_logic2(SEXP call, SEXP op, SEXP args, SEXP env)
 	    ans = TRUE;
 	else {
 	    get_2nd;
-	    if (x1 == NA_LOGICAL)
-		ans = (x2 == NA_LOGICAL || !x2) ? NA_LOGICAL : x2;
+	    if (x1 == R_NaLog)
+		ans = (x2 == R_NaLog || !x2) ? R_NaLog : x2;
 	    else /* x1 == FALSE */
 		ans = x2;
 	}
@@ -257,7 +257,7 @@ static Logical checkValues(int op, int na_rm, SEXP x, R_xlen_t n)
     for (i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	int xi = px[i];
-	if (!na_rm && xi == NA_LOGICAL) has_na = 1;
+	if (!na_rm && xi == R_NaLog) has_na = 1;
 	else {
 	    if (xi == TRUE && op == _OP_ANY) return true;
 	    if (xi == FALSE && op == _OP_ALL) return false;

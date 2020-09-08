@@ -285,7 +285,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
 	    REAL(value)[1] <= 1.0 &&
 	    0.0 <= REAL(value)[2] && REAL(value)[2] < REAL(value)[3] &&
 	    REAL(value)[3] <= 1.0) {
-	    R_DEV_2(defaultFigure) = Rboolean(0);
+	    R_DEV_2(defaultFigure) = FALSE;
 	    R_DEV_2(fUnits) = NIC;
 	    R_DEV_2(numrows) = 1;
 	    R_DEV_2(numcols) = 1;
@@ -309,7 +309,7 @@ static void Specify(const char *what, SEXP value, pGEDevDesc dd)
     else if (streql(what, "fin")) {
 	value = Rf_coerceVector(value, REALSXP);
 	lengthCheck(what, value, 2);
-	R_DEV_2(defaultFigure) = Rboolean(0);
+	R_DEV_2(defaultFigure) = FALSE;
 	R_DEV_2(fUnits) = INCHES;
 	R_DEV_2(numrows) = 1;
 	R_DEV_2(numcols) = 1;
@@ -1061,11 +1061,11 @@ static SEXP Query(const char *what, pGEDevDesc dd)
     }
     else if (ParCode(what) == -2) {
 	Rf_warning(_("graphical parameter \"%s\" is obsolete"), what);
-	value = R_NilValue;
+	value = nullptr;
     }
     else {
 	Rf_warning(_("\"%s\" is not a graphical parameter"), what);
-	value = R_NilValue;
+	value = nullptr;
     }
     return value;
 }
@@ -1090,13 +1090,13 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 	PROTECT(value = Rf_allocVector(VECSXP, nargs));
 	oldnames = Rf_getAttrib(args, R_NamesSymbol);
 	for (i = 0 ; i < nargs ; i++) {
-	    if (oldnames != R_NilValue)
+	    if (oldnames != nullptr)
 		tag = STRING_ELT(oldnames, i);
 	    else
-		tag = R_NilValue;
+		tag = nullptr;
 	    val = VECTOR_ELT(args, i);
 	    /* tags are all ASCII */
-	    if (tag != R_NilValue && R_CHAR(tag)[0]) {
+	    if (tag != nullptr && R_CHAR(tag)[0]) {
 		new_spec = 1;
 		SET_VECTOR_ELT(value, i, Query(R_CHAR(tag), dd));
 		SET_STRING_ELT(newnames, i, tag);
@@ -1104,13 +1104,13 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
 	    }
 	    else if (Rf_isString(val) && Rf_length(val) > 0) {
 		tag = STRING_ELT(val, 0);
-		if (tag != R_NilValue && R_CHAR(tag)[0]) {
+		if (tag != nullptr && R_CHAR(tag)[0]) {
 		    SET_VECTOR_ELT(value, i, Query(R_CHAR(tag), dd));
 		    SET_STRING_ELT(newnames, i, tag);
 		}
 	    }
 	    else {
-		SET_VECTOR_ELT(value, i, R_NilValue);
+		SET_VECTOR_ELT(value, i, nullptr);
 		SET_STRING_ELT(newnames, i, R_BlankString);
 	    }
 	}
@@ -1118,7 +1118,7 @@ SEXP C_par(SEXP call, SEXP op, SEXP args, SEXP rho)
     }
     else {
 	Rf_error(_("invalid argument passed to par()"));
-	return R_NilValue/* -Wall */;
+	return nullptr/* -Wall */;
     }
     /* should really only do this if specifying new pars ?  yes! [MM] */
 
@@ -1240,7 +1240,7 @@ SEXP C_layout(SEXP args)
 
     GReset(dd);
 
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -1250,10 +1250,10 @@ SEXP C_layout(SEXP args)
 void ProcessInlinePars(SEXP s, pGEDevDesc dd)
 {
     if (Rf_isList(s)) {
-	while (s != R_NilValue) {
+	while (s != nullptr) {
 	    if (Rf_isList(CAR(s)))
 		ProcessInlinePars(CAR(s), dd);
-	    else if (TAG(s) != R_NilValue)
+	    else if (TAG(s) != nullptr)
 		Specify2(R_CHAR(PRINTNAME(TAG(s))), CAR(s), dd);
 	    s = CDR(s);
 	}

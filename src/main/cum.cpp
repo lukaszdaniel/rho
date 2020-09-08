@@ -54,9 +54,9 @@ static SEXP icumsum(SEXP x, SEXP s)
     int *ix = INTEGER(x), *is = INTEGER(s);
     double sum = 0.0;
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++) {
-	if (ix[i] == NA_INTEGER) break;
+	if (ix[i] == R_NaInt) break;
 	sum += ix[i];
-	if(sum > INT_MAX || sum < 1 + INT_MIN) { /* INT_MIN is NA_INTEGER */
+	if(sum > INT_MAX || sum < 1 + INT_MIN) { /* INT_MIN is R_NaInt */
 	    Rf_warning(_("integer overflow in 'cumsum'; use 'cumsum(as.numeric(.))'"));
 	    break;
 	}
@@ -112,7 +112,7 @@ static SEXP cummax(SEXP x, SEXP s)
     double max, *rx = REAL(x), *rs = REAL(s);
     max = R_NegInf;
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++) {
-	if(ISNAN(rx[i]) || ISNAN(max))
+	if(std::isnan(rx[i]) || std::isnan(max))
 	    max = max + rx[i];  /* propagate NA and NaN */
 	else
 	    max = (max > rx[i]) ? max : rx[i];
@@ -126,7 +126,7 @@ static SEXP cummin(SEXP x, SEXP s)
     double min, *rx = REAL(x), *rs = REAL(s);
     min = R_PosInf; /* always positive, not NA */
     for (R_xlen_t i = 0 ; i < XLENGTH(x) ; i++ ) {
-	if (ISNAN(rx[i]) || ISNAN(min))
+	if (std::isnan(rx[i]) || std::isnan(min))
 	    min = min + rx[i];  /* propagate NA and NaN */
 	else
 	    min = (min < rx[i]) ? min : rx[i];
@@ -138,12 +138,12 @@ static SEXP cummin(SEXP x, SEXP s)
 static SEXP icummax(SEXP x, SEXP s)
 {
     int *ix = INTEGER(x);
-    if(ix[0] == NA_INTEGER)
+    if(ix[0] == R_NaInt)
 	return s; // all NA
     int *is = INTEGER(s), max = ix[0];
     is[0] = max;
     for (R_xlen_t i = 1 ; i < XLENGTH(x) ; i++) {
-	if(ix[i] == NA_INTEGER) break;
+	if(ix[i] == R_NaInt) break;
 	is[i] = max = (max > ix[i]) ? max : ix[i];
     }
     return s;
@@ -155,7 +155,7 @@ static SEXP icummin(SEXP x, SEXP s)
     int min = ix[0];
     is[0] = min;
     for (R_xlen_t i = 1 ; i < XLENGTH(x) ; i++ ) {
-	if(ix[i] == NA_INTEGER) break;
+	if(ix[i] == R_NaInt) break;
 	is[i] = min = (min < ix[i]) ? min : ix[i];
     }
     return s;
@@ -205,7 +205,7 @@ HIDDEN SEXP do_cum(/*const*/ rho::Expression* call, const rho::BuiltInFunction* 
 	    UNPROTECT(2); /* t, s */
 	    return s;
 	}
-	for(i = 0 ; i < n ; i++) INTEGER(s)[i] = NA_INTEGER;
+	for(i = 0 ; i < n ; i++) INTEGER(s)[i] = R_NaInt;
 	switch (op->variant() ) {
 	case 1:	/* cumsum */
 	    ans = icumsum(t,s);

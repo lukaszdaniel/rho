@@ -89,8 +89,7 @@ static void ProbSampleReplace(int n, double *p, int *perm, int nans, int *ans)
  */
 
 constexpr int SMALL = 10000;
-static void
-walker_ProbSampleReplace(int n, double *p, int *a, int nans, int *ans)
+static void walker_ProbSampleReplace(int n, double *p, int *a, int nans, int *ans)
 {
     double *q, rU;
     int i, j, k;
@@ -181,7 +180,7 @@ static void FixupProb(double *p, int n, int require_k, Rboolean replace)
     double sum = 0.0;
     int npos = 0;
     for (int i = 0; i < n; i++) {
-	if (!R_FINITE(p[i]))
+	if (!std::isfinite(p[i]))
 	    Rf_error(_("NA in probability vector"));
 	if (p[i] < 0.0)
 	    Rf_error(_("negative probability"));
@@ -198,7 +197,7 @@ static void FixupProb(double *p, int n, int require_k, Rboolean replace)
 /* do_sample - probability sampling with/without replacement.
    .Internal(sample(n, size, replace, prob))
 */
-HIDDEN SEXP do_sample(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* size_, RObject* replace_, RObject* prob_)
+HIDDEN RObject* do_sample(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* size_, RObject* replace_, RObject* prob_)
 {
     SEXP x, y, sn, sk, prob, sreplace;
 
@@ -209,14 +208,14 @@ HIDDEN SEXP do_sample(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	 Rf_error(_("invalid '%s' argument"), "replace");
     int replace = Rf_asLogical(sreplace);
     prob = prob_;
-    if (replace == NA_LOGICAL)
+    if (replace == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "replace");
     GetRNGstate();
     if (!Rf_isNull(prob)) {
 	int n = Rf_asInteger(sn), k = Rf_asInteger(sk);
-	if (n == NA_INTEGER || n < 0 || (k > 0 && n == 0))
+	if (n == R_NaInt || n < 0 || (k > 0 && n == 0))
 	    Rf_error(_("invalid first argument"));
-	if (k == NA_INTEGER || k < 0)
+	if (k == R_NaInt || k < 0)
 	    Rf_error(_("invalid '%s' argument"), "size");
 	if (!replace && k > n)
 	    Rf_error(_("cannot take a sample larger than the population when 'replace = FALSE'"));
@@ -243,7 +242,7 @@ HIDDEN SEXP do_sample(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     else {  // uniform sampling
 	double dn = Rf_asReal(sn);
 	R_xlen_t k = asVecSize(sk);
-	if (!R_FINITE(dn) || dn < 0 || dn > 4.5e15 || (k > 0 && dn == 0))
+	if (!std::isfinite(dn) || dn < 0 || dn > 4.5e15 || (k > 0 && dn == 0))
 	    Rf_error(_("invalid first argument"));
 	if (k < 0) Rf_error(_("invalid '%s' argument"), "size");
 	if (!replace && k > dn)

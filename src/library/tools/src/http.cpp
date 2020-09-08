@@ -22,21 +22,20 @@
 #include "tools.h"
 #include "localization.h"
 
-
 extern int extR_HTTPDCreate(const char *ip, int port);
 extern void extR_HTTPDStop(void);
 
 SEXP startHTTPD(SEXP sIP, SEXP sPort)
 {
     const char *ip = 0;
-    if (sIP != R_NilValue && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
+    if (sIP != nullptr && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
 	Rf_error(_("invalid bind address specification"));
-    if (sIP != R_NilValue) ip = R_CHAR(STRING_ELT(sIP, 0));
+    if (sIP != nullptr) ip = R_CHAR(STRING_ELT(sIP, 0));
     return Rf_ScalarInteger(extR_HTTPDCreate(ip, Rf_asInteger(sPort)));
 }
 
 SEXP stopHTTPD(void)
 {
     extR_HTTPDStop();
-    return R_NilValue;
+    return nullptr;
 }

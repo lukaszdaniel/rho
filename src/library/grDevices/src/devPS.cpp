@@ -1576,7 +1576,7 @@ static SEXP getFontDB(const char *fontdbname) {
 	UNPROTECT(2);
 	PROTECT(PSenv);
     }
-    PROTECT(fontdb = Rf_findVar(Rf_install(fontdbname), PSenv));
+    PROTECT(fontdb = Rf_findVar(rho::Symbol::obtain(fontdbname), PSenv));
     UNPROTECT(3);
     return fontdb;
 }
@@ -1586,7 +1586,7 @@ static SEXP getFontDB(const char *fontdbname) {
  */
 static SEXP getFont(const char *family, const char *fontdbname) {
     int i, nfonts;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     int found = 0;
     SEXP fontdb = PROTECT(getFontDB(fontdbname));
     SEXP fontnames;
@@ -3150,7 +3150,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding(encoding, pd->encodings, FALSE)))
-	enc = addEncoding(encoding, Rboolean(0));
+	enc = addEncoding(encoding, FALSE);
     if (enc && (enclist = addDeviceEncoding(enc, pd->encodings))) {
 	pd->encodings = enclist;
     } else {
@@ -3170,7 +3170,7 @@ PSDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      * Could lead to redundant extra loading of a font, but not often(?)
      */
     if (streql(family, "User")) {
-	font = addDefaultFontFromAFMs(encoding, afmpaths, Rboolean(0), pd->encodings);
+	font = addDefaultFontFromAFMs(encoding, afmpaths, FALSE, pd->encodings);
     } else {
 	/*
 	 * Otherwise, family is a device-independent font family.
@@ -4786,7 +4786,7 @@ XFigDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding("ISOLatin1.enc", pd->encodings, FALSE)))
-	enc = addEncoding("ISOLatin1.enc", Rboolean(0));
+	enc = addEncoding("ISOLatin1.enc", FALSE);
     if (enc && (enclist = addDeviceEncoding(enc, pd->encodings))) {
 	pd->encodings = enclist;
     } else {
@@ -4973,7 +4973,7 @@ XFigDeviceDriver(pDevDesc dd, const char *file, const char *paper,
 
     dd->deviceSpecific = (void *) pd;
     dd->displayListOn = FALSE;
-    return Rboolean(1);
+    return TRUE;
 }
 
 static void XFig_cleanup(pDevDesc dd, XFigDesc *pd)
@@ -5938,7 +5938,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      */
     pd->encodings = NULL;
     if (!(enc = findEncoding(encoding, pd->encodings, TRUE)))
-	enc = addEncoding(encoding, Rboolean(1));
+	enc = addEncoding(encoding, TRUE);
     if (enc && (enclist = addDeviceEncoding(enc,
 					    pd->encodings))) {
 	pd->encodings = enclist;
@@ -5960,7 +5960,7 @@ PDFDeviceDriver(pDevDesc dd, const char *file, const char *paper,
      * Could lead to redundant extra loading of a font, but not often(?)
      */
     if (streql(family, "User")) {
-	font = addDefaultFontFromAFMs(encoding, afmpaths, Rboolean(0), pd->encodings);
+	font = addDefaultFontFromAFMs(encoding, afmpaths, FALSE, pd->encodings);
     } else {
 	/*
 	 * Otherwise, family is a device-independent font family.
@@ -7251,7 +7251,7 @@ static void PDF_NewPage(const pGEcontext gc,
 	pd->pdffp = fopen(tmp, "w+b");
 	if (! pd->pdffp) {
             pd->pdffp = pd->mainfp;
-            pd->useCompression = Rboolean(0);
+            pd->useCompression = FALSE;
             Rf_warning(_("Cannot open temporary file '%s' for compression (reason: %s); compression has been turned off for this device"), 
                     tmp, strerror(errno));
         }
@@ -7882,7 +7882,7 @@ static void PDF_Text0(double x, double y, const char *str, int enc,
 	    /*
 	     * Try to load the font
 	     */
-	    cidfont = addCIDFont(gc->fontfamily, Rboolean(1));
+	    cidfont = addCIDFont(gc->fontfamily, TRUE);
 	    if (cidfont) {
 		if (!addPDFDeviceCIDfont(cidfont, pd, &dontcare)) {
 		    cidfont = NULL;
@@ -8013,7 +8013,7 @@ static FontMetricInfo
 	    /*
 	     * Try to load the font
 	     */
-	    fontfamily = addCIDFont(family, Rboolean(1));
+	    fontfamily = addCIDFont(family, TRUE);
 	    if (fontfamily) {
 		if (addPDFDeviceCIDfont(fontfamily, pd, &dontcare)) {
 		    result = &(fontfamily->symfont->metrics);
@@ -8301,7 +8301,7 @@ SEXP PostScript(SEXP args)
 	GEaddDevice2f(gdd, "postscript", file);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -8368,7 +8368,7 @@ SEXP XFig(SEXP args)
 	GEaddDevice2f(gdd, "xfig", file);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -8468,5 +8468,5 @@ SEXP PDF(SEXP args)
 	GEaddDevice2f(gdd, "pdf", file);
     } END_SUSPEND_INTERRUPTS;
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }

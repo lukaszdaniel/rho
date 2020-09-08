@@ -2358,17 +2358,17 @@ static void X11_Raster(unsigned int *raster, int w, int h,
 static SEXP X11_Cap(pDevDesc dd)
 {
     pX11Desc xd = (pX11Desc) dd->deviceSpecific;
-    XImage *image = XGetImage(display, xd->window, 0, 0,
+    XImage* image = XGetImage(display, xd->window, 0, 0,
                               xd->windowWidth, xd->windowHeight, 
                               AllPlanes, ZPixmap);
-    SEXP raster = R_NilValue;
+    SEXP raster = nullptr;
 
     if (image) {
         int i, j;
         SEXP dim;
         int size = xd->windowWidth * xd->windowHeight;
-        const void *vmax = vmaxget();
-        unsigned int *rint;
+        const void* vmax = vmaxget();
+        unsigned int* rint;
 
         PROTECT(raster = Rf_allocVector(INTSXP, size));
 
@@ -2446,12 +2446,12 @@ static void X11_Line(double x1, double y1, double x2, double y2,
 static void X11_Polyline(int n, const double *x, const double *y,
 			 const pGEcontext gc, pDevDesc dd)
 {
-    const void *vmax = vmaxget();
-    XPoint *points;
+    const void* vmax = vmaxget();
+    XPoint* points;
     int i, j;
     pX11Desc xd = (pX11Desc) dd->deviceSpecific;
 
-    points = (XPoint *) R_alloc(n, sizeof(XPoint));
+    points = (XPoint*)R_alloc(n, sizeof(XPoint));
 
     for(i = 0 ; i < n ; i++) {
 	points[i].x = (short)(x[i]);
@@ -2477,12 +2477,12 @@ static void X11_Polyline(int n, const double *x, const double *y,
 static void X11_Polygon(int n, const double *x, const double *y,
 			const pGEcontext gc, pDevDesc dd)
 {
-    const void *vmax = vmaxget();
-    XPoint *points;
+    const void* vmax = vmaxget();
+    XPoint* points;
     int i;
     pX11Desc xd = (pX11Desc) dd->deviceSpecific;
 
-    points = (XPoint *) R_alloc(n+1, sizeof(XPoint));
+    points = (XPoint*)R_alloc(n + 1, sizeof(XPoint));
 
     for (i = 0 ; i < n ; i++) {
 	points[i].x = (short)(x[i]);
@@ -2536,7 +2536,7 @@ static Rboolean X11_Locator(double *x, double *y, pDevDesc dd)
 	Rf_error(_("attempt to use the locator after dev.hold()"));
     if (xd->buffered) Cairo_update(xd);
 #endif
-    R_ProcessX11Events((void*)NULL);	/* discard pending events */
+    R_ProcessX11Events((void*)NULL); /* discard pending events */
     if(xd->type==WINDOW) XDefineCursor(display, xd->window, cross_cursor);
     XSync(display, 1);
     /* handle X events as normal until get a button */
@@ -2756,7 +2756,7 @@ Rboolean X11DeviceDriver(pDevDesc dd,
 			 const char *family)
 {
     pX11Desc xd;
-    const char *fn;
+    const char* fn;
 
     xd = Rf_allocX11DeviceDesc(pointsize);
     if(!xd) return Rboolean(FALSE);
@@ -3052,10 +3052,9 @@ Rboolean in_R_GetX11Image(int d, void *pximage, int *pwidth, int *pheight)
 /**
    Allows callers to retrieve the current Display setting for the process.
  */
-Display*
-Rf_getX11Display(void)
+Display* Rf_getX11Display(void)
 {
-    return(display);
+    return display;
 }
 
 
@@ -3069,8 +3068,7 @@ Rf_getX11Display(void)
  function.
  Finally, setHandlers controls whether the code establishes handlers for the X errors.
  */
-int
-Rf_setX11Display(Display *dpy, double gamma_fac, X_COLORTYPE colormodel,
+int Rf_setX11Display(Display *dpy, double gamma_fac, X_COLORTYPE colormodel,
 		 int maxcube, Rboolean setHandlers)
 {
 /*    static int alreadyDone = 0;
@@ -3236,7 +3234,7 @@ static SEXP in_do_X11(SEXP call, SEXP op, SEXP args, SEXP env)
 		    maxcubesize, bgcolor, canvascolor, devname, sfonts,
 		    res, xpos, ypos, title, useCairo, antialias, family, call);
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 
@@ -3290,20 +3288,20 @@ static SEXP in_do_saveplot(SEXP call, SEXP op, SEXP args, SEXP env)
 		     Sbitgp, 0, fn, 0, 1L);
     } else
 	Rf_error(_("invalid '%s' argument"), "type");
-    return R_NilValue;
+    return nullptr;
 }
 #else
 static SEXP in_do_saveplot(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     Rf_error(_("savePlot() is not supported on this build"));
-    return R_NilValue;
+    return nullptr;
 }
 #endif
 
 
 static int in_R_X11_access(void)
 {
-    char *p;
+    char* p;
     X11IOhandler old;
 
     if (displayOpen) return Rboolean(TRUE);

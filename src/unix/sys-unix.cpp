@@ -636,7 +636,7 @@ static void warn_status(const char *cmd, int res)
 #define INTERN_BUFSIZE 8096
 HIDDEN SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
-    SEXP tlist = R_NilValue;
+    SEXP tlist = nullptr;
     int intern = 0;
     int timeout = 0;
 
@@ -783,7 +783,7 @@ HIDDEN SEXP do_system(SEXP call, SEXP op, SEXP args, SEXP rho)
 	R_Busy(0);
 #endif
 	UNPROTECT(1);
-	R_Visible = Rboolean(0);
+	R_Visible = FALSE;
 	return tlist;
     }
 }
@@ -808,7 +808,7 @@ HIDDEN SEXP do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(ans = Rf_allocVector(STRSXP, 8));
     if(uname(&name) == -1) {
 	UNPROTECT(1);
-	return R_NilValue;
+	return nullptr;
     }
     SET_STRING_ELT(ans, 0, Rf_mkChar(name.sysname));
     SET_STRING_ELT(ans, 1, Rf_mkChar(name.release));
@@ -852,7 +852,7 @@ HIDDEN SEXP do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP do_sysinfo(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_warning(_("Sys.info() is not implemented on this system"));
-    return R_NilValue;		/* -Wall */
+    return nullptr;		/* -Wall */
 }
 #endif /* not HAVE_SYS_UTSNAME_H */
 

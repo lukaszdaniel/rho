@@ -42,7 +42,7 @@ void unregisterBase(void); /* used in devices.cpp */
 #ifdef __cplusplus
 extern "C"
 #endif
-void Rf_setBaseDevice(Rboolean val, pGEDevDesc dd); /* used in graphics.cpp */
+void Rf_setBaseDevice(Rboolean val, GEDevDesc* dd); /* used in graphics.cpp */
 
 extern int baseRegisterIndex;
 

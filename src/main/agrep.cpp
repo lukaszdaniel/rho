@@ -43,7 +43,7 @@ using namespace rho;
 #undef pmatch
 
 /* interval at which to check interrupts */
-#define NINTERRUPT 1000000
+constexpr R_xlen_t NINTERRUPT = 1000000;
 
 #include <R_ext/RS.h>		/* for Calloc/Free */
 
@@ -122,10 +122,10 @@ HIDDEN SEXP do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction
     int useBytes = Rf_asLogical(useBytes_);
     int opt_fixed = Rf_asLogical(fixed_);
 
-    if(opt_icase == NA_INTEGER) opt_icase = 0;
-    if(opt_value == NA_INTEGER) opt_value = 0;
-    if(useBytes == NA_INTEGER) useBytes = 0;
-    if(opt_fixed == NA_INTEGER) opt_fixed = 1;
+    if(opt_icase == R_NaInt) opt_icase = 0;
+    if(opt_value == R_NaInt) opt_value = 0;
+    if(useBytes == R_NaInt) useBytes = 0;
+    if(opt_fixed == R_NaInt) opt_fixed = 1;
 
     if(opt_fixed) cflags |= REG_LITERAL;
 
@@ -153,7 +153,7 @@ HIDDEN SEXP do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	useWC = Rboolean(!IS_ASCII(STRING_ELT(pattern, 0)));
 	if(!useWC) {
 	    for (i = 0 ; i < n ; i++) {
-		if(STRING_ELT(vec, i) == NA_STRING) continue;
+		if(STRING_ELT(vec, i) == R_NaString) continue;
 		if(!IS_ASCII(STRING_ELT(vec, i))) {
 		    useWC = TRUE;
 		    break;
@@ -162,18 +162,18 @@ HIDDEN SEXP do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	}
     }
 
-    if(STRING_ELT(pattern, 0) == NA_STRING) {
+    if(STRING_ELT(pattern, 0) == R_NaString) {
 	if(opt_value) {
 	    PROTECT(ans = Rf_allocVector(STRSXP, n));
 	    for(i = 0; i < n; i++)
-		SET_STRING_ELT(ans, i, NA_STRING);
+		SET_STRING_ELT(ans, i, R_NaString);
 	    SEXP nms = Rf_getAttrib(vec, Symbols::NamesSymbol);
 	    if(!Rf_isNull(nms))
 		Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
 	} else {
 	    PROTECT(ans = Rf_allocVector(INTSXP, n));
 	    for(i = 0; i < n; i++)
-		INTEGER(ans)[i] = NA_INTEGER;
+		INTEGER(ans)[i] = R_NaInt;
 	}
 	UNPROTECT(1);
 	return ans;
@@ -221,7 +221,7 @@ HIDDEN SEXP do_agrep(/*const*/ rho::Expression* call, const rho::BuiltInFunction
     nmatches = 0;
     for (i = 0 ; i < n ; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	if(STRING_ELT(vec, i) == NA_STRING) {
+	if(STRING_ELT(vec, i) == R_NaString) {
 	    LOGICAL(ind)[i] = 0;
 	    continue;
 	}
@@ -326,24 +326,24 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
     for(i = 0; i < nx; i++) {
 	nxi = LENGTH(VECTOR_ELT(x, i));
 	xi = INTEGER(VECTOR_ELT(x, i));
-	if(nxi && (xi[0] == NA_INTEGER)) {
+	if(nxi && (xi[0] == R_NaInt)) {
 	    for(j = 0; j < ny; j++) {
-		ANS(i, j) = NA_REAL;
+		ANS(i, j) = R_NaReal;
 	    }
 	    if(opt_counts) {
 		for(m = 0; m < 3; m++) {
-		    COUNTS(i, j, m) = NA_INTEGER;
+		    COUNTS(i, j, m) = R_NaInt;
 		}
 	    }
 	} else {
 	    for(j = 0; j < ny; j++) {
 		nyj = LENGTH(VECTOR_ELT(y, j));
 		yj = INTEGER(VECTOR_ELT(y, j));
-		if(nyj && (yj[0] == NA_INTEGER)) {
-		    ANS(i, j) = NA_REAL;
+		if(nyj && (yj[0] == R_NaInt)) {
+		    ANS(i, j) = R_NaReal;
 		    if(opt_counts) {
 			for(m = 0; m < 3; m++) {
-			    COUNTS(i, j, m) = NA_INTEGER;
+			    COUNTS(i, j, m) = R_NaInt;
 			}
 		    }
 		}
@@ -401,9 +401,9 @@ adist_full(SEXP x, SEXP y, double *costs, Rboolean opt_counts)
 		    if(opt_counts) {
 			if(!R_finite(ANS(i, j))) {
 			    for(m = 0; m < 3; m++) {
-				COUNTS(i, j, m) = NA_INTEGER;
+				COUNTS(i, j, m) = R_NaInt;
 			    }
-			    SET_STRING_ELT(trafos, i + nx * j, NA_STRING);
+			    SET_STRING_ELT(trafos, i + nx * j, R_NaString);
 			} else {
 			    nins = ndel = nsub = 0;
 			    k = nxi; l = nyj; m = k + l; nz = m;
@@ -516,11 +516,11 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
     opt_icase = Rf_asLogical(ignore_case_);
     useBytes = Rf_asLogical(useBytes_);
 
-    if(opt_counts == NA_INTEGER) opt_counts = 0;
-    if(opt_fixed == NA_INTEGER) opt_fixed = 1;
-    if(opt_partial == NA_INTEGER) opt_partial = 0;
-    if(opt_icase == NA_INTEGER) opt_icase = 0;
-    if(useBytes == NA_INTEGER) useBytes = 0;
+    if(opt_counts == R_NaInt) opt_counts = 0;
+    if(opt_fixed == R_NaInt) opt_fixed = 1;
+    if(opt_partial == R_NaInt) opt_partial = 0;
+    if(opt_icase == R_NaInt) opt_icase = 0;
+    if(useBytes == R_NaInt) useBytes = 0;
 
     if(opt_fixed) cflags |= REG_LITERAL;
     if(opt_icase) cflags |= REG_ICASE;
@@ -562,7 +562,7 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 
     if(!useBytes) {
 	for(i = 0; i < nx; i++) {
-	    if(STRING_ELT(x, i) == NA_STRING) continue;
+	    if(STRING_ELT(x, i) == R_NaString) continue;
 	    if(!IS_ASCII(STRING_ELT(x, i))) {
 		useWC = TRUE;
 		break;
@@ -570,7 +570,7 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	}
 	if(!useWC) {
 	    for(j = 0; j < ny; j++) {
-		if(STRING_ELT(y, j) == NA_STRING) continue;
+		if(STRING_ELT(y, j) == R_NaString) continue;
 		if(!IS_ASCII(STRING_ELT(y, j))) {
 		    useWC = TRUE;
 		    break;
@@ -595,12 +595,12 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
     vmax = vmaxget();
     for(i = 0; i < nx; i++) {
 	elt = STRING_ELT(x, i);
-	if(elt == NA_STRING) {
+	if(elt == R_NaString) {
 	    for(j = 0; j < ny; j++) {
-		ANS(i, j) = NA_REAL;
+		ANS(i, j) = R_NaReal;
 		if(opt_counts) {
 		    for(m = 0; m < 3; m++) {
-			COUNTS(i, j, m) = NA_INTEGER;
+			COUNTS(i, j, m) = R_NaInt;
 		    }
 		    OFFSETS(i, j, 0) = -1;
 		    OFFSETS(i, j, 1) = -1;
@@ -633,11 +633,11 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 
 	    for(j = 0; j < ny; j++) {
 		elt = STRING_ELT(y, j);
-		if(elt == NA_STRING) {
-		    ANS(i, j) = NA_REAL;
+		if(elt == R_NaString) {
+		    ANS(i, j) = R_NaReal;
 		    if(opt_counts) {
 			for(m = 0; m < 3; m++) {
-			    COUNTS(i, j, m) = NA_INTEGER;
+			    COUNTS(i, j, m) = R_NaInt;
 			}
 			OFFSETS(i, j, 0) = -1;
 			OFFSETS(i, j, 1) = -1;
@@ -682,7 +682,7 @@ HIDDEN SEXP do_adist(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 			ANS(i, j) = R_PosInf;
 			if(opt_counts) {
 			    for(m = 0; m < 3; m++) {
-				COUNTS(i, j, m) = NA_INTEGER;
+				COUNTS(i, j, m) = R_NaInt;
 			    }
 			    OFFSETS(i, j, 0) = -1;
 			    OFFSETS(i, j, 1) = -1;
@@ -753,9 +753,9 @@ HIDDEN SEXP do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunct
     int opt_fixed = Rf_asLogical(fixed_);
     int useBytes = Rf_asLogical(use_bytes_);
 
-    if(opt_icase == NA_INTEGER) opt_icase = 0;
-    if(opt_fixed == NA_INTEGER) opt_fixed = 0;
-    if(useBytes == NA_INTEGER) useBytes = 0;
+    if(opt_icase == R_NaInt) opt_icase = 0;
+    if(opt_fixed == R_NaInt) opt_fixed = 0;
+    if(useBytes == R_NaInt) useBytes = 0;
     if(opt_fixed && opt_icase) {
 	Rf_warning(_("argument '%s' will be ignored"),
 		"ignore.case = TRUE");
@@ -766,7 +766,7 @@ HIDDEN SEXP do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 
     if(!Rf_isString(pattern) ||
        (Rf_length(pattern) < 1) ||
-       (STRING_ELT(pattern, 0) == NA_STRING))
+       (STRING_ELT(pattern, 0) == R_NaString))
 	Rf_error(_("invalid '%s' argument"), "pattern");
     if(Rf_length(pattern) > 1)
 	Rf_warning(_("argument '%s' has length > 1 and only the first element will be used"), "pattern");
@@ -792,7 +792,7 @@ HIDDEN SEXP do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunct
         useWC = Rboolean(!IS_ASCII(STRING_ELT(pattern, 0)));
 	if(!useWC) {
 	    for(R_xlen_t i = 0 ; i < n ; i++) {
-		if(STRING_ELT(vec, i) == NA_STRING) continue;
+		if(STRING_ELT(vec, i) == R_NaString) continue;
 		if(!IS_ASCII(STRING_ELT(vec, i))) {
 		    useWC = TRUE;
 		    break;
@@ -843,11 +843,11 @@ HIDDEN SEXP do_aregexec(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 
     for(R_xlen_t i = 0; i < n; i++) {
 //	if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
-	if(STRING_ELT(vec, i) == NA_STRING) {
-	    PROTECT(matchpos = Rf_ScalarInteger(NA_INTEGER));
+	if(STRING_ELT(vec, i) == R_NaString) {
+	    PROTECT(matchpos = Rf_ScalarInteger(R_NaInt));
 	    SEXP s_match_length = Rf_install("match.length");
 	    Rf_setAttrib(matchpos, s_match_length,
-		      Rf_ScalarInteger(NA_INTEGER));
+		      Rf_ScalarInteger(R_NaInt));
 	    SET_VECTOR_ELT(ans, i, matchpos);
 	    UNPROTECT(1);
 	} else {

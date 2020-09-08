@@ -232,7 +232,7 @@ typedef QuartzDesc_t (*quartz_create_fn_t)(void *dd, QuartzFunctions_t *fn, Quar
 QuartzDesc_t Quartz_C(QuartzParameters_t *par, quartz_create_fn_t q_create, int *errorCode);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif   
 
-#endif
+#endif /* R_EXT_QUARTZDEVICE_H_ */

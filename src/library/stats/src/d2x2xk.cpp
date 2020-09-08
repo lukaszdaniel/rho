@@ -22,8 +22,7 @@
 #include <R.h>
 #include <Rmath.h>
 
-static void
-int_d2x2xk(int K, double *m, double *n, double *t, double *d)
+static void int_d2x2xk(int K, double *m, double *n, double *t, double *d)
 {
     int i, j, l, w, y, z;
     double u, **c;

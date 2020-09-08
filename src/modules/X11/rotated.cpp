@@ -105,7 +105,7 @@ static int debug=0;
 
 /* ---------------------------------------------------------------------- */
 
-static inline double myround(double x)
+inline static double myround(double x)
 {
     return std::floor(x+0.5);
 }

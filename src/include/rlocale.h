@@ -151,6 +151,6 @@ extern int      Ri18n_iswctype(wint_t, wctype_t);
 Rwchar_t utf8toucs32(wchar_t high, const char *s);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 #endif /* R_LOCALE_H */

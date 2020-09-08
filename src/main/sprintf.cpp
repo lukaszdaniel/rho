@@ -44,7 +44,7 @@
 using namespace rho;
 
 
-#define MAXLINE MAXELTSIZE
+constexpr size_t MAXLINE = MAXELTSIZE;
 #define MAXNARGS 100
 /*               ^^^ not entirely arbitrary, but strongly linked to allowing %$1 to %$99 !*/
 
@@ -54,13 +54,13 @@ using namespace rho;
    format from one of the types given in pattern.
 */
 
-static const char *findspec(const char *str)
+static const char* findspec(const char* str)
 {
     /* This is not strict about checking where '.' is allowed.
        It should allow  - + ' ' # 0 as flags
        m m. .n n.m as width/precision
     */
-    const char *p = str;
+    const char* p = str;
 
     if(*p != '%') return p;
     for(p++; ; p++) {
@@ -74,13 +74,14 @@ static const char *findspec(const char *str)
 
 
 /*   FALSE is success, TRUE is an error: pattern *not* found . */
-static Rboolean checkfmt(const char *fmt, const char *pattern)
+static bool checkfmt(const char* fmt, const char* pattern)
 {
-    const char *p =fmt;
+    const char* p = fmt;
 
-    if(*p != '%') return TRUE;
+    if (*p != '%')
+	return true;
     p = findspec(fmt);
-    return strcspn(p, pattern) ? TRUE : FALSE;
+    return strcspn(p, pattern) ? true : false;
 }
 
 #define TRANSLATE_CHAR(_STR_, _i_)  \
@@ -93,22 +94,23 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
     int i, nargs, cnt, v, thislen, nfmt, nprotect = 0;
     /* fmt2 is a copy of fmt with '*' expanded.
        bit will hold numeric formats and %<w>s, so be quite small. */
-    char fmt[MAXLINE+1], fmt2[MAXLINE+10], *fmtp, bit[MAXLINE+1],
+    char fmt[MAXLINE + 1], fmt2[MAXLINE + 10], *fmtp, bit[MAXLINE + 1],
 	*outputString;
     const char *formatString;
     size_t n, cur, chunk;
 
     SEXP format, _this, a[MAXNARGS], ans /* -Wall */ = nullptr;
     int ns, maxlen, lens[MAXNARGS], nthis, nstar, star_arg = 0;
-    static R_StringBuffer outbuff = {nullptr, 0, MAXELTSIZE};
+    static R_StringBuffer outbuff = { nullptr, 0, MAXELTSIZE };
     Rboolean has_star, use_UTF8;
 
-#define _my_sprintf(_X_)						\
-    {									\
-	int nc = snprintf(bit, MAXLINE+1, fmtp, _X_);			\
-	if (nc > MAXLINE)						\
-	    Rf_error(_("required resulting string length %d is greater than maximal %d"), \
-		  nc, MAXLINE);						\
+#define _my_sprintf(_X_)                                                       \
+    {                                                                          \
+	int nc = snprintf(bit, MAXLINE + 1, fmtp, _X_);                        \
+	if (size_t(nc) > MAXLINE)                                              \
+	    Rf_error(_("required resulting string length %d is greater than "  \
+		       "maximal %d"),                                          \
+		nc, MAXLINE);                                                  \
     }
 
     nargs = num_args;
@@ -240,7 +242,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 			    nprotect++;
 			}
 			if(TYPEOF(_this) != INTSXP || LENGTH(_this)<1 ||
-			   INTEGER(_this)[ns % LENGTH(_this)] == NA_INTEGER)
+			   INTEGER(_this)[ns % LENGTH(_this)] == R_NaInt)
 			    Rf_error(_("argument for '*' conversion specification must be a number"));
 			star_arg = INTEGER(_this)[ns % LENGTH(_this)];
 			has_star = TRUE;
@@ -300,8 +302,8 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 				    R_xlen_t n = XLENGTH(_this);
 				    for(i = 0; i < n; i++) {
 					double r = REAL(_this)[i];
-					if (R_IsNA(r)) continue; // NA_REAL is ok
-					if (!R_FINITE(r) || (double)((int) r) != r) {
+					if (R_IsNA(r)) continue; // R_NaReal is ok
+					if (!std::isfinite(r) || (double)((int) r) != r) {
 					    exactlyInteger = FALSE;
 					    break;
 					}
@@ -367,7 +369,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 				if (checkfmt(fmtp, "di"))
 				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %d or %i for logical objects"));
-				if (x == NA_LOGICAL) {
+				if (x == R_NaLog) {
 				    fmtp[strlen(fmtp)-1] = 's';
 				    _my_sprintf("NA")
 				} else {
@@ -381,7 +383,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 				if (checkfmt(fmtp, "dioxX"))
 				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %d, %i, %o, %x or %X for integer objects"));
-				if (x == NA_INTEGER) {
+				if (x == R_NaInt) {
 				    fmtp[strlen(fmtp)-1] = 's';
 				    _my_sprintf("NA")
 				} else {
@@ -395,7 +397,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 				if (checkfmt(fmtp, "aAfeEgG"))
 				    Rf_error(_("invalid format '%s'; %s"), fmtp,
 					  _("use format %f, %e, %g or %a for numeric objects"));
-				if (R_FINITE(x)) {
+				if (std::isfinite(x)) {
 				    _my_sprintf(x)
 				} else {
 				    char *p = Rf_strchr(fmtp, '.');
@@ -408,7 +410,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 					    _my_sprintf(" NA")
 					else
 					    _my_sprintf("NA")
-				    } else if (ISNAN(x)) {
+				    } else if (std::isnan(x)) {
 					if (strcspn(fmtp, " ") < strlen(fmtp))
 					    _my_sprintf(" NaN")
 					else
@@ -426,7 +428,7 @@ HIDDEN SEXP do_sprintf(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 				break;
 			    }
 			case STRSXP:
-			    /* NA_STRING will be printed as 'NA' */
+			    /* R_NaString will be printed as 'NA' */
 			    if (checkfmt(fmtp, "s"))
 				Rf_error(_("invalid format '%s'; %s"), fmtp,
 				      _("use format %s for character objects"));

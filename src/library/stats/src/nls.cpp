@@ -319,7 +319,7 @@ numeric_deriv(SEXP expr, SEXP theta, SEXP rho, SEXP dir)
     const void *vmax = vmaxget();
     for(i = 0; i < LENGTH(theta); i++) {
 	const char *name = Rf_translateChar(STRING_ELT(theta, i));
-	SEXP s_name = Rf_install(name);
+	SEXP s_name = rho::Symbol::obtain(name);
 	SEXP temp = Rf_findVar(s_name, rho);
 	if(Rf_isInteger(temp))
 	    Rf_error(_("variable '%s' is integer, not numeric"), name);

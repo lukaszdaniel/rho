@@ -151,7 +151,7 @@ SEXP C_StemLeaf(SEXP x, SEXP scale, SEXP swidth, SEXP atom)
     if (!R_FINITE(sc)) Rf_error(_("invalid '%s' argument"), "scale");
     if (!R_FINITE(sa)) Rf_error(_("invalid '%s' argument"), "atom");
     stem_leaf(REAL(x), n, sc, width, sa);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Formerly a version in src/appl/binning.c */

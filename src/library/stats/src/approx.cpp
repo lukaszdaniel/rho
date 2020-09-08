@@ -146,7 +146,7 @@ SEXP ApproxTest(SEXP x, SEXP y, SEXP method, SEXP sf)
     int m = Rf_asInteger(method);
     double f = Rf_asReal(sf);
     R_approxtest(REAL(x), REAL(y), nx, m, f);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP Approx(SEXP x, SEXP y, SEXP v, SEXP method,

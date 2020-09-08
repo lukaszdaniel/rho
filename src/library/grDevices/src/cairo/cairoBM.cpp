@@ -598,7 +598,7 @@ SEXP in_Cairo(SEXP args)
     } END_SUSPEND_INTERRUPTS;
 
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 extern "C"

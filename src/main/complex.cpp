@@ -74,7 +74,7 @@
 
 
 /* interval at which to check interrupts, a guess */
-#define NINTERRUPT 10000000
+constexpr R_xlen_t NINTERRUPT = 10000000;
 
 
 HIDDEN SEXP complex_unary(ARITHOP_TYPE code, SEXP s1, SEXP call)
@@ -202,7 +202,7 @@ HIDDEN SEXP complex_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2)
     n1 = XLENGTH(s1);
     n2 = XLENGTH(s2);
      /* S4-compatibility change: if n1 or n2 is 0, result is of length 0 */
-    if (n1 == 0 || n2 == 0) return(Rf_allocVector(CPLXSXP, 0));
+    if (n1 == 0 || n2 == 0) return (Rf_allocVector(CPLXSXP, 0));
 
     n = (n1 > n2) ? n1 : n2;
     ans = R_allocOrReuseVector(s1, s2, CPLXSXP, n);
@@ -351,7 +351,7 @@ HIDDEN SEXP do_cmathfuns(SEXP call, SEXP op, SEXP args, SEXP env)
 	    break;
 	case 4:	/* Arg */
 	    for(i = 0 ; i < n ; i++)
-		if(ISNAN(px[i]))
+		if(std::isnan(px[i]))
 		    py[i] = px[i];
 		else if (px[i] >= 0)
 		    py[i] = 0;
@@ -386,10 +386,10 @@ HIDDEN void z_prec_r(Rcomplex *r, const Rcomplex *x, double digits)
 
     r->r = x->r; r->i = x->i;
     m1 = std::abs(x->r); m2 = std::abs(x->i);
-    if(R_FINITE(m1)) m = m1;
-    if(R_FINITE(m2) && m2 > m) m = m2;
+    if(std::isfinite(m1)) m = m1;
+    if(std::isfinite(m2) && m2 > m) m = m2;
     if (m == 0.0) return;
-    if (!R_FINITE(digits)) {
+    if (!std::isfinite(digits)) {
 	if(digits > 0) return; else {r->r = r->i = 0.0; return ;}
     }
     dig = (int)floor(digits+0.5);
@@ -472,7 +472,7 @@ static std::complex<double> ctan(std::complex<double> z)
     y2 = 2.0 * cimag(z);
     den = cos(x2) + cosh(y2);
     /* any threshold between -log(DBL_EPSILON) and log(DBL_XMAX) will do*/
-    if (ISNAN(y2) || std::abs(y2) < 50.0) ri = sinh(y2)/den;
+    if (std::isnan(y2) || std::abs(y2) < 50.0) ri = sinh(y2)/den;
     else ri = (y2 < 0 ? -1.0 : 1.0);
     return sin(x2)/den + ri * I;
 }
@@ -537,7 +537,7 @@ static std::complex<double> z_tan(std::complex<double> z)
 {
     double y = std::imag(z);
     std::complex<double> r = std::tan(z);
-    if(R_FINITE(y) && std::abs(y) > 25.0) {
+    if(std::isfinite(y) && std::abs(y) > 25.0) {
 	/* at this point the real part is nearly zero, and the
 	   imaginary part is one: but some OSes get the imag as NaN */
 #ifdef __cplusplus
@@ -615,11 +615,11 @@ static Rboolean cmath1(std::complex<double> (*f)(std::complex<double>),
     Rboolean naflag = FALSE;
     for (i = 0 ; i < n ; i++) {
 	if (ISNA(x[i].r) || ISNA(x[i].i)) {
-	    y[i].r = NA_REAL; y[i].i = NA_REAL;
+	    y[i].r = R_NaReal; y[i].i = R_NaReal;
 	} else {
 	    SET_C99_COMPLEX(y, i, f(toC99(x + i)));
-	    if ( (ISNAN(y[i].r) || ISNAN(y[i].i)) &&
-		!(ISNAN(x[i].r) || ISNAN(x[i].i)) ) naflag = TRUE;
+	    if ( (std::isnan(y[i].r) || std::isnan(y[i].i)) &&
+		!(std::isnan(x[i].r) || std::isnan(x[i].i)) ) naflag = TRUE;
 	}
     }
     return naflag;
@@ -697,11 +697,11 @@ static void z_atan2(Rcomplex *r, Rcomplex *csn, Rcomplex *ccs)
     std::complex<double> dr, dcsn = toC99(csn), dccs = toC99(ccs);
     if (dccs == std::complex<double>(0,0)) {
 	if(dcsn == std::complex<double>(0,0)) {
-	    r->r = NA_REAL; r->i = NA_REAL; /* Why not R_NaN? */
+	    r->r = R_NaReal; r->i = R_NaReal; /* Why not R_NaN? */
 	    return;
 	} else {
 	    double y = std::real(dcsn);
-	    if (ISNAN(y)) dr = y;
+	    if (std::isnan(y)) dr = y;
 	    else dr = ((y >= 0) ? M_PI_2 : -M_PI_2);
 	}
     } else {
@@ -755,11 +755,11 @@ HIDDEN SEXP complex_math2(SEXP call, SEXP op, SEXP args, SEXP env)
 	ai = a[ia]; bi = b[ib];
 	if(ISNA(ai.r) && ISNA(ai.i) &&
 	   ISNA(bi.r) && ISNA(bi.i)) {
-	    y[i].r = NA_REAL; y[i].i = NA_REAL;
+	    y[i].r = R_NaReal; y[i].i = R_NaReal;
 	} else {
 	    f(&y[i], &ai, &bi);
-	    if ( (ISNAN(y[i].r) || ISNAN(y[i].i)) &&
-		 !(ISNAN(ai.r) || ISNAN(ai.i) || ISNAN(bi.r) || ISNAN(bi.i)) )
+	    if ( (std::isnan(y[i].r) || std::isnan(y[i].i)) &&
+		 !(std::isnan(ai.r) || std::isnan(ai.i) || std::isnan(bi.r) || std::isnan(bi.i)) )
 		naflag = TRUE;
 	}
     });
@@ -782,7 +782,7 @@ HIDDEN SEXP do_complex(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     checkArity(op, args);
     na = Rf_asInteger(CAR(args));
-    if(na == NA_INTEGER || na < 0)
+    if(na == R_NaInt || na < 0)
 	Rf_error(_("invalid length"));
     PROTECT(re = Rf_coerceVector(CADR(args), REALSXP));
     PROTECT(im = Rf_coerceVector(CADDR(args), REALSXP));
@@ -859,7 +859,7 @@ HIDDEN SEXP do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
 	double *p_zi = REAL(zi);
 
 	for(i = 0 ; i < n ; i++) {
-	    if(!R_FINITE(pz[i].r) || !R_FINITE(pz[i].i))
+	    if(!std::isfinite(pz[i].r) || !std::isfinite(pz[i].i))
 		Rf_error(_("invalid polynomial coefficient"));
 	    p_zr[degree-i] = pz[i].r;
 	    p_zi[degree-i] = pz[i].i;
@@ -929,7 +929,7 @@ HIDDEN SEXP do_polyroot(SEXP call, SEXP op, SEXP args, SEXP rho)
 
 #include <Rmath.h> /* for R_pow_di */
 
-static void calct(Rboolean *);
+static void calct(Rboolean&);
 static Rboolean fxshft(int, double *, double *);
 static Rboolean vrshft(int, double *, double *);
 static void nexth(Rboolean);
@@ -1164,7 +1164,7 @@ static Rboolean fxshft(int l2, double *zr, double *zi)
 
     /* calculate first t = -p(s)/h(s). */
 
-    calct(&bool_);
+    calct(bool_);
 
     /* main loop for one second stage step. */
 
@@ -1176,7 +1176,7 @@ static Rboolean fxshft(int l2, double *zr, double *zi)
 	/* compute next h polynomial and new t. */
 
 	nexth(bool_);
-	calct(&bool_);
+	calct(bool_);
 	*zr = sr + tr;
 	*zi = si + ti;
 
@@ -1219,7 +1219,7 @@ static Rboolean fxshft(int l2, double *zr, double *zi)
 		sr = svsr;
 		si = svsi;
 		polyev(nn, sr, si, pr, pi, qpr, qpi, &pvr, &pvi);
-		calct(&bool_);
+		calct(bool_);
 	    }
 	}
     }
@@ -1288,7 +1288,7 @@ static Rboolean vrshft(int l3, double *zr, double *zi)
 		sr = r2;
 		polyev(nn, sr, si, pr, pi, qpr, qpi, &pvr, &pvi);
 		for (j = 1; j <= 5; ++j) {
-		    calct(&bool_);
+		    calct(bool_);
 		    nexth(bool_);
 		}
 		omp = infin;
@@ -1308,9 +1308,9 @@ static Rboolean vrshft(int l3, double *zr, double *zi)
 	/* calculate next iterate. */
 
     L10:
-	calct(&bool_);
+	calct(bool_);
 	nexth(bool_);
-	calct(&bool_);
+	calct(bool_);
 	if (!bool_) {
 	    relstp = hypot(tr, ti) / hypot(sr, si);
 	    sr += tr;
@@ -1325,7 +1325,7 @@ L_conv:
     return TRUE;
 }
 
-static void calct(Rboolean *bool_)
+static void calct(Rboolean& bool_)
 {
     /* computes	 t = -p(s)/h(s).
      * bool_   - logical, set true if h(s) is essentially zero.	*/
@@ -1337,8 +1337,8 @@ static void calct(Rboolean *bool_)
     polyev(n, sr, si, hr, hi,
 	   qhr, qhi, &hvr, &hvi);
 
-    *bool_ = Rboolean(hypot(hvr, hvi) <= are * 10. * hypot(hr[n-1], hi[n-1]));
-    if (!*bool_) {
+    bool_ = Rboolean(hypot(hvr, hvi) <= are * 10. * hypot(hr[n-1], hi[n-1]));
+    if (!bool_) {
 	cdivid(-pvr, -pvi, hvr, hvi, &tr, &ti);
     }
     else {
@@ -1376,11 +1376,10 @@ static void nexth(Rboolean bool_)
 	hi[0] = 0.;
     }
 }
-
+
 /*--------------------- Independent Complex Polynomial Utilities ----------*/
 
-static
-void polyev(int n,
+static void polyev(int n,
 	    double s_r, double s_i,
 	    double *p_r, double *p_i,
 	    double *q_r, double *q_i,
@@ -1403,8 +1402,7 @@ void polyev(int n,
     }
 }
 
-static
-double errev(int n, double *qr, double *qi,
+static double errev(int n, double *qr, double *qi,
 	     double ms, double mp, double a_re, double m_re)
 {
     /*	bounds the error in evaluating the polynomial by the horner
@@ -1426,8 +1424,7 @@ double errev(int n, double *qr, double *qi,
 }
 
 
-static
-double cpoly_cauchy(int n, double *pot, double *q)
+static double cpoly_cauchy(int n, double *pot, double *q)
 {
     /* Computes a lower bound on the moduli of the zeros of a polynomial
      * pot[1:nn] is the modulus of the coefficients.
@@ -1451,7 +1448,7 @@ double cpoly_cauchy(int n, double *pot, double *q)
 
     /* chop the interval (0,x) unitl f le 0. */
 
-    for(;;) {
+    while (true) {
 	xm = x * 0.1;
 	f = pot[0];
 	for (i = 1; i < n; i++)
@@ -1480,8 +1477,7 @@ double cpoly_cauchy(int n, double *pot, double *q)
     return x;
 }
 
-static
-double cpoly_scale(int n, double *pot,
+static double cpoly_scale(int n, double *pot,
 		   double eps, double BIG, double small, double base)
 {
     /* Returns a scale factor to multiply the coefficients of the polynomial.
@@ -1527,8 +1523,7 @@ double cpoly_scale(int n, double *pot,
 }
 
 
-static
-void cdivid(double ar, double ai, double br, double bi,
+static void cdivid(double ar, double ai, double br, double bi,
 	    double *cr, double *ci)
 {
 /* complex division c = a/b, i.e., (cr +i*ci) = (ar +i*ai) / (br +i*bi),

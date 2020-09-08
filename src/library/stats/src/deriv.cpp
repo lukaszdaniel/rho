@@ -331,7 +331,7 @@ static SEXP D(SEXP expr, SEXP var)
 #define PP_S(F,a1,a2) PP(simplify(F,a1,a2))
 #define PP_S2(F,a1)   PP(simplify(F,a1, R_MissingArg))
 
-    SEXP ans = R_NilValue, expr1, expr2;
+    SEXP ans = nullptr, expr1, expr2;
     switch(TYPEOF(expr)) {
     case LGLSXP:
     case INTSXP:
@@ -724,7 +724,7 @@ static SEXP AddParens(SEXP expr)
     SEXP e;
     if (TYPEOF(expr) == LANGSXP) {
 	e = CDR(expr);
-	while(e != R_NilValue) {
+	while(e != nullptr) {
 	    SETCAR(e, AddParens(CAR(e)));
 	    e = CDR(e);
 	}
@@ -830,13 +830,13 @@ static int Accumulate(SEXP expr, SEXP exprlist)
     int k;
     e = exprlist;
     k = 0;
-    while(CDR(e) != R_NilValue) {
+    while(CDR(e) != nullptr) {
 	e = CDR(e);
 	k = k + 1;
 	if (equal(expr, CAR(e)))
 	    return k;
     }
-    SETCDR(e, CONS(expr, R_NilValue));
+    SETCDR(e, CONS(expr, nullptr));
     return k + 1;
 }
 
@@ -846,11 +846,11 @@ static int Accumulate2(SEXP expr, SEXP exprlist)
     int k;
     e = exprlist;
     k = 0;
-    while(CDR(e) != R_NilValue) {
+    while(CDR(e) != nullptr) {
 	e = CDR(e);
 	k = k + 1;
     }
-    SETCDR(e, CONS(expr, R_NilValue));
+    SETCDR(e, CONS(expr, nullptr));
     return k + 1;
 }
 
@@ -860,7 +860,7 @@ static SEXP MakeVariable(int k, SEXP tag)
     char buf[64];
     snprintf(buf, 64, "%s%d", Rf_translateChar(STRING_ELT(tag, 0)), k);
     vmaxset(vmax);
-    return Rf_install(buf);
+    return rho::Symbol::obtain(buf);
 }
 
 static int FindSubexprs(SEXP expr, SEXP exprlist, SEXP tag)
@@ -886,7 +886,7 @@ static int FindSubexprs(SEXP expr, SEXP exprlist, SEXP tag)
 	}
 	else {
 	    e = CDR(expr);
-	    while(e != R_NilValue) {
+	    while(e != nullptr) {
 		if ((k = FindSubexprs(CAR(e), exprlist, tag)) != 0)
 		    SETCAR(e, MakeVariable(k, tag));
 		e = CDR(e);
@@ -935,7 +935,7 @@ static SEXP CreateGrad(SEXP names)
     SEXP p, q, data, dim, dimnames;
     int i, n;
     n = Rf_length(names);
-    PROTECT(dimnames = Rf_lang3(R_NilValue, R_NilValue, R_NilValue));
+    PROTECT(dimnames = Rf_lang3(nullptr, nullptr, nullptr));
     SETCAR(dimnames, Rf_install("list"));
     p = Rf_install("c");
     PROTECT(q = Rf_allocList(n));
@@ -945,7 +945,7 @@ static SEXP CreateGrad(SEXP names)
 	SETCAR(q, Rf_ScalarString(STRING_ELT(names, i)));
 	q = CDR(q);
     }
-    PROTECT(dim = Rf_lang3(R_NilValue, R_NilValue, R_NilValue));
+    PROTECT(dim = Rf_lang3(nullptr, nullptr, nullptr));
     SETCAR(dim, Rf_install("c"));
     SETCADR(dim, Rf_lang2(Rf_install("length"), Rf_install(".value")));
     SETCADDR(dim, Rf_ScalarInteger(Rf_length(names))); /* was real? */
@@ -961,7 +961,7 @@ static SEXP CreateHess(SEXP names)
     SEXP p, q, data, dim, dimnames;
     int i, n;
     n = Rf_length(names);
-    PROTECT(dimnames = Rf_lang4(R_NilValue, R_NilValue, R_NilValue, R_NilValue));
+    PROTECT(dimnames = Rf_lang4(nullptr, nullptr, nullptr, nullptr));
     SETCAR(dimnames, Rf_install("list"));
     p = Rf_install("c");
     PROTECT(q = Rf_allocList(n));
@@ -972,7 +972,7 @@ static SEXP CreateHess(SEXP names)
 	q = CDR(q);
     }
     SETCADDDR(dimnames, Rf_duplicate(CADDR(dimnames)));
-    PROTECT(dim = Rf_lang4(R_NilValue, R_NilValue, R_NilValue,R_NilValue));
+    PROTECT(dim = Rf_lang4(nullptr, nullptr, nullptr,nullptr));
     SETCAR(dim, Rf_install("c"));
     SETCADR(dim, Rf_lang2(Rf_install("length"), Rf_install(".value")));
     SETCADDR(dim, Rf_ScalarInteger(Rf_length(names)));
@@ -987,7 +987,7 @@ static SEXP CreateHess(SEXP names)
 static SEXP DerivAssign(SEXP name, SEXP expr)
 {
     SEXP ans, newname;
-    PROTECT(ans = Rf_lang3(Rf_install("<-"), R_NilValue, expr));
+    PROTECT(ans = Rf_lang3(Rf_install("<-"), nullptr, expr));
     PROTECT(newname = Rf_ScalarString(name));
     SETCADR(ans, Rf_lang4(R_BracketSymbol, Rf_install(".grad"), R_MissingArg, newname));
     UNPROTECT(2);
@@ -997,7 +997,7 @@ static SEXP DerivAssign(SEXP name, SEXP expr)
 static SEXP HessAssign1(SEXP name, SEXP expr)
 {
     SEXP ans, newname;
-    PROTECT(ans = Rf_lang3(Rf_install("<-"), R_NilValue, expr));
+    PROTECT(ans = Rf_lang3(Rf_install("<-"), nullptr, expr));
     PROTECT(newname = Rf_ScalarString(name));
     SETCADR(ans, Rf_lang5(R_BracketSymbol, Rf_install(".hessian"), R_MissingArg,
 		       newname, newname));
@@ -1045,7 +1045,7 @@ static SEXP AddHess(void)
 
 static SEXP Prune(SEXP lst)
 {
-    if (lst == R_NilValue)
+    if (lst == nullptr)
 	return lst;
     SETCDR(lst, Prune(CDR(lst)));
     if (CAR(lst) == R_MissingArg)
@@ -1063,7 +1063,7 @@ SEXP deriv(SEXP args)
 
     args = CDR(args);
     InitDerivSymbols();
-    PROTECT(exprlist = LCONS(R_BraceSymbol, R_NilValue));
+    PROTECT(exprlist = LCONS(R_BraceSymbol, nullptr));
     /* expr: */
     if (Rf_isExpression(CAR(args)))
 	PROTECT(expr = VECTOR_ELT(CAR(args), 0));
@@ -1122,8 +1122,8 @@ SEXP deriv(SEXP args)
 	Accumulate2(expr, exprlist);
 	UNPROTECT(1);
     }
-    Accumulate2(R_NilValue, exprlist);
-    if (hessian) { Accumulate2(R_NilValue, exprlist); }
+    Accumulate2(nullptr, exprlist);
+    if (hessian) { Accumulate2(nullptr, exprlist); }
     for (i = 0, k = 0; i < nderiv ; i++) {
 	if (d_index[i]) {
 	    Accumulate2(MakeVariable(d_index[i], tag), exprlist);
@@ -1164,9 +1164,9 @@ SEXP deriv(SEXP args)
 	    }
 	}
     }
-    Accumulate2(R_NilValue, exprlist);
-    Accumulate2(R_NilValue, exprlist);
-    if (hessian) { Accumulate2(R_NilValue, exprlist); }
+    Accumulate2(nullptr, exprlist);
+    Accumulate2(nullptr, exprlist);
+    if (hessian) { Accumulate2(nullptr, exprlist); }
 
     i = 0;
     ans = CDR(exprlist);

@@ -142,7 +142,7 @@ typedef long long int _lli_t;
 # include <Startup.h>
 #endif
 
-constexpr int NCONNECTIONS = 128; /* snow needs one per slave node */
+constexpr int NCONNECTIONS = 128; /* snow needs one per no-echo node */
 constexpr int NSINKS = 21;
 
 static Rconnection Connections[NCONNECTIONS];
@@ -189,7 +189,7 @@ Rconnection getConnection(int n)
 {
     Rconnection con = nullptr;
 
-    if(n < 0 || n >= NCONNECTIONS || n == NA_INTEGER ||
+    if(n < 0 || n >= NCONNECTIONS || n == R_NaInt ||
        !(con = Connections[n]))
 	Rf_error(_("invalid connection"));
     return con;
@@ -236,7 +236,7 @@ HIDDEN Rconnection getConnection_no_err(int n)
 {
     Rconnection con = nullptr;
 
-    if (n < 0 || n >= NCONNECTIONS || n == NA_INTEGER
+    if (n < 0 || n >= NCONNECTIONS || n == R_NaInt
 	|| !(con = Connections[n]))
 	return nullptr;
     return con;
@@ -337,7 +337,7 @@ static double buff_seek(Rconnection con, double where, int origin, int rw)
     if (origin == 2) { /* current */
 	if (where < unread_len) {
 	    con->buff_pos += where;
-	    return con->seek(con, NA_REAL, origin, rw);
+	    return con->seek(con, R_NaReal, origin, rw);
 	} else {
 	    where -= unread_len;
 	}
@@ -652,7 +652,7 @@ void init_con(Rconnection newconn, const char *description, int enc,
     if(!current_id) current_id = reinterpret_cast<void *>(1);
     newconn->id = current_id;
     newconn->ex_ptr = nullptr;
-    newconn->status = NA_INTEGER;
+    newconn->status = R_NaInt;
 }
 
 /* ------------------- file connections --------------------- */
@@ -717,8 +717,8 @@ static Rboolean file_open(Rconnection con)
 	    && (!strcmp(con->encname, "UTF-16LE") || !strcmp(con->encname, "UCS-2LE"))) {
 	    strcat(mode, ",ccs=UTF-16LE");
 	    if (con->canread) {
-	    	this->use_fgetwc = TRUE;
-	    	this->have_wcbuffered = FALSE;
+	    	thisconn->use_fgetwc = TRUE;
+	    	thisconn->have_wcbuffered = FALSE;
 	    }
 	}
 	if(con->enc == CE_UTF8) {
@@ -886,7 +886,7 @@ static double file_seek(Rconnection con, double where, int origin, int rw)
 	    break;
     default: whence = SEEK_SET;
     }
-    f_seek(fp, OFF_T( where), whence);
+    f_seek(fp, OFF_T(where), whence);
     if(thisconn->last_was_write) thisconn->wpos = f_tell(thisconn->fp);
     else thisconn->rpos = f_tell(thisconn->fp);
     return double(pos);
@@ -923,7 +923,7 @@ static void file_truncate(Rconnection con)
 
 static int file_fflush(Rconnection con)
 {
-    FILE *fp = (static_cast<Rfileconn>((con->connprivate)))->fp;
+    FILE *fp = (static_cast<Rfileconn>(con->connprivate))->fp;
 
     return fflush(fp);
 }
@@ -986,7 +986,7 @@ static Rconnection newfile(const char *description, int enc, const char *mode,
     newconn->fflush = &file_fflush;
     newconn->read = &file_read;
     newconn->write = &file_write;
-    newconn->canseek = Rboolean((raw == 0));
+    newconn->canseek = Rboolean(raw == 0);
     newconn->connprivate = malloc(sizeof(struct fileconn));
     if(!newconn->connprivate) {
 	free(newconn->description); free(newconn->connclass); free(newconn);
@@ -1212,7 +1212,7 @@ static Rboolean	fifo_open(Rconnection con)
 	win_namedpipe_secattr.lpSecurityDescriptor = nullptr;
 	win_namedpipe_secattr.bInheritHandle = FALSE;
 
-	this->hdl_namedpipe =
+	thisconn->hdl_namedpipe =
 	    CreateNamedPipeA(hch_pipename,
 			     (con->canread ? PIPE_ACCESS_DUPLEX :
 			      PIPE_ACCESS_OUTBOUND) | FILE_FLAG_OVERLAPPED,
@@ -1298,8 +1298,7 @@ static size_t fifo_read(void* ptr, size_t size, size_t nitems, Rconnection con)
     return (read_byte / sizeof(wchar_t)) / size;
 }
 
-static size_t
-fifo_write(const void *ptr, size_t size, size_t nitems, Rconnection con)
+static size_t fifo_write(const void *ptr, size_t size, size_t nitems, Rconnection con)
 {
     Rfifoconn thisconn = con->connprivate;
     size_t written_bytes = 0;
@@ -1409,7 +1408,7 @@ HIDDEN SEXP do_fifo(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     if(!Rf_isString(sopen) || Rf_length(sopen) != 1)
 	Rf_error(_("invalid '%s' argument"), "open");
     block = Rf_asLogical(blocking_);
-    if(block == NA_LOGICAL)
+    if(block == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "block");
     enc = encoding_;
     if(!Rf_isString(enc) || Rf_length(enc) != 1 ||
@@ -1511,8 +1510,7 @@ static void pipe_close(Rconnection con)
     con->isopen = FALSE;
 }
 
-static Rconnection
-newpipe(const char *description, int ienc, const char *mode)
+static Rconnection newpipe(const char *description, int ienc, const char *mode)
 {
     Rconnection newconn;
     newconn = static_cast<Rconnection>(malloc(sizeof(struct Rconn)));
@@ -1692,7 +1690,7 @@ static int gzfile_fgetc_internal(Rconnection con)
 }
 
 /* This can only seek forwards when writing (when it writes nul bytes).
-   When reading, it either seeks forwards of rewinds and reads again */
+   When reading, it either seeks forwards or rewinds and reads again */
 static double gzfile_seek(Rconnection con, double where, int origin, int rw)
 {
     gzFile  fp = (static_cast<Rgzfileconn>((con->connprivate)))->fp;
@@ -2145,8 +2143,7 @@ static size_t xzfile_write(const void *ptr, size_t size, size_t nitems,
     }
 }
 
-static Rconnection
-newxzfile(const char *description, const char *mode, int type, int compress)
+static Rconnection newxzfile(const char *description, const char *mode, int type, int compress)
 {
     Rconnection newconn;
     newconn = static_cast<Rconnection>(malloc(sizeof(struct Rconn)));
@@ -2213,12 +2210,12 @@ HIDDEN SEXP do_gzfile(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	Rf_error(_("invalid '%s' argument"), "encoding");
     if(type < 2) {
 	compress = Rf_asInteger(compression_);
-	if(compress == NA_LOGICAL || compress < 0 || compress > 9)
+	if(compress == R_NaLog || compress < 0 || compress > 9)
 	    Rf_error(_("invalid '%s' argument"), "compress");
     }
     if(type == 2) {
 	compress = Rf_asInteger(compression_);
-	if(compress == NA_LOGICAL || abs(compress) > 9)
+	if(compress == R_NaLog || abs(compress) > 9)
 	    Rf_error(_("invalid '%s' argument"), "compress");
     }
     open = R_CHAR(STRING_ELT(sopen, 0)); /* ASCII */
@@ -2574,8 +2571,7 @@ static int ConsoleGetchar(void)
 	    return R_EOF;
 	}
 	ConsoleBufp = ConsoleBuf;
-	ConsoleBufCnt
-	    = int(strlen(reinterpret_cast<char*>(ConsoleBuf))); // must be short
+	ConsoleBufCnt = int(strlen(reinterpret_cast<char*>(ConsoleBuf))); // must be short
 	ConsoleBufCnt--;
     }
     return *ConsoleBufp++;
@@ -2693,7 +2689,7 @@ HIDDEN SEXP do_isatty(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     int con;
     /* FIXME: is this correct for consoles? */
     con = Rf_asInteger(con_);
-    return Rf_ScalarLogical(con == NA_LOGICAL ? FALSE : isatty(con) );
+    return Rf_ScalarLogical(con == R_NaLog ? FALSE : isatty(con) );
 }
 
 /* ------------------- raw connections --------------------- */
@@ -3189,7 +3185,7 @@ static void outtext_init(Rconnection con, SEXP stext, const char *mode, int idx)
 	val = Rf_allocVector(STRSXP, 0);
 	R_PreserveObject(val);
     } else {
-	thisconn->namesymbol = Rf_install(con->description);
+	thisconn->namesymbol = rho::Symbol::obtain(con->description);
 	if(streql(mode, "w")) {
 	    /* create variable pointed to by con->description */
 	    PROTECT(val = Rf_allocVector(STRSXP, 0));
@@ -3285,7 +3281,7 @@ HIDDEN SEXP do_textconnection(/*const*/ Expression* call, const BuiltInFunction*
     if (!venv)
 	Rf_error(_("invalid '%s' argument"), "environment");
     type = Rf_asInteger(type_);
-    if (type == NA_INTEGER)
+    if (type == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "encoding");
     ncon = NextConnection();
     if(!strlen(open) || streqln(open, "r", 1)) {
@@ -3355,13 +3351,13 @@ HIDDEN SEXP do_sockconn(/*const*/ Expression* call, const BuiltInFunction* op, R
 	Rf_error(_("invalid '%s' argument"), "host");
     host = Rf_translateChar(STRING_ELT(scmd, 0));
     port = Rf_asInteger(port_);
-    if(port == NA_INTEGER || port < 0)
+    if(port == R_NaInt || port < 0)
 	Rf_error(_("invalid '%s' argument"), "port");
     server = Rf_asLogical(server_);
-    if(server == NA_LOGICAL)
+    if(server == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "server");
     blocking = Rf_asLogical(blocking_);
-    if(blocking == NA_LOGICAL)
+    if(blocking == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "blocking");
     sopen = open_;
     if(!Rf_isString(sopen) || Rf_length(sopen) != 1)
@@ -3472,7 +3468,7 @@ HIDDEN SEXP do_open(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     if(!Rf_isString(sopen) || Rf_length(sopen) != 1)
 	Rf_error(_("invalid '%s' argument"), "open");
     block = Rf_asLogical(blocking_);
-    if(block == NA_LOGICAL)
+    if(block == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "blocking");
     open = R_CHAR(STRING_ELT(sopen, 0)); /* ASCII */
     if(strlen(open) > 0) strcpy(con->mode, open);
@@ -3527,7 +3523,7 @@ static void checkClose(Rconnection con)
     if (con->isopen) {
         errno = 0;
     	con->close(con);
-    	if (con->status != NA_INTEGER && con->status < 0) {
+    	if (con->status != R_NaInt && con->status < 0) {
     	    int serrno = errno;
             if (serrno)
 		Rf_warning(_("Problem closing connection:  %s"), strerror(serrno));
@@ -3557,7 +3553,7 @@ static int con_close1(Rconnection con)
     con->description = nullptr;
     /* clear the pushBack */
     if(con->nPushBack > 0) {
-	for(auto j = 0; j < con->nPushBack; j++)
+	for(size_t j = 0; j < con->nPushBack; j++)
 	    free(con->PushBack[j]);
 	free(con->PushBack);
     }
@@ -3609,7 +3605,7 @@ HIDDEN SEXP do_close(/*const*/ Expression* call, const BuiltInFunction* op, RObj
     int status = con_close1(con);
     free(Connections[i]);
     Connections[i] = nullptr;
-    return (status != NA_INTEGER) ? Rf_ScalarInteger(status) : nullptr;
+    return (status != R_NaInt) ? Rf_ScalarInteger(status) : nullptr;
 }
 
 static double Rconn_seek(Rconnection con, double where, int origin, int rw) {
@@ -3632,9 +3628,9 @@ HIDDEN SEXP do_seek(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     where = Rf_asReal(where_);
     origin = Rf_asInteger(origin_);
     rw = Rf_asInteger(rw_);
-    if(!ISNAN(where) && con->nPushBack > 0) {
+    if(!std::isnan(where) && con->nPushBack > 0) {
 	/* clear pushback */
-	int j;
+	size_t j;
 	for(j = 0; j < con->nPushBack; j++) free(con->PushBack[j]);
 	free(con->PushBack);
 	con->nPushBack = 0;
@@ -3696,7 +3692,7 @@ int Rconn_fgetc(Rconnection con)
     }
     curLine = con->PushBack[con->nPushBack-1];
     c = static_cast<unsigned char>(curLine[con->posPushBack++]);
-    if(con->posPushBack >= int(strlen(curLine))) {
+    if(con->posPushBack >= strlen(curLine)) {
 	/* last character on a line, so pop the line */
 	free(curLine);
 	con->nPushBack--;
@@ -3783,16 +3779,16 @@ HIDDEN SEXP do_readLines(/*const*/ Expression* call, const BuiltInFunction* op, 
     if(n == -999)
 	Rf_error(_("invalid '%s' argument"), "n");
     ok = Rf_asLogical(ok_);
-    if(ok == NA_LOGICAL)
+    if(ok == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "ok");
     warn = Rf_asLogical(warn_);
-    if(warn == NA_LOGICAL)
+    if(warn == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "warn");
     if(!Rf_isString(encoding_) || LENGTH(encoding_) != 1)
 	Rf_error(_("invalid '%s' value"), "encoding");
     encoding = R_CHAR(STRING_ELT(encoding_, 0)); /* ASCII */
     skipNul = Rf_asLogical(skipNul_);
-    if(skipNul == NA_LOGICAL)
+    if(skipNul == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "skipNul");
 
     wasopen = con->isopen;
@@ -3914,7 +3910,7 @@ HIDDEN SEXP do_writelines(/*const*/ Expression* call, const BuiltInFunction* op,
     sep = sep_;
     if(!Rf_isString(sep)) Rf_error(_("invalid '%s' argument"), "sep");
     useBytes = Rf_asLogical(useBytes_);
-    if(useBytes == NA_LOGICAL)
+    if(useBytes == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "useBytes");
 
     wasopen = con->isopen;
@@ -4074,10 +4070,10 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
     if(n < 0) Rf_error(_("invalid '%s' argument"), "n");
     size = Rf_asInteger(size_);
     signd = Rf_asLogical(signed_);
-    if(signd == NA_LOGICAL)
+    if(signd == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "signed");
     swap = Rf_asLogical(endian_);
-    if(swap == NA_LOGICAL)
+    if(swap == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "swap");
     if(!isRaw) {
 	wasopen = con->isopen;
@@ -4107,7 +4103,7 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
 		} else break;
 	    }
 	} else if(streql(what, "complex")) {
-	    if(size == NA_INTEGER) size = sizeof(Rcomplex);
+	    if(size == R_NaInt) size = sizeof(Rcomplex);
 	    if(size != sizeof(Rcomplex))
 		Rf_error(_("size changing is not supported for complex vectors"));
 	    PROTECT(ans = Rf_allocVector(CPLXSXP, n));
@@ -4137,7 +4133,7 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	} else {
 	    if (streql(what, "integer") || streql(what, "int")) {
 		sizedef = sizeof(int); mode = 1;
-		if(size == NA_INTEGER) size = sizedef;
+		if(size == R_NaInt) size = sizedef;
 		switch (size) {
 		case sizeof(signed char):
 		case sizeof(short):
@@ -4155,7 +4151,7 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
 		p = INTEGER(ans);
 	    } else if (streql(what, "logical")) {
 		sizedef = sizeof(int); mode = 1;
-		if(size == NA_INTEGER) size = sizedef;
+		if(size == R_NaInt) size = sizedef;
 		switch (size) {
 		case sizeof(signed char):
 		case sizeof(short):
@@ -4173,7 +4169,7 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
 		p = LOGICAL(ans);
 	    } else if (streql(what, "raw")) {
 		sizedef = 1; mode = 1;
-		if(size == NA_INTEGER) size = sizedef;
+		if(size == R_NaInt) size = sizedef;
 		switch (size) {
 		case 1:
 		    break;
@@ -4184,7 +4180,7 @@ HIDDEN SEXP do_readbin(/*const*/ Expression* call, const BuiltInFunction* op, RO
 		p = RAW(ans);
 	    } else if (streql(what, "numeric") || streql(what, "double")) {
 		sizedef = sizeof(double); mode = 2;
-		if(size == NA_INTEGER) size = sizedef;
+		if(size == R_NaInt) size = sizedef;
 		switch (size) {
 		case sizeof(double):
 		case sizeof(float):
@@ -4336,10 +4332,10 @@ HIDDEN SEXP do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, R
 
     size = Rf_asInteger(size_);
     swap = Rf_asLogical(endian_);
-    if(swap == NA_LOGICAL)
+    if(swap == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "swap");
     useBytes = Rf_asLogical(useBytes_);
-    if(useBytes == NA_LOGICAL)
+    if(useBytes == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "useBytes");
     len = LENGTH(object);
     if(len == 0) {
@@ -4407,7 +4403,7 @@ HIDDEN SEXP do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, R
 	    switch(TYPEOF(object)) {
 	    case LGLSXP:
 	    case INTSXP:
-		if(size == NA_INTEGER) size = sizeof(int);
+		if(size == R_NaInt) size = sizeof(int);
 		switch (size) {
 		case sizeof(signed char):
 		case sizeof(short):
@@ -4423,7 +4419,7 @@ HIDDEN SEXP do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, R
 		}
 		break;
 	    case REALSXP:
-		if(size == NA_INTEGER) size = sizeof(double);
+		if(size == R_NaInt) size = sizeof(double);
 		switch (size) {
 		case sizeof(double):
 		case sizeof(float):
@@ -4436,12 +4432,12 @@ HIDDEN SEXP do_writebin(/*const*/ Expression* call, const BuiltInFunction* op, R
 		}
 		break;
 	    case CPLXSXP:
-		if(size == NA_INTEGER) size = sizeof(Rcomplex);
+		if(size == R_NaInt) size = sizeof(Rcomplex);
 		if(size != sizeof(Rcomplex))
 		    Rf_error(_("size changing is not supported for complex vectors"));
 		break;
 	    case RAWSXP:
-		if(size == NA_INTEGER) size = 1;
+		if(size == R_NaInt) size = 1;
 		if(size != 1)
 		    Rf_error(_("size changing is not supported for raw vectors"));
 		break;
@@ -4680,7 +4676,7 @@ HIDDEN SEXP do_readchar(/*const*/ Expression* call, const BuiltInFunction* op, R
     n = XLENGTH(nchars);
     if(n == 0) return Rf_allocVector(STRSXP, 0);
     useBytes = Rf_asLogical(useBytes_);
-    if(useBytes == NA_LOGICAL)
+    if(useBytes == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "useBytes");
 
     if (!isRaw) {
@@ -4703,7 +4699,7 @@ HIDDEN SEXP do_readchar(/*const*/ Expression* call, const BuiltInFunction* op, R
 	PROTECT(ans = Rf_allocVector(STRSXP, n));
 	for(i = 0, m = 0; i < n; i++) {
 	    int len = INTEGER(nchars)[i];
-	    if(len == NA_INTEGER || len < 0)
+	    if(len == R_NaInt || len < 0)
 		Rf_error(_("invalid '%s' argument"), "nchar");
 	    onechar = isRaw ? rawFixedString(bytes, len, nbytes, &np, useBytes)
 		: readFixedString(con, len, useBytes);
@@ -4756,7 +4752,7 @@ HIDDEN SEXP do_writechar(/*const*/ Expression* call, const BuiltInFunction* op, 
     nchars = nchars_;
     sep = eos_;
     useBytes = Rf_asLogical(useBytes_);
-    if(useBytes == NA_LOGICAL)
+    if(useBytes == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "useBytes");
 
     if(Rf_isNull(sep)) {
@@ -4790,7 +4786,7 @@ HIDDEN SEXP do_writechar(/*const*/ Expression* call, const BuiltInFunction* op, 
 		tlen = strlen(Rf_translateChar(STRING_ELT(object, i)));
 	    if (static_cast<R_xlen_t>(tlen) > len) len = tlen;
 	    int tt = INTEGER(nchars)[i];
-	    if(tt == NA_INTEGER || tt < 0)
+	    if(tt == R_NaInt || tt < 0)
 		Rf_error(_("invalid '%s' argument"), "nchars");
 	    if (tt > len) len = tt;
 	}
@@ -4944,7 +4940,7 @@ HIDDEN SEXP do_pushback(/*const*/ Expression* call, const BuiltInFunction* op, R
 	Rf_error(_("invalid '%s' argument"), "data");
     con = getConnection(Rf_asInteger(connection_));
     newLine = Rf_asLogical(newLine_);
-    if(newLine == NA_LOGICAL)
+    if(newLine == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "newLine");
     type = Rf_asInteger(encoding_);
     if(!con->canread && !con->isopen)
@@ -4991,7 +4987,7 @@ HIDDEN SEXP do_clearpushback(/*const*/ Expression* call, const BuiltInFunction* 
     con = getConnection(Rf_asInteger(connection_));
 
     if(con->nPushBack > 0) {
-	for(auto j = 0; j < con->nPushBack; j++) free(con->PushBack[j]);
+	for(size_t j = 0; j < con->nPushBack; j++) free(con->PushBack[j]);
 	free(con->PushBack);
 	con->nPushBack = 0;
     }
@@ -5070,12 +5066,12 @@ HIDDEN SEXP do_sink(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 
     icon = Rf_asInteger(file_);
     closeOnExit = Rf_asLogical(append_);
-    if(closeOnExit == NA_LOGICAL)
+    if(closeOnExit == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "closeOnExit");
     errcon = Rf_asLogical(type_);
-    if(errcon == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "type");
+    if(errcon == R_NaLog) Rf_error(_("invalid '%s' argument"), "type");
     tee = Rf_asLogical(split_);
-    if(tee == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "split");
+    if(tee == R_NaLog) Rf_error(_("invalid '%s' argument"), "split");
 
     if(!errcon) {
 	/* allow space for cat() to use sink() */
@@ -5099,7 +5095,7 @@ HIDDEN SEXP do_sink(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 HIDDEN SEXP do_sinknumber(/*const*/ Expression* call, const BuiltInFunction* op, RObject* type_)
 {
     int errcon = Rf_asLogical(type_);
-    if(errcon == NA_LOGICAL)
+    if(errcon == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "type");
     return Rf_ScalarInteger(errcon ? R_SinkNumber : R_ErrorCon);
 }
@@ -5156,7 +5152,7 @@ do_getconnection(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
     Rconnection con;
 
     what = Rf_asInteger(what_);
-    if (what == NA_INTEGER)
+    if (what == R_NaInt)
 	Rf_error(_("there is no connection NA"));
     if (what < 0 || what >= NCONNECTIONS || !Connections[what])
 	Rf_error(_("there is no connection %d"), what);
@@ -5280,7 +5276,7 @@ HIDDEN SEXP do_url(/*const*/ Expression* call, const BuiltInFunction* op, int nu
 	Rf_error(_("invalid '%s' argument"), "open");
     open = R_CHAR(STRING_ELT(sopen, 0)); /* ASCII */
     // --------- blocking
-    if(block == NA_LOGICAL)
+    if(block == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "block");
     // --------- encoding
     if(!Rf_isString(enc) || Rf_length(enc) != 1 ||
@@ -5305,7 +5301,7 @@ HIDDEN SEXP do_url(/*const*/ Expression* call, const BuiltInFunction* op, int nu
 #endif
 
     if(op->variant() == 1) { // file() -- has extra  'raw'  argument
-	if(raw == NA_LOGICAL)
+	if(raw == R_NaLog)
 	    Rf_error(_("invalid '%s' argument"), "raw");
     }
 
@@ -5748,13 +5744,13 @@ HIDDEN SEXP do_gzcon(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 	Rf_error(_("'con' is not a connection"));
     incon = getConnection(icon = Rf_asInteger(con_));
     level = Rf_asInteger(level_);
-    if(level == NA_INTEGER || level < 0 || level > 9)
+    if(level == R_NaInt || level < 0 || level > 9)
 	Rf_error(_("'level' must be one of 0 ... 9"));
     allow = Rf_asLogical(allowNonCompressed_);
-    if(allow == NA_INTEGER)
+    if(allow == R_NaInt)
 	Rf_error(_("'allowNonCompression' must be TRUE or FALSE"));
     text = Rboolean(Rf_asLogical(text_));
-    if(text == NA_INTEGER)
+    if(text == R_NaInt)
         Rf_error(_("'text' must be TRUE or FALSE"));
 
     if(incon->isGzcon) {
@@ -5842,7 +5838,7 @@ static unsigned int uiSwap (unsigned int x)
   return((x << 24) | ((x & 0xff00) << 8) | ((x & 0xff0000) >> 8) | (x >> 24));
 }
 #else
-static inline unsigned int uiSwap (unsigned int x)
+inline static unsigned int uiSwap (unsigned int x)
 {
     return x;
 }

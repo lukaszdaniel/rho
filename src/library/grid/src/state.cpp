@@ -96,7 +96,7 @@ void initOtherState(pGEDevDesc dd)
     prevloc = VECTOR_ELT(state, GSS_PREVLOC);
     REAL(prevloc)[0] = NA_REAL;
     REAL(prevloc)[1] = NA_REAL;    
-    SET_VECTOR_ELT(state, GSS_CURRGROB, R_NilValue);
+    SET_VECTOR_ELT(state, GSS_CURRGROB, nullptr);
     recording = VECTOR_ELT(state, GSS_ENGINERECORDING);
     LOGICAL(recording)[0] = FALSE;
     SET_VECTOR_ELT(state, GSS_ENGINERECORDING, recording);
@@ -125,14 +125,14 @@ void fillGridSystemState(SEXP state, pGEDevDesc dd)
     SET_VECTOR_ELT(state, GSS_PREVLOC, prevloc);
     SET_VECTOR_ELT(state, GSS_DLON, Rf_ScalarLogical(TRUE));
     SET_VECTOR_ELT(state, GSS_ENGINEDLON, Rf_ScalarLogical(TRUE));
-    SET_VECTOR_ELT(state, GSS_CURRGROB, R_NilValue);
+    SET_VECTOR_ELT(state, GSS_CURRGROB, nullptr);
     SET_VECTOR_ELT(state, GSS_ENGINERECORDING, Rf_ScalarLogical(FALSE));
     initGPar(dd);
-    SET_VECTOR_ELT(state, GSS_GPSAVED, R_NilValue);
+    SET_VECTOR_ELT(state, GSS_GPSAVED, nullptr);
     /* Do NOT initialise top-level viewport or grid display list for
      * this device until there is some grid output 
      */
-    SET_VECTOR_ELT(state, GSS_GLOBALINDEX, R_NilValue);
+    SET_VECTOR_ELT(state, GSS_GLOBALINDEX, nullptr);
     /* Note that no grid output has occurred on the device yet.
      */
     SET_VECTOR_ELT(state, GSS_GRIDDEVICE, Rf_ScalarLogical(FALSE));
@@ -159,7 +159,7 @@ static void deglobaliseState(SEXP state)
 {
     int index = INTEGER(VECTOR_ELT(state, GSS_GLOBALINDEX))[0];
     SET_VECTOR_ELT(Rf_findVar(Rf_install(".GRID.STATE"), R_gridEvalEnv), 
-		   index, R_NilValue);
+		   index, nullptr);
 }
 
 static int findStateSlot()
@@ -168,7 +168,7 @@ static int findStateSlot()
     int result = -1;
     SEXP globalstate = Rf_findVar(Rf_install(".GRID.STATE"), R_gridEvalEnv);
     for (i = 0; i < Rf_length(globalstate); i++)
-	if (VECTOR_ELT(globalstate, i) == R_NilValue) {
+	if (VECTOR_ELT(globalstate, i) == nullptr) {
 	    result = i;
 	    break;
 	}
@@ -192,7 +192,7 @@ static void globaliseState(SEXP state)
 }
 
 SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
     SEXP valid, scale;
     SEXP gridState;
     GESystemDesc *sd;
@@ -262,7 +262,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
                  * 'graphics' internals and the engine DL internals.
 		 */ 
                 /* 'data' is engine DL */
-                if (data != R_NilValue) {
+                if (data != nullptr) {
                     SEXP firstDLentry = CAR(data);
                     SEXP args = CADR(firstDLentry);
                     int newpage = 1;
@@ -346,7 +346,7 @@ SEXP gridCallback(GEevent task, pGEDevDesc dd, SEXP data) {
         { 
             int i, nState = LENGTH(data) - 1;
             SEXP gridState, snapshotEngineVersion;
-            PROTECT(gridState = R_NilValue);
+            PROTECT(gridState = nullptr);
             /* Prior to engine version 11, "pkgName" was not stored.
              * (can tell because "engineVersion" was not stored either.)
              * Assume 'grid' is second state in snapshot

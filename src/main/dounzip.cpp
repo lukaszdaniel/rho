@@ -349,20 +349,20 @@ SEXP Runzip(SEXP args)
 	Rf_error(_("'exdir' does not exist"));
     args = CDR(args);
     list = Rf_asLogical(CAR(args));
-    if (list == NA_LOGICAL)
+    if (list == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "list");
     if (list) return(ziplist(zipname));
     args = CDR(args);
     overwrite = Rf_asLogical(CAR(args));
-    if (overwrite == NA_LOGICAL)
+    if (overwrite == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "overwrite");
     args = CDR(args);
     junk = Rf_asLogical(CAR(args));
-    if (junk == NA_LOGICAL)
+    if (junk == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "junkpaths");
     args = CDR(args);
     setTime = Rf_asLogical(CAR(args));
-    if (setTime == NA_LOGICAL)
+    if (setTime == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "setTime");
 
     if (ntopics > 0)

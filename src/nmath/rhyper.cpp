@@ -207,6 +207,7 @@ double rhyper(double nn1in, double nn2in, double kkin)
 		goto L10;
 	    // FIXME  if(p == 0.)  we also "have lost"  => goto L10
 	}
+
     } else { /* III : H2PE Algorithm --------------------------------------- */
 
 	double u,v;

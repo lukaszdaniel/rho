@@ -12,8 +12,6 @@
 #endif
 
 #include "localization.h"
-
-
 #include <math.h>
 
 #include <R_ext/Random.h>
@@ -22,8 +20,7 @@
 #include <R_ext/Error.h>
 #include <R_ext/Utils.h>
 
-void
-rcont2(int *nrow, int *ncol,
+void rcont2(int *nrow, int *ncol,
        /* vectors of row and column totals, and their sum ntotal: */
        int *nrowt, int *ncolt, int *ntotal,
        double *fact, int *jwork, int *matrix)

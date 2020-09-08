@@ -87,7 +87,7 @@ void EvaluatorTest::checkWarnings(SingleTest test)
 void EvaluatorTest::clearWarnings()
 {
     R_CollectWarnings = 0;
-    R_Warnings = R_NilValue;
+    R_Warnings = nullptr;
 }
 
 void EvaluatorTest::runSingleTest(SingleTest test)

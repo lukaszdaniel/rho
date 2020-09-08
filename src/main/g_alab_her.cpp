@@ -291,9 +291,9 @@ void R_GE_VText (double x, double y, const char *s, cetype_t enc,
   label_width = _label_width_hershey (gc, dd, codestring);
   label_height = _label_height_hershey(gc, dd, codestring);
 
-  if (!R_FINITE(x_justify))
+  if (!std::isfinite(x_justify))
       x_justify = 0.5;
-  if (!R_FINITE(y_justify))
+  if (!std::isfinite(y_justify))
       y_justify = 0.5;
 
   x_offset = 0 - x_justify;

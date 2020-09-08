@@ -369,7 +369,7 @@ static Rboolean GetRNGkind(SEXP seeds)
     is = INTEGER(seeds);
     tmp = is[0];
     /* avoid overflow here: max current value is 705 */
-    if (tmp == NA_INTEGER || tmp < 0 || tmp > 1000) {
+    if (tmp == R_NaInt || tmp < 0 || tmp > 1000) {
 	Rf_warning(_("'.Random.seed[1]' is not a valid integer, so ignored"));
 	goto invalid;
     }
@@ -540,7 +540,7 @@ HIDDEN SEXP do_setseed (/*const*/ rho::Expression* call, const rho::BuiltInFunct
 
     if(!Rf_isNull(seed_)) {
 	seed = Rf_asInteger(seed_);
-	if (seed == NA_INTEGER)
+	if (seed == R_NaInt)
 	    Rf_error(_("supplied seed is not a valid integer"));
     } else seed = int(TimeToSeed());
     skind = kind_;

@@ -99,7 +99,7 @@ extern FILE * R_Consolefile;
 extern FILE * R_Outputfile;
 #endif
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 /* in ../unix/sys-unix.cpp */
 void R_setStartTime(void);
@@ -189,7 +189,7 @@ extern long R_timeout_val;
 extern int R_SignalHandlers;
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* RINTERFACE_H_ */

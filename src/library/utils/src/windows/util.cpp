@@ -145,16 +145,16 @@ SEXP dllversion(SEXP path)
 		if(fRet) SET_STRING_ELT(ans, 1, Rf_mkChar(lszVer));
 	    }
 
-	} else ans = R_NilValue;
+	} else ans = nullptr;
 	free(lpstrVffInfo);
-    } else ans = R_NilValue;
+    } else ans = nullptr;
     UNPROTECT(1);
     return ans;
 }
 
 SEXP getClipboardFormats(void)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     int j, size, format = 0;
 
     if(OpenClipboard(NULL)) {
@@ -226,7 +226,7 @@ static SEXP splitClipboardText(const char *s, int ienc)
 
 SEXP readClipboard(SEXP sformat, SEXP sraw)
 {
-    SEXP ans = R_NilValue;
+    SEXP ans = nullptr;
     HGLOBAL hglb;
     const char *pc;
     int j, format, raw, size;
@@ -411,7 +411,7 @@ SEXP setStatusBar(SEXP text)
 	Rf_error(_("'text' must be a character string"));
     showstatusbar();
     setstatus(Rf_translateChar(STRING_ELT(text, 0)));
-    return R_NilValue;
+    return nullptr;
 }
 
 static void * getConsoleHandle(const char *which)
@@ -453,9 +453,9 @@ SEXP getWindowsHandle(SEXP which)
     else handle = NULL;
 
     if (handle)
-	return R_MakeExternalPtr(handle,R_NilValue,R_NilValue);
+	return R_MakeExternalPtr(handle,nullptr,nullptr);
     else
-	return R_NilValue;
+	return nullptr;
 }
 
 static SEXP          EnumResult;
@@ -480,7 +480,7 @@ static BOOL CALLBACK EnumWindowsProc(HWND handle, LPARAM param)
     	    Rf_setAttrib(EnumResult, R_NamesSymbol, 
     	              Rf_lengthgets(Rf_getAttrib(EnumResult, R_NamesSymbol), newlen));
     	}
-    	SET_VECTOR_ELT(EnumResult, EnumCount, R_MakeExternalPtr(handle,R_NilValue,R_NilValue));
+    	SET_VECTOR_ELT(EnumResult, EnumCount, R_MakeExternalPtr(handle,nullptr,nullptr));
     	if (GetWindowText(handle, title, 1024)) 
     	    SET_STRING_ELT(Rf_getAttrib(EnumResult, R_NamesSymbol), EnumCount, Rf_mkChar(title));
     	EnumCount++;

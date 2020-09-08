@@ -167,8 +167,7 @@ void R_init_base(DllInfo *); /* In registration.cpp */
 
 static void initLoadedDLL();
 
-HIDDEN void
-InitDynload()
+HIDDEN void InitDynload()
 {
     initLoadedDLL();
     int which = addDLL(strdup("base"), "base", nullptr);
@@ -261,9 +260,9 @@ static void initLoadedDLL()
 
 /* returns DllInfo used by the embedding application.
    the underlying "(embedding)" entry is created if not present */
-DllInfo *R_getEmbeddingDllInfo()
+DllInfo* R_getEmbeddingDllInfo()
 {
-    DllInfo *dll = R_getDllInfo("(embedding)");
+    DllInfo* dll = R_getDllInfo("(embedding)");
     if (dll == nullptr) {
 	int which = addDLL(strdup("(embedding)"), "(embedding)", nullptr);
 	dll = &LoadedDLL[which];
@@ -723,8 +722,8 @@ static int addDLL(char* dpath, const char* DLLname, HINSTANCE handle)
     return (ans);
 }
 
-static Rf_DotCSymbol *
-Rf_lookupRegisteredCSymbol(DllInfo *info, const char *name)
+static Rf_DotCSymbol* Rf_lookupRegisteredCSymbol(
+    DllInfo* info, const char* name)
 {
     for(int i = 0; i < info->numCSymbols; i++) {
 	if(streql(name, info->CSymbols[i].name))
@@ -734,8 +733,8 @@ Rf_lookupRegisteredCSymbol(DllInfo *info, const char *name)
     return nullptr;
 }
 
-static Rf_DotFortranSymbol *
-Rf_lookupRegisteredFortranSymbol(DllInfo *info, const char *name)
+static Rf_DotFortranSymbol* Rf_lookupRegisteredFortranSymbol(
+    DllInfo* info, const char* name)
 {
     for(int i = 0; i < info->numFortranSymbols; i++) {
 	if(streql(name, info->FortranSymbols[i].name))
@@ -745,8 +744,8 @@ Rf_lookupRegisteredFortranSymbol(DllInfo *info, const char *name)
     return nullptr;
 }
 
-static Rf_DotCallSymbol *
-Rf_lookupRegisteredCallSymbol(DllInfo *info, const char *name)
+static Rf_DotCallSymbol* Rf_lookupRegisteredCallSymbol(
+    DllInfo* info, const char* name)
 {
     for(int i = 0; i < info->numCallSymbols; i++) {
 	if(streql(name, info->CallSymbols[i].name))
@@ -755,8 +754,8 @@ Rf_lookupRegisteredCallSymbol(DllInfo *info, const char *name)
     return nullptr;
 }
 
-static Rf_DotExternalSymbol *
-Rf_lookupRegisteredExternalSymbol(DllInfo *info, const char *name)
+static Rf_DotExternalSymbol* Rf_lookupRegisteredExternalSymbol(
+    DllInfo* info, const char* name)
 {
     for(int i = 0; i < info->numExternalSymbols; i++) {
 	if(streql(name, info->ExternalSymbols[i].name))
@@ -765,8 +764,7 @@ Rf_lookupRegisteredExternalSymbol(DllInfo *info, const char *name)
     return nullptr;
 }
 
-static DL_FUNC
-R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
+static DL_FUNC R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
 			 R_RegisteredNativeSymbol *symbol)
 {
     NativeSymbolType purpose = R_ANY_SYM;
@@ -834,8 +832,7 @@ R_getDLLRegisteredSymbol(DllInfo *info, const char *name,
     return nullptr;
 }
 
-HIDDEN DL_FUNC R_dlsym(DllInfo *info, const char *name,
-	R_RegisteredNativeSymbol *symbol)
+HIDDEN DL_FUNC R_dlsym(DllInfo* info, const char* name, R_RegisteredNativeSymbol* symbol)
 {
     size_t len = strlen(name) + 4;
     vector<char> bufv(len);  /* up to 3 additional underscores */
@@ -926,8 +923,7 @@ DL_FUNC R_FindSymbol(const char *name, const char *pkg,
     return nullptr;
 }
 
-
-static void GetFullDLLPath(SEXP call, char *buf, const char *const path)
+static void GetFullDLLPath(SEXP call, char* buf, const char* const path)
 {
     R_osDynSymbol->getFullDLLPath(call, buf, path);
 }
@@ -1025,8 +1021,7 @@ int R_cairoCdynload(int local, int now)
   NativeSymbol and can be used to relay symbols from
   one DLL to another.
  */
-static SEXP
-Rf_MakeNativeSymbolRef(DL_FUNC f)
+static SEXP Rf_MakeNativeSymbolRef(DL_FUNC f)
 {
     SEXP ref, klass;
 
@@ -1038,17 +1033,15 @@ Rf_MakeNativeSymbolRef(DL_FUNC f)
     return(ref);
 }
 
-static void
-freeRegisteredNativeSymbolCopy(SEXP ref)
+static void freeRegisteredNativeSymbolCopy(SEXP ref)
 {
-   void *ptr;
-   ptr = R_ExternalPtrAddr(ref);
-   if (ptr)
-       free(ptr);
+    void* ptr;
+    ptr = R_ExternalPtrAddr(ref);
+    if (ptr)
+	free(ptr);
 }
 
-static SEXP
-Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
+static SEXP Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
 {
     SEXP ref, klass;
     R_RegisteredNativeSymbol *copy;
@@ -1074,8 +1067,7 @@ Rf_MakeRegisteredNativeSymbol(R_RegisteredNativeSymbol *symbol)
 }
 
 
-static SEXP
-Rf_makeDllObject(HINSTANCE inst)
+static SEXP Rf_makeDllObject(HINSTANCE inst)
 {
     SEXP ans;
 
@@ -1087,8 +1079,7 @@ Rf_makeDllObject(HINSTANCE inst)
     return(ans);
 }
 
-static SEXP
-Rf_makeDllInfoReference(HINSTANCE inst)
+static SEXP Rf_makeDllInfoReference(HINSTANCE inst)
 {
     SEXP ans;
 
@@ -1107,8 +1098,7 @@ Rf_makeDllInfoReference(HINSTANCE inst)
  name of the DLL and whether we only look for symbols that have been
  registered in this DLL or do we also use dynamic lookup.
  */
-static SEXP
-Rf_MakeDLLInfo(DllInfo *info)
+static SEXP Rf_MakeDLLInfo(DllInfo *info)
 {
     SEXP ref, elNames;
     size_t i, n;
@@ -1156,8 +1146,7 @@ Rf_MakeDLLInfo(DllInfo *info)
   registered, we add a class identifying the interface type
   for which it is intended (i.e. .C(), .Call(), etc.)
  */
-HIDDEN SEXP
-R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
+HIDDEN SEXP R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
 {
     const void *vmax = vmaxget();
     const char *package, *name;
@@ -1191,8 +1180,7 @@ R_getSymbolInfo(SEXP sname, SEXP spackage, SEXP withRegistrationInfo)
     return sym;
 }
 
-HIDDEN SEXP
-R_getDllTable()
+HIDDEN SEXP R_getDllTable()
 {
     int i;
     SEXP ans;
@@ -1216,8 +1204,7 @@ R_getDllTable()
     return(ans);
 }
 
-static SEXP
-createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
+static SEXP createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
 		    Rboolean withRegistrationInfo)
 {
     SEXP tmp, klass, sym, names;
@@ -1290,8 +1277,7 @@ createRSymbolObject(SEXP sname, DL_FUNC f, R_RegisteredNativeSymbol *symbol,
     return(sym);
 }
 
-static SEXP
-R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
+static SEXP R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 {
     SEXP ans;
     int i, num;
@@ -1346,8 +1332,7 @@ R_getRoutineSymbols(NativeSymbolType type, DllInfo *info)
 }
 
 
-HIDDEN SEXP
-R_getRegisteredRoutines(SEXP dll)
+HIDDEN SEXP R_getRegisteredRoutines(SEXP dll)
 {
     DllInfo *info;
     SEXP ans, snames;
@@ -1410,8 +1395,7 @@ do_getSymbolInfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject*
 }
 
 /* .Internal(getLoadedDLLs()) */
-HIDDEN SEXP
-do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
 {
     SEXP ans, nm;
 
@@ -1442,7 +1426,7 @@ do_getDllTable(/*const*/ Expression* call, const BuiltInFunction* op)
 HIDDEN SEXP
 do_getRegisteredRoutines(/*const*/ Expression* call, const BuiltInFunction* op, RObject* info_)
 {
-    const char * const names[] = {".C", ".Call", ".Fortran", ".External"};
+    const char* const names[] = { ".C", ".Call", ".Fortran", ".External" };
 
     SEXP dll = info_, ans, snames;
 
@@ -1479,7 +1463,7 @@ do_getRegisteredRoutines(/*const*/ Expression* call, const BuiltInFunction* op, 
 
 static GCRoot<> CEntryTable = nullptr;
 
-static SEXP get_package_CEntry_table(const char *package)
+static SEXP get_package_CEntry_table(const char* package)
 {
     SEXP penv, pname;
 
@@ -1488,7 +1472,7 @@ static SEXP get_package_CEntry_table(const char *package)
 	CEntryTable = R_NewHashedEnv(nullptr, zero);
 	R_PreserveObject(CEntryTable);
     }
-    pname = Rf_install(package);
+    pname = rho::Symbol::obtain(package);
     penv = Rf_findVarInFrame(CEntryTable, pname);
     if (penv == R_UnboundValue) {
 	penv = R_NewHashedEnv(nullptr, zero);
@@ -1497,14 +1481,13 @@ static SEXP get_package_CEntry_table(const char *package)
     return penv;
 }
 
-
 void R_RegisterCCallable(const char *package, const char *name, DL_FUNC fptr)
 {
     SEXP penv = get_package_CEntry_table(package);
     PROTECT(penv);
     SEXP eptr = R_MakeExternalPtrFn(fptr, nullptr, nullptr);
     PROTECT(eptr);
-    Rf_defineVar(Rf_install(name), eptr, penv);
+    Rf_defineVar(rho::Symbol::obtain(name), eptr, penv);
     UNPROTECT(2);
 }
 
@@ -1512,7 +1495,7 @@ DL_FUNC R_GetCCallable(const char *package, const char *name)
 {
     SEXP penv = get_package_CEntry_table(package);
     PROTECT(penv);
-    SEXP eptr = Rf_findVarInFrame(penv, Rf_install(name));
+    SEXP eptr = Rf_findVarInFrame(penv, rho::Symbol::obtain(name));
     UNPROTECT(1);
     if (eptr == R_UnboundValue)
 	Rf_error(_("function '%s' not provided by package '%s'"), name, package);

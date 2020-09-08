@@ -528,8 +528,8 @@ SEXP RGB2hsv(SEXP rgb)
     SET_STRING_ELT(names, 2, Rf_mkChar("v"));
     SET_VECTOR_ELT(dmns, 0, names);
     /* column names if input has: */
-    if ((dd = Rf_getAttrib(rgb, R_DimNamesSymbol)) != R_NilValue &&
-	(names = VECTOR_ELT(dd, 1)) != R_NilValue)
+    if ((dd = Rf_getAttrib(rgb, R_DimNamesSymbol)) != nullptr &&
+	(names = VECTOR_ELT(dd, 1)) != nullptr)
 	SET_VECTOR_ELT(dmns, 1, names);
     Rf_setAttrib(ans, R_DimNamesSymbol, dmns);
     UNPROTECT(2);/* names, dmns */
@@ -572,7 +572,7 @@ SEXP col2rgb(SEXP colors, SEXP alpha)
     SET_STRING_ELT(names, 2, Rf_mkChar("blue"));
     if(alph) SET_STRING_ELT(names, 3, Rf_mkChar("alpha"));
     SET_VECTOR_ELT(dmns, 0, names);
-    if ((names = Rf_getAttrib(colors, R_NamesSymbol)) != R_NilValue)
+    if ((names = Rf_getAttrib(colors, R_NamesSymbol)) != nullptr)
 	SET_VECTOR_ELT(dmns, 1, names);
     Rf_setAttrib(ans, R_DimNamesSymbol, dmns);
 
@@ -592,7 +592,7 @@ SEXP col2rgb(SEXP colors, SEXP alpha)
 
 #include <ctype.h> /* for tolower, isdigit */
 
-#define MAX_PALETTE_SIZE 1024
+constexpr int MAX_PALETTE_SIZE = 1024;
 static int PaletteSize = 8;
 static rcolor Palette[MAX_PALETTE_SIZE] = {
     0xff000000,
@@ -611,7 +611,7 @@ static rcolor Palette0[MAX_PALETTE_SIZE];
 /* String comparison ignoring case and squeezing out blanks */
 static int StrMatch(const char *s, const char *t)
 {
-    for(;;) {
+    while (true) {
 	if(*s == '\0' && *t == '\0') return 1;
 	if(*s == ' ') { s++; continue; }
 	if(*t == ' ') { t++; continue; }
@@ -1510,7 +1510,7 @@ SEXP palette(SEXP val)
 	if (n > MAX_PALETTE_SIZE)
 	    Rf_error(_("maximum number of colors is %d"), MAX_PALETTE_SIZE);
 	for (i = 0; i < n; i++) {
-	    const char *s = R_CHAR(STRING_ELT(val, i));
+	    const char* s = R_CHAR(STRING_ELT(val, i));
 	    color[i] = (s[0] == '#') ? rgb2col(s) : name2col(s);
 	}
 	for (i = 0; i < n; i++)
@@ -1563,8 +1563,8 @@ static void savePalette(Rboolean save)
 
 /* same as src/main/colors.cpp */
 typedef unsigned int (*F1)(SEXP x, int i, unsigned int bg);
-typedef const char * (*F2)(unsigned int col);
-typedef unsigned int (*F3)(const char *s);
+typedef const char* (*F2)(unsigned int col);
+typedef unsigned int (*F3)(const char* s);
 typedef void (*F4)(Rboolean save);
 
 void Rg_set_col_ptrs(F1 f1, F2 f2, F3 f3, F4 f4);

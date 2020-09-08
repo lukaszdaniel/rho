@@ -52,9 +52,8 @@ typedef void *HINSTANCE;
 #include <R_ext/Rdynload.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
 #endif
-
 int R_moduleCdynload(const char *module, int local, int now);
 
   /*
@@ -191,7 +190,9 @@ extern int nCPFun;
 
 #endif /* CACHE_DLL_SYM */
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 DL_FUNC Rf_lookupCachedSymbol(const char *name, const char *pkg, int all);
 
 DL_FUNC R_dlsym(DllInfo *info, const char *name, 
@@ -205,7 +206,7 @@ DL_FUNC R_dotCallFn(SEXP, SEXP, int);
 SEXP R_doDotCall(DL_FUNC, int, SEXP *, SEXP);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
-#endif /* ifdef R_DYNPRIV_H */
+#endif /* R_DYNPRIV_H */

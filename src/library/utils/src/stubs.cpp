@@ -50,7 +50,7 @@ SEXP savehistory(SEXP call, SEXP op, SEXP args, SEXP env)
 	gl_savehistory(Rf_translateChar(STRING_ELT(sfile, 0)), R_HistorySize);
     } else
 	Rf_errorcall(call, _("'savehistory' can only be used in Rgui and Rterm"));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP loadhistory(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -67,7 +67,7 @@ SEXP loadhistory(SEXP call, SEXP op, SEXP args, SEXP env)
 	gl_loadhistory(Rf_translateChar(STRING_ELT(sfile, 0)));
     else
 	Rf_errorcall(call, _("'loadhistory' can only be used in Rgui and Rterm"));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -87,7 +87,7 @@ SEXP addhistory(SEXP call, SEXP op, SEXP args, SEXP env)
 	    gl_histadd(Rf_translateChar(STRING_ELT(stamp, i)));
     }
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP Win_dataentry(SEXP args);
@@ -118,19 +118,19 @@ SEXP selectlist(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP loadhistory(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ptr_R_loadhistory(call, op, CDR(args), rho);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP savehistory(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     ptr_R_savehistory(call, op, CDR(args), rho);
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP addhistory(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     if(ptr_R_addhistory) ptr_R_addhistory(call, op, CDR(args), rho);
-    return R_NilValue;
+    return nullptr;
 }
 
 #ifdef HAVE_X11
@@ -178,13 +178,13 @@ static SEXP X11_do_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 static SEXP X11_do_dataentry(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_error(_("X11 is not available"));
-    return R_NilValue;
+    return nullptr;
 }
 
 static SEXP X11_do_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     Rf_error(_("X11 is not available"));
-    return R_NilValue;
+    return nullptr;
 }
 #endif
 
@@ -205,7 +205,7 @@ SEXP dataviewer(SEXP call, SEXP op, SEXP args, SEXP env)
 SEXP selectlist(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     if(ptr_do_selectlist) return ptr_do_selectlist(call, op, CDR(args), env);
-    return R_NilValue;
+    return nullptr;
 }
 #endif
 
@@ -217,13 +217,13 @@ SEXP edit(SEXP call, SEXP op, SEXP args, SEXP rho)
 SEXP flushconsole(void)
 {
     R_FlushConsole();
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP processevents(void)
 {
     R_ProcessEvents();
-    return R_NilValue;
+    return nullptr;
 }
 
 // formerly in src/main/platform.cpp
@@ -279,7 +279,7 @@ SEXP fileedit(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif
     R_EditFiles(n, f, title, editor);
     vmaxset(vmax);
-    return R_NilValue;
+    return nullptr;
 }
 
 #ifdef Win32

@@ -19,7 +19,7 @@
 
 #include <R.h>
 #include <Rinternals.h>
-#include "statsR.h"	
+#include "statsR.h"
 
 #include <R_ext/RS.h>
 extern "C"

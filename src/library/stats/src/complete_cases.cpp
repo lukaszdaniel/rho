@@ -39,9 +39,9 @@ SEXP compcases(SEXP args)
 
     len = -1;
 
-    for (s = args; s != R_NilValue; s = CDR(s)) {
+    for (s = args; s != nullptr; s = CDR(s)) {
 	if (Rf_isList(CAR(s))) {
-	    for (t = CAR(s); t != R_NilValue; t = CDR(t))
+	    for (t = CAR(s); t != nullptr; t = CDR(t))
 		if (Rf_isMatrix(CAR(t))) {
 		    u = Rf_getAttrib(CAR(t), R_DimSymbol);
 		    if (len < 0)
@@ -116,13 +116,13 @@ SEXP compcases(SEXP args)
     for (i = 0; i < len; i++) INTEGER(rval)[i] = 1;
     /* FIXME : there is a lot of shared code here for vectors. */
     /* It should be abstracted out and optimized. */
-    for (s = args; s != R_NilValue; s = CDR(s)) {
+    for (s = args; s != nullptr; s = CDR(s)) {
 	if (Rf_isList(CAR(s))) {
 	    /* Now we only need to worry about vectors */
 	    /* since we use mod to handle arrays. */
 	    /* FIXME : using mod like this causes */
 	    /* a potential performance hit. */
-	    for (t = CAR(s); t != R_NilValue; t = CDR(t)) {
+	    for (t = CAR(s); t != nullptr; t = CDR(t)) {
 		u = CAR(t);
 		for (i = 0; i < LENGTH(u); i++) {
 		    switch (TYPEOF(u)) {
@@ -215,5 +215,5 @@ SEXP compcases(SEXP args)
 
  bad:
     Rf_error(_("not all arguments have the same length"));
-    return R_NilValue; /* -Wall */
+    return nullptr; /* -Wall */
 }

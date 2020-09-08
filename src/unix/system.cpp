@@ -430,7 +430,7 @@ int Rf_initialize_R(int ac, char **av)
 	R_Interactive = useaqua;
     else
 #endif
-	R_Interactive = Rboolean(R_Interactive && (force_interactive || isatty(0)));
+	R_Interactive = (Rboolean) (R_Interactive && (force_interactive || R_isatty(0)));
 
 #ifdef HAVE_AQUA
     /* for Aqua and non-dumb terminal use callbacks instead of connections
@@ -461,7 +461,7 @@ int Rf_initialize_R(int ac, char **av)
     R_setupHistory();
     if (R_RestoreHistory)
 	Rstd_read_history(R_HistoryFile);
-    fpu_setup(Rboolean(1));
+    fpu_setup(TRUE);
 
     return(0);
 }
@@ -498,7 +498,7 @@ int R_EditFiles(int nfile, const char **file, const char **title,
 	    else
 		snprintf(buf, 1024, "%s \"%s\"", editor, file[0]);
 	    if (R_system(buf) == 127)
-		Rf_warningcall(R_NilValue, _("error in running command"));
+		Rf_warningcall(nullptr, _("error in running command"));
 	}
 	return 0;
     }

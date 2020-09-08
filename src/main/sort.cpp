@@ -48,9 +48,9 @@ using namespace rho;
 
 static int icmp(int x, int y, Rboolean nalast)
 {
-    if (x == NA_INTEGER && y == NA_INTEGER) return 0;
-    if (x == NA_INTEGER) return nalast ? 1 : -1;
-    if (y == NA_INTEGER) return nalast ? -1 : 1;
+    if (x == R_NaInt && y == R_NaInt) return 0;
+    if (x == R_NaInt) return nalast ? 1 : -1;
+    if (y == R_NaInt) return nalast ? -1 : 1;
     if (x < y)		return -1;
     if (x > y)		return 1;
     return 0;
@@ -58,7 +58,7 @@ static int icmp(int x, int y, Rboolean nalast)
 
 static int rcmp(double x, double y, Rboolean nalast)
 {
-    int nax = ISNAN(x), nay = ISNAN(y);
+    int nax = std::isnan(x), nay = std::isnan(y);
     if (nax && nay)	return 0;
     if (nax)		return nalast ? 1 : -1;
     if (nay)		return nalast ? -1 : 1;
@@ -69,7 +69,7 @@ static int rcmp(double x, double y, Rboolean nalast)
 
 static int ccmp(Rcomplex x, Rcomplex y, Rboolean nalast)
 {
-    int nax = ISNAN(x.r), nay = ISNAN(y.r);
+    int nax = std::isnan(x.r), nay = std::isnan(y.r);
 				/* compare real parts */
     if (nax && nay)	return 0;
     if (nax)		return nalast ? 1 : -1;
@@ -77,7 +77,7 @@ static int ccmp(Rcomplex x, Rcomplex y, Rboolean nalast)
     if (x.r < y.r)	return -1;
     if (x.r > y.r)	return 1;
 				/* compare complex parts */
-    nax = ISNAN(x.i); nay = ISNAN(y.i);
+    nax = std::isnan(x.i); nay = std::isnan(y.i);
     if (nax && nay)	return 0;
     if (nax)		return nalast ? 1 : -1;
     if (nay)		return nalast ? -1 : 1;
@@ -89,9 +89,9 @@ static int ccmp(Rcomplex x, Rcomplex y, Rboolean nalast)
 
 static int scmp(SEXP x, SEXP y, Rboolean nalast)
 {
-    if (x == NA_STRING && y == NA_STRING) return 0;
-    if (x == NA_STRING) return nalast ? 1 : -1;
-    if (y == NA_STRING) return nalast ? -1 : 1;
+    if (x == R_NaString && y == R_NaString) return 0;
+    if (x == R_NaString) return nalast ? 1 : -1;
+    if (y == R_NaString) return nalast ? -1 : 1;
     if (x == y) return 0;  /* same string in cache */
     return Scollate(x, y);
 }
@@ -213,7 +213,7 @@ HIDDEN SEXP do_isunsorted(/*const*/ Expression* call, const BuiltInFunction* op,
     }
 
     int strictly = Rf_asLogical(strictly_);
-    if(strictly == NA_LOGICAL)
+    if(strictly == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "strictly");
     if(Rf_isVectorAtomic(x)) {
 	UNPROTECT(1);
@@ -230,7 +230,7 @@ HIDDEN SEXP do_isunsorted(/*const*/ Expression* call, const BuiltInFunction* op,
     }
     else {
 	UNPROTECT(1);
-	return Rf_ScalarLogical(NA_LOGICAL);
+	return Rf_ScalarLogical(R_NaLog);
     }
 }
 
@@ -364,7 +364,7 @@ HIDDEN SEXP do_sort(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     Rboolean decreasing;
 
     decreasing = Rboolean(Rf_asLogical(decreasing_));
-    if(decreasing == NA_LOGICAL)
+    if(decreasing == R_NaLog)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     if(x_ == nullptr) return nullptr;
     if(!Rf_isVectorAtomic(x_))
@@ -401,7 +401,7 @@ Rboolean fastpass_sortcheck(SEXP x, int wanted) {
 	/* keep sorted == UNKNOWN_SORTEDNESS */
 	break;
     }
-    /* we know wanted is not NA_INTEGER or 0 at this point because
+    /* we know wanted is not R_NaInt or 0 at this point because
        of the immediate return at the beginning for that case */
     if(!KNOWN_SORTED(sorted)) {
 	done = FALSE;
@@ -417,11 +417,11 @@ Rboolean fastpass_sortcheck(SEXP x, int wanted) {
 static int makeSortEnum(int decr, int nalast)
 {
 
-    /* passing decr = NA_INTEGER indicates UNKNOWN_SORTEDNESS. */
-    if (decr == NA_INTEGER)
+    /* passing decr = R_NaInt indicates UNKNOWN_SORTEDNESS. */
+    if (decr == R_NaInt)
 	return UNKNOWN_SORTEDNESS;
 
-    if (nalast == NA_INTEGER)
+    if (nalast == R_NaInt)
 	nalast = 1; //  they were/will be removed so we say they are "last"
 
     if (decr)
@@ -716,7 +716,7 @@ HIDDEN SEXP do_psort(/*const*/ Expression* call, const BuiltInFunction* op, RObj
     if (TYPEOF(p) == REALSXP) {
 	double* rl = REAL(p);
 	for (int i = 0; i < nind; i++) {
-	    if (!R_FINITE(rl[i])) Rf_error(_("NA or infinite index"));
+	    if (!std::isfinite(rl[i])) Rf_error(_("NA or infinite index"));
 	    l[i] = R_xlen_t(rl[i]);
 	    if (l[i] < 1 || l[i] > n)
 		Rf_error(_("index %ld outside bounds"), l[i]);
@@ -724,7 +724,7 @@ HIDDEN SEXP do_psort(/*const*/ Expression* call, const BuiltInFunction* op, RObj
     } else {
 	int* il = INTEGER(p);
 	for (int i = 0; i < nind; i++) {
-	    if (il[i] == NA_INTEGER) Rf_error(_("NA index"));
+	    if (il[i] == R_NaInt) Rf_error(_("NA index"));
 	    if (il[i] < 1 || il[i] > n)
 		Rf_error(_("index %d outside bounds"), il[i]);
 	    l[i] = il[i];
@@ -735,7 +735,7 @@ HIDDEN SEXP do_psort(/*const*/ Expression* call, const BuiltInFunction* op, RObj
     int nind = LENGTH(p);
     int* l = INTEGER(p);
     for (int i = 0; i < nind; i++) {
-	if (l[i] == NA_INTEGER)
+	if (l[i] == R_NaInt)
 	    Rf_error(_("NA index"));
 	if (l[i] < 1 || l[i] > n)
 	    Rf_error(_("index %d outside bounds"), l[i]);
@@ -1090,16 +1090,16 @@ HIDDEN void orderVector1(int *indx, int n, SEXP key, Rboolean nalast, Rboolean d
 	switch (TYPEOF(key)) {
 	case LGLSXP:
 	case INTSXP:
-	    for (i = 0; i < n; i++) isna[i] = (ix[i] == NA_INTEGER);
+	    for (i = 0; i < n; i++) isna[i] = (ix[i] == R_NaInt);
 	    break;
 	case REALSXP:
-	    for (i = 0; i < n; i++) isna[i] = ISNAN(x[i]);
+	    for (i = 0; i < n; i++) isna[i] = std::isnan(x[i]);
 	    break;
 	case STRSXP:
-	    for (i = 0; i < n; i++) isna[i] = ((*sv)[i] == NA_STRING);
+	    for (i = 0; i < n; i++) isna[i] = ((*sv)[i] == R_NaString);
 	    break;
 	case CPLXSXP:
-	    for (i = 0; i < n; i++) isna[i] = ISNAN(cx[i].r) || ISNAN(cx[i].i);
+	    for (i = 0; i < n; i++) isna[i] = std::isnan(cx[i].r) || std::isnan(cx[i].i);
 	    break;
 	default:
 	    UNIMPLEMENTED_TYPE("orderVector1", key);
@@ -1230,16 +1230,16 @@ static void orderVector1l(R_xlen_t *indx, R_xlen_t n, SEXP key, Rboolean nalast,
 	switch (TYPEOF(key)) {
 	case LGLSXP:
 	case INTSXP:
-	    for (i = 0; i < n; i++) isna[i] = (ix[i] == NA_INTEGER);
+	    for (i = 0; i < n; i++) isna[i] = (ix[i] == R_NaInt);
 	    break;
 	case REALSXP:
-	    for (i = 0; i < n; i++) isna[i] = ISNAN(x[i]);
+	    for (i = 0; i < n; i++) isna[i] = std::isnan(x[i]);
 	    break;
 	case STRSXP:
-	    for (i = 0; i < n; i++) isna[i] = ((*sv)[i] == NA_STRING);
+	    for (i = 0; i < n; i++) isna[i] = ((*sv)[i] == R_NaString);
 	    break;
 	case CPLXSXP:
-	    for (i = 0; i < n; i++) isna[i] = ISNAN(cx[i].r) || ISNAN(cx[i].i);
+	    for (i = 0; i < n; i++) isna[i] = std::isnan(cx[i].r) || std::isnan(cx[i].i);
 	    break;
 	default:
 	    UNIMPLEMENTED_TYPE("orderVector1", key);
@@ -1342,11 +1342,11 @@ HIDDEN SEXP do_order(SEXP call, SEXP op, SEXP args, SEXP rho)
     Rboolean nalast, decreasing;
 
     nalast = Rboolean(Rf_asLogical(CAR(args)));
-    if(nalast == NA_LOGICAL)
+    if(nalast == R_NaLog)
 	Rf_error(_("invalid '%s' value"), "na.last");
     args = CDR(args);
     decreasing = Rboolean(Rf_asLogical(CAR(args)));
-    if(decreasing == NA_LOGICAL)
+    if(decreasing == R_NaLog)
 	Rf_error(_("'decreasing' must be TRUE or FALSE"));
     args = CDR(args);
     if (args == nullptr)
@@ -1421,21 +1421,21 @@ HIDDEN SEXP do_rank(/*const*/ Expression* call, const BuiltInFunction* op, Envir
     R_xlen_t n;
     if (TYPEOF(sn) == REALSXP)  {
 	double d = REAL(x)[0];
-	if(ISNAN(d)) Rf_error(_("vector size cannot be NA/NaN"));
-	if(!R_FINITE(d)) Rf_error(_("vector size cannot be infinite"));
+	if(std::isnan(d)) Rf_error(_("vector size cannot be NA/NaN"));
+	if(!std::isfinite(d)) Rf_error(_("vector size cannot be infinite"));
 	if(d > double(R_XLEN_T_MAX)) Rf_error(_("vector size specified is too large"));
 	n = R_xlen_t(d);
 	if (n < 0) Rf_error(_("invalid '%s' value"), "length(xx)");
     } else {
 	int nn = Rf_asInteger(sn);
-	if (nn == NA_INTEGER || nn < 0)
+	if (nn == R_NaInt || nn < 0)
 	    Rf_error(_("invalid '%s' value"), "length(xx)");
 	n = nn;
     }
     isLong = Rboolean(n > INT_MAX);
 #else
     int n = Rf_asInteger(CADR(*args));
-    if (n == NA_INTEGER || n < 0)
+    if (n == R_NaInt || n < 0)
 	Rf_error(_("invalid '%s' value"), "length(xx)");
 #endif
     const char *ties_str = R_CHAR(Rf_asChar(args[2]));

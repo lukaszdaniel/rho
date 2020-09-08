@@ -119,7 +119,7 @@ enum FontType {
  *
  */
 
-static double ItalicFactor = 0.15;
+constexpr double ItalicFactor = 0.15;
 
 /* Drawing basics */
 
@@ -127,7 +127,7 @@ static double ItalicFactor = 0.15;
 /* Convert CurrentX and CurrentY from */
 /* 0 angle to and CurrentAngle */
 
-static double ConvertedX(const mathContext *mc, pGEDevDesc dd)
+static double ConvertedX(const mathContext* mc, pGEDevDesc dd)
 {
     double rotatedX = mc->ReferenceX +
 	(mc->CurrentX - mc->ReferenceX) * mc->CosAngle -
@@ -135,7 +135,7 @@ static double ConvertedX(const mathContext *mc, pGEDevDesc dd)
     return toDeviceX(rotatedX, MetricUnit, dd);
 }
 
-static double ConvertedY(const mathContext *mc, pGEDevDesc dd)
+static double ConvertedY(const mathContext* mc, pGEDevDesc dd)
 {
     double rotatedY = mc->ReferenceY +
 	(mc->CurrentY - mc->ReferenceY) * mc->CosAngle +
@@ -143,17 +143,17 @@ static double ConvertedY(const mathContext *mc, pGEDevDesc dd)
     return toDeviceY(rotatedY, MetricUnit, dd);
 }
 
-static void PMoveAcross(double xamount, mathContext *mc)
+static void PMoveAcross(double xamount, mathContext* mc)
 {
     mc->PMoveAcross(xamount);
 }
 
-static void PMoveUp(double yamount, mathContext *mc)
+static void PMoveUp(double yamount, mathContext* mc)
 {
     mc->PMoveUp(yamount);
 }
 
-static void PMoveTo(double x, double y, mathContext *mc)
+static void PMoveTo(double x, double y, mathContext* mc)
 {
     mc->PMoveTo(x, y);
 }
@@ -409,7 +409,7 @@ static void SetSupStyle(const STYLE style, mathContext *mc, pGEcontext gc)
     }
 }
 
-static void SetSubStyle(const STYLE style, mathContext *mc, pGEcontext gc)
+static void SetSubStyle(const STYLE style, mathContext* mc, pGEcontext gc)
 {
     switch (style) {
     case STYLE_D:
@@ -427,7 +427,7 @@ static void SetSubStyle(const STYLE style, mathContext *mc, pGEcontext gc)
     }
 }
 
-static void SetNumStyle(const STYLE style, mathContext *mc, pGEcontext gc)
+static void SetNumStyle(const STYLE style, mathContext* mc, pGEcontext gc)
 {
     switch (style) {
     case STYLE_D:
@@ -441,7 +441,7 @@ static void SetNumStyle(const STYLE style, mathContext *mc, pGEcontext gc)
     }
 }
 
-static void SetDenomStyle(const STYLE style, mathContext *mc, pGEcontext gc)
+static void SetDenomStyle(const STYLE style, mathContext* mc, pGEcontext gc)
 {
     if (style > STYLE_T)
 	SetStyle(STYLE_T1, mc, gc);
@@ -476,12 +476,12 @@ struct BBOX {
 
     BBOX() : height(0), depth(0), width(0), italic(0), simple(0) {};
     ~BBOX() {};
-    BBOX NullBBox() { return BBOX(); };
-    double bboxHeight(const BBOX& bbox) { return bbox.height; }
-    double bboxDepth(const BBOX& bbox) { return bbox.depth; }
-    double bboxWidth(const BBOX& bbox) { return bbox.width; }
-    double bboxItalic(const BBOX& bbox) { return bbox.italic; }
-    double bboxSimple(const BBOX& bbox) { return bbox.simple; }
+    static BBOX NullBBox() { return BBOX(); };
+    static double bboxHeight(const BBOX& bbox) { return bbox.height; }
+    static double bboxDepth(const BBOX& bbox) { return bbox.depth; }
+    static double bboxWidth(const BBOX& bbox) { return bbox.width; }
+    static double bboxItalic(const BBOX& bbox) { return bbox.italic; }
+    static double bboxSimple(const BBOX& bbox) { return bbox.simple; }
 };
 
 static BBOX MakeBBox(double height, double depth, double width)
@@ -553,7 +553,7 @@ static double CenterShift(BBOX bbox)
 
 
 struct SymTab {
-    const char *name;
+    const char * const name;
     int code;
 };
 
@@ -561,7 +561,7 @@ struct SymTab {
 
 static bool NameMatch(SEXP expr, const char *aString)
 {
-    if (!Rf_isSymbol(expr)) return 0;
+    if (!Rf_isSymbol(expr)) return false;
     return streql(R_CHAR(PRINTNAME(expr)), aString);
 }
 
@@ -760,7 +760,7 @@ SymbolTable[] = {
     { "element",	206 },
     { "notelement",	207 },
     { "angle",		208 },
-    { "nabla",  	209 },/* = 0321, Adobe name 'gradient' */
+    { "nabla",		209 },/* = 0321, Adobe name 'gradient' */
     { "registerserif",	210 },
     { "copyrightserif", 211 },
     { "trademarkserif", 212 },
@@ -1645,7 +1645,7 @@ static BBOX RenderBar(SEXP expr, int draw, mathContext *mc,
 }
 
 static struct AccentTable {
-    const char *name;
+    const char *const name;
     int code;
 }
 AccentTable[] = {
@@ -3202,7 +3202,7 @@ void GEMathText(double x, double y, SEXP expr,
     bbox = RenderElement(expr, 0, &mc, gc, dd);
     mc.ReferenceX = fromDeviceX(x, GE_INCHES, dd);
     mc.ReferenceY = fromDeviceY(y, GE_INCHES, dd);
-    if (R_FINITE(xc))
+    if (std::isfinite(xc))
 	mc.CurrentX = mc.ReferenceX - xc * bbox.width;
     else
 	/* Paul 2002-02-11
@@ -3210,7 +3210,7 @@ void GEMathText(double x, double y, SEXP expr,
 	 * Used to left-adjust.
 	 */
 	mc.CurrentX = mc.ReferenceX - 0.5 * bbox.width;
-    if (R_FINITE(yc))
+    if (std::isfinite(yc))
 	mc.CurrentY = mc.ReferenceY + bbox.depth
 	    - yc * (bbox.height + bbox.depth);
     else

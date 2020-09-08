@@ -37,6 +37,10 @@
 #ifndef R_DEFINES_H
 #define R_DEFINES_H
 
+#ifdef USE_RINTERNALS
+#undef USE_RINTERNALS
+#endif
+
 #if !defined(R_R_H) && !defined(R_S_H)
 /* user forgot to include R.h or S.h */
 # include <R_ext/Memory.h>
@@ -178,25 +182,7 @@ extern "C" {
 #define s_object                SEXPREC
 #define S_EVALUATOR             /**/
 
-/* These conflict with definitions in R_ext/Boolean.h,
-   but spatstat relies on them in a C file */
-#ifdef __cplusplus
-# ifndef R_EXT_BOOLEAN_H_
-#  ifndef TRUE
-#   define TRUE 1
-#  endif
-#  ifndef FALSE
-#   define FALSE 0
-#  endif
-# endif
-#else
-#  ifndef TRUE
-#   define TRUE 1
-#  endif
-#  ifndef FALSE
-#   define FALSE 0
-#  endif
-#endif
+#include <R_ext/Boolean.h>
 
 #define COPY_TO_USER_STRING(x)	mkChar(x)
 #define CREATE_STRING_VECTOR(x)	mkChar(x)

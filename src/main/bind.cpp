@@ -336,7 +336,7 @@ LogicalAnswer(RObject* x, struct BindData *data, Expression* call)
     case INTSXP:
 	for (i = 0; i < XLENGTH(x); i++) {
 	    int v = INTEGER(x)[i];
-	    LOGICAL(data->ans_ptr)[data->ans_length++] = (v == NA_INTEGER) ? NA_LOGICAL : ( v != 0 );
+	    LOGICAL(data->ans_ptr)[data->ans_length++] = (v == R_NaInt) ? R_NaLog : ( v != 0 );
 	}
 	break;
     case RAWSXP:
@@ -349,8 +349,7 @@ LogicalAnswer(RObject* x, struct BindData *data, Expression* call)
     }
 }
 
-static void
-IntegerAnswer(RObject* x, struct BindData *data, Expression* call)
+static void IntegerAnswer(RObject* x, struct BindData *data, Expression* call)
 {
     R_xlen_t i;
     switch(TYPEOF(x)) {
@@ -417,16 +416,16 @@ RealAnswer(RObject* x, struct BindData *data, Expression* call)
     case LGLSXP:
 	for (i = 0; i < XLENGTH(x); i++) {
 	    xi = LOGICAL(x)[i];
-	    if (xi == NA_LOGICAL)
-		REAL(data->ans_ptr)[data->ans_length++] = NA_REAL;
+	    if (xi == R_NaLog)
+		REAL(data->ans_ptr)[data->ans_length++] = R_NaReal;
 	    else REAL(data->ans_ptr)[data->ans_length++] = xi;
 	}
 	break;
     case INTSXP:
 	for (i = 0; i < XLENGTH(x); i++) {
 	    xi = INTEGER(x)[i];
-	    if (xi == NA_INTEGER)
-		REAL(data->ans_ptr)[data->ans_length++] = NA_REAL;
+	    if (xi == R_NaInt)
+		REAL(data->ans_ptr)[data->ans_length++] = R_NaReal;
 	    else REAL(data->ans_ptr)[data->ans_length++] = xi;
 	}
 	break;
@@ -476,9 +475,9 @@ ComplexAnswer(RObject* x, struct BindData *data, Expression* call)
     case LGLSXP:
 	for (i = 0; i < XLENGTH(x); i++) {
 	    xi = LOGICAL(x)[i];
-	    if (xi == NA_LOGICAL) {
-		COMPLEX(data->ans_ptr)[data->ans_length].r = NA_REAL;
-		COMPLEX(data->ans_ptr)[data->ans_length].i = NA_REAL;
+	    if (xi == R_NaLog) {
+		COMPLEX(data->ans_ptr)[data->ans_length].r = R_NaReal;
+		COMPLEX(data->ans_ptr)[data->ans_length].i = R_NaReal;
 	    }
 	    else {
 		COMPLEX(data->ans_ptr)[data->ans_length].r = xi;
@@ -490,9 +489,9 @@ ComplexAnswer(RObject* x, struct BindData *data, Expression* call)
     case INTSXP:
 	for (i = 0; i < XLENGTH(x); i++) {
 	    xi = INTEGER(x)[i];
-	    if (xi == NA_INTEGER) {
-		COMPLEX(data->ans_ptr)[data->ans_length].r = NA_REAL;
-		COMPLEX(data->ans_ptr)[data->ans_length].i = NA_REAL;
+	    if (xi == R_NaInt) {
+		COMPLEX(data->ans_ptr)[data->ans_length].r = R_NaReal;
+		COMPLEX(data->ans_ptr)[data->ans_length].i = R_NaReal;
 	    }
 	    else {
 		COMPLEX(data->ans_ptr)[data->ans_length].r = xi;
@@ -799,7 +798,7 @@ static RObject* c_Extract_opt(RObject* ans, Rboolean *recurse, Rboolean *usename
 	if (n != nullptr && Rf_pmatch(Symbols::RecursiveSymbol, n, TRUE)) {
 	    if (n_recurse++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'recursive'"));
-	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
+	    if ((v = Rf_asLogical(CAR(a))) != R_NaInt) {
 		*recurse = Rboolean(v);
 	    }
 	    if (last == nullptr)
@@ -810,7 +809,7 @@ static RObject* c_Extract_opt(RObject* ans, Rboolean *recurse, Rboolean *usename
 	else if (n != nullptr && Rf_pmatch(Symbols::UseNamesSymbol, n, TRUE)) {
 	    if (n_usenames++ == 1)
 		Rf_errorcall(call, _("repeated formal argument 'use.names'"));
-	    if ((v = Rf_asLogical(CAR(a))) != NA_INTEGER) {
+	    if ((v = Rf_asLogical(CAR(a))) != R_NaInt) {
 		*usenames = Rboolean(v);
 	    }
 	    if (last == nullptr)
@@ -1154,7 +1153,7 @@ HIDDEN SEXP do_bind(SEXP call, SEXP op, SEXP args, SEXP env)
 		if(strlen(generic) + strlen(s) + 2 > 512)
 		    Rf_error(_("class name too long in '%s'"), generic);
 		sprintf(buf, "%s.%s", generic, s);
-		SEXP classmethod = R_LookupMethod(Rf_install(buf), env, env,
+		SEXP classmethod = R_LookupMethod(rho::Symbol::obtain(buf), env, env,
 						  R_BaseNamespace);
 		if (classmethod != R_UnboundValue) {
 		    if (klass[0] == '\0') {
@@ -1443,7 +1442,7 @@ static RObject* cbind(RObject* call, const ArgList& args, SEXPTYPE mode, RObject
 			R_xlen_t i, i1;
 			MOD_ITERATE1(idx, k, i, i1, {
 			    REAL(result)[n++] =
-				(INTEGER(u)[i1]) == NA_INTEGER ? NA_REAL : INTEGER(u)[i1];
+				(INTEGER(u)[i1]) == R_NaInt ? R_NaReal : INTEGER(u)[i1];
 			});
 		    }
 		}
@@ -1685,7 +1684,7 @@ static RObject* rbind(RObject* call, const ArgList& args, SEXPTYPE mode, RObject
 		    else {
 			FILL_MATRIX_ITERATE(n, rows, idx, cols, k)
 			    REAL(result)[didx]
-				= (INTEGER(u)[sidx]) == NA_INTEGER ? NA_REAL : INTEGER(u)[sidx];
+				= (INTEGER(u)[sidx]) == R_NaInt ? R_NaReal : INTEGER(u)[sidx];
 			n += idx;
 		    }
 		}

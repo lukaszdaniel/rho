@@ -113,7 +113,7 @@ R_INLINE static SEXP XVECTOR_ELT_FIX_NAMED(SEXP y, R_xlen_t i) {
 	    for (i = 0; i < n; i++) {		  \
 		double di = pindx[i];		  \
 		ii = (R_xlen_t) (di - 1);	  \
-		if (R_FINITE(di) &&		  \
+		if (std::isfinite(di) &&		  \
 		    0 <= ii && ii < nx)		  \
 		    STDCODE;			  \
 		else				  \
@@ -145,26 +145,26 @@ HIDDEN SEXP Rf_ExtractSubset(SEXP x, SEXP indx, SEXP call)
     switch(mode) {
     case LGLSXP:
 	EXTRACT_SUBSET_LOOP(LOGICAL0(result)[i] = Rboolean(LOGICAL_ELT(x, ii)),
-			    LOGICAL0(result)[i] = Rboolean(NA_INTEGER));
+			    LOGICAL0(result)[i] = Rboolean(R_NaInt));
 	break;
     case INTSXP:
 	EXTRACT_SUBSET_LOOP(INTEGER0(result)[i] = INTEGER_ELT(x, ii),
-			    INTEGER0(result)[i] = NA_INTEGER);
+			    INTEGER0(result)[i] = R_NaInt);
 	break;
     case REALSXP:
 	EXTRACT_SUBSET_LOOP(REAL0(result)[i] = REAL_ELT(x, ii),
-			    REAL0(result)[i] = NA_REAL);
+			    REAL0(result)[i] = R_NaReal);
 	break;
     case CPLXSXP:
 	{
-	    Rcomplex NA_CPLX = { NA_REAL, NA_REAL };
+	    Rcomplex NA_CPLX = { R_NaReal, R_NaReal };
 	    EXTRACT_SUBSET_LOOP(COMPLEX0(result)[i] = COMPLEX_ELT(x, ii),
 				COMPLEX0(result)[i] = NA_CPLX);
 	}
 	break;
     case STRSXP:
 	EXTRACT_SUBSET_LOOP(SET_STRING_ELT(result, i, STRING_ELT(x, ii)),
-			    SET_STRING_ELT(result, i, NA_STRING));
+			    SET_STRING_ELT(result, i, R_NaString));
 	break;
     case VECSXP:
 	EXTRACT_SUBSET_LOOP(SET_VECTOR_ELT(result, i,
@@ -343,7 +343,7 @@ static void ExtractDropArg(rho::RObject* el, int& drop)
 {
     SEXP dropArg = ExtractArg(el, rho::Symbol::obtain("drop"));
     drop = Rf_asLogical(dropArg);
-    if (drop == NA_LOGICAL) drop = 1;
+    if (drop == R_NaLog) drop = 1;
 }
 
 
@@ -360,7 +360,7 @@ static int ExtractExactArg(SEXP args)
     int exact;
     if(Rf_isNull(argval)) return 1; /* Default is true as from R 2.7.0 */
     exact = Rf_asLogical(argval);
-    if (exact == NA_LOGICAL) exact = -1;
+    if (exact == R_NaLog) exact = -1;
     return exact;
 }
 
@@ -393,7 +393,7 @@ R_INLINE static R_xlen_t scalarIndex(SEXP s)
 	case INTSXP:
 	{
 	    int ival = SCALAR_IVAL(s);
-	    if (XLENGTH(s) == 1 && ival != NA_INTEGER)
+	    if (XLENGTH(s) == 1 && ival != R_NaInt)
 		return ival;
 	    else return -1;
 	}
@@ -401,7 +401,7 @@ R_INLINE static R_xlen_t scalarIndex(SEXP s)
 	{
 	    double rval = SCALAR_DVAL(s);
 	    // treat infinite indices as NA, like asInteger
-	    if (XLENGTH(s) == 1 && R_FINITE(rval))
+	    if (XLENGTH(s) == 1 && std::isfinite(rval))
 		return R_xlen_t(rval);
 	    else return -1;
 	}
@@ -664,7 +664,7 @@ HIDDEN SEXP do_subset2_dflt(SEXP call, SEXP op,
 	    Rf_errorcall(call, _("wrong arguments for subsetting an environment"));
 	GCStackRoot<>
 	    ans(Rf_findVarInFrame(x,
-			       Rf_install(Rf_translateChar(STRING_ELT(CAR(subs),
+			       rho::Symbol::obtain(Rf_translateChar(STRING_ELT(CAR(subs),
 								0)))));
 	if ( TYPEOF(ans) == PROMSXP )
 	    ans = Rf_eval(ans, R_GlobalEnv);

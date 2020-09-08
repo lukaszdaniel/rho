@@ -31,7 +31,7 @@
  */
 SEXP getListElement(SEXP list, const char *str)
 {
-  SEXP elmt = R_NilValue;
+  SEXP elmt = nullptr;
   SEXP names = Rf_getAttrib(list, R_NamesSymbol);
   int i;
 
@@ -261,7 +261,7 @@ SEXP L_CreateSEXPPtr(SEXP s)
     SEXP data, result;
     PROTECT(data = Rf_allocVector(VECSXP, 1));
     SET_VECTOR_ELT(data, 0, s);
-    result = R_MakeExternalPtr(data, R_NilValue, data);
+    result = R_MakeExternalPtr(data, nullptr, data);
     UNPROTECT(1);
     return result;
 }
@@ -288,6 +288,6 @@ SEXP L_SetSEXPPtr(SEXP sp, SEXP s)
     if (data == NULL)
 	Rf_error("grid grob object is empty");
     SET_VECTOR_ELT(data, 0, s);
-    return R_NilValue;
+    return nullptr;
 }
 

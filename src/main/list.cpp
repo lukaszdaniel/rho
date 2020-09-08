@@ -107,16 +107,16 @@ HIDDEN SEXP do_allnames(/*const*/ rho::Expression* call, const rho::BuiltInFunct
     expr = expr_;
 
     data.IncludeFunctions = Rf_asLogical(functions_);
-    if(data.IncludeFunctions == NA_LOGICAL)
+    if(data.IncludeFunctions == R_NaLog)
 	data.IncludeFunctions = 0;
 
     data.MaxCount = Rf_asInteger(max_names_);
     if(data.MaxCount == -1) data.MaxCount = INT_MAX;
-    if(data.MaxCount < 0 || data.MaxCount == NA_INTEGER)
+    if(data.MaxCount < 0 || data.MaxCount == R_NaInt)
 	data.MaxCount = 0;
 
     data.UniqueNames = Rf_asLogical(unique_);
-    if(data.UniqueNames == NA_LOGICAL)
+    if(data.UniqueNames == R_NaLog)
 	data.UniqueNames = 1;
 
     namewalk(expr, &data);

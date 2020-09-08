@@ -37,8 +37,6 @@
 #include <config.h>
 #endif
 
-/* interval at which to check interrupts */
-#define NINTERRUPT 10000000
 
 #include <Defn.h> /*-- Maybe modularize into own Coerce.h ..*/
 #include <Localization.h>
@@ -58,6 +56,9 @@
 
 using namespace std;
 using namespace rho;
+
+/* interval at which to check interrupts */
+constexpr R_xlen_t NINTERRUPT = 10000000;
 
 /* This section of code handles type conversion for elements */
 /* of data vectors.  Type coercion throughout R should use these */
@@ -104,73 +105,63 @@ HIDDEN void Rf_CoercionWarning(int warn)
 	Rf_warning(_("out-of-range values treated as 0 in coercion to raw"));
 }
 
-HIDDEN int
-Rf_LogicalFromInteger(int x, int *warn)
+HIDDEN int Rf_LogicalFromInteger(int x, int *warn)
 {
-    return (x == NA_INTEGER) ?
-	NA_LOGICAL : (x != 0);
+    return (x == R_NaInt) ?
+	R_NaLog : (x != 0);
 }
 
-HIDDEN int
-Rf_LogicalFromReal(double x, int *warn)
+HIDDEN int Rf_LogicalFromReal(double x, int* warn)
 {
-    return ISNAN(x) ?
-	NA_LOGICAL : (x != 0);
+    return std::isnan(x) ? R_NaLog : (x != 0);
 }
 
-HIDDEN int
-Rf_LogicalFromComplex(Rcomplex x, int *warn)
+HIDDEN int Rf_LogicalFromComplex(Rcomplex x, int* warn)
 {
-    return (ISNAN(x.r) || ISNAN(x.i)) ?
-	NA_LOGICAL : (x.r != 0 || x.i != 0);
+    return (std::isnan(x.r) || std::isnan(x.i)) ? R_NaLog : (x.r != 0 || x.i != 0);
 }
 
-HIDDEN int
-Rf_LogicalFromString(SEXP x, int *warn)
+HIDDEN int Rf_LogicalFromString(SEXP x, int* warn)
 {
     if (x != R_NaString) {
-	if (Rf_StringTrue(R_CHAR(x))) return 1;
-	if (Rf_StringFalse(R_CHAR(x))) return 0;
+	if (Rf_StringTrue(R_CHAR(x)))
+	    return 1;
+	if (Rf_StringFalse(R_CHAR(x)))
+	    return 0;
     }
-    return NA_LOGICAL;
+    return R_NaLog;
 }
 
-HIDDEN int
-Rf_IntegerFromLogical(int x, int *warn)
+HIDDEN int Rf_IntegerFromLogical(int x, int* warn)
 {
-    return (x == NA_LOGICAL) ?
-	NA_INTEGER : x;
+    return (x == R_NaLog) ? R_NaInt : x;
 }
 
-HIDDEN int
-Rf_IntegerFromReal(double x, int *warn)
+HIDDEN int Rf_IntegerFromReal(double x, int* warn)
 {
-    if (ISNAN(x))
-	return NA_INTEGER;
-    else if (x >= INT_MAX+1. || x <= INT_MIN ) {
+    if (std::isnan(x))
+	return R_NaInt;
+    else if (x >= INT_MAX + 1. || x <= INT_MIN) {
 	*warn |= WARN_INT_NA;
-	return NA_INTEGER;
+	return R_NaInt;
     }
     return int(x);
 }
 
-HIDDEN int
-Rf_IntegerFromComplex(Rcomplex x, int *warn)
+HIDDEN int Rf_IntegerFromComplex(Rcomplex x, int* warn)
 {
-    if (ISNAN(x.r) || ISNAN(x.i))
-	return NA_INTEGER;
-    else if (x.r > INT_MAX+1. || x.r <= INT_MIN ) {
+    if (std::isnan(x.r) || std::isnan(x.i))
+	return R_NaInt;
+    else if (x.r > INT_MAX + 1. || x.r <= INT_MIN) {
 	*warn |= WARN_INT_NA;
-	return NA_INTEGER;;
+	return R_NaInt;
     }
     if (x.i != 0)
 	*warn |= WARN_IMAG;
     return int(x.r);
 }
 
-
-HIDDEN int
-Rf_IntegerFromString(SEXP x, int *warn)
+HIDDEN int Rf_IntegerFromString(SEXP x, int *warn)
 {
     double xdouble;
     char *endp;
@@ -184,13 +175,13 @@ Rf_IntegerFromString(SEXP x, int *warn)
 	    }
 	    else if(xdouble < INT_MIN+1) {
 		*warn |= WARN_INT_NA;
-		return INT_MIN;// <- "wrong" as INT_MIN == NA_INTEGER currently; should have used INT_MIN+1
+		return INT_MIN;// <- "wrong" as INT_MIN == R_NaInt currently; should have used INT_MIN+1
 	    }
 #else
 	    // behave the same as IntegerFromReal() etc:
 	    if (xdouble >= INT_MAX+1. || xdouble <= INT_MIN ) {
 		*warn |= WARN_INT_NA;
-		return NA_INTEGER;
+		return R_NaInt;
 	    }
 #endif
 	    else
@@ -198,42 +189,39 @@ Rf_IntegerFromString(SEXP x, int *warn)
 	}
 	else *warn |= WARN_NA;
     }
-    return NA_INTEGER;
+    return R_NaInt;
 }
 
-HIDDEN double
-Rf_RealFromLogical(int x, int *warn)
+HIDDEN double Rf_RealFromLogical(int x, int* warn)
 {
-    return (x == NA_LOGICAL) ?
-	NA_REAL : x;
+    return (x == R_NaLog) ? R_NaReal : x;
 }
 
-HIDDEN double
-Rf_RealFromInteger(int x, int *warn)
+HIDDEN double Rf_RealFromInteger(int x, int* warn)
 {
-    if (x == NA_INTEGER)
-	return NA_REAL;
+    if (x == R_NaInt)
+	return R_NaReal;
     else
 	return x;
 }
 
-HIDDEN double
-Rf_RealFromComplex(Rcomplex x, int *warn)
+HIDDEN double Rf_RealFromComplex(Rcomplex x, int* warn)
 {
-    if (ISNAN(x.r) || ISNAN(x.i))
-	return NA_REAL;
-    if (ISNAN(x.r)) return x.r;
-    if (ISNAN(x.i)) return NA_REAL;
+    if (std::isnan(x.r) || std::isnan(x.i))
+	return R_NaReal;
+    if (std::isnan(x.r))
+	return x.r;
+    if (std::isnan(x.i))
+	return R_NaReal;
     if (x.i != 0)
 	*warn |= WARN_IMAG;
     return x.r;
 }
 
-HIDDEN double
-Rf_RealFromString(SEXP x, int *warn)
+HIDDEN double Rf_RealFromString(SEXP x, int* warn)
 {
     double xdouble;
-    char *endp;
+    char* endp;
     if (x != R_NaString && !Rf_isBlankString(R_CHAR(x))) { /* ASCII */
 	xdouble = R_strtod(R_CHAR(x), &endp); /* ASCII */
 	if (Rf_isBlankString(endp))
@@ -241,49 +229,43 @@ Rf_RealFromString(SEXP x, int *warn)
 	else
 	    *warn |= WARN_NA;
     }
-    return NA_REAL;
+    return R_NaReal;
 }
 
-HIDDEN Rcomplex
-Rf_ComplexFromLogical(int x, int *warn)
+HIDDEN Rcomplex Rf_ComplexFromLogical(int x, int* warn)
 {
     Rcomplex z;
-    if (x == NA_LOGICAL) {
-	z.r = NA_REAL;
-	z.i = NA_REAL;
-    }
-    else {
+    if (x == R_NaLog) {
+	z.r = R_NaReal;
+	z.i = R_NaReal;
+    } else {
 	z.r = x;
 	z.i = 0;
     }
     return z;
 }
 
-HIDDEN Rcomplex
-Rf_ComplexFromInteger(int x, int *warn)
+HIDDEN Rcomplex Rf_ComplexFromInteger(int x, int* warn)
 {
     Rcomplex z;
-    if (x == NA_INTEGER) {
-	z.r = NA_REAL;
-	z.i = NA_REAL;
-    }
-    else {
+    if (x == R_NaInt) {
+	z.r = R_NaReal;
+	z.i = R_NaReal;
+    } else {
 	z.r = x;
 	z.i = 0;
     }
     return z;
 }
 
-HIDDEN Rcomplex
-Rf_ComplexFromReal(double x, int *warn)
+HIDDEN Rcomplex Rf_ComplexFromReal(double x, int* warn)
 {
     Rcomplex z;
 #ifdef PRE_R_3_3_0
-    if (ISNAN(x)) {
-	z.r = NA_REAL;
-	z.i = NA_REAL;
-    }
-    else {
+    if (std::isnan(x)) {
+	z.r = R_NaReal;
+	z.i = R_NaReal;
+    } else {
 #endif
 	z.r = x;
 	z.i = 0;
@@ -293,15 +275,14 @@ Rf_ComplexFromReal(double x, int *warn)
     return z;
 }
 
-HIDDEN Rcomplex
-Rf_ComplexFromString(SEXP x, int *warn)
+HIDDEN Rcomplex Rf_ComplexFromString(SEXP x, int *warn)
 {
     double xr, xi;
     Rcomplex z;
-    const char *xx = R_CHAR(x); /* ASCII */
-    char *endp;
+    const char* xx = R_CHAR(x); /* ASCII */
+    char* endp;
 
-    z.r = z.i = NA_REAL;
+    z.r = z.i = R_NaReal;
     if (x != R_NaString && !Rf_isBlankString(xx)) {
 	xr = R_strtod(xx, &endp);
 	if (Rf_isBlankString(endp)) {
@@ -325,7 +306,7 @@ HIDDEN SEXP Rf_StringFromLogical(int x, int *warn)
 {
     int w;
     formatLogical(&x, 1, &w);
-    if (x == NA_LOGICAL) return NA_STRING;
+    if (x == R_NaLog) return R_NaString;
     else return Rf_mkChar(EncodeLogical(x, w));
 }
 
@@ -335,7 +316,7 @@ static SEXP sficache = nullptr;
 
 HIDDEN SEXP Rf_StringFromInteger(int x, int *warn)
 {
-    if (x == NA_INTEGER) return NA_STRING;
+    if (x == R_NaInt) return R_NaString;
     else if (x >= 0 && x < SFI_CACHE_SIZE) {
 	if (sficache == nullptr) {
 	    sficache = Rf_allocVector(STRSXP, SFI_CACHE_SIZE);
@@ -364,7 +345,7 @@ HIDDEN SEXP Rf_StringFromComplex(Rcomplex x, int *warn)
     int wr, dr, er, wi, di, ei;
     formatComplex(&x, 1, &wr, &dr, &er, &wi, &di, &ei, 0);
     if (ISNA(x.r) || ISNA(x.i)) // "NA" if Re or Im is (but not if they're just NaN)
-	return NA_STRING;
+	return R_NaString;
     else /* EncodeComplex has its own anti-trailing-0 care :*/
 	return Rf_mkChar(EncodeComplex(x, wr, dr, er, wi, di, ei, OutDec));
 }
@@ -676,7 +657,7 @@ static SEXP coerceToRaw(SEXP v)
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    tmp = Rf_IntegerFromLogical(LOGICAL_ELT(v, i), &warn);
-	    if(tmp == NA_INTEGER) {
+	    if(tmp == R_NaInt) {
 		tmp = 0;
 		warn |= WARN_RAW;
 	    }
@@ -687,7 +668,7 @@ static SEXP coerceToRaw(SEXP v)
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    tmp = INTEGER_ELT(v, i);
-	    if(tmp == NA_INTEGER || tmp < 0 || tmp > 255) {
+	    if(tmp == R_NaInt || tmp < 0 || tmp > 255) {
 		tmp = 0;
 		warn |= WARN_RAW;
 	    }
@@ -698,7 +679,7 @@ static SEXP coerceToRaw(SEXP v)
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    tmp = Rf_IntegerFromReal(REAL_ELT(v, i), &warn);
-	    if(tmp == NA_INTEGER || tmp < 0 || tmp > 255) {
+	    if(tmp == R_NaInt || tmp < 0 || tmp > 255) {
 		tmp = 0;
 		warn |= WARN_RAW;
 	    }
@@ -709,7 +690,7 @@ static SEXP coerceToRaw(SEXP v)
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    tmp = Rf_IntegerFromComplex(COMPLEX_ELT(v, i), &warn);
-	    if(tmp == NA_INTEGER || tmp < 0 || tmp > 255) {
+	    if(tmp == R_NaInt || tmp < 0 || tmp > 255) {
 		tmp = 0;
 		warn |= WARN_RAW;
 	    }
@@ -720,7 +701,7 @@ static SEXP coerceToRaw(SEXP v)
 	for (i = 0; i < n; i++) {
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    tmp = Rf_IntegerFromString(STRING_ELT(v, i), &warn);
-	    if(tmp == NA_INTEGER || tmp < 0 || tmp > 255) {
+	    if(tmp == R_NaInt || tmp < 0 || tmp > 255) {
 		tmp = 0;
 		warn |= WARN_RAW;
 	    }
@@ -1116,7 +1097,7 @@ static SEXP Rf_coerceVectorList(SEXP v, SEXPTYPE type)
 	    for (i = 0; i < n; i++) {
 //		if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 		tmp = Rf_asInteger(VECTOR_ELT(v, i));
-		if (tmp < 0 || tmp > 255) { /* includes NA_INTEGER */
+		if (tmp < 0 || tmp > 255) { /* includes R_NaInt */
 		    tmp = 0;
 		    warn |= WARN_RAW;
 		}
@@ -1397,8 +1378,8 @@ SEXP Rf_asCharacterFactor(SEXP x)
     PROTECT(ans = Rf_allocVector(STRSXP, n));
     for(i = 0; i < n; i++) {
       int ii = INTEGER_ELT(x, i);
-      if (ii == NA_INTEGER)
-	  SET_STRING_ELT(ans, i, NA_STRING);
+      if (ii == R_NaInt)
+	  SET_STRING_ELT(ans, i, R_NaString);
       else if (ii >= 1 && ii <= nl)
 	  SET_STRING_ELT(ans, i, STRING_ELT(labels, ii - 1));
       else
@@ -1629,14 +1610,14 @@ HIDDEN SEXP do_ascall(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 }
 
 
-/* int, not Rboolean, for NA_LOGICAL : */
+/* int, not Rboolean, for R_NaLog : */
 int Rf_asLogical(SEXP x)
 {
     int warn = 0;
 
     if (Rf_isVectorAtomic(x)) {
 	if (XLENGTH(x) < 1)
-	    return NA_LOGICAL;
+	    return R_NaLog;
 	switch (TYPEOF(x)) {
 	case LGLSXP:
 	    return LOGICAL_ELT(x, 0);
@@ -1656,7 +1637,7 @@ int Rf_asLogical(SEXP x)
     } else if(TYPEOF(x) == CHARSXP) {
 	    return Rf_LogicalFromString(x, &warn);
     }
-    return NA_LOGICAL;
+    return R_NaLog;
 }
 
 int Rf_asInteger(SEXP x)
@@ -1689,7 +1670,7 @@ int Rf_asInteger(SEXP x)
 	Rf_CoercionWarning(warn);
 	return res;
     }
-    return NA_INTEGER;
+    return R_NaInt;
 }
 
 double Rf_asReal(SEXP x)
@@ -1725,7 +1706,7 @@ double Rf_asReal(SEXP x)
 	Rf_CoercionWarning(warn);
 	return res;
     }
-    return NA_REAL;
+    return R_NaReal;
 }
 
 Rcomplex Rf_asComplex(SEXP x)
@@ -1761,8 +1742,8 @@ Rcomplex Rf_asComplex(SEXP x)
 	Rf_CoercionWarning(warn);
 	return z;
     }
-    z.r = NA_REAL;
-    z.i = NA_REAL;
+    z.r = R_NaReal;
+    z.i = R_NaReal;
     return z;
 }
 
@@ -1980,17 +1961,17 @@ namespace {
 	    switch (TYPEOF(s)) {
 	    case LGLSXP:
 	    case INTSXP:
-		return (INTEGER(s)[0] == NA_INTEGER);
+		return (INTEGER(s)[0] == R_NaInt);
 		break;
 	    case REALSXP:
-		return ISNAN(REAL(s)[0]);
+		return std::isnan(REAL(s)[0]);
 		break;
 	    case STRSXP:
-		return (STRING_ELT(s, 0) == NA_STRING);
+		return (STRING_ELT(s, 0) == R_NaString);
 		break;
 	    case CPLXSXP:
-		return (ISNAN(COMPLEX(s)[0].r)
-			|| ISNAN(COMPLEX(s)[0].i));
+		return (std::isnan(COMPLEX(s)[0].r)
+			|| std::isnan(COMPLEX(s)[0].i));
 		break;
 	    default:
 		return 0;
@@ -2040,25 +2021,25 @@ HIDDEN SEXP do_isna(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     switch (TYPEOF(x)) {
     case LGLSXP:
        for (i = 0; i < n; i++)
-	   pa[i] = (LOGICAL_ELT(x, i) == NA_LOGICAL);
+	   pa[i] = (LOGICAL_ELT(x, i) == R_NaLog);
 	break;
     case INTSXP:
 	for (i = 0; i < n; i++)
-	    pa[i] = (INTEGER_ELT(x, i) == NA_INTEGER);
+	    pa[i] = (INTEGER_ELT(x, i) == R_NaInt);
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++)
-	    pa[i] = ISNAN(REAL_ELT(x, i));
+	    pa[i] = std::isnan(REAL_ELT(x, i));
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 	    Rcomplex v = COMPLEX_ELT(x, i);
-	    pa[i] = (ISNAN(v.r) || ISNAN(v.i));
+	    pa[i] = (std::isnan(v.r) || std::isnan(v.i));
 	}
 	break;
     case STRSXP:
 	for (i = 0; i < n; i++)
-	    pa[i] = (STRING_ELT(x, i) == NA_STRING);
+	    pa[i] = (STRING_ELT(x, i) == R_NaString);
 	break;
     case LISTSXP:
 	for (i = 0; i < n; i++) {
@@ -2121,7 +2102,7 @@ static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
 	    return FALSE;
 	ITERATE_BY_REGION(x, xD, i, nbatch, double, REAL, {
 		for (int k = 0; k < nbatch; k++)
-		    if (ISNAN(xD[k]))
+		    if (std::isnan(xD[k]))
 			return TRUE;
 	    });
 	break;
@@ -2132,7 +2113,7 @@ static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
 	    return FALSE;
 	ITERATE_BY_REGION(x, xI, i, nbatch, int, INTEGER, {
 		for (int k = 0; k < nbatch; k++)
-		    if (xI[k] == NA_INTEGER)
+		    if (xI[k] == R_NaInt)
 			return TRUE;
 	    });
 	break;
@@ -2140,20 +2121,20 @@ static Rboolean anyNA(const Expression* call, const BuiltInFunction* op,
     case LGLSXP:
     {
 	for (i = 0; i < n; i++)
-	    if (LOGICAL_ELT(x, i) == NA_LOGICAL) return TRUE;
+	    if (LOGICAL_ELT(x, i) == R_NaLog) return TRUE;
 	break;
     }
     case CPLXSXP:
     {
 	for (i = 0; i < n; i++) {
 	    Rcomplex v = COMPLEX_ELT(x, i);
-	    if (ISNAN(v.r) || ISNAN(v.i)) return TRUE;
+	    if (std::isnan(v.r) || std::isnan(v.i)) return TRUE;
 	}
 	break;
     }
     case STRSXP:
 	for (i = 0; i < n; i++)
-	    if (STRING_ELT(x, i) == NA_STRING) return TRUE;
+	    if (STRING_ELT(x, i) == R_NaString) return TRUE;
 	break;
     case RAWSXP: /* no such thing as a raw NA:  is.na(.) gives FALSE always */
 	return FALSE;
@@ -2315,16 +2296,16 @@ HIDDEN SEXP do_isfinite(/*const*/ Expression* call, const BuiltInFunction* op, R
     case LGLSXP:
     case INTSXP:
 	for (i = 0; i < n; i++)
-	    pa[i] = (INTEGER_ELT(x, i) != NA_INTEGER);
+	    pa[i] = (INTEGER_ELT(x, i) != R_NaInt);
 	break;
     case REALSXP:
 	for (i = 0; i < n; i++)
-	    pa[i] = R_FINITE(REAL_ELT(x, i));
+	    pa[i] = std::isfinite(REAL_ELT(x, i));
 	break;
     case CPLXSXP:
 	for (i = 0; i < n; i++) {
 	    Rcomplex v = COMPLEX_ELT(x, i);
-	    pa[i] = (R_FINITE(v.r) && R_FINITE(v.i));
+	    pa[i] = (std::isfinite(v.r) && std::isfinite(v.i));
 	}
 	break;
     default:
@@ -2376,7 +2357,7 @@ HIDDEN SEXP do_isinfinite(/*const*/ Expression* call, const BuiltInFunction* op,
     case REALSXP:
 	for (i = 0; i < n; i++) {
 	    xr = REAL_ELT(x, i);
-	    if (ISNAN(xr) || R_FINITE(xr))
+	    if (std::isnan(xr) || std::isfinite(xr))
 		pa[i] = 0;
 	    else
 		pa[i] = 1;
@@ -2387,7 +2368,7 @@ HIDDEN SEXP do_isinfinite(/*const*/ Expression* call, const BuiltInFunction* op,
 	    Rcomplex v = COMPLEX_ELT(x, i);
 	    xr = v.r;
 	    xi = v.i;
-	    if ((ISNAN(xr) || R_FINITE(xr)) && (ISNAN(xi) || R_FINITE(xi)))
+	    if ((std::isnan(xr) || std::isfinite(xr)) && (std::isnan(xi) || std::isfinite(xi)))
 		pa[i] = 0;
 	    else
 		pa[i] = 1;
@@ -2421,7 +2402,7 @@ HIDDEN SEXP do_call(SEXP call, SEXP op, SEXP args, SEXP rho)
 	errorcall_return(call, _("first argument must be a character string"));
     const char *str = Rf_translateChar(STRING_ELT(rfun, 0));
     if (streql(str, ".Internal")) Rf_error("illegal usage");
-    PROTECT(rfun = Rf_install(str));
+    PROTECT(rfun = rho::Symbol::obtain(str));
     PROTECT(evargs = Rf_shallow_duplicate(CDR(args)));
     for (rest = evargs; rest != nullptr; rest = CDR(rest)) {
 	PROTECT(tmp = Rf_eval(CAR(rest), rho));
@@ -2468,7 +2449,7 @@ HIDDEN SEXP do_docall(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     if( Rf_isString(fun) ) {
 	const char *str = Rf_translateChar(STRING_ELT(fun, 0));
 	if (streql(str, ".Internal")) Rf_error("illegal usage");
-	SETCAR(c, Rf_install(str));
+	SETCAR(c, rho::Symbol::obtain(str));
     } else {
 	if(TYPEOF(fun) == SPECIALSXP && streql(PRIMNAME(fun), ".Internal"))
 	    Rf_error("illegal usage");
@@ -2786,7 +2767,7 @@ HIDDEN SEXP do_storage_mode(/*const*/ Expression* call, const BuiltInFunction* o
     SEXP ans;
     SEXPTYPE type;
 
-    if (!Rf_isValidString(value) || STRING_ELT(value, 0) == NA_STRING)
+    if (!Rf_isValidString(value) || STRING_ELT(value, 0) == R_NaString)
 	Rf_error(_("'value' must be non-null character string"));
     type = Rf_str2type(R_CHAR(STRING_ELT(value, 0)));
     if(type == SEXPTYPE( -1)) {

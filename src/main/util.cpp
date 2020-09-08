@@ -67,7 +67,7 @@ void F77_SYMBOL(rwarnc)(char *msg, int *nchar);
 NORET void F77_SYMBOL(rexitc)(char *msg, int *nchar);
 
 #ifdef __cplusplus
-}
+} //extern "C"
 #endif
 
 #include <rlocale.h>
@@ -129,16 +129,16 @@ SEXP Rf_asChar(SEXP x)
 
 	    switch (TYPEOF(x)) {
 	    case LGLSXP:
-		if (LOGICAL(x)[0] == NA_LOGICAL)
-		    return NA_STRING;
+		if (LOGICAL(x)[0] == R_NaLog)
+		    return R_NaString;
 		if (LOGICAL(x)[0])
 		    sprintf(buf, "TRUE");
 		else
 		    sprintf(buf, "FALSE");
 		return Rf_mkChar(buf);
 	    case INTSXP:
-		if (INTEGER(x)[0] == NA_INTEGER)
-		    return NA_STRING;
+		if (INTEGER(x)[0] == R_NaInt)
+		    return R_NaString;
 		snprintf(buf, MAXELTSIZE, "%d", INTEGER(x)[0]);
 		return Rf_mkChar(buf);
 	    case REALSXP:
@@ -152,13 +152,13 @@ SEXP Rf_asChar(SEXP x)
 	    case STRSXP:
 		return STRING_ELT(x, 0);
 	    default:
-		return NA_STRING;
+		return R_NaString;
 	    }
 	} else if(TYPEOF(x) == CHARSXP) {
 	    return x;
 	} else if(TYPEOF(x) == SYMSXP)
 	    return PRINTNAME(x);
-    return NA_STRING;
+    return R_NaString;
 }
 
 Rboolean Rf_isUnordered(SEXP s)
@@ -241,8 +241,7 @@ static int findTypeInTypeTable(const SEXPTYPE t)
 }
 
 // called from main.cpp
-HIDDEN
-void Rf_InitTypeTables(void) {
+HIDDEN void Rf_InitTypeTables(void) {
 
     /* Type2Table */
     for (int type = 0; type < MAX_NUM_SEXPTYPE; type++) {
@@ -255,7 +254,7 @@ void Rf_InitTypeTables(void) {
 	    MARK_NOT_MUTABLE(rstr);
 	    R_PreserveObject(rstr);
 	    UNPROTECT(1); /* rchar */
-	    SEXP rsym = Rf_install(cstr);
+	    SEXP rsym = rho::Symbol::obtain(cstr);
 
 	    Type2Table[type].cstrName = cstr;
 	    Type2Table[type].rcharName = rchar;
@@ -325,7 +324,7 @@ NORET SEXP Rf_type2symbol(SEXPTYPE t)
 }
 #endif
 
-NORET HIDDEN void UNIMPLEMENTED_TYPEt(const char* s, const SEXPTYPE t)
+HIDDEN NORET void UNIMPLEMENTED_TYPEt(const char *s, const SEXPTYPE t)
 {
     for (int i = 0; TypeTable[i].str; i++) {
 	if (TypeTable[i].type == int(t))
@@ -521,7 +520,7 @@ SEXP Rf_nthcdr(SEXP s, int n)
 HIDDEN SEXP do_nargs(/*const*/ Expression* call, const BuiltInFunction* op, Environment* rho, RObject* const* args, int num_args, const PairList* tags)
 {
     ClosureContext *cptr = R_GlobalContext();
-    int nargs = NA_INTEGER;
+    int nargs = R_NaInt;
     while (cptr && cptr->workingEnvironment() != rho)
 	cptr = ClosureContext::innermost(cptr->nextOut());
     if (cptr)
@@ -573,7 +572,6 @@ SEXP dcdr(SEXP l)
 {
     return(CDR(l));
 }
-
 
 static void isort_with_index(int *x, int *indx, int n)
 {
@@ -627,9 +625,9 @@ HIDDEN SEXP do_merge(/*const*/ Expression* call, const BuiltInFunction* op, RObj
     yi = yinds_;
     if ( !Rf_isInteger(yi) || !(ny = LENGTH(yi)) )
 	Rf_error(_("invalid '%s' argument"), "yinds");
-    if(!LENGTH(ans = all_x_) || NA_LOGICAL == (all_x = Rf_asLogical(ans)))
+    if(!LENGTH(ans = all_x_) || R_NaLog == (all_x = Rf_asLogical(ans)))
 	Rf_error(_("'all.x' must be TRUE or FALSE"));
-    if(!LENGTH(ans = all_y_)|| NA_LOGICAL == (all_y = Rf_asLogical(ans)))
+    if(!LENGTH(ans = all_y_)|| R_NaLog == (all_y = Rf_asLogical(ans)))
 	Rf_error(_("'all.y' must be TRUE or FALSE"));
 
     /* 0. sort the indices */
@@ -745,7 +743,7 @@ HIDDEN SEXP do_setwd(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 {
     if (!Rf_isValidString(dir))
 	Rf_error(_("character argument expected"));
-    if (STRING_ELT(dir, 0) == NA_STRING)
+    if (STRING_ELT(dir, 0) == R_NaString)
 	Rf_error(_("missing value is invalid"));
 
     /* get current directory to return */
@@ -784,8 +782,8 @@ HIDDEN SEXP do_basename(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("a character vector argument expected"));
     PROTECT(ans = Rf_allocVector(STRSXP, n = LENGTH(s)));
     for(i = 0; i < n; i++) {
-	if (STRING_ELT(s, i) == NA_STRING)
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if (STRING_ELT(s, i) == R_NaString)
+	    SET_STRING_ELT(ans, i, R_NaString);
 	else {
 	    pp = filenameToWchar(STRING_ELT(s, i), TRUE);
 	    if (wcslen(pp) > PATH_MAX - 1) Rf_error(_("path too long"));
@@ -816,8 +814,8 @@ HIDDEN SEXP do_basename(/*const*/ Expression* call, const BuiltInFunction* op, R
 	Rf_error(_("a character vector argument expected"));
     PROTECT(ans = Rf_allocVector(STRSXP, n = LENGTH(s)));
     for(i = 0; i < n; i++) {
-	if (STRING_ELT(s, i) == NA_STRING)
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if (STRING_ELT(s, i) == R_NaString)
+	    SET_STRING_ELT(ans, i, R_NaString);
 	else {
 	    pp = R_ExpandFileName(Rf_translateChar(STRING_ELT(s, i)));
 	    if (strlen(pp) > PATH_MAX - 1)
@@ -856,8 +854,8 @@ HIDDEN SEXP do_dirname(SEXP call, SEXP op, SEXP args, SEXP rho)
 	Rf_error(_("a character vector argument expected"));
     PROTECT(ans = Rf_allocVector(STRSXP, n = LENGTH(s)));
     for(i = 0; i < n; i++) {
-	if (STRING_ELT(s, i) == NA_STRING)
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if (STRING_ELT(s, i) == R_NaString)
+	    SET_STRING_ELT(ans, i, R_NaString);
 	else {
 	    memset(sp, 0, 4*PATH_MAX);
 	    pp = filenameToWchar(STRING_ELT(s, i), TRUE);
@@ -897,8 +895,8 @@ HIDDEN SEXP do_dirname(/*const*/ Expression* call, const BuiltInFunction* op, RO
 	Rf_error(_("a character vector argument expected"));
     PROTECT(ans = Rf_allocVector(STRSXP, n = LENGTH(s)));
     for(i = 0; i < n; i++) {
-	if (STRING_ELT(s, i) == NA_STRING)
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if (STRING_ELT(s, i) == R_NaString)
+	    SET_STRING_ELT(ans, i, R_NaString);
 	else {
 	    pp = R_ExpandFileName(Rf_translateChar(STRING_ELT(s, i)));
 	    if (strlen(pp) > PATH_MAX - 1)
@@ -941,7 +939,7 @@ HIDDEN SEXP do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* 
     if (!Rf_isString(paths))
 	Rf_error(_("'path' must be a character vector"));
 
-    int mustWork = Rf_asLogical(mustWork_); /* 1, NA_LOGICAL or 0 */
+    int mustWork = Rf_asLogical(mustWork_); /* 1, R_NaLog or 0 */
 
 /* Does any platform not have this? */
 #ifdef HAVE_REALPATH
@@ -956,7 +954,7 @@ HIDDEN SEXP do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* 
 	    /* and report the problem */
 	    if (mustWork == 1)
 		Rf_error("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
-	    else if (mustWork == NA_LOGICAL)
+	    else if (mustWork == R_NaLog)
 		Rf_warning("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
 	}
     }
@@ -983,7 +981,7 @@ HIDDEN SEXP do_normalizepath(rho::Expression* call, const rho::BuiltInFunction* 
 	    /* and report the problem */
 	    if (mustWork == 1)
 		Rf_error("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
-	    else if (mustWork == NA_LOGICAL)
+	    else if (mustWork == R_NaLog)
 		Rf_warning("path[%d]=\"%s\": %s", i+1, path, strerror(errno));
 	}
     }
@@ -1004,7 +1002,7 @@ extern "C" const char *getTZinfo(void)
     SEXP ans = PROTECT(Rf_eval(call, R_GlobalEnv));
     if(TYPEOF(ans) == STRSXP && LENGTH(ans) == 1) {
 	SEXP el = STRING_ELT(ans, 0);
-	if (el != NA_STRING) {
+	if (el != R_NaString) {
 	    strcpy(def_tz, R_CHAR(el));
 	    // printf("tz is %s\n", R_CHAR(el));
 	    UNPROTECT(3);
@@ -1032,13 +1030,13 @@ HIDDEN SEXP do_encodeString(/*const*/ Expression* call, const BuiltInFunction* o
 
     if (TYPEOF(x = x_) != STRSXP)
 	Rf_error(_("a character vector argument expected"));
-    if(Rf_isNull(width_)) w = NA_INTEGER;
+    if(Rf_isNull(width_)) w = R_NaInt;
     else {
 	w = Rf_asInteger(width_);
-	if(w != NA_INTEGER && w < 0)
+	if(w != R_NaInt && w < 0)
 	    Rf_error(_("invalid '%s' value"), "width");
     }
-    findWidth = Rboolean(w == NA_INTEGER);
+    findWidth = Rboolean(w == R_NaInt);
     s = quote_;
     if(LENGTH(s) != 1 || TYPEOF(s) != STRSXP)
 	Rf_error(_("invalid '%s' value"), "quote");
@@ -1047,18 +1045,18 @@ HIDDEN SEXP do_encodeString(/*const*/ Expression* call, const BuiltInFunction* o
     if(strlen(cs) > 1)
 	Rf_warning(_("only the first character of 'quote' will be used"));
     justify = Rf_asInteger(na_encode_);
-    if(justify == NA_INTEGER || justify < 0 || justify > 3)
+    if(justify == R_NaInt || justify < 0 || justify > 3)
 	Rf_error(_("invalid '%s' value"), "justify");
     if(justify == 3) w = 0;
     na = Rf_asLogical(justify_);
-    if(na == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "na.encode");
+    if(na == R_NaLog) Rf_error(_("invalid '%s' value"), "na.encode");
 
     len = XLENGTH(x);
     if(findWidth && justify < 3) {
 	w  = 0;
 	for(i = 0; i < len; i++) {
 	    s = STRING_ELT(x, i);
-	    if(na || s != NA_STRING)
+	    if(na || s != R_NaString)
 		w = std::max(w, Rstrlen(s, quote));
 	}
 	if(quote) w +=2; /* for surrounding quotes */
@@ -1066,7 +1064,7 @@ HIDDEN SEXP do_encodeString(/*const*/ Expression* call, const BuiltInFunction* o
     PROTECT(ans = Rf_duplicate(x));
     for(i = 0; i < len; i++) {
 	s = STRING_ELT(x, i);
-	if(na || s != NA_STRING) {
+	if(na || s != R_NaString) {
 	    cetype_t ienc = Rf_getCharCE(s);
 	    if(ienc == CE_UTF8) {
 		const char *ss = Rf_EncodeString(s, w-1000000, quote,
@@ -1127,7 +1125,7 @@ HIDDEN SEXP do_setencoding(/*const*/ Expression* call, const BuiltInFunction* op
 	else if(streql(thiss, "UTF-8")) ienc = CE_UTF8;
 	else if(streql(thiss, "bytes")) ienc = CE_BYTES;
 	tmp = STRING_ELT(x, i);
-	if(tmp == NA_STRING) continue;
+	if(tmp == R_NaString) continue;
 	if (! ((ienc == CE_LATIN1 && IS_LATIN1(tmp)) ||
 	       (ienc == CE_UTF8 && IS_UTF8(tmp)) ||
 	       (ienc == CE_BYTES && IS_BYTES(tmp)) ||
@@ -1170,15 +1168,13 @@ HIDDEN int utf8clen(char c)
     return 1 + utf8_table4[c & 0x3f];
 }
 
-static Rwchar_t
-utf16toucs(wchar_t high, wchar_t low) 
+static Rwchar_t utf16toucs(wchar_t high, wchar_t low)
 {
     return 0x10000 + ((int) (high & 0x3FF) << 10 ) + (int) (low & 0x3FF);
 }
 
 /* Return the low UTF-16 surrogate from a UTF-8 string; assumes all testing has been done. */
-static wchar_t
-utf8toutf16low(const char *s)
+static wchar_t utf8toutf16low(const char *s)
 {
     return (unsigned int) LOW_SURROGATE_START | ((s[2] & 0x0F) << 6) | (s[3] & 0x3F);
 }
@@ -1258,8 +1254,7 @@ HIDDEN size_t Rf_utf8toucs(wchar_t *wc, const char *s)
     }
 }
 
-size_t
-Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
+size_t Rf_utf8towcs(wchar_t *wc, const char *s, size_t n)
 {
     ssize_t m, res = 0;
     const char *t;
@@ -1376,8 +1371,7 @@ size_t Rf_mbrtowc(wchar_t *wc, const char *s, size_t n, mbstate_t *ps)
     return used;
 }
 
-HIDDEN
-Rboolean mbcsValid(const char *str)
+HIDDEN Rboolean mbcsValid(const char *str)
 {
     return  Rboolean((int(mbstowcs(nullptr, str, 0)) >= 0));
 }
@@ -1553,7 +1547,6 @@ char *Rf_acopy_string(const char *in)
 
 
 
-
 /* Table from
 http://unicode.org/Public/MAPPINGS/VENDORS/ADOBE/symbol.txt
 */
@@ -1631,7 +1624,7 @@ double R_strtod5(const char *str, char **endptr, char dec,
     while (isspace(*p)) p++;
 
     if (NA && streqln(p, "NA", 2)) {
-	ans = NA_REAL;
+	ans = R_NaReal;
 	p += 2;
 	goto done;
     }
@@ -1670,12 +1663,12 @@ double R_strtod5(const char *str, char **endptr, char dec,
 	}
 #define strtod_EXACT_CLAUSE						\
 	if(exact && ans > 0x1.fffffffffffffp52) {			\
-	    if(exact == NA_LOGICAL)					\
+	    if(exact == R_NaLog)					\
 		Rf_warning(_(						\
 		"accuracy loss in conversion from \"%s\" to numeric"),	\
 			str);						\
 	    else {							\
-		ans = NA_REAL;						\
+		ans = R_NaReal;						\
 		p = str; /* back out */					\
 		goto done;						\
 	    }								\
@@ -1717,14 +1710,14 @@ double R_strtod5(const char *str, char **endptr, char dec,
 	    }
 	}
 	goto done;
-    }
+    } // end {hexadecimal case}
 
     for ( ; *p >= '0' && *p <= '9'; p++, ndigits++) ans = 10*ans + (*p - '0');
     if (*p == dec)
 	for (p++; *p >= '0' && *p <= '9'; p++, ndigits++, expn--)
 	    ans = 10*ans + (*p - '0');
     if (ndigits == 0) {
-	ans = NA_REAL;
+	ans = R_NaReal;
 	p = str; /* back out */
 	goto done;
     }
@@ -1800,7 +1793,7 @@ HIDDEN SEXP do_enc2(/*const*/ Expression* call, const BuiltInFunction* op, RObje
 	Rf_errorcall(call, "argument is not a character vector");
     for (i = 0; i < XLENGTH(ans); i++) {
 	el = STRING_ELT(ans, i);
-	if (el == NA_STRING) continue;
+	if (el == R_NaString) continue;
 	if (op->variant() || known_to_be_utf8) { /* enc2utf8 */
 	    if (IS_UTF8(el) || IS_ASCII(el) || IS_BYTES(el)) continue;
 	    if (!duped) { ans = PROTECT(Rf_duplicate(ans)); duped = TRUE; }
@@ -2144,8 +2137,7 @@ int Scollate(SEXP a, SEXP b)
 }
 
 # else
-HIDDEN
-int Scollate(SEXP a, SEXP b)
+HIDDEN int Scollate(SEXP a, SEXP b)
 {
     return strcoll(Rf_translateChar(a), Rf_translateChar(b));
 }
@@ -2153,8 +2145,7 @@ int Scollate(SEXP a, SEXP b)
 # endif
 #endif
 
-static void
-bincode(double *x, R_xlen_t n, double *breaks, int nb,
+static void bincode(double *x, R_xlen_t n, double *breaks, int nb,
 	int *code, int right, int include_border)
 {
     int lo, hi, nb1 = nb - 1, newi;
@@ -2165,8 +2156,8 @@ bincode(double *x, R_xlen_t n, double *breaks, int nb,
 	if(breaks[i-1] > breaks[i]) Rf_error(_("'breaks' is not sorted"));
 
     for(R_xlen_t i = 0; i < n; i++) {
-	code[i] = NA_INTEGER;
-	if(!ISNAN(x[i])) {
+	code[i] = R_NaInt;
+	if(!std::isnan(x[i])) {
 	    lo = 0;
 	    hi = nb1;
 	    if(x[i] <  breaks[lo] || breaks[hi] < x[i] ||
@@ -2201,9 +2192,9 @@ HIDDEN SEXP do_bincode(/*const*/ Expression* call, const BuiltInFunction* op, RO
     PROTECT(breaks = Rf_coerceVector(breaks, REALSXP));
     R_xlen_t n = XLENGTH(x);
     int nB = LENGTH(breaks), sr = Rf_asLogical(right), sl = Rf_asLogical(lowest);
-    if (nB == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "breaks");
-    if (sr == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "right");
-    if (sl == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "include.lowest");
+    if (nB == R_NaInt) Rf_error(_("invalid '%s' argument"), "breaks");
+    if (sr == R_NaInt) Rf_error(_("invalid '%s' argument"), "right");
+    if (sl == R_NaInt) Rf_error(_("invalid '%s' argument"), "include.lowest");
     SEXP codes;
     PROTECT(codes = Rf_allocVector(INTSXP, n));
     bincode(REAL(x), n, REAL(breaks), nB, INTEGER(codes), sr, sl);
@@ -2217,7 +2208,7 @@ HIDDEN SEXP do_tabulate(/*const*/ Expression* call, const BuiltInFunction* op, R
     if (TYPEOF(in) != INTSXP)  Rf_error("invalid input");
     R_xlen_t n = XLENGTH(in);
     int nb = Rf_asInteger(nbin);
-    if (nb == NA_INTEGER || nb < 0)
+    if (nb == R_NaInt || nb < 0)
 	Rf_error(_("invalid '%s' argument"), "nbin");
     int *x = INTEGER(in);
     SEXP ans;
@@ -2227,7 +2218,7 @@ HIDDEN SEXP do_tabulate(/*const*/ Expression* call, const BuiltInFunction* op, R
 	double *y = REAL(ans);
 	if (nb) memset(y, 0, nb * sizeof(double));
 	for(R_xlen_t i = 0 ; i < n ; i++)
-	    if (x[i] != NA_INTEGER && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
+	    if (x[i] != R_NaInt && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
     } else
 #endif
     {
@@ -2235,7 +2226,7 @@ HIDDEN SEXP do_tabulate(/*const*/ Expression* call, const BuiltInFunction* op, R
 	int *y = INTEGER(ans);
 	if (nb) memset(y, 0, nb * sizeof(int));
 	for(R_xlen_t i = 0 ; i < n ; i++)
-	    if (x[i] != NA_INTEGER && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
+	    if (x[i] != R_NaInt && x[i] > 0 && x[i] <= nb) y[x[i] - 1]++;
     }
     return ans;
 }
@@ -2259,19 +2250,19 @@ HIDDEN SEXP do_findinterval(/*const*/ Expression* call, const BuiltInFunction* o
 	Rf_error(_("long vector '%s' is not supported"), "vec");
 #endif
     int n = LENGTH(xt);
-    if (n == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "vec");
+    if (n == R_NaInt) Rf_error(_("invalid '%s' argument"), "vec");
     R_xlen_t nx = XLENGTH(x);
     int sr = Rf_asLogical(right), si = Rf_asLogical(inside), lO = Rf_asLogical(leftOp);
-    if (sr == NA_INTEGER)
+    if (sr == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "rightmost.closed");
-    if (si == NA_INTEGER)
+    if (si == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "all.inside");
     SEXP ans = Rf_allocVector(INTSXP, nx);
     double *rxt = REAL(xt), *rx = REAL(x);
     int ii = 1;
     for(int i = 0; i < nx; i++) {
-	if (ISNAN(rx[i]))
-	    ii = NA_INTEGER;
+	if (std::isnan(rx[i]))
+	    ii = R_NaInt;
 	else {
 	    int mfl;
 	    ii = findInterval2(rxt, n, rx[i], Rboolean(sr), Rboolean(si), Rboolean(lO), ii, &mfl); // -> ../appl/interv.c
@@ -2290,25 +2281,25 @@ HIDDEN SEXP do_pretty(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 {
     SEXP ans, nm, hi;
     double l = Rf_asReal(min_);
-    if (!R_FINITE(l)) Rf_error(_("invalid '%s' argument"), "l");
+    if (!std::isfinite(l)) Rf_error(_("invalid '%s' argument"), "l");
     double u = Rf_asReal(max_);
-    if (!R_FINITE(u)) Rf_error(_("invalid '%s' argument"), "u");
+    if (!std::isfinite(u)) Rf_error(_("invalid '%s' argument"), "u");
     int n = Rf_asInteger(n_);
-    if (n == NA_INTEGER || n < 0) Rf_error(_("invalid '%s' argument"), "n");
+    if (n == R_NaInt || n < 0) Rf_error(_("invalid '%s' argument"), "n");
     int min_n = Rf_asInteger(min_n_);
-    if (min_n == NA_INTEGER || min_n < 0 || min_n > n) 
+    if (min_n == R_NaInt || min_n < 0 || min_n > n) 
 	Rf_error(_("invalid '%s' argument"), "min.n");
     double shrink = Rf_asReal(shrink_sml_);
-    if (!R_FINITE(shrink) || shrink <= 0.) 
+    if (!std::isfinite(shrink) || shrink <= 0.) 
 	Rf_error(_("invalid '%s' argument"), "shrink.sml");
     PROTECT(hi = Rf_coerceVector(bias_, REALSXP));
     double z;
-    if (!R_FINITE(z = REAL(hi)[0]) || z < 0.)
+    if (!std::isfinite(z = REAL(hi)[0]) || z < 0.)
 	Rf_error(_("invalid '%s' argument"), "high.u.bias");
-    if (!R_FINITE(z = REAL(hi)[1]) || z < 0.)
+    if (!std::isfinite(z = REAL(hi)[1]) || z < 0.)
 	Rf_error(_("invalid '%s' argument"), "u5.bias");
     int eps = Rf_asInteger(eps_correct_); /* eps.correct */
-    if (eps == NA_INTEGER || eps < 0 || eps > 2) 
+    if (eps == R_NaInt || eps < 0 || eps > 2) 
 	Rf_error(_("'eps.correct' must be 0, 1, or 2"));
     R_pretty(&l, &u, &n, min_n, shrink, REAL(hi), eps, 1);
     PROTECT(ans = Rf_allocVector(VECSXP, 3));
@@ -2329,8 +2320,7 @@ HIDDEN SEXP do_pretty(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 		   as.character(format), as.character(flag), i.strlen))
 */
 
-static void
-str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
+static void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 	   const char *format, const char *flag, char **result);
 
 HIDDEN SEXP do_formatC(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject*  mode_, RObject*  width_, RObject*  digits_, RObject*  format_, RObject*  flag_, RObject*  i_strlen_)
@@ -2423,8 +2413,7 @@ HIDDEN SEXP do_formatC(/*const*/ Expression* call, const BuiltInFunction* op, RO
 #endif
 #include <Rmath.h>		/* fround */
 
-static
-void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
+static void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 		const char *format, const char *flag, char **result)
 {
     int dig = abs(digits);
@@ -2536,7 +2525,7 @@ void str_signif(void *x, R_xlen_t n, const char *type, int width, int digits,
 		} /* if(do_fg) for(i..) */
 	    else
 		for (R_xlen_t i = 0; i < n; i++)
-		    snprintf(result[i], strlen(result[i]) + 1, 
+		    snprintf(result[i], strlen(result[i]) + 1,
 			     form, width, dig, (static_cast<double *>(x))[i]);
 	} else
 	    Rf_error("'type' must be \"real\" for this format");

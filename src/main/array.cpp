@@ -99,7 +99,7 @@ HIDDEN SEXP do_matrix(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     }
     R_xlen_t lendat = XLENGTH(vals);
     int byrow = Rf_asLogical(byrow_);
-    if (byrow == NA_INTEGER)
+    if (byrow == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "byrow");
     int miss_nr = Rf_asLogical(miss_nr_);
     int miss_nc = Rf_asLogical(miss_nc_);
@@ -107,7 +107,7 @@ HIDDEN SEXP do_matrix(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     if (!miss_nr) {
 	if (!Rf_isNumeric(nrow)) Rf_error(_("non-numeric matrix extent"));
 	nr = Rf_asInteger(nrow);
-	if (nr == NA_INTEGER)
+	if (nr == R_NaInt)
 	    Rf_error(_("invalid 'nrow' value (too large or NA)"));
 	if (nr < 0)
 	    Rf_error(_("invalid 'nrow' value (< 0)"));
@@ -115,7 +115,7 @@ HIDDEN SEXP do_matrix(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     if (!miss_nc) {
 	if (!Rf_isNumeric(ncol)) Rf_error(_("non-numeric matrix extent"));
 	nc = Rf_asInteger(ncol);
-	if (nc == NA_INTEGER)
+	if (nc == R_NaInt)
 	    Rf_error(_("invalid 'ncol' value (too large or NA)"));
 	if (nc < 0)
 	    Rf_error(_("invalid 'ncol' value (< 0)"));
@@ -172,24 +172,24 @@ HIDDEN SEXP do_matrix(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	switch(TYPEOF(vals)) {
 	case STRSXP:
 	    for (i = 0; i < N; i++)
-		SET_STRING_ELT(ans, i, NA_STRING);
+		SET_STRING_ELT(ans, i, R_NaString);
 	    break;
 	case LGLSXP:
 	    for (i = 0; i < N; i++)
-		LOGICAL(ans)[i] = NA_LOGICAL;
+		LOGICAL(ans)[i] = R_NaLog;
 	    break;
 	case INTSXP:
 	    for (i = 0; i < N; i++)
-		INTEGER(ans)[i] = NA_INTEGER;
+		INTEGER(ans)[i] = R_NaInt;
 	    break;
 	case REALSXP:
 	    for (i = 0; i < N; i++)
-		REAL(ans)[i] = NA_REAL;
+		REAL(ans)[i] = R_NaReal;
 	    break;
 	case CPLXSXP:
 	    {
 		Rcomplex na_cmplx;
-		na_cmplx.r = NA_REAL;
+		na_cmplx.r = R_NaReal;
 		na_cmplx.i = 0;
 		for (i = 0; i < N; i++)
 		    COMPLEX(ans)[i] = na_cmplx;
@@ -339,7 +339,7 @@ HIDDEN SEXP do_length(/*const*/ Expression* call, const BuiltInFunction* op, Env
 	if (Rf_length(ans) == 1 && TYPEOF(ans) == REALSXP) {
 	    GCStackRoot<> ansrt(ans);
 	    double d = REAL(ans)[0];
-	    if (R_FINITE(d) && d >= 0. && d <= INT_MAX && floor(d) == d) {
+	    if (std::isfinite(d) && d >= 0. && d <= INT_MAX && floor(d) == d) {
                 PROTECT(ans);
                 ans = Rf_coerceVector(ans, INTSXP);
                 UNPROTECT(1);
@@ -415,7 +415,7 @@ HIDDEN SEXP do_lengths(/*const*/ Expression* call, const BuiltInFunction* op, En
     R_xlen_t x_len, i;
     int *ans_elt;
     int useNames = Rf_asLogical(args[1]);
-    if (useNames == NA_LOGICAL)
+    if (useNames == R_NaLog)
 	Rf_error(_("invalid '%s' value"), "use.names");
     bool isList_ = Rf_isVectorList(x) || Rf_isS4(x);
     if(!isList_) switch(TYPEOF(x)) {
@@ -503,19 +503,19 @@ HIDDEN SEXP do_rowscols(/*const*/ Expression* call, const BuiltInFunction* op, R
  A precise version of the function could be implemented as
 
        for (R_xlen_t i = 0; i < n; i++)
-           if (!R_FINITE(x[i])) return TRUE;
+           if (!std::isfinite(x[i])) return TRUE;
        return FALSE;
 
  The present version is imprecise, but faster.
 */
 static bool mayHaveNaNOrInf(double *x, R_xlen_t n)
 {
-    if ((n&1) != 0 && !R_FINITE(x[0]))
+    if ((n&1) != 0 && !std::isfinite(x[0]))
 	return true;
     for (R_xlen_t i = n&1; i < n; i += 2)
 	/* A precise version could use this condition:
 	 *
-	 * !R_FINITE(x[i]+x[i+1]) && (!R_FINITE(x[i]) || !R_FINITE(x[i+1]))
+	 * !std::isfinite(x[i]+x[i+1]) && (!std::isfinite(x[i]) || !std::isfinite(x[i+1]))
 	 *
 	 * The present imprecise version has been found to be faster
 	 * with GCC and ICC in the common case when the sum of the two
@@ -524,7 +524,7 @@ static bool mayHaveNaNOrInf(double *x, R_xlen_t n)
 	 * The present version is imprecise because the sum of two very
 	 * large finite values (e.g. 1e308) may be infinite.
 	 */
-	if (!R_FINITE(x[i]+x[i+1]))
+	if (!std::isfinite(x[i]+x[i+1]))
 	    return true;
     return false;
 }
@@ -548,7 +548,7 @@ static Rboolean mayHaveNaNOrInf_simd(double *x, R_xlen_t n)
 #endif
     for (R_xlen_t i = 0; i < n; i++)
 	s += x[i];
-    return Rboolean(!R_FINITE(s));
+    return Rboolean(!std::isfinite(s));
 }
 
 static bool cmayHaveNaNOrInf(Rcomplex *x, R_xlen_t n)
@@ -556,10 +556,10 @@ static bool cmayHaveNaNOrInf(Rcomplex *x, R_xlen_t n)
     /* With HAVE_FORTRAN_DOUBLE_COMPLEX set, it should be clear that
        Rcomplex has no padding, so we could probably use mayHaveNaNOrInf,
        but better safe than sorry... */
-    if ((n&1) != 0 && (!R_FINITE(x[0].r) || !R_FINITE(x[0].i)))
+    if ((n&1) != 0 && (!std::isfinite(x[0].r) || !std::isfinite(x[0].i)))
 	return true;
     for (R_xlen_t i = n&1; i < n; i += 2)
-	if (!R_FINITE(x[i].r+x[i].i+x[i+1].r+x[i+1].i))
+	if (!std::isfinite(x[i].r+x[i].i+x[i+1].r+x[i+1].i))
 	    return true;
     return false;
 }
@@ -576,7 +576,7 @@ static Rboolean cmayHaveNaNOrInf_simd(Rcomplex *x, R_xlen_t n)
 	s += x[i].r;
 	s += x[i].i;
     }
-    return Rboolean(!R_FINITE(s));
+    return Rboolean(!std::isfinite(s));
 }
 
 static void internal_matprod(double *x, int nrx, int ncx,
@@ -968,7 +968,6 @@ static void ccrossprod(Rcomplex *x, int nrx, int ncx,
 	    }
 	    break; /* use blas */
     }
-
 
     const char *transa = "T", *transb = "N";
     Rcomplex one, zero;
@@ -1714,7 +1713,7 @@ HIDDEN SEXP do_aperm(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 
     /* handle the resize */
     int resize = Rf_asLogical(resize_);
-    if (resize == NA_LOGICAL) Rf_error(_("'resize' must be TRUE or FALSE"));
+    if (resize == R_NaLog) Rf_error(_("'resize' must be TRUE or FALSE"));
 
     /* and handle names(dim(.)) and the dimnames if any */
     if (resize) {
@@ -1771,11 +1770,11 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     R_xlen_t n = asVecSize(n_);
     R_xlen_t p = asVecSize(p_);
     NaRm = Rboolean(Rf_asLogical(na_rm_));
-    if (n == NA_INTEGER || n < 0)
+    if (n == R_NaInt || n < 0)
 	Rf_error(_("invalid '%s' argument"), "n");
-    if (p == NA_INTEGER || p < 0)
+    if (p == R_NaInt || p < 0)
 	Rf_error(_("invalid '%s' argument"), "p");
-    if (NaRm == NA_LOGICAL) Rf_error(_("invalid '%s' argument"), "na.rm");
+    if (NaRm == R_NaLog) Rf_error(_("invalid '%s' argument"), "na.rm");
     keepNA = Rboolean(!NaRm);
 
     switch (type = TYPEOF(x)) {
@@ -1812,8 +1811,8 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 		    for (sum = 0., i = 0; i < n; i++) sum += *rx++;
 		else {
 		    for (cnt = 0, sum = 0., i = 0; i < n; i++, rx++)
-			if (!ISNAN(*rx)) {cnt++; sum += *rx;}
-			else if (keepNA) {sum = NA_REAL; break;} // unused
+			if (!std::isnan(*rx)) {cnt++; sum += *rx;}
+			else if (keepNA) {sum = R_NaReal; break;} // unused
 		}
 		break;
 	    }
@@ -1821,16 +1820,16 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	    {
 		int *ix = INTEGER(x) + R_xlen_t(n)*j;
 		for (cnt = 0, sum = 0., i = 0; i < n; i++, ix++)
-		    if (*ix != NA_INTEGER) {cnt++; sum += *ix;}
-		    else if (keepNA) {sum = NA_REAL; break;}
+		    if (*ix != R_NaInt) {cnt++; sum += *ix;}
+		    else if (keepNA) {sum = R_NaReal; break;}
 		break;
 	    }
 	    case LGLSXP:
 	    {
 		int *ix = LOGICAL(x) + R_xlen_t(n)*j;
 		for (cnt = 0, sum = 0., i = 0; i < n; i++, ix++)
-		    if (*ix != NA_LOGICAL) {cnt++; sum += *ix;}
-		    else if (keepNA) {sum = NA_REAL; break;}
+		    if (*ix != R_NaLog) {cnt++; sum += *ix;}
+		    else if (keepNA) {sum = R_NaReal; break;}
 		break;
 	    }
 	    }
@@ -1862,7 +1861,7 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 		    for (R_xlen_t i = 0; i < n; i++) *ra++ += *rx++;
 		else
 		    for (R_xlen_t i = 0; i < n; i++, ra++, rx++)
-			if (!ISNAN(*rx)) {
+			if (!std::isnan(*rx)) {
 			    *ra += *rx;
 			    if (OP == 3) Cnt[i]++;
 			}
@@ -1873,10 +1872,10 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 		int *ix = INTEGER(x) + (R_xlen_t)n * j;
 		for (R_xlen_t i = 0; i < n; i++, ra++, ix++)
 		    if (keepNA) {
-			if (*ix != NA_INTEGER) *ra += *ix;
-			else *ra = NA_REAL;
+			if (*ix != R_NaInt) *ra += *ix;
+			else *ra = R_NaReal;
 		    }
-		    else if (*ix != NA_INTEGER) {
+		    else if (*ix != R_NaInt) {
 			*ra += *ix;
 			if (OP == 3) Cnt[i]++;
 		    }
@@ -1887,10 +1886,10 @@ HIDDEN SEXP do_colsum(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 		int *ix = LOGICAL(x) + (R_xlen_t)n * j;
 		for (R_xlen_t i = 0; i < n; i++, ra++, ix++)
 		    if (keepNA) {
-			if (*ix != NA_LOGICAL) *ra += *ix;
-			else *ra = NA_REAL;
+			if (*ix != R_NaLog) *ra += *ix;
+			else *ra = R_NaReal;
 		    }
-		    else if (*ix != NA_LOGICAL) {
+		    else if (*ix != R_NaLog) {
 			*ra += *ix;
 			if (OP == 3) Cnt[i]++;
 		    }
@@ -1974,20 +1973,20 @@ HIDDEN SEXP do_array(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 	    xcopyWithRecycle(LOGICAL(ans), LOGICAL(vals), 0, nans,
 				    lendat);
 	else
-	    for (i = 0; i < nans; i++) LOGICAL(ans)[i] = NA_LOGICAL;
+	    for (i = 0; i < nans; i++) LOGICAL(ans)[i] = R_NaLog;
 	break;
     case INTSXP:
 	if (nans && lendat)
 	    xcopyWithRecycle(INTEGER(ans), INTEGER(vals), 0, nans,
 				    lendat);
 	else
-	    for (i = 0; i < nans; i++) INTEGER(ans)[i] = NA_INTEGER;
+	    for (i = 0; i < nans; i++) INTEGER(ans)[i] = R_NaInt;
 	break;
     case REALSXP:
 	if (nans && lendat)
 	    xcopyWithRecycle(REAL(ans), REAL(vals), 0, nans, lendat);
 	else
-	    for (i = 0; i < nans; i++) REAL(ans)[i] = NA_REAL;
+	    for (i = 0; i < nans; i++) REAL(ans)[i] = R_NaReal;
 	break;
     case CPLXSXP:
 	if (nans && lendat)
@@ -1995,7 +1994,7 @@ HIDDEN SEXP do_array(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 				    lendat);
 	else {
 	    Rcomplex na_cmplx;
-	    na_cmplx.r = NA_REAL;
+	    na_cmplx.r = R_NaReal;
 	    na_cmplx.i = 0;
 	    for (i = 0; i < nans; i++) COMPLEX(ans)[i] = na_cmplx;
 	}
@@ -2010,7 +2009,7 @@ HIDDEN SEXP do_array(/*const*/ Expression* call, const BuiltInFunction* op, RObj
 	if (nans && lendat)
 	    xcopyStringWithRecycle(ans, vals, 0, nans, lendat);
 	else
-	    for (i = 0; i < nans; i++) SET_STRING_ELT(ans, i, NA_STRING);
+	    for (i = 0; i < nans; i++) SET_STRING_ELT(ans, i, R_NaString);
 	break;
     /* Rest are already initialized */
     case VECSXP:
@@ -2056,12 +2055,12 @@ HIDDEN SEXP do_diag(/*const*/ Expression* call, const BuiltInFunction* op, RObje
     snr = nrow_;
     snc = ncol_;
     nr = Rf_asInteger(snr);
-    if (nr == NA_INTEGER)
+    if (nr == R_NaInt)
 	Rf_error(_("invalid 'nrow' value (too large or NA)"));
     if (nr < 0)
 	Rf_error(_("invalid 'nrow' value (< 0)"));
     nc = Rf_asInteger(snc);
-    if (nc == NA_INTEGER)
+    if (nc == R_NaInt)
 	Rf_error(_("invalid 'ncol' value (too large or NA)"));
     if (nc < 0)
 	Rf_error(_("invalid 'ncol' value (< 0)"));
@@ -2153,12 +2152,12 @@ HIDDEN SEXP do_backsolve(/*const*/ Expression* call, const BuiltInFunction* op, 
        many rows and cols in the rhs and at least that many rows on
        the rhs.
     */
-    if (k == NA_INTEGER || k <= 0 || k > nrr || k > Rf_ncols(r) || k > nrb)
+    if (k == R_NaInt || k <= 0 || k > nrr || k > Rf_ncols(r) || k > nrb)
 	Rf_error(_("invalid '%s' argument"), "k");
     int upper = Rf_asLogical(upper_tri_);
-    if (upper == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "upper.tri");
+    if (upper == R_NaInt) Rf_error(_("invalid '%s' argument"), "upper.tri");
     int trans = Rf_asLogical(transpose_);
-    if (trans == NA_INTEGER) Rf_error(_("invalid '%s' argument"), "transpose");
+    if (trans == R_NaInt) Rf_error(_("invalid '%s' argument"), "transpose");
     if (TYPEOF(r) != REALSXP) {PROTECT(r = Rf_coerceVector(r, REALSXP)); nprot++;}
     if (TYPEOF(b) != REALSXP) {PROTECT(b = Rf_coerceVector(b, REALSXP)); nprot++;}
     double *rr = REAL(r);

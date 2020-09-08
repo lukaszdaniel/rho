@@ -52,7 +52,7 @@ using namespace rho;
 using namespace VectorOps;
 
 /* interval at which to check interrupts, a guess */
-#define NINTERRUPT 10000000
+constexpr R_xlen_t NINTERRUPT = 10000000;
 
 static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2);
 
@@ -265,8 +265,8 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else
 		pa[i] = Rf_Seql(c1, c2) ? 1 : 0;
 	}
@@ -276,8 +276,8 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else
 		pa[i] = Rf_Seql(c1, c2) ? 0 : 1;
 	}
@@ -287,15 +287,15 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else if (c1 == c2)
 		pa[i] = 0;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    pa[i] = NA_LOGICAL;
+		    pa[i] = R_NaLog;
 		else
 		    pa[i] = (res < 0) ? 1 : 0;
 	    }
@@ -306,15 +306,15 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else if (c1 == c2)
 		pa[i] = 0;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    pa[i] = NA_LOGICAL;
+		    pa[i] = R_NaLog;
 		else
 		    pa[i] = (res > 0) ? 1 : 0;
 	    }
@@ -325,15 +325,15 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else if (c1 == c2)
 		pa[i] = 1;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    pa[i] = NA_LOGICAL;
+		    pa[i] = R_NaLog;
 		else
 		    pa[i] = (res <= 0) ? 1 : 0;
 	    }
@@ -344,15 +344,15 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 //	    if ((i+1) % NINTERRUPT == 0) R_CheckUserInterrupt();
 	    c1 = STRING_ELT(s1, i % n1);
 	    c2 = STRING_ELT(s2, i % n2);
-	    if (c1 == NA_STRING || c2 == NA_STRING)
-		pa[i] = NA_LOGICAL;
+	    if (c1 == R_NaString || c2 == R_NaString)
+		pa[i] = R_NaLog;
 	    else if (c1 == c2)
 		pa[i] = 1;
 	    else {
 		errno = 0;
 		res = Scollate(c1, c2);
 		if(errno)
-		    pa[i] = NA_LOGICAL;
+		    pa[i] = R_NaLog;
 		else
 		    pa[i] = (res >= 0) ? 1 : 0;
 	    }
@@ -384,7 +384,7 @@ static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2)
 	    const int *pa = INTEGER_RO(a), *pb = INTEGER_RO(b);		\
 	for(i = 0; i < mn; i++) { \
 	    int aa = pa[i%m], bb =  pb[i%n]; \
-	    pans[i] = (aa == NA_INTEGER || bb == NA_INTEGER) ? NA_INTEGER : aa op bb; \
+	    pans[i] = (aa == R_NaInt || bb == R_NaInt) ? R_NaInt : aa op bb; \
 	} \
 	}								\
 	break;								\
@@ -430,9 +430,9 @@ static SEXP bitwiseShiftL(SEXP a, SEXP b)
 	for(i = 0; i < mn; i++) {
 	    int aa = pa[i%m], bb = pb[i%n];
 	    pans[i] = 
-			(aa == NA_INTEGER || bb == NA_INTEGER ||
+			(aa == R_NaInt || bb == R_NaInt ||
 			 bb < 0 || bb > 31) ?
-			NA_INTEGER : ((unsigned int)aa << bb);
+			R_NaInt : ((unsigned int)aa << bb);
 	}
 	}
 	break;
@@ -464,9 +464,9 @@ static SEXP bitwiseShiftR(SEXP a, SEXP b)
 	for(i = 0; i < mn; i++) {
 	    int aa = pa[i%m], bb = pb[i%n];
 	    pans[i] = 
-			(aa == NA_INTEGER || bb == NA_INTEGER ||
+			(aa == R_NaInt || bb == R_NaInt ||
 			 bb < 0 || bb > 31) ?
-			NA_INTEGER : ((unsigned int)aa >> bb);
+			R_NaInt : ((unsigned int)aa >> bb);
 	}
 	}
 	break;
@@ -503,7 +503,7 @@ HIDDEN SEXP do_bitwise_not(/*const*/ Expression* call, const BuiltInFunction* op
     case INTSXP:
 	for(i = 0; i < m; i++) {
 	    int aa = INTEGER(a)[i];
-	    INTEGER(ans)[i] = (aa == NA_INTEGER) ? aa : ~aa;
+	    INTEGER(ans)[i] = (aa == R_NaInt) ? aa : ~aa;
 	}
 	break;
     default:

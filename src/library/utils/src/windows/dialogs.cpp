@@ -103,7 +103,7 @@ SEXP winProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
     iv = pbar->width * (pbar->val - pbar->min)/(pbar->max - pbar->min);
     setprogressbar(pbar->pb, iv);
     show(pbar->wprog);
-    ptr = R_MakeExternalPtr(pbar, Rf_install("winProgressBar"), R_NilValue);
+    ptr = R_MakeExternalPtr(pbar, Rf_install("winProgressBar"), nullptr);
     R_RegisterCFinalizerEx(ptr, pbarFinalizer, TRUE);
 
     return ptr;
@@ -112,7 +112,7 @@ SEXP winProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 SEXP closeWinProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
 {
     pbarFinalizer(CADR(args));
-    return R_NilValue;
+    return nullptr;
 }
 
 SEXP setWinProgressBar(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -198,7 +198,7 @@ SEXP winDialogString(SEXP call, SEXP op, SEXP args, SEXP env)
     string = askstring(Rf_translateChar(STRING_ELT(message, 0)),
 		       Rf_translateChar(STRING_ELT(def, 0)));
     if (string) return Rf_mkString(string);
-    else return R_NilValue;
+    else return nullptr;
 }
 
 static char msgbuf[256];
@@ -296,7 +296,7 @@ SEXP winMenuAdd(SEXP call, SEXP op, SEXP args, SEXP env)
 	    Rf_errorcall(call, msgbuf);
 	}
     }
-    return (R_NilValue);
+    return (nullptr);
 }
 
 SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
@@ -326,5 +326,5 @@ SEXP winMenuDel(SEXP call, SEXP op, SEXP args, SEXP env)
 	    Rf_errorcall(call, msgbuf);
 	}
     }
-    return (R_NilValue);
+    return (nullptr);
 }

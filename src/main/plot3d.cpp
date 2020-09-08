@@ -197,7 +197,7 @@ SEXP GEcontourLines(double *x, int nx, double *y, int ny,
     zmin = DBL_MAX;
     zmax = DBL_MIN;
     for (i = 0; i < nx * ny; i++)
-	if (R_FINITE(z[i])) {
+	if (std::isfinite(z[i])) {
 	    if (zmax < z[i]) zmax =  z[i];
 	    if (zmin > z[i]) zmin =  z[i];
 	}

@@ -188,14 +188,14 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
 {
     GESystemDesc *sd;
     baseSystemState *bss, *bss2;
-    SEXP result = R_NilValue;
+    SEXP result = nullptr;
 
     switch (task) {
     case GE_FinaliseState:
 	/* called from unregisterOne */
 	sd = dd->gesd[baseRegisterIndex];
 	free(sd->systemSpecific);
-	sd->systemSpecific = NULL;
+	sd->systemSpecific = nullptr;
 	break;
     case GE_InitState:
     {
@@ -272,7 +272,7 @@ static SEXP baseCallback(GEevent task, pGEDevDesc dd, SEXP data)
         {
             int i, nState = LENGTH(data) - 1;
             SEXP graphicsState, snapshotEngineVersion;
-            PROTECT(graphicsState = R_NilValue);
+            PROTECT(graphicsState = nullptr);
             /* Prior to engine version 11, "pkgName" was not stored.
              * (can tell because "engineVersion" was not stored either.)
              * Assume 'graphics' is first state in snapshot
@@ -367,7 +367,7 @@ unregisterBase(void) {
 SEXP RunregisterBase(void)
 {
     unregisterBase();
-    return R_NilValue;
+    return nullptr;
 }
 
 /* FIXME: Make this a macro to avoid function call overhead?

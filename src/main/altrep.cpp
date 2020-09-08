@@ -38,20 +38,20 @@ using namespace rho;
  **/
 
 /* Use ATTRIB field to hold class info. OK since not visible outside. */
-static inline SEXP ALTREP_CLASS_SERIALIZED_CLASS(SEXP x) { return ATTRIB(x); }
-static inline void SET_ALTREP_CLASS_SERIALIZED_CLASS(
+inline static SEXP ALTREP_CLASS_SERIALIZED_CLASS(SEXP x) { return ATTRIB(x); }
+inline static void SET_ALTREP_CLASS_SERIALIZED_CLASS(
     SEXP x, SEXP csym, SEXP psym, SEXP stype)
 {
     SET_ATTRIB(x, Rf_list3(csym, psym, stype));
 }
-static inline SEXP ALTREP_SERIALIZED_CLASS_CLSSYM(SEXP x) { return CAR(x); }
-static inline SEXP ALTREP_SERIALIZED_CLASS_PKGSYM(SEXP x) { return CADR(x); }
-static inline SEXPTYPE ALTREP_SERIALIZED_CLASS_TYPE(SEXP x)
+inline static SEXP ALTREP_SERIALIZED_CLASS_CLSSYM(SEXP x) { return CAR(x); }
+inline static SEXP ALTREP_SERIALIZED_CLASS_PKGSYM(SEXP x) { return CADR(x); }
+inline static SEXPTYPE ALTREP_SERIALIZED_CLASS_TYPE(SEXP x)
 {
     return SEXPTYPE(INTEGER0(CADDR(x))[0]);
 }
 
-static inline SEXPTYPE ALTREP_CLASS_BASE_TYPE(SEXP x)
+inline static SEXPTYPE ALTREP_CLASS_BASE_TYPE(SEXP x)
 {
     return ALTREP_SERIALIZED_CLASS_TYPE(ALTREP_CLASS_SERIALIZED_CLASS(x));
 }
@@ -76,8 +76,8 @@ RegisterClass(SEXP class_, SEXPTYPE type, const char *cname, const char *pname,
 	R_PreserveObject(Registry);
     }
 
-    SEXP csym = Rf_install(cname);
-    SEXP psym = Rf_install(pname);
+    SEXP csym = rho::Symbol::obtain(cname);
+    SEXP psym = rho::Symbol::obtain(pname);
     SEXP stype = PROTECT(Rf_ScalarInteger(type));
     SEXP iptr = R_MakeExternalPtr(dll, nullptr, nullptr);
     SEXP entry = LookupClassEntry(csym, psym);
@@ -842,9 +842,9 @@ DEFINE_METHOD_SETTER(altstring, No_NA)
  ** ALTREP Object Constructor and Utility Functions
  **/
 
-SEXP R_new_altrep(R_altrep_class_t class_, SEXP data1, SEXP data2)
+SEXP R_new_altrep(R_altrep_class_t aclass, SEXP data1, SEXP data2)
 {
-    SEXP sclass = R_SEXP(class_);
+    SEXP sclass = R_SEXP(aclass);
     SEXPTYPE type = ALTREP_CLASS_BASE_TYPE(sclass);
     SEXP ans = Rf_cons(data1, data2);
     SET_TYPEOF(ans, type);
@@ -2094,7 +2094,7 @@ static SEXP mmap_file(SEXP file, SEXPTYPE type, Rboolean ptrOK, Rboolean wrtOK,
 static Rboolean asLogicalNA(SEXP x, Rboolean dflt)
 {
     Rboolean val = Rboolean(Rf_asLogical(x));
-    return val == NA_LOGICAL ? dflt : val;
+    return val == R_NaLog ? dflt : val;
 }
 
 #ifdef SIMPLEMMAP
@@ -2126,7 +2126,7 @@ HIDDEN SEXP do_mmap_file(SEXP call, SEXP op, SEXP args, SEXP env)
     Rboolean wrtOK = (swrtOK == nullptr) ? FALSE : asLogicalNA(swrtOK, FALSE);
     Rboolean serOK = (sserOK == nullptr) ? FALSE : asLogicalNA(sserOK, FALSE);
 
-    if (TYPEOF(file) != STRSXP || LENGTH(file) != 1 || file == NA_STRING)
+    if (TYPEOF(file) != STRSXP || LENGTH(file) != 1 || file == R_NaString)
 	Rf_error("invalud 'file' argument");
 
     return mmap_file(file, type, ptrOK, wrtOK, serOK, FALSE);

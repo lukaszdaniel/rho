@@ -60,7 +60,7 @@ static const char * idleHandler = "onIdle";
 
 static void checkHandler(const char * name, SEXP eventEnv)
 {
-    SEXP handler = Rf_findVar(Rf_install(name), eventEnv);
+    SEXP handler = Rf_findVar(rho::Symbol::obtain(name), eventEnv);
     if (TYPEOF(handler) == CLOSXP)
 	Rf_warning(_("'%s' events not supported in this device"), name);
 }
@@ -109,7 +109,7 @@ SEXP do_getGraphicsEventEnv(SEXP call, SEXP op, SEXP args, SEXP env)
     pGEDevDesc gdd;
 
     devnum = INTEGER(CAR(args))[0];
-    if(devnum == NA_INTEGER)
+    if(devnum == R_NaInt)
 	Rf_error(_("invalid graphical device number"));
     devnum--;
     if(devnum < 1 || devnum >= R_MaxDevices)
@@ -330,7 +330,7 @@ void doIdle(pDevDesc dd)
 }
 
 Rboolean doesIdle(pDevDesc dd) {
-    SEXP handler = Rf_findVar(Rf_install(idleHandler), dd->eventEnv);
+    SEXP handler = Rf_findVar(rho::Symbol::obtain(idleHandler), dd->eventEnv);
     return Rboolean((handler != R_UnboundValue) &&
         (handler != nullptr));
 }

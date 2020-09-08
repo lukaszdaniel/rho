@@ -54,7 +54,7 @@ using namespace std;
 
 #define R_VERSION_STRING "@PACKAGE_VERSION@"
 
-// Legacy defines -- C99 functions which R >= 3.5.0 reauires
+// Legacy defines -- C99 functions which R >= 3.5.0 requires
 #ifndef HAVE_EXPM1
 # define HAVE_EXPM1 1
 #endif
@@ -195,20 +195,17 @@ double  Rlog1p(double);
 
 //echo 'scale=32; l(sqrt(4*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_PI
-#define M_LN_SQRT_PI	0.572364942924700087071713675677	/* log(sqrt(pi))
-								   == log(pi)/2 */
+#define M_LN_SQRT_PI	0.572364942924700087071713675677	/* log(sqrt(pi)) == log(pi)/2 */
 #endif
 
 //echo 'scale=32; l(sqrt(8*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_2PI
-#define M_LN_SQRT_2PI	0.918938533204672741780329736406	/* log(sqrt(2*pi))
-								 == log(2*pi)/2 */
+#define M_LN_SQRT_2PI	0.918938533204672741780329736406	/* log(sqrt(2*pi)) == log(2*pi)/2 */
 #endif
 
 //echo 'scale=32; l(sqrt(2*a(1)))/l(e(1))' | bc -l
 #ifndef M_LN_SQRT_PId2
-#define M_LN_SQRT_PId2	0.225791352644727432363097614947	/* log(sqrt(pi/2))
-								   == log(pi/2)/2 */
+#define M_LN_SQRT_PId2	0.225791352644727432363097614947	/* log(sqrt(pi/2)) == log(pi/2)/2 */
 #endif
 
 
@@ -672,7 +669,7 @@ extern int N01_kind;
 #endif /* MATHLIB_STANDALONE */
 
 #ifdef  __cplusplus
-}
+} //extern "C"
 #endif
 
 #endif /* RMATH_H */

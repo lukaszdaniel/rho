@@ -528,7 +528,7 @@ SEXP in_R_X11_dataviewer(SEXP call, SEXP op, SEXP args, SEXP rho)
 	throw;
     }
     UNPROTECT(nprotect);
-    return R_NilValue;
+    return nullptr;
 }
 
 /* Window Drawing Routines */
@@ -749,7 +749,7 @@ static void cell_cursor_init(DEstruct DE)
     } else {
 	if (Rf_length(DE->work) >= whichcol) {
 	    tmp = VECTOR_ELT(DE->work, whichcol - 1);
-	    if (tmp != R_NilValue &&
+	    if (tmp != nullptr &&
 		(i = whichrow - 1) < LENGTH(tmp) ) {
 		Rf_PrintDefaults();
 		if (TYPEOF(tmp) == REALSXP) {
@@ -764,7 +764,7 @@ static void cell_cursor_init(DEstruct DE)
 	}
     }
     buf[BOOSTED_BUF_SIZE-1] = '\0';
-clength = (int) strlen(buf);
+    clength = (int) strlen(buf);
     bufp = buf + clength;
 }
 
@@ -1070,7 +1070,7 @@ static SEXP processEscapes(SEXP x)
     PROTECT( replacement = Rf_mkString("\"\\1\"") );
     PROTECT( expr = Rf_lang4(Rf_install("sub"), pattern, replacement, newval) );
     PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
-    PROTECT( expr = R_ParseVector( newval, 1, &status, R_NilValue) );
+    PROTECT( expr = R_ParseVector( newval, 1, &status, nullptr) );
 
     /* We only handle the first entry. If this were available more generally,
        we'd probably want to loop over all of expr */
@@ -1078,7 +1078,7 @@ static SEXP processEscapes(SEXP x)
     if (status == PARSE_OK && Rf_length(expr))
 	PROTECT( newval = Rf_eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
     else
-	PROTECT( newval = R_NilValue );  /* protect just so the count doesn't change */
+	PROTECT( newval = nullptr );  /* protect just so the count doesn't change */
     UNPROTECT(10);
     return newval;
 }
@@ -2510,7 +2510,7 @@ static void copycell(DEstruct DE)
 	strcpy(copycontents, "");
 	if (Rf_length(DE->work) >= whichcol) {
 	    tmp = VECTOR_ELT(DE->work, whichcol - 1);
-	    if (tmp != R_NilValue &&
+	    if (tmp != nullptr &&
 		(i = whichrow - 1) < LENGTH(tmp) ) {
 		Rf_PrintDefaults();
 		if (TYPEOF(tmp) == REALSXP) {

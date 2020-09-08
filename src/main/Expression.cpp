@@ -201,7 +201,7 @@ RObject* Expression::evaluateNativeBuiltInCall(const BuiltInFunction* func,
     }
 }
 
-static inline RObject* evalIfNonNull(RObject* x, Environment* env) {
+inline static RObject* evalIfNonNull(RObject* x, Environment* env) {
   return x ? x->evaluate(env) : x;
 }
 

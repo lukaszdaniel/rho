@@ -92,6 +92,9 @@ int F77_SYMBOL(dblepr0)(const char *, int *, double *, int *);
 int F77_SYMBOL(intpr0) (const char *, int *, int *, int *);
 int F77_SYMBOL(realpr0)(const char *, int *, float *, int *);
 void R_PV(SEXP s);
+#ifdef __cplusplus
+} //extern "C"
+#endif
 
 /* Offset for rowlabels if there are named dimnames */
 #define R_MIN_LBLOFF 2
@@ -100,9 +103,5 @@ void R_PV(SEXP s);
 #define R_MAX_WIDTH_OPT		10000
 #define R_MIN_DIGITS_OPT	0
 #define R_MAX_DIGITS_OPT	22
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PRINT_H_ */

@@ -101,10 +101,10 @@ HIDDEN SEXP do_vapply(SEXP call, SEXP op, SEXP args, SEXP rho)
     PROTECT(value = Rf_eval(CADDR(args), rho));
     if (!Rf_isVector(value)) Rf_error(_("'FUN.VALUE' must be a vector"));
     useNames = Rf_asLogical(Rf_eval(CADDDR(args), rho));
-    if (useNames == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "USE.NAMES");
+    if (useNames == R_NaLog) Rf_error(_("invalid '%s' value"), "USE.NAMES");
 
     n = Rf_xlength(XX);
-    if (n == NA_INTEGER) Rf_error(_("invalid length"));
+    if (n == R_NaInt) Rf_error(_("invalid length"));
     Rboolean realIndx = Rboolean(n > INT_MAX);
 
     commonLen = Rf_length(value);
@@ -356,13 +356,13 @@ static Rboolean islistfactor(RObject* X)
 
     switch(TYPEOF(X)) {
     case VECSXP:
-        if(n == 0) return Rboolean(NA_LOGICAL);
+        if(n == 0) return Rboolean(R_NaLog);
 	for(i = 0; i < LENGTH(X); i++)
 	    if(!islistfactor(VECTOR_ELT(X, i))) return FALSE;
 	return TRUE;
 	break;
     case EXPRSXP:
-        if(n == 0) return Rboolean(NA_LOGICAL);
+        if(n == 0) return Rboolean(R_NaLog);
 	for(i = 0; i < LENGTH(X); i++)
 	    if(!islistfactor(XVECTOR_ELT(X, i))) return FALSE;
 	return TRUE;

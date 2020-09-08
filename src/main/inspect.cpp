@@ -71,7 +71,7 @@ HIDDEN SEXP do_inspect(/*const*/ rho::Expression* call, const rho::BuiltInFuncti
 
 HIDDEN SEXP do_address(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
-    return R_MakeExternalPtr((void *) x, nullptr, nullptr);
+    return R_MakeExternalPtr((void*)x, nullptr, nullptr);
 }
 
 HIDDEN SEXP do_named(SEXP call, SEXP op, SEXP args, SEXP rho)
@@ -83,7 +83,7 @@ HIDDEN SEXP do_named(SEXP call, SEXP op, SEXP args, SEXP rho)
 HIDDEN SEXP do_refcnt(rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x)
 {
     // return Rf_ScalarInteger(REFCNT(CAR(args)));
-    return Rf_ScalarInteger(NA_INTEGER); // Not currently implemented in rho
+    return Rf_ScalarInteger(R_NaInt); // Not currently implemented in rho
 }
 
 /* the following functions can be use internally and for debugging purposes -

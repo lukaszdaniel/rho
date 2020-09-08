@@ -50,7 +50,7 @@
 using namespace rho;
 using namespace std;
 
-static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
+static R_StringBuffer cbuff = { nullptr, 0, MAXELTSIZE };
 
 /*
   .Internal(paste (args, sep, collapse))
@@ -61,7 +61,7 @@ static R_StringBuffer cbuff = {nullptr, 0, MAXELTSIZE};
  * then it is alloc-ed and the second pass stuffs the information in.
  */
 
-/* Note that NA_STRING is not handled separately here.  This is
+/* Note that R_NaString is not handled separately here.  This is
    deliberate -- see ?paste -- and implicitly coerces it to "NA"
 */
 HIDDEN SEXP do_paste(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::Environment* env, rho::RObject* const* args, int num_args, const rho::PairList* tags)
@@ -90,7 +90,7 @@ HIDDEN SEXP do_paste(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 
     if(use_sep) { /* paste(..., sep, .) */
 	sep = args[1];
-	if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
+	if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == R_NaString)
 	    Rf_error(_("invalid separator"));
 	sep = STRING_ELT(sep, 0);
 	csep = Rf_translateChar(sep);
@@ -106,7 +106,7 @@ HIDDEN SEXP do_paste(/*const*/ rho::Expression* call, const rho::BuiltInFunction
     }
     if (!Rf_isNull(collapse))
 	if(!Rf_isString(collapse) || LENGTH(collapse) <= 0 ||
-	   STRING_ELT(collapse, 0) == NA_STRING)
+	   STRING_ELT(collapse, 0) == R_NaString)
 	    Rf_error(_("invalid '%s' argument"), "collapse");
     if(nx == 0)
 	return (!Rf_isNull(collapse)) ? Rf_mkString("") : Rf_allocVector(STRSXP, 0);
@@ -307,7 +307,7 @@ HIDDEN SEXP do_filepath(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 
 
     sep = sep_;
-    if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == NA_STRING)
+    if (!Rf_isString(sep) || LENGTH(sep) <= 0 || STRING_ELT(sep, 0) == R_NaString)
 	Rf_error(_("invalid separator"));
     sep = STRING_ELT(sep, 0);
     csep = R_CHAR(sep);
@@ -397,50 +397,50 @@ HIDDEN SEXP do_format(/*const*/ rho::Expression* call, const rho::BuiltInFunctio
 	Rf_error(_("first argument must be atomic"));
 
     trim = Rf_asLogical(trim_);
-    if (trim == NA_INTEGER)
+    if (trim == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "trim");
 
     if (!Rf_isNull(digits_)) {
 	digits = Rf_asInteger(digits_);
-	if (digits == NA_INTEGER || digits < R_MIN_DIGITS_OPT
+	if (digits == R_NaInt || digits < R_MIN_DIGITS_OPT
 	    || digits > R_MAX_DIGITS_OPT)
 	    Rf_error(_("invalid '%s' argument"), "digits");
 	R_print.digits = digits;
     }
 
     nsmall = Rf_asInteger(nsmall_);
-    if (nsmall == NA_INTEGER || nsmall < 0 || nsmall > 20)
+    if (nsmall == R_NaInt || nsmall < 0 || nsmall > 20)
 	Rf_error(_("invalid '%s' argument"), "nsmall");
 
     if (Rf_isNull(swd = width_)) wd = 0; else wd = Rf_asInteger(swd);
-    if(wd == NA_INTEGER)
+    if(wd == R_NaInt)
 	Rf_error(_("invalid '%s' argument"), "width");
 
     adj = Rf_asInteger(justify_);
-    if(adj == NA_INTEGER || adj < 0 || adj > 3)
+    if(adj == R_NaInt || adj < 0 || adj > 3)
 	Rf_error(_("invalid '%s' argument"), "justify");
 
     na = Rf_asLogical(na_encode_);
-    if(na == NA_LOGICAL)
+    if(na == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "na.encode");
 
     if(LENGTH(scientific_) != 1)
 	Rf_error(_("invalid '%s' argument"), "scientific");
     if(Rf_isLogical(scientific_)) {
 	int tmp = LOGICAL(scientific_)[0];
-	if(tmp == NA_LOGICAL) sci = NA_INTEGER;
+	if(tmp == R_NaLog) sci = R_NaInt;
 	else sci = tmp > 0 ?-100 : 100;
     } else if (Rf_isNumeric(scientific_)) {
 	sci = Rf_asInteger(scientific_);
     } else
 	Rf_error(_("invalid '%s' argument"), "scientific");
-    if(sci != NA_INTEGER) R_print.scipen = sci;
+    if(sci != R_NaInt) R_print.scipen = sci;
 
     // copy/paste from "OutDec" part of ./options.cpp
     if (TYPEOF(decimal_mark_) != STRSXP || LENGTH(decimal_mark_) != 1)
 	Rf_error(_("invalid '%s' argument"), "decimal.mark");
     const char *my_OutDec;
-    if(STRING_ELT(decimal_mark_, 0) == NA_STRING)
+    if(STRING_ELT(decimal_mark_, 0) == R_NaString)
 	my_OutDec = OutDec; // default
     else {
 	static char sdec[11];
@@ -539,13 +539,13 @@ HIDDEN SEXP do_format(/*const*/ rho::Expression* call, const rho::BuiltInFunctio
 	    w = wd;
 	    if (adj != Rprt_adj_none) {
 		for (i = 0; i < n; i++)
-		    if (STRING_ELT(xx, i) != NA_STRING)
+		    if (STRING_ELT(xx, i) != R_NaString)
 			w = max(w, Rstrlen(STRING_ELT(xx, i), 0));
 		    else if (na) w = max(w, R_print.na_width);
 	    } else w = 0;
 	    /* now calculate the buffer size needed, in bytes */
 	    for (i = 0; i < n; i++)
-		if (STRING_ELT(xx, i) != NA_STRING) {
+		if (STRING_ELT(xx, i) != R_NaString) {
 		    il = Rstrlen(STRING_ELT(xx, i), 0);
 		    cnt = max(cnt, LENGTH(STRING_ELT(xx, i)) + max(0, w-il));
 		} else if (na)
@@ -555,11 +555,11 @@ HIDDEN SEXP do_format(/*const*/ rho::Expression* call, const rho::BuiltInFunctio
 	    char* buff = &buffv[0];
 	    PROTECT(y = Rf_allocVector(STRSXP, n));
 	    for (i = 0; i < n; i++) {
-		if(!na && STRING_ELT(xx, i) == NA_STRING) {
-		    SET_STRING_ELT(y, i, NA_STRING);
+		if(!na && STRING_ELT(xx, i) == R_NaString) {
+		    SET_STRING_ELT(y, i, R_NaString);
 		} else {
 		    q = buff;
-		    if(STRING_ELT(xx, i) == NA_STRING) s0 = R_print.na_string;
+		    if(STRING_ELT(xx, i) == R_NaString) s0 = R_print.na_string;
 		    else s0 = STRING_ELT(xx, i) ;
 		    s = R_CHAR(s0);
 		    il = Rstrlen(s0, 0);
@@ -618,13 +618,13 @@ HIDDEN SEXP do_formatinfo(/*const*/ rho::Expression* call, const rho::BuiltInFun
 
     if (!Rf_isNull(digits_)) {
 	digits = Rf_asInteger(digits_);
-	if (digits == NA_INTEGER || digits < R_MIN_DIGITS_OPT
+	if (digits == R_NaInt || digits < R_MIN_DIGITS_OPT
 	    || digits > R_MAX_DIGITS_OPT)
 	    Rf_error(_("invalid '%s' argument"), "digits");
 	R_print.digits = digits;
     }
     nsmall = Rf_asInteger(nsmall_);
-    if (nsmall == NA_INTEGER || nsmall < 0 || nsmall > 20)
+    if (nsmall == R_NaInt || nsmall < 0 || nsmall > 20)
 	Rf_error(_("invalid '%s' argument"), "nsmall");
 
     w = 0;
@@ -657,7 +657,7 @@ HIDDEN SEXP do_formatinfo(/*const*/ rho::Expression* call, const rho::BuiltInFun
 
     case STRSXP:
 	for (R_xlen_t i = 0; i < n; i++)
-	    if (STRING_ELT(x, i) != NA_STRING) {
+	    if (STRING_ELT(x, i) != R_NaString) {
 		int il = Rstrlen(STRING_ELT(x, i), 0);
 		if (il > w) w = il;
 	    }

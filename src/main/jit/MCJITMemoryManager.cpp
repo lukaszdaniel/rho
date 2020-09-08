@@ -34,7 +34,7 @@ using namespace llvm;
 namespace rho {
 namespace JIT {
 
-static inline bool startsWith(const std::string& text,
+inline static bool startsWith(const std::string& text,
 			      const std::string& prefix) {
     return (text.compare(0, prefix.size(), prefix) == 0);
 }

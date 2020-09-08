@@ -70,12 +70,12 @@ HIDDEN SEXP do_identical(/*const*/ rho::Expression* call, const rho::BuiltInFunc
     ignore_env = Rf_asLogical(ignore_env_);
     ignore_srcref = Rf_asLogical(ignore_srcref_);
 
-    if(num_eq          == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "num.eq");
-    if(single_NA       == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "single.NA");
-    if(attr_as_set     == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "attrib.as.set");
-    if(ignore_bytecode == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.bytecode");
-    if(ignore_env      == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.environment");
-    if(ignore_srcref   == NA_LOGICAL) Rf_error(_("invalid '%s' value"), "ignore.srcref");
+    if(num_eq          == R_NaLog) Rf_error(_("invalid '%s' value"), "num.eq");
+    if(single_NA       == R_NaLog) Rf_error(_("invalid '%s' value"), "single.NA");
+    if(attr_as_set     == R_NaLog) Rf_error(_("invalid '%s' value"), "attrib.as.set");
+    if(ignore_bytecode == R_NaLog) Rf_error(_("invalid '%s' value"), "ignore.bytecode");
+    if(ignore_env      == R_NaLog) Rf_error(_("invalid '%s' value"), "ignore.environment");
+    if(ignore_srcref   == R_NaLog) Rf_error(_("invalid '%s' value"), "ignore.srcref");
 
     flags = (num_eq ? 0 : 1) + (single_NA ? 0 : 2) + (attr_as_set ? 0 : 4) +
 	(ignore_bytecode ? 0 : 8) + (ignore_env ? 0 : 16) + (ignore_srcref ? 0 : 32);
@@ -225,8 +225,8 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	if(n != Rf_xlength(y)) return FALSE;
 	for(i = 0; i < n; i++) {
 	    /* This special-casing for NAs is not needed */
-	    Rboolean na1 = (Rboolean(STRING_ELT(x, i) == NA_STRING)),
-		na2 = (Rboolean(STRING_ELT(y, i) == NA_STRING));
+	    Rboolean na1 = (Rboolean(STRING_ELT(x, i) == R_NaString)),
+		na2 = (Rboolean(STRING_ELT(y, i) == R_NaString));
 	    if(na1 ^ na2) return FALSE;
 	    if(na1 && na2) continue;
 	    if (! Rf_Seql(STRING_ELT(x, i), STRING_ELT(y, i))) return FALSE;
@@ -276,7 +276,7 @@ R_compute_identical(SEXP x, SEXP y, int flags)
 	    x = CDR(x);
 	    y = CDR(y);
 	}
-	return(Rboolean(y == nullptr));
+	return Rboolean(y == nullptr);
     }
     case CLOSXP:
     {
@@ -358,8 +358,8 @@ static bool neWithNaN(double x, double y, ne_strictness_type str)
 	    return(R_IsNA(y) ? false : true);
 	if(R_IsNA(y))
 	    return(R_IsNA(x) ? false : true);
-	if(ISNAN(x))
-	    return(ISNAN(y) ? false : true);
+	if(std::isnan(x))
+	    return(std::isnan(y) ? false : true);
 
     case bit_NA__num_eq:
     case bit_NA__num_bit:
@@ -370,7 +370,7 @@ static bool neWithNaN(double x, double y, ne_strictness_type str)
     case single_NA__num_eq:
 	return (x != y);
     case bit_NA__num_eq:
-	if(!ISNAN(x) && !ISNAN(y))
+	if(!std::isnan(x) && !std::isnan(y))
 	    return (x != y);
 	else /* bitwise check for NA/NaN's */
 	    return memcmp(&x,

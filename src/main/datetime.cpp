@@ -149,7 +149,7 @@ namespace {
   Return 0 if valid, -1 if invalid and uncorrectable, or a positive
   integer approximating the number of corrections needed.
   */
-static int validate_tm (stm *tm)
+static int validate_tm(stm *tm)
 {
     int tmp, res = 0;
 
@@ -420,7 +420,7 @@ static double guess_offset (stm *tm)
 }
 
 /* Interface to mktime or mktime00 */
-static double mktime0 (stm *tm, const int local)
+static double mktime0(stm *tm, const int local)
 {
     double res;
     Rboolean OK;
@@ -639,10 +639,10 @@ static void glibc_fix(stm *tm, int *invalid)
 #else
     tm0 = localtime(&t);
 #endif
-    if(tm->tm_year == NA_INTEGER) tm->tm_year = tm0->tm_year;
-    if(tm->tm_mon != NA_INTEGER && tm->tm_mday != NA_INTEGER) return;
+    if(tm->tm_year == R_NaInt) tm->tm_year = tm0->tm_year;
+    if(tm->tm_mon != R_NaInt && tm->tm_mday != R_NaInt) return;
     /* at least one of the month and the day of the month is missing */
-    if(tm->tm_yday != NA_INTEGER) {
+    if(tm->tm_yday != R_NaInt) {
 	/* since we have yday, let that take precedence over mon/mday */
 	int yday = tm->tm_yday, mon = 0;
 	while(yday >= (tmp = days_in_month[mon] +
@@ -653,13 +653,13 @@ static void glibc_fix(stm *tm, int *invalid)
 	tm->tm_mon = mon;
 	tm->tm_mday = yday + 1;
     } else {
-	if(tm->tm_mday == NA_INTEGER) {
-	    if(tm->tm_mon != NA_INTEGER) {
+	if(tm->tm_mday == R_NaInt) {
+	    if(tm->tm_mon != R_NaInt) {
 		*invalid = 1;
 		return;
 	    } else tm->tm_mday = tm0->tm_mday;
 	}
-	if(tm->tm_mon == NA_INTEGER) tm->tm_mon = tm0->tm_mon;
+	if(tm->tm_mon == R_NaInt) tm->tm_mon = tm0->tm_mon;
     }
 }
 
@@ -683,9 +683,9 @@ makelt(stm *tm, SEXP ans, R_xlen_t i, int valid, double frac_secs)
 	INTEGER(VECTOR_ELT(ans, 7))[i] = tm->tm_yday;
 	INTEGER(VECTOR_ELT(ans, 8))[i] = tm->tm_isdst;
     } else {
-	REAL(VECTOR_ELT(ans, 0))[i] = NA_REAL;
+	REAL(VECTOR_ELT(ans, 0))[i] = R_NaReal;
 	for(int j = 1; j < 8; j++)
-	    INTEGER(VECTOR_ELT(ans, j))[i] = NA_INTEGER;
+	    INTEGER(VECTOR_ELT(ans, j))[i] = R_NaInt;
 	INTEGER(VECTOR_ELT(ans, 8))[i] = -1;
     }
 }
@@ -756,7 +756,7 @@ HIDDEN SEXP do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunc
     for(R_xlen_t i = 0; i < n; i++) {
 	stm dummy, *ptm = &dummy;
 	double d = REAL(x)[i];
-	if(R_FINITE(d)) {
+	if(std::isfinite(d)) {
 	    ptm = localtime0(&d, 1 - isgmt, &dummy);
 	    /* in theory localtime/gmtime always return a valid
 	       struct tm pointer, but Windows uses NULL for error
@@ -772,7 +772,7 @@ HIDDEN SEXP do_asPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, Rf_mkChar(p));
 #ifdef HAVE_TM_GMTOFF
 	    INTEGER(VECTOR_ELT(ans, 10))[i] =
-		valid ? (int)ptm->tm_gmtoff : NA_INTEGER;
+		valid ? (int)ptm->tm_gmtoff : R_NaInt;
 #endif
 	}
     }
@@ -847,7 +847,7 @@ HIDDEN SEXP do_asPOSIXct(/*const*/ rho::Expression* call, const rho::BuiltInFunc
     for(R_xlen_t i = 0; i < n; i++) {
 	double secs = REAL(VECTOR_ELT(x, 0))[i%nlen[0]], fsecs = floor(secs);
 	// avoid (int) NAN
-	tm.tm_sec   = R_FINITE(secs) ? (int) fsecs: NA_INTEGER;
+	tm.tm_sec   = std::isfinite(secs) ? (int) fsecs: R_NaInt;
 	tm.tm_min   = INTEGER(VECTOR_ELT(x, 1))[i%nlen[1]];
 	tm.tm_hour  = INTEGER(VECTOR_ELT(x, 2))[i%nlen[2]];
 	tm.tm_mday  = INTEGER(VECTOR_ELT(x, 3))[i%nlen[3]];
@@ -855,22 +855,22 @@ HIDDEN SEXP do_asPOSIXct(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	tm.tm_year  = INTEGER(VECTOR_ELT(x, 5))[i%nlen[5]];
 	/* mktime ignores tm.tm_wday and tm.tm_yday */
 	tm.tm_isdst = isgmt ? 0 : INTEGER(VECTOR_ELT(x, 8))[i%nlen[8]];
-	if(!R_FINITE(secs) || tm.tm_min == NA_INTEGER ||
-	   tm.tm_hour == NA_INTEGER || tm.tm_mday == NA_INTEGER ||
-	   tm.tm_mon == NA_INTEGER || tm.tm_year == NA_INTEGER)
-	    REAL(ans)[i] = NA_REAL;
+	if(!std::isfinite(secs) || tm.tm_min == R_NaInt ||
+	   tm.tm_hour == R_NaInt || tm.tm_mday == R_NaInt ||
+	   tm.tm_mon == R_NaInt || tm.tm_year == R_NaInt)
+	    REAL(ans)[i] = R_NaReal;
 	else {
 	    errno = 0;
 	    tmp = mktime0(&tm, 1 - isgmt);
 #ifdef MKTIME_SETS_ERRNO
-	    REAL(ans)[i] = errno ? NA_REAL : tmp + (secs - fsecs);
+	    REAL(ans)[i] = errno ? R_NaReal : tmp + (secs - fsecs);
 #else
 	    REAL(ans)[i] = ((tmp == -1.)
 			    /* avoid silly gotcha at epoch minus one sec */
 			    && (tm.tm_sec != 59)
 			    && ((tm.tm_sec = 58), (mktime0(&tm, 1 - isgmt) != -2.))
 			    ) ?
-	      NA_REAL : tmp + (secs - fsecs);
+	      R_NaReal : tmp + (secs - fsecs);
 #endif
 	}
     }
@@ -896,7 +896,7 @@ HIDDEN SEXP do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltIn
 	Rf_error(_("invalid '%s' argument"), "format");
     R_xlen_t m = XLENGTH(sformat);
     int UseTZ = Rf_asLogical(usetz_);
-    if(UseTZ == NA_LOGICAL)
+    if(UseTZ == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "usetz");
     SEXP tz = Rf_getAttrib(x, Rf_install("tzone"));
 
@@ -948,7 +948,7 @@ HIDDEN SEXP do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltIn
     for(R_xlen_t i = 0; i < N; i++) {
 	double secs = REAL(VECTOR_ELT(x, 0))[i%nlen[0]], fsecs = floor(secs);
 	// avoid (int) NAN
-	tm.tm_sec   = R_FINITE(secs) ? (int) fsecs: NA_INTEGER;
+	tm.tm_sec   = std::isfinite(secs) ? (int) fsecs: R_NaInt;
 	tm.tm_min   = INTEGER(VECTOR_ELT(x, 1))[i%nlen[1]];
 	tm.tm_hour  = INTEGER(VECTOR_ELT(x, 2))[i%nlen[2]];
 	tm.tm_mday  = INTEGER(VECTOR_ELT(x, 3))[i%nlen[3]];
@@ -970,15 +970,15 @@ HIDDEN SEXP do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltIn
 #endif
 #ifdef HAVE_TM_GMTOFF
 	    int tmp = INTEGER(VECTOR_ELT(x, 10))[i%n];
-	    tm.tm_gmtoff = (tmp == NA_INTEGER) ? 0 : tmp;
+	    tm.tm_gmtoff = (tmp == R_NaInt) ? 0 : tmp;
 #endif
 	}
-	if(!R_FINITE(secs) || tm.tm_min == NA_INTEGER ||
-	   tm.tm_hour == NA_INTEGER || tm.tm_mday == NA_INTEGER ||
-	   tm.tm_mon == NA_INTEGER || tm.tm_year == NA_INTEGER) {
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	if(!std::isfinite(secs) || tm.tm_min == R_NaInt ||
+	   tm.tm_hour == R_NaInt || tm.tm_mday == R_NaInt ||
+	   tm.tm_mon == R_NaInt || tm.tm_year == R_NaInt) {
+	    SET_STRING_ELT(ans, i, R_NaString);
 	} else if(validate_tm(&tm) < 0) {
-	    SET_STRING_ELT(ans, i, NA_STRING);
+	    SET_STRING_ELT(ans, i, R_NaString);
 	} else {
 	    const char *q = Rf_translateChar(STRING_ELT(sformat, i%m));
 	    int nn = (int) strlen(q) + 50;
@@ -1009,7 +1009,7 @@ HIDDEN SEXP do_formatPOSIXlt(/*const*/ rho::Expression* call, const rho::BuiltIn
 		ns = *(p+3) - '0';
 		if(ns < 0 || ns > 9) { /* not a digit */
 		    ns = Rf_asInteger(Rf_GetOption1(Rf_install("digits.secs")));
-		    if(ns == NA_INTEGER) ns = 0;
+		    if(ns == R_NaInt) ns = 0;
 		    nused = 3;
 		}
 		if(ns > 6) ns = 6;
@@ -1133,24 +1133,24 @@ HIDDEN SEXP do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	memset(&tm, 0, sizeof(stm));
 	tm.tm_sec = tm.tm_min = tm.tm_hour = 0;
 	tm.tm_year = tm.tm_mon = tm.tm_mday = tm.tm_yday =
-	    tm.tm_wday = NA_INTEGER;
+	    tm.tm_wday = R_NaInt;
 #ifdef HAVE_TM_GMTOFF
-	tm.tm_gmtoff = (long) NA_INTEGER;
+	tm.tm_gmtoff = (long) R_NaInt;
 	tm.tm_isdst = -1;
 #endif
-	offset = NA_INTEGER;
-	invalid = STRING_ELT(x, i%n) == NA_STRING ||
+	offset = R_NaInt;
+	invalid = STRING_ELT(x, i%n) == R_NaString ||
 	    !R_strptime(Rf_translateChar(STRING_ELT(x, i%n)),
 			Rf_translateChar(STRING_ELT(sformat, i%m)),
 			&tm, &psecs, &offset);
 	if(!invalid) {
 	    /* Solaris sets missing fields to 0 */
-	    if(tm.tm_mday == 0) tm.tm_mday = NA_INTEGER;
-	    if(tm.tm_mon == NA_INTEGER || tm.tm_mday == NA_INTEGER
-	       || tm.tm_year == NA_INTEGER)
+	    if(tm.tm_mday == 0) tm.tm_mday = R_NaInt;
+	    if(tm.tm_mon == R_NaInt || tm.tm_mday == R_NaInt
+	       || tm.tm_year == R_NaInt)
 		glibc_fix(&tm, &invalid);
 	    tm.tm_isdst = -1;
-	    if (offset != NA_INTEGER) {
+	    if (offset != R_NaInt) {
 #ifdef HAVE_TM_GMTOFF
 		tm.tm_gmtoff = offset;
 #endif
@@ -1188,7 +1188,7 @@ HIDDEN SEXP do_strptime(/*const*/ rho::Expression* call, const rho::BuiltInFunct
 	    SET_STRING_ELT(VECTOR_ELT(ans, 9), i, Rf_mkChar(p));
 #ifdef HAVE_TM_GMTOFF
 	    INTEGER(VECTOR_ELT(ans, 10))[i] =
-		invalid ? NA_INTEGER : (int)tm.tm_gmtoff;
+		invalid ? R_NaInt : (int)tm.tm_gmtoff;
 #endif
 	}
     }
@@ -1223,7 +1223,7 @@ HIDDEN SEXP do_D2POSIXlt(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	SET_STRING_ELT(ansnames, i, Rf_mkChar(ltnames[i]));
 
     for(R_xlen_t i = 0; i < n; i++) {
-	if(R_FINITE(REAL(x)[i])) {
+	if(std::isfinite(REAL(x)[i])) {
 	    day = int(floor(REAL(x)[i]));
 	    tm.tm_hour = tm.tm_min = tm.tm_sec = 0;
 	    /* weekday: 1970-01-01 was a Thursday */
@@ -1299,13 +1299,13 @@ HIDDEN SEXP do_POSIXlt2D(/*const*/ rho::Expression* call, const rho::BuiltInFunc
 	tm.tm_year  = INTEGER(VECTOR_ELT(x, 5))[i%nlen[5]];
 	/* mktime ignores tm.tm_wday and tm.tm_yday */
 	tm.tm_isdst = 0;
-	if(tm.tm_mday == NA_INTEGER || tm.tm_mon == NA_INTEGER ||
-	   tm.tm_year == NA_INTEGER || validate_tm(&tm) < 0)
-	    REAL(ans)[i] = NA_REAL;
+	if(tm.tm_mday == R_NaInt || tm.tm_mon == R_NaInt ||
+	   tm.tm_year == R_NaInt || validate_tm(&tm) < 0)
+	    REAL(ans)[i] = R_NaReal;
 	else {
 	    /* -1 must be error as seconds were zeroed */
 	    double tmp = mktime00(&tm);
-	    REAL(ans)[i] = (tmp == -1) ? NA_REAL : tmp/86400;
+	    REAL(ans)[i] = (tmp == -1) ? R_NaReal : tmp/86400;
 	}
     }
 

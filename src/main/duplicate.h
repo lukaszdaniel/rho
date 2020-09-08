@@ -34,36 +34,39 @@ Iterator macro to fill a matrix from a vector with re-use of vector
     }
 */
 
-#define FILL_MATRIX_ITERATE(dstart, drows, srows, cols, nsrc) 		\
-    for(R_xlen_t i = 0, sidx = 0; i < srows; i++, sidx = i)		\
-        for(R_xlen_t j = 0, didx = dstart + i; j < cols;		\
-            j++, 							\
-            sidx += srows,						\
-            (sidx >= nsrc) ? sidx -= nsrc : 0,				\
-            didx += drows)
+#define FILL_MATRIX_ITERATE(dstart, drows, srows, cols, nsrc) \
+    for (R_xlen_t i = 0, sidx = 0; i < srows; i++, sidx = i)  \
+        for (R_xlen_t j = 0, didx = dstart + i; j < cols;     \
+             j++,                                             \
+                      sidx += srows,                          \
+                      (sidx >= nsrc) ? sidx -= nsrc : 0,      \
+                      didx += drows)
 
 void xcopyRealWithRecycle(double *dst, double *src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc);
 void xcopyStringWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc);
 void xcopyVectorWithRecycle(SEXP dst, SEXP src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc);
-template<typename VALTYPE>
-HIDDEN void xcopyWithRecycle(VALTYPE *dst, VALTYPE *src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc) {
+template <typename VALTYPE>
+HIDDEN void xcopyWithRecycle(
+    VALTYPE* dst, VALTYPE* src, R_xlen_t dstart, R_xlen_t n, R_xlen_t nsrc)
+{
 
     if (nsrc >= n) { /* no recycle needed */
-	for(R_xlen_t i = 0; i < n; i++)
+	for (R_xlen_t i = 0; i < n; i++)
 	    dst[dstart + i] = src[i];
 	return;
     }
     if (nsrc == 1) {
 	VALTYPE val = src[0];
-	for(R_xlen_t i = 0; i < n; i++)
+	for (R_xlen_t i = 0; i < n; i++)
 	    dst[dstart + i] = val;
 	return;
     }
 
     /* recycle needed */
     R_xlen_t sidx = 0;
-    for(R_xlen_t i = 0; i < n; i++, sidx++) {
-	if (sidx == nsrc) sidx = 0;
+    for (R_xlen_t i = 0; i < n; i++, sidx++) {
+	if (sidx == nsrc)
+	    sidx = 0;
 	dst[dstart + i] = src[sidx];
     }
 }
@@ -79,13 +82,9 @@ HIDDEN void xfillMatrixWithRecycle(VALTYPE* dst, VALTYPE* src, R_xlen_t dstart,
     dst[didx] = src[sidx];
 }
 
-#define FILL_MATRIX_BYROW_ITERATE(dstart, drows, dcols, nsrc) 		\
-    for(R_xlen_t i = 0, sidx = 0; i < drows; i++)			\
-        for(R_xlen_t j = 0, didx = dstart + i; j < dcols;		\
-            j++, 							\
-            sidx++,							\
-            (sidx >= nsrc) ? sidx -= nsrc : 0,				\
-            didx += drows)
-
+#define FILL_MATRIX_BYROW_ITERATE(dstart, drows, dcols, nsrc)                  \
+    for (R_xlen_t i = 0, sidx = 0; i < drows; i++)                             \
+	for (R_xlen_t j = 0, didx = dstart + i; j < dcols;                     \
+	     j++, sidx++, (sidx >= nsrc) ? sidx -= nsrc : 0, didx += drows)
 
 #endif /* R_DUPLICATE_H */

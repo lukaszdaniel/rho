@@ -145,7 +145,7 @@ static double R_ValueOfNA(void)
 
 int R_IsNA(double x)
 {
-    if (isnan(x)) {
+    if (std::isnan(x)) {
 	ieee_double y;
 	y.value = x;
 	return (y.word[lw] == 1954);
@@ -155,7 +155,7 @@ int R_IsNA(double x)
 
 int R_IsNaN(double x)
 {
-    if (isnan(x)) {
+    if (std::isnan(x)) {
 	ieee_double y;
 	y.value = x;
 	return Rboolean((y.word[lw] != 1954));
@@ -163,27 +163,25 @@ int R_IsNaN(double x)
     return 0;
 }
 
-
 int R_isnancpp(double x) {
     return std::isnan(x);
 }
-
 
 /* Mainly for use in packages */
 int R_finite(double x) {
     return std::isfinite(x);
 }
 
-
 /* Arithmetic Initialization */
 
 HIDDEN void Rf_InitArithmetic()
 {
-    R_NaInt = INT_MIN;
+    R_NaInt = std::numeric_limits<int>::min();
+	R_NaLog = std::numeric_limits<int>::min();
     R_NaReal = R_ValueOfNA();
     R_NaN = std::numeric_limits<double>::quiet_NaN();
     R_PosInf = std::numeric_limits<double>::infinity();
-    R_NegInf = -R_PosInf;  // is this portable?
+    R_NegInf = -R_PosInf;
 }
 
 /* Keep these two in step */
@@ -192,11 +190,12 @@ HIDDEN void Rf_InitArithmetic()
  */
 static double myfmod(double x1, double x2)
 {
-    if (x2 == 0.0) return R_NaN;
+    if (x2 == 0.0)
+	return R_NaN;
     double q = x1 / x2, tmp = x1 - floor(q) * x2;
-    if(R_FINITE(q) && (std::abs(q) > 1/R_AccuracyInfo.eps))
+    if (std::isfinite(q) && (std::abs(q) > 1 / R_AccuracyInfo.eps))
 	Rf_warning(_("probable complete loss of accuracy in modulus"));
-    q = floor(tmp/x2);
+    q = floor(tmp / x2);
     return tmp - q * x2;
 }
 
@@ -204,9 +203,10 @@ static double myfloor(double x1, double x2)
 {
     double q = x1 / x2, tmp;
 
-    if (x2 == 0.0) return q;
+    if (x2 == 0.0)
+	return q;
     tmp = x1 - floor(q) * x2;
-    return floor(q) + floor(tmp/x2);
+    return floor(q) + floor(tmp / x2);
 }
 
 double R_pow(double x, double y) /* = x ^ y */
@@ -222,7 +222,7 @@ double R_pow(double x, double y) /* = x ^ y */
 	else if(y < 0) return(R_PosInf);
 	else return(y); /* NA or NaN, we assert */
     }
-    if (R_FINITE(x) && R_FINITE(y)) {
+    if (std::isfinite(x) && std::isfinite(y)) {
 	/* There was a special case for y == 0.5 here, but
 	   gcc 4.3.0 -g -O2 mis-compiled it.  Showed up with
 	   100^0.5 as 3.162278, example(pbirthday) failed. */
@@ -233,17 +233,17 @@ double R_pow(double x, double y) /* = x ^ y */
 	return pow(x, y);
 #endif
     }
-    if (ISNAN(x) || ISNAN(y))
+    if (std::isnan(x) || std::isnan(y))
 	return(x + y);
-    if(!R_FINITE(x)) {
+    if(!std::isfinite(x)) {
 	if(x > 0)		/* Inf ^ y */
 	    return (y < 0.)? 0. : R_PosInf;
 	else {			/* (-Inf) ^ y */
-	    if(R_FINITE(y) && y == floor(y)) /* (-Inf) ^ n */
+	    if(std::isfinite(y) && y == floor(y)) /* (-Inf) ^ n */
 		return (y < 0.) ? 0. : (myfmod(y, 2.) != 0 ? x  : -x);
 	}
     }
-    if(!R_FINITE(y)) {
+    if(!std::isfinite(y)) {
 	if(x >= 0) {
 	    if(y > 0)		/* y == +Inf */
 		return (x >= 1) ? R_PosInf : 0.;
@@ -258,15 +258,15 @@ double R_pow_di(double x, int n)
 {
     double xn = 1.0;
 
-    if (ISNAN(x)) return x;
-    if (n == NA_INTEGER) return NA_REAL;
+    if (std::isnan(x)) return x;
+    if (n == R_NaInt) return R_NaReal;
 
     if (n != 0) {
-	if (!R_FINITE(x)) return R_POW(x, double(n));
+	if (!std::isfinite(x)) return R_POW(x, double(n));
 
 	bool is_neg = (n < 0);
 	if(is_neg) n = -n;
-	for(;;) {
+	while(true) {
 	    if(n & 01) xn *= x;
 	    if(n >>= 1) x *= x; else break;
 	}
@@ -430,7 +430,7 @@ struct Negate {
 
 template<>
 int Negate::operator()(int value) {
-    return value == NA_INTEGER ? NA_INTEGER : -value;
+    return value == R_NaInt ? R_NaInt : -value;
 }
 
 template<typename InputType>
@@ -499,27 +499,27 @@ HIDDEN SEXP R_unary(SEXP call, SEXP op, SEXP s1)
 
 namespace {
     int integer_plus(int lhs, int rhs, Rboolean* naflag) {
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER) {
-	    return NA_INTEGER;
+	if (lhs == R_NaInt || rhs == R_NaInt) {
+	    return R_NaInt;
 	}
 	if ((lhs > 0 && INT_MAX - lhs < rhs)
 	    || (lhs < 0 && INT_MAX + lhs < -rhs)) {
 	    // Integer overflow.
 	    *naflag = TRUE;
-	    return NA_INTEGER;
+	    return R_NaInt;
 	}
 	return lhs + rhs;
     }
 
     int integer_minus(int lhs, int rhs, Rboolean* naflag) {
-	if (rhs == NA_INTEGER)
-	    return NA_INTEGER;
+	if (rhs == R_NaInt)
+	    return R_NaInt;
 	return integer_plus(lhs, -rhs, naflag);
     }
 
     int integer_times(int lhs, int rhs, Rboolean* naflag) {
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER) {
-	    return NA_INTEGER;
+	if (lhs == R_NaInt || rhs == R_NaInt) {
+	    return R_NaInt;
 	}
 	// This relies on the assumption that a double can represent all the
 	// possible values of an integer.  This isn't true for 64-bit integers.
@@ -529,14 +529,14 @@ namespace {
 	if (std::abs(result) > INT_MAX) {
 	    // Integer overflow.
 	    *naflag = TRUE;
-	    return NA_INTEGER;
+	    return R_NaInt;
 	}
 	return static_cast<int>(result);
     }
 
     double integer_divide(int lhs, int rhs) {
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER) {
-	    return NA_REAL;
+	if (lhs == R_NaInt || rhs == R_NaInt) {
+	    return R_NaReal;
 	}
 	return static_cast<double>(lhs) / static_cast<double>(rhs);
     }
@@ -544,15 +544,15 @@ namespace {
     double integer_pow(int lhs, int rhs) {
 	if(lhs == 1 || rhs == 0)
 	    return 1;
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER) {
-	    return NA_REAL;
+	if (lhs == R_NaInt || rhs == R_NaInt) {
+	    return R_NaReal;
 	}
 	return R_POW(static_cast<double>(lhs), static_cast<double>(rhs));
     }
 
     int integer_mod(int lhs, int rhs) {
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER || rhs == 0)
-	    return NA_INTEGER;
+	if (lhs == R_NaInt || rhs == R_NaInt || rhs == 0)
+	    return R_NaInt;
 	return (lhs >= 0 && rhs > 0) ? lhs % rhs :
 	    static_cast<int>(myfmod(lhs, rhs));
     }
@@ -560,8 +560,8 @@ namespace {
     int integer_idiv(int lhs, int rhs) {
 	/* This had x %/% 0 == 0 prior to 2.14.1, but
 	   it seems conventionally to be undefined */
-	if (lhs == NA_INTEGER || rhs == NA_INTEGER || rhs == 0)
-	    return NA_INTEGER;
+	if (lhs == R_NaInt || rhs == R_NaInt || rhs == 0)
+	    return R_NaInt;
 	return static_cast<int>(floor(double(lhs) / static_cast<double>(rhs)));
     }
 
@@ -634,7 +634,7 @@ static SEXP integer_binary(ARITHOP_TYPE code, SEXP s1, SEXP s2, SEXP lcall)
 
 namespace {
     inline double intToReal(int value) {
-	return isNA(value) ? NA_REAL : value;
+	return isNA(value) ? R_NaReal : value;
     }
 }
 
@@ -719,8 +719,8 @@ public:
 	/* This code assumes that isnan(in) implies isnan(m_f(in)), so we
 	   only need to check isnan(in) if isnan(m_f(in)) is true. */
 	double ans = m_f(in);
-	if (ISNAN(ans)) {
-	    if (ISNAN(in))
+	if (std::isnan(ans)) {
+	    if (std::isnan(in))
 		ans = in; // ensure the incoming NaN is preserved.
 	    else
 		m_any_NaN = true;
@@ -850,7 +850,7 @@ HIDDEN SEXP do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 	int *px = INTEGER(x);
 	for(i = 0 ; i < n ; i++) {
 	    int xi = px[i];
-	    pa[i] = (xi == NA_INTEGER) ? xi : abs(xi);
+	    pa[i] = (xi == R_NaInt) ? xi : abs(xi);
 	}
     } else if (TYPEOF(x) == REALSXP) {
 	R_xlen_t i, n = XLENGTH(x);
@@ -874,8 +874,8 @@ HIDDEN SEXP do_abs(SEXP call, SEXP op, SEXP args, SEXP env)
 /* Mathematical Functions of Two Numeric Arguments (plus 1 int) */
 
 #define if_NA_Math2_set(y,a,b)				\
-	if      (ISNA (a) || ISNA (b)) y = NA_REAL;	\
-	else if (ISNAN(a) || ISNAN(b)) y = R_NaN;
+	if      (ISNA (a) || ISNA (b)) y = R_NaReal;	\
+	else if (std::isnan(a) || std::isnan(b)) y = R_NaN;
 
 static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
 		  SEXP lcall)
@@ -917,7 +917,7 @@ static SEXP math2(SEXP sa, SEXP sb, double (*f)(double, double),
 	if_NA_Math2_set(y[i], ai, bi)
 	else {
 	    y[i] = f(ai, bi);
-	    if (ISNAN(y[i])) naflag = 1;
+	    if (std::isnan(y[i])) naflag = 1;
 	}
     });
 
@@ -974,7 +974,7 @@ static SEXP math2B(SEXP sa, SEXP sb, double (*f)(double, double, double *),
 	if_NA_Math2_set(y[i], ai, bi)
 	else {
 	    y[i] = f(ai, bi, work);
-	    if (ISNAN(y[i])) naflag = 1;
+	    if (std::isnan(y[i])) naflag = 1;
 	}
     });
 
@@ -1204,8 +1204,8 @@ HIDDEN SEXP do_log_builtin(SEXP call, SEXP op, SEXP args, SEXP rho)
 /* Mathematical Functions of Three (Real) Arguments */
 
 #define if_NA_Math3_set(y,a,b,c)			        \
-	if      (ISNA (a) || ISNA (b)|| ISNA (c)) y = NA_REAL;	\
-	else if (ISNAN(a) || ISNAN(b)|| ISNAN(c)) y = R_NaN;
+	if      (ISNA (a) || ISNA (b)|| ISNA (c)) y = R_NaReal;	\
+	else if (std::isnan(a) || std::isnan(b)|| std::isnan(c)) y = R_NaN;
 
 #define SETUP_Math3						\
     if (!Rf_isNumeric(sa) || !Rf_isNumeric(sb) || !Rf_isNumeric(sc))	\
@@ -1270,7 +1270,7 @@ static SEXP math3B(SEXP sa, SEXP sb, SEXP sc,
 	if_NA_Math3_set(y[i], ai,bi,ci)
 	else {
 	    y[i] = f(ai, bi, ci, work);
-	    if (ISNAN(y[i])) naflag = 1;
+	    if (std::isnan(y[i])) naflag = 1;
 	}
     });
 

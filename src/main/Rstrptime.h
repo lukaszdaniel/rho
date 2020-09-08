@@ -23,10 +23,6 @@
 #ifndef RSTRPTIME_H
 #define RSTRPTIME_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* Convert a string representation of time to a time value.
    Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
@@ -64,7 +60,6 @@ static int locale_strings_set = 0;
 static int locale_w_strings_set = 0;
 static void get_locale_strings(void);
 static void get_locale_w_strings(void);
-
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>  /* for strncasecmp */
@@ -162,8 +157,7 @@ static const unsigned short int __mon_yday[2][13] =
   ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
 
 /* Compute the day of the week.  */
-static void
-day_of_the_week (stm *tm)
+static void day_of_the_week(stm* tm)
 {
     /* We know that January 1st 1970 was a Thursday (= 4).  Compute the
        the difference between this data in the one on TM and so determine
@@ -187,8 +181,7 @@ day_of_the_week (stm *tm)
 }
 
 /* Compute the day of the year.  */
-static void
-day_of_the_year (stm *tm)
+static void day_of_the_year(stm* tm)
 {
     /* R bug fix: day_of_the_year needs year, month, mday set */
     if(tm->tm_year == NA_INTEGER ||
@@ -226,12 +219,13 @@ static wchar_t w_ab_month_name[][DT_WBUFSIZE] =
 static wchar_t w_am_pm[][DT_WBUFSIZE] = {L"AM", L"PM"};
 
 /* Need case-insensitive version */
-static int Rwcsncasecmp(const wchar_t *cs1, const wchar_t *s2)
+static int Rwcsncasecmp(const wchar_t* cs1, const wchar_t* s2)
 {
     size_t i, n = wcslen(cs1);
     const wchar_t *a = cs1, *b = s2;
-    for(i = 0; i < n; i++, a++, b++) {
-	if(*b == L'\0' || towlower(*a) != towlower(*b)) return 1;
+    for (i = 0; i < n; i++, a++, b++) {
+	if (*b == L'\0' || towlower(*a) != towlower(*b))
+	    return 1;
     }
     return 0;
 }
@@ -243,9 +237,7 @@ static int Rwcsncasecmp(const wchar_t *cs1, const wchar_t *s2)
   (*(new_fmt) != '\0'							      \
    && (rp = w_strptime_internal (rp, (new_fmt), tm, psecs, poffset)) != NULL)
 
-static wchar_t *
-w_strptime_internal (wchar_t *rp, const wchar_t *fmt, stm *tm,
-		     double *psecs, int *poffset)
+static wchar_t* w_strptime_internal(wchar_t* rp, const wchar_t* fmt, stm* tm, double* psecs, int* poffset)
 {
     int cnt;
     int val;
@@ -718,10 +710,7 @@ w_strptime_internal (wchar_t *rp, const wchar_t *fmt, stm *tm,
   return rp;
 }
 
-
-static char *
-strptime_internal (const char *rp, const char *fmt, stm *tm,
-		   double *psecs, int *poffset)
+static char* strptime_internal(const char* rp, const char* fmt, stm* tm, double* psecs, int* poffset)
 {
     int cnt;
     int val;
@@ -1283,9 +1272,7 @@ static void get_locale_w_strings(void)
 
 
 /* We only care if the result is null or not */
-static void *
-R_strptime (const char *buf, const char *format, stm *tm,
-	    double *psecs, int *poffset)
+static void* R_strptime(const char* buf, const char* format, stm* tm, double* psecs, int* poffset)
 {
 #if defined(HAVE_WCSTOD)
     if(mbcslocale) {
@@ -1303,12 +1290,8 @@ R_strptime (const char *buf, const char *format, stm *tm,
     } else
 #endif
     {
-	return (void *) strptime_internal (buf, format, tm, psecs, poffset);
+	return (void*)strptime_internal(buf, format, tm, psecs, poffset);
     }
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* RSTRPTIME_H */

@@ -277,8 +277,8 @@ SEXP Win_dataentry(SEXP args)
     R_de_up = TRUE;
 
     /* set up a context which will close the window if there is an error */
-    begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_BaseEnv, R_BaseEnv,
-		 R_NilValue, R_NilValue);
+    begincontext(&cntxt, CTXT_CCODE, nullptr, R_BaseEnv, R_BaseEnv,
+		 nullptr, nullptr);
     cntxt.cend = &de_closewin_cend;
     cntxt.cenddata = (void *)DE;
 
@@ -795,7 +795,7 @@ static SEXP processEscapes(SEXP x)
     PROTECT( replacement = Rf_mkString("\"\\1\"") );
     PROTECT( expr = Rf_lang4(Rf_install("sub"), pattern, replacement, newval) );
     PROTECT( newval = Rf_eval(expr, R_BaseEnv) );
-    PROTECT( expr = R_ParseVector( newval, 1, &status, R_NilValue) );
+    PROTECT( expr = R_ParseVector( newval, 1, &status, nullptr) );
 
     /* We only handle the first entry. If this were available more generally,
        we'd probably want to loop over all of expr */
@@ -803,7 +803,7 @@ static SEXP processEscapes(SEXP x)
     if (status == PARSE_OK && length(expr))
 	PROTECT( newval = Rf_eval(VECTOR_ELT(expr, 0), R_BaseEnv) );
     else
-	PROTECT( newval = R_NilValue );  /* protect just so the count doesn't change */
+	PROTECT( newval = nullptr );  /* protect just so the count doesn't change */
     UNPROTECT(10);
     return newval;
 }
@@ -1886,13 +1886,13 @@ SEXP Win_dataviewer(SEXP args)
 	Rf_error("unable to start data viewer");
 
     /* set up a context which will close the window if there is an error */
-    begincontext(&cntxt, CTXT_CCODE, R_NilValue, R_BaseEnv, R_BaseEnv,
-		 R_NilValue, R_NilValue);
+    begincontext(&cntxt, CTXT_CCODE, nullptr, R_BaseEnv, R_BaseEnv,
+		 nullptr, nullptr);
     cntxt.cend = &dv_closewin_cend;
     cntxt.cenddata = (void *)DE;
 
     R_PreserveObject(DE->work); /* also preserves names */
     R_PreserveObject(DE->lens);
     UNPROTECT(nprotect);
-    return R_NilValue;
+    return nullptr;
 }

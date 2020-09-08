@@ -1054,6 +1054,6 @@ namespace rho {
 
 // This definition is visible only in C++; C code sees instead a
 // definition (in Defn.h) as an opaque pointer.
-typedef rho::Frame::Binding* R_varloc_t;
+using R_varloc_t = rho::Frame::Binding*;
 
 #endif // RFRAME_HPP

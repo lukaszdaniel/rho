@@ -68,7 +68,7 @@ RECT *RgetMDIsize(void); /* in rui.c */
 
 SEXP Win_selectlist(SEXP args)
 {
-    SEXP choices, preselect, ans = R_NilValue;
+    SEXP choices, preselect, ans = nullptr;
     const char **clist;
     int i, j = -1, n, mw = 0, multiple, nsel = 0;
     int xmax, ymax, ylist, fht, h0;

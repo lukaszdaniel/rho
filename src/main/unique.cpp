@@ -48,7 +48,7 @@ using namespace rho;
 #define NIL -1
 
 /* interval at which to check interrupts */
-#define NINTERRUPT 1000000
+constexpr R_xlen_t NINTERRUPT = 1000000;
 
 
 /* Hash function and equality test for keys */
@@ -91,7 +91,7 @@ struct _HashData {
     array.  So there are two 31-bit restrictions, the length of the
     array and the values.  The values are initially NIL (-1).  O-based
     indices are inserted by isDuplicated, and invalidated by setting
-    to NA_INTEGER.
+    to R_NaInt.
 */
 
 static size_t scatter(unsigned int key, HashData *d)
@@ -102,14 +102,14 @@ static size_t scatter(unsigned int key, HashData *d)
 static size_t lhash(SEXP x, R_xlen_t indx, HashData *d)
 {
     int xi = LOGICAL_ELT(x, indx);
-    if (xi == NA_LOGICAL) return 2U;
+    if (xi == R_NaLog) return 2U;
     return size_t(xi);
 }
 
 R_INLINE static size_t ihash(SEXP x, R_xlen_t indx, HashData *d)
 {
     int xi = INTEGER_ELT(x, indx);
-    if (xi == NA_INTEGER) return 0;
+    if (xi == R_NaInt) return 0;
     return scatter(static_cast<unsigned int>(xi), d);
 }
 
@@ -129,7 +129,7 @@ R_INLINE static size_t rhash(SEXP x, R_xlen_t indx, HashData *d)
     double tmp = (xi == 0.0) ? 0.0 : xi;
     /* need to use both 32-byte chunks or endianness is an issue */
     /* we want all NaNs except NA equal, and all NAs equal */
-    if (R_IsNA(tmp)) tmp = NA_REAL;
+    if (R_IsNA(tmp)) tmp = R_NaReal;
     else if (R_IsNaN(tmp)) tmp = R_NaN;
 #if 2*SIZEOF_INT == SIZEOF_DOUBLE
     {
@@ -147,7 +147,7 @@ static Rcomplex unify_complex_na(Rcomplex z) {
     ans.r = (z.r == 0.0) ? 0.0 : z.r;
     ans.i = (z.i == 0.0) ? 0.0 : z.i;
     if (R_IsNA(ans.r) || R_IsNA(ans.i))
-	ans.r = ans.i = NA_REAL;
+	ans.r = ans.i = R_NaReal;
     else if (R_IsNaN(ans.r) || R_IsNaN(ans.i))
 	ans.r = ans.i = R_NaN;
     return ans;
@@ -200,26 +200,26 @@ R_INLINE static size_t shash(SEXP x, R_xlen_t indx, HashData *d)
     return scatter(k, d);
 }
 
-static inline bool lequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool lequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     return (LOGICAL_ELT(x, i) == LOGICAL_ELT(y, j));
 }
 
 
-static inline bool iequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool iequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     return (INTEGER_ELT(x, i) == INTEGER_ELT(y, j));
 }
 
 /* BDR 2002-1-17  We don't want NA and other NaNs to be equal */
-static inline bool requal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool requal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return 0;
     double xi = REAL_ELT(x, i);
     double yj = REAL_ELT(y, j);
-    if (!ISNAN(xi) && !ISNAN(yj))
+    if (!std::isnan(xi) && !std::isnan(yj))
 	return (xi == yj);
     else if (R_IsNA(xi) && R_IsNA(yj)) return true;
     else if (R_IsNaN(xi) && R_IsNaN(yj)) return true;
@@ -228,28 +228,28 @@ static inline bool requal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 
 /* This is differentiating {NA,1}, {NA,0}, {NA, NaN}, {NA, NA},
  * but R's print() and format()  render all as "NA" */
-static inline bool cplx_eq(const Rcomplex &x, const Rcomplex &y)
+inline static bool cplx_eq(const Rcomplex &x, const Rcomplex &y)
 {
-    if (!ISNAN(x.r) && !ISNAN(x.i) && !ISNAN(y.r) && !ISNAN(y.i))
+    if (!std::isnan(x.r) && !std::isnan(x.i) && !std::isnan(y.r) && !std::isnan(y.i))
 	return x.r == y.r && x.i == y.i;
     else if (R_IsNA(x.r) || R_IsNA(x.i)) // x is NA
 	return (R_IsNA(y.r) || R_IsNA(y.i)) ? true : false;
     else if (R_IsNA(y.r) || R_IsNA(y.i)) // y is NA but x is not
 	return false;
-    // else : none is NA but there's at least one NaN;  hence  ISNAN(.) == R_IsNaN(.)
+    // else : none is NA but there's at least one NaN;  hence  std::isnan(.) == R_IsNaN(.)
     return
-	(((ISNAN(x.r) && ISNAN(y.r)) || (!ISNAN(x.r) && !ISNAN(y.r) && x.r == y.r)) && // Re
-	 ((ISNAN(x.i) && ISNAN(y.i)) || (!ISNAN(x.i) && !ISNAN(y.i) && x.i == y.i))    // Im
+	(((std::isnan(x.r) && std::isnan(y.r)) || (!std::isnan(x.r) && !std::isnan(y.r) && x.r == y.r)) && // Re
+	 ((std::isnan(x.i) && std::isnan(y.i)) || (!std::isnan(x.i) && !std::isnan(y.i) && x.i == y.i))    // Im
 	    ) ? true : false;
 }
 
-static inline bool cequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool cequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     return cplx_eq(COMPLEX_ELT(x, i), COMPLEX_ELT(y, j));
 }
 
-static inline bool sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     SEXP xi = STRING_ELT(x, i);
@@ -259,7 +259,7 @@ static inline bool sequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
     if (xi == yj) return true;
     /* Then if either is NA the other cannot be */
     /* Once all CHARSXPs are cached, Seql will handle this */
-    if (xi == NA_STRING || yj == NA_STRING)
+    if (xi == R_NaString || yj == R_NaString)
 	return false;
     /* another pre-test to avoid the call to Seql */
     if (/*IS_CACHED(xi) && IS_CACHED(yj) && */ ENC_KNOWN(xi) == ENC_KNOWN(yj))
@@ -272,7 +272,7 @@ static size_t rawhash(SEXP x, R_xlen_t indx, HashData *d)
     return size_t(RAW_ELT(x, indx));
 }
 
-static inline bool rawequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool rawequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     return (RAW_ELT(x, i) == RAW_ELT(y, j));
@@ -336,7 +336,7 @@ static size_t vhash(SEXP x, R_xlen_t indx, HashData *d)
     return scatter(key, d);
 }
 
-static inline bool vequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool vequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     if (i < 0 || j < 0) return false;
     return R_compute_identical(VECTOR_ELT(x, i), VECTOR_ELT(y, j), 0);
@@ -362,7 +362,7 @@ static void MKsetup(R_xlen_t n, HashData *d, R_xlen_t nmax)
 	Rf_error(_("length %d is too large for hashing"), n);
 #endif
 
-    if (nmax != NA_INTEGER && nmax != 1) n = nmax;
+    if (nmax != R_NaInt && nmax != 1) n = nmax;
     R_xlen_t n2 = 2U * n;
     d->M = 2;
     d->K = 1;
@@ -481,7 +481,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
 	size_t i = d->hash(x, indx, d);
 	while (h[i] >= 0) {
 	    if (d->equal(table, R_xlen_t(h[i]), x, indx)) {
-		h[i] = NA_INTEGER;  /* < 0, only index values are inserted */
+		h[i] = R_NaInt;  /* < 0, only index values are inserted */
 		return;
 	    }
 	    i = (i + 1) % d->M;
@@ -493,7 +493,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
 	size_t i = d->hash(x, indx, d);
 	while (h[i] >= 0) {
 	    if (d->equal(table, h[i], x, indx)) {
-		h[i] = NA_INTEGER;  /* < 0, only index values are inserted */
+		h[i] = R_NaInt;  /* < 0, only index values are inserted */
 		return;
 	    }
 	    i = (i + 1) % d->M;
@@ -520,7 +520,7 @@ static void removeEntry(SEXP table, SEXP x, R_xlen_t indx, HashData *d)
 SEXP Rf_duplicated(SEXP x, Rboolean from_last)
 {
     SEXP ans;
-    int *v, nmax = NA_INTEGER;
+    int *v, nmax = R_NaInt;
 
     if (!Rf_isVector(x)) Rf_error(_("'duplicated' applies only to vectors"));
     R_xlen_t i, n = XLENGTH(x);
@@ -579,7 +579,7 @@ static SEXP Duplicated(SEXP x, Rboolean from_last, int nmax)
 R_xlen_t Rf_any_duplicated(SEXP x, Rboolean from_last)
 {
     R_xlen_t result = 0;
-    int nmax = NA_INTEGER;
+    int nmax = R_NaInt;
 
     if (!Rf_isVector(x)) Rf_error(_("'duplicated' applies only to vectors"));
     R_xlen_t i, n = XLENGTH(x);
@@ -642,7 +642,7 @@ static SEXP duplicated3(SEXP x, SEXP incomp, Rboolean from_last, int nmax)
 /* return (1-based) index of first duplication, or 0 : */
 R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
 {
-    int j, m = Rf_length(incomp), nmax = NA_INTEGER;
+    int j, m = Rf_length(incomp), nmax = R_NaInt;
 
     if (!Rf_isVector(x)) Rf_error(_("'duplicated' applies only to vectors"));
     R_xlen_t i, n = XLENGTH(x);
@@ -692,7 +692,7 @@ R_xlen_t Rf_any_duplicated3(SEXP x, SEXP incomp, Rboolean from_last)
 HIDDEN SEXP do_duplicated(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
 {
     SEXP dup, ans;
-    int fromLast, nmax = NA_INTEGER;
+    int fromLast, nmax = R_NaInt;
     R_xlen_t i, k, n;
 
     va_list args;
@@ -708,7 +708,7 @@ HIDDEN SEXP do_duplicated(/*const*/ Expression* call, const BuiltInFunction* op,
     if (Rf_length(fromLast_) < 1)
 	Rf_error(_("'fromLast' must be length 1"));
     fromLast = Rf_asLogical(fromLast_);
-    if (fromLast == NA_LOGICAL)
+    if (fromLast == R_NaLog)
 	Rf_error(_("'fromLast' must be TRUE or FALSE"));
 
     Rboolean fL = Rboolean( fromLast);
@@ -725,7 +725,7 @@ HIDDEN SEXP do_duplicated(/*const*/ Expression* call, const BuiltInFunction* op,
 	       (op->variant() == 1 ? "unique" : /* 2 */ "anyDuplicated")));
     }
     if (op->variant() <= 1) {
-	if (nmax != NA_INTEGER && nmax <= 0)
+	if (nmax != R_NaInt && nmax <= 0)
 	    Rf_error(_("'nmax' must be positive"));
     }
 
@@ -989,7 +989,7 @@ SEXP match5(SEXP itable, SEXP ix, int nmatch, SEXP incomp, SEXP env)
 
 	if (incomp) { PROTECT(incomp = Rf_coerceVector(incomp, type)); nprot++; }
 	data.nomatch = nmatch;
-	HashTableSetup(table, &data, NA_INTEGER);
+	HashTableSetup(table, &data, R_NaInt);
 	if(type == STRSXP) {
 	    Rboolean useBytes = FALSE;
 	    Rboolean useUTF8 = FALSE;
@@ -1089,7 +1089,7 @@ HIDDEN SEXP do_pmatch(/*const*/ Expression* call, const BuiltInFunction* op, ROb
     n_target = LENGTH(target); // not allowed to be long
     no_match = Rf_asInteger(nomatch_);
     dups_ok = Rf_asLogical(duplicates_ok_);
-    if (dups_ok == NA_LOGICAL)
+    if (dups_ok == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "duplicates.ok");
     no_dups = Rboolean(!dups_ok);
 
@@ -1168,7 +1168,7 @@ HIDDEN SEXP do_pmatch(/*const*/ Expression* call, const BuiltInFunction* op, ROb
 	}
     } else {
 	HashData data;
-	HashTableSetup(target, &data, NA_INTEGER);
+	HashTableSetup(target, &data, R_NaInt);
 	data.useUTF8 = useUTF8;
 	data.nomatch = 0;
 	DoHashing(target, &data);
@@ -1266,7 +1266,7 @@ HIDDEN SEXP do_charmatch(/*const*/ Expression* call, const BuiltInFunction* op, 
 	else
 	    ss = Rf_translateChar(STRING_ELT(input, i));
 	size_t temp = strlen(ss);
-	int imatch = NA_INTEGER;
+	int imatch = R_NaInt;
 	Rboolean perfect = FALSE;
 	/* we could reset vmax here too: worth it? */
 	for(int j = 0; j < n_target; j++) {
@@ -1287,14 +1287,14 @@ HIDDEN SEXP do_charmatch(/*const*/ Expression* call, const BuiltInFunction* op, 
 		    }
 		}
 		else if (!perfect) {
-		    if (imatch == NA_INTEGER)
+		    if (imatch == R_NaInt)
 			imatch = j + 1;
 		    else
 			imatch = 0;
 		}
 	    }
 	}
-	ians[i] = (imatch == NA_INTEGER) ? no_match : imatch;
+	ians[i] = (imatch == R_NaInt) ? no_match : imatch;
 	vmaxset(vmax);
     }
     UNPROTECT(1);
@@ -1405,7 +1405,7 @@ HIDDEN SEXP do_matchcall(SEXP call, SEXP op, SEXP args, SEXP env)
     /* Do we expand ... ? */
 
     expdots = Rf_asLogical(CAR(CDDR(args)));
-    if (expdots == NA_LOGICAL)
+    if (expdots == R_NaLog)
 	Rf_error(_("invalid '%s' argument"), "expand.dots");
 
     /* Get the formals and match the actual args */
@@ -1504,10 +1504,10 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     n = LENGTH(g);
     ng = Rf_length(uniqueg);
     narm = Rf_asLogical(snarm);
-    if(narm == NA_LOGICAL) Rf_error("'na.rm' must be TRUE or FALSE");
+    if(narm == R_NaLog) Rf_error("'na.rm' must be TRUE or FALSE");
     if(Rf_isMatrix(x)) p = Rf_ncols(x); else p = 1;
 
-    HashTableSetup(uniqueg, &data, NA_INTEGER);
+    HashTableSetup(uniqueg, &data, R_NaInt);
     PROTECT(data.HashTable);
     DoHashing(uniqueg, &data);
     PROTECT(matches = HashLookup(uniqueg, g, &data));
@@ -1522,7 +1522,7 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    double *pa = REAL0(ans);
 	    for(int j = 0; j < n; j++) {
 		double xjpo = REAL_ELT(x, j + offset);
-		if(!narm || !ISNAN(xjpo))
+		if(!narm || !std::isnan(xjpo))
 		    pa[pmatches[j] - 1 + offsetg] += xjpo;
 	    }
 	    offset += n;
@@ -1535,15 +1535,15 @@ rowsum(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    int *pa = INTEGER0(ans);
 	    for(int j = 0; j < n; j++) {
 		int xjpo = INTEGER_ELT(x, j + offset);
-		if (xjpo == NA_INTEGER) {
+		if (xjpo == R_NaInt) {
 		    if(!narm)
-			pa[pmatches[j] - 1 + offsetg] = NA_INTEGER;
-		} else if (pa[pmatches[j] - 1 + offsetg] != NA_INTEGER) {
+			pa[pmatches[j] - 1 + offsetg] = R_NaInt;
+		} else if (pa[pmatches[j] - 1 + offsetg] != R_NaInt) {
 		    /* check for integer overflows */
 		    int itmp = pa[pmatches[j] - 1 + offsetg];
 		    double dtmp = itmp;
 		    dtmp += xjpo;
-		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = NA_INTEGER;
+		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = R_NaInt;
 		    else itmp += xjpo;
 		    pa[pmatches[j] - 1 + offsetg] = itmp;
 		}
@@ -1580,9 +1580,9 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
     p = LENGTH(x);
     R_xlen_t ng = XLENGTH(uniqueg);
     narm = Rf_asLogical(snarm);
-    if(narm == NA_LOGICAL) Rf_error("'na.rm' must be TRUE or FALSE");
+    if(narm == R_NaLog) Rf_error("'na.rm' must be TRUE or FALSE");
 
-    HashTableSetup(uniqueg, &data, NA_INTEGER);
+    HashTableSetup(uniqueg, &data, R_NaInt);
     PROTECT(data.HashTable);
     DoHashing(uniqueg, &data);
     PROTECT(matches = HashLookup(uniqueg, g, &data));
@@ -1600,7 +1600,7 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    Memzero(REAL0(col), ng);
 	    for(R_xlen_t j = 0; j < n; j++) {
 		double xj = REAL_ELT(xcol, j);
-		if(!narm || !ISNAN(xj))
+		if(!narm || !std::isnan(xj))
 		    REAL0(col)[pmatches[j] - 1] += xj;
 	    }
 	    SET_VECTOR_ELT(ans,i,col);
@@ -1611,14 +1611,14 @@ rowsum_df(SEXP x, SEXP g, SEXP uniqueg, SEXP snarm, SEXP rn)
 	    Memzero(INTEGER0(col), ng);
 	    for(R_xlen_t j = 0; j < n; j++) {
 		int xj = INTEGER_ELT(xcol, j);
-		if (xj == NA_INTEGER) {
+		if (xj == R_NaInt) {
 		    if(!narm)
-			INTEGER0(col)[pmatches[j] - 1] = NA_INTEGER;
-		} else if (INTEGER0(col)[pmatches[j] - 1] != NA_INTEGER) {
+			INTEGER0(col)[pmatches[j] - 1] = R_NaInt;
+		} else if (INTEGER0(col)[pmatches[j] - 1] != R_NaInt) {
 		    int itmp = INTEGER0(col)[pmatches[j] - 1];
 		    double dtmp = itmp;
 		    dtmp += xj;
-		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = NA_INTEGER;
+		    if (dtmp < INT_MIN || dtmp > INT_MAX) itmp = R_NaInt;
 		    else itmp += xj;
 		    INTEGER0(col)[pmatches[j] - 1] = itmp;
 		}
@@ -1672,7 +1672,7 @@ static SEXP duplicated2(SEXP x, HashData *d)
     int n;
 
     n = LENGTH(x);
-    HashTableSetup(x, d, NA_INTEGER);
+    HashTableSetup(x, d, R_NaInt);
     PROTECT(d->HashTable);
     PROTECT(ans = Rf_allocVector(INTSXP, n));
 
@@ -1754,7 +1754,7 @@ HIDDEN SEXP do_makeunique(/*const*/ Expression* call, const BuiltInFunction* op,
 /* Use hashing to improve object.size. Here we want equal CHARSXPs,
    not equal contents. */
 
-static inline bool csequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
+inline static bool csequal(SEXP x, R_xlen_t i, SEXP y, R_xlen_t j)
 {
     return STRING_ELT(x, i) == STRING_ELT(y, j);
 }
@@ -1766,7 +1766,7 @@ static void HashTableSetup1(SEXP x, HashData *d)
 #ifdef LONG_VECTOR_SUPPORT
     d->isLong = FALSE;
 #endif
-    MKsetup(XLENGTH(x), d, NA_INTEGER);
+    MKsetup(XLENGTH(x), d, R_NaInt);
     d->HashTable = Rf_allocVector(INTSXP, d->M);
     for (R_xlen_t i = 0; i < d->M; i++) HTDATA_INT(d)[i] = NIL;
 }
@@ -1797,7 +1797,7 @@ HIDDEN SEXP do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RO
     SEXP ans;
     double dn = Rf_asReal(n_);
     int k = Rf_asInteger(size_);
-    if (!R_FINITE(dn) || dn < 0 || dn > 4.5e15 || (k > 0 && dn == 0)) 
+    if (!std::isfinite(dn) || dn < 0 || dn > 4.5e15 || (k > 0 && dn == 0)) 
 	Rf_error(_("invalid first argument"));
     if (k < 0) Rf_error(_("invalid '%s' argument"), "size");
     if (k > dn/2) Rf_error("This algorithm is for size <= n/2");
@@ -1806,7 +1806,7 @@ HIDDEN SEXP do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RO
     if (dn > INT_MAX) {
 	ans = PROTECT(Rf_allocVector(REALSXP, k));
 	double *ry = REAL0(ans);
-	HashTableSetup(ans, &data, NA_INTEGER);
+	HashTableSetup(ans, &data, R_NaInt);
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)
 	    for(int j = 0; j < 100; j++) { // average < 2
@@ -1816,7 +1816,7 @@ HIDDEN SEXP do_sample2(/*const*/ Expression* call, const BuiltInFunction* op, RO
    } else {
 	ans = PROTECT(Rf_allocVector(INTSXP, k));
 	int *iy = INTEGER0(ans);
-	HashTableSetup(ans, &data, NA_INTEGER);
+	HashTableSetup(ans, &data, R_NaInt);
 	PROTECT(data.HashTable);
 	for (int i = 0; i < k; i++)
 	    for(int j = 0; j < 100; j++) { // average < 2

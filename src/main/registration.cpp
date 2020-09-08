@@ -70,7 +70,7 @@
 
 
 
-#define CALLDEF(name, n)  {#name, DL_FUNC( &name), n}
+#define CALLDEF(name, n)  {#name, DL_FUNC(&name), n}
 
 static R_CallMethodDef callMethods [] = {
     /* Top-level task callbacks: .Call as .Internal does not work */
@@ -83,7 +83,7 @@ static R_CallMethodDef callMethods [] = {
 };
 
 
-#define FDEF(name, n)  {#name, DL_FUNC( &F77_SYMBOL(name)), n, NULL}
+#define FDEF(name, n)  {#name, DL_FUNC(&F77_SYMBOL(name)), n, NULL}
 static R_FortranMethodDef fortranMethods[] = {
     /* LINPACK */
     FDEF(dqrcf, 8), // qr and auxiliaries
@@ -99,8 +99,7 @@ static R_FortranMethodDef fortranMethods[] = {
 
 #undef FALSE
 
-HIDDEN void
-R_init_base(DllInfo *dll)
+HIDDEN void R_init_base(DllInfo *dll)
 {
     R_registerRoutines(dll, nullptr, callMethods, fortranMethods, nullptr);
     R_useDynamicSymbols(dll, FALSE);

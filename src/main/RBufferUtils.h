@@ -26,27 +26,19 @@
 #ifndef R_BUFFER_UTILS
 #define R_BUFFER_UTILS
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* used in bind.cpp character.cpp deparse.cpp, printutils.cpp, saveload.cpp
    scan.cpp seq.cpp sprintf.cpp sysutils.cpp */
 
-typedef struct {
- char *data;
- size_t bufsize;
- size_t defaultSize;
-} R_StringBuffer;
+struct R_StringBuffer {
+    char* data;
+    size_t bufsize;
+    size_t defaultSize;
+};
 
 /* code in ./memory.cpp : */
 /* Note that R_StringBuffer *buf needs to be initialized before call */
-void *R_AllocStringBuffer(size_t blen, R_StringBuffer *buf);
-void R_FreeStringBuffer(R_StringBuffer *buf);
-void R_FreeStringBufferL(R_StringBuffer *buf);
-
-#ifdef __cplusplus
-}
-#endif
+void* R_AllocStringBuffer(size_t blen, R_StringBuffer* buf);
+void R_FreeStringBuffer(R_StringBuffer* buf);
+void R_FreeStringBufferL(R_StringBuffer* buf);
 
 #endif

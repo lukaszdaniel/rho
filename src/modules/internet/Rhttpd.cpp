@@ -223,11 +223,11 @@ static void first_init()
     /* create a dummy message-only window for synchronization with the
      * main event loop */
     HINSTANCE instance = GetModuleHandle(NULL);
-    LPCTSTR class = "Rhttpd";
+    LPCTSTR class_ = "Rhttpd";
     WNDCLASS wndclass = { 0, RhttpdWindowProc, 0, 0, instance, NULL, 0, 0,
-			  NULL, class };
+			  NULL, class_ };
     RegisterClass(&wndclass);
-    message_window = CreateWindow(class, "Rhttpd", 0, 1, 1, 1, 1,
+    message_window = CreateWindow(class_, "Rhttpd", 0, 1, 1, 1, 1,
 				  HWND_MESSAGE, NULL, instance, NULL);
 #endif
     needs_init = 0;
@@ -477,7 +477,7 @@ static SEXP R_ContentTypeName, R_HandlersName;
  * In the case of a URL encoded form it will have the same shape as the query string (named string vector).
  * In all other cases it will be a raw vector with a "content-type" attribute (if specified in the headers) */
 static SEXP parse_request_body(httpd_conn_t *c) {
-    if (!c || !c->body) return R_NilValue;
+    if (!c || !c->body) return nullptr;
 
     if (c->attr & CONTENT_FORM_UENC) { /* URL encoded form - return parsed form */
 	c->body[c->content_length] = 0; /* the body is guaranteed to have an extra byte for the termination */
@@ -498,9 +498,9 @@ static SEXP parse_request_body(httpd_conn_t *c) {
 #ifdef _WIN32
 /* on Windows we have to guarantee that process_request is performed
  * on the main thread, so we have to dispatch it through a message */
-static void process_request_main_thread(httpd_conn_t *c);
+static void process_request_main_thread(httpd_conn_t* c);
 
-static void process_request(httpd_conn_t *c)
+static void process_request(httpd_conn_t* c)
 {
     /* SendMessage is synchronous, so it will wait until the message
      * is processed */
@@ -513,7 +513,8 @@ static void process_request(httpd_conn_t *c)
 
 /* finalize a request - essentially for HTTP/1.0 it means that
  * we have to close the connection */
-static void fin_request(httpd_conn_t *c) {
+static void fin_request(httpd_conn_t* c)
+{
     if (!IS_HTTP_1_1(c))
 	c->attr |= CONNECTION_CLOSE;
 }
@@ -543,7 +544,7 @@ static SEXP handler_for_path(const char *path) {
 	    }
 	    /* we only proceed if .httpd.handlers.env really exists */
 	    if (TYPEOF(custom_handlers_env) == ENVSXP) {
-		SEXP cl = Rf_findVarInFrame3(custom_handlers_env, Rf_install(fn), TRUE);
+		SEXP cl = Rf_findVarInFrame3(custom_handlers_env, rho::Symbol::obtain(fn), TRUE);
 		if (cl != R_UnboundValue && TYPEOF(cl) == CLOSXP) /* we need a closure */
 		    return cl;
 	    }
@@ -554,12 +555,12 @@ static SEXP handler_for_path(const char *path) {
 }
 
 /* process a request by calling the httpd() function in R */
-static void process_request_(void *ptr)
+static void process_request_(void* ptr)
 {
     httpd_conn_t *c = (httpd_conn_t*) ptr;
     const char *ct = "text/html";
     char *query = 0, *s;
-    SEXP sHeaders = R_NilValue;
+    SEXP sHeaders = nullptr;
     int code = 200;
     DBG(Rprintf("process request for %p\n", (void*) c));
     if (!c || !c->url) return; /* if there is not enough to process, bail out */
@@ -573,8 +574,8 @@ static void process_request_(void *ptr)
     {   /* construct "try(httpd(url, query, body), silent=TRUE)" */
 	SEXP sTrue = PROTECT(Rf_ScalarLogical(TRUE));
 	SEXP sBody = PROTECT(parse_request_body(c));
-	SEXP sQuery = PROTECT(query ? parse_query(query) : R_NilValue);
-	SEXP sReqHeaders = PROTECT(c->headers ? collect_buffers(c->headers) : R_NilValue);
+	SEXP sQuery = PROTECT(query ? parse_query(query) : nullptr);
+	SEXP sReqHeaders = PROTECT(c->headers ? collect_buffers(c->headers) : nullptr);
 	SEXP sArgs = PROTECT(Rf_list4(Rf_mkString(c->url), sQuery, sBody, sReqHeaders));
 	SEXP sTry = Rf_install("try");
 	SEXP y, x = PROTECT(Rf_lang3(sTry,
@@ -630,7 +631,7 @@ static void process_request_(void *ptr)
 		if (LENGTH(x) > 2) { /* third element is headers vector */
 		    sHeaders = VECTOR_ELT(x, 2);
 		    if (TYPEOF(sHeaders) != STRSXP)
-			sHeaders = R_NilValue;
+			sHeaders = nullptr;
 		    if (LENGTH(x) > 3) /* fourth element is HTTP code */
 			code = Rf_asInteger(VECTOR_ELT(x, 3));
 		}
@@ -646,7 +647,7 @@ static void process_request_(void *ptr)
 		    send_response(c->sock, buf, strlen(buf));
 		}
 		send_response(c->sock, ct, strlen(ct));
-		if (sHeaders != R_NilValue) {
+		if (sHeaders != nullptr) {
 		    unsigned int i = 0, n = LENGTH(sHeaders);
 		    for (; i < n; i++) {
 			const char *hs = R_CHAR(STRING_ELT(sHeaders, i));
@@ -661,8 +662,8 @@ static void process_request_(void *ptr)
 		if (LENGTH(y) > 1 && !strcmp(cs, "*FILE*"))
 		    fn = R_CHAR(STRING_ELT(y, 1));
 		if (fn) {
-		    char *fbuf;
-		    FILE *f = fopen(fn, "rb");
+		    char* fbuf;
+		    FILE* f = fopen(fn, "rb");
 		    long fsz = 0;
 		    if (!f) {
 			send_response(c->sock, "\r\nContent-length: 0\r\n\r\n", 23);
@@ -721,7 +722,7 @@ static void process_request_(void *ptr)
 		    send_response(c->sock, buf, strlen(buf));
 		}
 		send_response(c->sock, ct, strlen(ct));
-		if (sHeaders != R_NilValue) {
+		if (sHeaders != nullptr) {
 		    unsigned int i = 0, n = LENGTH(sHeaders);
 		    for (; i < n; i++) {
 			const char *hs = R_CHAR(STRING_ELT(sHeaders, i));
@@ -1257,9 +1258,9 @@ void in_R_HTTPDStop(void)
 SEXP R_init_httpd(SEXP sIP, SEXP sPort)
 {
     const char *ip = 0;
-    if (sIP != R_NilValue && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
+    if (sIP != nullptr && (TYPEOF(sIP) != STRSXP || LENGTH(sIP) != 1))
 	Rf_error("invalid bind address specification");
-    if (sIP != R_NilValue)
+    if (sIP != nullptr)
 	ip = R_CHAR(STRING_ELT(sIP, 0));
     return Rf_ScalarInteger(in_R_HTTPDCreate(ip, Rf_asInteger(sPort)));
 }

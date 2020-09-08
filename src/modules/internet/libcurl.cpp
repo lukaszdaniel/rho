@@ -293,7 +293,7 @@ HIDDEN SEXP in_do_curlGetHeaders(SEXP call, SEXP op, SEXP args, SEXP rho)
     checkArity(op, args);
 #ifndef HAVE_LIBCURL
     Rf_error(_("curlGetHeaders is not supported on this platform"));
-    return R_NilValue;
+    return nullptr;
 #else
     if (!Rf_isString(CAR(args)) || LENGTH(CAR(args)) != 1)
        Rf_error("invalid %s argument", "url");
@@ -466,7 +466,7 @@ HIDDEN SEXP in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
     checkArity(op, args);
 #ifndef HAVE_LIBCURL
     Rf_error(_("download.file(method = \"libcurl\") is not supported on this platform"));
-    return R_NilValue;
+    return nullptr;
 #else
     SEXP scmd, sfile, smode;
     const char *url, *file, *mode;
@@ -561,8 +561,8 @@ HIDDEN SEXP in_do_curlDownload(SEXP call, SEXP op, SEXP args, SEXP rho)
 		setprogressbar(pbar.pb, 0);
 		settext(pbar.wprog, "Download progress");
 		show(pbar.wprog);
-		begincontext(&(pbar.cntxt), CTXT_CCODE, R_NilValue, R_NilValue,
-			     R_NilValue, R_NilValue, R_NilValue);
+		begincontext(&(pbar.cntxt), CTXT_CCODE, nullptr, nullptr,
+			     nullptr, nullptr, nullptr);
 		pbar.cntxt.cend = &doneprogressbar;
 		pbar.cntxt.cenddata = &pbar;
 	    }

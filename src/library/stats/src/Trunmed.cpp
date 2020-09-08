@@ -113,8 +113,7 @@ R_heapsort(int low, int up, double *window, int *outlist, int *nrlist,
     }
 }
 
-static void
-inittree(R_xlen_t n, int k, int k2, const double *data, double *window,
+static void inittree(R_xlen_t n, int k, int k2, const double *data, double *window,
 	 int *outlist, int *nrlist, int print_level)
 {
     int i, k2p1;
@@ -181,7 +180,7 @@ downtoleave(int outvirt, int k,
     int childl, childr;
 
     if(print_level >= 2) Rprintf("\n downtoleave(%d, %d)\n   ", outvirt,k);
-    for(;;) {
+    while (true) {
 	childl = outvirt*2;
 	childr = childl-1;
 	if (window[childl+k] < window[childr+k])
@@ -201,7 +200,7 @@ uptoleave(int outvirt, int k,
     int childl, childr;
 
     if(print_level >= 2) Rprintf("\n uptoleave(%d, %d)\n   ", outvirt,k);
-    for(;;) {
+    while (true) {
 	childl = outvirt*2;
 	childr = childl+1;
 	if (window[childl+k] > window[childr+k])

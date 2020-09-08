@@ -26,13 +26,17 @@
 #ifndef RLOCALE_DATA_H
 #define RLOCALE_DATA_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* R i18n fake locale functions. */
-enum { MB_Default, MB_ja_JP, MB_ko_KR, MB_zh_SG, MB_zh_CN, MB_zh_HK,
-       MB_zh_TW, MB_SIZE };
+enum {
+    MB_Default,
+    MB_ja_JP,
+    MB_ko_KR,
+    MB_zh_SG,
+    MB_zh_CN,
+    MB_zh_HK,
+    MB_zh_TW,
+    MB_SIZE
+};
 
 struct interval {
     int first;
@@ -3524,18 +3528,14 @@ static const struct interval table_wupper[] = {
     { 0xff21, 0xff3a },
     { 0x10400, 0x10425 }
 };
-static const int table_wupper_count =
-  (int(sizeof(table_wupper)/sizeof(struct interval)));
-
+static const int table_wupper_count
+    = (int(sizeof(table_wupper) / sizeof(struct interval)));
 
 /* ------------------- iswxdigit -------------------- */
-static const struct interval table_wxdigit[] = {
-  { 0x30, 0x39 },
-  { 0x41, 0x46 },
-  { 0x61, 0x66 }
-};
-static const int table_wxdigit_count =
-  (int(sizeof(table_wxdigit)/sizeof(struct interval)));
+static const struct interval table_wxdigit[]
+    = { { 0x30, 0x39 }, { 0x41, 0x46 }, { 0x61, 0x66 } };
+static const int table_wxdigit_count
+    = (int(sizeof(table_wxdigit) / sizeof(struct interval)));
 #endif
 
 /* -------------------helper for wcwidth -------------------- */
@@ -3617,11 +3617,6 @@ static const struct interval zero_width[] = {
     { 0xE0100, 0xE01EF }
   };
 
-static const int 
-zero_width_count = (sizeof(zero_width)/sizeof(struct interval));
-
-#ifdef __cplusplus
-}
-#endif
+static const int zero_width_count = (sizeof(zero_width) / sizeof(struct interval));
 
 #endif /* RLOCALE_DATA_H */

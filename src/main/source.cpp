@@ -260,12 +260,12 @@ HIDDEN SEXP do_parse(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	    known_to_be_latin1 = old_latin1;
 	    known_to_be_utf8 = old_utf8;
 	}
-	if (num == NA_INTEGER) num = -1;
+	if (num == R_NaInt) num = -1;
 	s = R_ParseVector(text, num, &status, source);
 	if (status != PARSE_OK) parseError(call, R_ParseError);
     }
     else if (ifile >= 3) {/* file != "" */
-	if (num == NA_INTEGER) num = -1;
+	if (num == R_NaInt) num = -1;
 	try {
 	    if(!wasopen && !con->open(con))
 		Rf_error(_("cannot open the connection"));
@@ -280,7 +280,7 @@ HIDDEN SEXP do_parse(/*const*/ rho::Expression* call, const rho::BuiltInFunction
 	if (status != PARSE_OK) parseError(call, R_ParseError);
     }
     else {
-	if (num == NA_INTEGER) num = 1;
+	if (num == R_NaInt) num = 1;
 	s = R_ParseBuffer(&R_ConsoleIob, num, &status, prompt, source);
 	if (status != PARSE_OK) parseError(call, R_ParseError);
     }

@@ -334,7 +334,7 @@ static SEXP allocMatrixNA(SEXPTYPE mode, int nrow, int ncol)
 
     PROTECT(retval = Rf_allocMatrix(mode, nrow, ncol));
     for(k = 0; k < LENGTH(retval); k++)
-	SET_STRING_ELT(retval, k, NA_STRING);
+	SET_STRING_ELT(retval, k, R_NaString);
     UNPROTECT(1);
     return(retval);
 }

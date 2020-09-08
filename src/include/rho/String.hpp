@@ -238,8 +238,7 @@ namespace rho {
 	 * @return Pointer to a String (preexisting or newly created)
 	 * representing the specified text in the specified encoding.
 	 */
-	static String* obtain(const std::string& str,
-			      cetype_t encoding = CE_UTF8);
+	static String* obtain(const std::string& str, cetype_t encoding = CE_NATIVE);
 
 	/** @brief The name by which this type is known in R.
 	 *
@@ -498,7 +497,7 @@ extern "C" {
      * @return Pointer to a string object representing the specified
      *         text in the specified encoding.
      */
-    inline SEXP Rf_mkCharCE(const char* str, cetype_t encoding)
+    inline SEXP Rf_mkCharCE(const char* str, cetype_t encoding = CE_UTF8)
     {
 	return rho::String::obtain(str, encoding);
     }
@@ -524,7 +523,7 @@ extern "C" {
      *
      * @return Pointer to the created string.
      */
-    SEXP Rf_mkCharLenCE(const char* text, int length, cetype_t encoding);
+    SEXP Rf_mkCharLenCE(const char* text, int length, cetype_t encoding = CE_UTF8);
 
     /** @brief Create a rho::String object for specified text.
      *

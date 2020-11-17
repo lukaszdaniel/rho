@@ -24,23 +24,26 @@
 
 /** @file RealVector.cpp
  *
- * Implementation of class RealVector and related functions.
+ * @brief Implementation of class RealVector and related functions.
  */
 
 #include "rho/RealVector.hpp"
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*isRealptr)(SEXP s) = Rf_isReal;
-	double* (*REALp)(SEXP) = REAL;
-    }
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        Rboolean (*isRealptr)(SEXP s) = Rf_isReal;
+        double *(*REALp)(SEXP) = REAL;
+    } // namespace ForceNonInline
 
-    template<>
-    const char* RealVector::staticTypeName() {
-	return "numeric";
+    template <>
+    const char *RealVector::staticTypeName()
+    {
+        return "numeric";
     }
-}
+} // namespace rho

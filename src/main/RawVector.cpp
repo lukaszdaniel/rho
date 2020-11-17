@@ -24,22 +24,25 @@
 
 /** @file RawVector.cpp
  *
- * Implementation of class RawVector and related functions.
+ * @brief Implementation of class RawVector and related functions.
  */
 
 #include "rho/RawVector.hpp"
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rbyte* (*RAWp)(SEXP) = RAW;
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        Rbyte *(*RAWp)(SEXP) = RAW;
     }
 
     template <>
-    const char* RawVector::staticTypeName() {
-	return "raw";
+    const char *RawVector::staticTypeName()
+    {
+        return "raw";
     }
-}
+} // namespace rho

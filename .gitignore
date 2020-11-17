@@ -297,3 +297,4 @@ tests/PCRE.Rout
 tests/p-qbeta-strict-tst.pdf
 tests/timezone.Rout
 .Rproj.user
+.dccache

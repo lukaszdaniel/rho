@@ -24,7 +24,7 @@
 
 /** @file StringVector.cpp
  *
- * Implementation of class StringVector and related functions.
+ * @brief Implementation of class StringVector and related functions.
  */
 
 #include "rho/StringVector.hpp"
@@ -35,42 +35,48 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*isStringp)(SEXP s) = Rf_isString;
-	SEXP (*STRING_ELTp)(const SEXP x, R_xlen_t i) = STRING_ELT;
-    }
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        Rboolean (*isStringp)(SEXP s) = Rf_isString;
+        SEXP (*STRING_ELTp)
+        (const SEXP x, R_xlen_t i) = STRING_ELT;
+    } // namespace ForceNonInline
 
     GCEdge<String> ElementTraits::NAFunc<GCEdge<String>>::makeNA()
     {
-	GCEdge<String> na;
-	na = String::NA();
-	return na;
+        GCEdge<String> na;
+        na = String::NA();
+        return na;
     }
 
-    template<>
-    const char* StringVector::staticTypeName() {
-	return "character";
-    }
-}
-
-namespace {
-    void indent(std::ostream& os, std::size_t margin)
+    template <>
+    const char *StringVector::staticTypeName()
     {
-	while (margin--)
-	    os << ' ';
+        return "character";
     }
-}
+} // namespace rho
 
-void rho::strdump(std::ostream& os, const StringVector& sv, std::size_t margin)
+namespace
+{
+    void indent(std::ostream &os, std::size_t margin)
+    {
+        while (margin--)
+            os << ' ';
+    }
+} // namespace
+
+void rho::strdump(std::ostream &os, const StringVector &sv, std::size_t margin)
 {
     indent(os, margin);
     os << "character:\n";
-    for (unsigned int i = 0; i < sv.size(); ++i) {
-	indent(os, margin + 2);
-	os << sv[i]->c_str() << '\n';
+    for (unsigned int i = 0; i < sv.size(); ++i)
+    {
+        indent(os, margin + 2);
+        os << sv[i]->c_str() << '\n';
     }
 }
 
@@ -78,23 +84,24 @@ void rho::strdump(std::ostream& os, const StringVector& sv, std::size_t margin)
 
 void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
-    if(TYPEOF(x) != STRSXP)
-	Rf_error("%s() can only be applied to a character vector, not a '%s'",
-	      "SET_STRING_ELT", Rf_type2char(TYPEOF(x)));
-    StringVector* sv = SEXP_downcast<StringVector*>(x, false);
+    if (TYPEOF(x) != STRSXP)
+        Rf_error("%s() can only be applied to a character vector, not a '%s'",
+                 "SET_STRING_ELT", Rf_type2char(TYPEOF(x)));
+    StringVector *sv = SEXP_downcast<StringVector *>(x, false);
 
-    if(TYPEOF(v) != CHARSXP)
-       Rf_error("Value of SET_STRING_ELT() must be a 'CHARSXP' not a '%s'",
-	     Rf_type2char(TYPEOF(v)));
+    if (TYPEOF(v) != CHARSXP)
+        Rf_error("Value of SET_STRING_ELT() must be a 'CHARSXP' not a '%s'",
+                 Rf_type2char(TYPEOF(v)));
     if (i < 0 || i >= XLENGTH(x))
-	Rf_error(_("attempt to set index %lu/%lu in SET_STRING_ELT"),
-	      i, XLENGTH(x));
-    String* s = SEXP_downcast<String*>(v, false);
+        Rf_error(_("attempt to set index %lu/%lu in SET_STRING_ELT"),
+                 i, XLENGTH(x));
+    String *s = SEXP_downcast<String *>(v, false);
     (*sv)[i] = s;
 }
 
-SEXP* STRING_PTR(SEXP x) {
+SEXP *STRING_PTR(SEXP x)
+{
     // Evil, but it happens to work for now.
-    return reinterpret_cast<SEXP*>(
-	&*SEXP_downcast<StringVector*>(x)->begin());
+    return reinterpret_cast<SEXP *>(
+        &*SEXP_downcast<StringVector *>(x)->begin());
 }

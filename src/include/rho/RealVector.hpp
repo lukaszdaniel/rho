@@ -24,81 +24,88 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file RealVector.h
+/** @file RealVector.hpp
  * @brief Class rho::RealVector and associated C interface.
  */
 
-#ifndef REALVECTOR_H
-#define REALVECTOR_H
+#ifndef REALVECTOR_HPP
+#define REALVECTOR_HPP
 
-#include "rho/VectorBase.hpp"
 #include "R_ext/Arith.h"
 #include "rho/FixedVector.hpp"
 #include "rho/SEXP_downcast.hpp"
+#include "rho/VectorBase.hpp"
 #include <cmath>
 
-namespace rho {
+namespace rho
+{
     // Template specializations:
-    namespace ElementTraits {
-	template<>
-	struct MustConstruct<double> : boost::mpl::false_ {};
-
-	template<>
-	struct MustDestruct<double> : boost::mpl::false_ {};
-
-	template <>
-        inline const double& NAFunc<double>::operator()() const
+    namespace ElementTraits
+    {
+        template <>
+        struct MustConstruct<double> : boost::mpl::false_
         {
-	    static double na = NA_REAL;
-	    return na;
-	}
+        };
 
-	template <>
-        inline bool IsNA<double>::operator()(const double& t) const
+        template <>
+        struct MustDestruct<double> : boost::mpl::false_
+        {
+        };
+
+        template <>
+        inline const double &NAFunc<double>::operator()() const
+        {
+            static double na = NA_REAL;
+            return na;
+        }
+
+        template <>
+        inline bool IsNA<double>::operator()(const double &t) const
         {
             return R_IsNA(t);
         }
 
-	template <>
-	inline bool IsNaOrNaN<double>::operator()(const double& t) const
-	{
-	    return std::isnan(t);
-	}
-    }
+        template <>
+        inline bool IsNaOrNaN<double>::operator()(const double &t) const
+        {
+            return std::isnan(t);
+        }
+    } // namespace ElementTraits
 
     /** @brief Vector of real numbers.
-     */
+ */
     typedef rho::FixedVector<double, REALSXP> RealVector;
 
-    template<>
-    struct VectorTypeFor<double> {
-      typedef RealVector type;
+    template <>
+    struct VectorTypeFor<double>
+    {
+        typedef RealVector type;
     };
 
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
     /**
-     * @param s Pointer to an RObject.
-     * @return TRUE iff the RObject pointed to by \a s is a real vector.
-     */
+ * @param s Pointer to an RObject.
+ * @return TRUE iff the RObject pointed to by \a s is a real vector.
+ */
     inline Rboolean Rf_isReal(SEXP s)
     {
-	return Rboolean(s && TYPEOF(s) == REALSXP);
+        return Rboolean(s && TYPEOF(s) == REALSXP);
     }
 
-/**
+    /**
  * @param x Pointer to an \c RealVector (i.e. an R numeric vector).
  *          An error is generated if \a x is not pointer to an \c
  *          RealVector .
  * @return Pointer to element 0 of \a x .
  */
-inline double *REAL(SEXP x)
-{
-    using namespace rho;
-    return &(*SEXP_downcast<RealVector*>(x, false))[0];
+    inline double *REAL(SEXP x)
+    {
+        using namespace rho;
+        return &(*SEXP_downcast<RealVector *>(x, false))[0];
+    }
 }
 
-}
-
-#endif /* REALVECTOR_H */
+#endif // REALVECTOR_HPP

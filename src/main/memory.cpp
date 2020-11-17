@@ -838,7 +838,6 @@ int Rf_Seql(SEXP a, SEXP b)
     // }
 }
 
-
 #ifdef LONG_VECTOR_SUPPORT
 NORET R_len_t R_BadLongVector(SEXP x, const char *file, int line)
 {

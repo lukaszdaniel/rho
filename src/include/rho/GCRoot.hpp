@@ -22,264 +22,262 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file GCRoot.h
+/** @file GCRoot.hpp
  *
  * @brief Templated class rho::GCRoot and its untemplated base class
  * rho::GCRootBase.
  */
 
-#ifndef GCROOT_H
-#define GCROOT_H 1
+#ifndef GCROOT_HPP
+#define GCROOT_HPP
 
-#include "rho/GCNode.hpp"
 #include "Rinternals.h"
+#include "rho/GCNode.hpp"
 
-namespace rho {
+namespace rho
+{
     class RObject;
 
     /** @brief Untemplated base class for GCRoot.
-     *
-     * The preferred method for C++ code to protect a GCNode
-     * from the garbage collector is to use the templated class
-     * GCRoot, of which this is the untemplated base class, or class
-     * GCStackRoot.
-     */
-    class GCRootBase {
+ *
+ * The preferred method for C++ code to protect a GCNode
+ * from the garbage collector is to use the templated class
+ * GCRoot, of which this is the untemplated base class, or class
+ * GCStackRoot.
+ */
+    class GCRootBase
+    {
     public:
-	/** @brief Conduct a const visitor to all 'root' GCNode objects.
-	 *
-	 * Conduct a GCNode::const_visitor object to each root GCNode
-	 * and each node on the C pointer protection stack.
-	 *
-	 * @param v Pointer to the const_visitor object.
-	 */
-	static void visitRoots(GCNode::const_visitor* v);
+        /** @brief Conduct a const visitor to all 'root' GCNode objects.
+     *
+     * Conduct a GCNode::const_visitor object to each root GCNode
+     * and each node on the C pointer protection stack.
+     *
+     * @param v Pointer to the const_visitor object.
+     */
+        static void visitRoots(GCNode::const_visitor *v);
+
     protected:
-	/** @brief Primary constructor.
-	 *
-	 * @param node Pointer, possibly null, to the node to be protected.
-	 */
-	GCRootBase(const GCNode* node);
+        /** @brief Primary constructor.
+     *
+     * @param node Pointer, possibly null, to the node to be protected.
+     */
+        GCRootBase(const GCNode *node);
 
-	/** @brief Copy constructor.
-	 *
-	 * @param source Pattern for the copy.
-	 */
-	GCRootBase(const GCRootBase& source)
-	    : GCRootBase(source.ptr())
-	{ }
+        /** @brief Copy constructor.
+     *
+     * @param source Pattern for the copy.
+     */
+        GCRootBase(const GCRootBase &source) : GCRootBase(source.ptr()) {}
 
-	~GCRootBase()
-	{
-	    const GCNode* node = ptr();
-	    GCNode::decRefCount(node);
-	    unlink();
-	}
+        ~GCRootBase()
+        {
+            const GCNode *node = ptr();
+            GCNode::decRefCount(node);
+            unlink();
+        }
 
-	GCRootBase& operator=(const GCRootBase& source)
-	{
-	    const GCNode* newnode = source.ptr();
-	    GCNode::incRefCount(newnode);
-	    const GCNode* oldnode = ptr();
-	    GCNode::decRefCount(oldnode);
-	    m_pointer = newnode;
-	    return *this;
-	}
+        GCRootBase &operator=(const GCRootBase &source)
+        {
+            const GCNode *newnode = source.ptr();
+            GCNode::incRefCount(newnode);
+            const GCNode *oldnode = ptr();
+            GCNode::decRefCount(oldnode);
+            m_pointer = newnode;
+            return *this;
+        }
 
-	/** @brief Change the node protected by this GCRootBase.
-	 *
-	 * @param node Pointer to the node now to be protected, or a
-	 * null pointer.
-	 */
-	void redirect(const GCNode* node)
-	{
-	    GCNode::incRefCount(node);
-	    const GCNode* oldnode = ptr();
-	    GCNode::decRefCount(oldnode);
-	    m_pointer = node;
-	}
+        /** @brief Change the node protected by this GCRootBase.
+     *
+     * @param node Pointer to the node now to be protected, or a
+     * null pointer.
+     */
+        void redirect(const GCNode *node)
+        {
+            GCNode::incRefCount(node);
+            const GCNode *oldnode = ptr();
+            GCNode::decRefCount(oldnode);
+            m_pointer = node;
+        }
 
-	/** @brief Access the encapsulated pointer.
-	 *
-	 * @return the GCNode pointer encapsulated by this object.
-	 */
-	const GCNode* ptr() const
-	{
-	    return m_pointer;
-	}
+        /** @brief Access the encapsulated pointer.
+     *
+     * @return the GCNode pointer encapsulated by this object.
+     */
+        const GCNode *ptr() const { return m_pointer; }
+
     private:
-        const GCNode* m_pointer;
+        const GCNode *m_pointer;
 
         // GCRoots form an intrusive doubly-linked list.  This structure
         // requires only constant initialization and doesn't allocate memory at
         // all.  This allows static creation of global GCRoots when needed.
-        GCRootBase* m_next;
-        GCRootBase* m_prev;
+        GCRootBase *m_next;
+        GCRootBase *m_prev;
 
-        static GCRootBase* s_list_head;
+        static GCRootBase *s_list_head;
 
-        void unlink() {
-	    if (m_next) {
-		m_next->m_prev = m_prev;
-	    }
-	    if (m_prev) {
-		m_prev->m_next = m_next;
-	    } else {
-		s_list_head = m_next;
-	    }
-	}
+        void unlink()
+        {
+            if (m_next)
+            {
+                m_next->m_prev = m_prev;
+            }
+            if (m_prev)
+            {
+                m_prev->m_next = m_next;
+            }
+            else
+            {
+                s_list_head = m_next;
+            }
+        }
     };
 
     /** @brief Smart pointer to protect a GCNode from garbage
-     * collection.
-     *
-     * This class encapsulates a pointer to an object of a type
-     * derived from GCNode.  For as long as the GCRoot object exists,
-     * the GCNode that it points to will not be garbage collected.
-     *
-     * This class performs a similar function to GCStackRoot, but is
-     * intended for variables that are not allocated on the stack.
-     * Unlike GCStackRoot objects, there is no requirement that GCRoot
-     * objects be destroyed in the reverse order of their creation;
-     * the price of this is that there is a slightly greater time overhead
-     * to construction and destruction.
-     *
-     * It is safe to declare a GCRoot at file or namespace scope.
-     *
-     * @tparam T GCNode or a type publicly derived from GCNode.  This
-     *           may be qualified by const, so for example a const
-     *           String* may be encapsulated in a GCRoot using the type
-     *           GCRoot<const String>.
-     */
+ * collection.
+ *
+ * This class encapsulates a pointer to an object of a type
+ * derived from GCNode.  For as long as the GCRoot object exists,
+ * the GCNode that it points to will not be garbage collected.
+ *
+ * This class performs a similar function to GCStackRoot, but is
+ * intended for variables that are not allocated on the stack.
+ * Unlike GCStackRoot objects, there is no requirement that GCRoot
+ * objects be destroyed in the reverse order of their creation;
+ * the price of this is that there is a slightly greater time overhead
+ * to construction and destruction.
+ *
+ * It is safe to declare a GCRoot at file or namespace scope.
+ *
+ * @tparam T GCNode or a type publicly derived from GCNode.  This
+ *           may be qualified by const, so for example a const
+ *           String* may be encapsulated in a GCRoot using the type
+ *           GCRoot<const String>.
+ */
     template <class T = RObject>
-    class GCRoot : public GCRootBase {
+    class GCRoot : public GCRootBase
+    {
     public:
-	/**
-	 * @param node Pointer the node to be pointed to, and
-	 *          protected from the garbage collector, or a null
-	 *          pointer.
-	 */
-    GCRoot(T* node = 0)
-    : GCRootBase(node) {
-	check_complete_type();
-    }
+        /**
+     * @param node Pointer the node to be pointed to, and
+     *          protected from the garbage collector, or a null
+     *          pointer.
+     */
+        GCRoot(T *node = 0) : GCRootBase(node) { check_complete_type(); }
 
-	/** @brief Copy constructor.
-	 *
-	 * The constructed GCRoot will protect the same GCNode as
-	 * source.  (There is probably no reason to use this
-	 * constructor.)
-	 */
-    GCRoot(const GCRoot& source) : GCRootBase(source) {}
+        /** @brief Copy constructor.
+     *
+     * The constructed GCRoot will protect the same GCNode as
+     * source.  (There is probably no reason to use this
+     * constructor.)
+     */
+        GCRoot(const GCRoot &source) : GCRootBase(source) {}
 
-	/**
-	 * This will cause this GCRoot to protect the same GCNode as
-	 * is protected by source.  (There is probably no reason to
-	 * use this method.)
-	 */
-    GCRoot& operator=(const GCRoot& source)
-	{
-	    GCRootBase::operator=(source);
-	    return *this;
-	}
+        /**
+     * This will cause this GCRoot to protect the same GCNode as
+     * is protected by source.  (There is probably no reason to
+     * use this method.)
+     */
+        GCRoot &operator=(const GCRoot &source)
+        {
+            GCRootBase::operator=(source);
+            return *this;
+        }
 
-	/**
-	 * This will cause this GCRoot to point to and protect node,
-	 * instead of the node (if any) it currently points to and
-	 * protects.
-	 *
-	 * @param node Pointer to the GCNode that is now to be pointed
-	 *          to and protected from the garbage collector.
-	 */
-	GCRoot& operator=(T* node)
-	{
-	    check_complete_type();
-	    GCRootBase::redirect(node);
-	    return *this;
-	}
+        /**
+     * This will cause this GCRoot to point to and protect node,
+     * instead of the node (if any) it currently points to and
+     * protects.
+     *
+     * @param node Pointer to the GCNode that is now to be pointed
+     *          to and protected from the garbage collector.
+     */
+        GCRoot &operator=(T *node)
+        {
+            check_complete_type();
+            GCRootBase::redirect(node);
+            return *this;
+        }
 
-	/** @brief Access member via encapsulated pointer.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 */
-	T* operator->() const
-	{
-	    return get();
-	}
+        /** @brief Access member via encapsulated pointer.
+     *
+     * @return the pointer currently encapsulated by the node.
+     */
+        T *operator->() const { return get(); }
 
-	/** @brief Dereference the encapsulated pointer.
-	 *
-	 * @return a reference to the object pointed to by the
-	 * encapsulated pointer.  The effect is undefined if this
-	 * object encapsulates a null pointer.
-	 */
-	T& operator*() const
-	{
-	    return *get();
-	}
+        /** @brief Dereference the encapsulated pointer.
+     *
+     * @return a reference to the object pointed to by the
+     * encapsulated pointer.  The effect is undefined if this
+     * object encapsulates a null pointer.
+     */
+        T &operator*() const { return *get(); }
 
-	/** @brief Implicit conversion to encapsulated pointer type.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 * The pointer is of type \a T* const to prevent its use as
-	 * an lvalue, the effect of which would probably not be what
-	 * the programmer wanted.
-	 */
-	operator T*() const
-	{
-	    return get();
-	}
+        /** @brief Implicit conversion to encapsulated pointer type.
+     *
+     * @return the pointer currently encapsulated by the node.
+     * The pointer is of type \a T* const to prevent its use as
+     * an lvalue, the effect of which would probably not be what
+     * the programmer wanted.
+     */
+        operator T *() const { return get(); }
 
-	/** @brief Access the encapsulated pointer.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 */
-	T* get() const
-	{
-	    check_complete_type();
-	    return static_cast<T*>(const_cast<GCNode*>(ptr()));
-	}
+        /** @brief Access the encapsulated pointer.
+     *
+     * @return the pointer currently encapsulated by the node.
+     */
+        T *get() const
+        {
+            check_complete_type();
+            return static_cast<T *>(const_cast<GCNode *>(ptr()));
+        }
+
     private:
-	static void check_complete_type() {
-	    static_assert(sizeof(T) >= 0, "T must be a complete type");
-	}
+        static void check_complete_type()
+        {
+            static_assert(sizeof(T) >= 0, "T must be a complete type");
+        }
     };
-}  // namespace rho
+} // namespace rho
 
 // For hashing, simply hash the encapsulated pointer:
-namespace std {
+namespace std
+{
     template <class T>
-        struct hash<rho::GCRoot<T> > {
-        std::size_t operator()(const rho::GCRoot<T>& gcrt) const
+    struct hash<rho::GCRoot<T>>
+    {
+        std::size_t operator()(const rho::GCRoot<T> &gcrt) const
         {
-            std::hash<T*> make_hash;
+            std::hash<T *> make_hash;
             return make_hash(gcrt);
         }
     };
-}
+} // namespace std
 
-extern "C" {
+extern "C"
+{
     /* ***** C interface ***** */
 
     /** @brief Protect object against garbage collection.
-     *
-     * This is intended for long-term protection, for which PROTECT()
-     * etc. would be inappropriate.
-     *
-     * @param object Pointer to the object to be preserved.  It is
-     *          permissible for this to be a null pointer.
-     */
+ *
+ * This is intended for long-term protection, for which PROTECT()
+ * etc. would be inappropriate.
+ *
+ * @param object Pointer to the object to be preserved.  It is
+ *          permissible for this to be a null pointer.
+ */
     void R_PreserveObject(SEXP object);
 
     /** @brief Remove object's protection against garbage collection.
-     *
-     * @param object Pointer to the object whose protection is to be
-     *          removed.  It is permissible (but pointless) for this
-     *          to be a pointer to an object that is not currently
-     *          protected by R_PreserveObject(), but in that case
-     *          R_ReleaseObject() has no effect.
-     */
+ *
+ * @param object Pointer to the object whose protection is to be
+ *          removed.  It is permissible (but pointless) for this
+ *          to be a pointer to an object that is not currently
+ *          protected by R_PreserveObject(), but in that case
+ *          R_ReleaseObject() has no effect.
+ */
     void R_ReleaseObject(SEXP object);
-}  /* extern "C" */
+} /* extern "C" */
 
-#endif  // GCROOT_H
+#endif // GCROOT_HPP

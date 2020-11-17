@@ -24,7 +24,7 @@
 
 /** @file LogicalVector.cpp
  *
- * Implementation of class LogicalVector and related functions.
+ * @brief Implementation of class LogicalVector and related functions.
  */
 
 #include "rho/LogicalVector.hpp"
@@ -34,16 +34,19 @@
 using namespace std;
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*isLogicalptr)(SEXP s) = Rf_isLogical;
-	int* (*LOGICALp)(SEXP) = LOGICAL;
-    }
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        Rboolean (*isLogicalptr)(SEXP s) = Rf_isLogical;
+        int *(*LOGICALp)(SEXP) = LOGICAL;
+    } // namespace ForceNonInline
 
     template <>
-    const char* LogicalVector::staticTypeName() {
-	return "logical";
+    const char *LogicalVector::staticTypeName()
+    {
+        return "logical";
     }
-}
+} // namespace rho

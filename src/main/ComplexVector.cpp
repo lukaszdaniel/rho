@@ -32,17 +32,19 @@
 using namespace std;
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*isComplexptr)(SEXP s) = Rf_isComplex;
-	Rcomplex* (*COMPLEXp)(SEXP) = COMPLEX;
-    }
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        Rboolean (*isComplexptr)(SEXP s) = Rf_isComplex;
+        Rcomplex *(*COMPLEXp)(SEXP) = COMPLEX;
+    } // namespace ForceNonInline
 
     template <>
-    const char* ComplexVector::staticTypeName()
+    const char *ComplexVector::staticTypeName()
     {
-	return "complex";
+        return "complex";
     }
-}
+} // namespace rho

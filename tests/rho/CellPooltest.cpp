@@ -29,34 +29,39 @@
 using namespace std;
 using namespace rho;
 
-namespace {
-    double* dptrs[16];
+namespace
+{
+    double *dptrs[16];
 
     CellPool pool;
-}
+} // namespace
 
-int main() {
+int main()
+{
     pool.initialize(1, 5);
     for (int i = 0; i < 16; ++i)
-	dptrs[i] = 0;
+        dptrs[i] = 0;
     pool.check();
     cout << "Cell size: " << pool.cellSize()
-	 << "\nSuperblock size: " << pool.superblockSize() << endl;
-    for (int i = 0; i < 10; ++i) {
-	cout << "Allocating dptrs[" << i << "]\n";
-	dptrs[i] = static_cast<double*>(pool.allocate());
+         << "\nSuperblock size: " << pool.superblockSize() << endl;
+    for (int i = 0; i < 10; ++i)
+    {
+        cout << "Allocating dptrs[" << i << "]\n";
+        dptrs[i] = static_cast<double *>(pool.allocate());
     }
     pool.check();
     cout << "Cells allocated: " << pool.cellsAllocated() << endl;
-    for (int i = 3; i < 10; i += 2) {
-	cout << "Deallocating dptrs[" << i << "]\n";
-	pool.deallocate(dptrs[i]);
+    for (int i = 3; i < 10; i += 2)
+    {
+        cout << "Deallocating dptrs[" << i << "]\n";
+        pool.deallocate(dptrs[i]);
     }
     pool.check();
     cout << "Cells allocated: " << pool.cellsAllocated() << endl;
-    for (int i = 11; i < 16; i += 2) {
-	cout << "Allocating dptrs[" << i << "]\n";
-	dptrs[i] = static_cast<double*>(pool.allocate());
+    for (int i = 11; i < 16; i += 2)
+    {
+        cout << "Allocating dptrs[" << i << "]\n";
+        dptrs[i] = static_cast<double *>(pool.allocate());
     }
     pool.check();
     cout << "Cells allocated: " << pool.cellsAllocated() << endl;

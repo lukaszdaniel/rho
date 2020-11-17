@@ -40,93 +40,97 @@
 using namespace rho;
 using namespace Symbols;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	R_xlen_t (*STDVEC_LENGTHptr)(SEXP x) = STDVEC_LENGTH;
-	void (*SET_TRUELENGTHptr)(SEXP x, R_xlen_t v) = SET_TRUELENGTH;
-	R_xlen_t (*STDVEC_TRUELENGTHptr)(SEXP x) = STDVEC_TRUELENGTH;
-    }
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        R_xlen_t (*STDVEC_LENGTHptr)(SEXP x) = STDVEC_LENGTH;
+        void (*SET_TRUELENGTHptr)(SEXP x, R_xlen_t v) = SET_TRUELENGTH;
+        R_xlen_t (*STDVEC_TRUELENGTHptr)(SEXP x) = STDVEC_TRUELENGTH;
+    } // namespace ForceNonInline
+} // namespace rho
+
+const ListVector *VectorBase::dimensionNames() const
+{
+    return static_cast<const ListVector *>(getAttribute(DimNamesSymbol));
 }
 
-const ListVector* VectorBase::dimensionNames() const
+const StringVector *VectorBase::dimensionNames(unsigned int d) const
 {
-    return static_cast<const ListVector*>(getAttribute(DimNamesSymbol));
-}
-
-const StringVector* VectorBase::dimensionNames(unsigned int d) const
-{
-    const ListVector* lv = dimensionNames();
+    const ListVector *lv = dimensionNames();
     if (!lv || d > lv->size())
-	return nullptr;
-    return static_cast<const StringVector*>((*lv)[d - 1].get());
+        return nullptr;
+    return static_cast<const StringVector *>((*lv)[d - 1].get());
 }
 
-const IntVector* VectorBase::dimensions() const
+const IntVector *VectorBase::dimensions() const
 {
-    return static_cast<const IntVector*>(getAttribute(DimSymbol));
+    return static_cast<const IntVector *>(getAttribute(DimSymbol));
 }
 
-const StringVector* VectorBase::names() const
+const StringVector *VectorBase::names() const
 {
-    return static_cast<const StringVector*>(getAttribute(NamesSymbol));
+    return static_cast<const StringVector *>(getAttribute(NamesSymbol));
 }
 
-PairList* VectorBase::resizeAttributes(const PairList* attributes,
-				       std::size_t new_size)
+PairList *VectorBase::resizeAttributes(const PairList *attributes,
+                                       std::size_t new_size)
 {
-    GCStackRoot<PairList> ans(PairList::cons(nullptr));  // dummy first link
-    PairList* op = ans;
-    for (const PairList* ip = attributes; ip; ip = ip->tail()) {
-	const RObject* tag = ip->tag();
-	RObject* value = ip->car();
+    GCStackRoot<PairList> ans(PairList::cons(nullptr)); // dummy first link
+    PairList *op = ans;
+    for (const PairList *ip = attributes; ip; ip = ip->tail())
+    {
+        const RObject *tag = ip->tag();
+        RObject *value = ip->car();
 
-	if (tag == NamesSymbol) {
-	    StringVector* names
-		= SEXP_downcast<StringVector*>(value);
-	    size_t old_size = names->size();
-	    names = VectorBase::resize(names, new_size);
-	    // resize() pads with NA, but we want blank strings instead.
-	    for (size_t i = old_size; i < new_size; i++)
-		(*names)[i] = String::blank();
-	    value = names;
-	}
-	if (tag != DimSymbol && tag != DimNamesSymbol) {
-	    op->setTail(PairList::cons(value, nullptr, tag));
-	    op = op->tail();
-	}
+        if (tag == NamesSymbol)
+        {
+            StringVector *names = SEXP_downcast<StringVector *>(value);
+            size_t old_size = names->size();
+            names = VectorBase::resize(names, new_size);
+            // resize() pads with NA, but we want blank strings instead.
+            for (size_t i = old_size; i < new_size; i++)
+                (*names)[i] = String::blank();
+            value = names;
+        }
+        if (tag != DimSymbol && tag != DimNamesSymbol)
+        {
+            op->setTail(PairList::cons(value, nullptr, tag));
+            op = op->tail();
+        }
     }
     return ans->tail();
 }
 
 // TODO(kmillar): Ensure that names(dims(x)) and names(dimnames(x)) always match
 //   when dims(x) and dimnames(x) are both defined.
-void VectorBase::setDimensionNames(ListVector* names)
+void VectorBase::setDimensionNames(ListVector *names)
 {
     setAttribute(DimNamesSymbol, names);
 }
 
-void VectorBase::setDimensionNames(unsigned int d, StringVector* names)
+void VectorBase::setDimensionNames(unsigned int d, StringVector *names)
 {
     size_t ndims = dimensions()->size();
     if (d == 0 || d > ndims)
-	Rf_error(_("Attempt to associate dimnames with a non-existent dimension"));
-    ListVector* lv
-	= SEXP_downcast<ListVector*>(getAttribute(DimNamesSymbol));
-    if (!lv) {
-	lv = ListVector::create(ndims);
-	setAttribute(DimNamesSymbol, lv);
+        Rf_error(_("Attempt to associate dimnames with a non-existent dimension"));
+    ListVector *lv = SEXP_downcast<ListVector *>(getAttribute(DimNamesSymbol));
+    if (!lv)
+    {
+        lv = ListVector::create(ndims);
+        setAttribute(DimNamesSymbol, lv);
     }
     (*lv)[d - 1] = names;
 }
 
-void VectorBase::setDimensions(IntVector* dims)
+void VectorBase::setDimensions(IntVector *dims)
 {
     setAttribute(DimSymbol, dims);
 }
 
-void VectorBase::setNames(StringVector* names)
+void VectorBase::setNames(StringVector *names)
 {
     setAttribute(NamesSymbol, names);
 }
@@ -140,13 +144,13 @@ void VectorBase::decreaseSizeInPlace(size_type)
 // not including the malformed unit abbreviations.
 void VectorBase::tooBig(std::size_t bytes)
 {
-    double dsize = double(bytes)/1024.0;
-    if (dsize > 1024.0*1024.0)
-	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f GB"),
-		     dsize/1024.0/1024.0);
+    double dsize = double(bytes) / 1024.0;
+    if (dsize > 1024.0 * 1024.0)
+        Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f GB"),
+                     dsize / 1024.0 / 1024.0);
     if (dsize > 1024.0)
-	Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f MB"),
-		     dsize/1024.0);
+        Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f MB"),
+                     dsize / 1024.0);
     Rf_errorcall(nullptr, _("cannot allocate vector of size %0.1f KB"), dsize);
 }
 
@@ -154,7 +158,8 @@ void VectorBase::tooBig(std::size_t bytes)
 
 Rboolean Rf_isVector(SEXP s)
 {
-    switch(TYPEOF(s)) {
+    switch (TYPEOF(s))
+    {
     case LGLSXP:
     case INTSXP:
     case REALSXP:
@@ -164,18 +169,18 @@ Rboolean Rf_isVector(SEXP s)
 
     case VECSXP:
     case EXPRSXP:
-	return TRUE;
+        return TRUE;
     case CXXSXP:
-	return Rboolean(dynamic_cast<const VectorBase*>(s) != nullptr);
+        return Rboolean(dynamic_cast<const VectorBase *>(s) != nullptr);
     default:
-	return FALSE;
+        return FALSE;
     }
 }
 
 void SETLENGTH(SEXP x, R_xlen_t v)
 {
-    VectorBase* vb = dynamic_cast<VectorBase*>(x);
+    VectorBase *vb = dynamic_cast<VectorBase *>(x);
     if (!vb)
-	Rf_error("SETLENGTH invoked for a non-vector.");
+        Rf_error("SETLENGTH invoked for a non-vector.");
     vb->decreaseSizeInPlace(VectorBase::size_type(v));
 }

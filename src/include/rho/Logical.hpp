@@ -25,122 +25,140 @@
  * @brief Class rho::Logical.
  */
 
-#ifndef RHO_LOGICAL_H
-#define RHO_LOGICAL_H
+#ifndef RHO_LOGICAL_HPP
+#define RHO_LOGICAL_HPP
 
 #include "R_ext/Arith.h"
 #include "rho/ElementTraits.hpp"
 
-namespace rho {
+namespace rho
+{
     /** @brief Object representing a scalar logical value.
-     *
-     * In R, logical values have three states: TRUE, FALSE and NA.
-     * The Logical class represents such a value and provides the standard
-     * logic operations extended to ternary logic.
-     *
-     * Note that the representation of this class is completely constrained by
-     * the C API to R's internals.  Any changes are likely to break existing
-     * user code.
-     */
-    class Logical {
+ *
+ * In R, logical values have three states: TRUE, FALSE and NA.
+ * The Logical class represents such a value and provides the standard
+ * logic operations extended to ternary logic.
+ *
+ * Note that the representation of this class is completely constrained by
+ * the C API to R's internals.  Any changes are likely to break existing
+ * user code.
+ */
+    class Logical
+    {
     public:
-	Logical() {}
-	explicit Logical(int i) : m_value(i) {
-	    assert(i == 0 || i == 1 || i == NA_LOGICAL);
-	}
+        Logical() {}
+        explicit Logical(int i) : m_value(i)
+        {
+            assert(i == 0 || i == 1 || i == NA_LOGICAL);
+        }
 
-	/*implicit*/ Logical(bool b) : m_value(b ? 1 : 0) {}
+        /*implicit*/ Logical(bool b) : m_value(b ? 1 : 0) {}
 
-	explicit operator int() const { return m_value; }
-	explicit operator double() const { return isNA() ? NA_REAL : m_value; }
+        explicit operator int() const { return m_value; }
+        explicit operator double() const { return isNA() ? NA_REAL : m_value; }
 
-	bool isTrue() const  { return m_value == TRUE; }
-	bool isFalse() const { return m_value == FALSE; }
-	bool isNA() const    { return m_value == NA_LOGICAL; }
+        bool isTrue() const { return m_value == TRUE; }
+        bool isFalse() const { return m_value == FALSE; }
+        bool isNA() const { return m_value == NA_LOGICAL; }
 
-	static Logical NA() { return Logical(NA_LOGICAL); }
+        static Logical NA() { return Logical(NA_LOGICAL); }
 
- 	/** @brief NA aware equality operator.
-	 *
-	 *  Returns NA if either or both operands are NA.  Otherwise returns
-	 *  whether or not the two values are equal.
-	 */ 
-	Logical equals(Logical other) const {
-	    return (isNA() || other.isNA()) ? NA() : identical(other);
-	}
+        /** @brief NA aware equality operator.
+     *
+     *  Returns NA if either or both operands are NA.  Otherwise returns
+     *  whether or not the two values are equal.
+     */
+        Logical equals(Logical other) const
+        {
+            return (isNA() || other.isNA()) ? NA() : identical(other);
+        }
 
- 	/** @brief NA oblivious equality operator.
-	 *
-	 *  Returns True iff the values are equal, or if they are both NA.
-	 */ 
-	bool identical(Logical other) const {
-	    return m_value == other.m_value; }
+        /** @brief NA oblivious equality operator.
+     *
+     *  Returns True iff the values are equal, or if they are both NA.
+     */
+        bool identical(Logical other) const { return m_value == other.m_value; }
 
-	// NB: operator==() is intentionally not defined.
-	// Use either 'equals' or 'identical' instead.
+        // NB: operator==() is intentionally not defined.
+        // Use either 'equals' or 'identical' instead.
 
-	Logical operator!() const;
-	Logical operator||(Logical other) const;
-	Logical operator&&(Logical other) const;
+        Logical operator!() const;
+        Logical operator||(Logical other) const;
+        Logical operator&&(Logical other) const;
 
-	static void initialize();
+        static void initialize();
+
     private:
-	// The value.  Allowed values are TRUE, FALSE and NA_LOGICAL.
-	int m_value;
+        // The value.  Allowed values are TRUE, FALSE and NA_LOGICAL.
+        int m_value;
 
-	/*implicit*/
-	Logical(float prevent_implicit_int_to_Logical_conversions);
+        /*implicit*/
+        Logical(float prevent_implicit_int_to_Logical_conversions);
     };
 
     namespace ElementTraits
     {
-	template<>
-	struct MustConstruct<Logical> : boost::mpl::false_ {};
+        template <>
+        struct MustConstruct<Logical> : boost::mpl::false_
+        {
+        };
 
-	template<>
-	struct MustDestruct<Logical> : boost::mpl::false_ {};
+        template <>
+        struct MustDestruct<Logical> : boost::mpl::false_
+        {
+        };
 
-	template<>
-	inline bool IsNA<Logical>::operator()(const Logical& value) const {
-	    return value.isNA();
-	}
+        template <>
+        inline bool IsNA<Logical>::operator()(const Logical &value) const
+        {
+            return value.isNA();
+        }
 
-	template<>
-	inline const Logical& NAFunc<Logical>::operator()() const {
-	    // TODO(kmillar): change NAFunc to return by value instead.
-	    static Logical NA = Logical::NA();
-	    return NA;
-	}
-    }  // namespace ElementTraits
+        template <>
+        inline const Logical &NAFunc<Logical>::operator()() const
+        {
+            // TODO(kmillar): change NAFunc to return by value instead.
+            static Logical NA = Logical::NA();
+            return NA;
+        }
+    } // namespace ElementTraits
 
     // Inline definitions of operators.
-    inline Logical Logical::operator!() const {
-	if (isNA()) {
-	    return NA();
-	}
-	return Logical(1 - m_value);
+    inline Logical Logical::operator!() const
+    {
+        if (isNA())
+        {
+            return NA();
+        }
+        return Logical(1 - m_value);
     }
 
-    inline Logical Logical::operator||(Logical other) const {
-	if (isTrue() || other.isTrue()) {
-	    return true;
-	}
-	if (isNA() || other.isNA()) {
-	    return NA();
-	}
-	return false;
+    inline Logical Logical::operator||(Logical other) const
+    {
+        if (isTrue() || other.isTrue())
+        {
+            return true;
+        }
+        if (isNA() || other.isNA())
+        {
+            return NA();
+        }
+        return false;
     }
 
-    inline Logical Logical::operator&&(Logical other) const {
-	if (isFalse() || other.isFalse()) {
-	    return false;
-	}
-	if (isNA() || other.isNA()) {
-	    return NA();
-	}
-	return true;
+    inline Logical Logical::operator&&(Logical other) const
+    {
+        if (isFalse() || other.isFalse())
+        {
+            return false;
+        }
+        if (isNA() || other.isNA())
+        {
+            return NA();
+        }
+        return true;
     }
 
-}  // namespace rho
+} // namespace rho
 
-#endif  // RHO_LOGICAL_H
+#endif // RHO_LOGICAL_HPP

@@ -33,15 +33,18 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	int* (*INTEGERp)(SEXP) = INTEGER;
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        int *(*INTEGERp)(SEXP) = INTEGER;
     }
 
     template <>
-    const char* IntVector::staticTypeName() {
-	return "integer";
+    const char *IntVector::staticTypeName()
+    {
+        return "integer";
     }
-}
+} // namespace rho

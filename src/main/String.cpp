@@ -37,21 +37,26 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
-namespace rho {
-    namespace ForceNonInline {
-	int (*ENC_KNOWNp)(const SEXP x) = ENC_KNOWN;
-	int (*IS_ASCIIp)(const SEXP x) = IS_ASCII;
-	int (*IS_BYTESp)(const SEXP x) = IS_BYTES;
-	int (*IS_LATIN1p)(const SEXP x) = IS_LATIN1;
-	int (*IS_UTF8p)(const SEXP x) = IS_UTF8;
-	const char* (*R_CHARp)(SEXP x) = R_CHAR;
-	SEXP (*mkCharp)(const char*) = Rf_mkChar;
-	SEXP (*mkCharCEp)(const char*, cetype_t) = Rf_mkCharCE;
-	SEXP (*mkCharLenp)(const char*, int) = Rf_mkCharLen;
-    }
-}
+namespace rho
+{
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
+    namespace ForceNonInline
+    {
+        int (*ENC_KNOWNp)(const SEXP x) = ENC_KNOWN;
+        int (*IS_ASCIIp)(const SEXP x) = IS_ASCII;
+        int (*IS_BYTESp)(const SEXP x) = IS_BYTES;
+        int (*IS_LATIN1p)(const SEXP x) = IS_LATIN1;
+        int (*IS_UTF8p)(const SEXP x) = IS_UTF8;
+        const char *(*R_CHARp)(SEXP x) = R_CHAR;
+        SEXP (*mkCharp)
+        (const char *) = Rf_mkChar;
+        SEXP (*mkCharCEp)
+        (const char *, cetype_t) = Rf_mkCharCE;
+        SEXP (*mkCharLenp)
+        (const char *, int) = Rf_mkCharLen;
+    } // namespace ForceNonInline
+} // namespace rho
 std::hash<std::string> String::Hasher::s_string_hasher;
 
 SEXP R_NaString = nullptr;
@@ -60,8 +65,8 @@ SEXP R_BlankString = nullptr;
 // String::Comparator::operator()(const String*, const String*) is in
 // sort.cpp
 
-String::String(char* character_storage,
-	       const std::string& text, cetype_t encoding, bool isAscii)
+String::String(char *character_storage,
+               const std::string &text, cetype_t encoding, bool isAscii)
     : VectorBase(CHARSXP, text.size()),
       m_key_val_pr(nullptr),
       m_data(character_storage),
@@ -70,30 +75,31 @@ String::String(char* character_storage,
       m_ascii(isAscii)
 {
     memcpy(character_storage, text.data(), text.size());
-    character_storage[text.size()] = '\0';  // Null terminated.
+    character_storage[text.size()] = '\0'; // Null terminated.
     assert(m_data);
 
-    switch(m_encoding) {
+    switch (m_encoding)
+    {
     case CE_NATIVE:
     case CE_UTF8:
     case CE_LATIN1:
     case CE_BYTES:
-	break;
+        break;
     default:
-	Rf_error("character encoding %d not permitted here", m_encoding);
+        Rf_error("character encoding %d not permitted here", m_encoding);
     }
 }
 
-String* String::create(const std::string& text, cetype_t encoding, bool isAscii)
+String *String::create(const std::string &text, cetype_t encoding, bool isAscii)
 {
     size_t size = sizeof(String) + text.size() + 1;
-    void* storage = GCNode::operator new(size);
-    char* character_storage = (char*)storage + sizeof(String);
-    String* result = new(storage) String(character_storage, text, encoding, isAscii);
+    void *storage = GCNode::operator new(size);
+    char *character_storage = (char *)storage + sizeof(String);
+    String *result = new (storage) String(character_storage, text, encoding, isAscii);
     return result;
 }
 
-String* String::createNA()
+String *String::createNA()
 {
     return String::create("NA", CE_NATIVE, true);
 }
@@ -101,13 +107,14 @@ String* String::createNA()
 String::~String()
 {
     // m_key_val_pr is null for serialization proxies.
-    if (m_key_val_pr) {
-	// Must copy the key, because some implementations may,
-	// having deleted the cache entry pointed to by
-	// m_key_val_pr, continue looking for other entries with
-	// the given key.
-	key k = m_key_val_pr->first;
-	getCache()->erase(k);
+    if (m_key_val_pr)
+    {
+        // Must copy the key, because some implementations may,
+        // having deleted the cache entry pointed to by
+        // m_key_val_pr, continue looking for other entries with
+        // the given key.
+        key k = m_key_val_pr->first;
+        getCache()->erase(k);
     }
     // GCNode::~GCNode doesn't know about the string storage space in this
     // object, so account for it here.
@@ -115,21 +122,22 @@ String::~String()
     MemoryBank::adjustFreedSize(sizeof(String), sizeof(String) + bytes);
 }
 
-namespace {
+namespace
+{
     // Used in GPBits2Encoding() and packGPBits():
-    const unsigned int BYTES_MASK = 1<<1;
-    const unsigned int LATIN1_MASK = 1<<2;
-    const unsigned int UTF8_MASK = 1<<3;
-}
+    const unsigned int BYTES_MASK = 1 << 1;
+    const unsigned int LATIN1_MASK = 1 << 2;
+    const unsigned int UTF8_MASK = 1 << 3;
+} // namespace
 
 cetype_t String::GPBits2Encoding(unsigned int gpbits)
 {
     if ((gpbits & LATIN1_MASK) != 0)
-	return CE_LATIN1;
+        return CE_LATIN1;
     if ((gpbits & UTF8_MASK) != 0)
-	return CE_UTF8;
+        return CE_UTF8;
     if ((gpbits & BYTES_MASK) != 0)
-	return CE_BYTES;
+        return CE_BYTES;
     return CE_NATIVE;
 }
 
@@ -139,51 +147,54 @@ void String::initialize()
     R_BlankString = blank();
 }
 
-String::map* String::getCache()
+String::map *String::getCache()
 {
-    static map* cache = new map();
+    static map *cache = new map();
     return cache;
 }
 
-bool rho::isASCII(const std::string& str)
+bool rho::isASCII(const std::string &str)
 {
     using namespace boost::lambda;
     // Beware of the iterator dereferencing to a *signed* char, hence
     // the bitwise test:
-    std::string::const_iterator it
-	= std::find_if(str.begin(), str.end(), _1 & 0x80);
+    std::string::const_iterator it = std::find_if(str.begin(), str.end(), _1 & 0x80);
     return it == str.end();
 }
 
-String* String::obtain(const std::string& str, cetype_t encoding)
+String *String::obtain(const std::string &str, cetype_t encoding)
 {
     // This will be checked again when we actually construct the
     // String, but we precheck now so that we don't create an
     // invalid cache key:
-    switch(encoding) {
+    switch (encoding)
+    {
     case CE_NATIVE:
     case CE_UTF8:
     case CE_LATIN1:
     case CE_BYTES:
-	break;
+        break;
     default:
         Rf_error("unknown encoding: %d", encoding);
     }
     bool ascii = rho::isASCII(str);
     if (ascii)
-	encoding = CE_NATIVE;
-    std::pair<map::iterator, bool> pr
-	= getCache()->insert(map::value_type(key(str, encoding), nullptr));
+        encoding = CE_NATIVE;
+    std::pair<map::iterator, bool> pr = getCache()->insert(map::value_type(key(str, encoding), nullptr));
     map::iterator it = pr.first;
-    if (pr.second) {
-	try {
-	    map::value_type& val = *it;
-	    val.second = String::create(str, encoding, ascii);
-	    val.second->m_key_val_pr = &*it;
-	} catch (...) {
-	    getCache()->erase(it);
-	    throw;
-	}
+    if (pr.second)
+    {
+        try
+        {
+            map::value_type &val = *it;
+            val.second = String::create(str, encoding, ascii);
+            val.second->m_key_val_pr = &*it;
+        }
+        catch (...)
+        {
+            getCache()->erase(it);
+            throw;
+        }
     }
     return (*it).second;
 }
@@ -191,44 +202,46 @@ String* String::obtain(const std::string& str, cetype_t encoding)
 unsigned int String::packGPBits() const
 {
     unsigned int ans = VectorBase::packGPBits();
-    switch (m_encoding) {
+    switch (m_encoding)
+    {
     case CE_UTF8:
-	ans |= UTF8_MASK;
-	break;
+        ans |= UTF8_MASK;
+        break;
     case CE_LATIN1:
-	ans |= LATIN1_MASK;
-	break;
+        ans |= LATIN1_MASK;
+        break;
     case CE_BYTES:
-	ans |= BYTES_MASK;
-	break;
+        ans |= BYTES_MASK;
+        break;
     default:
-	break;
+        break;
     }
     return ans;
 }
 
-const char* String::typeName() const
+const char *String::typeName() const
 {
     return String::staticTypeName();
 }
 
 // ***** C interface *****
 
-SEXP Rf_mkCharLenCE(const char* text, int length, cetype_t encoding)
+SEXP Rf_mkCharLenCE(const char *text, int length, cetype_t encoding)
 {
     if (!text)
-	text = "";
+        text = "";
 
-    switch(encoding) {
+    switch (encoding)
+    {
     case CE_NATIVE:
     case CE_UTF8:
     case CE_LATIN1:
     case CE_BYTES:
     case CE_SYMBOL:
     case CE_ANY:
-	break;
+        break;
     default:
-	Rf_error(_("unknown encoding: %d"), encoding);
+        Rf_error(_("unknown encoding: %d"), encoding);
     }
     std::string str(text, length);
     return String::obtain(str, encoding);

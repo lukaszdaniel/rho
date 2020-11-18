@@ -30,7 +30,7 @@
 #include <cstdint>
 #include <functional>
 
-#include <GCNodeAllocator.hpp>
+#include <rho/GCNodeAllocator.hpp>
 
 namespace rho
 {

@@ -22,7 +22,7 @@
  *  https://www.R-project.org/Licenses/
  */
 
-#include "rho/StackChecker.hpp"
+#include <rho/StackChecker.hpp>
 #include <Localization.h>
 
 namespace rho {

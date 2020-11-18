@@ -36,12 +36,12 @@
 #include <Localization.h>
 #include <Internal.h>
 #include "basedecl.h"
-#include "rho/ArgMatcher.hpp"
-#include "rho/ClosureContext.hpp"
-#include "rho/DottedArgs.hpp"
-#include "rho/Promise.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/ArgMatcher.hpp>
+#include <rho/ClosureContext.hpp>
+#include <rho/DottedArgs.hpp>
+#include <rho/Promise.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 

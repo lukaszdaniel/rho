@@ -34,7 +34,7 @@
 #include <Localization.h>
 #include <Internal.h>
 
-#include "rho/RAllocStack.hpp"
+#include <rho/RAllocStack.hpp>
 
 using namespace rho;
 

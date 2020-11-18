@@ -25,7 +25,7 @@
 #define RHO_FRAME_DESCRIPTOR_HPP
 
 #include <vector>
-#include "rho/GCNode.hpp"
+#include <rho/GCNode.hpp>
 
 namespace rho {
 class Closure;

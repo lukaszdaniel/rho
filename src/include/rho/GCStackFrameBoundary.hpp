@@ -30,7 +30,7 @@
 #ifndef RHO_GC_STACK_FRAME_BOUNDARY_HPP
 #define RHO_GC_STACK_FRAME_BOUNDARY_HPP
 
-#include "rho/GCStackRoot.hpp"
+#include <rho/GCStackRoot.hpp>
 #include <functional>
 #include <stack>
 #include <boost/intrusive/list.hpp>

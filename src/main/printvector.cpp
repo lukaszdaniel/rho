@@ -40,32 +40,35 @@
 #endif
 
 #include <cstdarg>
-#include "Print.h"
-#include "rho/StringVector.hpp"
+#include <Print.h>
+#include <rho/StringVector.hpp>
 
 #include <numeric>
 
 using namespace std;
 using namespace rho;
 
-#define DO_first_lab			\
-    if (indx) {				\
-	labwidth = Rf_IndexWidth(n) + 2;	\
-	/* labwidth may well be		\
-	   one more than desired ..*/	\
-	VectorIndex(1, labwidth);	\
-	width = labwidth;		\
-    }					\
-    else width = 0
+#define DO_first_lab                     \
+	if (indx)                            \
+	{                                    \
+		labwidth = Rf_IndexWidth(n) + 2; \
+		/* labwidth may well be          \
+		   one more than desired ..*/    \
+		VectorIndex(1, labwidth);        \
+		width = labwidth;                \
+	}                                    \
+	else                                 \
+		width = 0
 
-#define DO_newline			\
-    Rprintf("\n");			\
-    if (indx) {				\
-	VectorIndex(i + 1, labwidth);	\
-	width = labwidth;		\
-    }					\
-    else				\
-	width = 0
+#define DO_newline                    \
+	Rprintf("\n");                    \
+	if (indx)                         \
+	{                                 \
+		VectorIndex(i + 1, labwidth); \
+		width = labwidth;             \
+	}                                 \
+	else                              \
+		width = 0
 
 static
 void printLogicalVector(const int *x, R_xlen_t n, int indx)
@@ -252,34 +255,38 @@ void printVector(SEXP x, int indx, int quote)
  * 2) S prints a _space_ in the first column for named vectors; we dont.
  */
 
-#define PRINT_N_VECTOR(INI_FORMAT, PRINT_1)				\
-{									\
-    int i, j, k, nlines, nperline, w, wn;				\
-    INI_FORMAT;								\
-									\
-    {                                                                   \
-        StringVector::const_iterator beg = names->begin();              \
-        wn = accumulate(beg, beg + n, 0, stringWidth);                  \
-    }                                                                   \
-    if (w < wn) w = wn;							\
-    nperline = R_print.width / (w + R_print.gap);			\
-    if (nperline <= 0) nperline = 1;					\
-    nlines = n / nperline;						\
-    if (n % nperline) nlines += 1;					\
-									\
-    for (i = 0; i < nlines; i++) {					\
-	if (i) Rprintf("\n");						\
-	for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)	\
-	    Rprintf("%s%*s",						\
-		    Rf_EncodeString((*names)[k], w, 0, Rprt_adj_right),	\
-		    R_print.gap, "");					\
-	Rprintf("\n");							\
-	for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)	\
-	    PRINT_1;							\
-    }									\
-    Rprintf("\n");							\
-}
-
+#define PRINT_N_VECTOR(INI_FORMAT, PRINT_1)                                 \
+	{                                                                       \
+		int i, j, k, nlines, nperline, w, wn;                               \
+		INI_FORMAT;                                                         \
+                                                                            \
+		{                                                                   \
+			StringVector::const_iterator beg = names->begin();              \
+			wn = accumulate(beg, beg + n, 0, stringWidth);                  \
+		}                                                                   \
+		if (w < wn)                                                         \
+			w = wn;                                                         \
+		nperline = R_print.width / (w + R_print.gap);                       \
+		if (nperline <= 0)                                                  \
+			nperline = 1;                                                   \
+		nlines = n / nperline;                                              \
+		if (n % nperline)                                                   \
+			nlines += 1;                                                    \
+                                                                            \
+		for (i = 0; i < nlines; i++)                                        \
+		{                                                                   \
+			if (i)                                                          \
+				Rprintf("\n");                                              \
+			for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)    \
+				Rprintf("%s%*s",                                            \
+						Rf_EncodeString((*names)[k], w, 0, Rprt_adj_right), \
+						R_print.gap, "");                                   \
+			Rprintf("\n");                                                  \
+			for (j = 0; j < nperline && (k = i * nperline + j) < n; j++)    \
+				PRINT_1;                                                    \
+		}                                                                   \
+		Rprintf("\n");                                                      \
+	}
 
 static void printNamedLogicalVector(const int * x, int n, const StringVector* names)
     PRINT_N_VECTOR(formatLogical(x, n, &w),

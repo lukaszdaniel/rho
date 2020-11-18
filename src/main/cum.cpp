@@ -33,7 +33,7 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
-#include "rho/BuiltInFunction.hpp"
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 

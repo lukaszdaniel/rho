@@ -24,8 +24,8 @@
 #ifndef RHO_JIT_COMPILER_HPP
 #define RHO_JIT_COMPILER_HPP
 
-#include "rho/jit/CompilerContext.hpp"
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/CompilerContext.hpp>
+#include <rho/jit/llvm.hpp>
 namespace rho {
 
 class BuiltInFunction;

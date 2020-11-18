@@ -27,10 +27,10 @@
  * Implementation of class Evaluator.
  */
 
-#include "rho/Evaluator.hpp"
+#include <rho/Evaluator.hpp>
 
-#include "rho/Environment.hpp"
-#include "rho/StackChecker.hpp"
+#include <rho/Environment.hpp>
+#include <rho/StackChecker.hpp>
 
 using namespace std;
 using namespace rho;

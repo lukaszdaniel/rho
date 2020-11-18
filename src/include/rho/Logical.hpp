@@ -28,8 +28,8 @@
 #ifndef RHO_LOGICAL_HPP
 #define RHO_LOGICAL_HPP
 
-#include "R_ext/Arith.h"
-#include "rho/ElementTraits.hpp"
+#include <R_ext/Arith.h>
+#include <rho/ElementTraits.hpp>
 
 namespace rho
 {

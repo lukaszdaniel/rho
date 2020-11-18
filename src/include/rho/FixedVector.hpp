@@ -30,8 +30,8 @@
 #ifndef FIXEDVECTOR_HPP
 #define FIXEDVECTOR_HPP
 
-#include "rho/MemoryBank.hpp"
-#include "rho/VectorBase.hpp"
+#include <rho/MemoryBank.hpp>
+#include <rho/VectorBase.hpp>
 
 namespace rho
 {
@@ -277,7 +277,7 @@ namespace rho
 
 // ***** Implementation of non-inlined members *****
 
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 #include <Localization.h>
 #include <algorithm>
 

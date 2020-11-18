@@ -36,10 +36,10 @@
 #include <Print.h>
 #include <Fileio.h>
 #include <Rconnections.h>
-#include "rho/ArgMatcher.hpp"
-#include "rho/ClosureContext.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/ArgMatcher.hpp>
+#include <rho/ClosureContext.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 #include <R_ext/RS.h> /* for Memzero */
 

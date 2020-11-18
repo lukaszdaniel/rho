@@ -36,8 +36,8 @@
 
 #include <tre/tre.h>
 
-#include "rho/RAllocStack.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/RAllocStack.hpp>
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

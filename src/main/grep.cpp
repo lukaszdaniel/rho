@@ -71,7 +71,7 @@ strsplit grep [g]sub [g]regexpr
 #include <ctype.h>
 #include <wchar.h>
 #include <wctype.h>    /* for wctrans_t */
-#include "rho/BuiltInFunction.hpp"
+#include <rho/BuiltInFunction.hpp>
 
 /* As from TRE 0.8.0, tre.h replaces regex.h */
 #include <tre/tre.h>

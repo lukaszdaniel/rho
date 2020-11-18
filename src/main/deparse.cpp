@@ -128,11 +128,11 @@ constexpr size_t MAX_Cutoff = (BUFSIZE - 12);
 /* ----- MAX_Cutoff  <	BUFSIZE !! */
 
 #include "RBufferUtils.h"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Promise.hpp"
-#include "rho/StringVector.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Promise.hpp>
+#include <rho/StringVector.hpp>
 
 using namespace std;
 using namespace rho;
@@ -385,7 +385,7 @@ HIDDEN SEXP Rf_deparse1s(SEXP call)
 			  DEFAULTDEPARSE, /* nlines = */ 1);
 }
 
-#include "Rconnections.h"
+#include <Rconnections.h>
 
 // .Internal(dput(x, file, .deparseOpts(control)))
 HIDDEN SEXP do_dput(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* file_, RObject* control_)

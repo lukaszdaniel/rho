@@ -31,11 +31,11 @@
 #ifndef LOGICALVECTOR_H
 #define LOGICALVECTOR_H
 
-#include "R_ext/Arith.h"
-#include "rho/VectorBase.hpp"
-#include "rho/FixedVector.hpp"
-#include "rho/Logical.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <R_ext/Arith.h>
+#include <rho/VectorBase.hpp>
+#include <rho/FixedVector.hpp>
+#include <rho/Logical.hpp>
+#include <rho/SEXP_downcast.hpp>
 
 namespace rho {
     /** @brief Vector of truth values.

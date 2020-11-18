@@ -42,11 +42,11 @@
 #include <complex>
 #include "Rcomplex.h"	/* toC99 */
 
-#include "rho/BuiltInFunction.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/Subscripting.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/Subscripting.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 

@@ -29,7 +29,7 @@
 #include <Rmath.h>
 #include "stats.h"
 #include "localization.h"
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 #ifdef _OPENMP
 # include <R_ext/MathThreads.h>

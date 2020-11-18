@@ -27,7 +27,7 @@
  * Implementation of class NodeStack.
  */
 
-#include "rho/NodeStack.hpp"
+#include <rho/NodeStack.hpp>
 
 #include <algorithm>
 #include <iostream>

@@ -30,8 +30,8 @@
 #ifndef GCEDGE_HPP
 #define GCEDGE_HPP
 
-#include "rho/ElementTraits.hpp"
-#include "rho/GCNode.hpp"
+#include <rho/ElementTraits.hpp>
+#include <rho/GCNode.hpp>
 
 namespace rho
 {

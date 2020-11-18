@@ -105,8 +105,8 @@
 #include <Rdynpriv.h>
 #include "basedecl.h"
 #include <vector>
-#include "rho/GCStackRoot.hpp"
-#include "rho/WeakRef.hpp"
+#include <rho/GCStackRoot.hpp>
+#include <rho/WeakRef.hpp>
 
 using namespace std;
 using namespace rho;

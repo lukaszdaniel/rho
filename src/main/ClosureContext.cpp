@@ -27,10 +27,10 @@
  * Implementation of class Evaluator::Context.
  */
 
-#include "rho/ClosureContext.hpp"
+#include <rho/ClosureContext.hpp>
 
-#include "rho/Environment.hpp"
-#include "rho/StackChecker.hpp"
+#include <rho/Environment.hpp>
+#include <rho/StackChecker.hpp>
 
 using namespace std;
 using namespace rho;

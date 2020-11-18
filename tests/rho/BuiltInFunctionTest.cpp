@@ -22,7 +22,7 @@
  */
 
 #include "gtest/gtest.h"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 

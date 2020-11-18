@@ -31,9 +31,9 @@
 #include <functional>
 #include <limits>
 
-#include "rho/AddressSanitizer.hpp"
-#include "rho/AllocationTable.hpp"
-#include "rho/GCNodeAllocator.hpp"
+#include <rho/AddressSanitizer.hpp>
+#include <rho/AllocationTable.hpp>
+#include <rho/GCNodeAllocator.hpp>
 
 rho::AllocationTable::AllocationTable(unsigned num_bits): m_num_bits(num_bits) {
   m_num_buckets = 1 << m_num_bits;

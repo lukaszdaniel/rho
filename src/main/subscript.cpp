@@ -45,8 +45,8 @@
 #include <Defn.h>
 #include <Localization.h>
 
-#include "rho/GCStackRoot.hpp"
-#include "rho/Subscripting.hpp"
+#include <rho/GCStackRoot.hpp>
+#include <rho/Subscripting.hpp>
 
 using namespace std;
 using namespace rho;

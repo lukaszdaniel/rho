@@ -120,9 +120,9 @@
 #include <Parse.h>
 #include <Localization.h>
 #include <R_ext/Print.h>
-#include "rho/Expression.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/ProtectStack.hpp"
+#include <rho/Expression.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/ProtectStack.hpp>
 
 using namespace rho;
 
@@ -3869,7 +3869,7 @@ SEXP R_ParseFile(FILE *fp, int n, ParseStatus *status, SEXP srcfile)
     return R_Parse(n, status, srcfile);
 }
 
-#include "Rconnections.h"
+#include <Rconnections.h>
 static Rconnection con_parse;
 
 /* need to handle incomplete last line */

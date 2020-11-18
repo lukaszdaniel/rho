@@ -27,8 +27,8 @@
  * Implementation of class GCRootBase.
  */
 
-#include "rho/GCRoot.hpp"
-#include "rho/RObject.hpp"
+#include <rho/GCRoot.hpp>
+#include <rho/RObject.hpp>
 
 #include <cstdlib>
 #include <iostream>

@@ -27,13 +27,13 @@
  * Implementation of class String and related functions.
  */
 
-#include "rho/String.hpp"
+#include <rho/String.hpp>
 #include <Localization.h>
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
 
-#include "rho/errors.hpp"
+#include <rho/errors.hpp>
 
 using namespace rho;
 

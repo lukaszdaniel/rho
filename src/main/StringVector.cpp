@@ -27,7 +27,7 @@
  * @brief Implementation of class StringVector and related functions.
  */
 
-#include "rho/StringVector.hpp"
+#include <rho/StringVector.hpp>
 #include <Defn.h>
 #include <Localization.h>
 

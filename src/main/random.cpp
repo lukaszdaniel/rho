@@ -39,9 +39,9 @@
 #include <Rmath.h>		/* for rxxx functions */
 #include "basedecl.h"
 #include <errno.h>
-#include "Internal.h"
-#include "rho/GCStackRoot.hpp"
-#include "rho/RAllocStack.hpp"
+#include <Internal.h>
+#include <rho/GCStackRoot.hpp>
+#include <rho/RAllocStack.hpp>
 
 using namespace rho;
 

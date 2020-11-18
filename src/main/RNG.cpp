@@ -35,7 +35,7 @@
 #include <Internal.h>
 #include <R_ext/Random.h>
 #include <S.h>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

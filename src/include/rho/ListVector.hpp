@@ -33,9 +33,9 @@
 #ifndef LISTVECTOR_H
 #define LISTVECTOR_H
 
-#include "rho/VectorBase.hpp"
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/VectorBase.hpp>
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
 
 namespace rho {
     /** @brief General vector of GCEdge<RObject>.

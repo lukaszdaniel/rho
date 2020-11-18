@@ -45,13 +45,13 @@
 
 #include <cstdarg>
 #include <vector>
-#include "rho/Closure.hpp"
-#include "rho/DottedArgs.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/ExternalPointer.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Frame.hpp"
-#include "rho/WeakRef.hpp"
+#include <rho/Closure.hpp>
+#include <rho/DottedArgs.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/ExternalPointer.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Frame.hpp>
+#include <rho/WeakRef.hpp>
 #include "sparsehash/dense_hash_map"
 
 #ifdef Win32

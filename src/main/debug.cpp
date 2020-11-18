@@ -34,9 +34,9 @@
 #include <Localization.h>
 #include <Internal.h>
 #include "basedecl.h"
-#include "rho/Closure.hpp"
-#include "rho/FunctionBase.hpp"
-#include "rho/FunctionContext.hpp"
+#include <rho/Closure.hpp>
+#include <rho/FunctionBase.hpp>
+#include <rho/FunctionContext.hpp>
 
 using namespace rho;
 

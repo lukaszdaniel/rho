@@ -29,16 +29,16 @@
  * Class GCManager and associated C-callable functions.
  */
 
-#include "rho/GCManager.hpp"
+#include <rho/GCManager.hpp>
 
 #include <cstdarg>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <Defn.h>
-#include "R_ext/Print.h"
-#include "rho/GCNode.hpp"
-#include "rho/WeakRef.hpp"
+#include <R_ext/Print.h>
+#include <rho/GCNode.hpp>
+#include <rho/WeakRef.hpp>
 
 using namespace rho;
 

@@ -27,7 +27,7 @@
  * Implementation of class Browser.
  */
 
-#include "rho/Browser.hpp"
+#include <rho/Browser.hpp>
 
 using namespace std;
 using namespace rho;

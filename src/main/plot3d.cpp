@@ -39,7 +39,7 @@
 #include <Print.h>
 #include <R_ext/Boolean.h>
 #include "basedecl.h"
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

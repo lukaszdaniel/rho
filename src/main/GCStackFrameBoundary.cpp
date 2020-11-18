@@ -29,8 +29,8 @@
  * Class GCStackFrameBoundary.
  */
 
-#include "rho/GCStackFrameBoundary.hpp"
-#include "rho/GCNode.hpp"
+#include <rho/GCStackFrameBoundary.hpp>
+#include <rho/GCNode.hpp>
 
 namespace rho {
 

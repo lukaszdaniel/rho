@@ -44,7 +44,7 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <R_ext/Itermacros.h>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

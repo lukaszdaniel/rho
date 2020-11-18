@@ -25,7 +25,7 @@
 #define RHO_JIT_RUNTIME_HPP
 
 #include <string>
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 namespace llvm {
 class Function;

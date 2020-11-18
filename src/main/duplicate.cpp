@@ -34,8 +34,8 @@
 #include <Defn.h>
 #include "duplicate.h"
 
-#include "rho/DottedArgs.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/DottedArgs.hpp>
+#include <rho/GCStackRoot.hpp>
 
 using namespace std;
 using namespace rho;

@@ -20,14 +20,14 @@
  *  along with this program; if not, a copy is available at
  *  http://www.r-project.org/Licenses/
  */
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 #define R_NO_REMAP
-#include "rho/jit/MCJITMemoryManager.hpp"
+#include <rho/jit/MCJITMemoryManager.hpp>
 
-#include "rho/jit/TypeBuilder.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/jit/TypeBuilder.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/Symbol.hpp>
 
 using namespace llvm;
 

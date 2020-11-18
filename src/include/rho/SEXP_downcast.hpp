@@ -26,17 +26,18 @@
  * @brief The templated function rho::SEXP_downcast().
  */
 #ifndef SEXP_DOWNCAST_HPP
-#define SEXP_DOWNCAST_HPP 1
+#define SEXP_DOWNCAST_HPP
 
-#include "R_ext/Error.h"  // For NORET
+#include <R_ext/Error.h> // For NORET
 #include <type_traits>
 
-namespace rho {
+namespace rho
+{
     /** @brief Not for general use.
      *
      * (Used by SEXP_downcast() to report an erroneous cast.)
      */
-    NORET void SEXP_downcast_error(const char* given, const char* wanted);
+    NORET void SEXP_downcast_error(const char *given, const char *wanted);
 
     /** Down cast within the RObject class tree.
      *
@@ -59,29 +60,32 @@ namespace rho {
     template <typename PtrOut, typename PtrIn>
     inline PtrOut SEXP_downcast(PtrIn s, bool allow_null = true)
     {
-	if (!s && !allow_null) {
-	    SEXP_downcast_error("NULL",
+        if (!s && !allow_null)
+        {
+            SEXP_downcast_error("NULL",
                                 std::remove_pointer<PtrOut>::type::staticTypeName());
-	}
-	return static_cast<PtrOut>(s);
+        }
+        return static_cast<PtrOut>(s);
     }
 #else
     template <typename PtrOut, typename PtrIn>
     PtrOut SEXP_downcast(PtrIn s, bool allow_null = true)
     {
-	PtrOut ans = nullptr;
-	if (!s) {
-	    if (allow_null)
-		return nullptr;
-	    else SEXP_downcast_error("NULL",
-                                     std::remove_pointer<PtrOut>::type::staticTypeName());
-	}
-	ans = dynamic_cast<PtrOut>(s);
-	if (!ans)
-	    SEXP_downcast_error(s->typeName(), ans->staticTypeName());
-	return ans;
+        PtrOut ans = nullptr;
+        if (!s)
+        {
+            if (allow_null)
+                return nullptr;
+            else
+                SEXP_downcast_error("NULL",
+                                    std::remove_pointer<PtrOut>::type::staticTypeName());
+        }
+        ans = dynamic_cast<PtrOut>(s);
+        if (!ans)
+            SEXP_downcast_error(s->typeName(), ans->staticTypeName());
+        return ans;
     }
 #endif
-}  // namespace rho
+} // namespace rho
 
-#endif  // SEXP_DOWNCAST_HPP
+#endif // SEXP_DOWNCAST_HPP

@@ -42,17 +42,17 @@
 #include <R_ext/RS.h>
 #include <errno.h>
 #include <ctype.h>		/* for isspace */
-#include "rho/BuiltInFunction.hpp"
-#include "rho/DottedArgs.hpp"
-#include "rho/Expression.hpp"
-#include "rho/ExternalPointer.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Frame.hpp"
-#include "rho/LogicalVector.hpp"
-#include "rho/Promise.hpp"
-#include "rho/ProvenanceTracker.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/WeakRef.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/DottedArgs.hpp>
+#include <rho/Expression.hpp>
+#include <rho/ExternalPointer.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Frame.hpp>
+#include <rho/LogicalVector.hpp>
+#include <rho/Promise.hpp>
+#include <rho/ProvenanceTracker.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/WeakRef.hpp>
 
 using namespace rho;
 

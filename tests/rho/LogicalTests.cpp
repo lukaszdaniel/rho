@@ -23,7 +23,7 @@
 
 #include "gtest/gtest.h"
 #include "TestHelpers.hpp"
-#include "rho/LogicalVector.hpp"
+#include <rho/LogicalVector.hpp>
 
 using namespace rho;
 

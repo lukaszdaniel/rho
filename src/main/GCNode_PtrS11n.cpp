@@ -27,4 +27,4 @@
  * Implementation of class GCNode::PtrS11n.
  */
 
-#include "rho/GCNode_PtrS11n.hpp"
+#include <rho/GCNode_PtrS11n.hpp>

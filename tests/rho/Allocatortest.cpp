@@ -30,7 +30,7 @@
 #include <list>
 #include <sstream>
 #include <vector>
-#include "rho/Allocator.hpp"
+#include <rho/Allocator.hpp>
 
 using namespace std;
 using namespace rho;

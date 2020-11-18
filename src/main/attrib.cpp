@@ -35,8 +35,8 @@
 #include <Internal.h>
 #include <Rmath.h>
 #include "basedecl.h"
-#include "rho/ArgMatcher.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/ArgMatcher.hpp>
+#include <rho/GCStackRoot.hpp>
 
 using namespace rho;
 

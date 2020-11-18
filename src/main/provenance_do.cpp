@@ -35,11 +35,11 @@
 #include <config.h>
 #endif
 
-#include "rho/RObject.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/IntVector.hpp"
-#include "rho/StringVector.hpp"
-#include "rho/RealVector.hpp" /* EJP */
+#include <rho/RObject.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/IntVector.hpp>
+#include <rho/StringVector.hpp>
+#include <rho/RealVector.hpp> /* EJP */
 #include <Internal.h>
 
 #include <fstream>
@@ -47,7 +47,7 @@
 #include <set>
 #include <boost/math/special_functions/nonfinite_num_facets.hpp>
 
-#include "rho/Provenance.hpp"
+#include <rho/Provenance.hpp>
 
 // Try to get rid of this:
 #include <Defn.h>

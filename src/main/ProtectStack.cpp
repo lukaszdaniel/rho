@@ -28,7 +28,7 @@
  * interface.
  */
 
-#include "rho/ProtectStack.hpp"
+#include <rho/ProtectStack.hpp>
 
 #include <stdexcept>
 

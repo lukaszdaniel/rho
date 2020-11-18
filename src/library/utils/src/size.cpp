@@ -28,8 +28,8 @@
 #endif
 
 #include <Defn.h>
-#include "rho/ExpressionVector.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/ExpressionVector.hpp>
+#include <rho/GCStackRoot.hpp>
 
 using namespace rho;
 

@@ -24,7 +24,7 @@
 #ifndef RHO_JIT_TYPE_BUILDER_HPP
 #define RHO_JIT_TYPE_BUILDER_HPP
 
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 namespace rho {
 class Bailout;

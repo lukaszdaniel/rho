@@ -21,10 +21,10 @@
  *  https://www.R-project.org/Licenses/
  */
 
-#include "rho/Logical.hpp"
+#include <rho/Logical.hpp>
 
-#include "rho/GCRoot.hpp"
-#include "rho/LogicalVector.hpp"
+#include <rho/GCRoot.hpp>
+#include <rho/LogicalVector.hpp>
 #include <Defn.h>
 
 using namespace rho;

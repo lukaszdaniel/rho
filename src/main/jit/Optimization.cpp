@@ -21,12 +21,12 @@
  *  http://www.r-project.org/Licenses/
  */
 
-#include "rho/jit/Optimization.hpp"
+#include <rho/jit/Optimization.hpp>
 
 #include <string>
 #include <vector>
 
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 namespace rho {
 namespace JIT {

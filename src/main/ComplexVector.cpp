@@ -27,7 +27,7 @@
  * Implementation of class ComplexVector and related functions.
  */
 
-#include "rho/ComplexVector.hpp"
+#include <rho/ComplexVector.hpp>
 
 using namespace std;
 using namespace rho;

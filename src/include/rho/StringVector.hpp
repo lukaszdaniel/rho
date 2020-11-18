@@ -33,15 +33,15 @@
 #ifndef STRINGVECTOR_H
 #define STRINGVECTOR_H
 
-#include "Rinternals.h"
+#include <Rinternals.h>
 
 #ifdef __cplusplus
 
 #include <iostream>
 
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
-#include "rho/String.hpp"
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
+#include <rho/String.hpp>
 
 namespace rho {
     /** @brief Vector of strings.

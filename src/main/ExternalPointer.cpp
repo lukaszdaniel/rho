@@ -27,10 +27,10 @@
  * @brief Class ExternalPointer and associated C interface.
  */
 
-#include "rho/ExternalPointer.hpp"
+#include <rho/ExternalPointer.hpp>
 
 #include <Localization.h>
-#include "rho/GCStackRoot.hpp"
+#include <rho/GCStackRoot.hpp>
 
 using namespace std;
 using namespace rho;

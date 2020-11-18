@@ -39,7 +39,7 @@
 #ifdef Win32
 #include <trioremap.h>
 #endif
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

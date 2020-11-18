@@ -27,9 +27,9 @@
  * Implementation of class FunctionContext.
  */
 
-#include "rho/FunctionContext.hpp"
+#include <rho/FunctionContext.hpp>
 
-#include "rho/Environment.hpp"
+#include <rho/Environment.hpp>
 
 using namespace std;
 using namespace rho;

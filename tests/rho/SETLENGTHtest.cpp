@@ -30,8 +30,8 @@
 #include <iterator>
 #include <functional>
 
-#include "rho/GCStackRoot.hpp"
-#include "rho/StringVector.hpp"
+#include <rho/GCStackRoot.hpp>
+#include <rho/StringVector.hpp>
 #include <Defn.h>
 
 using namespace std;

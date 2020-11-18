@@ -28,19 +28,19 @@
  * C interface.
  */
 
-#include "rho/BuiltInFunction.hpp"
+#include <rho/BuiltInFunction.hpp>
 
 #include <cstdarg>
 #include <Internal.h>
-#include "rho/ArgList.hpp"
-#include "rho/FunctionContext.hpp"
-#include "rho/PlainContext.hpp"
-#include "rho/ProtectStack.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/String.hpp"
-#include "rho/Symbol.hpp"
-#include "rho/errors.hpp"
+#include <rho/ArgList.hpp>
+#include <rho/FunctionContext.hpp>
+#include <rho/PlainContext.hpp>
+#include <rho/ProtectStack.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/String.hpp>
+#include <rho/Symbol.hpp>
+#include <rho/errors.hpp>
 #include <R_ext/Print.h>
 #include <Defn.h>
 #include <Localization.h>

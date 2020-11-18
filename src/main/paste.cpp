@@ -44,8 +44,8 @@
 #include <Print.h>
 #include "RBufferUtils.h"
 #include <vector>
-#include "rho/Symbol.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/Symbol.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 using namespace std;

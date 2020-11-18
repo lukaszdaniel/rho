@@ -27,14 +27,14 @@
 
 #define R_NO_REMAP
 
-#include "rho/ArgMatcher.hpp"
+#include <rho/ArgMatcher.hpp>
 
 #define R_INTERFACE_PTRS
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include "boost/regex.hpp"
+#include <boost/regex.hpp>
 
 // For Rf_InitOptions():
 #include <Defn.h>
@@ -45,13 +45,13 @@
 // Otherwise expanded to Rf_match:
 #undef match
 
-#include "rho/CommandTerminated.hpp"
-#include "rho/Environment.hpp"
-#include "rho/Evaluator.hpp"
-#include "rho/Frame.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/PairList.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/CommandTerminated.hpp>
+#include <rho/Environment.hpp>
+#include <rho/Evaluator.hpp>
+#include <rho/Frame.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/PairList.hpp>
+#include <rho/Symbol.hpp>
 
 using namespace std;
 using namespace rho;

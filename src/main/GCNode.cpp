@@ -29,7 +29,7 @@
  * Class GCNode and associated C-callable functions.
  */
 
-#include "rho/GCNode.hpp"
+#include <rho/GCNode.hpp>
 
 #include <algorithm>
 #include <cstdlib>
@@ -39,14 +39,14 @@
 #include <set>
 #include <utility>
 
-#include "rho/GCManager.hpp"
-#include "rho/GCRoot.hpp"
-#include "rho/GCStackFrameBoundary.hpp"
-#include "rho/ProtectStack.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/WeakRef.hpp"
+#include <rho/GCManager.hpp>
+#include <rho/GCRoot.hpp>
+#include <rho/GCStackFrameBoundary.hpp>
+#include <rho/ProtectStack.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/WeakRef.hpp>
 
-#include "rho/GCNodeAllocator.hpp"
+#include <rho/GCNodeAllocator.hpp>
 
 using namespace std;
 using namespace rho;

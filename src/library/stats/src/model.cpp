@@ -36,8 +36,8 @@
 #include "localization.h"
 
 #include <vector>
-#include "rho/Expression.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/Expression.hpp>
+#include <rho/GCStackRoot.hpp>
 
 using namespace std;
 using namespace rho;

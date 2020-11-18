@@ -35,7 +35,7 @@
 #include <float.h>  /* for DBL_MAX */
 #include <Graphics.h>
 #include <Print.h>
-#include "rho/GCStackRoot.hpp"
+#include <rho/GCStackRoot.hpp>
 
 using namespace rho;
 using namespace std;

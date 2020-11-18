@@ -54,14 +54,15 @@
 
 #ifdef __cplusplus
 #include <iostream>
-#include "rho/ArgList.hpp"
-#include "rho/Frame.hpp"
-#include "rho/ListVector.hpp"
+#include <rho/ArgList.hpp>
+#include <rho/Frame.hpp>
+#include <rho/ListVector.hpp>
 
-#define rhoLOG(x) std::cout << x << std::endl;
+#define rhoLOG(x) std::cout << __FILE__ << ":" << __LINE__ << " " << x << std::endl;
 
-namespace rho {
-class BuiltInFunction;
+namespace rho
+{
+    class BuiltInFunction;
 }
 #endif
 

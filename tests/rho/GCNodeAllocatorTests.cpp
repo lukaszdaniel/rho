@@ -22,8 +22,8 @@
  */
 
 #include "gtest/gtest.h"
-#include "rho/GCNodeAllocator.hpp"
-#include "rho/AddressSanitizer.hpp"
+#include <rho/GCNodeAllocator.hpp>
+#include <rho/AddressSanitizer.hpp>
 
 using namespace rho;
 

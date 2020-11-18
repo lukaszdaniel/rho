@@ -39,7 +39,7 @@
 typedef struct SrcRefState SrcRefState;
 
 #ifdef __cplusplus
-#include "rho/GCRoot.hpp"
+#include <rho/GCRoot.hpp>
 
 struct SrcRefState {
 

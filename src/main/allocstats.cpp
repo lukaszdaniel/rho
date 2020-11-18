@@ -21,9 +21,9 @@
  *  https://www.R-project.org/Licenses/
  */
 
-#include "rho/IntVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/MemoryBank.hpp"
+#include <rho/IntVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/MemoryBank.hpp>
 
 using namespace rho;
 

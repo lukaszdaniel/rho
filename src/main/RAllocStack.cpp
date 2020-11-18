@@ -27,13 +27,13 @@
  * Implementation of class RAllocStack and related functions.
  */
 
-#include "rho/RAllocStack.hpp"
+#include <rho/RAllocStack.hpp>
 
 #include <cstring>
 #include <stdexcept>
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 #include <Localization.h>
-#include "rho/MemoryBank.hpp"
+#include <rho/MemoryBank.hpp>
 
 using namespace std;
 using namespace rho;

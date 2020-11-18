@@ -27,9 +27,9 @@
  * @brief Implementation of VectorOps::BinaryFunction and related functions.
  */
 
-#include "rho/BinaryFunction.hpp"
-#include "rho/PairList.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/BinaryFunction.hpp>
+#include <rho/PairList.hpp>
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 using namespace Symbols;

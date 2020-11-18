@@ -27,7 +27,7 @@
  * Implementation of class MemoryBank
  */
 
-#include "rho/MemoryBank.hpp"
+#include <rho/MemoryBank.hpp>
 
 #include <iostream>
 #include <limits>

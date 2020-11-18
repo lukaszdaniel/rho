@@ -27,8 +27,8 @@
 #include <stack>
 #include <typeinfo>
 
-#include "rho/Frame.hpp"
-#include "rho/GCRoot.hpp"
+#include <rho/Frame.hpp>
+#include <rho/GCRoot.hpp>
 
 namespace llvm {
     class BasicBlock;

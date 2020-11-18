@@ -23,14 +23,14 @@
  *  https://www.R-project.org/Licenses/
  */
 
-#include "rho/Provenance.hpp"
+#include <rho/Provenance.hpp>
 
 #include <sys/time.h>
 #include <cstdio>
 #include <ctime>
 #include <set>
 
-#include "rho/String.hpp"
+#include <rho/String.hpp>
 
 using namespace rho;
 

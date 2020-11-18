@@ -52,8 +52,8 @@
 #include <Fileio.h>
 #include <Rconnections.h>
 #include <errno.h>
-#include "rho/GCStackRoot.hpp"
-#include "rho/ProvenanceTracker.hpp"
+#include <rho/GCStackRoot.hpp>
+#include <rho/ProvenanceTracker.hpp>
 
 using namespace rho;
 

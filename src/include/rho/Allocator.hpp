@@ -20,7 +20,7 @@
 #ifndef ALLOCATOR_HPP
 #define ALLOCATOR_HPP
 
-#include "rho/MemoryBank.hpp"
+#include <rho/MemoryBank.hpp>
 #include <limits>
 
 namespace rho

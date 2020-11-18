@@ -24,11 +24,11 @@
 #include "gtest/gtest.h"
 
 #include "TestHelpers.hpp"
-#include "rho/GCManager.hpp"
-#include "rho/GCNode.hpp"
-#include "rho/GCRoot.hpp"
-#include "rho/RealVector.hpp"
-#include "rho/RObject.hpp"
+#include <rho/GCManager.hpp>
+#include <rho/GCNode.hpp>
+#include <rho/GCRoot.hpp>
+#include <rho/RealVector.hpp>
+#include <rho/RObject.hpp>
 
 using namespace rho;
 

@@ -106,13 +106,13 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <R_ext/Callbacks.h>
-#include "rho/ClosureContext.hpp"
-#include "rho/Frame.hpp"
-#include "rho/ListVector.hpp"
-#include "rho/Promise.hpp"
-#include "rho/ProvenanceTracker.hpp"
-#include "rho/StringVector.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/ClosureContext.hpp>
+#include <rho/Frame.hpp>
+#include <rho/ListVector.hpp>
+#include <rho/Promise.hpp>
+#include <rho/ProvenanceTracker.hpp>
+#include <rho/StringVector.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 using namespace rho;
 

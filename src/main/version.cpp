@@ -34,7 +34,7 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <Rversion.h>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

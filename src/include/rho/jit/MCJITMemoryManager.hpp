@@ -24,7 +24,7 @@
 #ifndef RHO_JIT_MCJIT_MEMORY_MANAGER_HPP
 #define RHO_JIT_MCJIT_MEMORY_MANAGER_HPP
 
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 #include <string>
 #include <unordered_map>
 

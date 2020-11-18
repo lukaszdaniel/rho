@@ -124,7 +124,7 @@ extern char *tzname[2];
 #include <Internal.h>
 
 #include <vector>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 using namespace std;

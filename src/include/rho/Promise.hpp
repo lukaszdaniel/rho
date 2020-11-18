@@ -31,8 +31,8 @@
 #ifndef PROMISE_HPP
 #define PROMISE_HPP
 
-#include "rho/RObject.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/RObject.hpp>
+#include <rho/Symbol.hpp>
 
 extern "C" void SET_PRVALUE(SEXP x, SEXP v);
 

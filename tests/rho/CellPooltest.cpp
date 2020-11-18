@@ -22,7 +22,7 @@
  * Test of class CellPool
  */
 
-#include "rho/CellPool.hpp"
+#include <rho/CellPool.hpp>
 
 #include <iostream>
 

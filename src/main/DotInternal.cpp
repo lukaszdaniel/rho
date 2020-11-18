@@ -27,13 +27,13 @@
  * @brief Table of functions invoked \e via <tt>.Internal()</tt>.
  */
 
-#include "rho/DotInternal.hpp"
+#include <rho/DotInternal.hpp>
 
-#include "Internal.h"
+#include <Internal.h>
 
-#include "rho/BuiltInFunction.hpp"
-#include "rho/Expression.hpp"
-#include "rho/errors.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/Expression.hpp>
+#include <rho/errors.hpp>
 
 using namespace std;
 using namespace rho;

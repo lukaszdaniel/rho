@@ -62,7 +62,7 @@
 
 #define R_USE_PROTOTYPES 1
 #include <R_ext/GraphicsEngine.h>
-#include "Fileio.h"		/* R_fopen */
+#include <Fileio.h>		/* R_fopen */
 #include "rotated.h"		/* 'Public' routines from here */
 /* For the input handlers of the event loop mechanism: */
 #include <R_ext/eventloop.h>

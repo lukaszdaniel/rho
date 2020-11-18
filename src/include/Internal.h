@@ -33,36 +33,37 @@
 #ifndef R_INTERNAL_H
 #define R_INTERNAL_H
 
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 
 #ifdef __cplusplus
 
 #include <boost/preprocessor.hpp>
 #include <stdarg.h>
-#include "rho/BuiltInFunction.hpp"
-#include "rho/RObject.hpp"
-#include "rho/Expression.hpp"
-#include "rho/Environment.hpp"
-#include "rho/PairList.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/RObject.hpp>
+#include <rho/Expression.hpp>
+#include <rho/Environment.hpp>
+#include <rho/PairList.hpp>
 
-namespace rho {
-  typedef RObject*(ArgumentArrayFn)(Expression*,
-                                    const BuiltInFunction*,
-                                    Environment* env,
-                                    RObject* const* args,
-                                    int num_args,
-                                    const PairList* tags);
-}  // namespace rho
+namespace rho
+{
+    typedef RObject *(ArgumentArrayFn)(Expression *,
+                                       const BuiltInFunction *,
+                                       Environment *env,
+                                       RObject *const *args,
+                                       int num_args,
+                                       const PairList *tags);
+} // namespace rho
 
 // Some macros to help unpack args from VarArgsBuiltin.
 #define NEXT_ARG va_arg(args, rho::RObject*)
 
-#define _EXTRACT_ONE_ARG(r, data, elem)     \
-    rho::RObject* elem = NEXT_ARG;
+#define _EXTRACT_ONE_ARG(r, data, elem) \
+    rho::RObject *elem = NEXT_ARG;
 
-#define UNPACK_VA_ARGS(LAST_ARG, ARG_NAME_SEQUENCE)    \
-    va_list args;                                   \
-    va_start(args, LAST_ARG);                       \
+#define UNPACK_VA_ARGS(LAST_ARG, ARG_NAME_SEQUENCE)               \
+    va_list args;                                                 \
+    va_start(args, LAST_ARG);                                     \
     BOOST_PP_SEQ_FOR_EACH(_EXTRACT_ONE_ARG, 0, ARG_NAME_SEQUENCE) \
     va_end(args);
 

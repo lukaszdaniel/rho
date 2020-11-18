@@ -27,9 +27,9 @@
  * @brief Implementation of VectorOps::UnaryFunction and related functions.
  */
 
-#include "rho/UnaryFunction.hpp"
+#include <rho/UnaryFunction.hpp>
 
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 using namespace Symbols;

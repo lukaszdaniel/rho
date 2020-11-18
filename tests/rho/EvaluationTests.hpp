@@ -26,9 +26,9 @@
 #define RHO_TESTS_RHO_EVALUATION_TESTS_HPP
 
 #include "gtest/gtest.h"
-#include "rho/Environment.hpp"
-#include "rho/Evaluator.hpp"
-#include "rho/RObject.hpp"
+#include <rho/Environment.hpp>
+#include <rho/Evaluator.hpp>
+#include <rho/RObject.hpp>
 #include "TestHelpers.hpp"
 
 #include <vector>

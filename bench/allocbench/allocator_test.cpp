@@ -22,10 +22,10 @@
  */
 
 #define COMPILING_RHO
-#include "rho/IntVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/MemoryBank.hpp"
-//#include "rho/BlockPool.hpp"
+#include <rho/IntVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/MemoryBank.hpp>
+//#include <rho/BlockPool.hpp>
 
 using namespace rho;
 

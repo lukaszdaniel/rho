@@ -31,9 +31,9 @@
 #ifndef RAWVECTOR_H
 #define RAWVECTOR_H
 
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
-#include "rho/VectorBase.hpp"
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
+#include <rho/VectorBase.hpp>
 
 typedef unsigned char Rbyte;
 

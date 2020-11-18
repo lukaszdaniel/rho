@@ -34,7 +34,7 @@
 /*
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     SEXP C_NAME = rho::RHO_NAME;
-#include "rho/PredefinedSymbols.hpp"
+#include <rho/PredefinedSymbols.hpp>
 #undef PREDEFINED_SYMBOL
 
 // generates:

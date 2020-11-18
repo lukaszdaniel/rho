@@ -31,8 +31,8 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
-#include "rho/ExpressionVector.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/ExpressionVector.hpp>
+#include <rho/Symbol.hpp>
 
 using namespace std;
 using namespace rho;

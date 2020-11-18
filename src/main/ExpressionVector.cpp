@@ -27,7 +27,7 @@
  * Implementation of class ExpressionVector and related functions.
  */
 
-#include "rho/ExpressionVector.hpp"
+#include <rho/ExpressionVector.hpp>
 
 using namespace rho;
 

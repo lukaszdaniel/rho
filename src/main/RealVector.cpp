@@ -27,7 +27,7 @@
  * @brief Implementation of class RealVector and related functions.
  */
 
-#include "rho/RealVector.hpp"
+#include <rho/RealVector.hpp>
 
 using namespace rho;
 

@@ -42,7 +42,7 @@
 #include <errno.h>
 #include <rlocale.h>
 #include <vector>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace std;
 using namespace rho;

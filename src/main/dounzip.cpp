@@ -46,7 +46,7 @@
 #include <io.h> /* for mkdir */
 #endif
 
-#include "rho/RAllocStack.hpp"
+#include <rho/RAllocStack.hpp>
 
 /* cf do_dircreate in platform.cpp */
 static int R_mkdir(char *path)

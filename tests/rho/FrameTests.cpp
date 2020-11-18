@@ -22,9 +22,9 @@
  */
 
 #include "gtest/gtest.h"
-#include "rho/Frame.hpp"
-#include "rho/FrameDescriptor.hpp"
-#include "rho/RealVector.hpp"
+#include <rho/Frame.hpp>
+#include <rho/FrameDescriptor.hpp>
+#include <rho/RealVector.hpp>
 
 using namespace rho;
 

@@ -27,11 +27,11 @@
  * Error reporting for SEXP_downcast.
  */
 
-#include "rho/SEXP_downcast.hpp"
+#include <rho/SEXP_downcast.hpp>
 
 #include <cstdlib>
 #include <Localization.h>
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 
 using namespace std;
 using namespace rho;

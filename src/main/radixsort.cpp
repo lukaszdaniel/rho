@@ -26,11 +26,11 @@
 #include <config.h>
 #endif
 
-#include "rho/StringVector.hpp"
+#include <rho/StringVector.hpp>
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

@@ -50,13 +50,13 @@
 #include <R_ext/Print.h>
 #include <cstdarg>
 
-#include "rho/ClosureContext.hpp"
-#include "rho/CommandTerminated.hpp"
-#include "rho/ConsCell.hpp"
-#include "rho/ListVector.hpp"
-#include "rho/ReturnException.hpp"
-#include "rho/StackChecker.hpp"
-#include "rho/strutil.hpp"
+#include <rho/ClosureContext.hpp>
+#include <rho/CommandTerminated.hpp>
+#include <rho/ConsCell.hpp>
+#include <rho/ListVector.hpp>
+#include <rho/ReturnException.hpp>
+#include <rho/StackChecker.hpp>
+#include <rho/strutil.hpp>
 
 using namespace std;
 using namespace rho;

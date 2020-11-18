@@ -38,8 +38,8 @@
 
 # include <rlocale.h>
 
-#include "rho/RAllocStack.hpp"
-#include "rho/Expression.hpp"
+#include <rho/RAllocStack.hpp>
+#include <rho/Expression.hpp>
 
 using namespace rho;
 using namespace std;

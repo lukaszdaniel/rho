@@ -24,10 +24,10 @@
 #include "gtest/gtest.h"
 
 #include "TestHelpers.hpp"
-#include "rho/GCStackFrameBoundary.hpp"
-#include "rho/GCManager.hpp"
-#include "rho/RealVector.hpp"
-#include "rho/RObject.hpp"
+#include <rho/GCStackFrameBoundary.hpp>
+#include <rho/GCManager.hpp>
+#include <rho/RealVector.hpp>
+#include <rho/RObject.hpp>
 
 using namespace rho;
 

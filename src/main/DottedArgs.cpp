@@ -27,10 +27,10 @@
  * @brief Class DottedArgs.
  */
 
-#include "rho/DottedArgs.hpp"
+#include <rho/DottedArgs.hpp>
 
 #include <Localization.h>
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 
 using namespace std;
 using namespace rho;

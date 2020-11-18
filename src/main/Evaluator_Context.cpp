@@ -31,7 +31,7 @@
  * filename of context.cpp derived from CR's context.c.
  */
 
-#include "rho/Evaluator_Context.hpp"
+#include <rho/Evaluator_Context.hpp>
 
 using namespace std;
 using namespace rho;

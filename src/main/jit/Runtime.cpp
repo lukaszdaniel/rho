@@ -20,17 +20,17 @@
  *  along with this program; if not, a copy is available at
  *  http://www.r-project.org/Licenses/
  */
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 #define R_NO_REMAP
-#include "rho/jit/Runtime.hpp"
+#include <rho/jit/Runtime.hpp>
 
-#include "rho/jit/Compiler.hpp"
-#include "rho/jit/Globals.hpp"
-#include "rho/jit/TypeBuilder.hpp"
-#include "rho/RObject.hpp"
+#include <rho/jit/Compiler.hpp>
+#include <rho/jit/Globals.hpp>
+#include <rho/jit/TypeBuilder.hpp>
+#include <rho/RObject.hpp>
 #include <Defn.h>
-#include "Rinternals.h"
+#include <Rinternals.h>
 
 #include "RuntimeImpl.cpp"
 

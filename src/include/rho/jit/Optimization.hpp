@@ -24,7 +24,7 @@
 #ifndef RHO_JIT_OPTIMIZATION_HPP
 #define RHO_JIT_OPTIMIZATION_HPP
 
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 namespace rho {
 namespace JIT {

@@ -20,27 +20,27 @@
  *  along with this program; if not, a copy is available at
  *  http://www.r-project.org/Licenses/
  */
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 #define R_NO_REMAP
-#include "rho/jit/Compiler.hpp"
+#include <rho/jit/Compiler.hpp>
 
-#include "rho/jit/CompilationException.hpp"
-#include "rho/jit/MCJITMemoryManager.hpp"
-#include "rho/jit/Runtime.hpp"
-#include "rho/jit/TypeBuilder.hpp"
+#include <rho/jit/CompilationException.hpp>
+#include <rho/jit/MCJITMemoryManager.hpp>
+#include <rho/jit/Runtime.hpp>
+#include <rho/jit/TypeBuilder.hpp>
 
-#include "rho/BuiltInFunction.hpp"
-#include "rho/Closure.hpp"
-#include "rho/DottedArgs.hpp"
-#include "rho/Environment.hpp"
-#include "rho/Expression.hpp"
-#include "rho/FrameDescriptor.hpp"
-#include "rho/FunctionBase.hpp"
-#include "rho/RObject.hpp"
-#include "rho/SEXP_downcast.hpp"
-#include "rho/StringVector.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/Closure.hpp>
+#include <rho/DottedArgs.hpp>
+#include <rho/Environment.hpp>
+#include <rho/Expression.hpp>
+#include <rho/FrameDescriptor.hpp>
+#include <rho/FunctionBase.hpp>
+#include <rho/RObject.hpp>
+#include <rho/SEXP_downcast.hpp>
+#include <rho/StringVector.hpp>
+#include <rho/Symbol.hpp>
 
 using llvm::BasicBlock;
 using llvm::PHINode;

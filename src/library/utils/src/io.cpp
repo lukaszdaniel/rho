@@ -41,7 +41,7 @@
 #include <Print.h>
 
 #include <rlocale.h> /* for btowc */
-#include "rho/IntVector.hpp"
+#include <rho/IntVector.hpp>
 
 #include "localization.h"
 

@@ -30,16 +30,16 @@
 
 #define R_NO_REMAP
 
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 #include <sstream>
 #include <Localization.h>
-#include "boost/regex.hpp"
-#include "R_ext/Error.h"
-#include "rho/Environment.hpp"
-#include "rho/Evaluator.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/String.hpp"
+#include <boost/regex.hpp>
+#include <R_ext/Error.h>
+#include <rho/Environment.hpp>
+#include <rho/Evaluator.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/String.hpp>
 
 using namespace std;
 using namespace rho;
@@ -147,7 +147,7 @@ void Symbol::initialize()
 
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     C_NAME = rho::Symbols::RHO_NAME = Symbol::obtain(R_NAME);
-#include "rho/PredefinedSymbols.hpp"
+#include <rho/PredefinedSymbols.hpp>
 #undef PREDEFINED_SYMBOL
 
     // DISABLE_REFCNT(Symbols::LastvalueSymbol);
@@ -232,7 +232,7 @@ namespace rho {
     namespace Symbols {
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     Symbol* RHO_NAME = nullptr;
-#include "rho/PredefinedSymbols.hpp"
+#include <rho/PredefinedSymbols.hpp>
 #undef PREDEFINED_SYMBOL
     }
 }
@@ -241,7 +241,7 @@ namespace rho {
 
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
     SEXP C_NAME = nullptr;
-#include "rho/PredefinedSymbols.hpp"
+#include <rho/PredefinedSymbols.hpp>
 #undef PREDEFINED_SYMBOL
 
 SEXP PRINTNAME(SEXP x)

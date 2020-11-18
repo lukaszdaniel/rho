@@ -27,9 +27,9 @@
  * @brief Implementation of class LogicalVector and related functions.
  */
 
-#include "rho/LogicalVector.hpp"
+#include <rho/LogicalVector.hpp>
 
-#include "rho/IntVector.hpp"
+#include <rho/IntVector.hpp>
 
 using namespace std;
 using namespace rho;

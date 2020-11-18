@@ -20,23 +20,23 @@
  *  along with this program; if not, a copy is available at
  *  http://www.r-project.org/Licenses/
  */
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 #define R_NO_REMAP
-#include "rho/jit/CompiledExpression.hpp"
+#include <rho/jit/CompiledExpression.hpp>
 
-#include "rho/jit/Compiler.hpp"
-#include "rho/jit/CompilerContext.hpp"
-#include "rho/jit/Globals.hpp"
-#include "rho/jit/MCJITMemoryManager.hpp"
-#include "rho/jit/Optimization.hpp"
-#include "rho/jit/Runtime.hpp"
-#include "rho/jit/TypeBuilder.hpp"
+#include <rho/jit/Compiler.hpp>
+#include <rho/jit/CompilerContext.hpp>
+#include <rho/jit/Globals.hpp>
+#include <rho/jit/MCJITMemoryManager.hpp>
+#include <rho/jit/Optimization.hpp>
+#include <rho/jit/Runtime.hpp>
+#include <rho/jit/TypeBuilder.hpp>
 
-#include "rho/Closure.hpp"
-#include "rho/Environment.hpp"
-#include "rho/Frame.hpp"
-#include "rho/RObject.hpp"
+#include <rho/Closure.hpp>
+#include <rho/Environment.hpp>
+#include <rho/Frame.hpp>
+#include <rho/RObject.hpp>
 
 using llvm::Module;
 using llvm::Value;

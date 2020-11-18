@@ -31,10 +31,10 @@
 #ifndef REALVECTOR_HPP
 #define REALVECTOR_HPP
 
-#include "R_ext/Arith.h"
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
-#include "rho/VectorBase.hpp"
+#include <R_ext/Arith.h>
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
+#include <rho/VectorBase.hpp>
 #include <cmath>
 
 namespace rho

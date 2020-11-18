@@ -31,9 +31,9 @@
 #ifndef VECTORBASE_HPP
 #define VECTORBASE_HPP
 
-#include "rho/GCStackRoot.hpp"
-#include "rho/RObject.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/GCStackRoot.hpp>
+#include <rho/RObject.hpp>
+#include <rho/SEXP_downcast.hpp>
 #include <stddef.h>
 
 namespace rho

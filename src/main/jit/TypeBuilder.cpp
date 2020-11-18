@@ -23,8 +23,8 @@
 
 #define R_NO_REMAP
 
-#include "rho/jit/TypeBuilder.hpp"
-#include "rho/jit/Runtime.hpp"
+#include <rho/jit/TypeBuilder.hpp>
+#include <rho/jit/Runtime.hpp>
 
 using namespace rho;
 

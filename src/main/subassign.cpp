@@ -96,13 +96,13 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <R_ext/RS.h> /* for test of S4 objects */
-#include "rho/ComplexVector.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Promise.hpp"
-#include "rho/RawVector.hpp"
-#include "rho/Subscripting.hpp"
-#include "rho/unrho.hpp"
+#include <rho/ComplexVector.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Promise.hpp>
+#include <rho/RawVector.hpp>
+#include <rho/Subscripting.hpp>
+#include <rho/unrho.hpp>
 
 using namespace rho;
 

@@ -42,17 +42,17 @@
 #include <stdarg.h>
 
 #include <R_ext/RS.h> /* for S4 allocation */
-#include "rho/ComplexVector.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/FunctionContext.hpp"
-#include "rho/GCManager.hpp"
-#include "rho/IntVector.hpp"
-#include "rho/Frame.hpp"
-#include "rho/LogicalVector.hpp"
-#include "rho/MemoryBank.hpp"
-#include "rho/RealVector.hpp"
-#include "rho/RawVector.hpp"
-#include "rho/unrho.hpp"
+#include <rho/ComplexVector.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/FunctionContext.hpp>
+#include <rho/GCManager.hpp>
+#include <rho/IntVector.hpp>
+#include <rho/Frame.hpp>
+#include <rho/LogicalVector.hpp>
+#include <rho/MemoryBank.hpp>
+#include <rho/RealVector.hpp>
+#include <rho/RawVector.hpp>
+#include <rho/unrho.hpp>
 
 #include <Defn.h>
 #include <Localization.h>

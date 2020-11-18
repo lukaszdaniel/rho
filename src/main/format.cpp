@@ -53,7 +53,7 @@
 #include "Rcomplex.h"
 #include <Rmath.h>
 #include <Print.h>
-#include "rho/String.hpp"
+#include <rho/String.hpp>
 
 using namespace std;
 using namespace rho;

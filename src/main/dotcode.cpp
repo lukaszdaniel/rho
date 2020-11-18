@@ -39,11 +39,11 @@
 #include <errno.h>
 
 #include <Rmath.h>
-#include "R_ext/RS.h"
+#include <R_ext/RS.h>
 #include <boost/preprocessor.hpp>
 
-#include "rho/ClosureContext.hpp"
-#include "rho/RAllocStack.hpp"
+#include <rho/ClosureContext.hpp>
+#include <rho/RAllocStack.hpp>
 
 
 using namespace rho;

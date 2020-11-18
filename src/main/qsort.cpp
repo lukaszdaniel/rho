@@ -41,7 +41,7 @@
 #include <Localization.h>
 #include <Internal.h>
 #include <Rmath.h>
-#include "rho/Symbol.hpp"
+#include <rho/Symbol.hpp>
 
 using namespace rho;
 

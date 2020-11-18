@@ -32,9 +32,9 @@
 
 #include <Defn.h>
 #include <Localization.h>
-#include "rho/Closure.hpp"
-#include "rho/Environment.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/Closure.hpp>
+#include <rho/Environment.hpp>
+#include <rho/GCStackRoot.hpp>
 
 using namespace rho;
 

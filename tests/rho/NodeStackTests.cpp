@@ -22,10 +22,10 @@
  */
 
 #include "gtest/gtest.h"
-#include "rho/GCManager.hpp"
-#include "rho/IntVector.hpp"
-#include "rho/NodeStack.hpp"
-#include "rho/RObject.hpp"
+#include <rho/GCManager.hpp>
+#include <rho/IntVector.hpp>
+#include <rho/NodeStack.hpp>
+#include <rho/RObject.hpp>
 #include "TestHelpers.hpp"
 
 namespace rho {

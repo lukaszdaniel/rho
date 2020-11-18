@@ -31,8 +31,8 @@
 #ifndef INTVECTOR_H
 #define INTVECTOR_H
 
-#include "R_ext/Arith.h"
-#include "rho/ElementTraits.hpp"
+#include <R_ext/Arith.h>
+#include <rho/ElementTraits.hpp>
 
 namespace rho {
     // Template specializations:
@@ -52,12 +52,12 @@ namespace rho {
     }
 }
 
-#include "rho/VectorBase.hpp"
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/VectorBase.hpp>
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
 
 #ifndef USE_TYPE_CHECKING_STRICT
-#include "rho/LogicalVector.hpp"
+#include <rho/LogicalVector.hpp>
 #endif
 
 namespace rho {

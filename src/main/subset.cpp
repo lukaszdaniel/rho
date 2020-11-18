@@ -49,13 +49,13 @@
 #include <stdexcept>
 #include <Defn.h>
 #include <Internal.h>
-#include "rho/BuiltInFunction.hpp"
-#include "rho/ComplexVector.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Promise.hpp"
-#include "rho/RawVector.hpp"
-#include "rho/Subscripting.hpp"
+#include <rho/BuiltInFunction.hpp>
+#include <rho/ComplexVector.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Promise.hpp>
+#include <rho/RawVector.hpp>
+#include <rho/Subscripting.hpp>
 
 using namespace std;
 using namespace rho;

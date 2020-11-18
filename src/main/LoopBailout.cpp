@@ -27,10 +27,10 @@
  * @brief Implementation of class LoopBailout.
  */
 
-#include "rho/LoopBailout.hpp"
+#include <rho/LoopBailout.hpp>
 
-#include "rho/Environment.hpp"
-#include "rho/LoopException.hpp"
+#include <rho/Environment.hpp>
+#include <rho/LoopException.hpp>
 
 using namespace rho;
 

@@ -37,9 +37,9 @@
 #ifndef EXPRESSIONVECTOR_H
 #define EXPRESSIONVECTOR_H
 
-#include "rho/VectorBase.hpp"
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/VectorBase.hpp>
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
 
 namespace rho {
     /** @brief Expression vector.

@@ -28,15 +28,15 @@
  * interface.
  */
 
-#include "rho/Promise.hpp"
+#include <rho/Promise.hpp>
 
 #include <Localization.h>
-#include "R_ext/Error.h"
-#include "rho/Bailout.hpp"
-#include "rho/Expression.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/PlainContext.hpp"
-#include "rho/StackChecker.hpp"
+#include <R_ext/Error.h>
+#include <rho/Bailout.hpp>
+#include <rho/Expression.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/PlainContext.hpp>
+#include <rho/StackChecker.hpp>
 
 using namespace rho;
 

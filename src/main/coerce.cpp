@@ -46,13 +46,13 @@
 #define R_MSG_list_vec	_("applies only to lists and vectors")
 #include <Rmath.h>
 #include <Print.h>
-#include "rho/ArgMatcher.hpp"
-#include "rho/Expression.hpp"
-#include "rho/ExpressionVector.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/Promise.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/unrho.hpp"
+#include <rho/ArgMatcher.hpp>
+#include <rho/Expression.hpp>
+#include <rho/ExpressionVector.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/Promise.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/unrho.hpp>
 
 using namespace std;
 using namespace rho;
@@ -2788,7 +2788,7 @@ HIDDEN SEXP do_storage_mode(/*const*/ Expression* call, const BuiltInFunction* o
     return ans;
 }
 
-#include "rho/ArgList.hpp"
+#include <rho/ArgList.hpp>
 
 const Symbol* ArgList::coerceTag(const RObject* tag)
 {

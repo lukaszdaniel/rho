@@ -27,11 +27,11 @@
  * @brief Class PairList and associated C interface.
  */
 
-#include "rho/PairList.hpp"
+#include <rho/PairList.hpp>
 
 #include <iostream>
 #include <Localization.h>
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 
 using namespace std;
 using namespace rho;
@@ -110,7 +110,7 @@ PairList* PairList::make(size_t sz)
 {
     PairList* ans = nullptr;
     while (sz--)
-	ans = cons(nullptr, ans);
+	ans = Rf_cons(nullptr, ans);
     return ans;
 }
 

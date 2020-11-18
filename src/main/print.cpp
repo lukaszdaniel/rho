@@ -75,11 +75,11 @@
 #include <Defn.h>
 #include <Localization.h>
 #include <Internal.h>
-#include "Print.h"
-#include "Fileio.h"
-#include "Rconnections.h"
+#include <Print.h>
+#include <Fileio.h>
+#include <Rconnections.h>
 #include <R_ext/RS.h>
-#include "rho/GCStackRoot.hpp"
+#include <rho/GCStackRoot.hpp>
 
 using namespace rho;
 

@@ -27,9 +27,9 @@
  * Implementation of class IntVector and related functions.
  */
 
-#include "rho/IntVector.hpp"
+#include <rho/IntVector.hpp>
 
-#include "rho/LogicalVector.hpp"
+#include <rho/LogicalVector.hpp>
 
 using namespace rho;
 

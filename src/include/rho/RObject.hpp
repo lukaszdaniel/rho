@@ -602,7 +602,7 @@ namespace rho
 } // namespace rho
 
 // Ensure that PairList is a complete type for the inlined functions below.
-#include "rho/PairList.hpp"
+#include <rho/PairList.hpp>
 
 inline rho::RObject::RObject(SEXPTYPE stype)
     : m_type(stype & s_sexptype_mask), m_named(0), m_altrep(0),

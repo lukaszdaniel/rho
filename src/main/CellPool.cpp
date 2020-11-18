@@ -23,7 +23,7 @@
  * Implementation of class CellPool
  */
 
-#include "rho/CellPool.hpp"
+#include <rho/CellPool.hpp>
 
 #ifndef __APPLE__
 #include <features.h>

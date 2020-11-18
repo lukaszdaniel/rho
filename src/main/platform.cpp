@@ -61,10 +61,10 @@
 
 #include "basedecl.h"
 #include <vector>
-#include "rho/Evaluator.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/StackChecker.hpp"
-#include "rho/StringVector.hpp"
+#include <rho/Evaluator.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/StackChecker.hpp>
+#include <rho/StringVector.hpp>
 
 using namespace std;
 using namespace rho;

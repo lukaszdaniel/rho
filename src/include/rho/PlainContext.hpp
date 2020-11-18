@@ -30,7 +30,7 @@
 #ifndef PLAINCONTEXT_HPP
 #define PLAINCONTEXT_HPP 1
 
-#include "rho/Evaluator_Context.hpp"
+#include <rho/Evaluator_Context.hpp>
 
 namespace rho {
     /** @brief Lightweight Context neutralizing BailoutContext.

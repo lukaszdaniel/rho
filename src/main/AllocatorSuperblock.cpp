@@ -34,9 +34,9 @@
 #include <limits>
 #include <memory>
 
-#include "rho/AddressSanitizer.hpp"
-#include "rho/AllocationTable.hpp"
-#include "rho/AllocatorSuperblock.hpp"
+#include <rho/AddressSanitizer.hpp>
+#include <rho/AllocationTable.hpp>
+#include <rho/AllocatorSuperblock.hpp>
 
 namespace {
   // Arena for small-object superblocks:

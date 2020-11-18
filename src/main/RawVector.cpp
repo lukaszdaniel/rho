@@ -27,7 +27,7 @@
  * @brief Implementation of class RawVector and related functions.
  */
 
-#include "rho/RawVector.hpp"
+#include <rho/RawVector.hpp>
 
 using namespace rho;
 

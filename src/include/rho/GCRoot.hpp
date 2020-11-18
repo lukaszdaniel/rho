@@ -31,8 +31,8 @@
 #ifndef GCROOT_HPP
 #define GCROOT_HPP
 
-#include "Rinternals.h"
-#include "rho/GCNode.hpp"
+#include <Rinternals.h>
+#include <rho/GCNode.hpp>
 
 namespace rho
 {

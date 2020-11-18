@@ -28,8 +28,8 @@
 #include <float.h> /* for DBL_DIG */
 #include <Print.h> /* for R_print */
 #include <R_ext/Itermacros.h>
-#include "rho/PairList.hpp"
-#include "rho/WeakRef.hpp"
+#include <rho/PairList.hpp>
+#include <rho/WeakRef.hpp>
 
 using namespace rho;
 

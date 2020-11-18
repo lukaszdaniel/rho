@@ -23,9 +23,9 @@
 
 #include "gtest/gtest.h"
 #include "TestHelpers.hpp"
-#include "rho/LogicalVector.hpp"
-#include "rho/IntVector.hpp"
-#include "Rinternals.h"
+#include <rho/LogicalVector.hpp>
+#include <rho/IntVector.hpp>
+#include <Rinternals.h>
 
 using namespace rho;
 

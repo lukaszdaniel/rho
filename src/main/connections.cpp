@@ -98,9 +98,9 @@
 #include "basedecl.h"
 #include <cstdarg>
 
-#include "rho/ProvenanceTracker.hpp"
-#include "rho/RAllocStack.hpp"
-#include "rho/BuiltInFunction.hpp"
+#include <rho/ProvenanceTracker.hpp>
+#include <rho/RAllocStack.hpp>
+#include <rho/BuiltInFunction.hpp>
 
 using namespace std;
 using namespace rho;

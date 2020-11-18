@@ -36,7 +36,7 @@
 #endif
 
 #include <Defn.h>
-#include "Fileio.h"
+#include <Fileio.h>
 
 HIDDEN
 int R_fgetc(FILE *fp)

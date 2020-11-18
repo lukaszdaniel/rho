@@ -34,12 +34,12 @@
 #include <Localization.h>
 #include <Internal.h>
 
-#include "rho/BinaryFunction.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/LogicalVector.hpp"
-#include "rho/RawVector.hpp"
-#include "rho/UnaryFunction.hpp"
+#include <rho/BinaryFunction.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/LogicalVector.hpp>
+#include <rho/RawVector.hpp>
+#include <rho/UnaryFunction.hpp>
 
 using namespace rho;
 using namespace VectorOps;

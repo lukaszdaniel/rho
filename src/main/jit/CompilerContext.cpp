@@ -23,18 +23,18 @@
 
 #include <typeinfo>
 
-#include "rho/jit/llvm.hpp"
+#include <rho/jit/llvm.hpp>
 
 #define R_NO_REMAP
-#include "rho/jit/CompilerContext.hpp"
+#include <rho/jit/CompilerContext.hpp>
 
-#include "rho/jit/Compiler.hpp"
-#include "rho/jit/OptimizationOptions.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/Closure.hpp"
-#include "rho/Frame.hpp"
-#include "rho/FrameDescriptor.hpp"
-#include "rho/LoopException.hpp"
+#include <rho/jit/Compiler.hpp>
+#include <rho/jit/OptimizationOptions.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/Closure.hpp>
+#include <rho/Frame.hpp>
+#include <rho/FrameDescriptor.hpp>
+#include <rho/LoopException.hpp>
 
 using llvm::BasicBlock;
 using llvm::Function;

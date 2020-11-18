@@ -33,7 +33,7 @@
 #include <Localization.h>
 #include <Internal.h>
 
-#include "rho/RAllocStack.hpp"
+#include <rho/RAllocStack.hpp>
 
 /* charToRaw works at byte level, ignores encoding */
 HIDDEN SEXP do_charToRaw(/*const*/ rho::Expression* call, const rho::BuiltInFunction* op, rho::RObject* x_)

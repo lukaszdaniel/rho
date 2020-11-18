@@ -33,9 +33,9 @@
 #include <limits>
 #include <map>
 
-#include "rho/AddressSanitizer.hpp"
-#include "rho/AllocationTable.hpp"
-#include "rho/GCNodeAllocator.hpp"
+#include <rho/AddressSanitizer.hpp>
+#include <rho/AllocationTable.hpp>
+#include <rho/GCNodeAllocator.hpp>
 
 #ifdef HAVE_ADDRESS_SANITIZER
 // Quarantine free lists are used to store freed objects for a while before

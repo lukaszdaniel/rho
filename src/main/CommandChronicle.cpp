@@ -28,9 +28,9 @@
  * Implementation of class CommandChronicle.
  */
 
-#include "rho/CommandChronicle.hpp"
+#include <rho/CommandChronicle.hpp>
 
-#include "rho/Provenance.hpp"
+#include <rho/Provenance.hpp>
 
 using namespace rho;
 

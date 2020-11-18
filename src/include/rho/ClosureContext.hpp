@@ -28,20 +28,21 @@
  */
 
 #ifndef CLOSURECONTEXT_HPP
-#define CLOSURECONTEXT_HPP 1
+#define CLOSURECONTEXT_HPP
 
-#include "rho/ArgList.hpp"
-#include "rho/FunctionContext.hpp"
+#include <rho/ArgList.hpp>
+#include <rho/FunctionContext.hpp>
 
-namespace rho {
-    class FunctionBase;
-    class PairList;
+namespace rho
+{
+	class FunctionBase;
+	class PairList;
 
-    // Parked here pending the creation of an ErrorHandling class:
-    extern GCRoot<PairList> R_HandlerStack;  // Condition handler stack
-    extern GCRoot<PairList> R_RestartStack;  // Stack of available restarts
+	// Parked here pending the creation of an ErrorHandling class:
+	extern GCRoot<PairList> R_HandlerStack; // Condition handler stack
+	extern GCRoot<PairList> R_RestartStack; // Stack of available restarts
 
-    /** @brief Context typically recording the call of a Closure.
+	/** @brief Context typically recording the call of a Closure.
      *
      * The normal use of a ClosureContext is to record the application
      * of a Closure.
@@ -56,158 +57,161 @@ namespace rho {
      * @todo Regularize aberrant (i.e. non-Closure-related) uses of
      * ClosureContext.
      */
-    class ClosureContext : public FunctionContext {
-    public:
-	/** @brief Constructor
-	 *
-	 * @param the_call Pointer to the call with which this Context
-	 *          is associated.
-	 *
-	 * @param call_env Pointer to the Environment in which \a
-	 *          the_call is to be evaluated.
-	 *
-	 * @param function Pointer to the FunctionBase being applied.
-	 *          Normally this will be a Closure.
-	 *
-	 * @param working_env Pointer to the working environment of
-	 *          the Closure, i.e. the environment in which
-	 *          assignments create bindings, and in which default
-	 *          values of parameters are evaluated.
-	 *
-	 * @param promise_args The list of arguments to the call, each
-	 *          wrapped in a Promise.
-	 */
-	ClosureContext(const Expression* the_call, Environment* call_env,
-		       const FunctionBase* function, Environment* working_env)
-	    : FunctionContext(the_call, call_env, function),
-	      m_interrupts_suspended(R_interrupts_suspended),
-	      m_handlerstack(R_HandlerStack), m_restartstack(R_RestartStack),
-	      m_working_env(working_env)
+	class ClosureContext : public FunctionContext
 	{
-	    setType(CLOSURE);
-	}
+	public:
+		/** @brief Constructor
+         *
+         * @param the_call Pointer to the call with which this Context
+         *          is associated.
+         *
+         * @param call_env Pointer to the Environment in which \a
+         *          the_call is to be evaluated.
+         *
+         * @param function Pointer to the FunctionBase being applied.
+         *          Normally this will be a Closure.
+         *
+         * @param working_env Pointer to the working environment of
+         *          the Closure, i.e. the environment in which
+         *          assignments create bindings, and in which default
+         *          values of parameters are evaluated.
+         *
+         * @param promise_args The list of arguments to the call, each
+         *          wrapped in a Promise.
+         */
+		ClosureContext(const Expression *the_call, Environment *call_env,
+					   const FunctionBase *function, Environment *working_env)
+			: FunctionContext(the_call, call_env, function),
+			  m_interrupts_suspended(R_interrupts_suspended),
+			  m_handlerstack(R_HandlerStack), m_restartstack(R_RestartStack),
+			  m_working_env(working_env)
+		{
+			setType(CLOSURE);
+		}
 
-	~ClosureContext() {
-	    R_RestartStack = m_restartstack;
-	    R_HandlerStack = m_handlerstack;
-	    if (m_onexit) {
-		runOnExit();
-	    }
-	    R_interrupts_suspended = m_interrupts_suspended;
-	}
+		~ClosureContext()
+		{
+			R_RestartStack = m_restartstack;
+			R_HandlerStack = m_handlerstack;
+			if (m_onexit)
+			{
+				runOnExit();
+			}
+			R_interrupts_suspended = m_interrupts_suspended;
+		}
 
-	/** @brief (Not for general use.)
-	 *
-	 * This function will be removed in future refactorization.
-	 *
-	 * @return Pointer to the handler stack associated with this
-	 * Context.
-	 */
-	RObject* handlerStack() const
-	{
-	    return m_handlerstack;
-	}
+		/** @brief (Not for general use.)
+         *
+         * This function will be removed in future refactorization.
+         *
+         * @return Pointer to the handler stack associated with this
+         * Context.
+         */
+		RObject *handlerStack() const
+		{
+			return m_handlerstack;
+		}
 
-	/** @brief Search outwards for a ClosureContext.
-	 *
-	 * This function works outwards from the Evaluator::Context \a
-	 * start until it finds a ClosureContext (possibly \a start
-	 * itself), and returns a pointer to that ClosureContext.
-	 *
-	 * @param start The Evaluator::Context from which the search
-	 * is to start.
-	 *
-	 * @return Pointer to the innermost ClosureContext found, or
-	 * a null pointer if no such context was found.
-	 */
-	static ClosureContext* innermost(Evaluator::Context* start
-					 = Evaluator::Context::innermost());
+		/** @brief Search outwards for a ClosureContext.
+         *
+         * This function works outwards from the Evaluator::Context \a
+         * start until it finds a ClosureContext (possibly \a start
+         * itself), and returns a pointer to that ClosureContext.
+         *
+         * @param start The Evaluator::Context from which the search
+         * is to start.
+         *
+         * @return Pointer to the innermost ClosureContext found, or
+         * a null pointer if no such context was found.
+         */
+		static ClosureContext *innermost(Evaluator::Context *start = Evaluator::Context::innermost());
 
-	/** @brief on.exit code.
-	 *
-	 * @return Pointer, possibly null, to an RObject to be
-	 * evaluated on exit from the Context, whether by normal exit
-	 * or by propagation of a C++ exception.
-	 */
-	RObject* onExit() const
-	{
-	    return m_onexit;
-	}
+		/** @brief on.exit code.
+         *
+         * @return Pointer, possibly null, to an RObject to be
+         * evaluated on exit from the Context, whether by normal exit
+         * or by propagation of a C++ exception.
+         */
+		RObject *onExit() const
+		{
+			return m_onexit;
+		}
 
-	/** @brief Call arguments wrapped in Promises.
-	 *
-	 * @return pointer, possibly null, to the list of arguments to
-	 * the call, each wrapped in a Promise.
-	 */
-	const ArgList& promiseArgs() const
-	{
-	    return m_working_env->frame()->promiseArgs();
-	}
+		/** @brief Call arguments wrapped in Promises.
+         *
+         * @return pointer, possibly null, to the list of arguments to
+         * the call, each wrapped in a Promise.
+         */
+		const ArgList &promiseArgs() const
+		{
+			return m_working_env->frame()->promiseArgs();
+		}
 
-	/** @brief Designate an on.exit object.
-	 *
-	 * @param onexit Pointer, possibly null, to an RObject to be
-	 *          evaluated on exit from the Context, whether by
-	 *          normal exit or by propagation of a C++ exception.
-	 */
-	void setOnExit(RObject* onexit)
-	{
-	    m_onexit = onexit;
-	}
+		/** @brief Designate an on.exit object.
+         *
+         * @param onexit Pointer, possibly null, to an RObject to be
+         *          evaluated on exit from the Context, whether by
+         *          normal exit or by propagation of a C++ exception.
+         */
+		void setOnExit(RObject *onexit)
+		{
+			m_onexit = onexit;
+		}
 
-	/** @brief Working environment of the Context's Closure.
-	 *
-	 * @return Pointer to the working environment of this
-	 * Context's Closure, i.e. the environment in which
-	 * assignments create bindings, and in which default values of
-	 * parameters are evaluated.
-	 */
-	Environment* workingEnvironment() const
-	{
-	    return m_working_env;
-	}
+		/** @brief Working environment of the Context's Closure.
+         *
+         * @return Pointer to the working environment of this
+         * Context's Closure, i.e. the environment in which
+         * assignments create bindings, and in which default values of
+         * parameters are evaluated.
+         */
+		Environment *workingEnvironment() const
+		{
+			return m_working_env;
+		}
 
-	/** @brief CR-style method name for the working environment of the Context's Closure.
-	 *
-	 * @return Pointer to the working environment of this
-	 * Context's Closure, i.e. the environment in which
-	 * assignments create bindings, and in which default values of
-	 * parameters are evaluated.
-	 */
-	inline Environment* cloenv() const
-	{
-		return  workingEnvironment();
-	}
+		/** @brief CR-style method name for the working environment of the Context's Closure.
+         *
+         * @return Pointer to the working environment of this
+         * Context's Closure, i.e. the environment in which
+         * assignments create bindings, and in which default values of
+         * parameters are evaluated.
+         */
+		inline Environment *cloenv() const
+		{
+			return workingEnvironment();
+		}
 
-	static ClosureContext* findClosureWithWorkingEnvironment(
-	    const Environment* env,
-	    ClosureContext* start = ClosureContext::innermost())
-	{
-	    ClosureContext* context = start;
-	    while (context && context->workingEnvironment() != env) {
-		context = ClosureContext::innermost(context->nextOut());
-	    }
-	    return context;
-	}
+		static ClosureContext *findClosureWithWorkingEnvironment(
+			const Environment *env,
+			ClosureContext *start = ClosureContext::innermost())
+		{
+			ClosureContext *context = start;
+			while (context && context->workingEnvironment() != env)
+			{
+				context = ClosureContext::innermost(context->nextOut());
+			}
+			return context;
+		}
 
-    private:
-	void runOnExit();
+	private:
+		void runOnExit();
 
-	Rboolean m_interrupts_suspended;
-	GCStackRoot<PairList> m_handlerstack;
-	GCStackRoot<PairList> m_restartstack;
-	GCStackRoot<Environment> m_working_env;
-	GCStackRoot<> m_onexit;
-    };
-}  // namespace rho
+		Rboolean m_interrupts_suspended;
+		GCStackRoot<PairList> m_handlerstack;
+		GCStackRoot<PairList> m_restartstack;
+		GCStackRoot<Environment> m_working_env;
+		GCStackRoot<> m_onexit;
+	};
+} // namespace rho
 
-SEXP Rf_dynamicfindVar(SEXP, rho::ClosureContext*);
-int Rf_framedepth(rho::ClosureContext*);
-void R_InsertRestartHandlers(rho::ClosureContext*, const char *cname);
-SEXP R_syscall(int, rho::ClosureContext*);
-int R_sysparent(int, rho::ClosureContext*);
-SEXP R_sysframe(int, rho::ClosureContext*);
-SEXP R_sysfunction(int, rho::ClosureContext*);
-rho::ClosureContext* R_GlobalContext();
+SEXP Rf_dynamicfindVar(SEXP, rho::ClosureContext *);
+int Rf_framedepth(rho::ClosureContext *);
+void R_InsertRestartHandlers(rho::ClosureContext *, const char *cname);
+SEXP R_syscall(int, rho::ClosureContext *);
+int R_sysparent(int, rho::ClosureContext *);
+SEXP R_sysframe(int, rho::ClosureContext *);
+SEXP R_sysfunction(int, rho::ClosureContext *);
+rho::ClosureContext *R_GlobalContext();
 
-#endif  // CLOSURECONTEXT_HPP
+#endif // CLOSURECONTEXT_HPP

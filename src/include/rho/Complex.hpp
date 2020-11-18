@@ -31,14 +31,14 @@
 #ifndef RHO_COMPLEX_VECTOR_HPP
 #define RHO_COMPLEX_VECTOR_HPP
 
-#include "rho/ElementTraits.hpp"
-#include "rho/Logical.hpp"
-#include "rho/RealVector.hpp"  // for isNA(double)
-#include "R_ext/Complex.h"
+#include <rho/ElementTraits.hpp>
+#include <rho/Logical.hpp>
+#include <rho/RealVector.hpp> // for isNA(double)
+#include <R_ext/Complex.h>
 
 namespace rho
 {
-    /** @brief rho's extension of CR's Rcomplex.
+	/** @brief rho's extension of CR's Rcomplex.
      *
      * This class is a wrapper around the C struct Rcomplex defined by
      * CR.
@@ -46,69 +46,76 @@ namespace rho
      * @note Backwards compatibility requires that <tt>sizeof(Complex)
      * == sizeof(Rcomplex)</tt>.
      */
-    struct Complex : public Rcomplex {
-	/** @brief Default constructor.
-	 *
-	 * Leaves data fields uninitialised.
-	 */
-	Complex()
-	{}
-
-	/** @brief Primary constructor.
-	 *
-	 * @param rl Real part.
-	 *
-	 * @param im Imaginary part.
-	 */
-	Complex(double rl, double im = 0.0)
+	struct Complex : public Rcomplex
 	{
-	    r = rl;
-	    i = im;
-	}
+		/** @brief Default constructor.
+         *
+         * Leaves data fields uninitialised.
+         */
+		Complex()
+		{
+		}
 
-	explicit Complex(Logical l) : Complex(static_cast<double>(l)) {}
+		/** @brief Primary constructor.
+         *
+         * @param rl Real part.
+         *
+         * @param im Imaginary part.
+         */
+		Complex(double rl, double im = 0.0)
+		{
+			r = rl;
+			i = im;
+		}
 
-	/** @brief Assignment from double.
-	 *
-	 * @param rhs Value to be assigned.
-	 *
-	 * @return Reference to this object.
-	 */
-	Complex& operator=(double rhs)
+		explicit Complex(Logical l) : Complex(static_cast<double>(l)) {}
+
+		/** @brief Assignment from double.
+         *
+         * @param rhs Value to be assigned.
+         *
+         * @return Reference to this object.
+         */
+		Complex &operator=(double rhs)
+		{
+			r = rhs;
+			i = 0;
+			return *this;
+		}
+	};
+
+	// Template specializations:
+	namespace ElementTraits
 	{
-	    r = rhs;
-	    i = 0;
-	    return *this;
-	}
-    };
+		template <>
+		struct MustConstruct<Complex> : boost::mpl::false_
+		{
+		};
 
-    // Template specializations:
-    namespace ElementTraits {
-	template<>
-	struct MustConstruct<Complex> : boost::mpl::false_ {};
+		template <>
+		struct MustDestruct<Complex> : boost::mpl::false_
+		{
+		};
 
-	template<>
-	struct MustDestruct<Complex> : boost::mpl::false_ {};
+		template <>
+		inline const Complex &NAFunc<Complex>::operator()() const
+		{
+			static Complex na(NA_REAL, NA_REAL);
+			return na;
+		}
 
-	template <>
-	inline const Complex& NAFunc<Complex>::operator()() const
-	{
-	    static Complex na(NA_REAL, NA_REAL);
-	    return na;
-	}
+		template <>
+		inline bool IsNA<Complex>::operator()(const Complex &c) const
+		{
+			return isNA(c.r) || isNA(c.i);
+		}
 
-	template <>
-	inline bool IsNA<Complex>::operator()(const Complex& c) const
-	{
-	    return isNA(c.r) || isNA(c.i);
-	}
+		template <>
+		inline bool IsNaOrNaN<Complex>::operator()(const Complex &c) const
+		{
+			return isNaOrNaN(c.r) || isNaOrNaN(c.i);
+		}
+	} // namespace ElementTraits
+} // namespace rho
 
-	template <>
-	inline bool IsNaOrNaN<Complex>::operator()(const Complex& c) const
-	{
-	    return isNaOrNaN(c.r) || isNaOrNaN(c.i);
-	}
-    }
-}  // namespace rho
-
-#endif  // RHO_COMPLEX_VECTOR_HPP
+#endif // RHO_COMPLEX_VECTOR_HPP

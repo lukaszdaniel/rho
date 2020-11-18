@@ -32,11 +32,12 @@
 #ifndef BAILOUT_HPP
 #define BAILOUT_HPP
 
-#include "rho/RObject.hpp"
+#include <rho/RObject.hpp>
 
-#include "rho/SEXP_downcast.hpp"
+#include <rho/SEXP_downcast.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Class used to implement indirect flow of control in R.
      *
      * Classes derived from this abstract base class are used in
@@ -59,21 +60,24 @@ namespace rho {
      * name suggests - will complete the indirect flow of control by
      * throwing a C++ exception.
      */
-    class Bailout : public RObject {
+    class Bailout : public RObject
+    {
     public:
-	/** @brief Default constructor.
-	 */
-	Bailout()
-	    : RObject(BAILSXP)
-	{}
+        /** @brief Default constructor.
+         */
+        Bailout()
+            : RObject(BAILSXP)
+        {
+        }
 
-	/** @brief Throw the corresponding C++ exception.
-	 */
-	virtual void throwException() = 0;
+        /** @brief Throw the corresponding C++ exception.
+         */
+        virtual void throwException() = 0;
+
     private:
-	// Not implemented.  Declared to prevent compiler-generated versions:
-	Bailout(const Bailout&);
-        Bailout& operator=(const Bailout&);
+        // Not implemented.  Declared to prevent compiler-generated versions:
+        Bailout(const Bailout &);
+        Bailout &operator=(const Bailout &);
     };
 } // namespace rho
 

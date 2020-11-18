@@ -28,17 +28,19 @@
  */
 
 #ifndef COMMANDTERMINATED_HPP
-#define COMMANDTERMINATED_HPP 1
+#define COMMANDTERMINATED_HPP
 
-namespace rho {
+namespace rho
+{
     /** @brief Exception thrown when a command is terminated prematurely.
      *
      * An exception of this class is thrown when evaluation of an R
      * command (i.e. a top-level function evaluation) will not be
      * completed, for example because of an error or a user interrupt.
      */
-    struct CommandTerminated {
+    struct CommandTerminated
+    {
     };
-}
+} // namespace rho
 
-#endif  // COMMANDTERMINATED_HPP
+#endif // COMMANDTERMINATED_HPP

@@ -28,50 +28,54 @@
  */
 
 #ifndef LOOPEXCEPTION_HPP
-#define LOOPEXCEPTION_HPP 1
+#define LOOPEXCEPTION_HPP
 
-#include "rho/Environment.hpp"
-#include "rho/GCRoot.hpp"
+#include <rho/Environment.hpp>
+#include <rho/GCRoot.hpp>
 
-namespace rho {
-    /** @brief Exception thrown by R commands 'break' and 'next'.
+namespace rho
+{
+	/** @brief Exception thrown by R commands 'break' and 'next'.
      */
-    class LoopException {
-    public:
-	/** @brief Constructor
-	 *
-	 * @param env Evaluation environment in which 'break' or
-	 *          'next' occurred.
-	 *
-	 * @param next_iteration true for 'next'; false for 'break'.
-	 */
-	LoopException(Environment* env, bool next_iteration)
-	    : m_environment(env), m_next(next_iteration)
-	{}
-
-	/** @brief Evaluation environment.
-	 *
-	 * @return Pointer to the evaluation environment in which
-	 *         'break' or 'next' occurred.
-	 */
-	Environment* environment() const
+	class LoopException
 	{
-	    return m_environment;
-	}
+	public:
+		/** @brief Constructor
+		 *
+		 * @param env Evaluation environment in which 'break' or
+		 *          'next' occurred.
+		 *
+		 * @param next_iteration true for 'next'; false for 'break'.
+		 */
+		LoopException(Environment *env, bool next_iteration)
+			: m_environment(env), m_next(next_iteration)
+		{
+		}
 
-	/** @brief Continue with next iteration of the loop (if any)?
-	 *
-	 * @return true if this LoopException arose from the R 'next'
-	 * command; false if it arose from 'break'.
-	 */
-	bool next() const
-	{
-	    return m_next;
-	}
-    private:
-	GCRoot<Environment> m_environment;
-	bool m_next;
-    };
-}
+		/** @brief Evaluation environment.
+		 *
+		 * @return Pointer to the evaluation environment in which
+		 *         'break' or 'next' occurred.
+		 */
+		Environment *environment() const
+		{
+			return m_environment;
+		}
 
-#endif  // LOOPEXCEPTION_HPP
+		/** @brief Continue with next iteration of the loop (if any)?
+		 *
+		 * @return true if this LoopException arose from the R 'next'
+		 * command; false if it arose from 'break'.
+		 */
+		bool next() const
+		{
+			return m_next;
+		}
+
+	private:
+		GCRoot<Environment> m_environment;
+		bool m_next;
+	};
+} // namespace rho
+
+#endif // LOOPEXCEPTION_HPP

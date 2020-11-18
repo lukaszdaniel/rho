@@ -28,11 +28,12 @@
  */
 
 #ifndef BAILOUTCONTEXT_HPP
-#define BAILOUTCONTEXT_HPP 1
+#define BAILOUTCONTEXT_HPP
 
-#include "rho/Evaluator_Context.hpp"
+#include <rho/Evaluator_Context.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Context indicating that Bailout objects are understood.
      *
      * A Context of this type is used to signal to any FunctionBase
@@ -41,12 +42,13 @@ namespace rho {
      * i.e. that the code enclosed within the BailoutContext will
      * handle a return value of this type correctly.
      */
-    struct BailoutContext : Evaluator::Context {
-	BailoutContext()
-	{
-	    setType(BAILOUT);
-	}
+    struct BailoutContext : Evaluator::Context
+    {
+        BailoutContext()
+        {
+            setType(BAILOUT);
+        }
     };
-}  // namespace rho
+} // namespace rho
 
-#endif  // BAILOUTCONTEXT_HPP
+#endif // BAILOUTCONTEXT_HPP

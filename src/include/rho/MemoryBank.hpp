@@ -32,127 +32,131 @@
 
 #include <cstring>
 #include "config.h"
-#include "rho/CellPool.hpp"
-#include "rho/SEXPTYPE.hpp"
+#include <rho/CellPool.hpp>
+#include <rho/SEXPTYPE.hpp>
 
 #define ALLOC_STATS // TODO(joqvist): Make this a configure option?
 
-namespace rho {
-    /** @brief Class to manage memory allocation and deallocation for rho.
+namespace rho
+{
+	/** @brief Class to manage memory allocation and deallocation for rho.
      * 
      * Small objects are quickly allocated from pools of various cell
      * sizes; large objects are obtained directly from the main heap.
      */
-    class MemoryBank {
-    public:
-	/** @brief Allocate a block of memory.
-	 *
-	 * @param bytes Required size in bytes of the block.
-	 *
-	 * @return a pointer to the allocated cell.
-	 *
-	 * @throws bad_alloc if a cell cannot be allocated.
-	 */
-	static void* allocate(size_t bytes) HOT_FUNCTION;
-
-	/** @brief Number of blocks currently allocated.
-	 *
-	 * @return the number of blocks of memory currently allocated.
-	 */
-	static size_t blocksAllocated() {return s_blocks_allocated;}
-
-	/** @brief Number of bytes currently allocated.
-	 *
-	 * @return the number of bytes of memory currently allocated.
-	 *
-	 * @note This refers to the total number of bytes \e requested
-	 * in blocks that have been allocated but not subsequently
-	 * deallocated.  Actual utilisation of memory in the main heap
-	 * may be greater than this, possibly by as much as a factor
-	 * of 2.
-	 */
-	static size_t bytesAllocated() {return s_bytes_allocated;}
-
-	/** @brief Integrity check.
-	 *
-	 * Aborts the program with an error message if the class is
-	 * found to be internally inconsistent.
-	 */
-	static void check();
-
-	/** @brief Deallocate a block
-	 *
-	 * @param p Pointer to a block of memory previously allocated
-	 *          by MemoryBank::allocate(), or a null pointer (in which
-	 *          case method does nothing).
-	 *
-	 * @param bytes The number of bytes in the memory block,
-	 *          i.e. the number of bytes requested in the
-	 *          corresponding call to allocate().
-	 */
-	static void deallocate(void* p, size_t bytes)
+	class MemoryBank
 	{
-	    if (!p) return;
-	    // Assumes sizeof(double) == 8:
-	    if (bytes >= s_new_threshold)
-		::operator delete(p);
-	    else s_pools[s_pooltab[(bytes + 7) >> 3]].deallocate(p);
-	    notifyDeallocation(bytes);
-	}
+	public:
+		/** @brief Allocate a block of memory.
+		 *
+		 * @param bytes Required size in bytes of the block.
+		 *
+		 * @return a pointer to the allocated cell.
+		 *
+		 * @throws bad_alloc if a cell cannot be allocated.
+		 */
+		static void *allocate(size_t bytes) HOT_FUNCTION;
 
-	/** @brief Reorganise lists of free cells.
-	 *
-	 * This is done with a view to increasing the probability that
-	 * successive allocations will lie within the same cache line
-	 * or (less importantly nowadays) memory page.
-	 */
-	static void defragment();
+		/** @brief Number of blocks currently allocated.
+		 *
+		 * @return the number of blocks of memory currently allocated.
+		 */
+		static size_t blocksAllocated() { return s_blocks_allocated; }
+
+		/** @brief Number of bytes currently allocated.
+		 *
+		 * @return the number of bytes of memory currently allocated.
+		 *
+		 * @note This refers to the total number of bytes \e requested
+		 * in blocks that have been allocated but not subsequently
+		 * deallocated.  Actual utilisation of memory in the main heap
+		 * may be greater than this, possibly by as much as a factor
+		 * of 2.
+		 */
+		static size_t bytesAllocated() { return s_bytes_allocated; }
+
+		/** @brief Integrity check.
+		 *
+		 * Aborts the program with an error message if the class is
+		 * found to be internally inconsistent.
+		 */
+		static void check();
+
+		/** @brief Deallocate a block
+		 *
+		 * @param p Pointer to a block of memory previously allocated
+		 *          by MemoryBank::allocate(), or a null pointer (in which
+		 *          case method does nothing).
+		 *
+		 * @param bytes The number of bytes in the memory block,
+		 *          i.e. the number of bytes requested in the
+		 *          corresponding call to allocate().
+		 */
+		static void deallocate(void *p, size_t bytes)
+		{
+			if (!p)
+				return;
+			// Assumes sizeof(double) == 8:
+			if (bytes >= s_new_threshold)
+				::operator delete(p);
+			else
+				s_pools[s_pooltab[(bytes + 7) >> 3]].deallocate(p);
+			notifyDeallocation(bytes);
+		}
+
+		/** @brief Reorganise lists of free cells.
+		 *
+		 * This is done with a view to increasing the probability that
+		 * successive allocations will lie within the same cache line
+		 * or (less importantly nowadays) memory page.
+		 */
+		static void defragment();
 
 #ifdef R_MEMORY_PROFILING
-	/** Set a callback to monitor allocations exceeding a threshold size.
-	 *
-	 * @param monitor This is a pointer to a function that this
-	 *          class will call when it allocates a block
-	 *          exceeding a threshold size.  The function is
-	 *          called with the first argument set to the number
-	 *          of bytes allocated.  Alternatively, monitor can be
-	 *          set to a null pointer to discontinue monitoring.
-	 *
-	 * @param threshold The monitor will only be called for
-	 *          allocations of at least this many bytes.  Ignored
-	 *          if monitor is a null pointer.
-	 *
-	 * @note This function is available only if R_MEMORY_PROFILING
-	 * is defined, e.g. by specifying option
-	 * --enable-memory-profiling to the configure script.
-	 */
-	static void setMonitor(void (*monitor)(size_t) = 0,
-			       size_t threshold = 0);
+		/** Set a callback to monitor allocations exceeding a threshold size.
+		 *
+		 * @param monitor This is a pointer to a function that this
+		 *          class will call when it allocates a block
+		 *          exceeding a threshold size.  The function is
+		 *          called with the first argument set to the number
+		 *          of bytes allocated.  Alternatively, monitor can be
+		 *          set to a null pointer to discontinue monitoring.
+		 *
+		 * @param threshold The monitor will only be called for
+		 *          allocations of at least this many bytes.  Ignored
+		 *          if monitor is a null pointer.
+		 *
+		 * @note This function is available only if R_MEMORY_PROFILING
+		 * is defined, e.g. by specifying option
+		 * --enable-memory-profiling to the configure script.
+		 */
+		static void setMonitor(void (*monitor)(size_t) = 0,
+							   size_t threshold = 0);
 #endif
-    private:
-	typedef CellPool Pool;
-	static const size_t s_num_pools = 10;
-	// We use ::operator new directly for allocations at least this big:
-	static const size_t s_new_threshold;
-	static size_t s_blocks_allocated;
-	static size_t s_bytes_allocated;
-	static Pool* s_pools;
-	static const unsigned char s_pooltab[];
+	private:
+		typedef CellPool Pool;
+		static const size_t s_num_pools = 10;
+		// We use ::operator new directly for allocations at least this big:
+		static const size_t s_new_threshold;
+		static size_t s_blocks_allocated;
+		static size_t s_bytes_allocated;
+		static Pool *s_pools;
+		static const unsigned char s_pooltab[];
 #ifdef R_MEMORY_PROFILING
-	static void (*s_monitor)(size_t);
-	static size_t s_monitor_threshold;
+		static void (*s_monitor)(size_t);
+		static size_t s_monitor_threshold;
 #endif
 
-	friend class GCNode;
-	static void notifyAllocation(size_t bytes);
+		friend class GCNode;
+		static void notifyAllocation(size_t bytes);
 
-	static void notifyDeallocation(size_t bytes);
+		static void notifyDeallocation(size_t bytes);
 
-	friend class String;
-	template<typename, SEXPTYPE>
-	friend class FixedVector;
+		friend class String;
+		template <typename, SEXPTYPE>
+		friend class FixedVector;
 
-        /** @brief Adjust the freed block statistics.
+		/** @brief Adjust the freed block statistics.
          *
          * This should be used when the entire size of a freed block is not
          * passed to the delete operator, causing inconsistent statistics for
@@ -162,18 +166,19 @@ namespace rho {
          *
          * @param actual The actual size of the freed block.
          */
-	static void adjustFreedSize(size_t original, size_t actual);
+		static void adjustFreedSize(size_t original, size_t actual);
 
-	static void adjustBytesAllocated(size_t bytes) {
-	    s_bytes_allocated += bytes;
-	}
+		static void adjustBytesAllocated(size_t bytes)
+		{
+			s_bytes_allocated += bytes;
+		}
 
-	// Initialize the static data members:
-	friend void initializeMemorySubsystem();
-	static void initialize();
+		// Initialize the static data members:
+		friend void initializeMemorySubsystem();
+		static void initialize();
 
-	MemoryBank() = delete;
-    };
-}
+		MemoryBank() = delete;
+	};
+} // namespace rho
 
 #endif /* MEMORYBANK_HPP */

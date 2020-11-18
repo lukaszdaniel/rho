@@ -28,20 +28,22 @@
  */
 
 #ifndef FUNCTIONCONTEXT_HPP
-#define FUNCTIONCONTEXT_HPP 1
+#define FUNCTIONCONTEXT_HPP
 
-#include "rho/Evaluator_Context.hpp"
-#include "rho/Expression.hpp"
-#include "rho/FunctionBase.hpp"
-#include "rho/GCStackRoot.hpp"
+#include <rho/Evaluator_Context.hpp>
+#include <rho/Expression.hpp>
+#include <rho/FunctionBase.hpp>
+#include <rho/GCStackRoot.hpp>
 
-extern "C" {
-    // Parked here temporarily:
-    extern rho::RObject* R_Srcref;
+extern "C"
+{
+	// Parked here temporarily:
+	extern rho::RObject *R_Srcref;
 }
 
-namespace rho {
-    /** @brief Context recording the invocation of a FunctionBase.
+namespace rho
+{
+	/** @brief Context recording the invocation of a FunctionBase.
      *
      * This class is the base class of ClosureContext.  A FunctionContext
      * object that is not also a ClosureContext records the invocation
@@ -51,106 +53,107 @@ namespace rho {
      * (SPECIALSXP) are not recorded; however, unlike CR, calls to
      * other BuiltInFunction objects (BUILTINSXP) are always recorded.
      */
-    class FunctionContext : public Evaluator::Context {
-    public:
-	/** @brief Constructor
-	 *
-	 * @param the_call Pointer to the call with which this Context
-	 *          is associated.
-	 *
-	 * @param call_env Pointer to the Environment in which \a
-	 *          the_call is to be evaluated.
-	 *
-	 * @param function Pointer, possibly null, to the function
-	 *          being applied.
-	 */
-	FunctionContext(const Expression* the_call, Environment* call_env,
-			const FunctionBase* function)
-	    : m_srcref(R_Srcref), m_call(the_call), m_call_env(call_env),
-	      m_function(function)
+	class FunctionContext : public Evaluator::Context
 	{
-	    setType(FUNCTION);
-	}
+	public:
+		/** @brief Constructor
+		 *
+		 * @param the_call Pointer to the call with which this Context
+		 *          is associated.
+		 *
+		 * @param call_env Pointer to the Environment in which \a
+		 *          the_call is to be evaluated.
+		 *
+		 * @param function Pointer, possibly null, to the function
+		 *          being applied.
+		 */
+		FunctionContext(const Expression *the_call, Environment *call_env,
+						const FunctionBase *function)
+			: m_srcref(R_Srcref), m_call(the_call), m_call_env(call_env),
+			  m_function(function)
+		{
+			setType(FUNCTION);
+		}
 
-	~FunctionContext() {
-	    R_Srcref = m_srcref;
-	}
+		~FunctionContext()
+		{
+			R_Srcref = m_srcref;
+		}
 
-	/** @brief The call of the Context.
-	 *
-	 * @return Pointer to the call with which the Context is
-	 * associated.
-	 */
-	const Expression* call() const
-	{
-	    return m_call;
-	}
+		/** @brief The call of the Context.
+		 *
+		 * @return Pointer to the call with which the Context is
+		 * associated.
+		 */
+		const Expression *call() const
+		{
+			return m_call;
+		}
 
-	/** @brief The call Environment.
-	 *
-	 * @return Pointer to the Environment in which the Context's
-	 * call is to be evaluated.
-	 */
-	Environment* callEnvironment() const
-	{
-	    return m_call_env;
-	}
+		/** @brief The call Environment.
+		 *
+		 * @return Pointer to the Environment in which the Context's
+		 * call is to be evaluated.
+		 */
+		Environment *callEnvironment() const
+		{
+			return m_call_env;
+		}
 
-	/** @brief RC-style call Environment.
-	 *
-	 * @return Pointer to the Environment in which the Context's
-	 * call is to be evaluated.
-	 */
-	Environment* sysParent() const
-	{
-	    return callEnvironment();
-	}
+		/** @brief RC-style call Environment.
+		 *
+		 * @return Pointer to the Environment in which the Context's
+		 * call is to be evaluated.
+		 */
+		Environment *sysParent() const
+		{
+			return callEnvironment();
+		}
 
-	/** @brief Function being applied.
-	 *
-	 * @return Pointer, possibly null, to the function being
-	 * applied in this Context.
-	 */
-	const FunctionBase* function() const
-	{
-	    return m_function;
-	}
-	inline const RObject* callfun() const
-	{
-		return m_function->clone();
-	}
+		/** @brief Function being applied.
+		 *
+		 * @return Pointer, possibly null, to the function being
+		 * applied in this Context.
+		 */
+		const FunctionBase *function() const
+		{
+			return m_function;
+		}
+		inline const RObject *callfun() const
+		{
+			return m_function->clone();
+		}
 
-	/** @brief Search outwards for a FunctionContext.
-	 *
-	 * This function works outwards from the Evaluator::Context \a
-	 * start until it finds a FunctionContext (possibly \a start
-	 * itself), and returns a pointer to that FunctionContext.
-	 *
-	 * @param start The Evaluator::Context from which the search
-	 * is to start.
-	 *
-	 * @return Pointer to the innermost FunctionContext found, or
-	 * a null pointer if no such context was found.
-	 */
-	static FunctionContext* innermost(Evaluator::Context* start
-					  = Evaluator::Context::innermost());
+		/** @brief Search outwards for a FunctionContext.
+		 *
+		 * This function works outwards from the Evaluator::Context \a
+		 * start until it finds a FunctionContext (possibly \a start
+		 * itself), and returns a pointer to that FunctionContext.
+		 *
+		 * @param start The Evaluator::Context from which the search
+		 * is to start.
+		 *
+		 * @return Pointer to the innermost FunctionContext found, or
+		 * a null pointer if no such context was found.
+		 */
+		static FunctionContext *innermost(Evaluator::Context *start = Evaluator::Context::innermost());
 
-	/** @brief Source location associated with this Context.
-	 *
-	 * @return Pointer, possibly null, to the source location
-	 * associated with this Context.
-	 */
-	RObject* sourceLocation() const
-	{
-	    return m_srcref;
-	}
+		/** @brief Source location associated with this Context.
+		 *
+		 * @return Pointer, possibly null, to the source location
+		 * associated with this Context.
+		 */
+		RObject *sourceLocation() const
+		{
+			return m_srcref;
+		}
 
-    private:
-	GCStackRoot<> m_srcref;
-	GCStackRoot<const Expression> m_call;
-	GCStackRoot<Environment> m_call_env;
-	GCStackRoot<const FunctionBase> m_function;
-    };
-}  // namespace rho
+	private:
+		GCStackRoot<> m_srcref;
+		GCStackRoot<const Expression> m_call;
+		GCStackRoot<Environment> m_call_env;
+		GCStackRoot<const FunctionBase> m_function;
+	};
+} // namespace rho
 
-#endif  // FUNCTIONCONTEXT_HPP
+#endif // FUNCTIONCONTEXT_HPP

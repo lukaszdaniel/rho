@@ -24,19 +24,20 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file DotInternal.h
+/** @file DotInternal.hpp
  *
  * @brief Table of functions invoked \e via <tt>.Internal()</tt>.
  */
 
-#ifndef DOTINTERNAL_H
-#define DOTINTERNAL_H
+#ifndef DOTINTERNAL_HPP
+#define DOTINTERNAL_HPP
 
-#include "rho/RObject.hpp"
-#include "rho/BuiltInFunction.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/RObject.hpp>
+#include <rho/BuiltInFunction.hpp>
+#include <rho/SEXP_downcast.hpp>
 
-extern "C" {
+extern "C"
+{
 
     /** @brief Get function accessed via <tt>.Internal()</tt>.
      *
@@ -48,9 +49,9 @@ extern "C" {
      */
     inline SEXP INTERNAL(SEXP x)
     {
-	using namespace rho;
-	const Symbol* sym = SEXP_downcast<Symbol*>(x);
-	return BuiltInFunction::obtainInternal(sym);
+        using namespace rho;
+        const Symbol *sym = SEXP_downcast<Symbol *>(x);
+        return BuiltInFunction::obtainInternal(sym);
     }
 
     /** @brief Associate a Symbol with a <tt>.Internal()</tt> function.
@@ -65,4 +66,4 @@ extern "C" {
     void SET_INTERNAL(SEXP x, SEXP v);
 }
 
-#endif /* DOTINTERNAL_H */
+#endif /* DOTINTERNAL_HPP */

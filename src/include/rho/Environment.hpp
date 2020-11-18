@@ -24,23 +24,22 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file Environment.h
+/** @file Environment.hpp
  * @brief Class rho::Environment and associated C interface.
  */
 
-#ifndef RENVIRONMENT_H
-#define RENVIRONMENT_H
+#ifndef RENVIRONMENT_HPP
+#define RENVIRONMENT_HPP
 
-#include "rho/RObject.hpp"
+#include <rho/RObject.hpp>
 
-extern "C"
-void Rf_InitGlobalEnv();
+extern "C" void Rf_InitGlobalEnv();
 
-#include "rho/Frame.hpp"
-#include "rho/GCStackRoot.hpp"
-#include "rho/PairList.hpp"
-#include "rho/StringVector.hpp"
-#include "rho/Symbol.hpp"
+#include <rho/Frame.hpp>
+#include <rho/GCStackRoot.hpp>
+#include <rho/PairList.hpp>
+#include <rho/StringVector.hpp>
+#include <rho/Symbol.hpp>
 
 /** @def DETACH_LOCAL_FRAMES
  *
@@ -60,10 +59,11 @@ void Rf_InitGlobalEnv();
 #define DETACH_LOCAL_FRAMES
 #endif
 
-namespace rho {
-    class FunctionBase;
+namespace rho
+{
+	class FunctionBase;
 
-    /** @brief Mapping from Symbols to R objects.
+	/** @brief Mapping from Symbols to R objects.
      *
      * An Environment has an associated Frame, which defines a mapping
      * from (pointers to) rho::Symbol objects to (pointers to)
@@ -80,475 +80,493 @@ namespace rho {
      * monitoring the event that the program \e fails to find a
      * binding for a Symbol.
      */
-    class Environment : public RObject {
-    public:
-	/** @brief Object authorising R 'break' and 'next' commands.
-	 *
-	 * LoopScope objects must be declared on the processor stack
-	 * (i.e. as C++ automatic variables).  Each Environment object
-	 * keeps track of the number of LoopScope objects associated
-	 * with it.  The R commands 'break' and 'next' are legal only
-	 * when the evaluation Environment has at least one LoopScope
-	 * in existence; this can be determined by calling
-	 * Environment::loopActive().
-	 */
-	class LoopScope {
+	class Environment : public RObject
+	{
 	public:
-	    /** @brief Constructor.
-	     *
-	     * @param env Pointer to the Environment with which this
-	     *          LoopScope is to be associated.
-	     */
-	    LoopScope(Environment* env)
-		: m_environment(env), m_prev_state(env->m_in_loop)
-	    {
-		env->m_in_loop = true;
-	    }
+		/** @brief Object authorising R 'break' and 'next' commands.
+         *
+         * LoopScope objects must be declared on the processor stack
+         * (i.e. as C++ automatic variables).  Each Environment object
+         * keeps track of the number of LoopScope objects associated
+         * with it.  The R commands 'break' and 'next' are legal only
+         * when the evaluation Environment has at least one LoopScope
+         * in existence; this can be determined by calling
+         * Environment::loopActive().
+         */
+		class LoopScope
+		{
+		public:
+			/** @brief Constructor.
+	         *
+	         * @param env Pointer to the Environment with which this
+	         *          LoopScope is to be associated.
+	         */
+			LoopScope(Environment *env)
+				: m_environment(env), m_prev_state(env->m_in_loop)
+			{
+				env->m_in_loop = true;
+			}
 
-	    ~LoopScope()
-	    {
-		m_environment->m_in_loop = m_prev_state;
-	    }
-	private:
-	    GCStackRoot<Environment> m_environment;
-	    bool m_prev_state;
-	};
+			~LoopScope()
+			{
+				m_environment->m_in_loop = m_prev_state;
+			}
 
-	/** @brief Object authorising R 'return' command.
-	 *
-	 * ReturnScope objects must be declared on the processor stack
-	 * (i.e. as C++ automatic variables).  Each Environment object
-	 * keeps track of the number of ReturnScope objects associated
-	 * with it.  The R command 'return' is legal only when the
-	 * evaluation Environment has at least one ReturnScope in
-	 * existence; this can be determined by calling
-	 * Environment::canReturn().  More generally, a transfer of
-	 * control to a specified Environment using ReturnException
-	 * will succeed only if canReturn() is true.
-	 */
-	class ReturnScope {
-	public:
-	    /** @brief Constructor.
-	     *
-	     * @param env Pointer to the Environment with which this
-	     *          ReturnScope is to be associated.
-	     */
-	    ReturnScope(Environment* env)
-		: m_environment(env), m_prev_state(env->m_can_return)
-	    {
-		env->m_can_return = true;
-	    }
+		private:
+			GCStackRoot<Environment> m_environment;
+			bool m_prev_state;
+		};
 
-	    ~ReturnScope()
-	    {
-		m_environment->m_can_return = m_prev_state;
-	    }
-	private:
-	    GCStackRoot<Environment> m_environment;
-	    bool m_prev_state;
-	};
+		/** @brief Object authorising R 'return' command.
+         *
+         * ReturnScope objects must be declared on the processor stack
+         * (i.e. as C++ automatic variables).  Each Environment object
+         * keeps track of the number of ReturnScope objects associated
+         * with it.  The R command 'return' is legal only when the
+         * evaluation Environment has at least one ReturnScope in
+         * existence; this can be determined by calling
+         * Environment::canReturn().  More generally, a transfer of
+         * control to a specified Environment using ReturnException
+         * will succeed only if canReturn() is true.
+         */
+		class ReturnScope
+		{
+		public:
+			/** @brief Constructor.
+	         *
+	         * @param env Pointer to the Environment with which this
+	         *          ReturnScope is to be associated.
+	         */
+			ReturnScope(Environment *env)
+				: m_environment(env), m_prev_state(env->m_can_return)
+			{
+				env->m_can_return = true;
+			}
 
-	/** @brief Constructor.
-	 *
-	 * @param enclosing Pointer to the enclosing environment.
-	 *
-	 * @param frame Pointer to the Frame to be used by the
-	 *          constructed Environment.
-	 */
-	Environment(Environment* enclosing, Frame* frame)
-	    : RObject(ENVSXP),
-	      m_single_stepping(false), m_locked(false), m_on_search_path(false),
-	      m_leaked(false), m_in_loop(false), m_can_return(false)
-	{
-            m_enclosing = enclosing;
-            m_frame = frame;
-        }
+			~ReturnScope()
+			{
+				m_environment->m_can_return = m_prev_state;
+			}
 
-	/** @brief Base environment.
-	 *
-	 * @return Pointer to the base environment.
-	 */
-	static Environment* base()
-	{
-            static GCRoot<Environment> base(createBaseEnvironment());
-	    return base;
-	}
+		private:
+			GCStackRoot<Environment> m_environment;
+			bool m_prev_state;
+		};
 
-	/** @brief Base namespace.
-	 *
-	 * @return Pointer to the base namespace.
-	 */
-	static Environment* baseNamespace()
-	{
-            static GCRoot<Environment> base_namespace(createBaseNamespace());
-            return base_namespace;
-	}
+		/** @brief Constructor.
+         *
+         * @param enclosing Pointer to the enclosing environment.
+         *
+         * @param frame Pointer to the Frame to be used by the
+         *          constructed Environment.
+         */
+		Environment(Environment *enclosing, Frame *frame)
+			: RObject(ENVSXP),
+			  m_single_stepping(false), m_locked(false), m_on_search_path(false),
+			  m_leaked(false), m_in_loop(false), m_can_return(false)
+		{
+			m_enclosing = enclosing;
+			m_frame = frame;
+		}
 
-	/** @brief Is R 'return' currently legal?
-	 *
-	 * @return true iff there is currently at least one ReturnScope
-	 * object in existence associated with this Environment, so
-	 * that a transfer of control using ReturnException will
-	 * succeed.
-	 */
-	bool canReturn() const
-	{
-	    return m_can_return;
-	}
+		/** @brief Base environment.
+         *
+         * @return Pointer to the base environment.
+         */
+		static Environment *base()
+		{
+			static GCRoot<Environment> base(createBaseEnvironment());
+			return base;
+		}
 
-	/** @brief Empty environment.
-	 *
-	 * CR accords a special status to the empty environment,
-	 * R_EmptyEnv, which is an Environment whose Frame contains no
-	 * Bindings, and which has no enclosing Environment.  In CR
-	 * the search for a Symbol Binding terminates when it reaches
-	 * the empty environment, without looking inside it.  In rho,
-	 * although the empty environment still exists (for backwards
-	 * compatibility)), it is not handled specially.  If the
-	 * search for a Symbol reaches the empty environment, rho
-	 * will look for the Symbol inside it - unsuccessfully of
-	 * course - and the search then terminates because there is no
-	 * enclosing Environment.
-	 *
-	 * @return Pointer to the empty environment.
-	 *
-	 * @note rho's own code does not include tests to prohibit
-	 * the creation of bindings within the empty environment, but
-	 * the effect of doing so is undefined.
-	 */
-	static Environment* empty()
-	{
-            static GCRoot<Environment> empty(createEmptyEnvironment());
-            return empty;
-	}
+		/** @brief Base namespace.
+         *
+         * @return Pointer to the base namespace.
+         */
+		static Environment *baseNamespace()
+		{
+			static GCRoot<Environment> base_namespace(createBaseNamespace());
+			return base_namespace;
+		}
 
-	/** @brief Access the enclosing Environment.
-	 *
-	 * @return pointer to the enclosing Environment.
-	 */
-	Environment* enclosingEnvironment() const
-	{
-	    return m_enclosing;
-	}
+		/** @brief Is R 'return' currently legal?
+         *
+         * @return true iff there is currently at least one ReturnScope
+         * object in existence associated with this Environment, so
+         * that a transfer of control using ReturnException will
+         * succeed.
+         */
+		bool canReturn() const
+		{
+			return m_can_return;
+		}
 
-	/** @brief Search for a Binding for a Symbol.
-	 *
-	 * The search starts in this Environment; if no Binding is
-	 * found there, the search will proceed through successive
-	 * enclosing Environments.
+		/** @brief Empty environment.
+         *
+         * CR accords a special status to the empty environment,
+         * R_EmptyEnv, which is an Environment whose Frame contains no
+         * Bindings, and which has no enclosing Environment.  In CR
+         * the search for a Symbol Binding terminates when it reaches
+         * the empty environment, without looking inside it.  In rho,
+         * although the empty environment still exists (for backwards
+         * compatibility)), it is not handled specially.  If the
+         * search for a Symbol reaches the empty environment, rho
+         * will look for the Symbol inside it - unsuccessfully of
+         * course - and the search then terminates because there is no
+         * enclosing Environment.
+         *
+         * @return Pointer to the empty environment.
+         *
+         * @note rho's own code does not include tests to prohibit
+         * the creation of bindings within the empty environment, but
+         * the effect of doing so is undefined.
+         */
+		static Environment *empty()
+		{
+			static GCRoot<Environment> empty(createEmptyEnvironment());
+			return empty;
+		}
 
-	 * @param symbol Pointer to the Symbol for which a Binding is
-	 *          sought.
-	 *
-	 * @return A pointer to the sought Binding, or a null pointer if no
+		/** @brief Access the enclosing Environment.
+         *
+         * @return pointer to the enclosing Environment.
+         */
+		Environment *enclosingEnvironment() const
+		{
+			return m_enclosing;
+		}
+
+		/** @brief Search for a Binding for a Symbol.
+         *
+         * The search starts in this Environment; if no Binding is
+         * found there, the search will proceed through successive
+         * enclosing Environments.
+
+         * @param symbol Pointer to the Symbol for which a Binding is
+         *          sought.
+         *
+         * @return A pointer to the sought Binding, or a null pointer if no
          *         Binding was found.
-	 */
-	Frame::Binding* findBinding(const Symbol* symbol) HOT_FUNCTION;
+         */
+		Frame::Binding *findBinding(const Symbol *symbol) HOT_FUNCTION;
 
-	/** @brief Search for a Binding for a Symbol (const variant).
-	 *
-	 * The search starts in this Environment; if no Binding is
-	 * found there, the search will proceed through successive
-	 * enclosing Environments.
+		/** @brief Search for a Binding for a Symbol (const variant).
+         *
+         * The search starts in this Environment; if no Binding is
+         * found there, the search will proceed through successive
+         * enclosing Environments.
 
-	 * @param symbol Pointer to the Symbol for which a Binding is
-	 *          sought.
-	 *
-	 * @return A pointer to the sought Binding, or a null pointer if no
+         * @param symbol Pointer to the Symbol for which a Binding is
+         *          sought.
+         *
+         * @return A pointer to the sought Binding, or a null pointer if no
          *         Binding was found.
-	 */
-	const Frame::Binding* findBinding(const Symbol* symbol) const
-	{
-	    return const_cast<Environment*>(this)->findBinding(symbol);
-	}
+         */
+		const Frame::Binding *findBinding(const Symbol *symbol) const
+		{
+			return const_cast<Environment *>(this)->findBinding(symbol);
+		}
 
-	/** @brief Locate a namespace environment from its
-	 *   specification.
-	 *
-	 * @param spec Non-null pointer to the specification of a
-	 * namespace environment (as returned by namespaceSpec() ).
-	 *
-	 * @return A pointer to the namespace environment
-	 * corresponding to \a spec .  This namespace is loaded if
-	 * necessary, and deserialization fails if loading is
-	 * unsuccessful.
-	 *
-	 * @todo Having deserialization fail entirely in the event that
-	 * the namespace cannot be loaded seems insufficiently robust,
-	 * but follows CR practice.
-	 */
-	static Environment* findNamespace(const StringVector* spec);
+		/** @brief Locate a namespace environment from its
+         *   specification.
+         *
+         * @param spec Non-null pointer to the specification of a
+         * namespace environment (as returned by namespaceSpec() ).
+         *
+         * @return A pointer to the namespace environment
+         * corresponding to \a spec .  This namespace is loaded if
+         * necessary, and deserialization fails if loading is
+         * unsuccessful.
+         *
+         * @todo Having deserialization fail entirely in the event that
+         * the namespace cannot be loaded seems insufficiently robust,
+         * but follows CR practice.
+         */
+		static Environment *findNamespace(const StringVector *spec);
 
-	/** @brief Locate a package environment from its name.
-	 *
-	 * @param name Name of a package, prefixed by <tt>package:</tt>.
-	 *
-	 * @return A pointer to the package environment corresponding
-	 * to \a name .  This package is loaded if necessary.  If
-	 * loading fails, the function returns a pointer to the global
-	 * Environment (<tt>Environment::global()</tt>): this follows
-	 * CR practice.
-	 */
-	static Environment* findPackage(const std::string& name);
+		/** @brief Locate a package environment from its name.
+         *
+         * @param name Name of a package, prefixed by <tt>package:</tt>.
+         *
+         * @return A pointer to the package environment corresponding
+         * to \a name .  This package is loaded if necessary.  If
+         * loading fails, the function returns a pointer to the global
+         * Environment (<tt>Environment::global()</tt>): this follows
+         * CR practice.
+         */
+		static Environment *findPackage(const std::string &name);
 
-	/** @brief Access the Environment's Frame.
-	 *
-	 * @return pointer to the Environment's Frame.
-	 */
-	Frame* frame()
-	{
-	    return m_frame;
-	}
+		/** @brief Access the Environment's Frame.
+         *
+         * @return pointer to the Environment's Frame.
+         */
+		Frame *frame()
+		{
+			return m_frame;
+		}
 
-	/** @brief Access the Environment's Frame (const variant).
-	 *
-	 * @return const pointer to the Environment's Frame.
-	 */
-	const Frame* frame() const
-	{
-	    return m_frame;
-	}
+		/** @brief Access the Environment's Frame (const variant).
+         *
+         * @return const pointer to the Environment's Frame.
+         */
+		const Frame *frame() const
+		{
+			return m_frame;
+		}
 
-	/** @brief Global environment.
-	 *
-	 * @return Pointer to the global environment.
-	 */
-	static Environment* global()
-	{
-            static GCRoot<Environment> global(createGlobalEnvironment());
-	    return global;
-	}
+		/** @brief Global environment.
+         *
+         * @return Pointer to the global environment.
+         */
+		static Environment *global()
+		{
+			static GCRoot<Environment> global(createGlobalEnvironment());
+			return global;
+		}
 
-	/** @brief Is R 'break' or 'next' currently legal?
-	 *
-	 * @return true iff there is currently at least one LoopScope
-	 * object in existence associated with this Environment.
-	 */
-	bool loopActive() const
-	{
-	    return m_in_loop;
-	}
+		/** @brief Is R 'break' or 'next' currently legal?
+         *
+         * @return true iff there is currently at least one LoopScope
+         * object in existence associated with this Environment.
+         */
+		bool loopActive() const
+		{
+			return m_in_loop;
+		}
 
-	/** @brief Disconnect the Environment from its Frame, if safe.
-	 *
-	 * Just before the application of a Closure returns, this
-	 * function is called on the local Environment of the Closure.
-	 * If it appears that the Environment will no longer be
-	 * reachable after the Closure returns (i.e., the Environment
-	 * is not 'leaked'), it detaches the Environment from its
-	 * Frame.  This breaks possible loops in the GCNode/GCEdge
-	 * graph, thus enabling the Environment to be
-	 * garbage-collected immediately.
-	 *
-	 * @note This function is an inlined no-op unless the
-	 * preprocessor variable DETACH_LOCAL_FRAMES is defined in
-	 * Environment.h.
-	 */
-	void maybeDetachFrame()
-	{
+		/** @brief Disconnect the Environment from its Frame, if safe.
+         *
+         * Just before the application of a Closure returns, this
+         * function is called on the local Environment of the Closure.
+         * If it appears that the Environment will no longer be
+         * reachable after the Closure returns (i.e., the Environment
+         * is not 'leaked'), it detaches the Environment from its
+         * Frame.  This breaks possible loops in the GCNode/GCEdge
+         * graph, thus enabling the Environment to be
+         * garbage-collected immediately.
+         *
+         * @note This function is an inlined no-op unless the
+         * preprocessor variable DETACH_LOCAL_FRAMES is defined in
+         * Environment.h.
+         */
+		void maybeDetachFrame()
+		{
 #ifdef DETACH_LOCAL_FRAMES
-	    if (!m_leaked)
-		detachFrame();
+			if (!m_leaked)
+				detachFrame();
 #endif
-	}
+		}
 
-	/** @brief Look for Environment objects that may have
-	 *  'leaked'.
-	 *
-	 * This function determines if any Environment objects are
-	 * reachable from \a node, and if so marks them as 'leaked'.
-	 * It is called in respect of any objects that are 'exported'
-	 * from a Closure call, for example the return value of the
-	 * call, and the objects of any non-local assignments within
-	 * the call.
-	 *
-	 * @param node Pointer (possibly null) to the object to be
-	 * scrutinised.
-	 *
-	 * @note This function is an inlined no-op unless the
-	 * preprocessor variable DETACH_LOCAL_FRAMES is defined in
-	 * Environment.h.
-	 */
-	static void monitorLeaks(const GCNode* node)
-	{
+		/** @brief Look for Environment objects that may have
+         *  'leaked'.
+         *
+         * This function determines if any Environment objects are
+         * reachable from \a node, and if so marks them as 'leaked'.
+         * It is called in respect of any objects that are 'exported'
+         * from a Closure call, for example the return value of the
+         * call, and the objects of any non-local assignments within
+         * the call.
+         *
+         * @param node Pointer (possibly null) to the object to be
+         * scrutinised.
+         *
+         * @note This function is an inlined no-op unless the
+         * preprocessor variable DETACH_LOCAL_FRAMES is defined in
+         * Environment.h.
+         */
+		static void monitorLeaks(const GCNode *node)
+		{
 #ifdef DETACH_LOCAL_FRAMES
-	    if (node) {
-		LeakMonitor monitor;
-		monitor(node);
-	    }
+			if (node)
+			{
+				LeakMonitor monitor;
+				monitor(node);
+			}
 #endif
-	}
+		}
 
-	/** @brief Get namespace spec (if applicable).
-	 *
-	 * @return If this Environment is a namespace environment,
-	 * this function returns the namespace specification.
-	 * Otherwise returns a null pointer.
-	 */
-	const StringVector* namespaceSpec() const;
+		/** @brief Get namespace spec (if applicable).
+         *
+         * @return If this Environment is a namespace environment,
+         * this function returns the namespace specification.
+         * Otherwise returns a null pointer.
+         */
+		const StringVector *namespaceSpec() const;
 
-	/** @brief Get package name (if any).
-	 *
-	 * @return If this Environment is the Environment of a package, this
-	 * function returns the name of the package (of the form
-	 * "package:foo") as the first element of a StringVector.
-	 * Otherwise returns a null pointer.
-	 */
-	const StringVector* packageName() const;
+		/** @brief Get package name (if any).
+         *
+         * @return If this Environment is the Environment of a package, this
+         * function returns the name of the package (of the form
+         * "package:foo") as the first element of a StringVector.
+         * Otherwise returns a null pointer.
+         */
+		const StringVector *packageName() const;
 
-	/** @brief Replace the enclosing environment.
-	 *
-	 * @param new_enclos Pointer to the environment now to be
-	 *          considered to enclose this Environment.
-	 *
-	 * @deprecated Retained for use in deserialization and in the
-	 * R function \c parent.env<- (itself deprecated).  For other
-	 * purposes, use instead slotBehind() and skipEnclosing(),
-	 * which ensure that the 'enclosing' relationship remains
-	 * acyclic.
-	 */
-	void setEnclosingEnvironment(Environment* new_enclos);
+		/** @brief Replace the enclosing environment.
+         *
+         * @param new_enclos Pointer to the environment now to be
+         *          considered to enclose this Environment.
+         *
+         * @deprecated Retained for use in deserialization and in the
+         * R function \c parent.env<- (itself deprecated).  For other
+         * purposes, use instead slotBehind() and skipEnclosing(),
+         * which ensure that the 'enclosing' relationship remains
+         * acyclic.
+         */
+		void setEnclosingEnvironment(Environment *new_enclos);
 
-	/** @brief Set single-stepping status
-	 *
-	 * @param on The required single-stepping status (true =
-	 *           enabled).
-	 */
-	void setSingleStepping(bool on)
-	{
-	    m_single_stepping = on;
-	}
+		/** @brief Set single-stepping status
+         *
+         * @param on The required single-stepping status (true =
+         *           enabled).
+         */
+		void setSingleStepping(bool on)
+		{
+			m_single_stepping = on;
+		}
 
-	/** @brief Get single-stepping status.
-	 *
-	 * @return true if debugger should single-step within this
-	 * Environment.
-	 */
-	bool singleStepping() const
-	{
-	    return m_single_stepping;
-	}
+		/** @brief Get single-stepping status.
+         *
+         * @return true if debugger should single-step within this
+         * Environment.
+         */
+		bool singleStepping() const
+		{
+			return m_single_stepping;
+		}
 
-        /** @brief Attach a copy of this environment to the search path.
-	 *
-	 * @param pos The position in the search list to attach to.
-	 *
-	 * @param name The name to used for the attached environment.
-	 *
-	 * @return The environment that was attached.
-	 */
-	Environment* attachToSearchPath(int pos, StringVector* name);
+		/** @brief Attach a copy of this environment to the search path.
+         *
+         * @param pos The position in the search list to attach to.
+         *
+         * @param name The name to used for the attached environment.
+         *
+         * @return The environment that was attached.
+         */
+		Environment *attachToSearchPath(int pos, StringVector *name);
 
-	/** @brief Detach an element from the search path.
-	 *
-	 * @param pos The position in the search list to detach.
-	 *
-	 * @return The environment that was detached.
-	 */
-	static Environment* detachFromSearchPath(int pos);
+		/** @brief Detach an element from the search path.
+         *
+         * @param pos The position in the search list to detach.
+         *
+         * @return The environment that was detached.
+         */
+		static Environment *detachFromSearchPath(int pos);
 
-	/** @brief The name by which this type is known in R.
-	 *
-	 * @return The name by which this type is known in R.
-	 */
-	static const char* staticTypeName()
-	{
-	    return "environment";
-	}
+		/** @brief The name by which this type is known in R.
+         *
+         * @return The name by which this type is known in R.
+         */
+		static const char *staticTypeName()
+		{
+			return "environment";
+		}
 
-	// Virtual functions of RObject:
-	unsigned int packGPBits() const override;
-	const char* typeName() const override;
-	void unpackGPBits(unsigned int gpbits) override;
+		// Virtual functions of RObject:
+		unsigned int packGPBits() const override;
+		const char *typeName() const override;
+		void unpackGPBits(unsigned int gpbits) override;
 
-	// Virtual functions of GCNode:
-	void visitReferents(const_visitor* v) const override;
+		// Virtual functions of GCNode:
+		void visitReferents(const_visitor *v) const override;
 
-	/** @brief Not for general use.
-	 *
-	 * (Used by downcast_to_env to report use of NULL environment.)
-	 */
-	NORET static void nullEnvironmentError();
-    protected:
-	// Virtual function of GCNode:
-	void detachReferents() override;
-    private:
-	friend class Frame;
+		/** @brief Not for general use.
+         *
+         * (Used by downcast_to_env to report use of NULL environment.)
+         */
+		NORET static void nullEnvironmentError();
 
-	// PACKAGE_ENV because PACKAGE is defined (to "R") as a macro
-	// within config.h .
-	enum S11nType {EMPTY = 0, BASE, BASENAMESPACE,
-		       GLOBAL, PACKAGE_ENV, NAMESPACE, OTHER};
+	protected:
+		// Virtual function of GCNode:
+		void detachReferents() override;
 
-	struct LeakMonitor : public GCNode::const_visitor {
-	    LeakMonitor()
-	    {}
+	private:
+		friend class Frame;
 
-	    // Virtual function of const_visitor:
-	    void operator()(const GCNode* node) override;
+		// PACKAGE_ENV because PACKAGE is defined (to "R") as a macro
+		// within config.h .
+		enum S11nType
+		{
+			EMPTY = 0,
+			BASE,
+			BASENAMESPACE,
+			GLOBAL,
+			PACKAGE_ENV,
+			NAMESPACE,
+			OTHER
+		};
+
+		struct LeakMonitor : public GCNode::const_visitor
+		{
+			LeakMonitor()
+			{
+			}
+
+			// Virtual function of const_visitor:
+			void operator()(const GCNode *node) override;
+		};
+
+		// The class maintains a cache of Symbol Bindings found along
+		// the search path:
+		class Cache;
+		static Cache *searchPathCache();
+		static Cache *createSearchPathCache();
+
+		// Predefined environments:
+		static Environment *createBaseEnvironment();
+		static Environment *createBaseNamespace();
+		static Environment *createEmptyEnvironment();
+		static Environment *createGlobalEnvironment();
+
+		GCEdge<Environment> m_enclosing;
+		GCEdge<Frame> m_frame;
+		bool m_single_stepping;
+		bool m_locked;
+		bool m_on_search_path;
+		// For local environments, m_leaked is set to true to signify
+		// that the environment may continue to be reachable after the
+		// return of the Closure call that created it.  It has no
+		// particular meaning for non-local environments.
+		mutable bool m_leaked;
+		bool m_in_loop;
+		bool m_can_return;
+
+		// Not (yet) implemented.  Declared to prevent
+		// compiler-generated versions:
+		Environment(const Environment &);
+		Environment &operator=(const Environment &);
+
+		// Declared private to ensure that Environment objects are
+		// created only using 'new':
+		~Environment()
+		{
+			setOnSearchPath(false);
+		}
+
+		void detachFrame();
+
+		// Remove any mapping of 'sym' from the search path cache.  If called
+		// with a null pointer, clear the cache entirely.
+		static void flushFromSearchPathCache(const Symbol *sym);
+
+		static void initialize();
+		friend void ::Rf_InitGlobalEnv();
+
+		bool isSearchPathCachePortal() const
+		{
+			return (this == global());
+		}
+
+		// Set whether or not this Environment is a participant in the search
+		// list cache:
+		void setOnSearchPath(bool status);
+
+		// Warn about package possibly not being available when
+		// loading, and extract package name.
+		static const char *package_s11n_aux(const StringVector *pkg_name);
 	};
 
-	// The class maintains a cache of Symbol Bindings found along
-	// the search path:
-        class Cache;
-	static Cache* searchPathCache();
-        static Cache* createSearchPathCache();
-
-	// Predefined environments:
-	static Environment* createBaseEnvironment();
-	static Environment* createBaseNamespace();
-	static Environment* createEmptyEnvironment();
-	static Environment* createGlobalEnvironment();
-
-	GCEdge<Environment> m_enclosing;
-	GCEdge<Frame> m_frame;
-	bool m_single_stepping;
-	bool m_locked;
-	bool m_on_search_path;
-	// For local environments, m_leaked is set to true to signify
-	// that the environment may continue to be reachable after the
-	// return of the Closure call that created it.  It has no
-	// particular meaning for non-local environments.
-	mutable bool m_leaked;
-	bool m_in_loop;
-	bool m_can_return;
-
-	// Not (yet) implemented.  Declared to prevent
-	// compiler-generated versions:
-	Environment(const Environment&);
-	Environment& operator=(const Environment&);
-
-	// Declared private to ensure that Environment objects are
-	// created only using 'new':
-	~Environment()
-	{
-	    setOnSearchPath(false);
-	}
-
-	void detachFrame();
-
-	// Remove any mapping of 'sym' from the search path cache.  If called
-        // with a null pointer, clear the cache entirely.
-	static void flushFromSearchPathCache(const Symbol* sym);
-
-	static void initialize();
-        friend void ::Rf_InitGlobalEnv();
-
-	bool isSearchPathCachePortal() const
-	{
-          return (this == global());
-	}
-
-	// Set whether or not this Environment is a participant in the search
-	// list cache:
-        void setOnSearchPath(bool status);
-
-	// Warn about package possibly not being available when
-	// loading, and extract package name.
-	static const char* package_s11n_aux(const StringVector* pkg_name);
-    };
-
-    /** @brief Search for a Binding of a Symbol to a FunctionBase.
+	/** @brief Search for a Binding of a Symbol to a FunctionBase.
      *
      * This function looks for a Binding of \a symbol, and tests
      * whether the Binding's value is a FunctionBase.
@@ -585,10 +603,10 @@ namespace rho {
      * @return Returns the sought function if a Binding to a FunctionBase was
      *         found.  Otherwise returns null.
      */
-    FunctionBase*
-    findFunction(const Symbol* symbol, Environment* env, bool inherits = true);
+	FunctionBase *
+	findFunction(const Symbol *symbol, Environment *env, bool inherits = true);
 
-    /** @brief Search for a Binding whose value satisfies a predicate.
+	/** @brief Search for a Binding whose value satisfies a predicate.
      *
      * This function looks for a Binding of \a symbol, and tests
      * whether the Binding's value satisfies a predicate \a pred.
@@ -632,96 +650,104 @@ namespace rho {
      *   the result of evaluating the Promise instead.  If no Binding
      *   satisfying the predicate was found, returns null.
      */
-    template <typename UnaryPredicate>
-    RObject* findTestedValue(const Symbol* symbol, Environment* env,
-			     UnaryPredicate pred, bool inherits)
-    {
-	using namespace std;
+	template <typename UnaryPredicate>
+	RObject *findTestedValue(const Symbol *symbol, Environment *env,
+							 UnaryPredicate pred, bool inherits)
+	{
+		using namespace std;
 
-	do {
-	    Frame::Binding *bdg;
-	    if (inherits && env == Environment::global()) {
-		// findBinding() handles the details of the cache correctly.
-		bdg = env->findBinding(symbol);
-	    } else {
-		bdg = env->frame()->binding(symbol);
-	    }
-	    if (bdg) {
-		pair<RObject*, bool> fpr = bdg->forcedValue2();
-		RObject* val = fpr.first;
-		if (pred(val)) {
-		    // Invoke read monitor (if any) only if
-		    // forcedValue() did not force a Promise.  (If a
-		    // Promise was forced, the read monitor will have
-		    // been invoked anyway, and 'bdg' may now be
-		    // junk.)
-		    if (!fpr.second)
-			bdg->rawValue();
-		    return val;
-		}
-	    }
-            env = env->enclosingEnvironment();
-	} while (inherits && env);
-	return nullptr;
-    }
-
-    template<typename PtrIn>
-    Environment* downcast_to_env(PtrIn s, bool allow_null = false)
-    {
-	if (!s && !allow_null) {
-	    Environment::nullEnvironmentError();
+		do
+		{
+			Frame::Binding *bdg;
+			if (inherits && env == Environment::global())
+			{
+				// findBinding() handles the details of the cache correctly.
+				bdg = env->findBinding(symbol);
+			}
+			else
+			{
+				bdg = env->frame()->binding(symbol);
+			}
+			if (bdg)
+			{
+				pair<RObject *, bool> fpr = bdg->forcedValue2();
+				RObject *val = fpr.first;
+				if (pred(val))
+				{
+					// Invoke read monitor (if any) only if
+					// forcedValue() did not force a Promise.  (If a
+					// Promise was forced, the read monitor will have
+					// been invoked anyway, and 'bdg' may now be
+					// junk.)
+					if (!fpr.second)
+						bdg->rawValue();
+					return val;
+				}
+			}
+			env = env->enclosingEnvironment();
+		} while (inherits && env);
+		return nullptr;
 	}
-	return SEXP_downcast<Environment*>(s);
-    }
 
-}  // namespace rho
+	template <typename PtrIn>
+	Environment *downcast_to_env(PtrIn s, bool allow_null = false)
+	{
+		if (!s && !allow_null)
+		{
+			Environment::nullEnvironmentError();
+		}
+		return SEXP_downcast<Environment *>(s);
+	}
 
-extern "C" {
-    /* C-visible names for predefined environments */
-    extern SEXP R_EmptyEnv;
-    extern SEXP R_BaseEnv;
-    extern SEXP R_GlobalEnv;
-    extern SEXP R_BaseNamespace;
+} // namespace rho
 
-    /** @brief Is this a rho::Environment?
+extern "C"
+{
+	/* C-visible names for predefined environments */
+	extern SEXP R_EmptyEnv;
+	extern SEXP R_BaseEnv;
+	extern SEXP R_GlobalEnv;
+	extern SEXP R_BaseNamespace;
+
+	/** @brief Is this a rho::Environment?
      *
      * @param s Pointer to an RObject.
      *
      * @return TRUE iff the RObject pointed to by s is an environment.
      */
-    inline Rboolean Rf_isEnvironment(SEXP s)
-    {
-	return Rboolean(s && TYPEOF(s) == ENVSXP);
-    }
+	inline Rboolean Rf_isEnvironment(SEXP s)
+	{
+		return Rboolean(s && TYPEOF(s) == ENVSXP);
+	}
 
-    /** @brief Access enclosing environment.
+	/** @brief Access enclosing environment.
      *
      * @param x Pointer to a rho::Environment (checked).
      *
      * @return Pointer to the enclosing environment of \a x .
      */
-    inline SEXP ENCLOS(SEXP x)
-    {
-	using namespace rho;
-	const Environment& env = *SEXP_downcast<Environment*>(x);
-	return env.enclosingEnvironment();
-    }
+	inline SEXP ENCLOS(SEXP x)
+	{
+		using namespace rho;
+		const Environment &env = *SEXP_downcast<Environment *>(x);
+		return env.enclosingEnvironment();
+	}
 
-    /** @brief Should the debugger single-step?
+	/** @brief Should the debugger single-step?
      *
      * @param x Pointer to a rho::Environment object (checked).
      *
      * @return \c true if single-stepping is set, i.e. the debugger
      * should single-step within this environment.
      */
-    inline Rboolean ENV_DEBUG(SEXP x)
-    {
-	using namespace rho;
-	const Environment& env = *SEXP_downcast<const Environment*>(x);
-	return Rboolean(env.singleStepping());
-    }
+	inline Rboolean ENV_DEBUG(SEXP x)
+	{
+		using namespace rho;
+		const Environment &env = *SEXP_downcast<const Environment *>(x);
+		return Rboolean(env.singleStepping());
+	}
 
-    /** @brief Access an environment's Frame, represented as a PairList.
+	/** @brief Access an environment's Frame, represented as a PairList.
      *
      * @param x Pointer to a rho::Environment (checked).
      *
@@ -734,27 +760,27 @@ extern "C" {
      * accessor function, its return value will need protection from
      * garbage collection.
      */
-    inline SEXP FRAME(SEXP x)
-    {
-	using namespace rho;
-	Environment* env = SEXP_downcast<Environment*>(x);
-	return env->frame()->asPairList();
-    }
+	inline SEXP FRAME(SEXP x)
+	{
+		using namespace rho;
+		Environment *env = SEXP_downcast<Environment *>(x);
+		return env->frame()->asPairList();
+	}
 
-    /** @brief Enable/disable single-stepping of the debugger.
+	/** @brief Enable/disable single-stepping of the debugger.
      *
      * @param x Pointer a rho::Environment object (checked).
      *
      * @param v The new single-stepping state (true = enabled).
      */
-    inline void SET_ENV_DEBUG(SEXP x, Rboolean v)
-    {
-	using namespace rho;
-	Environment& env = *SEXP_downcast<Environment*>(x);
-	env.setSingleStepping(v);
-    }
+	inline void SET_ENV_DEBUG(SEXP x, Rboolean v)
+	{
+		using namespace rho;
+		Environment &env = *SEXP_downcast<Environment *>(x);
+		env.setSingleStepping(v);
+	}
 
-    /** @brief Set symbol's value in the base environment.
+	/** @brief Set symbol's value in the base environment.
      *
      * @param x Pointer to a rho::Symbol (checked).
      *
@@ -764,14 +790,14 @@ extern "C" {
      *
      * @todo No binding to R_UnboundValue ought to be created.
      */
-    inline void SET_SYMVALUE(SEXP x, SEXP val)
-    {
-	using namespace rho;
-	const Symbol* sym = SEXP_downcast<Symbol*>(x);
-	Environment::base()->frame()->obtainBinding(sym)->setValue(val);
-    }
+	inline void SET_SYMVALUE(SEXP x, SEXP val)
+	{
+		using namespace rho;
+		const Symbol *sym = SEXP_downcast<Symbol *>(x);
+		Environment::base()->frame()->obtainBinding(sym)->setValue(val);
+	}
 
-    /** @brief Symbol's value in the base environment.
+	/** @brief Symbol's value in the base environment.
      *
      * @param x Pointer to a rho::Symbol (checked).
      *
@@ -779,13 +805,13 @@ extern "C" {
      *         Returns R_UnboundValue if no value is currently
      *         associated with the Symbol.
      */
-    inline SEXP SYMVALUE(SEXP x)
-    {
-	using namespace rho;
-	const Symbol* sym = SEXP_downcast<Symbol*>(x);
-	Frame::Binding* bdg = Environment::base()->frame()->binding(sym);
-	return bdg ? bdg->unforcedValue() : Symbol::unboundValue();
-    }
+	inline SEXP SYMVALUE(SEXP x)
+	{
+		using namespace rho;
+		const Symbol *sym = SEXP_downcast<Symbol *>(x);
+		Frame::Binding *bdg = Environment::base()->frame()->binding(sym);
+		return bdg ? bdg->unforcedValue() : Symbol::unboundValue();
+	}
 }
 
-#endif /* RENVIRONMENT_H */
+#endif /* RENVIRONMENT_HPP */

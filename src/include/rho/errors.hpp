@@ -24,20 +24,21 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file errors.h
+/** @file errors.hpp
  *
  * @brief Convenience header to give rho core code access to CR error
  * handling.
  */
 
-#ifndef RHO_ERRORS_H
-#define RHO_ERRORS_H
+#ifndef RHO_ERRORS_HPP
+#define RHO_ERRORS_HPP
 
-#include "R_ext/Error.h"
+#include <R_ext/Error.h>
 #include <Localization.h>
-#include "rho/RObject.hpp"
+#include <rho/RObject.hpp>
 
-extern "C" {
+extern "C"
+{
     void R_CheckStack(void);
     void Rf_errorcall(SEXP, const char *, ...);
     void Rf_warningcall(SEXP, const char *, ...);
@@ -46,4 +47,4 @@ extern "C" {
     void R_CheckUserInterrupt(void);
 }
 
-#endif /* RHO_ERRORS_H */
+#endif /* RHO_ERRORS_HPP */

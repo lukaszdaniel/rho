@@ -22,24 +22,25 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file Evaluator.h
+/** @file Evaluator.hpp
  *
  * @brief Class rho::Evaluator
  */
 
-#ifndef EVALUATOR_H
-#define EVALUATOR_H
+#ifndef EVALUATOR_HPP
+#define EVALUATOR_HPP
 
-#include "R_ext/Boolean.h"
-#include "rho/Environment.hpp"
-#include "rho/PairList.hpp"
+#include <R_ext/Boolean.h>
+#include <rho/Environment.hpp>
+#include <rho/PairList.hpp>
 
 // Move this to ByteCode.hpp in due course:
 #define BYTECODE
 
 #include <utility>
 
-extern "C" {
+extern "C"
+{
     /** @brief Print expression value?
      *
      * If R_Visible is TRUE when the evaluation of a top-level R
@@ -79,7 +80,8 @@ extern "C" {
     int R_isMissing(SEXP symbol, SEXP rho);
 } // extern "C"
 
-namespace rho {
+namespace rho
+{
     class RObject;
     class Expression;
 
@@ -116,127 +118,130 @@ namespace rho {
      * overall list of Context objects spanning different Evaluator
      * objects.
      */
-    class Evaluator {
+    class Evaluator
+    {
     public:
-	class Context;
+        class Context;
 
-	Evaluator()
-	    : m_next(s_current), m_innermost_context(nullptr)
-	{
-	    s_current = this;
-	}
-
-	~Evaluator()
-	{
-	    s_current = m_next;
-	}
-
-	/** @brief The current Evaluator.
-	 *
-	 * @return Pointer to the current (innermost) Evaluator.
-	 */
-	static Evaluator* current()
-	{
-	    return s_current;
-	}
-
-	/** @brief (Not for general use.)
-	 *
-	 * This function is for use by the profiling code in eval.cpp
-	 * to record whether profiling is currently enabled.
-	 *
-	 * @param on true iff printing is required.
-	 */
-	static void enableProfiling(bool on)
-	{
-	    s_profiling = on;
-	}
-
-	/** @brief Specify whether the result of top-level expression
-	 * be printed.
-	 *
-	 * @param on true iff printing is required.
-	 */
-	static void enableResultPrinting(bool on)
-	{
-	    R_Visible = Rboolean(on);
-	}
-
-	/** @brief Evaluate RObject in a specified Environment.
-	 *
-	 * For most types of RObject, this simply returns a pointer to
-	 * the RObject itself.
-	 *
-	 * @param object Pointer to the RObject to be evaluated.  May
-	 *          be null, in which case the function returns a null
-	 *          pointer.
-	 *
-	 * @param env Pointer to the environment in which evaluation
-	 *          is to take place.  May be null only if \a object
-	 *          is null.
-	 *
-	 * @return Pointer to the result of evaluation.
-	 */
-	static RObject* evaluate(RObject* object, Environment* env) {
-          enableResultPrinting(true);
-          return object ? object->evaluate(env) : nullptr;
-        };
-
-
-	/** @brief Innermost Context belonging to this Evaluator.
-	 *
-	 * @return Pointer to the innermost Context belonging to this
-	 * Evaluator.
-	 */
-	Context* innermostContext() const
-	{
-	    return m_innermost_context;
-	}
-
-	/** @brief Is profiling currently enabled?
-	 *
-	 * @return true iff profiling is currently in progress.
-	 */
-	static bool profiling()
-	{
-	    return s_profiling;
-	}
-
-	/** @brief Is the result of top-level expression evaluation
-	 * printed?
-	 *
-	 * @return true iff it is currently specified that the result
-	 * of a top-level R expression evaluation should be printed.
-	 */
-	static bool resultPrinted()
-	{
-	    return R_Visible;
-	}
-
-        //* @brief Check for user interrupts. 
-        static void maybeCheckForUserInterrupts() {
-          if (--s_countdown == 0) {
-            checkForUserInterrupts();
-          }
+        Evaluator()
+            : m_next(s_current), m_innermost_context(nullptr)
+        {
+            s_current = this;
         }
 
-        //* @brief Check for user interrupts. 
+        ~Evaluator()
+        {
+            s_current = m_next;
+        }
+
+        /** @brief The current Evaluator.
+         *
+         * @return Pointer to the current (innermost) Evaluator.
+         */
+        static Evaluator *current()
+        {
+            return s_current;
+        }
+
+        /** @brief (Not for general use.)
+         *
+         * This function is for use by the profiling code in eval.cpp
+         * to record whether profiling is currently enabled.
+         *
+         * @param on true iff printing is required.
+         */
+        static void enableProfiling(bool on)
+        {
+            s_profiling = on;
+        }
+
+        /** @brief Specify whether the result of top-level expression
+         * be printed.
+         *
+         * @param on true iff printing is required.
+         */
+        static void enableResultPrinting(bool on)
+        {
+            R_Visible = Rboolean(on);
+        }
+
+        /** @brief Evaluate RObject in a specified Environment.
+         *
+         * For most types of RObject, this simply returns a pointer to
+         * the RObject itself.
+         *
+         * @param object Pointer to the RObject to be evaluated.  May
+         *          be null, in which case the function returns a null
+         *          pointer.
+         *
+         * @param env Pointer to the environment in which evaluation
+         *          is to take place.  May be null only if \a object
+         *          is null.
+         *
+         * @return Pointer to the result of evaluation.
+         */
+        static RObject *evaluate(RObject *object, Environment *env)
+        {
+            enableResultPrinting(true);
+            return object ? object->evaluate(env) : nullptr;
+        };
+
+        /** @brief Innermost Context belonging to this Evaluator.
+         *
+         * @return Pointer to the innermost Context belonging to this
+         * Evaluator.
+         */
+        Context *innermostContext() const
+        {
+            return m_innermost_context;
+        }
+
+        /** @brief Is profiling currently enabled?
+         *
+         * @return true iff profiling is currently in progress.
+         */
+        static bool profiling()
+        {
+            return s_profiling;
+        }
+
+        /** @brief Is the result of top-level expression evaluation
+         * printed?
+         *
+         * @return true iff it is currently specified that the result
+         * of a top-level R expression evaluation should be printed.
+         */
+        static bool resultPrinted()
+        {
+            return R_Visible;
+        }
+
+        //* @brief Check for user interrupts.
+        static void maybeCheckForUserInterrupts()
+        {
+            if (--s_countdown == 0)
+            {
+                checkForUserInterrupts();
+            }
+        }
+
+        //* @brief Check for user interrupts.
         static void checkForUserInterrupts();
 
-   private:
-	friend class Context;  // Unnecessary in C++ 0x
+    private:
+        friend class Context; // Unnecessary in C++ 0x
 
-	static unsigned int s_countdown;  // Number of calls of
-			      // Evaluator::evaluate() to go before a
-			      // check is made for user interrupts.
-	static unsigned int s_countdown_start;  // Value from which
-			      // s_countdown starts counting down
-	static Evaluator* s_current;  // The current (innermost) Evaluator
-	static bool s_profiling;  // True iff profiling enabled
+        static unsigned int s_countdown;       // Number of calls of
+                                               // Evaluator::evaluate() to go before a
+                                               // check is made for user interrupts.
+        static unsigned int s_countdown_start; // Value from which
+                                               // s_countdown starts counting down
+        static Evaluator *s_current;           // The current (innermost) Evaluator
+        static bool s_profiling;               // True iff profiling enabled
 
-	Evaluator* m_next;  // Next Evaluator down the stack
-	Context* m_innermost_context;  // Innermost Context belonging
-		   // to this Evaluator
+        Evaluator *m_next;            // Next Evaluator down the stack
+        Context *m_innermost_context; // Innermost Context belonging
+                                      // to this Evaluator
     };
 
     /** @brief Shorthand for Evaluator::evaluate().
@@ -251,13 +256,14 @@ namespace rho {
      *
      * @return Pointer to the result of evaluation.
      */
-    inline RObject* evaluate(RObject* object, Environment* env)
+    inline RObject *evaluate(RObject *object, Environment *env)
     {
-	return Evaluator::evaluate(object, env);
+        return Evaluator::evaluate(object, env);
     }
-}
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
     /** @brief Evaluate an object in a specified Environment.
      *
      * @param e Pointer (possibly null) to the object to be evaluated.
@@ -269,12 +275,12 @@ extern "C" {
      */
     inline SEXP Rf_eval(SEXP e, SEXP rho)
     {
-	using namespace rho;
-	Environment* env = nullptr;
-	if (e)
-	    env = SEXP_downcast<Environment*>(rho);
-	return evaluate(e, env);
+        using namespace rho;
+        Environment *env = nullptr;
+        if (e)
+            env = SEXP_downcast<Environment *>(rho);
+        return evaluate(e, env);
     }
 }
 
-#endif /* EVALUATOR_H */
+#endif /* EVALUATOR_HPP */

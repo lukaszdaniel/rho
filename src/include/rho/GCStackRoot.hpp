@@ -29,76 +29,78 @@
  */
 
 #ifndef GCSTACKROOT_HPP
-#define GCSTACKROOT_HPP 1
+#define GCSTACKROOT_HPP
 
-#include "rho/GCNode.hpp"
+#include <rho/GCNode.hpp>
 
-namespace rho {
-    class RObject;
+namespace rho
+{
+	class RObject;
 
-    /** @brief Untemplated utility class for GCStackRoot.
+	/** @brief Untemplated utility class for GCStackRoot.
      *
      * This class provides static functions useful for working with the set
      * of active stack roots.
      */
-    class GCStackRootBase {
-    public:
-	/** @brief Conduct a const visitor to protected objects.
-	 *
-	 * Conduct a GCNode::const_visitor object to each node pointed
-	 * to by a pointer on the stack.  Note that because rho does
-	 * conservative stack scanning, it is possible that this may also visit
-	 * some unreferenced objects.
-	 *
-	 * @param v Pointer to the const_visitor object.
-	 */
-	static void visitRoots(GCNode::const_visitor* v);
+	class GCStackRootBase
+	{
+	public:
+		/** @brief Conduct a const visitor to protected objects.
+		 *
+		 * Conduct a GCNode::const_visitor object to each node pointed
+		 * to by a pointer on the stack.  Note that because rho does
+		 * conservative stack scanning, it is possible that this may also visit
+		 * some unreferenced objects.
+		 *
+		 * @param v Pointer to the const_visitor object.
+		 */
+		static void visitRoots(GCNode::const_visitor *v);
 
-	/** @brief Conduct a const visitor to protected objects in a specified
-	 *    range.
-	 *
-	 * Conduct a GCNode::const_visitor object to each node pointed
-	 * to by a pointer in the given range on the stack.
-	 * Note that because rho does conservative stack scanning, it is
-	 * possible that this may also visit some unreferenced objects.
-	 *
-	 * @param v Pointer to the const_visitor object.
-	 * @param start Pointer to the location on the stack to start at.  If
-	 *    set nullptr, then starts at the base of the stack.
-	 * @param end Pointer to the location on the stack to end at.
-	 *
-	 * Note that as usual in C++, start and end form a semi-closed interval
-	 * [start, end).  In particular, if there is a pointer at end, it
-	 * will not be visited.
-	 */
-	static void visitRoots(GCNode::const_visitor* v,
-			       const void* start,
-			       const void* end);
+		/** @brief Conduct a const visitor to protected objects in a specified
+		 *    range.
+		 *
+		 * Conduct a GCNode::const_visitor object to each node pointed
+		 * to by a pointer in the given range on the stack.
+		 * Note that because rho does conservative stack scanning, it is
+		 * possible that this may also visit some unreferenced objects.
+		 *
+		 * @param v Pointer to the const_visitor object.
+		 * @param start Pointer to the location on the stack to start at.  If
+		 *    set nullptr, then starts at the base of the stack.
+		 * @param end Pointer to the location on the stack to end at.
+		 *
+		 * Note that as usual in C++, start and end form a semi-closed interval
+		 * [start, end).  In particular, if there is a pointer at end, it
+		 * will not be visited.
+		 */
+		static void visitRoots(GCNode::const_visitor *v,
+							   const void *start,
+							   const void *end);
 
-	/** @brief Ensures that the reference counts of all roots on the stack
-	 *   have been updated.
-	 *
-	 * Calls the specified function in a context where all the defered
-	 * updates to the reference counts from stack roots have been done.
-	 *
-	 * @param function The function to call.
-	 */
-	static void withAllStackNodesProtected(std::function<void()> function);
+		/** @brief Ensures that the reference counts of all roots on the stack
+		 *   have been updated.
+		 *
+		 * Calls the specified function in a context where all the defered
+		 * updates to the reference counts from stack roots have been done.
+		 *
+		 * @param function The function to call.
+		 */
+		static void withAllStackNodesProtected(std::function<void()> function);
 
-	/** @brief Informs the memory manager that the object at this address
-	 *    must not be deleted prior to this call.
-	 */
-	static void ensureReachable(void* p);
+		/** @brief Informs the memory manager that the object at this address
+		 *    must not be deleted prior to this call.
+		 */
+		static void ensureReachable(void *p);
 
-    private:
-	friend class GCStackFrameBoundary;
+	private:
+		friend class GCStackFrameBoundary;
 
-	static void visitRootsImpl(char*, void*);
-	static void withAllStackNodesProtectedImpl(char*, void*);
-	static void* getStackBase();
-    };
+		static void visitRootsImpl(char *, void *);
+		static void withAllStackNodesProtectedImpl(char *, void *);
+		static void *getStackBase();
+	};
 
-    /** @brief Smart pointer to protect a GCNode from garbage
+	/** @brief Smart pointer to protect a GCNode from garbage
      * collection.
      *
      * This class encapsulates a pointer to an object of a type
@@ -124,102 +126,103 @@ namespace rho {
      *           String* may be encapsulated in a GCStackRoot using the
      *           type GCStackRoot<const String>.
      */
-    template <class T = RObject>
-    class GCStackRoot {
-    public:
-	typedef T type;
-
-	/**
-	 * @param node Pointer the node to be pointed to, and
-	 *          protected from the garbage collector, or a null
-	 *          pointer.
-	 */
-	explicit GCStackRoot(T* node = 0)
-	    : m_target(node) {}
-
-	~GCStackRoot()
+	template <class T = RObject>
+	class GCStackRoot
 	{
-	    GCStackRootBase::ensureReachable((void*)m_target);
-	}
+	public:
+		typedef T type;
 
-	/**
-	 * This will cause this GCStackRoot to protect the same GCNode as
-	 * is protected by source.
-	 */
-        GCStackRoot& operator=(const GCStackRoot& source) = default;
+		/**
+		 * @param node Pointer the node to be pointed to, and
+		 *          protected from the garbage collector, or a null
+		 *          pointer.
+		 */
+		explicit GCStackRoot(T *node = 0)
+			: m_target(node) {}
 
-	/**
-	 * This will cause this GCStackRoot to point to and protect node,
-	 * instead of the node (if any) it currently points to and
-	 * protects.
-	 *
-	 * @param node Pointer to the GCNode that is now to be pointed
-	 *          to and protected from the garbage collector.
-	 */
-	GCStackRoot& operator=(T* node)
-	{
-	    m_target = node;
-	    return *this;
-	}
+		~GCStackRoot()
+		{
+			GCStackRootBase::ensureReachable((void *)m_target);
+		}
 
-	/** @brief Access member via encapsulated pointer.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 */
-	T* operator->() const
-	{
-	    return get();
-	}
+		/**
+		 * This will cause this GCStackRoot to protect the same GCNode as
+		 * is protected by source.
+		 */
+		GCStackRoot &operator=(const GCStackRoot &source) = default;
 
-	/** @brief Dereference the encapsulated pointer.
-	 *
-	 * @return a reference to the object pointed to by the
-	 * encapsulated pointer.  The effect is undefined if this
-	 * object encapsulates a null pointer.
-	 */
-	T& operator*() const
-	{
-	    return *get();
-	}
+		/**
+		 * This will cause this GCStackRoot to point to and protect node,
+		 * instead of the node (if any) it currently points to and
+		 * protects.
+		 *
+		 * @param node Pointer to the GCNode that is now to be pointed
+		 *          to and protected from the garbage collector.
+		 */
+		GCStackRoot &operator=(T *node)
+		{
+			m_target = node;
+			return *this;
+		}
 
-	/** @brief Implicit conversion to encapsulated pointer type.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 * The pointer is of type \a T* const to prevent its use as
-	 * an lvalue, the effect of which would probably not be what
-	 * the programmer wanted.
-	 */
-	operator T*() const
-	{
-	    return get();
-	}
+		/** @brief Access member via encapsulated pointer.
+		 *
+		 * @return the pointer currently encapsulated by the node.
+		 */
+		T *operator->() const
+		{
+			return get();
+		}
 
-	/** @brief Access the encapsulated pointer.
-	 *
-	 * @return the pointer currently encapsulated by the node.
-	 */
-	T* get() const
-	{
-	    return m_target;
-	}
+		/** @brief Dereference the encapsulated pointer.
+		 *
+		 * @return a reference to the object pointed to by the
+		 * encapsulated pointer.  The effect is undefined if this
+		 * object encapsulates a null pointer.
+		 */
+		T &operator*() const
+		{
+			return *get();
+		}
 
-    private:
-	// A stack root is a pointer, not an array.
-	T& operator[](size_t) const = delete;
+		/** @brief Implicit conversion to encapsulated pointer type.
+		 *
+		 * @return the pointer currently encapsulated by the node.
+		 * The pointer is of type \a T* const to prevent its use as
+		 * an lvalue, the effect of which would probably not be what
+		 * the programmer wanted.
+		 */
+		operator T *() const
+		{
+			return get();
+		}
 
-	T* m_target;
-    };
-}  // namespace rho
+		/** @brief Access the encapsulated pointer.
+		 *
+		 * @return the pointer currently encapsulated by the node.
+		 */
+		T *get() const
+		{
+			return m_target;
+		}
+
+	private:
+		// A stack root is a pointer, not an array.
+		T &operator[](size_t) const = delete;
+
+		T *m_target;
+	};
+} // namespace rho
 
 #ifdef HAVE_GC_HEADER
 #include "gc.h"
 
-inline void rho::GCStackRootBase::ensureReachable(void* p)
+inline void rho::GCStackRootBase::ensureReachable(void *p)
 {
-    // Force the compiler to keep m_target live as long as this object
-    // exists.
-    GC_reachable_here(p);
+	// Force the compiler to keep m_target live as long as this object
+	// exists.
+	GC_reachable_here(p);
 }
 #endif
 
-#endif  // GCSTACKROOT_HPP
+#endif // GCSTACKROOT_HPP

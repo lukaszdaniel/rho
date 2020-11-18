@@ -24,26 +24,27 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file Expression.h
+/** @file Expression.hpp
  * @brief Class rho::Expression and associated C interface.
  */
 
-#ifndef EXPRESSION_H
-#define EXPRESSION_H
+#ifndef EXPRESSION_HPP
+#define EXPRESSION_HPP
 
-#include "rho/ArgList.hpp"
-#include "rho/ArgMatcher.hpp"
-#include "rho/FunctionBase.hpp"
-#include "rho/PairList.hpp"
+#include <rho/ArgList.hpp>
+#include <rho/ArgMatcher.hpp>
+#include <rho/FunctionBase.hpp>
+#include <rho/PairList.hpp>
 
-namespace rho {
-    class ArgList;
-    class BuiltInFunction;
-    class Closure;
-    class Frame;
-    class FunctionBase;
+namespace rho
+{
+	class ArgList;
+	class BuiltInFunction;
+	class Closure;
+	class Frame;
+	class FunctionBase;
 
-    /** @brief Singly linked list representing an R expression.
+	/** @brief Singly linked list representing an R expression.
      *
      * R expression, represented as a LISP-like singly-linked list,
      * each element containing pointers to a 'car' object and to a
@@ -57,140 +58,144 @@ namespace rho {
      * useful for expressions that are only evaluated once, where the function
      * is known to be a primitive and for SET_TYPEOF.
      */
-    class Expression : public ConsCell {
-    public:
-	/**
-	 * @param cr Pointer to the 'car' of the element to be
-	 *           constructed.
-	 *
-	 * @param tl Pointer to the 'tail' (LISP cdr) of the element
-	 *           to be constructed.
-	 *
-	 * @param tg Pointer to the 'tag' of the element to be constructed.
-	 */
-	explicit Expression(RObject* cr = nullptr, PairList* tl = nullptr,
-			    const RObject* tg = nullptr)
-	    : ConsCell(LANGSXP, cr, tl, tg)
-	{}
-
-	Expression(RObject* function,
-		   std::initializer_list<RObject*> unnamed_args);
-
-	Expression(RObject* function,
-		   const ArgList& arglist)
-	    : Expression(function, const_cast<PairList*>(arglist.list())) {}
-
-	/** @brief Copy constructor.
-	 *
-	 * @param pattern Expression to be copied.
-	 */
-	Expression(const Expression& pattern) = default;
-
-        const RObject* getFunction() const {
-            return car();
-        }
-
-        const PairList* getArgs() const {
-            return tail();
-        }
-
-	void check1arg(const char* formal) const;
-
-	/** @brief The name by which this type is known in R.
-	 *
-	 * @return the name by which this type is known in R.
-	 */
-	static const char* staticTypeName()
+	class Expression : public ConsCell
 	{
-	    return "language";
-	}
+	public:
+		/**
+         * @param cr Pointer to the 'car' of the element to be
+         *           constructed.
+         *
+         * @param tl Pointer to the 'tail' (LISP cdr) of the element
+         *           to be constructed.
+         *
+         * @param tg Pointer to the 'tag' of the element to be constructed.
+         */
+		explicit Expression(RObject *cr = nullptr, PairList *tl = nullptr,
+							const RObject *tg = nullptr)
+			: ConsCell(LANGSXP, cr, tl, tg)
+		{
+		}
 
-	/** @brief Invoke the function.
-	 *
-	 * @param func The function to call.
-	 *
-	 * @param env The environment to call the function from.
-	 *
-	 * @param arglist The arguments to pass to the function.
-	 *
-	 * @param method_bindings This pointer will be non-null if and
-	 *          only if this invocation represents a method call,
-	 *          in which case it points to a Frame containing
-	 *          Bindings that should be added to the working
-	 *          environment, for example bindings of the Symbols
-	 *          \c .Generic and \c .Class.
-	 *
-	 * @return The result of evaluating the function call.
-	 */
-	RObject* evaluateFunctionCall(const FunctionBase* func,
-				      Environment* env,
-                                      const ArgList& arglist,
-				      const Frame* method_bindings = nullptr)
-	    const;
-        // Specializations of the above function for cases where we statically
-        // know the type of the function.
-        RObject* evaluateFunctionCall(const BuiltInFunction* func,
-                                      Environment* env,
-                                      const ArgList& arglist) const;
-        RObject* evaluateFunctionCall(const Closure* func,
-                                      Environment* env,
-                                      const ArgList& arglist,
-                                      const Frame* method_bindings = nullptr)
-            const;
+		Expression(RObject *function,
+				   std::initializer_list<RObject *> unnamed_args);
 
-	// Virtual functions of RObject:
-	Expression* clone() const override;
-        RObject* evaluate(Environment* env) override;
-	const char* typeName() const override;
+		Expression(RObject *function,
+				   const ArgList &arglist)
+			: Expression(function, const_cast<PairList *>(arglist.list())) {}
 
-    protected:
-	// Declared protected to ensure that Expression objects are
-	// allocated only using 'new':
-	~Expression() {}
+		/** @brief Copy constructor.
+         *
+         * @param pattern Expression to be copied.
+         */
+		Expression(const Expression &pattern) = default;
 
-        FunctionBase* getFunction(Environment* env) const;
+		const RObject *getFunction() const
+		{
+			return car();
+		}
 
-        RObject* invokeClosureImpl(const Closure* func,
-                                   Environment* calling_env,
-                                   const ArgList& arglist,
-                                   const Frame* method_bindings) const;
+		const PairList *getArgs() const
+		{
+			return tail();
+		}
 
-	RObject* evaluateBuiltInCall(const BuiltInFunction* func,
-                                     Environment* env,
-                                     const ArgList& arglist) const;
-	RObject* evaluateDirectBuiltInCall(const BuiltInFunction* func,
-                                           Environment* env,
-                                           const ArgList& arglist) const;
+		void check1arg(const char *formal) const;
 
-	RObject* evaluatePairListBuiltInCall(const BuiltInFunction* func,
-                                             Environment* env,
-                                             const ArgList& arglist) const;
-	RObject* evaluatePairListSpecialCall(const BuiltInFunction* func,
-                                             Environment* env,
-                                             const ArgList& arglist) const;
+		/** @brief The name by which this type is known in R.
+         *
+         * @return the name by which this type is known in R.
+         */
+		static const char *staticTypeName()
+		{
+			return "language";
+		}
 
-	RObject* evaluateNativeBuiltInCall(const BuiltInFunction*,
-					   Environment*, const ArgList&) const;
-	RObject* evalArgsAndEvaluateNativeBuiltInCall(const BuiltInFunction*,
-                                                      Environment*,
-                                                      const ArgList&) const;
+		/** @brief Invoke the function.
+         *
+         * @param func The function to call.
+         *
+         * @param env The environment to call the function from.
+         *
+         * @param arglist The arguments to pass to the function.
+         *
+         * @param method_bindings This pointer will be non-null if and
+         *          only if this invocation represents a method call,
+         *          in which case it points to a Frame containing
+         *          Bindings that should be added to the working
+         *          environment, for example bindings of the Symbols
+         *          \c .Generic and \c .Class.
+         *
+         * @return The result of evaluating the function call.
+         */
+		RObject *evaluateFunctionCall(const FunctionBase *func,
+									  Environment *env,
+									  const ArgList &arglist,
+									  const Frame *method_bindings = nullptr)
+			const;
+		// Specializations of the above function for cases where we statically
+		// know the type of the function.
+		RObject *evaluateFunctionCall(const BuiltInFunction *func,
+									  Environment *env,
+									  const ArgList &arglist) const;
+		RObject *evaluateFunctionCall(const Closure *func,
+									  Environment *env,
+									  const ArgList &arglist,
+									  const Frame *method_bindings = nullptr)
+			const;
 
-        static void importMethodBindings(const Frame* method_bindings,
-                                         Frame* newframe);
-        static Environment* getMethodCallingEnv();
+		// Virtual functions of RObject:
+		Expression *clone() const override;
+		RObject *evaluate(Environment *env) override;
+		const char *typeName() const override;
 
-	virtual void matchArgsIntoEnvironment(const Closure* func,
-					      Environment* calling_env,
-					      const ArgList& arglist,
-					      Environment* execution_env) const;
+	protected:
+		// Declared protected to ensure that Expression objects are
+		// allocated only using 'new':
+		~Expression() {}
 
-        void checkArityAndNamingRequirements(const BuiltInFunction* func,
-                                             int num_args) const;
+		FunctionBase *getFunction(Environment *env) const;
 
-      Expression& operator=(const Expression&) = delete;
-    };
+		RObject *invokeClosureImpl(const Closure *func,
+								   Environment *calling_env,
+								   const ArgList &arglist,
+								   const Frame *method_bindings) const;
 
-    /** @brief Singly linked list representing an R expression.
+		RObject *evaluateBuiltInCall(const BuiltInFunction *func,
+									 Environment *env,
+									 const ArgList &arglist) const;
+		RObject *evaluateDirectBuiltInCall(const BuiltInFunction *func,
+										   Environment *env,
+										   const ArgList &arglist) const;
+
+		RObject *evaluatePairListBuiltInCall(const BuiltInFunction *func,
+											 Environment *env,
+											 const ArgList &arglist) const;
+		RObject *evaluatePairListSpecialCall(const BuiltInFunction *func,
+											 Environment *env,
+											 const ArgList &arglist) const;
+
+		RObject *evaluateNativeBuiltInCall(const BuiltInFunction *,
+										   Environment *, const ArgList &) const;
+		RObject *evalArgsAndEvaluateNativeBuiltInCall(const BuiltInFunction *,
+													  Environment *,
+													  const ArgList &) const;
+
+		static void importMethodBindings(const Frame *method_bindings,
+										 Frame *newframe);
+		static Environment *getMethodCallingEnv();
+
+		virtual void matchArgsIntoEnvironment(const Closure *func,
+											  Environment *calling_env,
+											  const ArgList &arglist,
+											  Environment *execution_env) const;
+
+		void checkArityAndNamingRequirements(const BuiltInFunction *func,
+											 int num_args) const;
+
+		Expression &operator=(const Expression &) = delete;
+	};
+
+	/** @brief Singly linked list representing an R expression.
      *
      * R expression, represented as a LISP-like singly-linked list,
      * each element containing pointers to a 'car' object and to a
@@ -202,68 +207,75 @@ namespace rho {
      * Unlike the regular Expression class, this class caches the results of
      * parameter matching to closure calls for improved performance.
      */
-    class CachingExpression : public Expression {
-    public:
-	/**
-	 * @param cr Pointer to the 'car' of the element to be
-	 *           constructed.
-	 *
-	 * @param tl Pointer to the 'tail' (LISP cdr) of the element
-	 *           to be constructed.
-	 *
-	 * @param tg Pointer to the 'tag' of the element to be constructed.
-	 */
-	explicit CachingExpression(RObject* cr = nullptr,
-				   PairList* tl = nullptr,
-				   const RObject* tg = nullptr)
-	    : Expression(cr, tl, tg)
-	{}
+	class CachingExpression : public Expression
+	{
+	public:
+		/**
+         * @param cr Pointer to the 'car' of the element to be
+         *           constructed.
+         *
+         * @param tl Pointer to the 'tail' (LISP cdr) of the element
+         *           to be constructed.
+         *
+         * @param tg Pointer to the 'tag' of the element to be constructed.
+         */
+		explicit CachingExpression(RObject *cr = nullptr,
+								   PairList *tl = nullptr,
+								   const RObject *tg = nullptr)
+			: Expression(cr, tl, tg)
+		{
+		}
 
-	CachingExpression(RObject* function,
-			  std::initializer_list<RObject*> unnamed_args)
-	    : Expression(function, unnamed_args)
-	{}
+		CachingExpression(RObject *function,
+						  std::initializer_list<RObject *> unnamed_args)
+			: Expression(function, unnamed_args)
+		{
+		}
 
-	/** @brief Copy constructor.
-	 *
-	 * @param pattern CachingExpression to be copied.
-	 */
-	CachingExpression(const CachingExpression& pattern)
-	    : Expression(pattern) {
-	    // Don't copy the cache, as the new expression may be about to get
-	    // modified.
-	    // TODO: is there a way we can automatically detect modifications
-	    //   of *this and invalidate the cache?
-	}
+		/** @brief Copy constructor.
+         *
+         * @param pattern CachingExpression to be copied.
+         */
+		CachingExpression(const CachingExpression &pattern)
+			: Expression(pattern)
+		{
+			// Don't copy the cache, as the new expression may be about to get
+			// modified.
+			// TODO: is there a way we can automatically detect modifications
+			//   of *this and invalidate the cache?
+		}
 
-	CachingExpression(const Expression& pattern) : Expression(pattern)
-	{}
+		CachingExpression(const Expression &pattern) : Expression(pattern)
+		{
+		}
 
-	// Virtual functions of RObject:
-	CachingExpression* clone() const override;
+		// Virtual functions of RObject:
+		CachingExpression *clone() const override;
 
-	// For GCNode
-	void visitReferents(const_visitor* v) const override;
-    protected:
-	void detachReferents() override;
-    private:
-	// Object used for recording details from previous evaluations of
-	// this expression, for the purpose of optimizing future evaluations.
-	// In the future, this will likely include type recording as well.
-        mutable GCEdge<const ArgMatchCache> m_cached_matching_info;
+		// For GCNode
+		void visitReferents(const_visitor *v) const override;
 
-	void matchArgsIntoEnvironment(const Closure* func,
-				      Environment* calling_env,
-				      const ArgList& arglist,
-				      Environment* execution_env)
-	    const override;
+	protected:
+		void detachReferents() override;
 
-	// Declared private to ensure that CachingExpression objects are
-	// allocated only using 'new':
-	~CachingExpression() {}
+	private:
+		// Object used for recording details from previous evaluations of
+		// this expression, for the purpose of optimizing future evaluations.
+		// In the future, this will likely include type recording as well.
+		mutable GCEdge<const ArgMatchCache> m_cached_matching_info;
 
-	CachingExpression& operator=(const CachingExpression&) = delete;
-    };
+		void matchArgsIntoEnvironment(const Closure *func,
+									  Environment *calling_env,
+									  const ArgList &arglist,
+									  Environment *execution_env)
+			const override;
+
+		// Declared private to ensure that CachingExpression objects are
+		// allocated only using 'new':
+		~CachingExpression() {}
+
+		CachingExpression &operator=(const CachingExpression &) = delete;
+	};
 
 } // namespace rho
 
@@ -284,4 +296,4 @@ SEXP Rf_currentExpression();
  */
 void Rf_setCurrentExpression(SEXP e);
 
-#endif /* EXPRESSION_H */
+#endif /* EXPRESSION_HPP */

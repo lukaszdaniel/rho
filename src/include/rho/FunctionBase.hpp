@@ -24,129 +24,137 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file FunctionBase.h
+/** @file FunctionBase.hpp
  *
  * @brief Class rho::FunctionBase and associated C interface functions.
  */
 
-#ifndef FUNCTIONBASE_H
-#define FUNCTIONBASE_H
+#ifndef FUNCTIONBASE_HPP
+#define FUNCTIONBASE_HPP
 
-#include "rho/RObject.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/RObject.hpp>
+#include <rho/SEXP_downcast.hpp>
 
-namespace rho {
-    class ArgList;
-    class Expression;
-    class Environment;
+namespace rho
+{
+	class ArgList;
+	class Expression;
+	class Environment;
 
-    /** @brief Base class for function types.
+	/** @brief Base class for function types.
      */
-    class FunctionBase : public RObject {
-    public:
-	/** @brief Enable/disable function tracing.
-	 *
-	 * @param on True iff function tracing is to be enabled.
-	 */
-	static void enableTracing(bool on)
+	class FunctionBase : public RObject
 	{
-	    s_tracing_enabled = on;
-	}
+	public:
+		/** @brief Enable/disable function tracing.
+         *
+         * @param on True iff function tracing is to be enabled.
+         */
+		static void enableTracing(bool on)
+		{
+			s_tracing_enabled = on;
+		}
 
-	/** @brief Is an RObject a FunctionBase?
-	 *
-	 * @param obj Pointer to RObject to be tested.  This may be a
-	 *          null pointer, in which case the function returns
-	 *          false.
-	 *
-	 * @return true iff \a obj is a FunctionBase.
-	 */
-	static bool isA(const RObject* obj)
-	{
-	    // We could of course use dynamic_cast here, but the
-	    // following is probably faster:
-	    if (!obj) return false;
-	    SEXPTYPE st = obj->sexptype();
-	    return st == CLOSXP || st == BUILTINSXP || st == SPECIALSXP;
-	}
+		/** @brief Is an RObject a FunctionBase?
+         *
+         * @param obj Pointer to RObject to be tested.  This may be a
+         *          null pointer, in which case the function returns
+         *          false.
+         *
+         * @return true iff \a obj is a FunctionBase.
+         */
+		static bool isA(const RObject *obj)
+		{
+			// We could of course use dynamic_cast here, but the
+			// following is probably faster:
+			if (!obj)
+				return false;
+			SEXPTYPE st = obj->sexptype();
+			return st == CLOSXP || st == BUILTINSXP || st == SPECIALSXP;
+		}
 
-	/** @brief Produce a tracing report if appropriate.
-	 *
-	 * A tracing report is generated if this function is set to be
-	 * traced and tracing in general is enabled.
-	 *
-	 * @param call The call to this function to be reported.
-	 */
-	void maybeTrace(const Expression* call) const
-	{
-	    if (traced() && tracingEnabled())
-		reportCall(call);
-	}
+		/** @brief Produce a tracing report if appropriate.
+         *
+         * A tracing report is generated if this function is set to be
+         * traced and tracing in general is enabled.
+         *
+         * @param call The call to this function to be reported.
+         */
+		void maybeTrace(const Expression *call) const
+		{
+			if (traced() && tracingEnabled())
+				reportCall(call);
+		}
 
-	/** @brief The name by which this type is known in R.
-	 *
-	 * @return the name by which this type is known in R.
-	 */
-	static const char* staticTypeName()
-	{
-	    return "(function type)";
-	}
+		/** @brief The name by which this type is known in R.
+         *
+         * @return the name by which this type is known in R.
+         */
+		static const char *staticTypeName()
+		{
+			return "(function type)";
+		}
 
-	/** @brief Set tracing status.
-	 *
-	 * @param on True iff it is required to monitor calls to this
-	 *           function object.
-	 */
-	void setTracing(bool on)
-	{
-	    m_traced = on;
-	}
+		/** @brief Set tracing status.
+         *
+         * @param on True iff it is required to monitor calls to this
+         *           function object.
+         */
+		void setTracing(bool on)
+		{
+			m_traced = on;
+		}
 
-	/** @brief Is this function being traced?
-	 *
-	 * @return true if this function object is currently being
-	 * traced.
-	 */
-	bool traced() const
-	{
-	    return m_traced;
-	}
+		/** @brief Is this function being traced?
+         *
+         * @return true if this function object is currently being
+         * traced.
+         */
+		bool traced() const
+		{
+			return m_traced;
+		}
 
-	/** @brief If function tracing currently enabled?
-	 *
-	 * @return true iff function tracing is currently enabled.
-	 */
-	static bool tracingEnabled()
-	{
-	    return s_tracing_enabled;
-	}
-    protected:
-	/**
-	 * @param stype Required type of the FunctionBase.
-	 */
-	explicit FunctionBase(SEXPTYPE stype)
-	    : RObject(stype), m_traced(false)
-	{}
+		/** @brief If function tracing currently enabled?
+         *
+         * @return true iff function tracing is currently enabled.
+         */
+		static bool tracingEnabled()
+		{
+			return s_tracing_enabled;
+		}
 
-	/** @brief Copy constructor.
-	 *
-	 * @param pattern FunctionBase to be copied.
-	 */
-	FunctionBase(const FunctionBase& pattern)
-	    : RObject(pattern), m_traced(false)
-	{}
+	protected:
+		/**
+         * @param stype Required type of the FunctionBase.
+         */
+		explicit FunctionBase(SEXPTYPE stype)
+			: RObject(stype), m_traced(false)
+		{
+		}
 
-	virtual ~FunctionBase() {}
-    private:
-	static bool s_tracing_enabled;
-	bool m_traced;
+		/** @brief Copy constructor.
+         *
+         * @param pattern FunctionBase to be copied.
+         */
+		FunctionBase(const FunctionBase &pattern)
+			: RObject(pattern), m_traced(false)
+		{
+		}
 
-	static void reportCall(const Expression* call);
-    };
-}  // namespace rho
+		virtual ~FunctionBase() {}
 
-extern "C" {
-    /** @brief Get function tracing status.
+	private:
+		static bool s_tracing_enabled;
+		bool m_traced;
+
+		static void reportCall(const Expression *call);
+	};
+} // namespace rho
+
+extern "C"
+{
+	/** @brief Get function tracing status.
      *
      * @param x Pointer to a rho::FunctionBase (checked), or a null
      *          pointer.
@@ -154,15 +162,16 @@ extern "C" {
      * @return Refer to 'R Internals' document.  Returns 0 if \a x is a
      * null pointer.
      */
-    inline int RTRACE(SEXP x)
-    {
-	using namespace rho;
-	if (!x) return 0;
-	const FunctionBase& f = *SEXP_downcast<const FunctionBase*>(x);
-	return f.traced();
-    }
+	inline int RTRACE(SEXP x)
+	{
+		using namespace rho;
+		if (!x)
+			return 0;
+		const FunctionBase &f = *SEXP_downcast<const FunctionBase *>(x);
+		return f.traced();
+	}
 
-    /** @brief Set function tracing status.
+	/** @brief Set function tracing status.
      *
      * @param x Pointer to a rho::FunctionBase (checked), or a null
      * pointer.
@@ -170,12 +179,12 @@ extern "C" {
      * @param v The desired tracing status: non-zero if tracing is
      * required.
      */
-    inline void SET_RTRACE(SEXP x, int v)
-    {
-	using namespace rho;
-	FunctionBase* f = SEXP_downcast<FunctionBase*>(x);
-	f->setTracing(v != 0);
-    }
+	inline void SET_RTRACE(SEXP x, int v)
+	{
+		using namespace rho;
+		FunctionBase *f = SEXP_downcast<FunctionBase *>(x);
+		f->setTracing(v != 0);
+	}
 }
 
-#endif /* FUNCTIONBASE_H */
+#endif /* FUNCTIONBASE_HPP */

@@ -28,76 +28,80 @@
  */
 
 #ifndef LOOPBAILOUT_HPP
-#define LOOPBAILOUT_HPP 1
+#define LOOPBAILOUT_HPP
 
-#include "rho/Bailout.hpp"
+#include <rho/Bailout.hpp>
 
-namespace rho {
-    class Environment;
+namespace rho
+{
+	class Environment;
 
-    /** @brief Bailout class for R commands 'break' and 'next'.
+	/** @brief Bailout class for R commands 'break' and 'next'.
      *
      * A Bailout of this class conveys a value back to a computation
      * (typically a Closure application) operating within a specified
      * working Environment, and is used for example to implement the R
      * return command.
      */
-    class LoopBailout : public Bailout {
-    public:
-	/** @brief Constructor.
-	 *
-	 * @param the_environment Pointer to the working Environment
-	 *          of the computational context in which the relevant
-	 *          loop is executing.
-	 *
-	 * @param next_iteration true for 'next'; false for 'break'.
-	 */
-	LoopBailout(Environment* the_environment, bool next_iteration)
-	    : m_next(next_iteration)
+	class LoopBailout : public Bailout
 	{
-	    m_environment = the_environment;
-	}
+	public:
+		/** @brief Constructor.
+		 *
+		 * @param the_environment Pointer to the working Environment
+		 *          of the computational context in which the relevant
+		 *          loop is executing.
+		 *
+		 * @param next_iteration true for 'next'; false for 'break'.
+		 */
+		LoopBailout(Environment *the_environment, bool next_iteration)
+			: m_next(next_iteration)
+		{
+			m_environment = the_environment;
+		}
 
-	/** @brief Target Environment of this LoopBailout.
-	 *
-	 * @return pointer to the Environment within which this
-	 * LoopBailout should be caught.
-	 */
-	Environment* environment() const
-	{
-	    return m_environment;
-	}
+		/** @brief Target Environment of this LoopBailout.
+		 *
+		 * @return pointer to the Environment within which this
+		 * LoopBailout should be caught.
+		 */
+		Environment *environment() const
+		{
+			return m_environment;
+		}
 
-	/** @brief Continue with next iteration of the loop (if any)?
-	 *
-	 * @return true if this LoopException arose from the R 'next'
-	 * command; false if it arose from 'break'.
-	 */
-	bool next() const
-	{
-	    return m_next;
-	}
+		/** @brief Continue with next iteration of the loop (if any)?
+		 *
+		 * @return true if this LoopException arose from the R 'next'
+		 * command; false if it arose from 'break'.
+		 */
+		bool next() const
+		{
+			return m_next;
+		}
 
-	// Virtual function of Bailout:
-	void throwException() override;
+		// Virtual function of Bailout:
+		void throwException() override;
 
-	// Virtual function of GCNode:
-	void visitReferents(const_visitor* v) const override;
-    protected:
-	// Virtual function of GCNode:
-	void detachReferents() override;
-    private:
-	GCEdge<Environment> m_environment;
-	bool m_next;
+		// Virtual function of GCNode:
+		void visitReferents(const_visitor *v) const override;
 
-	// Declared private to ensure that LoopBailout objects are
-	// allocated only using 'new':
-	~LoopBailout() {}
+	protected:
+		// Virtual function of GCNode:
+		void detachReferents() override;
 
-	// Not implemented.  Declared to prevent compiler-generated versions:
-	LoopBailout(const LoopBailout&);
-        LoopBailout& operator=(const LoopBailout&);
-    };
-}
+	private:
+		GCEdge<Environment> m_environment;
+		bool m_next;
 
-#endif  // LOOPBAILOUT_HPP
+		// Declared private to ensure that LoopBailout objects are
+		// allocated only using 'new':
+		~LoopBailout() {}
+
+		// Not implemented.  Declared to prevent compiler-generated versions:
+		LoopBailout(const LoopBailout &);
+		LoopBailout &operator=(const LoopBailout &);
+	};
+} // namespace rho
+
+#endif // LOOPBAILOUT_HPP

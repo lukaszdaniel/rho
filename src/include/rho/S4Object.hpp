@@ -24,21 +24,22 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file S4Object.h
+/** @file S4Object.hpp
  *
  * @brief Class rho::S4Object and associated C interface.
  *
  * (S4Object implements S4SXP.)
  */
 
-#ifndef S4OBJECT_H
-#define S4OBJECT_H
+#ifndef S4OBJECT_HPP
+#define S4OBJECT_HPP
 
-#include "rho/RObject.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/RObject.hpp>
+#include <rho/SEXP_downcast.hpp>
 
-namespace rho {
-    /** @brief S4 object.
+namespace rho
+{
+	/** @brief S4 object.
      *
      * This class is used to implement S4 classes that do not extend
      * objects of another R type, and corresponds to the ::SEXPTYPE
@@ -47,52 +48,56 @@ namespace rho {
      * @note The 'R Internals' document says that S4SXP objects have a
      * tag field.  This is not currently implemented in rho.
      */
-    class S4Object : public RObject {
-    public:
-	/** @brief Default constructor.
-	 */
-	S4Object()
-	    : RObject(S4SXP)
+	class S4Object : public RObject
 	{
-	    setS4Object(true);
-	}
+	public:
+		/** @brief Default constructor.
+		 */
+		S4Object()
+			: RObject(S4SXP)
+		{
+			setS4Object(true);
+		}
 
-	/** @brief Copy constructor.
-	 *
-	 * @param pattern S4Object to be copied.
-	 */
-	S4Object(const S4Object& pattern)
-	    : RObject(pattern)
-	{}
+		/** @brief Copy constructor.
+		 *
+		 * @param pattern S4Object to be copied.
+		 */
+		S4Object(const S4Object &pattern)
+			: RObject(pattern)
+		{
+		}
 
-	/** @brief The name by which this type is known in R.
-	 *
-	 * @return the name by which this type is known in R.
-	 */
-	static const char* staticTypeName()
-	{
-	    return "S4";
-	}
+		/** @brief The name by which this type is known in R.
+		 *
+		 * @return the name by which this type is known in R.
+		 */
+		static const char *staticTypeName()
+		{
+			return "S4";
+		}
 
-	// Virtual functions of RObject:
-	S4Object* clone() const override;
-	const char* typeName() const override;
-    private:
-	// Declared private to ensure that S4Objects are allocated
-	// only using 'new':
-	~S4Object() {}
+		// Virtual functions of RObject:
+		S4Object *clone() const override;
+		const char *typeName() const override;
 
-	// Not implemented.  Declared to prevent compiler-generated version:
-        S4Object& operator=(const S4Object&);
-    };
+	private:
+		// Declared private to ensure that S4Objects are allocated
+		// only using 'new':
+		~S4Object() {}
+
+		// Not implemented.  Declared to prevent compiler-generated version:
+		S4Object &operator=(const S4Object &);
+	};
 } // namespace rho
 
-extern "C" {
-    /** @brief Create an S4 object.
+extern "C"
+{
+	/** @brief Create an S4 object.
      *
      * @return Pointer to the created object.
      */
-    SEXP Rf_allocS4Object();
+	SEXP Rf_allocS4Object();
 }
 
-#endif /* S4OBJECT_H */
+#endif /* S4OBJECT_HPP */

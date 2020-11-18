@@ -24,16 +24,17 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file AddressSanitizer.h
+/** @file AddressSanitizer.hpp
  * @brief Macros to provide information to the address sanitizer when it is
  *   being used.
  */
 
-#ifndef RHO_ADDRESS_SANITIZER_H
-#define RHO_ADDRESS_SANITIZER_H
+#ifndef RHO_ADDRESS_SANITIZER_HPP
+#define RHO_ADDRESS_SANITIZER_HPP
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #ifdef __has_feature
@@ -43,31 +44,31 @@ extern "C" {
 #endif
 
 #if HAVE_ASAN
-void __asan_poison_memory_region(void const volatile *addr, size_t size);
+  void __asan_poison_memory_region(void const volatile *addr, size_t size);
 
-void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
+  void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 
-#  define HAVE_ADDRESS_SANITIZER
-#  define ASAN_POISON_MEMORY_REGION(addr, size) \
+#define HAVE_ADDRESS_SANITIZER
+#define ASAN_POISON_MEMORY_REGION(addr, size) \
   __asan_poison_memory_region((addr), (size))
-#  define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
   __asan_unpoison_memory_region((addr), (size))
 
-#  define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
+#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
 
-#else  // ! HAVE_ASAN
+#else // ! HAVE_ASAN
 
-#  define ASAN_POISON_MEMORY_REGION(addr, size) \
+#define ASAN_POISON_MEMORY_REGION(addr, size) \
   ((void)(addr), (void)(size))
-#  define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
+#define ASAN_UNPOISON_MEMORY_REGION(addr, size) \
   ((void)(addr), (void)(size))
 
-#  define NO_SANITIZE_ADDRESS
+#define NO_SANITIZE_ADDRESS
 
 #endif
 
 #ifdef __cplusplus
-}  // extern "C"
+} // extern "C"
 #endif
 
-#endif  // RHO_ADDRESS_SANITIZER_H
+#endif // RHO_ADDRESS_SANITIZER_HPP

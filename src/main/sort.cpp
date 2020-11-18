@@ -386,7 +386,7 @@ Rboolean fastpass_sortcheck(SEXP x, int wanted) {
 	return FALSE;
 
     int sorted = UNKNOWN_SORTEDNESS;
-    Rboolean noNA, done = FALSE;
+    Rboolean noNA = FALSE, done = FALSE;
 
     switch(TYPEOF(x)) {
     case INTSXP:

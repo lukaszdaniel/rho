@@ -28,90 +28,94 @@
  */
 
 #ifndef RETURNBAILOUT_HPP
-#define RETURNBAILOUT_HPP 1
+#define RETURNBAILOUT_HPP
 
-#include "rho/Bailout.hpp"
-#include "rho/Evaluator.hpp"
+#include <rho/Bailout.hpp>
+#include <rho/Evaluator.hpp>
 
-namespace rho {
-    class Environment;
+namespace rho
+{
+	class Environment;
 
-    /** @brief Bailout class to convey return value.
+	/** @brief Bailout class to convey return value.
      *
      * A Bailout of this class conveys a value back to a computation
      * (typically a Closure application) operating within a specified
      * working Environment, and is used for example to implement the R
      * return command.
      */
-    class ReturnBailout : public Bailout {
-    public:
-	/** @brief Constructor.
-	 *
-	 * @param the_environment Pointer to the working Environment
-	 *          of the computational context to which a return is
-	 *          to be made.
-	 *
-	 * @param the_value Pointer, possibly null, to the RObject to
-	 *          be conveyed back to the return destination.
-	 */
-	ReturnBailout(Environment* the_environment, RObject* the_value)
-	    : m_print_result(R_Visible)
+	class ReturnBailout : public Bailout
 	{
-	    m_environment = the_environment;
-	    m_value = the_value;
-	}
+	public:
+		/** @brief Constructor.
+		 *
+		 * @param the_environment Pointer to the working Environment
+		 *          of the computational context to which a return is
+		 *          to be made.
+		 *
+		 * @param the_value Pointer, possibly null, to the RObject to
+		 *          be conveyed back to the return destination.
+		 */
+		ReturnBailout(Environment *the_environment, RObject *the_value)
+			: m_print_result(R_Visible)
+		{
+			m_environment = the_environment;
+			m_value = the_value;
+		}
 
-	/** @brief Target Environment of this ReturnBailout.
-	 *
-	 * @return pointer to the Environment within which this
-	 * ReturnBailout should be caught.
-	 */
-	Environment* environment() const
-	{
-	    return m_environment;
-	}
+		/** @brief Target Environment of this ReturnBailout.
+		 *
+		 * @return pointer to the Environment within which this
+		 * ReturnBailout should be caught.
+		 */
+		Environment *environment() const
+		{
+			return m_environment;
+		}
 
-	/** @brief Should result be printed?
-	 *
-	 * @return true iff the return value should be printed if it
-	 * ends up as the result of a top-level command.
-	 */
-	bool printResult() const
-	{
-	    return m_print_result;
-	}
+		/** @brief Should result be printed?
+		 *
+		 * @return true iff the return value should be printed if it
+		 * ends up as the result of a top-level command.
+		 */
+		bool printResult() const
+		{
+			return m_print_result;
+		}
 
-	/** @brief Payload of this ReturnBailout.
-	 *
-	 * @return Pointer, possibly null, to the RObject conveyed to
-	 * the target Environment by this ReturnBailout.
-	 */
-	RObject* value() const
-	{
-	    return m_value;
-	}
+		/** @brief Payload of this ReturnBailout.
+		 *
+		 * @return Pointer, possibly null, to the RObject conveyed to
+		 * the target Environment by this ReturnBailout.
+		 */
+		RObject *value() const
+		{
+			return m_value;
+		}
 
-	// Virtual function of Bailout:
-	void throwException() override;
+		// Virtual function of Bailout:
+		void throwException() override;
 
-	// Virtual function of GCNode:
-	void visitReferents(const_visitor* v) const override;
-    protected:
-	// Virtual function of GCNode:
-	void detachReferents() override;
-    private:
-	GCEdge<Environment> m_environment;
-	GCEdge<> m_value;
-	bool m_print_result;
+		// Virtual function of GCNode:
+		void visitReferents(const_visitor *v) const override;
 
-	// Declared private to ensure that ReturnBailout objects are
-	// allocated only using 'new':
-	~ReturnBailout() {}
+	protected:
+		// Virtual function of GCNode:
+		void detachReferents() override;
 
-	// Not implemented.  Declared to prevent compiler-generated versions:
-	ReturnBailout(const ReturnBailout&);
-        ReturnBailout& operator=(const ReturnBailout&);
-    };
-}
+	private:
+		GCEdge<Environment> m_environment;
+		GCEdge<> m_value;
+		bool m_print_result;
 
-#endif  // RETURNBAILOUT_HPP
+		// Declared private to ensure that ReturnBailout objects are
+		// allocated only using 'new':
+		~ReturnBailout() {}
+
+		// Not implemented.  Declared to prevent compiler-generated versions:
+		ReturnBailout(const ReturnBailout &);
+		ReturnBailout &operator=(const ReturnBailout &);
+	};
+} // namespace rho
+
+#endif // RETURNBAILOUT_HPP

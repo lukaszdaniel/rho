@@ -34,101 +34,110 @@
 
 #include <Defn.h>
 
-namespace rho {
+namespace rho
+{
 
-    class IncrementStackDepthScope;
-    class DisableStackCheckingScope;
+	class IncrementStackDepthScope;
+	class DisableStackCheckingScope;
 
-    class StackChecker
-    {
-    public:
-	// Stack depth is in 'evaluator frames' (which is fairly loosely
-	// defined).  In rho, it includes non-inlined function calls (including
-	// builtins) and promise evaluations.
+	class StackChecker
+	{
+	public:
+		// Stack depth is in 'evaluator frames' (which is fairly loosely
+		// defined).  In rho, it includes non-inlined function calls (including
+		// builtins) and promise evaluations.
 
-	/** @brief (Not for general use.)
-	 *
-	 * Used in do_Cstack_info() in platform.cpp.
-	 *
-	 * @return The current evaluation depth.
-	 */
-	static unsigned int depth() {
-	    return s_depth;
-	}
+		/** @brief (Not for general use.)
+		 *
+		 * Used in do_Cstack_info() in platform.cpp.
+		 *
+		 * @return The current evaluation depth.
+		 */
+		static unsigned int depth()
+		{
+			return s_depth;
+		}
 
-	/** @brief Maximum depth of R expression nesting.
-	 *
-	 * @return The current maximum nesting depth.
-	 */
-	static unsigned int depthLimit() {
-	    return s_depth_limit;
-	}
+		/** @brief Maximum depth of R expression nesting.
+		 *
+		 * @return The current maximum nesting depth.
+		 */
+		static unsigned int depthLimit()
+		{
+			return s_depth_limit;
+		}
 
-	/** @brief Set maximum depth of R expression nesting.
-	 *
-	 * @param depth The required maximum nesting depth.  If the
-	 *          supplied value lies outside the permissible range,
-	 *          an error is reported and the nesting depth is left
-	 *          unchanged.
-	 */
-	static void setDepthLimit(unsigned int depth);
+		/** @brief Set maximum depth of R expression nesting.
+		 *
+		 * @param depth The required maximum nesting depth.  If the
+		 *          supplied value lies outside the permissible range,
+		 *          an error is reported and the nesting depth is left
+		 *          unchanged.
+		 */
+		static void setDepthLimit(unsigned int depth);
 
-	// Check that there is sufficient stack space for <required_bytes>
-	// plus some additional allowance.
-	// Throws an exception otherwise.
-	static void checkAvailableStackSpace(size_t required_bytes = 0);
+		// Check that there is sufficient stack space for <required_bytes>
+		// plus some additional allowance.
+		// Throws an exception otherwise.
+		static void checkAvailableStackSpace(size_t required_bytes = 0);
 
-    private:
-	friend class IncrementStackDepthScope;
-	friend class DisableStackCheckingScope;
+	private:
+		friend class IncrementStackDepthScope;
+		friend class DisableStackCheckingScope;
 
-	static void handleStackDepthExceeded() __attribute__((noreturn));
-	static void handleStackSpaceExceeded() __attribute__((noreturn));
+		static void handleStackDepthExceeded() __attribute__((noreturn));
+		static void handleStackSpaceExceeded() __attribute__((noreturn));
 
-	// Current depth of expression evaluation.
-	static unsigned int s_depth;
+		// Current depth of expression evaluation.
+		static unsigned int s_depth;
 
-	// The limit (controlled by the 'expressions' R option) at which we
-	// trigger an error.
-	static unsigned int s_depth_limit;
-    };
+		// The limit (controlled by the 'expressions' R option) at which we
+		// trigger an error.
+		static unsigned int s_depth_limit;
+	};
 
-    class IncrementStackDepthScope {
-    public:
-	IncrementStackDepthScope() {
-	    StackChecker::s_depth++;
-	    if (StackChecker::s_depth > StackChecker::s_depth_limit) {
-		StackChecker::handleStackDepthExceeded();
-	    }
-	    StackChecker::checkAvailableStackSpace();
-	}
-	~IncrementStackDepthScope() {
-	    StackChecker::s_depth--;
-	}
-    private:
-	IncrementStackDepthScope(const IncrementStackDepthScope&) = delete;
-	IncrementStackDepthScope& operator=(
-	    const IncrementStackDepthScope&) = delete;
-    };
+	class IncrementStackDepthScope
+	{
+	public:
+		IncrementStackDepthScope()
+		{
+			StackChecker::s_depth++;
+			if (StackChecker::s_depth > StackChecker::s_depth_limit)
+			{
+				StackChecker::handleStackDepthExceeded();
+			}
+			StackChecker::checkAvailableStackSpace();
+		}
+		~IncrementStackDepthScope()
+		{
+			StackChecker::s_depth--;
+		}
 
-    /*
+	private:
+		IncrementStackDepthScope(const IncrementStackDepthScope &) = delete;
+		IncrementStackDepthScope &operator=(
+			const IncrementStackDepthScope &) = delete;
+	};
+
+	/*
      * This class disables the normal stack checking to allow error reporting
      * and stack unwinding to proceed.
      */
-    class DisableStackCheckingScope {
-    public:
-	DisableStackCheckingScope();
-	~DisableStackCheckingScope();
+	class DisableStackCheckingScope
+	{
+	public:
+		DisableStackCheckingScope();
+		~DisableStackCheckingScope();
 
-    private:
-	unsigned int m_previous_limit;
-	uintptr_t m_previous_stack_limit;
+	private:
+		unsigned int m_previous_limit;
+		uintptr_t m_previous_stack_limit;
 
-	DisableStackCheckingScope(const DisableStackCheckingScope&) = delete;
-	DisableStackCheckingScope& operator=(
-	    const DisableStackCheckingScope&) = delete;
-    };
+		DisableStackCheckingScope(const DisableStackCheckingScope &) = delete;
+		DisableStackCheckingScope &operator=(
+			const DisableStackCheckingScope &) = delete;
+	};
 
-}  // namespace rho
+} // namespace rho
 
-#endif  // RHO_STACKDEPTH_HPP
+#endif // RHO_STACKDEPTH_HPP

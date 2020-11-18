@@ -28,59 +28,63 @@
  */
 
 #ifndef RETURNEXCEPTION_HPP
-#define RETURNEXCEPTION_HPP 1
+#define RETURNEXCEPTION_HPP
 
-#include "rho/GCRoot.hpp"
+#include <rho/GCRoot.hpp>
 
-namespace rho {
-    class Environment;
+namespace rho
+{
+	class Environment;
 
-    /** @brief Exception class to convey return value.
+	/** @brief Exception class to convey return value.
      *
      * An exception of this class conveys a value back to a
      * computation (typically a Closure application) operating within
      * a specified working Environment, and is used for example to
      * implement the R return command.
      */
-    class ReturnException {
-    public:
-	/** @brief Constructor.
-	 *
-	 * @param the_environment Pointer to the working Environment
-	 *          of the computational context within which the
-	 *          exception is to be caught.  (catch blocks within
-	 *          other contexts should rethrow the exception.)
-	 *
-	 * @param the_value Pointer, possibly null, to the RObject to
-	 *          be conveyed back to the target Environment.
-	 */
-	ReturnException(Environment* the_environment, RObject* the_value)
-	    : m_environment(the_environment), m_value(the_value)
-	{}
-
-	/** @brief Target Environment of this ReturnException.
-	 *
-	 * @return pointer to the Environment within which this
-	 * ReturnException should be caught.
-	 */
-	Environment* environment() const
+	class ReturnException
 	{
-	    return m_environment;
-	}
+	public:
+		/** @brief Constructor.
+		 *
+		 * @param the_environment Pointer to the working Environment
+		 *          of the computational context within which the
+		 *          exception is to be caught.  (catch blocks within
+		 *          other contexts should rethrow the exception.)
+		 *
+		 * @param the_value Pointer, possibly null, to the RObject to
+		 *          be conveyed back to the target Environment.
+		 */
+		ReturnException(Environment *the_environment, RObject *the_value)
+			: m_environment(the_environment), m_value(the_value)
+		{
+		}
 
-	/** @brief Payload of this ReturnException.
-	 *
-	 * @return Pointer, possibly null, to the RObject conveyed to
-	 * the target Environment by this ReturnException.
-	 */
-	RObject* value() const
-	{
-	    return m_value;
-	}
-    private:
-	Environment* m_environment;
-	GCRoot<> m_value;
-    };
-}
+		/** @brief Target Environment of this ReturnException.
+		 *
+		 * @return pointer to the Environment within which this
+		 * ReturnException should be caught.
+		 */
+		Environment *environment() const
+		{
+			return m_environment;
+		}
 
-#endif  // RETURNEXCEPTION_HPP
+		/** @brief Payload of this ReturnException.
+		 *
+		 * @return Pointer, possibly null, to the RObject conveyed to
+		 * the target Environment by this ReturnException.
+		 */
+		RObject *value() const
+		{
+			return m_value;
+		}
+
+	private:
+		Environment *m_environment;
+		GCRoot<> m_value;
+	};
+} // namespace rho
+
+#endif // RETURNEXCEPTION_HPP

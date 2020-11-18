@@ -24,49 +24,50 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file ComplexVector.h
+/** @file ComplexVector.hpp
  * @brief Class rho::ComplexVector and associated C interface.
  */
 
-#ifndef COMPLEXVECTOR_H
-#define COMPLEXVECTOR_H
+#ifndef COMPLEXVECTOR_HPP
+#define COMPLEXVECTOR_HPP
 
-#include "rho/VectorBase.hpp"
-#include "R_ext/Complex.h"
-#include "R_ext/Arith.h"
-#include "rho/Complex.hpp"
-#include "rho/FixedVector.hpp"
-#include "rho/SEXP_downcast.hpp"
+#include <rho/VectorBase.hpp>
+#include <R_ext/Complex.h>
+#include <R_ext/Arith.h>
+#include <rho/Complex.hpp>
+#include <rho/FixedVector.hpp>
+#include <rho/SEXP_downcast.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Vector of complex numbers.
      */
     typedef rho::FixedVector<Complex, CPLXSXP> ComplexVector;
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
     /**
      * @param s Pointer to an RObject.
      * @return TRUE iff the RObject pointed to by \a s is a complex vector.
      */
     inline Rboolean Rf_isComplex(SEXP s)
     {
-	return Rboolean(s && TYPEOF(s) == CPLXSXP);
+        return Rboolean(s && TYPEOF(s) == CPLXSXP);
     }
 
-/**
- * @param x Pointer to a rho::ComplexVector (i.e. an R complex vector).
- *          An error is generated if \a x is not a non-null pointer to a
- *          rho::ComplexVector .
- *
- * @return Pointer to element 0 of \a x .
- */
-inline Rcomplex *COMPLEX(SEXP x)
-{
-    using namespace rho;
-    return &(*SEXP_downcast<ComplexVector*>(x, false))[0];
+    /**
+     * @param x Pointer to a rho::ComplexVector (i.e. an R complex vector).
+     *          An error is generated if \a x is not a non-null pointer to a
+     *          rho::ComplexVector .
+     *
+     * @return Pointer to element 0 of \a x .
+     */
+    inline Rcomplex *COMPLEX(SEXP x)
+    {
+        using namespace rho;
+        return &(*SEXP_downcast<ComplexVector *>(x, false))[0];
+    }
 }
 
-}
-
-#endif /* COMPLEXVECTOR_H */
+#endif /* COMPLEXVECTOR_HPP */

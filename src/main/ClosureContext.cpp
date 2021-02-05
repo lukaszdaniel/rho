@@ -45,27 +45,31 @@ void ClosureContext::runOnExit()
     Rboolean savevis = R_Visible;
     // Prevent recursion:
     m_onexit = nullptr;
-    try {
-	DisableStackCheckingScope scope;
+    try
+    {
+        DisableStackCheckingScope scope;
 
-	     for (; onx != nullptr; onx = CDR(onx)) {
-		 setOnExit(CDR(onx));
-		Evaluator::evaluate(CAR(onx), m_working_env);
-	     }
+        for (; onx != nullptr; onx = CDR(onx))
+        {
+            setOnExit(CDR(onx));
+            Evaluator::evaluate(CAR(onx), m_working_env);
+        }
     }
     // Don't allow exceptions to escape:
-    catch (...) {}
+    catch (...)
+    {
+    }
     R_Visible = savevis;
 }
 
-ClosureContext* ClosureContext::innermost(Evaluator::Context* start)
+ClosureContext *ClosureContext::innermost(Evaluator::Context *start)
 {
     while (start && start->type() != CLOSURE)
-	start = start->nextOut();
-    return static_cast<ClosureContext*>(start);
+        start = start->nextOut();
+    return static_cast<ClosureContext *>(start);
 }
 
-ClosureContext* R_GlobalContext()
+ClosureContext *R_GlobalContext()
 {
     return ClosureContext::innermost();
 }

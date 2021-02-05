@@ -40,8 +40,8 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        Rboolean (*isLogicalptr)(SEXP s) = Rf_isLogical;
-        int *(*LOGICALp)(SEXP) = LOGICAL;
+        const auto &isLogicalptr = Rf_isLogical;
+        const auto &LOGICALp = LOGICAL;
     } // namespace ForceNonInline
 
     template <>

@@ -48,32 +48,37 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*ENCLOSp)(SEXP x) = ENCLOS;
-	Rboolean (*ENV_DEBUGp)(SEXP x) = ENV_DEBUG;
-	Rboolean (*isEnvironmentptr)(SEXP s) = Rf_isEnvironment;
-	SEXP (*FRAMEp)(SEXP x) = FRAME;
-	void (*SET_ENV_DEBUGp)(SEXP x, Rboolean v) = SET_ENV_DEBUG;
-	void (*SET_SYMVALUEp)(SEXP x, SEXP v) = SET_SYMVALUE;
-	SEXP (*SYMVALUEp)(SEXP x) = SYMVALUE;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &ENCLOSp = ENCLOS;
+        const auto &ENV_DEBUGp = ENV_DEBUG;
+        const auto &isEnvironmentptr = Rf_isEnvironment;
+        const auto &FRAMEp = FRAME;
+        const auto &SET_ENV_DEBUGp = SET_ENV_DEBUG;
+        const auto &SET_SYMVALUEp = SET_SYMVALUE;
+        const auto &SYMVALUEp = SYMVALUE;
+    } // namespace ForceNonInline
+} // namespace rho
 
-namespace {
+namespace
+{
     // Used in {,un}packGPBits():
-    const unsigned int FRAME_LOCK_MASK = 1<<14;
+    const unsigned int FRAME_LOCK_MASK = 1 << 14;
 
     // Used by the cache.
-    struct PointerHash {
-	size_t operator()(const Symbol* value) const {
-	    // Symbols are globally unique, so pointer equality is fine.
-	    // The '>> 4' is because the low-order bits are generally
-	    // zero due to alignment concerns.
-	    return reinterpret_cast<intptr_t>(value) >> 4;
-	}
+    struct PointerHash
+    {
+        size_t operator()(const Symbol *value) const
+        {
+            // Symbols are globally unique, so pointer equality is fine.
+            // The '>> 4' is because the low-order bits are generally
+            // zero due to alignment concerns.
+            return reinterpret_cast<intptr_t>(value) >> 4;
+        }
     };
-}
+} // namespace
 
 SEXP R_EmptyEnv;
 SEXP R_BaseEnv;
@@ -81,23 +86,24 @@ SEXP R_GlobalEnv;
 SEXP R_BaseNamespace;
 
 class Environment::Cache : public google::dense_hash_map<
-    const Symbol*, Frame::Binding*,
-    PointerHash,
-    std::equal_to<const Symbol*>,
-    Allocator<std::pair<const Symbol* const,
-			      Frame::Binding*> >
-    >
-{ };
+                               const Symbol *, Frame::Binding *,
+                               PointerHash,
+                               std::equal_to<const Symbol *>,
+                               Allocator<std::pair<const Symbol *const,
+                                                   Frame::Binding *>>>
+{
+};
 
 // The implementation assumes that any loops in the node graph will
 // include at least one Environment.
-void Environment::LeakMonitor::operator()(const GCNode* node)
+void Environment::LeakMonitor::operator()(const GCNode *node)
 {
-    if (typeid(*node) == typeid(Environment)) {
-	const Environment* env = static_cast<const Environment*>(node);
-	if (env->m_leaked)
-	    return;
-	env->m_leaked = true;
+    if (typeid(*node) == typeid(Environment))
+    {
+        const Environment *env = static_cast<const Environment *>(node);
+        if (env->m_leaked)
+            return;
+        env->m_leaked = true;
     }
     node->visitReferents(this);
 }
@@ -119,37 +125,42 @@ void Environment::detachReferents()
 // Define the preprocessor variable CHECK_CACHE to verify that the
 // search list cache is delivering correct results.
 
-Frame::Binding* Environment::findBinding(const Symbol* symbol)
+Frame::Binding *Environment::findBinding(const Symbol *symbol)
 {
     bool cache_miss = false;
-    Environment* env = this;
+    Environment *env = this;
 #ifdef CHECK_CACHE
-    Frame::Binding* cache_binding = 0;
+    Frame::Binding *cache_binding = 0;
 #endif
-    Cache* search_path_cache = searchPathCache();
-    while (env) {
-	if (env->isSearchPathCachePortal()) {
-	    // TODO: the cache isn't effective for S3 methods.
-	    Cache::iterator it = search_path_cache->find(symbol);
-	    if (it == search_path_cache->end())
-		cache_miss = true;
+    Cache *search_path_cache = searchPathCache();
+    while (env)
+    {
+        if (env->isSearchPathCachePortal())
+        {
+            // TODO: the cache isn't effective for S3 methods.
+            Cache::iterator it = search_path_cache->find(symbol);
+            if (it == search_path_cache->end())
+                cache_miss = true;
 #ifdef CHECK_CACHE
-	    else cache_binding = it->second;
+            else
+                cache_binding = it->second;
 #else
-	    else return it->second;
+            else
+                return it->second;
 #endif
-	}
-	Frame::Binding* bdg = env->frame()->binding(symbol);
-	if (bdg) {
+        }
+        Frame::Binding *bdg = env->frame()->binding(symbol);
+        if (bdg)
+        {
 #ifdef CHECK_CACHE
-	    if (cache_binding && cache_binding != bdg)
-		abort();
+            if (cache_binding && cache_binding != bdg)
+                abort();
 #endif
-	    if (cache_miss)
-		(*search_path_cache)[symbol] = bdg;
-	    return bdg;
-	}
-	env = env->enclosingEnvironment();
+            if (cache_miss)
+                (*search_path_cache)[symbol] = bdg;
+            return bdg;
+        }
+        env = env->enclosingEnvironment();
     }
     return nullptr;
 }
@@ -158,23 +169,24 @@ Frame::Binding* Environment::findBinding(const Symbol* symbol)
 
 // Environment::findPackage() is in envir.cpp
 
-void Environment::flushFromSearchPathCache(const Symbol* sym)
+void Environment::flushFromSearchPathCache(const Symbol *sym)
 {
-    Cache* search_path_cache = searchPathCache();
+    Cache *search_path_cache = searchPathCache();
 
     if (sym)
-	search_path_cache->erase(sym);
-    else {
-	// Clear the cache, but retain the current number of buckets:
-	size_t buckets = search_path_cache->bucket_count();
-	search_path_cache->clear();
-	search_path_cache->rehash(buckets);
+        search_path_cache->erase(sym);
+    else
+    {
+        // Clear the cache, but retain the current number of buckets:
+        size_t buckets = search_path_cache->bucket_count();
+        search_path_cache->clear();
+        search_path_cache->rehash(buckets);
     }
 }
 
-Environment::Cache* Environment::createSearchPathCache()
+Environment::Cache *Environment::createSearchPathCache()
 {
-    Cache* search_path_cache = new Cache();
+    Cache *search_path_cache = new Cache();
     // Need a couple of pointers that won't be used elsewhere.
     static GCRoot<Symbol> empty_key = Symbol::createUnnamedSymbol();
     static GCRoot<Symbol> deleted_key = Symbol::createUnnamedSymbol();
@@ -184,13 +196,13 @@ Environment::Cache* Environment::createSearchPathCache()
     return search_path_cache;
 }
 
-Environment* Environment::createEmptyEnvironment()
+Environment *Environment::createEmptyEnvironment()
 {
     GCStackRoot<Frame> empty_frame(new Frame(1));
     return new Environment(0, empty_frame);
 }
 
-Environment* Environment::createBaseEnvironment()
+Environment *Environment::createBaseEnvironment()
 {
     GCStackRoot<Frame> base_frame(new Frame(1));
     GCStackRoot<Environment> base(new Environment(empty(), base_frame));
@@ -198,20 +210,20 @@ Environment* Environment::createBaseEnvironment()
     return base;
 }
 
-Environment* Environment::createGlobalEnvironment()
+Environment *Environment::createGlobalEnvironment()
 {
     GCStackRoot<Frame> global_frame(new Frame(64));
     return new Environment(base(), global_frame);
 }
 
-Environment* Environment::createBaseNamespace()
+Environment *Environment::createBaseNamespace()
 {
     return new Environment(global(), base()->frame());
 }
 
-Environment::Cache* Environment::searchPathCache()
+Environment::Cache *Environment::searchPathCache()
 {
-    static Cache* cache = createSearchPathCache();
+    static Cache *cache = createSearchPathCache();
     return cache;
 }
 
@@ -226,32 +238,34 @@ void Environment::initialize()
     R_BaseNamespace = baseNamespace();
 }
 
-void Environment::setOnSearchPath(bool status) {
+void Environment::setOnSearchPath(bool status)
+{
     if (status == m_on_search_path)
-	return;
+        return;
 
     m_on_search_path = status;
     if (!m_frame)
-	return;
+        return;
 
     if (status)
-	m_frame->incCacheCount();
+        m_frame->incCacheCount();
     else
-	m_frame->decCacheCount();
+        m_frame->decCacheCount();
 
     // Invalidate cache entries.
-    std::vector<const Symbol*> symbols = frame()->symbols(true);
-    for (std::vector<const Symbol*>::const_iterator symbol = symbols.begin();
-	 symbol != symbols.end(); ++symbol) {
-	flushFromSearchPathCache(*symbol);
+    std::vector<const Symbol *> symbols = frame()->symbols(true);
+    for (std::vector<const Symbol *>::const_iterator symbol = symbols.begin();
+         symbol != symbols.end(); ++symbol)
+    {
+        flushFromSearchPathCache(*symbol);
     }
 }
 
 // Environment::namespaceSpec() is in envir.cpp
 
-const char* Environment::package_s11n_aux(const StringVector* pkg_name)
+const char *Environment::package_s11n_aux(const StringVector *pkg_name)
 {
-    const char* name = (*pkg_name)[0]->c_str();
+    const char *name = (*pkg_name)[0]->c_str();
     Rf_warning(_("'%s' may not be available when loading"), name);
     return name;
 }
@@ -259,38 +273,41 @@ const char* Environment::package_s11n_aux(const StringVector* pkg_name)
 unsigned int Environment::packGPBits() const
 {
     unsigned int ans = RObject::packGPBits();
-    if (m_locked) ans |= FRAME_LOCK_MASK;
+    if (m_locked)
+        ans |= FRAME_LOCK_MASK;
     return ans;
 }
 
 // Environment::packageName() in in envir.cpp
 
-void  Environment::setEnclosingEnvironment(Environment* new_enclos)
+void Environment::setEnclosingEnvironment(Environment *new_enclos)
 {
     m_enclosing = new_enclos;
     // Recursively propagate participation in search list cache:
-    if (m_on_search_path) {
-	Environment* env = m_enclosing;
-	while (env && !env->m_on_search_path) {
-	    env->setOnSearchPath(true);
-	    env = env->m_enclosing;
-	}
+    if (m_on_search_path)
+    {
+        Environment *env = m_enclosing;
+        while (env && !env->m_on_search_path)
+        {
+            env->setOnSearchPath(true);
+            env = env->m_enclosing;
+        }
     }
 }
 
-Environment* Environment::attachToSearchPath(int pos, StringVector* name)
+Environment *Environment::attachToSearchPath(int pos, StringVector *name)
 {
     // Duplicate the environment.
-    GCStackRoot<Frame> frame(static_cast<Frame*>(m_frame->clone()));
+    GCStackRoot<Frame> frame(static_cast<Frame *>(m_frame->clone()));
     GCStackRoot<Environment> new_env(new Environment(nullptr, frame));
     new_env->setAttribute(NameSymbol, name);
 
     // Iterate through the search path to the environment just before where we
     // want to insert.
     // This will be either pos - 1 or the environment prior to base().
-    Environment* where = global();
+    Environment *where = global();
     for (int n = 1; n < pos - 1 && where->enclosingEnvironment() != base(); n++)
-	where = where->enclosingEnvironment();
+        where = where->enclosingEnvironment();
 
     // Insert the new environment after where.
     new_env->m_enclosing = where->m_enclosing;
@@ -300,21 +317,22 @@ Environment* Environment::attachToSearchPath(int pos, StringVector* name)
     return new_env;
 }
 
-Environment* Environment::detachFromSearchPath(int pos) {
+Environment *Environment::detachFromSearchPath(int pos)
+{
     if (pos == 1)
-	Rf_error(_("invalid '%s' argument"), "pos");
+        Rf_error(_("invalid '%s' argument"), "pos");
 
     // Iterate through the search path to the environment just before where we
     // want to detach.
-    Environment* where = global();
+    Environment *where = global();
     for (int n = 1; n < pos - 1 && where->enclosingEnvironment() != empty(); n++)
-	where = where->enclosingEnvironment();
+        where = where->enclosingEnvironment();
 
     Environment *env_to_detach = where->enclosingEnvironment();
     if (env_to_detach == base())
-	Rf_error(_("detaching \"package:base\" is not allowed"));
+        Rf_error(_("detaching \"package:base\" is not allowed"));
     if (env_to_detach == empty())
-	Rf_error(_("invalid '%s' argument"), "pos");
+        Rf_error(_("invalid '%s' argument"), "pos");
 
     // Detach the environment after where.
     where->m_enclosing = env_to_detach->m_enclosing;
@@ -324,7 +342,7 @@ Environment* Environment::detachFromSearchPath(int pos) {
     return env_to_detach;
 }
 
-const char* Environment::typeName() const
+const char *Environment::typeName() const
 {
     return staticTypeName();
 }
@@ -337,94 +355,109 @@ void Environment::unpackGPBits(unsigned int gpbits)
     // m_globally_cached = ((gpbits & GLOBAL_FRAME_MASK) != 0);
 }
 
-void Environment::visitReferents(const_visitor* v) const
+void Environment::visitReferents(const_visitor *v) const
 {
-    const GCNode* enc = m_enclosing;
-    const GCNode* frame = m_frame;
+    const GCNode *enc = m_enclosing;
+    const GCNode *frame = m_frame;
     RObject::visitReferents(v);
     if (enc)
-	(*v)(enc);
+        (*v)(enc);
     if (frame)
-	(*v)(frame);
+        (*v)(frame);
 }
 
-void Environment::nullEnvironmentError() {
+void Environment::nullEnvironmentError()
+{
     Rf_error(_("use of NULL environment is defunct"));
 }
 
 // ***** Free-standing functions *****
 
-namespace {
+namespace
+{
     // Predicate used to test whether a Binding's value is a function.
-    class FunctionTester : public unary_function<RObject*, bool> {
+    class FunctionTester : public unary_function<RObject *, bool>
+    {
     public:
-	FunctionTester(const Symbol* symbol)
-	    : m_symbol(symbol)
-	{}
+        FunctionTester(const Symbol *symbol)
+            : m_symbol(symbol)
+        {
+        }
 
-	bool operator()(const RObject* obj);
+        bool operator()(const RObject *obj);
+
     private:
-	const Symbol* m_symbol;
+        const Symbol *m_symbol;
     };
 
-    bool FunctionTester::operator()(const RObject* obj)
+    bool FunctionTester::operator()(const RObject *obj)
     {
-	if (obj == R_MissingArg)
-	    Rf_error(_("argument \"%s\" is missing, with no default"),
-		     m_symbol->name()->c_str());
-	return FunctionBase::isA(obj);
+        if (obj == R_MissingArg)
+            Rf_error(_("argument \"%s\" is missing, with no default"),
+                     m_symbol->name()->c_str());
+        return FunctionBase::isA(obj);
     }
-}
+} // namespace
 
-namespace rho {
-    FunctionBase*
-    findFunction(const Symbol* symbol, Environment* env, bool inherits)
+namespace rho
+{
+    FunctionBase *
+    findFunction(const Symbol *symbol, Environment *env, bool inherits)
     {
-	FunctionTester functest(symbol);
-	RObject *value = findTestedValue(symbol, env, functest, inherits);
-	return static_cast<FunctionBase*>(value);
+        FunctionTester functest(symbol);
+        RObject *value = findTestedValue(symbol, env, functest, inherits);
+        return static_cast<FunctionBase *>(value);
     }
-}
+} // namespace rho
 
-SEXP HASHTAB(SEXP x) {
+SEXP HASHTAB(SEXP x)
+{
     Rf_error("HASHTAB is not supported in rho.");
     return nullptr;
 }
 
-void SET_HASHTAB(SEXP x, SEXP table) {
-    if (table != nullptr) {
-	Rf_error("SET_HASHTAB is not supported in rho.");
+void SET_HASHTAB(SEXP x, SEXP table)
+{
+    if (table != nullptr)
+    {
+        Rf_error("SET_HASHTAB is not supported in rho.");
     }
 }
 
-void SET_FRAME(SEXP x, SEXP frame) {
-    if (frame != nullptr) {
-	Rf_error("SET_FRAME is not supported in rho.");
+void SET_FRAME(SEXP x, SEXP frame)
+{
+    if (frame != nullptr)
+    {
+        Rf_error("SET_FRAME is not supported in rho.");
     }
 }
 
-void SET_ENCLOS(SEXP x, SEXP v) {
-    SEXP_downcast<Environment*>(x)->setEnclosingEnvironment(
-	SEXP_downcast<Environment*>(v));
+void SET_ENCLOS(SEXP x, SEXP v)
+{
+    SEXP_downcast<Environment *>(x)->setEnclosingEnvironment(
+        SEXP_downcast<Environment *>(v));
 }
 
 // Utility intended to be called from a debugger.  Prints out the
 // names of the Symbols in an Environment, together with the addresses
 // the Symbols are bound to.
-namespace rho {
-    void LS(SEXP s) {
-	const Environment* env = SEXP_downcast<Environment*>(s);
-	const Frame* frame = env->frame();
-	vector<const Symbol*> syms = frame->symbols(true);
-	for (vector<const Symbol*>::const_iterator it = syms.begin();
-	     it != syms.end(); ++it) {
-	    const Symbol* sym = *it;
-	    const RObject* val = frame->binding(sym)->rawValue();
-	    cout << '\"' << sym->name()->stdstring()
-		 << "\" (\'RObject\'*)" << val;
-	    if (val)
-		cout << " [" << typeid(*val).name() << ']';
-	    cout << '\n';
-	}
+namespace rho
+{
+    void LS(SEXP s)
+    {
+        const Environment *env = SEXP_downcast<Environment *>(s);
+        const Frame *frame = env->frame();
+        vector<const Symbol *> syms = frame->symbols(true);
+        for (vector<const Symbol *>::const_iterator it = syms.begin();
+             it != syms.end(); ++it)
+        {
+            const Symbol *sym = *it;
+            const RObject *val = frame->binding(sym)->rawValue();
+            cout << '\"' << sym->name()->stdstring()
+                 << "\" (\'RObject\'*)" << val;
+            if (val)
+                cout << " [" << typeid(*val).name() << ']';
+            cout << '\n';
+        }
     }
-}
+} // namespace rho

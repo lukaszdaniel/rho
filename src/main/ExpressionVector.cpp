@@ -33,23 +33,26 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*isExpressionptr)(SEXP s) = Rf_isExpression;
-	SEXP (*XVECTOR_ELTp)(const SEXP x, R_xlen_t i) = XVECTOR_ELT;
-    }
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &isExpressionptr = Rf_isExpression;
+        const auto &XVECTOR_ELTp = XVECTOR_ELT;
+    } // namespace ForceNonInline
 
-    template<>
-    const char* ExpressionVector::staticTypeName() {
-	return "expression";
+    template <>
+    const char *ExpressionVector::staticTypeName()
+    {
+        return "expression";
     }
-}
+} // namespace rho
 
 // ***** C interface *****
 
 SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
-    ExpressionVector* ev = SEXP_downcast<ExpressionVector*>(x, false);
+    ExpressionVector *ev = SEXP_downcast<ExpressionVector *>(x, false);
     (*ev)[i] = v;
     return v;
 }

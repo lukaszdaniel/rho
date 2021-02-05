@@ -22,7 +22,7 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file unrho.h
+/** @file unrho.hpp
  *
  * @brief Macros used to provide cues to the unrho.pl script.
  *
@@ -38,8 +38,8 @@
  * them differently, reflecting CR usage.
  */
 
-#ifndef UNRHO_H
-#define UNRHO_H
+#ifndef UNRHO_HPP
+#define UNRHO_HPP
 
 /** @brief const in rho, not const in CR.
  *
@@ -94,4 +94,4 @@
  */
 #define RHO_TRUE TRUE
 
-#endif /* UNRHO_H */
+#endif /* UNRHO_HPP */

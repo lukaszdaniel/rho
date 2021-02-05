@@ -34,11 +34,11 @@
 using namespace std;
 using namespace rho;
 
-RObject* R_Srcref = nullptr;
+RObject *R_Srcref = nullptr;
 
-FunctionContext* FunctionContext::innermost(Evaluator::Context* start)
+FunctionContext *FunctionContext::innermost(Evaluator::Context *start)
 {
     while (start && start->type() < FUNCTION)
-	start = start->nextOut();
-    return static_cast<FunctionContext*>(start);
+        start = start->nextOut();
+    return static_cast<FunctionContext *>(start);
 }

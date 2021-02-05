@@ -24,7 +24,7 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file LogicalVector.h
+/** @file LogicalVector.hpp
  * @brief Class rho::LogicalVector and associated C interface.
  */
 

@@ -245,7 +245,7 @@ void printVector(SEXP x, int indx, int quote)
 
 #undef DO_first_lab
 #undef DO_newline
-
+
 
 /* The following code prints vectors which have every element named.
 

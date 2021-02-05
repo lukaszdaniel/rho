@@ -88,7 +88,7 @@ using namespace std;
 using namespace rho;
 
 /* interval at which to check interrupts */
-constexpr R_xlen_t NINTERRUPT = 1000000;
+// constexpr R_xlen_t NINTERRUPT = 1000000;
 
 /* 
    Default maximum stack size: note this is reserved but not allocated

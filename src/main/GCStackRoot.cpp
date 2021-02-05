@@ -35,10 +35,11 @@
 
 #include <cstdlib>
 
-extern "C" {
+extern "C"
+{
     // Declared in src/extra/gc/include/private/gc_priv.h.
-    void GC_with_callee_saves_pushed(void (*fn)(char*, void *),
-				     char* arg);
+    void GC_with_callee_saves_pushed(void (*fn)(char *, void *),
+                                     char *arg);
 }
 
 using namespace std;
@@ -46,15 +47,16 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	auto ensureReachableP = GCStackRootBase::ensureReachable;
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        auto ensureReachableP = GCStackRootBase::ensureReachable;
     }
-}
+} // namespace rho
 
 #ifdef HAVE_ADDRESS_SANITIZER
-extern "C"
-const char* __asan_default_options()
+extern "C" const char *__asan_default_options()
 {
     // Disables leak detection and ASAN signal segv handler.
     // R installs it's own signal handlers.
@@ -66,50 +68,51 @@ const char* __asan_default_options()
 
 void R_GetStackLimits();
 
-void* GCStackRootBase::getStackBase()
+void *GCStackRootBase::getStackBase()
 {
-    if (R_CStackStart == (uintptr_t)-1) {
-	R_GetStackLimits();
+    if (R_CStackStart == (uintptr_t)-1)
+    {
+        R_GetStackLimits();
     }
-    return reinterpret_cast<void*>(R_CStackStart);
+    return reinterpret_cast<void *>(R_CStackStart);
 }
 
-NO_SANITIZE_ADDRESS 
-void GCStackRootBase::visitRoots(GCNode::const_visitor* visitor,
-				 const void* start_ptr,
-				 const void* end_ptr)
+NO_SANITIZE_ADDRESS
+void GCStackRootBase::visitRoots(GCNode::const_visitor *visitor,
+                                 const void *start_ptr,
+                                 const void *end_ptr)
 {
     uintptr_t start = start_ptr ? reinterpret_cast<uintptr_t>(start_ptr)
-	: reinterpret_cast<uintptr_t>(getStackBase());
+                                : reinterpret_cast<uintptr_t>(getStackBase());
     uintptr_t end = reinterpret_cast<uintptr_t>(end_ptr);
-
 
 #ifdef STACK_GROWS_UP
     for (uintptr_t stack_pointer = start; stack_pointer < end;
-	 stack_pointer += alignof(void*))
+         stack_pointer += alignof(void *))
 #else
     for (uintptr_t stack_pointer = start; stack_pointer > end;
-	 stack_pointer -= alignof(void*))
+         stack_pointer -= alignof(void *))
 #endif
     {
-        void* candidate_pointer = *reinterpret_cast<void**>(stack_pointer);
-	GCNode* node = GCNode::asGCNode(candidate_pointer);
-	if (node) {
-	    (*visitor)(node);
-	}
+        void *candidate_pointer = *reinterpret_cast<void **>(stack_pointer);
+        GCNode *node = GCNode::asGCNode(candidate_pointer);
+        if (node)
+        {
+            (*visitor)(node);
+        }
     }
 }
 
-void GCStackRootBase::visitRoots(GCNode::const_visitor* v)
+void GCStackRootBase::visitRoots(GCNode::const_visitor *v)
 {
     GC_with_callee_saves_pushed(visitRootsImpl,
-				reinterpret_cast<char*>(v));
+                                reinterpret_cast<char *>(v));
 }
 
-void GCStackRootBase::visitRootsImpl(char* p, void*)
+void GCStackRootBase::visitRootsImpl(char *p, void *)
 {
     GCStackRoot<GCNode> top;
-    GCNode::const_visitor* v = reinterpret_cast<GCNode::const_visitor*>(p);
+    GCNode::const_visitor *v = reinterpret_cast<GCNode::const_visitor *>(p);
     visitRoots(v, nullptr, &top);
 }
 
@@ -117,20 +120,19 @@ void GCStackRootBase::withAllStackNodesProtected(std::function<void()> function)
 {
     // Push all callee-save registers onto the stack.
     GC_with_callee_saves_pushed(withAllStackNodesProtectedImpl,
-				reinterpret_cast<char*>(&function));
+                                reinterpret_cast<char *>(&function));
 }
 
-void GCStackRootBase::withAllStackNodesProtectedImpl(char* pointer, void*)
+void GCStackRootBase::withAllStackNodesProtectedImpl(char *pointer, void *)
 {
-    std::function<void()>* function
-	= reinterpret_cast<std::function<void()>*>(pointer);
+    std::function<void()> *function = reinterpret_cast<std::function<void()> *>(pointer);
 
     // Protect all values on the stack above the barrier.  Those below the
     // barrier have already been protected.
     GCStackFrameBoundary::withStackFrameBoundary([=]() {
-	    GCStackFrameBoundary::advanceBarrier();
-	    // Call the user function.
-	    (*function)();
-	    return nullptr;
-	});
+        GCStackFrameBoundary::advanceBarrier();
+        // Call the user function.
+        (*function)();
+        return nullptr;
+    });
 }

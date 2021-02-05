@@ -35,93 +35,95 @@
 #include <stack>
 #include <boost/intrusive/list.hpp>
 
-namespace rho {
-
-// The reference counting scheme uses an incremental stack scanning
-// implementation for updating the reference counts of objects that have
-// stack roots.
-//
-// The GC maintains a location on the stack known as the GC stack barrier, which
-// has the property that all stack roots below the barrier have incremented
-// their reference count, and none of the ones above the barrier have.
-// At garbage collection time, only the locations on the stack between the
-// barrier and the top of the stack need to be scanned, and the barrier can be
-// advanced to reduce the amount of scanning that needs to occur in later
-// collections.
-// 
-// A GCStackFrameBoundary is a location on the stack where the barrier can be
-// placed.  To ensure correctness of the reference counting, it must be
-// inserted only in locations where all the roots further down the stack are
-// known to be immutable during its lifetime.
-// The GCStackFrameBoundary's destructor automatically tests if the stack is
-// being popped past the barrier, and if so, moves the barrier and updates the
-// reference counts of the stack roots.
-class GCStackFrameBoundary :
-	public boost::intrusive::list_base_hook<>
+namespace rho
 {
-public:
-    /** @brief Insert a stack frame boundary between function frames.
-     *
-     * Calls the specified function, with a stack frame boundary inserted
-     * between the calling and called functions.
-     *
-     * @param function The function to call.
-     */
-    static RObject* withStackFrameBoundary(std::function<RObject*()> function);
 
-    /** @brief Advance the GC stack barrier to the topmost boundary.
-     *
-     * The location of the GC stack barrier is moved to the location of the
-     * top boundary on the stack, ensuring that all roots below that boundary
-     * have their reference counts incremented.
-     *
-     * In particular, if there are no important roots after the topmost
-     * boundary, this ensures that all stack roots have been processed.
-     */
-    static void advanceBarrier();
-private:
-
-    GCStackFrameBoundary() : m_num_protected_pointers(0)
+    // The reference counting scheme uses an incremental stack scanning
+    // implementation for updating the reference counts of objects that have
+    // stack roots.
+    //
+    // The GC maintains a location on the stack known as the GC stack barrier, which
+    // has the property that all stack roots below the barrier have incremented
+    // their reference count, and none of the ones above the barrier have.
+    // At garbage collection time, only the locations on the stack between the
+    // barrier and the top of the stack need to be scanned, and the barrier can be
+    // advanced to reduce the amount of scanning that needs to occur in later
+    // collections.
+    //
+    // A GCStackFrameBoundary is a location on the stack where the barrier can be
+    // placed.  To ensure correctness of the reference counting, it must be
+    // inserted only in locations where all the roots further down the stack are
+    // known to be immutable during its lifetime.
+    // The GCStackFrameBoundary's destructor automatically tests if the stack is
+    // being popped past the barrier, and if so, moves the barrier and updates the
+    // reference counts of the stack roots.
+    class GCStackFrameBoundary : public boost::intrusive::list_base_hook<>
     {
-	s_boundaries.push_back(*this);
-    }
+    public:
+        /** @brief Insert a stack frame boundary between function frames.
+         *
+         * Calls the specified function, with a stack frame boundary inserted
+         * between the calling and called functions.
+         *
+         * @param function The function to call.
+         */
+        static RObject *withStackFrameBoundary(std::function<RObject *()> function);
 
-    ~GCStackFrameBoundary()
-    {
-	assert(this == &s_boundaries.back());
-	if (this == s_barrier) {
-	    applyBarrier();
-	}
-	s_boundaries.pop_back();
-    }
+        /** @brief Advance the GC stack barrier to the topmost boundary.
+         *
+         * The location of the GC stack barrier is moved to the location of the
+         * top boundary on the stack, ensuring that all roots below that boundary
+         * have their reference counts incremented.
+         *
+         * In particular, if there are no important roots after the topmost
+         * boundary, this ensures that all stack roots have been processed.
+         */
+        static void advanceBarrier();
 
-    void* getStackPointer();
-    static void advanceBarrierOneFrame(GCStackFrameBoundary* frame_start,
-				       GCStackFrameBoundary* frame_end);
+    private:
+        GCStackFrameBoundary() : m_num_protected_pointers(0)
+        {
+            s_boundaries.push_back(*this);
+        }
 
-    void applyBarrier();
+        ~GCStackFrameBoundary()
+        {
+            assert(this == &s_boundaries.back());
+            if (this == s_barrier)
+            {
+                applyBarrier();
+            }
+            s_boundaries.pop_back();
+        }
 
-    int m_num_protected_pointers;
+        void *getStackPointer();
+        static void advanceBarrierOneFrame(GCStackFrameBoundary *frame_start,
+                                           GCStackFrameBoundary *frame_end);
 
-    static GCStackFrameBoundary* s_barrier;
+        void applyBarrier();
 
-    // We can't use the std::stack wrapper here as it gives compilation errors
-    // when using the intrusive list as the underlying container.
-    typedef boost::intrusive::list<
-	GCStackFrameBoundary,
-	boost::intrusive::constant_time_size<false>> BoundaryStack;
-    static BoundaryStack s_boundaries;
+        int m_num_protected_pointers;
 
-    static GCStackFrameBoundary* s_bottom_of_stack;
+        static GCStackFrameBoundary *s_barrier;
 
-    static std::stack<const GCNode*> s_protected_nodes;
+        // We can't use the std::stack wrapper here as it gives compilation errors
+        // when using the intrusive list as the underlying container.
+        typedef boost::intrusive::list<
+            GCStackFrameBoundary,
+            boost::intrusive::constant_time_size<false>>
+            BoundaryStack;
+        static BoundaryStack s_boundaries;
 
-    struct ProtectPointerVisitor;
+        static GCStackFrameBoundary *s_bottom_of_stack;
 
-    GCStackFrameBoundary(const GCStackFrameBoundary&) = delete;
-    GCStackFrameBoundary& operator=(const GCStackFrameBoundary&) = delete;
-};
+        static std::stack<const GCNode *> s_protected_nodes;
 
-}  // namespace rho
+        struct ProtectPointerVisitor;
 
-#endif  // RHO_GC_STACK_BOUNDARY_HPP
+        GCStackFrameBoundary(const GCStackFrameBoundary &) = delete;
+        GCStackFrameBoundary &operator=(const GCStackFrameBoundary &) = delete;
+    };
+
+} // namespace rho
+
+#endif // RHO_GC_STACK_BOUNDARY_HPP

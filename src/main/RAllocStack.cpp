@@ -40,17 +40,19 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	void* (*vmaxgetp)(void) = vmaxget;
-	void (*vmaxsetp)(const void*) = vmaxset;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &vmaxgetp = vmaxget;
+        const auto &vmaxsetp = vmaxset;
+    } // namespace ForceNonInline
+} // namespace rho
 
-RAllocStack::Stack* RAllocStack::s_stack = nullptr;
-RAllocStack::Scope* RAllocStack::s_innermost_scope = 0;
+RAllocStack::Stack *RAllocStack::s_stack = nullptr;
+RAllocStack::Scope *RAllocStack::s_innermost_scope = 0;
 
-void* RAllocStack::allocate(size_t sz)
+void *RAllocStack::allocate(size_t sz)
 {
     Pair pr(sz, MemoryBank::allocate(sz));
     s_stack->push(pr);
@@ -65,62 +67,63 @@ void RAllocStack::initialize()
 void RAllocStack::restoreSize(size_t new_size)
 {
     if (new_size > s_stack->size())
-	throw out_of_range("RAllocStack::restoreSize: requested size greater than current size.");
+        throw out_of_range("RAllocStack::restoreSize: requested size greater than current size.");
 #ifndef NDEBUG
     if (s_innermost_scope && new_size < s_innermost_scope->startSize())
-	throw out_of_range("RAllocStack::restoreSize: requested size too small for current scope.");
+        throw out_of_range("RAllocStack::restoreSize: requested size too small for current scope.");
 #endif
     trim(new_size);
 }
 
 void RAllocStack::trim(size_t new_size)
 {
-    while (s_stack->size() > new_size) {
-	Pair& top = s_stack->top();
-	MemoryBank::deallocate(top.second, top.first);
-	s_stack->pop();
+    while (s_stack->size() > new_size)
+    {
+        Pair &top = s_stack->top();
+        MemoryBank::deallocate(top.second, top.first);
+        s_stack->pop();
     }
 }
 
 // ***** C interface *****
 
-char* R_alloc(size_t num_elts, int elt_size)
+char *R_alloc(size_t num_elts, int elt_size)
 {
     if (elt_size <= 0)
-	Rf_error(_("R_alloc: element size must be positive."));
+        Rf_error(_("R_alloc: element size must be positive."));
     size_t uelt_size = size_t(elt_size);
-    size_t size = num_elts*uelt_size;
+    size_t size = num_elts * uelt_size;
     // Check for integer overflow:
-    if (size/uelt_size != num_elts)
-	Rf_error(_("R_alloc: requested allocation is impossibly large."));
-    return static_cast<char*>(RAllocStack::allocate(size));
+    if (size / uelt_size != num_elts)
+        Rf_error(_("R_alloc: requested allocation is impossibly large."));
+    return static_cast<char *>(RAllocStack::allocate(size));
 }
 
-char* S_alloc(long num_elts, int elt_size)
+char *S_alloc(long num_elts, int elt_size)
 {
     if (num_elts < 0)
-	Rf_error(_("S_alloc: number of elements must be non-negative."));
+        Rf_error(_("S_alloc: number of elements must be non-negative."));
     if (elt_size <= 0)
-	Rf_error(_("S_alloc: element size must be positive."));
+        Rf_error(_("S_alloc: element size must be positive."));
     size_t unum_elts = size_t(num_elts);
     size_t uelt_size = size_t(elt_size);
-    size_t size = unum_elts*uelt_size;
+    size_t size = unum_elts * uelt_size;
     // Check for integer overflow:
-    if (size/uelt_size != unum_elts)
-	Rf_error(_("R_alloc: requested allocation is impossibly large."));
-    char* ans = static_cast<char*>(RAllocStack::allocate(size));
+    if (size / uelt_size != unum_elts)
+        Rf_error(_("R_alloc: requested allocation is impossibly large."));
+    char *ans = static_cast<char *>(RAllocStack::allocate(size));
     memset(ans, 0, size);
     return ans;
 }
 
-char* S_realloc(char *prev_block, long new_sz, long old_sz, int elt_size)
+char *S_realloc(char *prev_block, long new_sz, long old_sz, int elt_size)
 {
     if (new_sz <= old_sz)
-	return prev_block;
-    char* ans = S_alloc(new_sz, elt_size);
+        return prev_block;
+    char *ans = S_alloc(new_sz, elt_size);
     size_t uelt_size = size_t(elt_size);
-    size_t old_bytes = size_t(old_sz)*uelt_size;
+    size_t old_bytes = size_t(old_sz) * uelt_size;
     memcpy(ans, prev_block, old_bytes);
-    memset(ans + old_sz, 0, size_t(new_sz)*uelt_size - old_bytes);
+    memset(ans + old_sz, 0, size_t(new_sz) * uelt_size - old_bytes);
     return ans;
 }

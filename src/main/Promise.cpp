@@ -42,15 +42,17 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*PRCODEp)(SEXP x) = PRCODE;
-	SEXP (*PRENVp)(SEXP x) = PRENV;
-	SEXP (*PRVALUEp)(SEXP x) = PRVALUE;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &PRCODEp = PRCODE;
+        const auto &PRENVp = PRENV;
+        const auto &PRVALUEp = PRVALUE;
+    } // namespace ForceNonInline
+} // namespace rho
 
-PromiseData::PromiseData(const RObject* valgen, Environment* env)
+PromiseData::PromiseData(const RObject *valgen, Environment *env)
     : m_under_evaluation(false), m_interrupted(false),
       m_is_pointer_to_promise(false)
 {
@@ -59,18 +61,19 @@ PromiseData::PromiseData(const RObject* valgen, Environment* env)
     m_environment = env;
 }
 
-PromiseData::PromiseData(Promise* value)
+PromiseData::PromiseData(Promise *value)
     : m_is_pointer_to_promise(true)
 {
     m_value = value;
 }
 
 PromiseData::~PromiseData() = default;
-PromiseData::PromiseData(PromiseData&&) = default;
-PromiseData& PromiseData::operator=(PromiseData&& other) = default;
+PromiseData::PromiseData(PromiseData &&) = default;
+PromiseData &PromiseData::operator=(PromiseData &&other) = default;
 
-Promise* PromiseData::asPromise() {
-    Promise* promise = new Promise(std::move(*this));
+Promise *PromiseData::asPromise()
+{
+    Promise *promise = new Promise(std::move(*this));
     *this = PromiseData(promise);
     return promise;
 }
@@ -82,40 +85,46 @@ void PromiseData::detachReferents()
     m_environment.detach();
 }
 
-RObject* PromiseData::evaluate()
+RObject *PromiseData::evaluate()
 {
-    if (m_is_pointer_to_promise) {
+    if (m_is_pointer_to_promise)
+    {
         return getThis()->evaluate();
     }
-    if (m_value == Symbol::unboundValue()) {
-	// Force promise:
-	if (m_interrupted) {
-	    Rf_warning(_("restarting interrupted promise evaluation"));
-	    m_interrupted = false;
-	}
-	else if (m_under_evaluation)
-	    Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
-	m_under_evaluation = true;
-	try {
-	    IncrementStackDepthScope scope;
-	    PlainContext cntxt;
-	    RObject* val = Evaluator::evaluate(
-		const_cast<RObject*>(m_valgen.get()),
-		m_environment.get());
-	    setValue(val);
-	}
-	catch (...) {
-	    m_interrupted = true;
-	    throw;
-	}
-	m_under_evaluation = false;
+    if (m_value == Symbol::unboundValue())
+    {
+        // Force promise:
+        if (m_interrupted)
+        {
+            Rf_warning(_("restarting interrupted promise evaluation"));
+            m_interrupted = false;
+        }
+        else if (m_under_evaluation)
+            Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
+        m_under_evaluation = true;
+        try
+        {
+            IncrementStackDepthScope scope;
+            PlainContext cntxt;
+            RObject *val = Evaluator::evaluate(
+                const_cast<RObject *>(m_valgen.get()),
+                m_environment.get());
+            setValue(val);
+        }
+        catch (...)
+        {
+            m_interrupted = true;
+            throw;
+        }
+        m_under_evaluation = false;
     }
     return m_value;
 }
 
 bool PromiseData::isMissingSymbol() const
 {
-    if (m_is_pointer_to_promise) {
+    if (m_is_pointer_to_promise)
+    {
         return getThis()->isMissingSymbol();
     }
 
@@ -124,54 +133,57 @@ bool PromiseData::isMissingSymbol() const
     if (m_value == Symbol::missingArgument())
      	return true;
     */
-    if (m_value == Symbol::unboundValue() && m_valgen) {
-	const RObject* prexpr = m_valgen;
-	if (prexpr->sexptype() == SYMSXP) {
-	    // According to Luke Tierney's comment to R_isMissing() in CR,
-	    // if a cycle is found then a missing argument has been
-	    // encountered, so the return value is true.
-	    if (m_under_evaluation)
-		return true;
-	    try {
-		const Symbol* promsym
-		    = static_cast<const Symbol*>(prexpr);
-		m_under_evaluation = true;
-		ans = isMissingArgument(promsym, m_environment->frame());
-	    }
-	    catch (...) {
-		m_under_evaluation = false;
-		throw;
-	    }
-	    m_under_evaluation = false;
-	}
+    if (m_value == Symbol::unboundValue() && m_valgen)
+    {
+        const RObject *prexpr = m_valgen;
+        if (prexpr->sexptype() == SYMSXP)
+        {
+            // According to Luke Tierney's comment to R_isMissing() in CR,
+            // if a cycle is found then a missing argument has been
+            // encountered, so the return value is true.
+            if (m_under_evaluation)
+                return true;
+            try
+            {
+                const Symbol *promsym = static_cast<const Symbol *>(prexpr);
+                m_under_evaluation = true;
+                ans = isMissingArgument(promsym, m_environment->frame());
+            }
+            catch (...)
+            {
+                m_under_evaluation = false;
+                throw;
+            }
+            m_under_evaluation = false;
+        }
     }
     return ans;
 }
 
-void PromiseData::setValue(RObject* val)
+void PromiseData::setValue(RObject *val)
 {
     m_value = val;
     ENSURE_NAMEDMAX(val);
     if (val != Symbol::unboundValue())
-	m_environment = nullptr;
+        m_environment = nullptr;
 }
 
-const char* Promise::typeName() const
+const char *Promise::typeName() const
 {
     return staticTypeName();
 }
 
-void PromiseData::visitReferents(GCNode::const_visitor* v) const
+void PromiseData::visitReferents(GCNode::const_visitor *v) const
 {
-    const GCNode* value = m_value;
-    const GCNode* valgen = m_valgen;
-    const GCNode* env = m_environment;
+    const GCNode *value = m_value;
+    const GCNode *valgen = m_valgen;
+    const GCNode *env = m_environment;
     if (value)
-	(*v)(value);
+        (*v)(value);
     if (valgen)
-	(*v)(valgen);
+        (*v)(valgen);
     if (env)
-	(*v)(env);
+        (*v)(env);
 }
 
 // ***** C interface *****
@@ -179,30 +191,30 @@ void PromiseData::visitReferents(GCNode::const_visitor* v) const
 SEXP Rf_mkPROMISE(SEXP expr, SEXP rho)
 {
     GCStackRoot<> exprt(expr);
-    GCStackRoot<Environment> rhort(SEXP_downcast<Environment*>(rho));
+    GCStackRoot<Environment> rhort(SEXP_downcast<Environment *>(rho));
     return new Promise(exprt, rhort);
 }
 
 SEXP R_mkEVPROMISE(SEXP expr, SEXP value)
 {
     return Promise::createEvaluatedPromise(
-	SEXP_downcast<Expression*>(expr), value);
+        SEXP_downcast<Expression *>(expr), value);
 }
 
 void SET_PRVALUE(SEXP x, SEXP v)
 {
-    Promise* prom = SEXP_downcast<Promise*>(x);
+    Promise *prom = SEXP_downcast<Promise *>(x);
     prom->setValue(v);
 }
 
-int PRSEEN(SEXP x) {
-    Promise* prom = SEXP_downcast<Promise*>(x);
-    return prom->m_data.m_under_evaluation
-	|| prom->m_data.m_interrupted
-	|| prom->m_data.m_environment == nullptr;
+int PRSEEN(SEXP x)
+{
+    Promise *prom = SEXP_downcast<Promise *>(x);
+    return prom->m_data.m_under_evaluation || prom->m_data.m_interrupted || prom->m_data.m_environment == nullptr;
 }
 
-SEXP PRENV(SEXP x) {
-    const Promise& prom = *SEXP_downcast<Promise*>(x);
+SEXP PRENV(SEXP x)
+{
+    const Promise &prom = *SEXP_downcast<Promise *>(x);
     return prom.environment();
 }

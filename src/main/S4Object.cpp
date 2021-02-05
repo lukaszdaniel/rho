@@ -31,12 +31,12 @@
 
 using namespace rho;
 
-S4Object* S4Object::clone() const
+S4Object *S4Object::clone() const
 {
     return new S4Object(*this);
 }
 
-const char* S4Object::typeName() const
+const char *S4Object::typeName() const
 {
     return S4Object::staticTypeName();
 }

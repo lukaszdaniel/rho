@@ -28,50 +28,55 @@
 #include <string>
 #include <unordered_map>
 
-namespace rho {
+namespace rho
+{
 
-class BuiltInFunction;
-class Symbol;
+    class BuiltInFunction;
+    class Symbol;
 
-namespace JIT {
+    namespace JIT
+    {
 
-/*
+        /*
  * Memory manager that additionally knows the locations of:
  * - All Symbol objects.
  * - All builtin function objects.
  * - Any objects that have been added with 'addGlobal()'.
  */
-class MCJITMemoryManager : public llvm::SectionMemoryManager {
-public:
-    explicit MCJITMemoryManager(llvm::Module* module);
+        class MCJITMemoryManager : public llvm::SectionMemoryManager
+        {
+        public:
+            explicit MCJITMemoryManager(llvm::Module *module);
 
-    uint64_t getSymbolAddress(const std::string& name) override;
+            uint64_t getSymbolAddress(const std::string &name) override;
 
-    template<class T>
-    llvm::GlobalVariable* addGlobal(T* object,
-				    bool isConstant,
-				    std::string name = "")
-    {
-	llvm::Type* type = llvm::TypeBuilder<T, false>::get(
-	    m_module->getContext());
-	return addGlobal(type, (void*)object, isConstant, name);
-    }
+            template <class T>
+            llvm::GlobalVariable *addGlobal(T *object,
+                                            bool isConstant,
+                                            std::string name = "")
+            {
+                llvm::Type *type = llvm::TypeBuilder<T, false>::get(
+                    m_module->getContext());
+                return addGlobal(type, (void *)object, isConstant, name);
+            }
 
-    llvm::GlobalVariable* getSymbol(const Symbol* symbol);
-    llvm::GlobalVariable* getBuiltIn(const BuiltInFunction* function);
-private:
-    llvm::Module* m_module;
-    std::unordered_map<std::string,
-		       std::pair<void*, llvm::GlobalVariable*>> m_mappings;
+            llvm::GlobalVariable *getSymbol(const Symbol *symbol);
+            llvm::GlobalVariable *getBuiltIn(const BuiltInFunction *function);
 
-    llvm::GlobalVariable* addGlobal(llvm::Type* type, void* address,
-				    bool is_constant, std::string name);
+        private:
+            llvm::Module *m_module;
+            std::unordered_map<std::string,
+                               std::pair<void *, llvm::GlobalVariable *>>
+                m_mappings;
 
-    MCJITMemoryManager(const MCJITMemoryManager&) = delete;
-    MCJITMemoryManager& operator=(const MCJITMemoryManager&) = delete;
-};
+            llvm::GlobalVariable *addGlobal(llvm::Type *type, void *address,
+                                            bool is_constant, std::string name);
 
-}  // namespace JIT
-}  // namespace rho
+            MCJITMemoryManager(const MCJITMemoryManager &) = delete;
+            MCJITMemoryManager &operator=(const MCJITMemoryManager &) = delete;
+        };
 
-#endif  // RHO_JIT_MCJIT_MEMORY_MANAGER_HPP
+    } // namespace JIT
+} // namespace rho
+
+#endif // RHO_JIT_MCJIT_MEMORY_MANAGER_HPP

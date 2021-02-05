@@ -40,63 +40,72 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*VECTOR_ELTp)(const SEXP x, R_xlen_t i) = VECTOR_ELT;
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &VECTOR_ELTp = VECTOR_ELT;
     }
 
     template <>
-    const char* ListVector::staticTypeName() {
-	return "list";
+    const char *ListVector::staticTypeName()
+    {
+        return "list";
     }
-}
+} // namespace rho
 
 // ***** C interface *****
 SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 {
     if (i < 0 || i >= XLENGTH(x))
-	Rf_error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"), i, XLENGTH(x));
+        Rf_error(_("attempt to set index %lu/%lu in SET_VECTOR_ELT"), i, XLENGTH(x));
 
     /*  we need to allow vector-like types here */
-    if(TYPEOF(x) == VECSXP) {
-	ListVector* lv = SEXP_downcast<ListVector*>(x, false);
-	(*lv)[i] = v;
-	return v;
-    } else if (TYPEOF(x) == EXPRSXP) {
-	ExpressionVector* ev = SEXP_downcast<ExpressionVector*>(x, false);
-	(*ev)[i] = v;
-	return v;
-    } else {
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "SET_VECTOR_ELT", "list", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) == VECSXP)
+    {
+        ListVector *lv = SEXP_downcast<ListVector *>(x, false);
+        (*lv)[i] = v;
+        return v;
+    }
+    else if (TYPEOF(x) == EXPRSXP)
+    {
+        ExpressionVector *ev = SEXP_downcast<ExpressionVector *>(x, false);
+        (*ev)[i] = v;
+        return v;
+    }
+    else
+    {
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "SET_VECTOR_ELT", "list", Rf_type2char(TYPEOF(x)));
     }
 }
 
-NORET SEXP * (VECTOR_PTR)(SEXP x)
+NORET SEXP *(VECTOR_PTR)(SEXP x)
 {
-  Rf_error(_("not safe to return vector pointer"));
+    Rf_error(_("not safe to return vector pointer"));
 }
 
-extern "C"
-void* STDVEC_DATAPTR(SEXP x) {
-    switch (TYPEOF(x)) {
+extern "C" void *STDVEC_DATAPTR(SEXP x)
+{
+    switch (TYPEOF(x))
+    {
     case CHARSXP:
-	return const_cast<char*>(SEXP_downcast<String*>(x)->c_str());
+        return const_cast<char *>(SEXP_downcast<String *>(x)->c_str());
     case LGLSXP:
-	return LOGICAL(x);
+        return LOGICAL(x);
     case INTSXP:
-	return INTEGER(x);
+        return INTEGER(x);
     case REALSXP:
-	return REAL(x);
+        return REAL(x);
     case CPLXSXP:
-	return COMPLEX(x);
+        return COMPLEX(x);
     case RAWSXP:
-	return REAL(x);
+        return REAL(x);
     case STRSXP:
-	return STRING_PTR(x);
+        return STRING_PTR(x);
     case VECSXP:
-	return VECTOR_PTR(x);
+        return VECTOR_PTR(x);
     default:
-	Rf_error("cannot get data pointer of '%s' objects", Rf_type2char(TYPEOF(x)));
+        Rf_error("cannot get data pointer of '%s' objects", Rf_type2char(TYPEOF(x)));
     }
 }

@@ -48,7 +48,7 @@ using namespace rho;
 #define NIL -1
 
 /* interval at which to check interrupts */
-constexpr R_xlen_t NINTERRUPT = 1000000;
+// constexpr R_xlen_t NINTERRUPT = 1000000;
 
 
 /* Hash function and equality test for keys */

@@ -27,56 +27,58 @@
 #include <vector>
 #include <rho/GCNode.hpp>
 
-namespace rho {
-class Closure;
-class Symbol;
-
-/**
- * A FrameDescriptor creates a static mapping between the symbols expected to
- * be used in a function and integers that can be used as array offsets.
- *
- * This is used to create the layout for Environment objects.
- *
- * Note that it is not guaranteed that all symbols used in the function will
- * be listed in the FrameDescriptor.
- */
-class FrameDescriptor : public GCNode {
-public:
-    explicit FrameDescriptor(const Closure* closure);
-
-    explicit FrameDescriptor(std::initializer_list<const Symbol*> formals,
-			     std::initializer_list<const Symbol*> locals);
-
-    // Returns the index where the symbol is stored.  Returns -1 if the
-    // symbol has not been added to the descriptor.
-    int getLocation(const Symbol* symbol) const;
-
-    //* Check if the symbol is one of the formal parameters to the function.
-    bool isFormalParameter(const Symbol* symbol) const
-    {
-	return isFormalParameter(getLocation(symbol));
-    }
+namespace rho
+{
+    class Closure;
+    class Symbol;
 
     /**
-     * Check if the symbol at location is one of the formal parameters to the
-     * function.
+     * A FrameDescriptor creates a static mapping between the symbols expected to
+     * be used in a function and integers that can be used as array offsets.
+     *
+     * This is used to create the layout for Environment objects.
+     *
+     * Note that it is not guaranteed that all symbols used in the function will
+     * be listed in the FrameDescriptor.
      */
-    bool isFormalParameter(int location) const
+    class FrameDescriptor : public GCNode
     {
-	return location >= 0 && location < m_num_formals;
-    }
+    public:
+        explicit FrameDescriptor(const Closure *closure);
 
-    int getNumberOfSymbols() const
-    {
-	return m_local_vars.size();
+        explicit FrameDescriptor(std::initializer_list<const Symbol *> formals,
+                                 std::initializer_list<const Symbol *> locals);
+
+        // Returns the index where the symbol is stored.  Returns -1 if the
+        // symbol has not been added to the descriptor.
+        int getLocation(const Symbol *symbol) const;
+
+        //* Check if the symbol is one of the formal parameters to the function.
+        bool isFormalParameter(const Symbol *symbol) const
+        {
+            return isFormalParameter(getLocation(symbol));
+        }
+
+        /**
+         * Check if the symbol at location is one of the formal parameters to the
+         * function.
+         */
+        bool isFormalParameter(int location) const
+        {
+            return location >= 0 && location < m_num_formals;
+        }
+
+        int getNumberOfSymbols() const
+        {
+            return m_local_vars.size();
+        };
+
+    private:
+        ~FrameDescriptor() {}
+
+        std::vector<const Symbol *> m_local_vars;
+        int m_num_formals;
     };
-
-private:
-  ~FrameDescriptor() { }
-
-    std::vector<const Symbol*> m_local_vars;
-    int m_num_formals;
-};
 
 } // namespace rho
 

@@ -52,64 +52,68 @@ bool GCManager::s_gc_pending = false;
 size_t GCManager::s_max_bytes = 0;
 size_t GCManager::s_max_nodes = 0;
 
-std::ostream* GCManager::s_os = nullptr;
+std::ostream *GCManager::s_os = nullptr;
 
 void (*GCManager::s_pre_gc)() = nullptr;
 void (*GCManager::s_post_gc)() = nullptr;
 
-namespace {
+namespace
+{
     unsigned int gc_count = 0;
-
 
 #ifdef DEBUG_GC
     // This ought to go in GCNode.
     void DEBUG_GC_SUMMARY(int full_gc)
     {
-	int gen, OldCount;
-	REprintf("\n%s, VSize = %lu", full_gc ? "Full" : "Minor",
-		 MemoryBank::bytesAllocated()/sizeof(VECREC));
-	for (gen = 0, OldCount = 0; gen < num_old_generations; gen++)
-	    OldCount += GCNode::s_oldcount[gen];
-	REprintf(", %d", OldCount);
+        int gen, OldCount;
+        REprintf("\n%s, VSize = %lu", full_gc ? "Full" : "Minor",
+                 MemoryBank::bytesAllocated() / sizeof(VECREC));
+        for (gen = 0, OldCount = 0; gen < num_old_generations; gen++)
+            OldCount += GCNode::s_oldcount[gen];
+        REprintf(", %d", OldCount);
     }
 #else
 #define DEBUG_GC_SUMMARY(x)
 #endif /* DEBUG_GC */
-}
+} // namespace
 
 void GCManager::gc(bool force_full_collection)
 {
-    if (s_inhibitor_count > 0) {
-	s_gc_pending = true;
-	return;
+    if (s_inhibitor_count > 0)
+    {
+        s_gc_pending = true;
+        return;
     }
     s_gc_pending = false;
 
     // Prevent recursion:
     if (s_gc_is_running)
-	return;
+        return;
     s_gc_is_running = true;
     ++gc_count;
 
     s_max_bytes = std::max(s_max_bytes, MemoryBank::bytesAllocated());
     s_max_nodes = std::max(s_max_nodes, GCNode::numNodes());
 
-    if (s_pre_gc) (*s_pre_gc)();
+    if (s_pre_gc)
+        (*s_pre_gc)();
 
     GCNode::gc(false);
 
-    if (force_full_collection || MemoryBank::bytesAllocated() > s_threshold) {
-	GCNode::gc(true);
-	s_threshold = std::max(size_t(0.8*double(s_threshold)),
-			       std::max(s_min_threshold,
-					size_t(1.2*MemoryBank::bytesAllocated())));
+    if (force_full_collection || MemoryBank::bytesAllocated() > s_threshold)
+    {
+        GCNode::gc(true);
+        s_threshold = std::max(size_t(0.8 * double(s_threshold)),
+                               std::max(s_min_threshold,
+                                        size_t(1.2 * MemoryBank::bytesAllocated())));
     }
 
-    s_gclite_threshold = std::max(size_t(0.8*double(s_gclite_threshold)),
-			       std::max(s_min_threshold,
-					size_t(1.2*MemoryBank::bytesAllocated())));
+    s_gclite_threshold = std::max(size_t(0.8 * double(s_gclite_threshold)),
+                                  std::max(s_min_threshold,
+                                           size_t(1.2 * MemoryBank::bytesAllocated())));
 
-    if (s_post_gc) (*s_post_gc)();
+    if (s_post_gc)
+        (*s_post_gc)();
 
     s_gc_is_running = false;
 }
@@ -125,9 +129,9 @@ void GCManager::setGCThreshold(size_t initial_threshold)
     s_min_threshold = s_gclite_threshold = s_threshold = initial_threshold;
 }
 
-std::ostream* GCManager::setReporting(std::ostream* os)
+std::ostream *GCManager::setReporting(std::ostream *os)
 {
-    std::ostream* ans = s_os;
+    std::ostream *ans = s_os;
     s_os = os;
     return ans;
 }

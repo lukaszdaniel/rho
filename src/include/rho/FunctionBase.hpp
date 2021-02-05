@@ -42,14 +42,14 @@ namespace rho
 	class Environment;
 
 	/** @brief Base class for function types.
-     */
+	 */
 	class FunctionBase : public RObject
 	{
 	public:
 		/** @brief Enable/disable function tracing.
-         *
-         * @param on True iff function tracing is to be enabled.
-         */
+		 *
+		 * @param on True iff function tracing is to be enabled.
+		 */
 		static void enableTracing(bool on)
 		{
 			s_tracing_enabled = on;

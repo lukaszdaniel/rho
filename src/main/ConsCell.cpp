@@ -45,17 +45,13 @@ namespace rho
 {
 	namespace ForceNonInline
 	{
-		RObject *(*car0p)(ConsCell *) = car0;
-		PairList *(*tail0p)(ConsCell *) = tail0;
-		SEXP (*CAARp)
-		(SEXP e) = CAAR;
-		SEXP (*CARp)
-		(SEXP e) = CAR;
-		SEXP (*TAGp)
-		(SEXP e) = TAG;
-		SEXP (*allocSExpp)
-		(SEXPTYPE t) = Rf_allocSExp;
-		auto SET_MISSINGptr = &SET_MISSING;
+		const auto &car0p = car0;
+		const auto &tail0p = tail0;
+		const auto &CAARp = CAAR;
+		const auto &CARp = CAR;
+		const auto &TAGp = TAG;
+		const auto &allocSExpp = Rf_allocSExp;
+		const auto &SET_MISSINGptr = SET_MISSING;
 	} // namespace ForceNonInline
 } // namespace rho
 

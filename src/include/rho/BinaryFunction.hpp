@@ -120,14 +120,14 @@ namespace rho
 		{
 		public:
 			/** @brief Copy attributes as described above.
-	     *
-	     * @param vout Non-null pointer to the vector to which
-	     *          attributes are to be copied.
-	     *
-	     * @param vl Non-null pointer to the first operand.
-	     *
-	     * @param vr Non-null pointer to the second operand.
-	     */
+			 *
+			 * @param vout Non-null pointer to the vector to which
+			 *          attributes are to be copied.
+			 *
+			 * @param vl Non-null pointer to the first operand.
+			 *
+			 * @param vr Non-null pointer to the second operand.
+			 */
 			static void copyAttributes(VectorBase *vout,
 									   const VectorBase *vl,
 									   const VectorBase *vr)

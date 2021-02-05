@@ -24,64 +24,70 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file ListVector.h
+/** @file ListVector.hpp
  * @brief Class rho::ListVector and associated C interface.
  *
  * (ListVector implements VECSXP.)
  */
 
-#ifndef LISTVECTOR_H
-#define LISTVECTOR_H
+#ifndef LISTVECTOR_HPP
+#define LISTVECTOR_HPP
 
 #include <rho/VectorBase.hpp>
 #include <rho/FixedVector.hpp>
 #include <rho/SEXP_downcast.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief General vector of GCEdge<RObject>.
      */
     typedef FixedVector<GCEdge<>, VECSXP> ListVector;
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
-
-/** @brief Set element of rho::ListVector.
- *
- * @param x Pointer to a rho::ListVector.
- *
- * @param i Index of the required element.  There is no bounds checking.
- *
- * @param v Pointer, possibly null, to rho::RObject representing the
- *          new value.
- *
- * @return The new value \a v.
- */
-SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
-
-extern SEXP XVECTOR_ELT(SEXP x, R_xlen_t i);
-
-/** @brief Examine element of rho::ListVector.
- *
- * @param x Non-null pointer to a rho::ListVector.
- *
- * @param i Index of the required element.  There is no bounds checking.
- *
- * @return The value of the \a i 'th element.
- */
-inline SEXP VECTOR_ELT(SEXP x, R_xlen_t i)
+extern "C"
 {
-    using namespace rho;
-    if (x && x->sexptype() == VECSXP) {
-	ListVector* lv = SEXP_downcast<ListVector*>(x, false);
-	return (*lv)[VectorBase::size_type(i)];
-    } else if (x && x->sexptype() == EXPRSXP) {
-      return XVECTOR_ELT(x, i);
-    }  else {
-	Rf_error("'%s' function can only be applied to a list, not a '%s'",
-		 "VECTOR_ELT()",  Rf_type2char(TYPEOF(x)));
+
+    /** @brief Set element of rho::ListVector.
+     *
+     * @param x Pointer to a rho::ListVector.
+     *
+     * @param i Index of the required element.  There is no bounds checking.
+     *
+     * @param v Pointer, possibly null, to rho::RObject representing the
+     *          new value.
+     *
+     * @return The new value \a v.
+     */
+    SEXP SET_VECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
+
+    extern SEXP XVECTOR_ELT(SEXP x, R_xlen_t i);
+
+    /** @brief Examine element of rho::ListVector.
+     *
+     * @param x Non-null pointer to a rho::ListVector.
+     *
+     * @param i Index of the required element.  There is no bounds checking.
+     *
+     * @return The value of the \a i 'th element.
+     */
+    inline SEXP VECTOR_ELT(SEXP x, R_xlen_t i)
+    {
+        using namespace rho;
+        if (x && x->sexptype() == VECSXP)
+        {
+            ListVector *lv = SEXP_downcast<ListVector *>(x, false);
+            return (*lv)[VectorBase::size_type(i)];
+        }
+        else if (x && x->sexptype() == EXPRSXP)
+        {
+            return XVECTOR_ELT(x, i);
+        }
+        else
+        {
+            Rf_error("'%s' function can only be applied to a list, not a '%s'",
+                     "VECTOR_ELT()", Rf_type2char(TYPEOF(x)));
+        }
     }
 }
 
-}
-
-#endif /* LISTVECTOR_H */
+#endif /* LISTVECTOR_HPP */

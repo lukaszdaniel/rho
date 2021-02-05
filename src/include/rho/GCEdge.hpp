@@ -38,23 +38,23 @@ namespace rho
     class RObject;
 
     /** @brief Directed edge in the graph whose nodes are GCNode objects.
- *
- * This class encapsulates a pointer from one GCNode to another,
- * and carries out housekeeping required by the garbage collection
- * scheme.  The class name reflects the fact that these objects
- * represent directed edges in the directed graph with the GCNode
- * objects as its nodes.
- *
- * Whenever an object of a type derived from GCNode needs to refer
- * to another such object, it should do so by containing a GCEdge
- * object, rather than by containing a pointer or reference
- * directly.
- *
- * @tparam T GCNode or a type publicly derived from GCNode.  This
- *           may be qualified by const, so for example a const
- *           String* may be encapsulated in a GCEdge using the type
- *           GCEdge<const String>.
- */
+     *
+     * This class encapsulates a pointer from one GCNode to another,
+     * and carries out housekeeping required by the garbage collection
+     * scheme.  The class name reflects the fact that these objects
+     * represent directed edges in the directed graph with the GCNode
+     * objects as its nodes.
+     *
+     * Whenever an object of a type derived from GCNode needs to refer
+     * to another such object, it should do so by containing a GCEdge
+     * object, rather than by containing a pointer or reference
+     * directly.
+     *
+     * @tparam T GCNode or a type publicly derived from GCNode.  This
+     *           may be qualified by const, so for example a const
+     *           String* may be encapsulated in a GCEdge using the type
+     *           GCEdge<const String>.
+     */
     template <class T = RObject>
     class GCEdge
     {
@@ -76,10 +76,10 @@ namespace rho
         // which properly initialized the edge prior to doing the allocation.
 
         /** @brief Copy constructor.
-     *
-     * @param source GCEdge to be copied.  The constructed GCEdge
-     * will point to the same object (if any) as \a source.
-     */
+         *
+         * @param source GCEdge to be copied.  The constructed GCEdge
+         * will point to the same object (if any) as \a source.
+         */
         GCEdge(const GCEdge<T> &source) : m_target(source.m_target)
         {
             static_assert(sizeof(T) >= 0, "T must be a complete type");
@@ -107,15 +107,15 @@ namespace rho
         T *operator->() const { return get(); }
 
         /** @brief Extract encapsulated pointer
-     *
-     * @return The encapsulated pointer.
-     */
+         *
+         * @return The encapsulated pointer.
+         */
         operator T *() const { return get(); }
 
         /** @brief Access the target pointer.
-     *
-     * @return pointer to the current target (if any) of the edge.
-     */
+         *
+         * @return pointer to the current target (if any) of the edge.
+         */
         T *get() const { return m_target; }
 
         void detach()
@@ -129,10 +129,10 @@ namespace rho
         T *m_target;
 
         /** @brief Redirect the GCEdge to point at a (possibly) different node.
-     *
-     * @param newtarget Pointer to the object to which reference is now
-     *           to be made.
-     */
+         *
+         * @param newtarget Pointer to the object to which reference is now
+         *           to be made.
+         */
         void retarget(T *newtarget)
         {
             check_complete_type();

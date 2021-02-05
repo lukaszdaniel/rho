@@ -34,21 +34,21 @@
 
 namespace rho
 {
-     class Environment;
-     class Frame;
-     class FunctionBase;
-     class Symbol;
+	class Environment;
+	class Frame;
+	class FunctionBase;
+	class Symbol;
 
-     /** @brief Class to select and call to S3 methods.
-      *
-      * This class provides facilities for selecting an S3 method to
-      * call according to the object to be dispatched on, and for
-      * setting up the call to the S3 method.
-      */
-     class S3Launcher : public GCNode
-     {
-     public:
-          /** @brief Add the special S3 method bindings to a Frame.
+	/** @brief Class to select and call to S3 methods.
+     *
+     * This class provides facilities for selecting an S3 method to
+     * call according to the object to be dispatched on, and for
+     * setting up the call to the S3 method.
+     */
+	class S3Launcher : public GCNode
+	{
+	public:
+		/** @brief Add the special S3 method bindings to a Frame.
 		 *
 		 * This function adds to \a frame the special bindings of
 		 * <tt>.Class</tt>, <tt>.Generic</tt>,
@@ -62,32 +62,32 @@ namespace rho
 		 * @param frame Non-null pointer to the Frame to which
 		 *          Bindings are to be added.
 		 */
-          void addMethodBindings(Frame *frame) const;
+		void addMethodBindings(Frame *frame) const;
 
-          /** @brief Vector of classes.
+		/** @brief Vector of classes.
 		 *
 		 * @return Pointer to the vector of classes associated with
 		 * the dispatch object.
 		 */
-          const StringVector *classes() const
-          {
-               return m_classes;
-          }
+		const StringVector *classes() const
+		{
+			return m_classes;
+		}
 
-          /** @brief Name of method's class
+		/** @brief Name of method's class
 		 *
 		 * @return pointer to the name of the class to which this
 		 * method corresponds, or a null pointer if no class-specific
 		 * method was found.
 		 */
-          String *className() const
-          {
-               if (!usingClass())
-                    return 0;
-               return (*m_classes)[m_index];
-          }
+		String *className() const
+		{
+			if (!usingClass())
+				return 0;
+			return (*m_classes)[m_index];
+		}
 
-          /** @brief Attempt to create an S3Launcher object.
+		/** @brief Attempt to create an S3Launcher object.
 		 *
 		 * @param object Pointer, possibly null, to the object to be
 		 *          dispatched on.  The search for a method will work
@@ -127,12 +127,12 @@ namespace rho
 		 * @return A null pointer if no suitable S3 method was found,
 		 * or a pointer to an S3Launcher object for the method found.
 		 */
-          static S3Launcher *
-          create(const RObject *object, std::string generic, std::string group,
-                 Environment *call_env, Environment *table_env,
-                 bool allow_default);
+		static S3Launcher *
+		create(const RObject *object, std::string generic, std::string group,
+			   Environment *call_env, Environment *table_env,
+			   bool allow_default);
 
-          /** @brief Search for an S3 method.
+		/** @brief Search for an S3 method.
 		 *
 		 * This function searches for a definition of an S3 method
 		 * bound to \a symbol.
@@ -197,83 +197,83 @@ namespace rho
 		 * proceed to enclosing Environments.  This follows CR, but it
 		 * perhaps unduly restrictive.
 		 */
-          static std::pair<FunctionBase *, bool>
-          findMethod(const Symbol *symbol, Environment *call_env,
-                     Environment *table_env);
+		static std::pair<FunctionBase *, bool>
+		findMethod(const Symbol *symbol, Environment *call_env,
+				   Environment *table_env);
 
-          /** @brief Function implementing the method.
+		/** @brief Function implementing the method.
 		 *
 		 * @return Pointer to the function implementing the method
 		 * found.
 		 */
-          FunctionBase *function() const
-          {
-               return m_function;
-          }
+		FunctionBase *function() const
+		{
+			return m_function;
+		}
 
-          /** @brief Class for which method was found.
+		/** @brief Class for which method was found.
 		 *
 		 * @return the location (counting from zero) within the
 		 * classes() vector to which this S3 method corresponds.
 		 */
-          std::size_t locInClasses() const
-          {
-               return m_index;
-          }
+		std::size_t locInClasses() const
+		{
+			return m_index;
+		}
 
-          /** @brief Method name as Symbol.
+		/** @brief Method name as Symbol.
 		 *
 		 * @return pointer to the Symbol containing the name of the
 		 * method found.
 		 */
-          Symbol *symbol() const
-          {
-               return m_symbol;
-          }
+		Symbol *symbol() const
+		{
+			return m_symbol;
+		}
 
-          /** @brief Was a class-specific method found?
+		/** @brief Was a class-specific method found?
 		 *
 		 * @return true iff the method found corresponds to a specific
 		 * class (whose name will be given by className() ) rather
 		 * than being a default method.
 		 */
-          bool usingClass() const
-          {
-               return m_index < m_classes->size();
-          }
+		bool usingClass() const
+		{
+			return m_index < m_classes->size();
+		}
 
-          // Virtual function of GCNode:
-          void visitReferents(const_visitor *v) const override;
+		// Virtual function of GCNode:
+		void visitReferents(const_visitor *v) const override;
 
-     protected:
-          // Virtual function of GCNode:
-          void detachReferents() override;
+	protected:
+		// Virtual function of GCNode:
+		void detachReferents() override;
 
-     private:
-          std::string m_generic;
-          std::string m_group;
-          GCEdge<Environment> m_call_env;
-          GCEdge<Environment> m_table_env;
-          GCEdge<StringVector> m_classes;  // Pointer to a vector of
-                                           // class names, or a null pointer.  If null, subsequent
-                                           // fields are not meaningful.
-          GCEdge<FunctionBase> m_function; // Pointer to the method found, or
-                                           // null if no method was found.  If null, subsequent fields
-                                           // are not meaningful.
-          Symbol *m_symbol;                // Pointer to the Symbol naming the method found.
-          std::size_t m_index;             // Location within the classes vector to which
-                                           // 'function' corresponds, or one past the end if using a
-                                           // default method.
-          bool m_using_group;              // True iff 'function' is a group method.
+	private:
+		std::string m_generic;
+		std::string m_group;
+		GCEdge<Environment> m_call_env;
+		GCEdge<Environment> m_table_env;
+		GCEdge<StringVector> m_classes;	 // Pointer to a vector of
+										 // class names, or a null pointer.  If null, subsequent
+										 // fields are not meaningful.
+		GCEdge<FunctionBase> m_function; // Pointer to the method found, or
+										 // null if no method was found.  If null, subsequent fields
+										 // are not meaningful.
+		Symbol *m_symbol;				 // Pointer to the Symbol naming the method found.
+		std::size_t m_index;			 // Location within the classes vector to which
+										 // 'function' corresponds, or one past the end if using a
+										 // default method.
+		bool m_using_group;				 // True iff 'function' is a group method.
 
-          S3Launcher(const std::string &generic, const std::string &group,
-                     Environment *call_env, Environment *table_env)
-              : m_generic(generic), m_group(group), m_using_group(false)
-          {
-               m_call_env = call_env;
-               m_table_env = table_env;
-          }
-     };
+		S3Launcher(const std::string &generic, const std::string &group,
+				   Environment *call_env, Environment *table_env)
+			: m_generic(generic), m_group(group), m_using_group(false)
+		{
+			m_call_env = call_env;
+			m_table_env = table_env;
+		}
+	};
 } // namespace rho
 
 #endif // S3LAUNCHER_HPP

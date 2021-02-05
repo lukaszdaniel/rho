@@ -35,17 +35,18 @@ using namespace rho;
 using namespace Symbols;
 using namespace VectorOps;
 
-void CopyLayoutAttributes::copyAttributes(VectorBase* to,
-					  const VectorBase* from)
+void CopyLayoutAttributes::copyAttributes(VectorBase *to,
+										  const VectorBase *from)
 {
-    RObject* names = from->getAttribute(NamesSymbol);
-    if (names)
-	to->setAttribute(NamesSymbol, names);
-    RObject* dim = from->getAttribute(DimSymbol);
-    if (dim) {
-	to->setAttribute(DimSymbol, dim);
-	RObject* dimnames = from->getAttribute(DimNamesSymbol);
-	if (dimnames)
-	    to->setAttribute(DimNamesSymbol, dimnames);
-    }
+	RObject *names = from->getAttribute(NamesSymbol);
+	if (names)
+		to->setAttribute(NamesSymbol, names);
+	RObject *dim = from->getAttribute(DimSymbol);
+	if (dim)
+	{
+		to->setAttribute(DimSymbol, dim);
+		RObject *dimnames = from->getAttribute(DimNamesSymbol);
+		if (dimnames)
+			to->setAttribute(DimNamesSymbol, dimnames);
+	}
 }

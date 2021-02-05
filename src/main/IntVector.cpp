@@ -39,7 +39,7 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        int *(*INTEGERp)(SEXP) = INTEGER;
+        const auto &INTEGERp = INTEGER;
     }
 
     template <>

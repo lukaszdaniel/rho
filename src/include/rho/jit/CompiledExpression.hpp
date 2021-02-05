@@ -32,60 +32,64 @@
 #include <rho/GCStackRoot.hpp>
 #include <rho/FrameDescriptor.hpp>
 
-namespace llvm {
+namespace llvm
+{
 
-class ExecutionEngine;
+    class ExecutionEngine;
 }
 
-namespace rho {
+namespace rho
+{
 
-class Closure;
-class CompilerContext;
-class Environment;
-class Frame;
-class RObject;
+    class Closure;
+    class CompilerContext;
+    class Environment;
+    class Frame;
+    class RObject;
 
-namespace JIT {
-
-class CompiledExpression : public GCNode {
-public:
-    ~CompiledExpression();
-
-    RObject* evalInEnvironment(Environment* env) const
+    namespace JIT
     {
-	GCStackRoot<const GCNode> protect(this);
-	return m_function(env);
-    }
 
-    Frame* createFrame(const ArgList& promised_args) const;
+        class CompiledExpression : public GCNode
+        {
+        public:
+            ~CompiledExpression();
 
-    bool hasMatchingFrameLayout(const Environment* env) const;
+            RObject *evalInEnvironment(Environment *env) const
+            {
+                GCStackRoot<const GCNode> protect(this);
+                return m_function(env);
+            }
 
-    static CompiledExpression* compileFunctionBody(const Closure* function);
+            Frame *createFrame(const ArgList &promised_args) const;
 
-    void detachReferents() override;
-    void visitReferents(const_visitor* v) const override;
+            bool hasMatchingFrameLayout(const Environment *env) const;
 
-private:
-    CompiledExpression(const Closure* closure);
+            static CompiledExpression *compileFunctionBody(const Closure *function);
 
-    // The compiled function itself.
-    typedef RObject* (*CompiledExpressionPointer)(Environment* env);
-    CompiledExpressionPointer m_function;
+            void detachReferents() override;
+            void visitReferents(const_visitor *v) const override;
 
-    // The interpreter requires the frame descriptor to work with the frames
-    // that the compiled code generates.
-    GCEdge<FrameDescriptor> m_frame_descriptor;
+        private:
+            CompiledExpression(const Closure *closure);
 
-    // TODO(kmillar): we ought to have a single engine that is shared by many
-    //   functions.
-    std::unique_ptr<llvm::ExecutionEngine> m_engine;
+            // The compiled function itself.
+            typedef RObject *(*CompiledExpressionPointer)(Environment *env);
+            CompiledExpressionPointer m_function;
 
-    CompiledExpression(const CompiledExpression&) = delete;
-    CompiledExpression& operator=(const CompiledExpression&) = delete;
-};
+            // The interpreter requires the frame descriptor to work with the frames
+            // that the compiled code generates.
+            GCEdge<FrameDescriptor> m_frame_descriptor;
 
-} // namespace JIT
+            // TODO(kmillar): we ought to have a single engine that is shared by many
+            //   functions.
+            std::unique_ptr<llvm::ExecutionEngine> m_engine;
+
+            CompiledExpression(const CompiledExpression &) = delete;
+            CompiledExpression &operator=(const CompiledExpression &) = delete;
+        };
+
+    } // namespace JIT
 } // namespace rho
 
 #endif // RHO_JIT_COMPILED_EXPRESSION_HPP

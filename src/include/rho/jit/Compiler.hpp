@@ -26,132 +26,138 @@
 
 #include <rho/jit/CompilerContext.hpp>
 #include <rho/jit/llvm.hpp>
-namespace rho {
-
-class BuiltInFunction;
-class DottedArgs;
-class Environment;
-class Expression;
-class FunctionBase;
-class RObject;
-class Symbol;
-
-namespace JIT {
-
-class Compiler : public llvm::IRBuilder<> {
-public:
-    explicit Compiler(CompilerContext* context);
-
-    // Code generation.
-    llvm::Value* emitEval(const RObject* object);
-
-    // Utility functions.
-    template <class T>
-    llvm::Constant* emitConstantPointer(const T* value);
-    llvm::Constant* emitSymbol(const Symbol* symbol);
-    llvm::Constant* emitNullValue();
-    llvm::Constant* emitInvisibleNullValue();
-
-    template<class T>
-    llvm::Value* emitUncheckedCast(llvm::Value* value);
-
-    llvm::Value* emitCallOrInvoke(llvm::Function* function,
-				  llvm::ArrayRef<llvm::Value*> args);
-    llvm::Value* emitCallOrInvoke(llvm::Function* function,
-                                  std::initializer_list<llvm::Value*> args) {
-      return emitCallOrInvoke(function,
-                              llvm::ArrayRef<llvm::Value*>(
-                                  args.begin(), args.end()));
-    }
-
-    template<class T>
-    llvm::Type* getType();
-private:
-    CompilerContext* m_context;
-
-    llvm::Value* emitFunctionLookup(const Symbol* symbol,
-				    FunctionBase** likely_function);
-
-    // Code generation functions.
-    // These generate optimized code.
-    llvm::Value* emitEvalInternal(const RObject* object);
-    llvm::Value* emitSymbolEval(const Symbol* symbol);
-    llvm::Value* emitExpressionEval(const Expression* object);
-    llvm::Value* emitDotsEval(const DottedArgs* object);
-
-    // Code to generate inlined functions.
-    llvm::Value* emitInlineableBuiltinCall(const Expression* expression,
-					   llvm::Value* resolved_function,
-					   FunctionBase* likely_function);
-
-    // Specific functions to inline.
-    llvm::Value* emitInlinedAssign(const Expression* expression);
-    llvm::Value* emitInlinedParen(const Expression* expression);
-    llvm::Value* emitInlinedBegin(const Expression* expression);
-    llvm::Value* emitInlinedReturn(const Expression* expression);
-    llvm::Value* emitInlinedIf(const Expression* expression);
-    llvm::Value* emitInlinedWhile(const Expression* expression);
-    llvm::Value* emitInlinedRepeat(const Expression* expression);
-    llvm::Value* emitInlinedBreak(const Expression* expression);
-    llvm::Value* emitInlinedNext(const Expression* expression);
-
-    typedef llvm::Value* (Compiler::*EmitBuiltinFn)(const Expression*);
-    static const std::vector<std::pair<FunctionBase*, EmitBuiltinFn>>&
-	getInlineableBuiltins();
-    static EmitBuiltinFn getInlinedBuiltInEmitter(BuiltInFunction* builtin);
-
-    // Exception handling.
-    friend class CompilerContext;
-    llvm::Value* getExceptionTypeId(const std::type_info* type);
-    llvm::BasicBlock* emitLandingPad(llvm::PHINode* dispatch);
-    llvm::PHINode* emitDispatchToExceptionHandler(const std::type_info* type,
-    						  llvm::PHINode* handler,
-    						  llvm::PHINode* fallthrough);
-    llvm::PHINode* emitLoopExceptionHandler(llvm::BasicBlock* break_destination,
-					    llvm::BasicBlock* next_destination);
-    llvm::PHINode* emitReturnExceptionHandler();
-    llvm::PHINode* emitRethrowException();
-
-    // Utility functions.
-    std::vector<llvm::Value*> castFunctionArguments(
-	llvm::ArrayRef<llvm::Value*> args,
-	llvm::Function* function);
-
-    llvm::Constant* emitConstantPointer(const void* value, llvm::Type* type);
-
-    void emitSetVisibility(bool visible);
-
-    void emitErrorUnless(llvm::Value* condition,
-			 const char* error_msg,
-			 llvm::ArrayRef<llvm::Value*> extra_args = {});
-    llvm::BasicBlock* createBasicBlock(const char* name,
-				       llvm::BasicBlock* insert_before = nullptr);
-    llvm::BasicBlock* createBranch(const char* name, const RObject* expression,
-				   llvm::PHINode* merge_point,
-				   llvm::BasicBlock* insert_before = nullptr);
-    llvm::Value* createBackEdge(llvm::BasicBlock* destination);
-};
-
-template <class T>
-llvm::Constant* Compiler::emitConstantPointer(const T* value)
+namespace rho
 {
-    llvm::Type* type = llvm::TypeBuilder<T*, false>::get(getContext());
-    return emitConstantPointer(reinterpret_cast<const void*>(value), type);
-}
 
-template<class T>
-llvm::Value* Compiler::emitUncheckedCast(llvm::Value* value)
-{
-    llvm::Type* type = llvm::TypeBuilder<T, false>::get(getContext());
-    return CreatePointerCast(value, type);
-}
+    class BuiltInFunction;
+    class DottedArgs;
+    class Environment;
+    class Expression;
+    class FunctionBase;
+    class RObject;
+    class Symbol;
 
-template<class T>
-llvm::Type* Compiler::getType() {
-    return llvm::TypeBuilder<T, false>::get(getContext());
-}
+    namespace JIT
+    {
 
-} // namespace JIT
+        class Compiler : public llvm::IRBuilder<>
+        {
+        public:
+            explicit Compiler(CompilerContext *context);
+
+            // Code generation.
+            llvm::Value *emitEval(const RObject *object);
+
+            // Utility functions.
+            template <class T>
+            llvm::Constant *emitConstantPointer(const T *value);
+            llvm::Constant *emitSymbol(const Symbol *symbol);
+            llvm::Constant *emitNullValue();
+            llvm::Constant *emitInvisibleNullValue();
+
+            template <class T>
+            llvm::Value *emitUncheckedCast(llvm::Value *value);
+
+            llvm::Value *emitCallOrInvoke(llvm::Function *function,
+                                          llvm::ArrayRef<llvm::Value *> args);
+            llvm::Value *emitCallOrInvoke(llvm::Function *function,
+                                          std::initializer_list<llvm::Value *> args)
+            {
+                return emitCallOrInvoke(function,
+                                        llvm::ArrayRef<llvm::Value *>(
+                                            args.begin(), args.end()));
+            }
+
+            template <class T>
+            llvm::Type *getType();
+
+        private:
+            CompilerContext *m_context;
+
+            llvm::Value *emitFunctionLookup(const Symbol *symbol,
+                                            FunctionBase **likely_function);
+
+            // Code generation functions.
+            // These generate optimized code.
+            llvm::Value *emitEvalInternal(const RObject *object);
+            llvm::Value *emitSymbolEval(const Symbol *symbol);
+            llvm::Value *emitExpressionEval(const Expression *object);
+            llvm::Value *emitDotsEval(const DottedArgs *object);
+
+            // Code to generate inlined functions.
+            llvm::Value *emitInlineableBuiltinCall(const Expression *expression,
+                                                   llvm::Value *resolved_function,
+                                                   FunctionBase *likely_function);
+
+            // Specific functions to inline.
+            llvm::Value *emitInlinedAssign(const Expression *expression);
+            llvm::Value *emitInlinedParen(const Expression *expression);
+            llvm::Value *emitInlinedBegin(const Expression *expression);
+            llvm::Value *emitInlinedReturn(const Expression *expression);
+            llvm::Value *emitInlinedIf(const Expression *expression);
+            llvm::Value *emitInlinedWhile(const Expression *expression);
+            llvm::Value *emitInlinedRepeat(const Expression *expression);
+            llvm::Value *emitInlinedBreak(const Expression *expression);
+            llvm::Value *emitInlinedNext(const Expression *expression);
+
+            typedef llvm::Value *(Compiler::*EmitBuiltinFn)(const Expression *);
+            static const std::vector<std::pair<FunctionBase *, EmitBuiltinFn>> &
+            getInlineableBuiltins();
+            static EmitBuiltinFn getInlinedBuiltInEmitter(BuiltInFunction *builtin);
+
+            // Exception handling.
+            friend class CompilerContext;
+            llvm::Value *getExceptionTypeId(const std::type_info *type);
+            llvm::BasicBlock *emitLandingPad(llvm::PHINode *dispatch);
+            llvm::PHINode *emitDispatchToExceptionHandler(const std::type_info *type,
+                                                          llvm::PHINode *handler,
+                                                          llvm::PHINode *fallthrough);
+            llvm::PHINode *emitLoopExceptionHandler(llvm::BasicBlock *break_destination,
+                                                    llvm::BasicBlock *next_destination);
+            llvm::PHINode *emitReturnExceptionHandler();
+            llvm::PHINode *emitRethrowException();
+
+            // Utility functions.
+            std::vector<llvm::Value *> castFunctionArguments(
+                llvm::ArrayRef<llvm::Value *> args,
+                llvm::Function *function);
+
+            llvm::Constant *emitConstantPointer(const void *value, llvm::Type *type);
+
+            void emitSetVisibility(bool visible);
+
+            void emitErrorUnless(llvm::Value *condition,
+                                 const char *error_msg,
+                                 llvm::ArrayRef<llvm::Value *> extra_args = {});
+            llvm::BasicBlock *createBasicBlock(const char *name,
+                                               llvm::BasicBlock *insert_before = nullptr);
+            llvm::BasicBlock *createBranch(const char *name, const RObject *expression,
+                                           llvm::PHINode *merge_point,
+                                           llvm::BasicBlock *insert_before = nullptr);
+            llvm::Value *createBackEdge(llvm::BasicBlock *destination);
+        };
+
+        template <class T>
+        llvm::Constant *Compiler::emitConstantPointer(const T *value)
+        {
+            llvm::Type *type = llvm::TypeBuilder<T *, false>::get(getContext());
+            return emitConstantPointer(reinterpret_cast<const void *>(value), type);
+        }
+
+        template <class T>
+        llvm::Value *Compiler::emitUncheckedCast(llvm::Value *value)
+        {
+            llvm::Type *type = llvm::TypeBuilder<T, false>::get(getContext());
+            return CreatePointerCast(value, type);
+        }
+
+        template <class T>
+        llvm::Type *Compiler::getType()
+        {
+            return llvm::TypeBuilder<T, false>::get(getContext());
+        }
+
+    } // namespace JIT
 } // namespace rho
 
 #endif // RHO_JIT_COMPILER__HPP

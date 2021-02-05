@@ -35,36 +35,36 @@
 using namespace std;
 using namespace rho;
 
-void S3Launcher::addMethodBindings(Frame* frame) const
+void S3Launcher::addMethodBindings(Frame *frame) const
 {
     // .Class:
     if (m_index == 0)
-	frame->bind(DotClassSymbol, m_classes);
-    else {
-	GCStackRoot<StringVector>
-	    dotclass(StringVector::create(m_classes->size() - m_index));
-	for (unsigned int j = 0; j < dotclass->size(); ++j)
-	    (*dotclass)[j] = (*m_classes)[j + m_index];
-	dotclass->setAttribute(PreviousSymbol, m_classes);
-	frame->bind(DotClassSymbol, dotclass);
+        frame->bind(DotClassSymbol, m_classes);
+    else
+    {
+        GCStackRoot<StringVector>
+            dotclass(StringVector::create(m_classes->size() - m_index));
+        for (unsigned int j = 0; j < dotclass->size(); ++j)
+            (*dotclass)[j] = (*m_classes)[j + m_index];
+        dotclass->setAttribute(PreviousSymbol, m_classes);
+        frame->bind(DotClassSymbol, dotclass);
     }
 
     // .Method:
     {
-	String* method_name
-	    = const_cast<String*>(m_symbol->name());
-	frame->bind(DotMethodSymbol, StringVector::createScalar(method_name));
+        String *method_name = const_cast<String *>(m_symbol->name());
+        frame->bind(DotMethodSymbol, StringVector::createScalar(method_name));
     }
 
     // .Group:
     if (m_using_group)
-	frame->bind(DotGroupSymbol, asStringVector(m_group));
+        frame->bind(DotGroupSymbol, asStringVector(m_group));
 
     // Others:
     frame->bind(DotGenericSymbol, asStringVector(m_generic));
     frame->bind(DotGenericCallEnvSymbol, m_call_env);
     frame->bind(DotGenericDefEnvSymbol, m_table_env);
-}	
+}
 
 // Implementation of S3Launcher::create() is in objects.cpp
 
@@ -76,46 +76,48 @@ void S3Launcher::detachReferents()
     m_function.detach();
 }
 
-std::pair<FunctionBase*, bool>
-S3Launcher::findMethod(const Symbol* symbol, Environment* call_env,
-		       Environment* table_env)
+std::pair<FunctionBase *, bool>
+S3Launcher::findMethod(const Symbol *symbol, Environment *call_env,
+                       Environment *table_env)
 {
-    FunctionBase* fun = findFunction(symbol, call_env);
+    FunctionBase *fun = findFunction(symbol, call_env);
     if (fun)
-	return make_pair(fun, true);
+        return make_pair(fun, true);
     if (!table_env)
-	return pair<FunctionBase*, bool>(nullptr, false);
-    Environment* table = nullptr;
+        return pair<FunctionBase *, bool>(nullptr, false);
+    Environment *table = nullptr;
     // Look for S3 methods table:
     {
-	Frame::Binding* tblbdg
-	    = table_env->frame()->binding(S3MethodsTableSymbol);
-	if (tblbdg) {
-	    RObject* tblbdgval = tblbdg->forcedValue();
-	    if (tblbdgval && tblbdgval->sexptype() == ENVSXP)
-		table = SEXP_downcast<Environment*>(tblbdgval);
-	}
+        Frame::Binding *tblbdg = table_env->frame()->binding(S3MethodsTableSymbol);
+        if (tblbdg)
+        {
+            RObject *tblbdgval = tblbdg->forcedValue();
+            if (tblbdgval && tblbdgval->sexptype() == ENVSXP)
+                table = SEXP_downcast<Environment *>(tblbdgval);
+        }
     }
     // Look up method in table:
-    if (table) {
-	Frame::Binding* symbdg = table->frame()->binding(symbol);
-	if (symbdg) {
-	    RObject* symbdgval = symbdg->forcedValue();
-	    // Assume that the result is a FunctionBase:
-	    return make_pair(SEXP_downcast<FunctionBase*>(symbdgval), false);
-	}
+    if (table)
+    {
+        Frame::Binding *symbdg = table->frame()->binding(symbol);
+        if (symbdg)
+        {
+            RObject *symbdgval = symbdg->forcedValue();
+            // Assume that the result is a FunctionBase:
+            return make_pair(SEXP_downcast<FunctionBase *>(symbdgval), false);
+        }
     }
-    return pair<FunctionBase*, bool>(nullptr, false);
+    return pair<FunctionBase *, bool>(nullptr, false);
 }
 
-void S3Launcher::visitReferents(const_visitor* v) const
+void S3Launcher::visitReferents(const_visitor *v) const
 {
     if (m_call_env)
-	(*v)(m_call_env);
+        (*v)(m_call_env);
     if (m_table_env)
-	(*v)(m_table_env);
+        (*v)(m_table_env);
     if (m_classes)
-	(*v)(m_classes);
+        (*v)(m_classes);
     if (m_function)
-	(*v)(m_function);
+        (*v)(m_function);
 }

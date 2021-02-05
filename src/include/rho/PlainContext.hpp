@@ -32,7 +32,8 @@
 
 #include <rho/Evaluator_Context.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Lightweight Context neutralizing BailoutContext.
      *
      * A Context of this type is typically created in circumstances
@@ -42,12 +43,13 @@ namespace rho {
      * objects \e cannot be handled, but without creating a
      * FunctionContext or a ClosureContext.
      */
-    struct PlainContext : Evaluator::Context {
-	PlainContext()
-	{
-	    setType(PLAIN);
-	}
+    struct PlainContext : Evaluator::Context
+    {
+        PlainContext()
+        {
+            setType(PLAIN);
+        }
     };
-}  // namespace rho
+} // namespace rho
 
-#endif  // PLAINCONTEXT_HPP
+#endif // PLAINCONTEXT_HPP

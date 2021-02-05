@@ -38,79 +38,86 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*BINDING_IS_LOCKEDptr)(SEXP b) = BINDING_IS_LOCKED;
-	SEXP (*CAD4Rp)(SEXP e) = CAD4R;
-	SEXP (*CADDDRp)(SEXP e) = CADDDR;
-	SEXP (*CADDRp)(SEXP e) = CADDR;
-	SEXP (*CADRp)(SEXP e) = CADR;
-	SEXP (*CDARp)(SEXP e) = CDAR;
-	SEXP (*CDDRp)(SEXP e) = CDDR;
-	SEXP (*CDDDRp)(SEXP e) = CDDDR;
-	SEXP (*CDRp)(SEXP e) = CDR;
-	Rboolean (*IS_ACTIVE_BINDINGptr)(SEXP b) = IS_ACTIVE_BINDING;
-	void (*LOCK_BINDINGptr)(SEXP b) = LOCK_BINDING;
-	void (*SET_ACTIVE_BINDING_BITptr)(SEXP b) = SET_ACTIVE_BINDING_BIT;
-	void (*UNLOCK_BINDINGptr)(SEXP b) = UNLOCK_BINDING;
-   }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &BINDING_IS_LOCKEDptr = BINDING_IS_LOCKED;
+        const auto &CAD4Rp = CAD4R;
+        const auto &CADDDRp = CADDDR;
+        const auto &CADDRp = CADDR;
+        const auto &CADRp = CADR;
+        const auto &CDARp = CDAR;
+        const auto &CDDRp = CDDR;
+        const auto &CDDDRp = CDDDR;
+        const auto &CDRp = CDR;
+        const auto &IS_ACTIVE_BINDINGptr = IS_ACTIVE_BINDING;
+        const auto &LOCK_BINDINGptr = LOCK_BINDING;
+        const auto &SET_ACTIVE_BINDING_BITptr = SET_ACTIVE_BINDING_BIT;
+        const auto &UNLOCK_BINDINGptr = UNLOCK_BINDING;
+    } // namespace ForceNonInline
+} // namespace rho
 
-namespace {
+namespace
+{
     // Used in {,un}packGPBits():
-    const unsigned int BINDING_LOCK_MASK = 1<<14;
-    const unsigned int ACTIVE_BINDING_MASK = 1<<15;
-}
+    const unsigned int BINDING_LOCK_MASK = 1 << 14;
+    const unsigned int ACTIVE_BINDING_MASK = 1 << 15;
+} // namespace
 
-PairList* PairList::make(int num_args, RObject* const* args)
+PairList *PairList::make(int num_args, RObject *const *args)
 {
     if (num_args == 0)
-	return nullptr;
+        return nullptr;
     // TODO(kmillar): this uses a recursive implementation and may take up a lot
     //   of stack space.  Either reimplement or retire this function.
     return new PairList(args[0],
-			make(num_args - 1, args + 1),
-			nullptr);
+                        make(num_args - 1, args + 1),
+                        nullptr);
 }
 
-void PairList::copyTagsFrom(const PairList* listWithTags) {
-    PairList* to = this;
-    const PairList* from = listWithTags;
+void PairList::copyTagsFrom(const PairList *listWithTags)
+{
+    PairList *to = this;
+    const PairList *from = listWithTags;
 
-    while (to != nullptr && from != nullptr) {
-	to->setTag(from->tag());
-	to = to->tail();
-	from = from->tail();
+    while (to != nullptr && from != nullptr)
+    {
+        to->setTag(from->tag());
+        to = to->tail();
+        from = from->tail();
     }
 }
 
-PairList::PairList(const PairList& pattern)
+PairList::PairList(const PairList &pattern)
     : ConsCell(pattern, 0)
 {
     // Clone the tail:
-    PairList* c = this;
-    const PairList* pl = pattern.m_tail;
-    while (pl) {
-	c->m_tail = new PairList(*pl, 0);
-	c = c->m_tail;
-	pl = pl->m_tail;
+    PairList *c = this;
+    const PairList *pl = pattern.m_tail;
+    while (pl)
+    {
+        c->m_tail = new PairList(*pl, 0);
+        c = c->m_tail;
+        pl = pl->m_tail;
     }
 }
 
 // Non-inlined so it can get put in .text.hot :
 PairList::~PairList()
-{}
+{
+}
 
-PairList* PairList::clone() const
+PairList *PairList::clone() const
 {
     return new PairList(*this);
 }
 
-PairList* PairList::make(size_t sz)
+PairList *PairList::make(size_t sz)
 {
-    PairList* ans = nullptr;
+    PairList *ans = nullptr;
     while (sz--)
-	ans = Rf_cons(nullptr, ans);
+        ans = cons(nullptr, ans);
     return ans;
 }
 
@@ -118,13 +125,13 @@ unsigned int PairList::packGPBits() const
 {
     unsigned int ans = ConsCell::packGPBits();
     if (m_binding_locked)
-	ans |= BINDING_LOCK_MASK;
+        ans |= BINDING_LOCK_MASK;
     if (m_active_binding)
-	ans |= ACTIVE_BINDING_MASK;
+        ans |= ACTIVE_BINDING_MASK;
     return ans;
 }
 
-const char* PairList::typeName() const
+const char *PairList::typeName() const
 {
     return staticTypeName();
 }
@@ -145,24 +152,24 @@ SEXP Rf_allocList(unsigned int n)
 
 SEXP Rf_cons(SEXP cr, SEXP tl)
 {
-    return PairList::cons(cr, SEXP_downcast<PairList*>(tl));
+    return PairList::cons(cr, SEXP_downcast<PairList *>(tl));
 }
 
 Rboolean IS_ACTIVE_BINDING(SEXP b)
 {
-    const ConsCell* cc = SEXP_downcast<ConsCell*>(b);
+    const ConsCell *cc = SEXP_downcast<ConsCell *>(b);
     if (cc->sexptype() != LISTSXP)
-	return FALSE;
-    const PairList* pl = static_cast<const PairList*>(cc);
+        return FALSE;
+    const PairList *pl = static_cast<const PairList *>(cc);
     return Rboolean(pl->m_active_binding);
 }
 
 SEXP SETCDR(SEXP x, SEXP y)
 {
     if (!x)
-	Rf_error(_("bad value"));
-    ConsCell& cc = *SEXP_downcast<ConsCell*>(x);
-    PairList* tl = SEXP_downcast<PairList*>(y);
+        Rf_error(_("bad value"));
+    ConsCell &cc = *SEXP_downcast<ConsCell *>(x);
+    PairList *tl = SEXP_downcast<PairList *>(y);
     cc.setTail(tl);
     return y;
 }
@@ -170,11 +177,11 @@ SEXP SETCDR(SEXP x, SEXP y)
 SEXP SETCADR(SEXP x, SEXP y)
 {
     if (!x)
-	Rf_error(_("bad value"));
-    ConsCell* cc = SEXP_downcast<ConsCell*>(x);
+        Rf_error(_("bad value"));
+    ConsCell *cc = SEXP_downcast<ConsCell *>(x);
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc->setCar(y);
     return y;
 }
@@ -182,14 +189,14 @@ SEXP SETCADR(SEXP x, SEXP y)
 SEXP SETCADDR(SEXP x, SEXP y)
 {
     if (!x)
-	Rf_error(_("bad value"));
-    ConsCell* cc = SEXP_downcast<ConsCell*>(x);
+        Rf_error(_("bad value"));
+    ConsCell *cc = SEXP_downcast<ConsCell *>(x);
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc->setCar(y);
     return y;
 }
@@ -197,17 +204,17 @@ SEXP SETCADDR(SEXP x, SEXP y)
 SEXP SETCADDDR(SEXP x, SEXP y)
 {
     if (!x)
-	Rf_error(_("bad value"));
-    ConsCell* cc = SEXP_downcast<ConsCell*>(x);
+        Rf_error(_("bad value"));
+    ConsCell *cc = SEXP_downcast<ConsCell *>(x);
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc->setCar(y);
     return y;
 }
@@ -215,20 +222,20 @@ SEXP SETCADDDR(SEXP x, SEXP y)
 SEXP SETCAD4R(SEXP x, SEXP y)
 {
     if (!x)
-	Rf_error(_("bad value"));
-    ConsCell* cc = SEXP_downcast<ConsCell*>(x);
+        Rf_error(_("bad value"));
+    ConsCell *cc = SEXP_downcast<ConsCell *>(x);
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc = cc->tail();
     if (!cc)
-	Rf_error(_("bad value"));
+        Rf_error(_("bad value"));
     cc->setCar(y);
     return y;
 }

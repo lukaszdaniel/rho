@@ -33,24 +33,26 @@
 
 #include <cstdarg>
 #include <R_ext/Print.h>
-#include <Rinternals.h>  // For Rf_PrintValue
+#include <Rinternals.h> // For Rf_PrintValue
 #include <rho/Expression.hpp>
 
 using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	int (*RTRACEptr)(SEXP x) = RTRACE;
-	void (*SET_RTRACEptr)(SEXP x, int v) = SET_RTRACE;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &RTRACEptr = RTRACE;
+        const auto &SET_RTRACEptr = SET_RTRACE;
+    } // namespace ForceNonInline
+} // namespace rho
 
 bool FunctionBase::s_tracing_enabled = true;
 
-void FunctionBase::reportCall(const Expression* call)
+void FunctionBase::reportCall(const Expression *call)
 {
     Rprintf("trace: ");
-    Rf_PrintValue(const_cast<Expression*>(call));
+    Rf_PrintValue(const_cast<Expression *>(call));
 }

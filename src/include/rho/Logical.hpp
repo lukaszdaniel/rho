@@ -21,7 +21,7 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file Logical.h
+/** @file Logical.hpp
  * @brief Class rho::Logical.
  */
 
@@ -34,15 +34,15 @@
 namespace rho
 {
     /** @brief Object representing a scalar logical value.
- *
- * In R, logical values have three states: TRUE, FALSE and NA.
- * The Logical class represents such a value and provides the standard
- * logic operations extended to ternary logic.
- *
- * Note that the representation of this class is completely constrained by
- * the C API to R's internals.  Any changes are likely to break existing
- * user code.
- */
+     *
+     * In R, logical values have three states: TRUE, FALSE and NA.
+     * The Logical class represents such a value and provides the standard
+     * logic operations extended to ternary logic.
+     *
+     * Note that the representation of this class is completely constrained by
+     * the C API to R's internals.  Any changes are likely to break existing
+     * user code.
+     */
     class Logical
     {
     public:
@@ -64,19 +64,19 @@ namespace rho
         static Logical NA() { return Logical(NA_LOGICAL); }
 
         /** @brief NA aware equality operator.
-     *
-     *  Returns NA if either or both operands are NA.  Otherwise returns
-     *  whether or not the two values are equal.
-     */
+         *
+         *  Returns NA if either or both operands are NA.  Otherwise returns
+         *  whether or not the two values are equal.
+         */
         Logical equals(Logical other) const
         {
             return (isNA() || other.isNA()) ? NA() : identical(other);
         }
 
         /** @brief NA oblivious equality operator.
-     *
-     *  Returns True iff the values are equal, or if they are both NA.
-     */
+         *
+         *  Returns True iff the values are equal, or if they are both NA.
+         */
         bool identical(Logical other) const { return m_value == other.m_value; }
 
         // NB: operator==() is intentionally not defined.

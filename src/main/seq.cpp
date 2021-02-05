@@ -108,7 +108,7 @@ static SEXP cross_colon(SEXP call, SEXP s, SEXP t)
 }
 
 /* interval at which to check interrupts */
-constexpr R_xlen_t NINTERRUPT = 1000000;
+// constexpr R_xlen_t NINTERRUPT = 1000000;
 
 static SEXP seq_colon(double n1, double n2, SEXP call)
 {

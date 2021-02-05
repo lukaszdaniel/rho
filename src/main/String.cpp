@@ -43,20 +43,18 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        int (*ENC_KNOWNp)(const SEXP x) = ENC_KNOWN;
-        int (*IS_ASCIIp)(const SEXP x) = IS_ASCII;
-        int (*IS_BYTESp)(const SEXP x) = IS_BYTES;
-        int (*IS_LATIN1p)(const SEXP x) = IS_LATIN1;
-        int (*IS_UTF8p)(const SEXP x) = IS_UTF8;
-        const char *(*R_CHARp)(SEXP x) = R_CHAR;
-        SEXP (*mkCharp)
-        (const char *) = Rf_mkChar;
-        SEXP (*mkCharCEp)
-        (const char *, cetype_t) = Rf_mkCharCE;
-        SEXP (*mkCharLenp)
-        (const char *, int) = Rf_mkCharLen;
+        const auto &ENC_KNOWNp = ENC_KNOWN;
+        const auto &IS_ASCIIp = IS_ASCII;
+        const auto &IS_BYTESp = IS_BYTES;
+        const auto &IS_LATIN1p = IS_LATIN1;
+        const auto &IS_UTF8p = IS_UTF8;
+        const auto &R_CHARp = R_CHAR;
+        const auto &mkCharp = Rf_mkChar;
+        const auto &mkCharCEp = Rf_mkCharCE;
+        const auto &mkCharLenp = Rf_mkCharLen;
     } // namespace ForceNonInline
 } // namespace rho
+
 std::hash<std::string> String::Hasher::s_string_hasher;
 
 SEXP R_NaString = nullptr;

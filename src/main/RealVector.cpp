@@ -37,8 +37,8 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        Rboolean (*isRealptr)(SEXP s) = Rf_isReal;
-        double *(*REALp)(SEXP) = REAL;
+        const auto &isRealptr = Rf_isReal;
+        const auto &REALp = REAL;
     } // namespace ForceNonInline
 
     template <>

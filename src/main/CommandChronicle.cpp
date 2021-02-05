@@ -40,27 +40,28 @@ void CommandChronicle::detachReferents()
     m_command.detach();
 }
 
-void CommandChronicle::readBinding(const Provenance* bdgprov)
+void CommandChronicle::readBinding(const Provenance *bdgprov)
 {
-    std::pair<std::set<unsigned int>::iterator, bool> pr
-	= m_seen.insert(bdgprov->serialNumber());
-    if (pr.second) {
-	GCEdge<const Provenance> parent;
-	parent = bdgprov;
-	m_reads.push_back(parent);
+    std::pair<std::set<unsigned int>::iterator, bool> pr = m_seen.insert(bdgprov->serialNumber());
+    if (pr.second)
+    {
+        GCEdge<const Provenance> parent;
+        parent = bdgprov;
+        m_reads.push_back(parent);
     }
 }
 
-void CommandChronicle::visitReferents(const_visitor* v) const
+void CommandChronicle::visitReferents(const_visitor *v) const
 {
-    for (const GCNode* parent : m_reads) {
-	(*v)(parent);
+    for (const GCNode *parent : m_reads)
+    {
+        (*v)(parent);
     }
     if (m_command)
-	(*v)(m_command);
+        (*v)(m_command);
 }
 
-void CommandChronicle::writeBinding(const Provenance* bdgprov)
+void CommandChronicle::writeBinding(const Provenance *bdgprov)
 {
     m_seen.insert(bdgprov->serialNumber());
 }

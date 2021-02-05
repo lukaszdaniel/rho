@@ -47,7 +47,7 @@
 // Helper macro for the common case where the C name is the same as the rho
 // name with a 'R_' prefix.
 #define PREDEFINED_SYMBOL2(RHO_NAME, R_NAME) \
-  PREDEFINED_SYMBOL(R_ ## RHO_NAME, RHO_NAME, R_NAME)
+  PREDEFINED_SYMBOL(R_##RHO_NAME, RHO_NAME, R_NAME)
 //public
 PREDEFINED_SYMBOL2(Bracket2Symbol, "[[");
 PREDEFINED_SYMBOL2(BracketSymbol, "[");
@@ -88,7 +88,7 @@ PREDEFINED_SYMBOL2(DoubleColonSymbol, "::");
 PREDEFINED_SYMBOL2(TripleColonSymbol, ":::");
 PREDEFINED_SYMBOL2(ConnIdSymbol, "conn_id");
 PREDEFINED_SYMBOL(R_DevicesSymbol, DotDevicesSymbol, ".Devices");
-PREDEFINED_SYMBOL2(baseSymbol, "base");  // deprecated.
+PREDEFINED_SYMBOL2(baseSymbol, "base"); // deprecated.
 PREDEFINED_SYMBOL2(BaseSymbol, "base");
 PREDEFINED_SYMBOL2(SpecSymbol, "spec");
 PREDEFINED_SYMBOL2(NamespaceEnvSymbol, ".__NAMESPACE__.");

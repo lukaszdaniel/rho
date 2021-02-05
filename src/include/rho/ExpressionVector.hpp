@@ -24,7 +24,7 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file ExpressionVector.h
+/** @file ExpressionVector.hpp
  * @brief Class rho::ExpressionVector and associated C interface.
  *
  * (rho::ExpressionVector implements EXPRSXP.)
@@ -34,14 +34,15 @@
  * rather than Expressions.
  */
 
-#ifndef EXPRESSIONVECTOR_H
-#define EXPRESSIONVECTOR_H
+#ifndef EXPRESSIONVECTOR_HPP
+#define EXPRESSIONVECTOR_HPP
 
 #include <rho/VectorBase.hpp>
 #include <rho/FixedVector.hpp>
 #include <rho/SEXP_downcast.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Expression vector.
      *
      * The vector contains smart pointers of type
@@ -52,32 +53,33 @@ namespace rho {
      * stricter (but is needs to embrace Symbol as well as Expression).
      */
     typedef FixedVector<GCEdge<>, EXPRSXP> ExpressionVector;
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
     /**
      * @param s Pointer to a rho::RObject.
      * @return TRUE iff the rho::RObject pointed to by \a s is an expression.
      */
     inline Rboolean Rf_isExpression(SEXP s)
     {
-	return Rboolean(s && TYPEOF(s) == EXPRSXP);
+        return Rboolean(s && TYPEOF(s) == EXPRSXP);
     }
 
-/** @brief Set element of rho::ExpressionVector.
- * 
- * @param x Pointer to a rho::ExpressionVector .
- *
- * @param i Index of the required element.  There is no bounds checking.
- *
- * @param v Pointer, possibly null, to rho::RObject representing the
- *          new value.
- *
- * @return The new value \a v.
- */
-SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
+    /** @brief Set element of rho::ExpressionVector.
+     *
+     * @param x Pointer to a rho::ExpressionVector .
+     *
+     * @param i Index of the required element.  There is no bounds checking.
+     *
+     * @param v Pointer, possibly null, to rho::RObject representing the
+     *          new value.
+     *
+     * @return The new value \a v.
+     */
+    SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
 
-/**
+    /**
  * @brief Examine element of a rho::ExpressionVector.
  *
  * @param x Non-null pointer to a rho::ExpressionVector .
@@ -86,18 +88,20 @@ SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
  *
  * @return Pointer to extracted \a i 'th element.
  */
-inline SEXP XVECTOR_ELT(SEXP x, R_xlen_t i)
-{
-    using namespace rho;
-    if (x && x->sexptype() == EXPRSXP) {
-    ExpressionVector* ev = SEXP_downcast<ExpressionVector*>(x, false);
-    return (*ev)[VectorBase::size_type(i)];
-    } else {
-	Rf_error("'%s' function can only be applied to an expression vector, not a '%s'",
-		 "XVECTOR_ELT()",  Rf_type2char(TYPEOF(x)));
+    inline SEXP XVECTOR_ELT(SEXP x, R_xlen_t i)
+    {
+        using namespace rho;
+        if (x && x->sexptype() == EXPRSXP)
+        {
+            ExpressionVector *ev = SEXP_downcast<ExpressionVector *>(x, false);
+            return (*ev)[VectorBase::size_type(i)];
+        }
+        else
+        {
+            Rf_error("'%s' function can only be applied to an expression vector, not a '%s'",
+                     "XVECTOR_ELT()", Rf_type2char(TYPEOF(x)));
+        }
     }
 }
 
-}
-
-#endif /* EXPRESSIONVECTOR_H */
+#endif /* EXPRESSIONVECTOR_HPP */

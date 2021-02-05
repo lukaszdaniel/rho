@@ -24,12 +24,12 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file RawVector.h
+/** @file RawVector.hpp
  * @brief Class rho::RawVector and associated C interface.
  */
 
-#ifndef RAWVECTOR_H
-#define RAWVECTOR_H
+#ifndef RAWVECTOR_HPP
+#define RAWVECTOR_HPP
 
 #include <rho/FixedVector.hpp>
 #include <rho/SEXP_downcast.hpp>
@@ -37,53 +37,61 @@
 
 typedef unsigned char Rbyte;
 
-namespace rho {
-    // Template specializations:
-    namespace ElementTraits {
-	template<>
-	struct MustConstruct<Rbyte> : boost::mpl::false_ {};
-
-	template<>
-	struct MustDestruct<Rbyte> : boost::mpl::false_ {};
-
-	template <>
-	inline const Rbyte& NAFunc<Rbyte>::operator()() const
-	{
-	    static Rbyte s_na = 0;
-	    return s_na;
-	}
-
-	template <>
-	inline bool IsNA<Rbyte>::operator()(const Rbyte&) const
-	{
-	    return false;
-	}
-    }
-
-    /** @brief Vector of 'raw bytes'.
-     */
-    typedef rho::FixedVector<Rbyte, RAWSXP> RawVector;
-
-    template<>
-    struct VectorTypeFor<Rbyte> {
-      typedef RawVector type;
-    };
-}  // namespace rho
-
-extern "C" {
-/**
- * @param x Pointer to a rho::RawVector (i.e. a RAWSXP).  An error is
- *          generated if \a x is not a non-null pointer to a
- *          rho::RawVector .
- *
- * @return Pointer to element 0 of \a x .
- */
-inline Rbyte *RAW(SEXP x)
+namespace rho
 {
-    using namespace rho;
-    return &(*SEXP_downcast<RawVector*>(x, false))[0];
-}
+	// Template specializations:
+	namespace ElementTraits
+	{
+		template <>
+		struct MustConstruct<Rbyte> : boost::mpl::false_
+		{
+		};
 
-}  // extern "C"
+		template <>
+		struct MustDestruct<Rbyte> : boost::mpl::false_
+		{
+		};
 
-#endif /* RAWVECTOR_H */
+		template <>
+		inline const Rbyte &NAFunc<Rbyte>::operator()() const
+		{
+			static Rbyte s_na = 0;
+			return s_na;
+		}
+
+		template <>
+		inline bool IsNA<Rbyte>::operator()(const Rbyte &) const
+		{
+			return false;
+		}
+	} // namespace ElementTraits
+
+	/** @brief Vector of 'raw bytes'.
+     */
+	typedef rho::FixedVector<Rbyte, RAWSXP> RawVector;
+
+	template <>
+	struct VectorTypeFor<Rbyte>
+	{
+		typedef RawVector type;
+	};
+} // namespace rho
+
+extern "C"
+{
+	/**
+	 * @param x Pointer to a rho::RawVector (i.e. a RAWSXP).  An error is
+	 *          generated if \a x is not a non-null pointer to a
+	 *          rho::RawVector .
+	 *
+	 * @return Pointer to element 0 of \a x .
+	 */
+	inline Rbyte *RAW(SEXP x)
+	{
+		using namespace rho;
+		return &(*SEXP_downcast<RawVector *>(x, false))[0];
+	}
+
+} // extern "C"
+
+#endif /* RAWVECTOR_HPP */

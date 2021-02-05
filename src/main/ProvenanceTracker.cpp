@@ -32,79 +32,79 @@ using namespace rho;
 
 #ifdef PROVENANCE_TRACKING
 
-ProvenanceTracker::CommandScope* ProvenanceTracker::s_scope = 0;
-
+ProvenanceTracker::CommandScope *ProvenanceTracker::s_scope = 0;
 
 // ***** Class ProvenanceTracker::CommandScope *****
 
 // rho FIXME: Maybe ought to duplicate 'command', either here or in
 // CommandChronicle constructor.
-ProvenanceTracker::CommandScope::CommandScope(const RObject* command)
+ProvenanceTracker::CommandScope::CommandScope(const RObject *command)
     : m_xenogenetic(false)
 {
-    if (!ProvenanceTracker::s_scope) {
-	m_chronicle = new CommandChronicle(command);
-	ProvenanceTracker::s_scope = this;
+    if (!ProvenanceTracker::s_scope)
+    {
+        m_chronicle = new CommandChronicle(command);
+        ProvenanceTracker::s_scope = this;
     }
 }
 
 ProvenanceTracker::CommandScope::~CommandScope()
 {
-    if (s_scope == this) {
-	m_chronicle->close();
-	ProvenanceTracker::s_scope = 0;
+    if (s_scope == this)
+    {
+        m_chronicle->close();
+        ProvenanceTracker::s_scope = 0;
     }
 }
 
-void ProvenanceTracker::CommandScope::monitorRead(const Frame::Binding& bdg)
-{ 
-    const Provenance* prov = bdg.provenance();
+void ProvenanceTracker::CommandScope::monitorRead(const Frame::Binding &bdg)
+{
+    const Provenance *prov = bdg.provenance();
     if (prov)
-	m_chronicle->readBinding(prov);
+        m_chronicle->readBinding(prov);
 }
 
 void ProvenanceTracker::CommandScope::monitorWrite(const Frame::Binding &bdg)
 {
-    const Symbol* sym = bdg.symbol();
+    const Symbol *sym = bdg.symbol();
     GCStackRoot<Provenance> prov(new Provenance(sym, m_chronicle));
     if (m_xenogenetic)
-	prov->setXenogenous(bdg.rawValue());  // Maybe ought to clone value
-    Frame::Binding& ncbdg = const_cast<Frame::Binding&>(bdg);
+        prov->setXenogenous(bdg.rawValue()); // Maybe ought to clone value
+    Frame::Binding &ncbdg = const_cast<Frame::Binding &>(bdg);
     ncbdg.setProvenance(prov);
     m_chronicle->writeBinding(prov);
 }
-
 
 // ***** Class ProvenanceTracker *****
 
 void ProvenanceTracker::flagXenogenesis()
 {
     if (s_scope)
-	s_scope->flagXenogenesis();
+        s_scope->flagXenogenesis();
 }
 
-void ProvenanceTracker::monitorRead(const Frame::Binding& bdg)
+void ProvenanceTracker::monitorRead(const Frame::Binding &bdg)
 {
     if (s_scope)
-	s_scope->monitorRead(bdg);
+        s_scope->monitorRead(bdg);
 }
 
-void ProvenanceTracker::monitorWrite(const Frame::Binding& bdg)
+void ProvenanceTracker::monitorWrite(const Frame::Binding &bdg)
 {
     if (s_scope)
-	s_scope->monitorWrite(bdg);
+        s_scope->monitorWrite(bdg);
 }
 
 void ProvenanceTracker::setMonitors()
 {
     Frame::setReadMonitor(ProvenanceTracker::monitorRead);
     Frame::setWriteMonitor(ProvenanceTracker::monitorWrite);
-    Frame* global_frame = Environment::global()->frame();
+    Frame *global_frame = Environment::global()->frame();
     global_frame->enableReadMonitoring(true);
     global_frame->enableWriteMonitoring(true);
 }
 
-#endif  // PROVENANCE_TRACKING
+#endif // PROVENANCE_TRACKING
 
 // ***** C interface *****
 

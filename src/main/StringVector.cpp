@@ -41,9 +41,8 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        Rboolean (*isStringp)(SEXP s) = Rf_isString;
-        SEXP (*STRING_ELTp)
-        (const SEXP x, R_xlen_t i) = STRING_ELT;
+        const auto &isStringp = Rf_isString;
+        const auto &STRING_ELTp = STRING_ELT;
     } // namespace ForceNonInline
 
     GCEdge<String> ElementTraits::NAFunc<GCEdge<String>>::makeNA()

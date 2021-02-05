@@ -35,18 +35,18 @@
 using namespace std;
 using namespace rho;
 
-DottedArgs* DottedArgs::clone() const
+DottedArgs *DottedArgs::clone() const
 {
     return new DottedArgs(*this);
 }
 
-RObject* DottedArgs::evaluate(Environment* env)
+RObject *DottedArgs::evaluate(Environment *env)
 {
     Rf_error(_("'...' used in an incorrect context"));
     return nullptr;
 }
 
-const char* DottedArgs::typeName() const
+const char *DottedArgs::typeName() const
 {
     return staticTypeName();
 }

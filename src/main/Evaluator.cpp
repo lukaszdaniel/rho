@@ -37,11 +37,13 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*evalp)(SEXP, SEXP) = Rf_eval;
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &evalp = Rf_eval;
     }
-}
+} // namespace rho
 
 Rboolean R_Visible = TRUE;
 int R_interrupts_pending = 0;
@@ -49,7 +51,7 @@ Rboolean R_interrupts_suspended = FALSE;
 
 unsigned int Evaluator::s_countdown = 1000;
 unsigned int Evaluator::s_countdown_start = 1000;
-Evaluator* Evaluator::s_current = nullptr;
+Evaluator *Evaluator::s_current = nullptr;
 bool Evaluator::s_profiling = false;
 
 void Evaluator::checkForUserInterrupts()

@@ -36,11 +36,13 @@
  * to be found in PairList.hpp.
  */
 
+#include <rho/RObject.hpp>
+
 #ifndef CONSCELL_HPP
 #define CONSCELL_HPP
 
 #include <stdexcept>
-#include <rho/RObject.hpp>
+
 #include <rho/GCManager.hpp>
 #include <rho/GCRoot.hpp>
 #include <rho/SEXP_downcast.hpp>

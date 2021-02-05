@@ -40,19 +40,22 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
+namespace rho
+{
+    namespace ForceNonInline
+    {
     }
-}
+} // namespace rho
 
-GCRootBase* GCRootBase::s_list_head = nullptr;
+GCRootBase *GCRootBase::s_list_head = nullptr;
 
-GCRootBase::GCRootBase(const GCNode* node)
+GCRootBase::GCRootBase(const GCNode *node)
 {
     m_next = s_list_head;
     m_prev = nullptr;
-    if (m_next) {
-	m_next->m_prev = this;
+    if (m_next)
+    {
+        m_next->m_prev = this;
     }
     s_list_head = this;
 
@@ -60,26 +63,26 @@ GCRootBase::GCRootBase(const GCNode* node)
     GCNode::incRefCount(ptr());
 }
 
-void GCRootBase::visitRoots(GCNode::const_visitor* v)
+void GCRootBase::visitRoots(GCNode::const_visitor *v)
 {
-    for (GCRootBase* node = s_list_head; node != nullptr; node = node->m_next)
+    for (GCRootBase *node = s_list_head; node != nullptr; node = node->m_next)
     {
-	if (node->ptr())
-	    (*v)(node->ptr());
+        if (node->ptr())
+            (*v)(node->ptr());
     }
 }
 
 // ***** C interface *****
 
 // This is not a busy list, so we don't bother to use Allocator:
-static unordered_map<const RObject*, GCRoot<> > precious;
+static unordered_map<const RObject *, GCRoot<>> precious;
 
 void R_PreserveObject(SEXP object)
 {
     precious[object] = GCRoot<>(object);
 }
 
-void  R_ReleaseObject(SEXP object)
+void R_ReleaseObject(SEXP object)
 {
     precious.erase(object);
 }

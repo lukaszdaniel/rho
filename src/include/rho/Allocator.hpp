@@ -26,19 +26,19 @@
 namespace rho
 {
     /** @brief STL-compatible allocator front-ending rho::MemoryBank.
- *
- * This templated class enables container classes within the C++
- * standard library to allocate their memory via rho::MemoryBank.
- * However, its calls to MemoryBank are configured so that they do
- * not give rise to garbage collections: this is to avoid any
- * reentrant calls to the code for C++ standard library
- * containers.
- *
- * The code below is adapted from an example in the book "The C++
- * Standard Library - A Tutorial and Reference" by Nicolai
- * M. Josuttis, Addison-Wesley, 1999.  Also see Item 10 of Meyers'
- * 'Effective STL' for the arcana of STL allocators.
- */
+     *
+     * This templated class enables container classes within the C++
+     * standard library to allocate their memory via rho::MemoryBank.
+     * However, its calls to MemoryBank are configured so that they do
+     * not give rise to garbage collections: this is to avoid any
+     * reentrant calls to the code for C++ standard library
+     * containers.
+     *
+     * The code below is adapted from an example in the book "The C++
+     * Standard Library - A Tutorial and Reference" by Nicolai
+     * M. Josuttis, Addison-Wesley, 1999.  Also see Item 10 of Meyers'
+     * 'Effective STL' for the arcana of STL allocators.
+     */
     template <typename T>
     class Allocator
     {
@@ -64,8 +64,8 @@ namespace rho
         const_pointer address(const_reference value) const { return &value; }
 
         /* constructors and destructor
-     * - nothing to do because the allocator has no state
-     */
+         * - nothing to do because the allocator has no state
+         */
         Allocator() throw() {}
         Allocator(const Allocator &) throw() {}
         template <class U>
@@ -88,7 +88,7 @@ namespace rho
 
         // initialize elements of allocated storage p with value value
         template <class U, class... Args>
-        void construct(U *p, Args &&... args)
+        void construct(U *p, Args &&...args)
         {
             ::new ((void *)p) U(std::forward<Args>(args)...);
         }

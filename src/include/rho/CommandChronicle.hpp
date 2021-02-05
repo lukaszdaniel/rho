@@ -59,83 +59,83 @@ namespace rho
 	class CommandChronicle : public GCNode
 	{
 	public:
-          /** @brief Vector type used to record bindings read.
-           *
-           * This is the type of vector used to record the provenances
-           * of the binding states read during the evaluation of a
-           * top-level command.
-           */
+		/** @brief Vector type used to record bindings read.
+         *
+         * This is the type of vector used to record the provenances
+         * of the binding states read during the evaluation of a
+         * top-level command.
+         */
 		typedef std::vector<GCEdge<const Provenance>> ParentVector;
 
 		/** @brief Constructor.
-           *
-           * @param command_arg Pointer to the top-level command to
-           *          which this Chronicle relates.  This will usually,
-           *          but not necessarily, be an Expression.
-           */
+         *
+         * @param command_arg Pointer to the top-level command to
+         *          which this Chronicle relates.  This will usually,
+         *          but not necessarily, be an Expression.
+         */
 		CommandChronicle(const RObject *command_arg)
 		{
 			m_command = command_arg;
 		}
 
 		/** @brief Vector of bindings read.
-           *
-           * @return a reference to the vector of the provenances of
-           * provenance-tracked binding states read during the
-           * evaluation of the top-level command.
-           */
+         *
+         * @return a reference to the vector of the provenances of
+         * provenance-tracked binding states read during the
+         * evaluation of the top-level command.
+         */
 		const ParentVector &bindingsRead() const
 		{
 			return m_reads;
 		}
 
 		/** @brief Close the CommandChronicle to new entries.
-           *
-           * This function is to be called to signify that evaluation of
-           * the top-level command is complete, and that there will
-           * therefore be no further calls to readBinding() in respect
-           * of this object.  This is a cue to release housekeeping data
-           * structures.
-           *
-           * @note The class does not check that there are no further
-           * calls to readBinding() in respect of this object, but such
-           * calls would result in erroneous behaviour.
-           */
+         *
+         * This function is to be called to signify that evaluation of
+         * the top-level command is complete, and that there will
+         * therefore be no further calls to readBinding() in respect
+         * of this object.  This is a cue to release housekeeping data
+         * structures.
+         *
+         * @note The class does not check that there are no further
+         * calls to readBinding() in respect of this object, but such
+         * calls would result in erroneous behaviour.
+         */
 		void close()
 		{
 			m_seen.clear();
 		}
 
 		/** @brief The top-level command.
-           *
-           * @return pointer to the top-level command to which this
-           * CommandChronicle object relates.
-           */
+         *
+         * @return pointer to the top-level command to which this
+         * CommandChronicle object relates.
+         */
 		const RObject *command() const
 		{
 			return m_command;
 		}
 
 		/** @brief Report reading of a provenance-tracked binding.
-           *
-           * This function should be called whenever the top-level
-           * command reads a Frame::Binding with non-null Provenance.
-           *
-           * @param bdgprov Non-null pointer to the Provenance of a
-           *          Frame::Binding read by the top-level command.
-           */
+         *
+         * This function should be called whenever the top-level
+         * command reads a Frame::Binding with non-null Provenance.
+         *
+         * @param bdgprov Non-null pointer to the Provenance of a
+         *          Frame::Binding read by the top-level command.
+         */
 		void readBinding(const Provenance *bdgprov);
 
 		/** @brief Report writing of a provenance-tracked binding.
-           *
-           * This function should be called whenever the top-level
-           * command creates or changes the state of a Frame::Binding
-           * with non-null Provenance.
-           *
-           * @param bdgprov Non-null pointer to the Provenance of a
-           *          Frame::Binding created or modified by the
-           *          top-level command.
-           */
+         *
+         * This function should be called whenever the top-level
+         * command creates or changes the state of a Frame::Binding
+         * with non-null Provenance.
+         *
+         * @param bdgprov Non-null pointer to the Provenance of a
+         *          Frame::Binding created or modified by the
+         *          top-level command.
+         */
 		void writeBinding(const Provenance *bdgprov);
 
 		// Virtual functions of GCNode:

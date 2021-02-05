@@ -58,7 +58,7 @@ using namespace std;
 using namespace rho;
 
 /* interval at which to check interrupts */
-constexpr R_xlen_t NINTERRUPT = 10000000;
+// constexpr R_xlen_t NINTERRUPT = 10000000;
 
 /* This section of code handles type conversion for elements */
 /* of data vectors.  Type coercion throughout R should use these */

@@ -34,22 +34,24 @@
 
 using namespace rho;
 
-void ReturnBailout::detachReferents() {
+void ReturnBailout::detachReferents()
+{
     m_environment.detach();
     m_value.detach();
     Bailout::detachReferents();
 }
 
-void ReturnBailout::throwException() {
+void ReturnBailout::throwException()
+{
     R_Visible = Rboolean(m_print_result);
     throw ReturnException(m_environment, m_value);
 }
 
-void ReturnBailout::visitReferents(const_visitor* v) const
+void ReturnBailout::visitReferents(const_visitor *v) const
 {
     Bailout::visitReferents(v);
     if (m_environment)
-	(*v)(m_environment);
+        (*v)(m_environment);
     if (m_value)
-	(*v)(m_value);
+        (*v)(m_value);
 }

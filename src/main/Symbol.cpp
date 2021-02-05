@@ -46,14 +46,16 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	Rboolean (*DDVALp)(SEXP x) = DDVAL;
-	SEXP (*Rf_installp)(const char *name) = Rf_install;
-	Rboolean (*isSymbolp)(SEXP s) = Rf_isSymbol;
-	SEXP (*PRINTNAMEp)(SEXP x) = PRINTNAME;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &DDVALp = DDVAL;
+        const auto &Rf_installp = Rf_install;
+        const auto &isSymbolp = Rf_isSymbol;
+        const auto &PRINTNAMEp = PRINTNAME;
+    } // namespace ForceNonInline
+} // namespace rho
 
 SEXP R_MissingArg;
 SEXP R_UnboundValue;
@@ -62,38 +64,43 @@ SEXP R_UnboundValue;
 
 // Symbol::s_special_symbol_names is in names.cpp
 
-Symbol::Symbol(const String* the_name)
+Symbol::Symbol(const String *the_name)
     : RObject(SYMSXP), m_dd_index(-1), m_is_special_symbol(false)
 {
     m_name = the_name;
     // If this is a ..n symbol, extract the value of n.
     // boost::regex_match (libboost_regex1_36_0-1.36.0-9.5) doesn't
     // seem comfortable with empty strings, hence the size check.
-    if (m_name && m_name->size() > 2) {
-	// Versions of GCC prior to 4.9 don't support std::regex, so use
-	// boost::regex instead.
-	static const boost::regex *regex = new boost::regex("\\.\\.(\\d+)");
+    if (m_name && m_name->size() > 2)
+    {
+        // Versions of GCC prior to 4.9 don't support std::regex, so use
+        // boost::regex instead.
+        static const boost::regex *regex = new boost::regex("\\.\\.(\\d+)");
 
-	string name(m_name->c_str());
-	boost::smatch dd_match;
-	if (boost::regex_match(name, dd_match, *regex)) {
-	    istringstream iss(dd_match[1]);
-	    int n;
-	    iss >> n;
-	    m_dd_index = n;
-	}
+        string name(m_name->c_str());
+        boost::smatch dd_match;
+        if (boost::regex_match(name, dd_match, *regex))
+        {
+            istringstream iss(dd_match[1]);
+            int n;
+            iss >> n;
+            m_dd_index = n;
+        }
     }
 }
 
-Symbol::~Symbol() {
+Symbol::~Symbol()
+{
     // nothing needed.
 }
 
-Symbol* Symbol::obtain(const String* name) {
+Symbol *Symbol::obtain(const String *name)
+{
     return (name->m_symbol ? name->m_symbol : make(name));
 }
 
-Symbol* Symbol::createUnnamedSymbol() {
+Symbol *Symbol::createUnnamedSymbol()
+{
     return new Symbol(String::blank());
 }
 
@@ -103,35 +110,41 @@ void Symbol::detachReferents()
     RObject::detachReferents();
 }
 
-RObject* Symbol::evaluate(Environment* env)
+RObject *Symbol::evaluate(Environment *env)
 {
     if (this == DotsSymbol)
-	Rf_error(_("'...' used in an incorrect context"));
+        Rf_error(_("'...' used in an incorrect context"));
     GCStackRoot<> val;
     if (isDotDotSymbol())
-	val = Rf_ddfindVar(this, env);
-    else {
-	Frame::Binding* bdg = env->findBinding(this);
-	if (bdg)
-	    val = bdg->unforcedValue();
-	else if (this == missingArgument())
-	    val = this;  // This reproduces CR behaviour
-	else val = unboundValue();
+        val = Rf_ddfindVar(this, env);
+    else
+    {
+        Frame::Binding *bdg = env->findBinding(this);
+        if (bdg)
+            val = bdg->unforcedValue();
+        else if (this == missingArgument())
+            val = this; // This reproduces CR behaviour
+        else
+            val = unboundValue();
     }
     if (!val)
-	return nullptr;
+        return nullptr;
     if (val == unboundValue())
-	Rf_error(_("object '%s' not found"), name()->c_str());
-    if (val == missingArgument() && !isDotDotSymbol()) {
-	if (m_name && m_name != String::blank())
-	    Rf_error(_("argument \"%s\" is missing, with no default"), name()->c_str());
-	else Rf_error(_("argument is missing, with no default"));
+        Rf_error(_("object '%s' not found"), name()->c_str());
+    if (val == missingArgument() && !isDotDotSymbol())
+    {
+        if (m_name && m_name != String::blank())
+            Rf_error(_("argument \"%s\" is missing, with no default"), name()->c_str());
+        else
+            Rf_error(_("argument is missing, with no default"));
     }
-    if (val->sexptype() == PROMSXP) {
-	val = Rf_eval(val, env);
-	ENSURE_NAMEDMAX(val);
+    if (val->sexptype() == PROMSXP)
+    {
+        val = Rf_eval(val, env);
+        ENSURE_NAMEDMAX(val);
     }
-    else ENSURE_NAMED(val);
+    else
+        ENSURE_NAMED(val);
     return val;
 }
 
@@ -140,9 +153,10 @@ void Symbol::initialize()
     R_MissingArg = missingArgument();
     R_UnboundValue = unboundValue();
 
-    for (int i = 0; s_special_symbol_names[i] != nullptr; i++) {
-	Symbol* symbol = Symbol::obtain(s_special_symbol_names[i]);
-	symbol->m_is_special_symbol = true;
+    for (int i = 0; s_special_symbol_names[i] != nullptr; i++)
+    {
+        Symbol *symbol = Symbol::obtain(s_special_symbol_names[i]);
+        symbol->m_is_special_symbol = true;
     }
 
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
@@ -153,48 +167,49 @@ void Symbol::initialize()
     // DISABLE_REFCNT(Symbols::LastvalueSymbol);
 }
 
-Symbol* Symbol::missingArgument()
+Symbol *Symbol::missingArgument()
 {
     static GCRoot<Symbol> missing(createUnnamedSymbol());
     return missing.get();
 }
 
-Symbol* Symbol::unboundValue()
+Symbol *Symbol::unboundValue()
 {
     static GCRoot<Symbol> unbound(createUnnamedSymbol());
     return unbound.get();
 }
 
-Symbol::Table* Symbol::getTable()
+Symbol::Table *Symbol::getTable()
 {
-    static Table* table = new Table();
+    static Table *table = new Table();
     return table;
 }
 
-Symbol* Symbol::make(const String* name)
+Symbol *Symbol::make(const String *name)
 {
-    if (name->size() == 0) {
-	Rf_error(_("attempt to use zero-length variable name"));
+    if (name->size() == 0)
+    {
+        Rf_error(_("attempt to use zero-length variable name"));
     }
-    Symbol* ans = new Symbol(name);
+    Symbol *ans = new Symbol(name);
     getTable()->push_back(GCRoot<Symbol>(ans));
     name->m_symbol = ans;
     return ans;
 }
 
-Symbol* Symbol::obtain(const std::string& name)
+Symbol *Symbol::obtain(const std::string &name)
 {
     return Symbol::obtainCE(name, CE_NATIVE);
 }
 
-Symbol* Symbol::obtainCE(const std::string& name, cetype_t enc)
+Symbol *Symbol::obtainCE(const std::string &name, cetype_t enc)
 {
     GCStackRoot<const String> str(String::obtain(name, enc));
     return Symbol::obtain(str);
 }
 
-Symbol* Symbol::obtainS3Signature(const char *methodName,
-				  const char *className)
+Symbol *Symbol::obtainS3Signature(const char *methodName,
+                                  const char *className)
 {
     assert(methodName != nullptr);
     assert(className != nullptr);
@@ -204,38 +219,40 @@ Symbol* Symbol::obtainS3Signature(const char *methodName,
     return obtain(signature);
 }
 
-Symbol* Symbol::obtainDotDotSymbol(unsigned int n)
+Symbol *Symbol::obtainDotDotSymbol(unsigned int n)
 {
     if (n == 0)
-	Rf_error(_("..0 is not a permitted symbol name"));
+        Rf_error(_("..0 is not a permitted symbol name"));
     ostringstream nameos;
     nameos << ".." << n;
     GCStackRoot<const String> name(String::obtain(nameos.str()));
     return obtain(name);
 }
 
-const char* Symbol::typeName() const
+const char *Symbol::typeName() const
 {
     return staticTypeName();
 }
 
-void Symbol::visitReferents(const_visitor* v) const
+void Symbol::visitReferents(const_visitor *v) const
 {
-    const GCNode* name = m_name;
+    const GCNode *name = m_name;
     RObject::visitReferents(v);
     if (name)
-	(*v)(name);
+        (*v)(name);
 }
 
 // Predefined Symbols:
-namespace rho {
-    namespace Symbols {
+namespace rho
+{
+    namespace Symbols
+    {
 #define PREDEFINED_SYMBOL(C_NAME, RHO_NAME, R_NAME) \
-    Symbol* RHO_NAME = nullptr;
+    Symbol *RHO_NAME = nullptr;
 #include <rho/PredefinedSymbols.hpp>
 #undef PREDEFINED_SYMBOL
-    }
-}
+    } // namespace Symbols
+} // namespace rho
 
 // ***** C interface *****
 
@@ -247,22 +264,22 @@ namespace rho {
 SEXP PRINTNAME(SEXP x)
 {
     using namespace rho;
-    const Symbol& sym = *SEXP_downcast<Symbol*>(x);
-    return const_cast<String*>(sym.name());
+    const Symbol &sym = *SEXP_downcast<Symbol *>(x);
+    return const_cast<String *>(sym.name());
 }
 
-bool rho::isDotSymbol(const Symbol* symbol)
+bool rho::isDotSymbol(const Symbol *symbol)
 {
     return symbol && symbol->name()->c_str()[0] == '.';
 }
 
 SEXP Rf_installNoTrChar(SEXP charSXP)
 {
-    String* name = SEXP_downcast<String*>(charSXP);
+    String *name = SEXP_downcast<String *>(charSXP);
     return Symbol::obtain(name);
 }
 
-SEXP Rf_installS3Signature(const char* methodName, const char* className)
+SEXP Rf_installS3Signature(const char *methodName, const char *className)
 {
     return Symbol::obtainS3Signature(methodName, className);
 }

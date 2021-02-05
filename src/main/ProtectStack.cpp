@@ -37,17 +37,19 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*protectp)(SEXP) = Rf_protect;
-        void (*unprotectp)(int) = Rf_unprotect;
-	void (*unprotect_ptrp)(RObject*) = Rf_unprotect_ptr;
-	void (*ProtectWithIndexp)(SEXP, PROTECT_INDEX *) = R_ProtectWithIndex;
-	void (*Reprotectp)(SEXP, PROTECT_INDEX) = R_Reprotect;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &protectp = Rf_protect;
+        const auto &unprotectp = Rf_unprotect;
+        const auto &unprotect_ptrp = Rf_unprotect_ptr;
+        const auto &ProtectWithIndexp = R_ProtectWithIndex;
+        const auto &Reprotectp = R_Reprotect;
+    } // namespace ForceNonInline
+} // namespace rho
 
-NodeStack* ProtectStack::s_stack = nullptr;
+NodeStack *ProtectStack::s_stack = nullptr;
 
 void ProtectStack::initialize()
 {
@@ -57,7 +59,7 @@ void ProtectStack::initialize()
 void ProtectStack::restoreSize(size_t new_size)
 {
     if (new_size > s_stack->size())
-	throw out_of_range("ProtectStack::ppsRestoreSize: requested size greater than current size.");
+        throw out_of_range("ProtectStack::ppsRestoreSize: requested size greater than current size.");
     s_stack->resize(new_size);
 }
 

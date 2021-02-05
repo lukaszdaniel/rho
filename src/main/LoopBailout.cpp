@@ -34,18 +34,20 @@
 
 using namespace rho;
 
-void LoopBailout::detachReferents() {
+void LoopBailout::detachReferents()
+{
     m_environment.detach();
     Bailout::detachReferents();
 }
 
-void LoopBailout::throwException() {
+void LoopBailout::throwException()
+{
     throw LoopException(m_environment, m_next);
 }
 
-void LoopBailout::visitReferents(const_visitor* v) const
+void LoopBailout::visitReferents(const_visitor *v) const
 {
     Bailout::visitReferents(v);
     if (m_environment)
-	(*v)(m_environment);
+        (*v)(m_environment);
 }

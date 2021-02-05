@@ -36,8 +36,8 @@
 using namespace std;
 using namespace rho;
 
-void rho::SEXP_downcast_error(const char* given, const char* wanted)
+void rho::SEXP_downcast_error(const char *given, const char *wanted)
 {
     Rf_error(_("SEXP_downast: '%s' supplied where '%s' expected."), given, wanted);
-    abort();  // To avoid warning about noreturn function returning
+    abort(); // To avoid warning about noreturn function returning
 }

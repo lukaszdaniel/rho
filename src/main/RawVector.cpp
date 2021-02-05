@@ -37,7 +37,7 @@ namespace rho
     // from C:
     namespace ForceNonInline
     {
-        Rbyte *(*RAWp)(SEXP) = RAW;
+        const auto &RAWp = RAW;
     }
 
     template <>

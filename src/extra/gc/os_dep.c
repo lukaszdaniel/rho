@@ -110,7 +110,7 @@
 /* here.                                                                */
 
 #define READ read
-
+JMP_BUF GC_jmp_buf;
 /* Repeatedly perform a read call until the buffer is filled or */
 /* we encounter EOF.                                            */
 STATIC ssize_t GC_repeat_read(int fd, char *buf, size_t count)

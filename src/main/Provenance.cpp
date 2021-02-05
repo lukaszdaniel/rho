@@ -36,7 +36,7 @@ using namespace rho;
 
 unsigned int Provenance::s_next_serial = 0;
 
-Provenance::Provenance(const Symbol* sym, const CommandChronicle* chron)
+Provenance::Provenance(const Symbol *sym, const CommandChronicle *chron)
     : m_serial(s_next_serial++), m_xenogenous(false)
 {
     m_symbol = sym;
@@ -46,23 +46,25 @@ Provenance::Provenance(const Symbol* sym, const CommandChronicle* chron)
     announceBirth();
 }
 
-Provenance::Set* Provenance::ancestors(const Set& roots)
+Provenance::Set *Provenance::ancestors(const Set &roots)
 {
     Set open = roots;
-    Set* closed = new Set();
-    while (!open.empty()) {
-	const Provenance* n = *(open.begin());
-	std::pair<CommandChronicle::ParentVector::const_iterator,
-	          CommandChronicle::ParentVector::const_iterator>
-	    pr = n->parents();
-	for (CommandChronicle::ParentVector::const_iterator it = pr.first;
-	     it != pr.second; ++it) {
-	    const Provenance* prov = *it;
-	    if (closed->count(prov) == 0)
-		open.insert(prov);
-	}
-	open.erase(n);
-	closed->insert(n);
+    Set *closed = new Set();
+    while (!open.empty())
+    {
+        const Provenance *n = *(open.begin());
+        std::pair<CommandChronicle::ParentVector::const_iterator,
+                  CommandChronicle::ParentVector::const_iterator>
+            pr = n->parents();
+        for (CommandChronicle::ParentVector::const_iterator it = pr.first;
+             it != pr.second; ++it)
+        {
+            const Provenance *prov = *it;
+            if (closed->count(prov) == 0)
+                open.insert(prov);
+        }
+        open.erase(n);
+        closed->insert(n);
     }
     return closed;
 }
@@ -70,11 +72,11 @@ Provenance::Set* Provenance::ancestors(const Set& roots)
 void Provenance::announceBirth()
 {
     std::pair<CommandChronicle::ParentVector::const_iterator,
-	      CommandChronicle::ParentVector::const_iterator>
+              CommandChronicle::ParentVector::const_iterator>
         pr = parents();
     for (CommandChronicle::ParentVector::const_iterator it = pr.first;
-	 it != pr.second; ++it)
-	(*it)->registerChild(this);
+         it != pr.second; ++it)
+        (*it)->registerChild(this);
 }
 
 void Provenance::announceDeath()
@@ -82,29 +84,31 @@ void Provenance::announceDeath()
     // During a mark-sweep garbage collection, m_chronicle may have
     // been detached:
     if (!m_chronicle)
-	return;
+        return;
     std::pair<CommandChronicle::ParentVector::const_iterator,
-	      CommandChronicle::ParentVector::const_iterator>
+              CommandChronicle::ParentVector::const_iterator>
         pr = parents();
     for (CommandChronicle::ParentVector::const_iterator it = pr.first;
-	 it != pr.second; ++it)
-	(*it)->deregisterChild(this);
+         it != pr.second; ++it)
+        (*it)->deregisterChild(this);
 }
 
-Provenance::Set* Provenance::descendants(const Set& roots)
+Provenance::Set *Provenance::descendants(const Set &roots)
 {
     Set open = roots;
-    Set* closed = new Set();
-    while (!open.empty()) {
-	const Provenance* n = *(open.begin());
-	const Set& c = n->children();
-	for (const Provenance* s : c) {
-	    // If s isn't in closed set, put it in open
-	    if (closed->find(s) == closed->end())
-		open.insert(s);
-	}
-	open.erase(n);
-	closed->insert(n);
+    Set *closed = new Set();
+    while (!open.empty())
+    {
+        const Provenance *n = *(open.begin());
+        const Set &c = n->children();
+        for (const Provenance *s : c)
+        {
+            // If s isn't in closed set, put it in open
+            if (closed->find(s) == closed->end())
+                open.insert(s);
+        }
+        open.erase(n);
+        closed->insert(n);
     }
     return closed;
 }
@@ -117,25 +121,24 @@ void Provenance::detachReferents()
     m_value.detach();
 }
 
-const String* Provenance::getTime() const
+const String *Provenance::getTime() const
 {
     char buffer[32];
-    struct tm* lt = localtime(&m_timestamp.tv_sec);
+    struct tm *lt = localtime(&m_timestamp.tv_sec);
     size_t p = strftime(buffer, 32, "%x %X", lt);
     sprintf(&buffer[p], ".%ld", static_cast<long>(m_timestamp.tv_usec));
     return String::obtain(buffer);
 }
 
 std::pair<CommandChronicle::ParentVector::const_iterator,
-	  CommandChronicle::ParentVector::const_iterator>
+          CommandChronicle::ParentVector::const_iterator>
 Provenance::parents() const
 {
-    CommandChronicle::ParentVector::const_iterator bgn
-	= m_chronicle->bindingsRead().begin();
+    CommandChronicle::ParentVector::const_iterator bgn = m_chronicle->bindingsRead().begin();
     return make_pair(bgn, bgn + std::ptrdiff_t(m_num_parents));
 }
 
-void Provenance::setXenogenous(const RObject* value)
+void Provenance::setXenogenous(const RObject *value)
 {
     m_value = value;
     m_xenogenous = true;
@@ -143,15 +146,15 @@ void Provenance::setXenogenous(const RObject* value)
 
 double Provenance::timestamp() const
 {
-    return double(m_timestamp.tv_sec) + 1.0E-6*double(m_timestamp.tv_usec);
+    return double(m_timestamp.tv_sec) + 1.0E-6 * double(m_timestamp.tv_usec);
 }
 
-void Provenance::visitReferents(const_visitor* v) const
+void Provenance::visitReferents(const_visitor *v) const
 {
     if (m_symbol)
-	(*v)(m_symbol);
+        (*v)(m_symbol);
     if (m_chronicle)
-	(*v)(m_chronicle);
+        (*v)(m_chronicle);
     if (m_value)
-	(*v)(m_value);
+        (*v)(m_value);
 }

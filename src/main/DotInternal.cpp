@@ -40,11 +40,13 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*INTERNALp)(SEXP x) = INTERNAL;
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &INTERNALp = INTERNAL;
     }
-}
+} // namespace rho
 
 // ***** C interface *****
 
@@ -57,17 +59,17 @@ namespace rho {
 
 SEXP do_internal(SEXP call, SEXP op, SEXP args, SEXP env)
 {
-    PairList* argspl = SEXP_downcast<PairList*>(args);
-    Environment* envir = SEXP_downcast<Environment*>(env);
-    Expression* innercall = dynamic_cast<Expression*>(argspl->car());
+    PairList *argspl = SEXP_downcast<PairList *>(args);
+    Environment *envir = SEXP_downcast<Environment *>(env);
+    Expression *innercall = dynamic_cast<Expression *>(argspl->car());
     if (!innercall)
-	Rf_errorcall(call, _("invalid .Internal() argument"));
-    Symbol* funsym = dynamic_cast<Symbol*>(innercall->car());
+        Rf_errorcall(call, _("invalid .Internal() argument"));
+    Symbol *funsym = dynamic_cast<Symbol *>(innercall->car());
     if (!funsym)
-	Rf_errorcall(call, _("invalid .Internal() argument"));
-    BuiltInFunction* func = BuiltInFunction::obtainInternal(funsym);
+        Rf_errorcall(call, _("invalid .Internal() argument"));
+    BuiltInFunction *func = BuiltInFunction::obtainInternal(funsym);
     if (!func)
-	Rf_errorcall(call, _("there is no .Internal function \"%s\""), funsym->name()->c_str());
+        Rf_errorcall(call, _("there is no .Internal function \"%s\""), funsym->name()->c_str());
     ArgList al(innercall->tail(), ArgList::RAW);
     return innercall->evaluateFunctionCall(func, envir, al);
 }

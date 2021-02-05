@@ -37,21 +37,21 @@ namespace rho
 {
 
     /** @brief R data vector primarily intended for fixed-size use.
- *
- * This is a general-purpose class template to represent an R data
- * vector, and is intended particularly for the case where the
- * size of the vector is fixed when it is constructed.
- *
- * Having said that, the template \e does implement decreaseSizeInPlace(),
- * primarily to service CR code's occasional use of SETLENGTH().
- *
- * rho implements all of CR's built-in vector types using this
- * template.
- *
- * @tparam T The type of the elements of the vector.
- *
- * @tparam ST The required ::SEXPTYPE of the vector.
- */
+     *
+     * This is a general-purpose class template to represent an R data
+     * vector, and is intended particularly for the case where the
+     * size of the vector is fixed when it is constructed.
+     *
+     * Having said that, the template \e does implement decreaseSizeInPlace(),
+     * primarily to service CR code's occasional use of SETLENGTH().
+     *
+     * rho implements all of CR's built-in vector types using this
+     * template.
+     *
+     * @tparam T The type of the elements of the vector.
+     *
+     * @tparam ST The required ::SEXPTYPE of the vector.
+     */
     template <typename T, SEXPTYPE ST>
     class FixedVector : public VectorBase
     {
@@ -61,25 +61,25 @@ namespace rho
         typedef const T *const_iterator;
 
         /** @brief Create a vector, leaving its contents
-     *         uninitialized (for POD types) or default
-     *         constructed.
-     *
-     * @param sz Number of elements required.  Zero is
-     *          permissible.
-     */
+         *         uninitialized (for POD types) or default
+         *         constructed.
+         *
+         * @param sz Number of elements required.  Zero is
+         *          permissible.
+         */
         static FixedVector *create(size_type sz);
 
         /** @brief Create a vector from a range.
-     *
-     * @tparam An iterator type, at least a forward iterator.
-     *
-     * @param from Iterator designating the start of the range
-     *          from which the FixedVector is to be constructed.
-     *
-     * @param to Iterator designating 'one past the end' of the
-     *          range from which the FixedVector is to be
-     *          constructed.
-     */
+         *
+         * @tparam An iterator type, at least a forward iterator.
+         *
+         * @param from Iterator designating the start of the range
+         *          from which the FixedVector is to be constructed.
+         *
+         * @param to Iterator designating 'one past the end' of the
+         *          range from which the FixedVector is to be
+         *          constructed.
+         */
         template <typename FwdIter>
         static FixedVector *create(FwdIter from, FwdIter to)
         {
@@ -93,19 +93,19 @@ namespace rho
         }
 
         /** @brief Create a vector from an initializer list.
-     *
-     * @param An initializer list containing the values to store in the
-     *          FixedVector.
-     */
+         *
+         * @param An initializer list containing the values to store in the
+         *          FixedVector.
+         */
         static FixedVector *create(std::initializer_list<T> items)
         {
             return create(items.begin(), items.end());
         }
 
         /** @brief Create a vector containing a single value.
-     *
-     * @param value The value to store in the vector.
-     */
+         *
+         * @param value The value to store in the vector.
+         */
         template <typename U>
         static FixedVector *createScalar(const U &value)
         {
@@ -115,60 +115,60 @@ namespace rho
         }
 
         /** @brief Element access.
-     *
-     * @param index Index of required element (counting from
-     *          zero).  No bounds checking is applied.
-     *
-     * @return Reference to the specified element.
-     */
+         *
+         * @param index Index of required element (counting from
+         *          zero).  No bounds checking is applied.
+         *
+         * @return Reference to the specified element.
+         */
         T &operator[](size_type index) { return m_data[index]; }
 
         /** @brief Read-only element access.
-     *
-     * @param index Index of required element (counting from
-     *          zero).  No bounds checking is applied.
-     *
-     * @return \c const reference to the specified element.
-     */
+         *
+         * @param index Index of required element (counting from
+         *          zero).  No bounds checking is applied.
+         *
+         * @return \c const reference to the specified element.
+         */
         const T &operator[](size_type index) const { return m_data[index]; }
 
         /** @brief Iterator designating first element.
-     *
-     * @return An iterator designating the first element of the
-     * vector.  Returns end() if the vector is empty.
-     */
+         *
+         * @return An iterator designating the first element of the
+         * vector.  Returns end() if the vector is empty.
+         */
         iterator begin() { return m_data; }
 
         /** @brief Const iterator designating first element.
-     *
-     * @return A const_iterator designating the first element of
-     * the vector.  Returns end() if the vector is empty.
-     */
+         *
+         * @return A const_iterator designating the first element of
+         * the vector.  Returns end() if the vector is empty.
+         */
         const_iterator begin() const { return m_data; }
 
         /** @brief One-past-the-end iterator.
-     *
-     * @return An iterator designating a position 'one past the
-     * end' of the vector.
-     */
+         *
+         * @return An iterator designating a position 'one past the
+         * end' of the vector.
+         */
         iterator end() { return begin() + size(); }
 
         /** @brief One-past-the-end const_iterator.
-     *
-     * @return A const_iterator designating a position 'one past
-     * the end' of the vector.
-     */
+         *
+         * @return A const_iterator designating a position 'one past
+         * the end' of the vector.
+         */
         const_iterator end() const { return begin() + size(); }
 
         /** @brief Name by which this type is known in R.
-     *
-     * @return the name by which this type is known in R.
-     *
-     * @note This function is declared but not defined as part of
-     * the FixedVector template.  It must be defined as a
-     * specialization for each instantiation of the template for
-     * which it or typeName() is used.
-     */
+         *
+         * @return the name by which this type is known in R.
+         *
+         * @note This function is declared but not defined as part of
+         * the FixedVector template.  It must be defined as a
+         * specialization for each instantiation of the template for
+         * which it or typeName() is used.
+         */
         static const char *staticTypeName();
 
         // Virtual functions of VectorBase:
@@ -183,9 +183,9 @@ namespace rho
 
     protected:
         /**
-     * Declared protected to ensure that FixedVector objects are
-     * allocated only using 'new'.
-     */
+         * Declared protected to ensure that FixedVector objects are
+         * allocated only using 'new'.
+         */
         ~FixedVector()
         {
             destructElementsIfNeeded();
@@ -209,12 +209,12 @@ namespace rho
         alignas(T) char m_first_element_storage[sizeof(T)];
 
         /** @brief Create a vector, leaving its contents
-     *         uninitialized (for POD types) or default
-     *         constructed.
-     *
-     * @param sz Number of elements required.  Zero is
-     *          permissible.
-     */
+         *         uninitialized (for POD types) or default
+         *         constructed.
+         *
+         * @param sz Number of elements required.  Zero is
+         *          permissible.
+         */
         FixedVector(size_type sz)
             : VectorBase(ST, sz), m_data(reinterpret_cast<T *>(m_first_element_storage))
         {
@@ -222,9 +222,9 @@ namespace rho
         }
 
         /** @brief Copy constructor.
-     *
-     * @param pattern FixedVector to be copied.
-     */
+         *
+         * @param pattern FixedVector to be copied.
+         */
         FixedVector(const FixedVector<T, ST> &pattern);
 
         FixedVector &operator=(const FixedVector &) = delete;

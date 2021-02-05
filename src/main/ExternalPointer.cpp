@@ -37,14 +37,16 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	void* (*R_ExternalPtrAddrp)(SEXP) = R_ExternalPtrAddr;
-	RObject* (*R_ExternalPtrTagp)(SEXP) = R_ExternalPtrTag;
-	RObject* (*R_ExternalPtrProtectedp)(SEXP) = R_ExternalPtrProtected;
-	void (*R_ClearExternalPtrp)(SEXP) = R_ClearExternalPtr;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &R_ExternalPtrAddrp = R_ExternalPtrAddr;
+        const auto &R_ExternalPtrTagp = R_ExternalPtrTag;
+        const auto &R_ExternalPtrProtectedp = R_ExternalPtrProtected;
+        const auto &R_ClearExternalPtrp = R_ClearExternalPtr;
+    } // namespace ForceNonInline
+} // namespace rho
 
 void ExternalPointer::detachReferents()
 {
@@ -53,20 +55,20 @@ void ExternalPointer::detachReferents()
     RObject::detachReferents();
 }
 
-const char* ExternalPointer::typeName() const
+const char *ExternalPointer::typeName() const
 {
     return ExternalPointer::staticTypeName();
 }
 
-void ExternalPointer::visitReferents(const_visitor* v) const
+void ExternalPointer::visitReferents(const_visitor *v) const
 {
-    const GCNode* protege = m_protege;
-    const GCNode* tag = m_tag;
+    const GCNode *protege = m_protege;
+    const GCNode *tag = m_tag;
     RObject::visitReferents(v);
     if (protege)
-	(*v)(protege);
+        (*v)(protege);
     if (tag)
-	(*v)(tag);
+        (*v)(tag);
 }
 
 // ***** C interface *****
@@ -78,21 +80,18 @@ SEXP R_MakeExternalPtr(void *p, SEXP tag, SEXP prot)
 
 void R_SetExternalPtrAddr(SEXP s, void *p)
 {
-    ExternalPointer& ep
-	= *SEXP_downcast<ExternalPointer*>(s);
+    ExternalPointer &ep = *SEXP_downcast<ExternalPointer *>(s);
     ep.setPtr(p);
 }
 
 void R_SetExternalPtrTag(SEXP s, SEXP tag)
 {
-    ExternalPointer& ep
-	= *SEXP_downcast<ExternalPointer*>(s);
+    ExternalPointer &ep = *SEXP_downcast<ExternalPointer *>(s);
     ep.setTag(tag);
 }
 
 void R_SetExternalPtrProtected(SEXP s, SEXP p)
 {
-    ExternalPointer& ep
-	= *SEXP_downcast<ExternalPointer*>(s);
+    ExternalPointer &ep = *SEXP_downcast<ExternalPointer *>(s);
     ep.setProtege(p);
 }

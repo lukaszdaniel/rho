@@ -50,22 +50,24 @@ using namespace rho;
 
 // Force the creation of non-inline embodiments of functions callable
 // from C:
-namespace rho {
-    namespace ForceNonInline {
-	SEXP (*BODYp)(SEXP x) = BODY;
-	SEXP (*CLOENVp)(SEXP x) = CLOENV;
-	SEXP (*FORMALSp)(SEXP x) = FORMALS;
-	Rboolean (*RDEBUGp)(SEXP x) = RDEBUG;
-	int (*RSTEPp)(SEXP x) = RSTEP;
-	void (*SET_CLOENVp)(SEXP x, SEXP v) = SET_CLOENV;
-	void (*SET_RDEBUGp)(SEXP x, Rboolean v) = SET_RDEBUG;
-	void (*SET_RSTEPp)(SEXP x, int v) = SET_RSTEP;
-    }
-}
+namespace rho
+{
+    namespace ForceNonInline
+    {
+        const auto &BODYp = BODY;
+        const auto &CLOENVp = CLOENV;
+        const auto &FORMALSp = FORMALS;
+        const auto &RDEBUGp = RDEBUG;
+        const auto &RSTEPp = RSTEP;
+        const auto &SET_CLOENVp = SET_CLOENV;
+        const auto &SET_RDEBUGp = SET_RDEBUG;
+        const auto &SET_RSTEPp = SET_RSTEP;
+    } // namespace ForceNonInline
+} // namespace rho
 
 bool Closure::s_debugging_enabled = true;
 
-Closure::Closure(const PairList* formal_args, RObject* body, Environment* env)
+Closure::Closure(const PairList *formal_args, RObject *body, Environment *env)
     : FunctionBase(CLOSXP), m_debug(false),
       m_num_invokes(0)
 {
@@ -74,10 +76,11 @@ Closure::Closure(const PairList* formal_args, RObject* body, Environment* env)
     m_environment = env;
 }
 
-Closure::~Closure() {
+Closure::~Closure()
+{
 }
 
-Closure* Closure::clone() const
+Closure *Closure::clone() const
 {
     return new Closure(*this);
 }
@@ -94,115 +97,132 @@ void Closure::detachReferents()
     FunctionBase::detachReferents();
 }
 
-RObject* Closure::execute(Environment* env) const
+RObject *Closure::execute(Environment *env) const
 {
-    RObject* ans;
+    RObject *ans;
     Evaluator::maybeCheckForUserInterrupts();
     Environment::ReturnScope returnscope(env);
     Closure::DebugScope debugscope(this);
-    try {
-	++m_num_invokes;
+    try
+    {
+        ++m_num_invokes;
 #ifdef ENABLE_LLVM_JIT
-	if (m_compiled_body
-	    && m_compiled_body->hasMatchingFrameLayout(env)) {
-	    PlainContext boctxt;
-	    ans = m_compiled_body->evalInEnvironment(env);
-	} else {
-	    if (!m_compiled_body && m_num_invokes == 100) {
-		// Compile the body, but stay in the interpreter because the
-		// frame hasn't been setup for a compiled function.
-		// TODO(kmillar): recompile functions as needed.
-		compile();
-	    }
+        if (m_compiled_body && m_compiled_body->hasMatchingFrameLayout(env))
+        {
+            PlainContext boctxt;
+            ans = m_compiled_body->evalInEnvironment(env);
+        }
+        else
+        {
+            if (!m_compiled_body && m_num_invokes == 100)
+            {
+                // Compile the body, but stay in the interpreter because the
+                // frame hasn't been setup for a compiled function.
+                // TODO(kmillar): recompile functions as needed.
+                compile();
+            }
 #endif
-	    BailoutContext boctxt;
-	    ans = Evaluator::evaluate(m_body, env);
+            BailoutContext boctxt;
+            ans = Evaluator::evaluate(m_body, env);
 #ifdef ENABLE_LLVM_JIT
-	}
+        }
 #endif
-	if (ans && ans->sexptype() == BAILSXP) {
-	    ReturnBailout* rbo = dynamic_cast<ReturnBailout*>(ans);
-	    if (!rbo || rbo->environment() != env)
-		abort();
-	    R_Visible = Rboolean(rbo->printResult());
-	    ans = rbo->value();
-	}
+        if (ans && ans->sexptype() == BAILSXP)
+        {
+            ReturnBailout *rbo = dynamic_cast<ReturnBailout *>(ans);
+            if (!rbo || rbo->environment() != env)
+                abort();
+            R_Visible = Rboolean(rbo->printResult());
+            ans = rbo->value();
+        }
     }
-    catch (ReturnException& rx) {
-	if (rx.environment() != env)
-	    throw;
-	ans = rx.value();
+    catch (ReturnException &rx)
+    {
+        if (rx.environment() != env)
+            throw;
+        ans = rx.value();
     }
     return ans;
 }
 
-void Closure::compile() const {
+void Closure::compile() const
+{
 #ifdef ENABLE_LLVM_JIT
-    try {
-	m_compiled_body = JIT::CompiledExpression::compileFunctionBody(this);
-    } catch (...) {
-	// Compilation failed.  Continue on with the interpreter.
+    try
+    {
+        m_compiled_body = JIT::CompiledExpression::compileFunctionBody(this);
+    }
+    catch (...)
+    {
+        // Compilation failed.  Continue on with the interpreter.
     }
 #endif
 }
 
-Environment* Closure::createExecutionEnv(const ArgList& arglist) const {
-    Frame* frame =
+Environment *Closure::createExecutionEnv(const ArgList &arglist) const
+{
+    Frame *frame =
 #ifdef ENABLE_LLVM_JIT
-        m_compiled_body ? m_compiled_body->createFrame(arglist):
+        m_compiled_body ? m_compiled_body->createFrame(arglist) :
 #endif
-        Frame::closureWorkingFrame(arglist);
+                        Frame::closureWorkingFrame(arglist);
     return new Environment(environment(), frame);
 }
 
-const char* Closure::typeName() const
+const char *Closure::typeName() const
 {
     return staticTypeName();
 }
 
-void Closure::setEnvironment(Environment* new_env) {
+void Closure::setEnvironment(Environment *new_env)
+{
     m_environment = new_env;
     invalidateCompiledCode();
 }
 
-void Closure::setFormals(PairList* formals) {
+void Closure::setFormals(PairList *formals)
+{
     m_matcher = new ArgMatcher(formals);
     invalidateCompiledCode();
 }
 
-void Closure::setBody(RObject* body) {
+void Closure::setBody(RObject *body)
+{
     m_body = body;
     invalidateCompiledCode();
 }
 
-void Closure::invalidateCompiledCode() {
+void Closure::invalidateCompiledCode()
+{
     m_num_invokes = 0;
     m_compiled_body = nullptr;
 }
 
-void Closure::visitReferents(const_visitor* v) const
+void Closure::visitReferents(const_visitor *v) const
 {
-    const ArgMatcher* matcher = m_matcher;
-    const GCNode* body = m_body;
-    const GCNode* environment = m_environment;
-    const GCNode* compiled_body = m_compiled_body;
+    const ArgMatcher *matcher = m_matcher;
+    const GCNode *body = m_body;
+    const GCNode *environment = m_environment;
+    const GCNode *compiled_body = m_compiled_body;
 
     FunctionBase::visitReferents(v);
     if (matcher)
-	(*v)(matcher);
+        (*v)(matcher);
     if (body)
-	(*v)(body);
+        (*v)(body);
     if (environment)
-	(*v)(environment);
+        (*v)(environment);
     if (compiled_body)
-	(*v)(compiled_body);
+        (*v)(compiled_body);
 }
 
-void SET_FORMALS(SEXP closure, SEXP formals) {
-    SEXP_downcast<Closure*>(closure)->setFormals(
-	SEXP_downcast<PairList*>(formals));
+void SET_FORMALS(SEXP closure, SEXP formals)
+{
+    SEXP_downcast<Closure *>(closure)->setFormals(
+        SEXP_downcast<PairList *>(formals));
 }
 
-void SET_BODY(SEXP closure, SEXP body) {
-    SEXP_downcast<Closure*>(closure)->setBody(body);
+void SET_BODY(SEXP closure, SEXP body)
+{
+    SEXP_downcast<Closure *>(closure)->setBody(body);
 }

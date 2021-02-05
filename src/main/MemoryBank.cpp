@@ -53,22 +53,21 @@ void (*MemoryBank::s_monitor)(size_t) = 0;
 size_t MemoryBank::s_monitor_threshold = numeric_limits<size_t>::max();
 #endif
 
-MemoryBank::Pool* MemoryBank::s_pools = nullptr;
+MemoryBank::Pool *MemoryBank::s_pools = nullptr;
 
 // Note that the C++ standard requires that an operator new returns a
 // valid pointer even when 0 bytes are requested.  The entry at
 // s_pooltab[0] ensures this.  This table assumes sizeof(double) == 8.
-const unsigned char MemoryBank::s_pooltab[]
-= {0, 0,                    // 8
-   1,                       // 16
-   2,                       // 24
-   3,                       // 32
-   4,                       // 40
-   5,                       // 48
-   6, 6,                    // 64
-   7, 7, 7, 7,              // 96
-   8, 8, 8, 8,              // 128
-   9, 9, 9, 9, 9, 9, 9, 9}; // 192
+const unsigned char MemoryBank::s_pooltab[] = {0, 0,                    // 8
+                                               1,                       // 16
+                                               2,                       // 24
+                                               3,                       // 32
+                                               4,                       // 40
+                                               5,                       // 48
+                                               6, 6,                    // 64
+                                               7, 7, 7, 7,              // 96
+                                               8, 8, 8, 8,              // 128
+                                               9, 9, 9, 9, 9, 9, 9, 9}; // 192
 
 #ifdef ALLOC_STATS
 // Allocation and free frequency tables for profiling the allocator.
@@ -77,16 +76,21 @@ const unsigned char MemoryBank::s_pooltab[]
 size_t alloc_counts[32];
 size_t free_counts[32];
 
-
 // Computes the bin to update in an allocation frequency table.
-static int get_bin_number(size_t bytes) {
-    if (bytes >= 32 * 8) {
+static int get_bin_number(size_t bytes)
+{
+    if (bytes >= 32 * 8)
+    {
         // Allocations of size >= 256 are mapped to the 256-byte bin.
         return 31;
-    } else if (bytes >= 8) {
+    }
+    else if (bytes >= 8)
+    {
         // Allocations of size n*8 to n*8-1 are mapped to the n-byte bin.
         return (31 & (bytes / 8)) - 1;
-    } else {
+    }
+    else
+    {
         // Allocations of size < 8 are mapped to the 8-byte bin.
         return 0;
     }
@@ -102,15 +106,16 @@ void MemoryBank::adjustFreedSize(size_t original, size_t actual)
 #endif
 }
 
-void* MemoryBank::allocate(size_t bytes)
+void *MemoryBank::allocate(size_t bytes)
 {
     notifyAllocation(bytes);
-    void* p;
+    void *p;
     if (bytes >= s_new_threshold)
-	p = ::operator new(bytes);
-    else {
-	Pool& pool = s_pools[s_pooltab[(bytes + 7) >> 3]];
-	p = pool.allocate();
+        p = ::operator new(bytes);
+    else
+    {
+        Pool &pool = s_pools[s_pooltab[(bytes + 7) >> 3]];
+        p = pool.allocate();
     }
     return p;
 }
@@ -119,7 +124,7 @@ void MemoryBank::check()
 {
 #ifndef NO_CELLPOOLS
     for (unsigned int i = 0; i < s_num_pools; ++i)
-	s_pools[i].check();
+        s_pools[i].check();
 #endif
 }
 
@@ -127,9 +132,9 @@ void MemoryBank::defragment()
 {
 #ifndef NO_CELLPOOLS
     for (unsigned int i = 0; i < s_num_pools; ++i)
-	s_pools[i].defragment();
+        s_pools[i].defragment();
 #endif
-}    
+}
 
 void MemoryBank::initialize()
 {
@@ -152,7 +157,8 @@ void MemoryBank::initialize()
 void MemoryBank::notifyAllocation(size_t bytes)
 {
 #ifdef R_MEMORY_PROFILING
-    if (s_monitor && bytes >= s_monitor_threshold) s_monitor(bytes);
+    if (s_monitor && bytes >= s_monitor_threshold)
+        s_monitor(bytes);
 #endif
     ++s_blocks_allocated;
     s_bytes_allocated += bytes;
@@ -174,7 +180,6 @@ void MemoryBank::notifyDeallocation(size_t bytes)
 void MemoryBank::setMonitor(void (*monitor)(size_t), size_t threshold)
 {
     s_monitor = monitor;
-    s_monitor_threshold
-	= (monitor ? threshold : numeric_limits<size_t>::max());
+    s_monitor_threshold = (monitor ? threshold : numeric_limits<size_t>::max());
 }
 #endif

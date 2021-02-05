@@ -24,33 +24,39 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file IntVector.h
+/** @file IntVector.hpp
  * @brief Class rho::IntVector and associated C interface.
  */
 
-#ifndef INTVECTOR_H
-#define INTVECTOR_H
+#ifndef INTVECTOR_HPP
+#define INTVECTOR_HPP
 
 #include <R_ext/Arith.h>
 #include <rho/ElementTraits.hpp>
 
-namespace rho {
+namespace rho
+{
     // Template specializations:
-    namespace ElementTraits {
-	template <>
-	inline const int& NAFunc<int>::operator()() const
-	{
+    namespace ElementTraits
+    {
+        template <>
+        inline const int &NAFunc<int>::operator()() const
+        {
             static int na = NA_INTEGER;
             return na;
         }
 
-	template<>
-	struct MustConstruct<int> : boost::mpl::false_ {};
+        template <>
+        struct MustConstruct<int> : boost::mpl::false_
+        {
+        };
 
-	template<>
-	struct MustDestruct<int> : boost::mpl::false_ {};
-    }
-}
+        template <>
+        struct MustDestruct<int> : boost::mpl::false_
+        {
+        };
+    } // namespace ElementTraits
+} // namespace rho
 
 #include <rho/VectorBase.hpp>
 #include <rho/FixedVector.hpp>
@@ -60,21 +66,24 @@ namespace rho {
 #include <rho/LogicalVector.hpp>
 #endif
 
-namespace rho {
+namespace rho
+{
     /** @brief Vector of integer values.
      */
     typedef FixedVector<int, INTSXP> IntVector;
 
-    template<>
-    struct VectorTypeFor<int> {
-      typedef IntVector type;
+    template <>
+    struct VectorTypeFor<int>
+    {
+        typedef IntVector type;
     };
 
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
 
-/**
+    /**
  * @param x Pointer to an \c IntVector or a \c LogicalVector (i.e. an
  *          R integer or logical vector).  An error is generated if \a
  *          x is not a non-null pointer to an \c IntVector or a \c
@@ -82,19 +91,19 @@ extern "C" {
  *
  * @return Pointer to element 0 of \a x .
  */
-inline int* INTEGER(SEXP x)
-{
-    using namespace rho;
+    inline int *INTEGER(SEXP x)
+    {
+        using namespace rho;
 #ifndef USE_TYPE_CHECKING_STRICT
-    // Quicker than dynamic_cast:
-    if (x && x->sexptype() == LGLSXP) {
-	LogicalVector* lvec = static_cast<LogicalVector*>(x);
-	return reinterpret_cast<int*>(&(*lvec)[0]);
-    }
+        // Quicker than dynamic_cast:
+        if (x && x->sexptype() == LGLSXP)
+        {
+            LogicalVector *lvec = static_cast<LogicalVector *>(x);
+            return reinterpret_cast<int *>(&(*lvec)[0]);
+        }
 #endif
-    return &(*SEXP_downcast<IntVector*>(x, false))[0];
+        return &(*SEXP_downcast<IntVector *>(x, false))[0];
+    }
 }
 
-}
-
-#endif /* INTVECTOR_H */
+#endif /* INTVECTOR_HPP */

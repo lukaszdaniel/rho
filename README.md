@@ -1,6 +1,6 @@
 <img src="doc/html/rho_logo.png?raw=true" alt="Rho logo" width="130" height="100"/>
 
-[![Build Status](https://travis-ci.org/lukaszdaniel/rho.svg?branch=master)](https://travis-ci.org/lukaszdaniel/rho)
+[![Build Status](https://travis-ci.com/lukaszdaniel/rho.svg?branch=master)](https://travis-ci.com/lukaszdaniel/rho)
 [![codecov](https://codecov.io/gh/lukaszdaniel/rho/branch/master/graph/badge.svg)](https://codecov.io/gh/lukaszdaniel/rho)
 
 # Rho

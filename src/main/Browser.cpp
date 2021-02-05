@@ -32,4 +32,4 @@
 using namespace std;
 using namespace rho;
 
-vector<Browser*> Browser::s_browsers;
+vector<Browser *> Browser::s_browsers;

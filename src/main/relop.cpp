@@ -52,7 +52,7 @@ using namespace rho;
 using namespace VectorOps;
 
 /* interval at which to check interrupts, a guess */
-constexpr R_xlen_t NINTERRUPT = 10000000;
+// constexpr R_xlen_t NINTERRUPT = 10000000;
 
 static SEXP string_relop(RELOP_TYPE code, SEXP s1, SEXP s2);
 

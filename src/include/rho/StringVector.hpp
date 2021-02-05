@@ -24,14 +24,14 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file StringVector.h
+/** @file StringVector.hpp
  * @brief Class rho::StringVector and associated C interface.
  *
  * (StringVector implements STRSXP.)
  */
 
-#ifndef STRINGVECTOR_H
-#define STRINGVECTOR_H
+#ifndef STRINGVECTOR_HPP
+#define STRINGVECTOR_HPP
 
 #include <Rinternals.h>
 
@@ -43,7 +43,8 @@
 #include <rho/SEXP_downcast.hpp>
 #include <rho/String.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Vector of strings.
      *
      * Note that the <tt>StringVector(size_type)</tt> constructor will
@@ -64,22 +65,23 @@ namespace rho {
      *          element.  Only CE_NATIVE, CE_UTF8 or CE_LATIN1 are
      *          permitted in this context (checked).
      */
-    inline StringVector* asStringVector(const std::string& str,
-					cetype_t encoding = CE_UTF8)
+    inline StringVector *asStringVector(const std::string &str,
+                                        cetype_t encoding = CE_UTF8)
     {
-	GCStackRoot<String> cs(String::obtain(str, encoding));
-	return StringVector::createScalar(cs);
+        GCStackRoot<String> cs(String::obtain(str, encoding));
+        return StringVector::createScalar(cs);
     }
 
     /** @brief (For debugging.)
      *
      * @note The name and interface of this function may well change.
      */
-    void strdump(std::ostream& os, const StringVector& sv,
-		 std::size_t margin = 0);
-}  // namespace rho
+    void strdump(std::ostream &os, const StringVector &sv,
+                 std::size_t margin = 0);
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
 #endif /* __cplusplus */
 
     /**
@@ -90,44 +92,44 @@ extern "C" {
 #ifndef __cplusplus
     Rboolean Rf_isString(SEXP s);
 #else
-    inline Rboolean Rf_isString(SEXP s)
-    {
-	return Rboolean(s && TYPEOF(s) == STRSXP);
-    }
+inline Rboolean Rf_isString(SEXP s)
+{
+    return Rboolean(s && TYPEOF(s) == STRSXP);
+}
 #endif
 
-/** @brief Set element of rho::StringVector.
- * 
- * @param x Non-null pointer to a rho::StringVector .
- *
- * @param i Index of the required element.  There is no bounds checking.
- *
- * @param v Non-null pointer to rho::String representing the new value.
- */
-void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
+    /** @brief Set element of rho::StringVector.
+     *
+     * @param x Non-null pointer to a rho::StringVector .
+     *
+     * @param i Index of the required element.  There is no bounds checking.
+     *
+     * @param v Non-null pointer to rho::String representing the new value.
+     */
+    void SET_STRING_ELT(SEXP x, R_xlen_t i, SEXP v);
 
-/**
- * @brief Examine element of a rho::StringVector.
- *
- * @param x Non-null pointer to a rho::StringVector.  An error is
- *          raised if \a x is not a pointer to a rho::StringVector.
- *
- * @param i Index of the required element.  There is no bounds
- *          checking.
- *
- * @return Pointer to extracted \a i 'th element.
- */
+    /** @brief Examine element of a rho::StringVector.
+     *
+     * @param x Non-null pointer to a rho::StringVector.  An error is
+     *          raised if \a x is not a pointer to a rho::StringVector.
+     *
+     * @param i Index of the required element.  There is no bounds
+     *          checking.
+     *
+     * @return Pointer to extracted \a i 'th element.
+     */
 #ifndef __cplusplus
-SEXP STRING_ELT(SEXP x, R_xlen_t i);
+    SEXP STRING_ELT(SEXP x, R_xlen_t i);
 #else
 inline SEXP STRING_ELT(SEXP x, R_xlen_t i)
 {
     using namespace rho;
-    if(!x) return nullptr;
-    if(TYPEOF(x) != STRSXP)
-      Rf_error("'%s' function can only be applied to a character vector, not a '%s'",
-               "STRING_ELT()", Rf_type2char(TYPEOF(x)));
-    StringVector* sv = SEXP_downcast<StringVector*>(x, false);
+    if (!x)
+        return nullptr;
+    if (TYPEOF(x) != STRSXP)
+        Rf_error("'%s' function can only be applied to a character vector, not a '%s'",
+                 "STRING_ELT()", Rf_type2char(TYPEOF(x)));
+    StringVector *sv = SEXP_downcast<StringVector *>(x, false);
     return (*sv)[VectorBase::size_type(i)];
 }
 #endif
@@ -136,4 +138,4 @@ inline SEXP STRING_ELT(SEXP x, R_xlen_t i)
 }
 #endif
 
-#endif /* STRINGVECTOR_H */
+#endif /* STRINGVECTOR_HPP */

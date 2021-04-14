@@ -433,8 +433,7 @@ namespace rho
          *
          * @return Pointer to newly created PairList element.
          */
-        static PairList *cons(
-            RObject *cr, PairList *tl = nullptr, const RObject *tag = nullptr)
+        static PairList *cons(RObject *cr, PairList *tl = nullptr, const RObject *tag = nullptr)
         {
             GCManager::GCInhibitor no_gc;
             // We inhibit garbage collection here to avoid (a) the need

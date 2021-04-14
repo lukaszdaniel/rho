@@ -38,23 +38,23 @@ namespace rho
 	class RObject;
 
 	/** @brief Class recording the use of R browsers.
-     *
-     * Browser objects must be declared on the processor stack
-     * (i.e. as C++ automatic variables).  The class maintains a
-     * vector of pointers to the Browser objects currently in
-     * existence.
-     */
+	 *
+	 * Browser objects must be declared on the processor stack
+	 * (i.e. as C++ automatic variables).  The class maintains a
+	 * vector of pointers to the Browser objects currently in
+	 * existence.
+	 */
 	class Browser
 	{
 	public:
 		/** @brief Constructor.
-         *
-         * @param the_text 'text' argument supplied to R browser
-         *          command.
-         *
-         * @param the_condition 'condition' argument supplied to R browser
-         *          command.
-         */
+		 *
+		 * @param the_text 'text' argument supplied to R browser
+		 *          command.
+		 *
+		 * @param the_condition 'condition' argument supplied to R browser
+		 *          command.
+		 */
 		Browser(RObject *the_text, RObject *the_condition)
 			: m_text(the_text), m_condition(the_condition),
 			  m_context(Evaluator::Context::innermost())
@@ -68,53 +68,53 @@ namespace rho
 		}
 
 		/** @brief Number of browser levels currently active.
-         *
-         * @return the number of browser levels currently active.
-         */
+		 *
+		 * @return the number of browser levels currently active.
+		 */
 		static size_t numberActive()
 		{
 			return s_browsers.size();
 		}
 
 		/** @brief Condition argument associated with a Browser.
-         *
-         * @return The 'condition' argument associated with this Browser.
-         */
+		 *
+		 * @return The 'condition' argument associated with this Browser.
+		 */
 		RObject *condition() const
 		{
 			return m_condition;
 		}
 
 		/** @brief Context within which Browser was declared.
-         *
-         * @return Pointer to the Context in which this Browser was
-         * declared.
-         *
-         * @note This function is used to reproduce the rather strange
-         * behaviour of the R function browserSetDebug in CR.
-         */
+		 *
+		 * @return Pointer to the Context in which this Browser was
+		 * declared.
+		 *
+		 * @note This function is used to reproduce the rather strange
+		 * behaviour of the R function browserSetDebug in CR.
+		 */
 		Evaluator::Context *context() const
 		{
 			return m_context;
 		}
 
 		/** @brief Browser at specified level of nesting.
-         *
-         * @param i Index of the Browser required.  0 signifies the
-         *          outermost (first invoked) browser level.  Must be
-         *          less than numberActive().
-         *
-         * @return Pointer to the Browser at level \a i.
-         */
+		 *
+		 * @param i Index of the Browser required.  0 signifies the
+		 *          outermost (first invoked) browser level.  Must be
+		 *          less than numberActive().
+		 *
+		 * @return Pointer to the Browser at level \a i.
+		 */
 		static Browser *fromOutermost(size_t i)
 		{
 			return s_browsers.at(i);
 		}
 
 		/** @brief Text argument associated with Browser.
-         *
-         * @return The 'text' argument associated with this Browser.
-         */
+		 *
+		 * @return The 'text' argument associated with this Browser.
+		 */
 		RObject *text() const
 		{
 			return m_text;

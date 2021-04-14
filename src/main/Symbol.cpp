@@ -44,10 +44,10 @@
 using namespace std;
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
     namespace ForceNonInline
     {
         const auto &DDVALp = DDVAL;

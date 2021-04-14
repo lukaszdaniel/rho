@@ -43,19 +43,19 @@
 namespace rho
 {
 	/** @brief Services to support R subscripting operations.
-     *
-     * This class, all of whose members are static, encapsulates
-     * services supporting subscripting of R vector objects, including
-     * R matrices and arrays.  Foremost among its member functions are
-     * subset() and subassign(); the other member functions are
-     * auxiliary to these two.
-     *
-     * @todo At present this class does not handle the special case
-     * (described in sec. 3.4.2 of the R Language Definition) where
-     * subscripting is being applied to an array, and there is a
-     * single subscript which is a matrix with as many columns as the
-     * array has dimensions, each row of the matrix being used to pick
-     * out a single element of the array.
+	 *
+	 * This class, all of whose members are static, encapsulates
+	 * services supporting subscripting of R vector objects, including
+	 * R matrices and arrays.  Foremost among its member functions are
+	 * subset() and subassign(); the other member functions are
+	 * auxiliary to these two.
+	 *
+	 * @todo At present this class does not handle the special case
+	 * (described in sec. 3.4.2 of the R Language Definition) where
+	 * subscripting is being applied to an array, and there is a
+	 * single subscript which is a matrix with as many columns as the
+	 * array has dimensions, each row of the matrix being used to pick
+	 * out a single element of the array.
      *
      * @todo A matter for possible review is the fact that during
      * subsetting and subassignment operations, rho sometimes makes
@@ -151,8 +151,7 @@ namespace rho
 							  bool drop)
 		{
 			std::vector<Indices> indicesvec;
-			Subscripting::canonicalizeArraySubscripts(&indicesvec, v,
-													  subscripts);
+			Subscripting::canonicalizeArraySubscripts(&indicesvec, v, subscripts);
 			return arraySubset(v, indicesvec, drop);
 		}
 

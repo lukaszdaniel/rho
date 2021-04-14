@@ -9,8 +9,8 @@
  *  not be reported via r-bugs or other R project channels; instead refer
  *  to the Rho website.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
+ *  This header file is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation; either version 2.1 of the License, or
  *  (at your option) any later version.
  *
@@ -19,9 +19,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /** @file Closure.hpp
@@ -56,133 +56,133 @@ namespace rho
    {
    public:
       /**
-     * @param formal_args List of formal arguments.
-     *
-     * @param body Pointer to the body of the Closure.  This must
-     *          be either a null pointer or a pointer to an object
-     *          of one of the following types: PairList,
-     *          Expression, Symbol, ExpressionVector, ListVector
-     *          or ByteCode (checked).
-     *
-     * @param env pointer to the environment in which the Closure
-     *          is to be evaluated.
-     */
+       * @param formal_args List of formal arguments.
+       *
+       * @param body Pointer to the body of the Closure.  This must
+       *          be either a null pointer or a pointer to an object
+       *          of one of the following types: PairList,
+       *          Expression, Symbol, ExpressionVector, ListVector
+       *          or ByteCode (checked).
+       *
+       * @param env pointer to the environment in which the Closure
+       *          is to be evaluated.
+       */
       Closure(const PairList *formal_args, RObject *body,
               Environment *env = Environment::global());
 
       /** @brief Copy constructor.
-     *
-     * @param pattern Closure to be copied.
-     */
+       *
+       * @param pattern Closure to be copied.
+       */
       Closure(const Closure &pattern)
           : FunctionBase(pattern), m_debug(false), m_num_invokes(0), m_matcher(pattern.m_matcher), m_body(pattern.m_body), m_environment(pattern.m_environment)
       {
       }
 
       /** @brief Access the body of the Closure.
-     *
-     * @return Pointer to the body of the Closure.
-     */
+       *
+       * @return Pointer to the body of the Closure.
+       */
       const RObject *body() const { return m_body; }
 
       /** @brief Is debugging enabled?
-     *
-     * @return true iff debugging is currently enabled for this
-     * Closure.
-     */
+       *
+       * @return true iff debugging is currently enabled for this
+       * Closure.
+       */
       bool debugging() const { return m_debug && s_debugging_enabled; }
 
       /** @brief Enable/disable function debugging.
-     *
-     * @param on True iff function debugging is to be enabled.
-     */
+       *
+       * @param on True iff function debugging is to be enabled.
+       */
       static void enableDebugging(bool on) { s_debugging_enabled = on; }
 
       /** @brief If function debugging currently enabled?
-     *
-     * @return true iff function debugging is currently enabled.
-     */
+       *
+       * @return true iff function debugging is currently enabled.
+       */
       static bool debuggingEnabled() { return s_debugging_enabled; }
 
       /** @brief Access the environment of the Closure.
-     *
-     * @return Pointer to the environment of the Closure.
-     */
+       *
+       * @return Pointer to the environment of the Closure.
+       */
       Environment *environment() const { return m_environment; }
 
       /** @brief Evaluate the Closure's body in a given environment.
-     *
-     * This function evaluates the Closure's body with \a env as
-     * the working environment, handling debugging if currently
-     * enabled for this Closure.
-     *
-     * @param env Non-null pointer to the working environment in
-     *          which evaluation of the body is to be carried out.
-     *
-     * @return the result of evaluation.
-     *
-     * @note This is a low-level function that is called by
-     * invoke() but may also be called directly.  The function
-     * does not carry out argument matching, nor does it create a
-     * ClosureContext: both these operations must be handled by
-     * the calling code.
-     */
+       *
+       * This function evaluates the Closure's body with \a env as
+       * the working environment, handling debugging if currently
+       * enabled for this Closure.
+       *
+       * @param env Non-null pointer to the working environment in
+       *          which evaluation of the body is to be carried out.
+       *
+       * @return the result of evaluation.
+       *
+       * @note This is a low-level function that is called by
+       * invoke() but may also be called directly.  The function
+       * does not carry out argument matching, nor does it create a
+       * ClosureContext: both these operations must be handled by
+       * the calling code.
+       */
       RObject *execute(Environment *env) const;
 
       /** @brief Access the ArgMatcher of this Closure.
-     *
-     * @return const pointer to this Closure's ArgMatcher object.
-     */
+       *
+       * @return const pointer to this Closure's ArgMatcher object.
+       */
       const ArgMatcher *matcher() const { return m_matcher; }
 
       /** @brief Create an environment suitable for evaluating this closure.
-     */
+       */
       Environment *createExecutionEnv(const ArgList &) const;
 
       /** @brief Set debugging status.
-     *
-     * @param on The required new debugging status (true =
-     *           enabled).
-     */
+       *
+       * @param on The required new debugging status (true =
+       *           enabled).
+       */
       void setDebugging(bool on) { m_debug = on; }
 
       /** @brief Replace the environment of the closure.
-     *
-     * @param new_env Pointer to the environment now to be
-     *          considered as the environment of this Closure.  A
-     *          null pointer is not permissible (not checked).
-     */
+       *
+       * @param new_env Pointer to the environment now to be
+       *          considered as the environment of this Closure.  A
+       *          null pointer is not permissible (not checked).
+       */
       void setEnvironment(Environment *new_env);
 
       /** @brief Replace the formals of the closure.
-     *
-     * @param formals Pointer to a pairlist containing the new
-     *          formal arguments to use for this closure.
-     */
+       *
+       * @param formals Pointer to a pairlist containing the new
+       *          formal arguments to use for this closure.
+       */
       void setFormals(PairList *formals);
 
       /** @brief Replace the body of the closure.
-     *
-     * @param body Pointer to the new body to use for this closure.
-     */
+       *
+       * @param body Pointer to the new body to use for this closure.
+       */
       void setBody(RObject *body);
 
       /** @brief The name by which this type is known in R.
-     *
-     * @return The name by which this type is known in R.
-     */
+       *
+       * @return The name by which this type is known in R.
+       */
       static const char *staticTypeName() { return "closure"; }
 
       /** @brief Strip formal argument bindings from a Frame.
-     *
-     * This function removes from \a input_frame any bindings of
-     * the formal arguments of this Closure.  It is used in
-     * creating the working environment of an S3 method from the
-     * working environment of its generic.
-     *
-     * @param input_frame Non-null pointer to the Frame from which
-     *          bindings are to be stripped.
-     */
+       *
+       * This function removes from \a input_frame any bindings of
+       * the formal arguments of this Closure.  It is used in
+       * creating the working environment of an S3 method from the
+       * working environment of its generic.
+       *
+       * @param input_frame Non-null pointer to the Frame from which
+       *          bindings are to be stripped.
+       */
       void stripFormals(Frame *input_frame) const
       {
          m_matcher->stripFormals(input_frame);
@@ -203,18 +203,18 @@ namespace rho
 
    private:
       /** @brief Patrol entry and exit if debugging.
-     *
-     * DebugScope objects must be declared on the processor stack
-     * (i.e. as C++ automatic variables).  A DebugScope object
-     * relates to a particular Closure object.  If debugging is
-     * enabled for that Closure, then the DebugScope constructor
-     * will announce that the Closure function has been entered,
-     * enable single stepping for the working environment, and
-     * initiate the browser, and the DebugScope destructor will
-     * announce that the function is exiting.  If debugging is not
-     * enabled for the Closure, then the constructor and
-     * destructor do nothing.
-     */
+       *
+       * DebugScope objects must be declared on the processor stack
+       * (i.e. as C++ automatic variables).  A DebugScope object
+       * relates to a particular Closure object.  If debugging is
+       * enabled for that Closure, then the DebugScope constructor
+       * will announce that the Closure function has been entered,
+       * enable single stepping for the working environment, and
+       * initiate the browser, and the DebugScope destructor will
+       * announce that the function is exiting.  If debugging is not
+       * enabled for the Closure, then the constructor and
+       * destructor do nothing.
+       */
       class DebugScope
       {
       public:

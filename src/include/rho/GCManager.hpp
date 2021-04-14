@@ -41,12 +41,12 @@
 namespace rho
 {
 	/** @brief Class for managing garbage collection.
-     *
-     * This class only has static members.  A garbage
-     * collection can be initiated explicitly by calling
-     * GCManager::gc().  Also, GCNode::operator new() may
-     * automatically initiate garbage collection.
-     */
+	 *
+	 * This class only has static members.  A garbage
+	 * collection can be initiated explicitly by calling
+	 * GCManager::gc().  Also, GCNode::operator new() may
+	 * automatically initiate garbage collection.
+	 */
 	class GCManager
 	{
 	public:

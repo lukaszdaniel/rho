@@ -22,8 +22,8 @@
  *  http://www.r-project.org/Licenses/
  */
 
-/** @file ArgMatcher.hpp
- * @brief Class rho::ArgMatcher.
+/** @file S3Launcher.hpp
+ * @brief Class rho::S3Launcher.
  */
 
 #ifndef S3LAUNCHER_HPP
@@ -127,10 +127,9 @@ namespace rho
 		 * @return A null pointer if no suitable S3 method was found,
 		 * or a pointer to an S3Launcher object for the method found.
 		 */
-		static S3Launcher *
-		create(const RObject *object, std::string generic, std::string group,
-			   Environment *call_env, Environment *table_env,
-			   bool allow_default);
+		static S3Launcher *create(const RObject *object, std::string generic, std::string group,
+								  Environment *call_env, Environment *table_env,
+								  bool allow_default);
 
 		/** @brief Search for an S3 method.
 		 *
@@ -197,9 +196,8 @@ namespace rho
 		 * proceed to enclosing Environments.  This follows CR, but it
 		 * perhaps unduly restrictive.
 		 */
-		static std::pair<FunctionBase *, bool>
-		findMethod(const Symbol *symbol, Environment *call_env,
-				   Environment *table_env);
+		static std::pair<FunctionBase *, bool> findMethod(const Symbol *symbol, Environment *call_env,
+														  Environment *table_env);
 
 		/** @brief Function implementing the method.
 		 *

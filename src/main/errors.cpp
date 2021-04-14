@@ -1413,78 +1413,79 @@ static const char * R_ConciseTraceback(SEXP call, int skip)
     return buf;
 }
 
-namespace {
-    struct HandlerEntry : RObject {
-	GCEdge<String> m_class;
-	GCEdge<Environment> m_parent_environment;
-	GCEdge<> m_handler;
-	GCEdge<Environment> m_environment;
-	GCEdge<ListVector> m_result;
-	bool m_calling;
-
-	HandlerEntry(String* the_class, Environment* parent_env,
-		     RObject* handler, Environment* environment,
-		     ListVector* result, bool calling)
-	    : m_calling(calling)
+namespace
+{
+	struct HandlerEntry : RObject
 	{
-	    m_class = the_class;
-	    m_parent_environment = parent_env;
-	    m_handler = handler;
-	    m_environment = environment;
-	    m_result = result;
+		GCEdge<String> m_class;
+		GCEdge<Environment> m_parent_environment;
+		GCEdge<> m_handler;
+		GCEdge<Environment> m_environment;
+		GCEdge<ListVector> m_result;
+		bool m_calling;
+
+		HandlerEntry(String *the_class, Environment *parent_env,
+					 RObject *handler, Environment *environment,
+					 ListVector *result, bool calling)
+			: m_calling(calling)
+		{
+			m_class = the_class;
+			m_parent_environment = parent_env;
+			m_handler = handler;
+			m_environment = environment;
+			m_result = result;
+		}
+
+		static const char *staticTypeName()
+		{
+			return "(error handler entry)";
+		}
+
+		// Virtual functions of GCNode:
+		void detachReferents() override;
+		void visitReferents(const_visitor *v) const override;
+	};
+
+	void HandlerEntry::detachReferents()
+	{
+		m_class.detach();
+		m_parent_environment.detach();
+		m_handler.detach();
+		m_environment.detach();
+		m_result.detach();
+		RObject::detachReferents();
 	}
 
-	static const char* staticTypeName()
+	void HandlerEntry::visitReferents(const_visitor *v) const
 	{
-	    return "(error handler entry)";
+		const GCNode *cl = m_class;
+		const GCNode *parenv = m_parent_environment;
+		const GCNode *handler = m_handler;
+		const GCNode *env = m_environment;
+		const GCNode *result = m_result;
+		RObject::visitReferents(v);
+		if (cl)
+			(*v)(cl);
+		if (parenv)
+			(*v)(parenv);
+		if (handler)
+			(*v)(handler);
+		if (env)
+			(*v)(env);
+		if (result)
+			(*v)(result);
 	}
-
-	// Virtual functions of GCNode:
-	void detachReferents() override;
-	void visitReferents(const_visitor* v) const override;
-    };
-
-    void HandlerEntry::detachReferents()
-    {
-	m_class.detach();
-	m_parent_environment.detach();
-	m_handler.detach();
-	m_environment.detach();
-	m_result.detach();
-	RObject::detachReferents();
-    }
-
-    void HandlerEntry::visitReferents(const_visitor* v) const
-    {
-	const GCNode* cl = m_class;
-	const GCNode* parenv = m_parent_environment;
-	const GCNode* handler = m_handler;
-	const GCNode* env = m_environment;
-	const GCNode* result = m_result;
-	RObject::visitReferents(v);
-	if (cl)
-	    (*v)(cl);
-	if (parenv)
-	    (*v)(parenv);
-	if (handler)
-	    (*v)(handler);
-	if (env)
-	    (*v)(env);
-	if (result)
-	    (*v)(result);
-    }
 }
 
 static SEXP mkHandlerEntry(SEXP klass, SEXP parentenv, SEXP handler, SEXP rho,
-			   SEXP result, int calling)
+						   SEXP result, int calling)
 {
-    HandlerEntry* entry
-	= new HandlerEntry(SEXP_downcast<String*>(klass),
-			   SEXP_downcast<Environment*>(parentenv), handler,
-			   SEXP_downcast<Environment*>(rho),
-			   SEXP_downcast<ListVector*>(result),
-			   (calling != 0));
-    return entry;
+	HandlerEntry *entry = new HandlerEntry(SEXP_downcast<String *>(klass),
+										   SEXP_downcast<Environment *>(parentenv), handler,
+										   SEXP_downcast<Environment *>(rho),
+										   SEXP_downcast<ListVector *>(result),
+										   (calling != 0));
+	return entry;
 }
 
 static void push_handler(SEXP handlerEntry) {

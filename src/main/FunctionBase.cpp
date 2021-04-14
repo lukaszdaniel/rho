@@ -38,16 +38,15 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
     namespace ForceNonInline
     {
         const auto &RTRACEptr = RTRACE;
         const auto &SET_RTRACEptr = SET_RTRACE;
     } // namespace ForceNonInline
-} // namespace rho
 
 bool FunctionBase::s_tracing_enabled = true;
 
@@ -56,3 +55,4 @@ void FunctionBase::reportCall(const Expression *call)
     Rprintf("trace: ");
     Rf_PrintValue(const_cast<Expression *>(call));
 }
+} // namespace rho

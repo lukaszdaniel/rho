@@ -33,8 +33,8 @@ extern size_t free_counts[32];
 #endif
 
 // Returns a vector list with columns 'size', 'alloc', 'free' representing alloc and free stats.
-extern "C"
-SEXP allocstats(void) {
+extern "C" SEXP allocstats(void)
+{
 #ifdef ALLOC_STATS
 
     // Copy frequency tables to avoid concurrent modifications affecting result.
@@ -48,7 +48,8 @@ SEXP allocstats(void) {
     GCStackRoot<IntVector> alloc_column(IntVector::create(32));
     GCStackRoot<IntVector> free_column(IntVector::create(32));
 
-    for (int i = 0; i < 32; ++i) {
+    for (int i = 0; i < 32; ++i)
+    {
         (*size_column)[i] = (i + 1) * 8;
         (*alloc_column)[i] = allocs[i];
         (*free_column)[i] = frees[i];

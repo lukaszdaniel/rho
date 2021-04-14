@@ -38,39 +38,39 @@
 using namespace std;
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force generation of non-inline embodiments of functions in the C
+    // interface:
     namespace ForceNonInline
     {
+    } // namespace ForceNonInline
+
+    GCRootBase *GCRootBase::s_list_head = nullptr;
+
+    GCRootBase::GCRootBase(const GCNode *node)
+    {
+        m_next = s_list_head;
+        m_prev = nullptr;
+        if (m_next)
+        {
+            m_next->m_prev = this;
+        }
+        s_list_head = this;
+
+        m_pointer = node;
+        GCNode::incRefCount(ptr());
+    }
+
+    void GCRootBase::visitRoots(GCNode::const_visitor *v)
+    {
+        for (GCRootBase *node = s_list_head; node != nullptr; node = node->m_next)
+        {
+            if (node->ptr())
+                (*v)(node->ptr());
+        }
     }
 } // namespace rho
-
-GCRootBase *GCRootBase::s_list_head = nullptr;
-
-GCRootBase::GCRootBase(const GCNode *node)
-{
-    m_next = s_list_head;
-    m_prev = nullptr;
-    if (m_next)
-    {
-        m_next->m_prev = this;
-    }
-    s_list_head = this;
-
-    m_pointer = node;
-    GCNode::incRefCount(ptr());
-}
-
-void GCRootBase::visitRoots(GCNode::const_visitor *v)
-{
-    for (GCRootBase *node = s_list_head; node != nullptr; node = node->m_next)
-    {
-        if (node->ptr())
-            (*v)(node->ptr());
-    }
-}
 
 // ***** C interface *****
 

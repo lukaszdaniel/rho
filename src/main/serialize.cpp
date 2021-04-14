@@ -1657,47 +1657,47 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	}
     case ENVSXP:
 	{
-	    int locked = InInteger(stream);
+		int locked = InInteger(stream);
 
-	    GCStackRoot<Frame> frame(Frame::normalFrame());
-	    GCStackRoot<Environment> env(new Environment(nullptr, frame));
+		GCStackRoot<Frame> frame(Frame::normalFrame());
+		GCStackRoot<Environment> env(new Environment(nullptr, frame));
 
-	    /* MUST register before filling in */
-	    AddReadRef(ref_table, env);
+		/* MUST register before filling in */
+		AddReadRef(ref_table, env);
 
-	    /* Now fill it in  */
-	    R_ReadItemDepth++;
-	    // Enclosing environment:
-	    {
-		Environment* enc
-		    = SEXP_downcast<Environment*>(ReadItem(ref_table, stream));
-		env->setEnclosingEnvironment(enc);
-	    }
-	    // Frame:
-	    {
-		PairList* frame
-		    = SEXP_downcast<PairList*>(ReadItem(ref_table, stream));
-		while (frame) {
-		    const Symbol* sym
-			= SEXP_downcast<const Symbol*>(frame->tag());
-		    Frame::Binding* bdg = env->frame()->obtainBinding(sym);
-		    bdg->fromPairList(frame);
-		    frame = frame->tail();
+		/* Now fill it in  */
+		R_ReadItemDepth++;
+		// Enclosing environment:
+		{
+			Environment *enc = SEXP_downcast<Environment *>(ReadItem(ref_table, stream));
+			env->setEnclosingEnvironment(enc);
 		}
-	    }
-	    // Ignore hash table:
-	    ReadItem(ref_table, stream);
-	    // Attributes:
-	    SET_ATTRIB(env, ReadItem(ref_table, stream));
-	    R_ReadItemDepth--;
-	    if (locked) R_LockEnvironment(env, Rboolean(FALSE));
-	    /* Convert a NULL enclosure to baseenv() */
-	    if (!env->enclosingEnvironment())
-		env->setEnclosingEnvironment(Environment::base());
-	    return env;
+		// Frame:
+		{
+			PairList *frame = SEXP_downcast<PairList *>(ReadItem(ref_table, stream));
+			while (frame)
+			{
+				const Symbol *sym = SEXP_downcast<const Symbol *>(frame->tag());
+				Frame::Binding *bdg = env->frame()->obtainBinding(sym);
+				bdg->fromPairList(frame);
+				frame = frame->tail();
+			}
+		}
+		// Ignore hash table:
+		ReadItem(ref_table, stream);
+		// Attributes:
+		SET_ATTRIB(env, ReadItem(ref_table, stream));
+		R_ReadItemDepth--;
+		if (locked)
+			R_LockEnvironment(env, Rboolean(FALSE));
+		/* Convert a NULL enclosure to baseenv() */
+		if (!env->enclosingEnvironment())
+			env->setEnclosingEnvironment(Environment::base());
+		return env;
 	}
-    case LISTSXP:
-	/* This handling of dotted pair objects still uses recursion
+	case LISTSXP:
+	{
+		/* This handling of dotted pair objects still uses recursion
 	   on the CDR and so will overflow the PROTECT stack for long
 	   lists.  The save format does permit using an iterative
 	   approach; it just has to pass around the place to write the
@@ -1705,116 +1705,124 @@ static SEXP ReadItem (SEXP ref_table, R_inpstream_t stream)
 	   is worth to write the code to handle this now, but if it
 	   becomes necessary we can do it without needing to change
 	   the save format. */
-	PROTECT(s = new PairList);
-	SETLEVELS(s, levs);
-	R_ReadItemDepth++;
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
-	if (hastag && R_ReadItemDepth == R_InitReadItemDepth + 1 &&
-	    Rf_isSymbol(TAG(s))) {
-	    snprintf(lastname, 8192, "%s", R_CHAR(PRINTNAME(TAG(s))));
+		PROTECT(s = new PairList);
+		SETLEVELS(s, levs);
+		R_ReadItemDepth++;
+		SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+		SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
+		if (hastag && R_ReadItemDepth == R_InitReadItemDepth + 1 &&
+			Rf_isSymbol(TAG(s)))
+		{
+			snprintf(lastname, 8192, "%s", R_CHAR(PRINTNAME(TAG(s))));
+		}
+		if (hastag && R_ReadItemDepth <= 0)
+		{
+			Rprintf("%*s", 2 * (R_ReadItemDepth - R_InitReadItemDepth), "");
+			Rf_PrintValue(TAG(s));
+		}
+		SETCAR(s, ReadItem(ref_table, stream));
+		R_ReadItemDepth--; /* do this early because of the recursion. */
+		SETCDR(s, ReadItem(ref_table, stream));
+		UNPROTECT(1); /* s */
+		return s;
 	}
-	if (hastag && R_ReadItemDepth <= 0) {
-	    Rprintf("%*s", 2*(R_ReadItemDepth - R_InitReadItemDepth), "");
-	    Rf_PrintValue(TAG(s));
-	}
-	SETCAR(s, ReadItem(ref_table, stream));
-	R_ReadItemDepth--; /* do this early because of the recursion. */
-	SETCDR(s, ReadItem(ref_table, stream));
-	UNPROTECT(1); /* s */
-	return s;
-    case LANGSXP:
-	PROTECT(s = new CachingExpression);
-	SETLEVELS(s, levs);
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
-	SETCAR(s, ReadItem(ref_table, stream));
-	// Convert tail to PairList if necessary:
+	case LANGSXP:
 	{
-	    GCStackRoot<ConsCell>
-		cc(SEXP_downcast<ConsCell*>(ReadItem(ref_table, stream)));
-	    SETCDR(s, ConsCell::convert<PairList>(cc));
+		PROTECT(s = new CachingExpression);
+		SETLEVELS(s, levs);
+		SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+		SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
+		SETCAR(s, ReadItem(ref_table, stream));
+		// Convert tail to PairList if necessary:
+		{
+			GCStackRoot<ConsCell>
+				cc(SEXP_downcast<ConsCell *>(ReadItem(ref_table, stream)));
+			SETCDR(s, ConsCell::convert<PairList>(cc));
+		}
+		UNPROTECT(1); /* s */
+		return s;
 	}
-	UNPROTECT(1); /* s */
-	return s;
-    case DOTSXP:
-	PROTECT(s = new DottedArgs);
-	SETLEVELS(s, levs);
-	SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
-	SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
-	SETCAR(s, ReadItem(ref_table, stream));
-	// Convert tail to PairList if necessary:
+	case DOTSXP:
 	{
-	    GCStackRoot<ConsCell>
-		cc(SEXP_downcast<ConsCell*>(ReadItem(ref_table, stream)));
-	    SETCDR(s, ConsCell::convert<PairList>(cc));
+		PROTECT(s = new DottedArgs);
+		SETLEVELS(s, levs);
+		SET_ATTRIB(s, hasattr ? ReadItem(ref_table, stream) : nullptr);
+		SET_TAG(s, hastag ? ReadItem(ref_table, stream) : nullptr);
+		SETCAR(s, ReadItem(ref_table, stream));
+		// Convert tail to PairList if necessary:
+		{
+			GCStackRoot<ConsCell>
+				cc(SEXP_downcast<ConsCell *>(ReadItem(ref_table, stream)));
+			SETCDR(s, ConsCell::convert<PairList>(cc));
+		}
+		UNPROTECT(1); /* s */
+		return s;
 	}
-	UNPROTECT(1); /* s */
-	return s;
-    case CLOSXP:
+	case CLOSXP:
 	{
-	    GCStackRoot<PairList>
-		attr(hasattr
-		     ? SEXP_downcast<PairList*>(ReadItem(ref_table, stream))
-		     : nullptr);
-	    GCStackRoot<Environment>
-		env(hastag
-		    ? SEXP_downcast<Environment*>(ReadItem(ref_table, stream))
-		    : nullptr);
-	    if (!env)
-		env = Environment::base();
-	    GCStackRoot<PairList>
-		formals(SEXP_downcast<PairList*>(ReadItem(ref_table, stream)));
-	    GCStackRoot<> body(ReadItem(ref_table, stream));
-	    GCStackRoot<Closure>
-		clos(new Closure(formals, body, env));
-	    SETLEVELS(clos, levs);
-	    SET_ATTRIB(clos, attr);
-	    return clos;
+		GCStackRoot<PairList>
+			attr(hasattr
+					 ? SEXP_downcast<PairList *>(ReadItem(ref_table, stream))
+					 : nullptr);
+		GCStackRoot<Environment>
+			env(hastag
+					? SEXP_downcast<Environment *>(ReadItem(ref_table, stream))
+					: nullptr);
+		if (!env)
+			env = Environment::base();
+		GCStackRoot<PairList>
+			formals(SEXP_downcast<PairList *>(ReadItem(ref_table, stream)));
+		GCStackRoot<> body(ReadItem(ref_table, stream));
+		GCStackRoot<Closure> clos(new Closure(formals, body, env));
+		SETLEVELS(clos, levs);
+		SET_ATTRIB(clos, attr);
+		return clos;
 	}
-    case PROMSXP:
+	case PROMSXP:
 	{
-	    GCStackRoot<PairList>
-		attr(hasattr
-		     ? SEXP_downcast<PairList*>(ReadItem(ref_table, stream))
-		     : nullptr);
-	    GCStackRoot<Environment>
-		env(hastag
-		    ? SEXP_downcast<Environment*>(ReadItem(ref_table, stream))
-		    : nullptr);
-	    // For reading promises stored in earlier versions,
-	    // convert null env to base env:
-	    if (!env) env = Environment::base();
-	    GCStackRoot<> val(ReadItem(ref_table, stream));
-	    GCStackRoot<> valgen(ReadItem(ref_table, stream));
-	    GCStackRoot<Promise> prom(
-		val == Symbol::unboundValue() ? new Promise(valgen, env)
-               : Promise::createEvaluatedPromise(valgen, val));
-	    SETLEVELS(prom, levs);
-	    SET_ATTRIB(prom, attr);
-	    return prom;
+		GCStackRoot<PairList>
+			attr(hasattr
+					 ? SEXP_downcast<PairList *>(ReadItem(ref_table, stream))
+					 : nullptr);
+		GCStackRoot<Environment>
+			env(hastag
+					? SEXP_downcast<Environment *>(ReadItem(ref_table, stream))
+					: nullptr);
+		// For reading promises stored in earlier versions,
+		// convert null env to base env:
+		if (!env)
+			env = Environment::base();
+		GCStackRoot<> val(ReadItem(ref_table, stream));
+		GCStackRoot<> valgen(ReadItem(ref_table, stream));
+		GCStackRoot<Promise> prom(
+			val == Symbol::unboundValue() ? new Promise(valgen, env)
+										  : Promise::createEvaluatedPromise(valgen, val));
+		SETLEVELS(prom, levs);
+		SET_ATTRIB(prom, attr);
+		return prom;
 	}
-    default:
-	/* These break out of the switch to have their ATTR,
+	default:
+		/* These break out of the switch to have their ATTR,
 	   LEVELS, and OBJECT fields filled in.  Each leaves the
 	   newly allocated value PROTECTed */
-	switch (type) {
-	case EXTPTRSXP:
-	    PROTECT(s = new ExternalPointer);
-	    AddReadRef(ref_table, s);
-	    R_SetExternalPtrAddr(s, nullptr);
-	    R_ReadItemDepth++;
-	    R_SetExternalPtrProtected(s, ReadItem(ref_table, stream));
-	    R_SetExternalPtrTag(s, ReadItem(ref_table, stream));
-	    R_ReadItemDepth--;
-	    break;
-	case WEAKREFSXP:
-	    PROTECT(s = R_MakeWeakRef(nullptr, nullptr, nullptr,
-				      Rboolean(FALSE)));
-	    AddReadRef(ref_table, s);
-	    break;
-	case SPECIALSXP:
-	case BUILTINSXP:
+		switch (type)
+		{
+		case EXTPTRSXP:
+			PROTECT(s = new ExternalPointer);
+			AddReadRef(ref_table, s);
+			R_SetExternalPtrAddr(s, nullptr);
+			R_ReadItemDepth++;
+			R_SetExternalPtrProtected(s, ReadItem(ref_table, stream));
+			R_SetExternalPtrTag(s, ReadItem(ref_table, stream));
+			R_ReadItemDepth--;
+			break;
+		case WEAKREFSXP:
+			PROTECT(s = R_MakeWeakRef(nullptr, nullptr, nullptr,
+									  Rboolean(FALSE)));
+			AddReadRef(ref_table, s);
+			break;
+		case SPECIALSXP:
+		case BUILTINSXP:
 	    {
 		/* These are all short strings */
 		length = InInteger(stream);

@@ -104,7 +104,10 @@ namespace rho
          *
          * @return the GCNode pointer encapsulated by this object.
          */
-        const GCNode *ptr() const { return m_pointer; }
+        const GCNode *ptr() const
+        {
+            return m_pointer;
+        }
 
     private:
         const GCNode *m_pointer;
@@ -164,7 +167,7 @@ namespace rho
          *          protected from the garbage collector, or a null
          *          pointer.
          */
-        GCRoot(T *node = 0) : GCRootBase(node) { check_complete_type(); }
+        GCRoot(T *node = nullptr) : GCRootBase(node) { check_complete_type(); }
 
         /** @brief Copy constructor.
          *
@@ -204,7 +207,10 @@ namespace rho
          *
          * @return the pointer currently encapsulated by the node.
          */
-        T *operator->() const { return get(); }
+        T *operator->() const
+        {
+            return get();
+        }
 
         /** @brief Dereference the encapsulated pointer.
          *
@@ -212,7 +218,10 @@ namespace rho
          * encapsulated pointer.  The effect is undefined if this
          * object encapsulates a null pointer.
          */
-        T &operator*() const { return *get(); }
+        T &operator*() const
+        {
+            return *get();
+        }
 
         /** @brief Implicit conversion to encapsulated pointer type.
          *
@@ -221,7 +230,10 @@ namespace rho
          * an lvalue, the effect of which would probably not be what
          * the programmer wanted.
          */
-        operator T *() const { return get(); }
+        operator T *() const
+        {
+            return get();
+        }
 
         /** @brief Access the encapsulated pointer.
          *
@@ -278,6 +290,6 @@ extern "C"
      *          R_ReleaseObject() has no effect.
      */
     void R_ReleaseObject(SEXP object);
-} /* extern "C" */
+} // extern "C"
 
 #endif // GCROOT_HPP

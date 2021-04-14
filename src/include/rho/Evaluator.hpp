@@ -17,9 +17,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /** @file Evaluator.hpp
@@ -34,51 +34,7 @@
 #include <rho/Environment.hpp>
 #include <rho/PairList.hpp>
 
-// Move this to ByteCode.hpp in due course:
-#define BYTECODE
-
 #include <utility>
-
-extern "C"
-{
-    /** @brief Print expression value?
-     *
-     * If R_Visible is TRUE when the evaluation of a top-level R
-     * expression completes, the value of the expression is printed.
-     *
-     * @note In rho, R_Visible is evolving towards becoming a static
-     * data member of class rho::Evaluator.
-     */
-    extern Rboolean R_Visible;
-
-    /** @brief Are any user interrupts currently pending?
-     *
-     * If user interrupts are attempted while user interrupts are
-     * suspended, this is set non-zero.  The interrupt is then
-     * services when the period of suspension ends.
-     */
-    extern int R_interrupts_pending;
-
-    /** @brief Are interrupts currently suspended?
-     */
-    extern Rboolean R_interrupts_suspended;
-
-    /** @brief Is a Symbol missing within an Environment?
-     *
-     * @param symbol Pointer to the Symbol whose missing status is
-     * required.
-     *
-     * @param rho Pointer to the Environment in whose Frame \a symbol
-     *          is to be sought.
-     *
-     * @return A non-zero value iff \a symbol is missing in the Frame
-     * of \a rho.
-     *
-     * @note For more information, refer to the code, which is
-     * surprisingly complicated.
-     */
-    int R_isMissing(SEXP symbol, SEXP rho);
-} // extern "C"
 
 namespace rho
 {
@@ -160,10 +116,7 @@ namespace rho
          *
          * @param on true iff printing is required.
          */
-        static void enableResultPrinting(bool on)
-        {
-            R_Visible = Rboolean(on);
-        }
+        static void enableResultPrinting(bool on);
 
         /** @brief Evaluate RObject in a specified Environment.
          *
@@ -211,10 +164,7 @@ namespace rho
          * @return true iff it is currently specified that the result
          * of a top-level R expression evaluation should be printed.
          */
-        static bool resultPrinted()
-        {
-            return R_Visible;
-        }
+        static bool resultPrinted();
 
         //* @brief Check for user interrupts.
         static void maybeCheckForUserInterrupts()
@@ -264,6 +214,45 @@ namespace rho
 
 extern "C"
 {
+
+    /** @brief Print expression value?
+     *
+     * If R_Visible is TRUE when the evaluation of a top-level R
+     * expression completes, the value of the expression is printed.
+     *
+     * @note In rho, R_Visible is evolving towards becoming a static
+     * data member of class rho::Evaluator.
+     */
+    extern Rboolean R_Visible;
+
+    /** @brief Is a Symbol missing within an Environment?
+     *
+     * @param symbol Pointer to the Symbol whose missing status is
+     * required.
+     *
+     * @param rho Pointer to the Environment in whose Frame \a symbol
+     *          is to be sought.
+     *
+     * @return A non-zero value iff \a symbol is missing in the Frame
+     * of \a rho.
+     *
+     * @note For more information, refer to the code, which is
+     * surprisingly complicated.
+     */
+    int R_isMissing(SEXP symbol, SEXP rho);
+
+    /** @brief Are any user interrupts currently pending?
+     *
+     * If user interrupts are attempted while user interrupts are
+     * suspended, this is set non-zero.  The interrupt is then
+     * services when the period of suspension ends.
+     */
+    extern int R_interrupts_pending;
+
+    /** @brief Are interrupts currently suspended?
+     */
+    extern Rboolean R_interrupts_suspended;
+
     /** @brief Evaluate an object in a specified Environment.
      *
      * @param e Pointer (possibly null) to the object to be evaluated.

@@ -39,14 +39,14 @@ namespace rho
 	class RObject;
 
 	/** @brief Class implementing a stack of RObject*.
-     *
-     * This class is not intended for general use.  It is currently
-     * used in class ProtectStack and in the bytecode interpreter.
-     *
-     * Note that it is necessary for GCNode::gclite() to call the
-     * protectAll() method of every NodeStack in existence before it
-     * starts to delete nodes with zero references counts.
-     */
+	 *
+	 * This class is not intended for general use.  It is currently
+	 * used in class ProtectStack and in the bytecode interpreter.
+	 *
+	 * Note that it is necessary for GCNode::gclite() to call the
+	 * protectAll() method of every NodeStack in existence before it
+	 * starts to delete nodes with zero references counts.
+	 */
 	class NodeStack
 	{
 	public:
@@ -68,12 +68,12 @@ namespace rho
 		{
 		public:
 			/** Copy the value of the proxied element from another
-	     *  proxied element.
-	     *
-	     * @param rhs Proxied element whose value is to be copied.
-	     *
-	     * @return Reference to this ElementProxy.
-	     */
+			 *  proxied element.
+			 *
+			 * @param rhs Proxied element whose value is to be copied.
+			 *
+			 * @return Reference to this ElementProxy.
+			 */
 			ElementProxy &operator=(const ElementProxy &rhs)
 			{
 				m_stack->retarget((*rhs.m_stack)[rhs.m_index], m_index);
@@ -81,11 +81,11 @@ namespace rho
 			}
 
 			/** @brief Redirect encapsulated pointer.
-	     *
-	     * @param node New pointer value.
-	     *
-	     * @return Reference to this ElementProxy.
-	     */
+			 *
+			 * @param node New pointer value.
+			 *
+			 * @return Reference to this ElementProxy.
+			 */
 			ElementProxy &operator=(RObject *node)
 			{
 				m_stack->retarget(node, m_index);
@@ -93,9 +93,9 @@ namespace rho
 			}
 
 			/**
-	     * @return The pointer encapsulated by the proxied
-	     *         element.
-	     */
+			 * @return The pointer encapsulated by the proxied
+			 *         element.
+			 */
 			operator RObject * const() const
 			{
 				return m_stack->m_vector[m_index];
@@ -127,10 +127,10 @@ namespace rho
 		{
 		public:
 			/** @brief Constructor
-	     *
-	     * @param stack Non-null pointer to the NodeStack object
-	     *    with which this Scope is to be associated.
-	     */
+			 *
+			 * @param stack Non-null pointer to the NodeStack object
+			 *    with which this Scope is to be associated.
+			 */
 			Scope(NodeStack *stack)
 				: m_nodestack(stack),
 				  m_next_scope(stack->m_innermost_scope),
@@ -157,11 +157,11 @@ namespace rho
 			size_t m_saved_size;
 
 			/** @brief NodeStack size at construction.
-	     *
-	     * @return The size of the NodeStack at the time this
-	     * Scope object was constructed.  The NodeStack will be
-	     * restored to this size by the Scope destructor.
-	     */
+			 *
+			 * @return The size of the NodeStack at the time this
+			 * Scope object was constructed.  The NodeStack will be
+			 * restored to this size by the Scope destructor.
+			 */
 			size_t startSize() const
 			{
 				return m_saved_size;

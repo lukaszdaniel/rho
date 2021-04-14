@@ -38,12 +38,12 @@ namespace rho
 	class Environment;
 
 	/** @brief Bailout class to convey return value.
-     *
-     * A Bailout of this class conveys a value back to a computation
-     * (typically a Closure application) operating within a specified
-     * working Environment, and is used for example to implement the R
-     * return command.
-     */
+	 *
+	 * A Bailout of this class conveys a value back to a computation
+	 * (typically a Closure application) operating within a specified
+	 * working Environment, and is used for example to implement the R
+	 * return command.
+	 */
 	class ReturnBailout : public Bailout
 	{
 	public:

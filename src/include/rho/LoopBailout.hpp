@@ -37,12 +37,12 @@ namespace rho
 	class Environment;
 
 	/** @brief Bailout class for R commands 'break' and 'next'.
-     *
-     * A Bailout of this class conveys a value back to a computation
-     * (typically a Closure application) operating within a specified
-     * working Environment, and is used for example to implement the R
-     * return command.
-     */
+	 *
+	 * A Bailout of this class conveys a value back to a computation
+	 * (typically a Closure application) operating within a specified
+	 * working Environment, and is used for example to implement the R
+	 * return command.
+	 */
 	class LoopBailout : public Bailout
 	{
 	public:

@@ -82,9 +82,9 @@ extern "C"
 	/**
 	 * @param x Pointer to a rho::RawVector (i.e. a RAWSXP).  An error is
 	 *          generated if \a x is not a non-null pointer to a
-	 *          rho::RawVector .
+	 *          rho::RawVector.
 	 *
-	 * @return Pointer to element 0 of \a x .
+	 * @return Pointer to element 0 of \a x.
 	 */
 	inline Rbyte *RAW(SEXP x)
 	{

@@ -35,10 +35,10 @@
 using namespace std;
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
     namespace ForceNonInline
     {
         const auto &protectp = Rf_protect;
@@ -47,21 +47,21 @@ namespace rho
         const auto &ProtectWithIndexp = R_ProtectWithIndex;
         const auto &Reprotectp = R_Reprotect;
     } // namespace ForceNonInline
+
+    NodeStack *ProtectStack::s_stack = nullptr;
+
+    void ProtectStack::initialize()
+    {
+        s_stack = new NodeStack(64);
+    }
+
+    void ProtectStack::restoreSize(size_t new_size)
+    {
+        if (new_size > s_stack->size())
+            throw out_of_range("ProtectStack::ppsRestoreSize: requested size greater than current size.");
+        s_stack->resize(new_size);
+    }
 } // namespace rho
-
-NodeStack *ProtectStack::s_stack = nullptr;
-
-void ProtectStack::initialize()
-{
-    s_stack = new NodeStack(64);
-}
-
-void ProtectStack::restoreSize(size_t new_size)
-{
-    if (new_size > s_stack->size())
-        throw out_of_range("ProtectStack::ppsRestoreSize: requested size greater than current size.");
-    s_stack->resize(new_size);
-}
 
 // ***** C interface *****
 

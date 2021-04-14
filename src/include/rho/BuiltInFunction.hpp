@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1999-2006   The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2006   The R Development Core Team.
  *  Copyright (C) 2007-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -9,8 +9,8 @@
  *  not be reported via r-bugs or other R project channels; instead refer
  *  to the Rho website.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
+ *  This header file is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation; either version 2.1 of the License, or
  *  (at your option) any later version.
  *
@@ -19,9 +19,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /** @file BuiltInFunction.hpp
@@ -42,28 +42,28 @@
 extern "C"
 {
     /** @brief The type of the do_xxxx functions.
- *
- * These are the built-in R functions.
- */
+     *
+     * These are the built-in R functions.
+     */
     typedef SEXP (*CCODE)(SEXP, SEXP, SEXP, SEXP);
 } // extern "C"
 
 namespace rho
 {
     /** @brief R function implemented within the interpreter.
- *
- * A BuiltInFunction object represents an R function that is
- * implemented within the interpreter by a function in C++ or C.
- * These objects are of two kinds, according to whether the
- * arguments passed to BuiltInFunction::apply() are evaluated
- * before being passed on to the encapsulated C/C++ function (CR's
- * BUILTINSXP), or are passed on unevaluated (SPECIALSXP).
- */
+     *
+     * A BuiltInFunction object represents an R function that is
+     * implemented within the interpreter by a function in C++ or C.
+     * These objects are of two kinds, according to whether the
+     * arguments passed to BuiltInFunction::apply() are evaluated
+     * before being passed on to the encapsulated C/C++ function (CR's
+     * BUILTINSXP), or are passed on unevaluated (SPECIALSXP).
+     */
     class BuiltInFunction : public FunctionBase
     {
     public:
         /** @brief Kind of function, used mainly in deparsing.
-     */
+         */
         enum Kind
         {
             PP_INVALID = 0,
@@ -90,7 +90,7 @@ namespace rho
         };
 
         /** @brief Precedence level of function.
-     */
+         */
         enum Precedence
         {
             PREC_FN = 0,
@@ -114,38 +114,38 @@ namespace rho
         };
 
         /** @brief 'Arity' of the function.
-     *
-     * @return The number of arguments expected by the function.
-     * A return value of -1 signifies that any number of arguments
-     * is acceptable.
-     */
+         *
+         * @return The number of arguments expected by the function.
+         * A return value of -1 signifies that any number of arguments
+         * is acceptable.
+         */
         int arity() const { return m_arity; }
 
         /** @brief Report error if argument list is wrong length.
-     *
-     * This function raises an error if \a num_args is not a
-     * permissible length for all call to this BuiltInFunction.
-     *
-     * @param num_args The number of arguments that were passed.
-     *
-     * @param call The call being processed (for error reporting).
-     */
+         *
+         * This function raises an error if \a num_args is not a
+         * permissible length for all call to this BuiltInFunction.
+         *
+         * @param num_args The number of arguments that were passed.
+         *
+         * @param call The call being processed (for error reporting).
+         */
         void checkNumArgs(int num_args, const Expression *call) const
         {
             checkNumArgs(num_args, arity(), call);
         }
 
         /** @brief Report error if argument list is wrong length.
-     *
-     * This function raises an error if \a num_args is not a
-     * permissible length for all call to this BuiltInFunction.
-     *
-     * @param num_args The number of arguments that were passed.
-     *
-     * @param arity The expected number of arguments.
-     *
-     * @param call The call being processed (for error reporting).
-     */
+         *
+         * This function raises an error if \a num_args is not a
+         * permissible length for all call to this BuiltInFunction.
+         *
+         * @param num_args The number of arguments that were passed.
+         *
+         * @param arity The expected number of arguments.
+         *
+         * @param call The call being processed (for error reporting).
+         */
         void checkNumArgs(int num_args, int arity, const Expression *call) const
         {
             if (num_args == arity || arity < 0)
@@ -156,52 +156,52 @@ namespace rho
         }
 
         /** @brief Kind of built-in function.
-     *
-     * (Used mainly in deparsing.)
-     *
-     * @return The Kind of the function.
-     */
+         *
+         * (Used mainly in deparsing.)
+         *
+         * @return The Kind of the function.
+         */
         Kind kind() const { return m_gram.kind; }
 
         /** @brief Name of function.
-     *
-     * @return The textual name of this function.
-     */
+         *
+         * @return The textual name of this function.
+         */
         const char *name() const { return m_name.c_str(); }
 
         /** @brief Get a pointer to a BuiltInFunction object.
-     *
-     * If \a symbol does not point to a built-in primitive this
-     * function will raise a warning and return a null pointer.
-     * Otherwise the function will return a pointer to the
-     * (unique) BuiltInFunction object embodying that function.
-     * If no such object already exists, one will be created.
-     *
-     * @param symbol Symbol pointing to the built-in function.
-     *
-     * @return a pointer to the BuiltInFunction object
-     * representing the function with the specified \a name, or a
-     * null pointer if \a name is not the name of a built-in
-     * primitive function.
-     *
-     * @note The reason this function raises a warning and not an
-     * error if passed an inappropriate \a name is so that loading
-     * an archive will not fail completely simply because it
-     * refers to an obsolete built-in function.
-     */
+         *
+         * If \a symbol does not point to a built-in primitive this
+         * function will raise a warning and return a null pointer.
+         * Otherwise the function will return a pointer to the
+         * (unique) BuiltInFunction object embodying that function.
+         * If no such object already exists, one will be created.
+         *
+         * @param symbol Symbol pointing to the built-in function.
+         *
+         * @return a pointer to the BuiltInFunction object
+         * representing the function with the specified \a name, or a
+         * null pointer if \a name is not the name of a built-in
+         * primitive function.
+         *
+         * @note The reason this function raises a warning and not an
+         * error if passed an inappropriate \a name is so that loading
+         * an archive will not fail completely simply because it
+         * refers to an obsolete built-in function.
+         */
         static BuiltInFunction *obtainPrimitive(const Symbol *symbol);
         static BuiltInFunction *obtainPrimitive(const std::string &name);
 
         static void addPrimitivesToEnvironment(Environment *environment);
 
         /** @brief Get function accessed via <tt>.Internal()</tt>.
-     *
-     * @param sym Pointer to a Symbol.
-     *
-     * @return If \a x is associated with a function invoked in R \e
-     * via <tt>.Internal()</tt>, then a pointer to the appropriate
-     * rho::BuiltInFunction, otherwise a null pointer.
-     */
+         *
+         * @param sym Pointer to a Symbol.
+         *
+         * @return If \a x is associated with a function invoked in R \e
+         * via <tt>.Internal()</tt>, then a pointer to the appropriate
+         * rho::BuiltInFunction, otherwise a null pointer.
+         */
         static BuiltInFunction *obtainInternal(const Symbol *name);
         static BuiltInFunction *obtainInternal(const std::string &name)
         {
@@ -209,15 +209,15 @@ namespace rho
         }
 
         /** @brief Get table offset.
-     *
-     * @return The offset into the table of functions.
-     */
+         *
+         * @return The offset into the table of functions.
+         */
         unsigned int offset() const { return m_offset; }
 
         /** @brief Precedence of built-in function.
-     *
-     * @return The Precedence of the function.
-     */
+         *
+         * @return The Precedence of the function.
+         */
         Precedence precedence() const { return m_gram.precedence; }
 
         // SOFT_ON signifies that result printing should be enabled
@@ -231,49 +231,49 @@ namespace rho
         };
 
         /** @brief (Not for general use.)
-     *
-     * This function is used to implement PRIMPRINT, and is likely
-     * to be removed in future refactorisation.
-     *
-     * @return Code for handling \c R_Visible within the function,
-     *         as documented in names.cpp for the eval field of
-     *         the function table.
-     */
+         *
+         * This function is used to implement PRIMPRINT, and is likely
+         * to be removed in future refactorisation.
+         *
+         * @return Code for handling \c R_Visible within the function,
+         *         as documented in names.cpp for the eval field of
+         *         the function table.
+         */
         ResultPrintingMode printHandling() const { return m_result_printing_mode; }
 
         /** @brief Is a built-in function right-associative?
-     *
-     * @return true iff the function is right-associative.
-     */
+         *
+         * @return true iff the function is right-associative.
+         */
         bool rightAssociative() const { return m_gram.rightassoc; }
 
         /** @brief The names by which this type is known in R.
-     *
-     * @return The names by which this type is known in R.
-     */
+         *
+         * @return The names by which this type is known in R.
+         */
         static const char *staticTypeName() { return "(builtin or special)"; }
 
         /** @brief Index of variant behaviour.
-     *
-     * Where a single C/C++ function implements more than one
-     * built-in R function, this function provides the C/C++ code
-     * with an index indicating which R function is to be
-     * implemented.
-     *
-     * @return index of the required behaviour; interpretation is
-     * up to the C/C++ function called.
-     */
+         *
+         * Where a single C/C++ function implements more than one
+         * built-in R function, this function provides the C/C++ code
+         * with an index indicating which R function is to be
+         * implemented.
+         *
+         * @return index of the required behaviour; interpretation is
+         * up to the C/C++ function called.
+         */
         unsigned int variant() const { return m_variant; }
 
         /** @brief Must this function be called via .Internal()?
-     *
-     * @return true iff this function must be called via
-     * .Internal()?
-     */
+         *
+         * @return true iff this function must be called via
+         * .Internal()?
+         */
         bool viaDotInternal() const { return m_via_dot_internal; }
 
         /** @brief Does this function create a frame visible in traceback()?
-     */
+         */
         bool createsStackFrame() const { return !m_transparent; }
 
         // Virtual function of RObject:
@@ -410,16 +410,16 @@ namespace rho
         }
 
         /* @brief Attempt to dispatch this call to a method.
-     *
-     * @param call The call being dispatched.
-     * @param env The environment to call the method from.
-     * @param evaluated_args The arguments to pass to the method.
-     *
-     * @return The first value is whether or not the dispatch succeeded.
-     *    The second value is the return value if it did.
-     *
-     * @note If the dispatch fails, then evaluated_args is unchanged.
-     */
+         *
+         * @param call The call being dispatched.
+         * @param env The environment to call the method from.
+         * @param evaluated_args The arguments to pass to the method.
+         *
+         * @return The first value is whether or not the dispatch succeeded.
+         *    The second value is the return value if it did.
+         *
+         * @note If the dispatch fails, then evaluated_args is unchanged.
+         */
         std::pair<bool, RObject *> InternalDispatch(const Expression *call,
                                                     Environment *env, ArgList &&evaluated_args) const
         {
@@ -598,26 +598,26 @@ namespace rho
                                                         Environment *env) const;
 
         /** @brief Raise error because of missing argument.
-     *
-     * @param func Pointer, possibly null, to the BuiltInFunction
-     *          being evaluated.
-     *
-     * @param args The list of arguments.
-     *
-     * @param index Position (counting from one) of the first
-     * missing argument.
-     */
+         *
+         * @param func Pointer, possibly null, to the BuiltInFunction
+         *          being evaluated.
+         *
+         * @param args The list of arguments.
+         *
+         * @param index Position (counting from one) of the first
+         * missing argument.
+         */
         static void missingArgumentError(
             const BuiltInFunction *func, const PairList *args, unsigned int index);
 
         /** @brief Raise error because a bad number of arguments.
-     *
-     * @param num_args The number of args passed.
-     *
-     * @param arity The expected number of args passed.
+         *
+         * @param num_args The number of args passed.
+         *
+         * @param arity The expected number of args passed.
 
-     * @param call The call.
-     */
+         * @param call The call.
+         */
         void badArgumentCountError(
             int num_args, int arity, const Expression *call) const;
     };

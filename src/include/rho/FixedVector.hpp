@@ -30,12 +30,11 @@
 #ifndef FIXEDVECTOR_HPP
 #define FIXEDVECTOR_HPP
 
-#include <rho/MemoryBank.hpp>
 #include <rho/VectorBase.hpp>
+#include <rho/MemoryBank.hpp>
 
 namespace rho
 {
-
     /** @brief R data vector primarily intended for fixed-size use.
      *
      * This is a general-purpose class template to represent an R data
@@ -121,7 +120,10 @@ namespace rho
          *
          * @return Reference to the specified element.
          */
-        T &operator[](size_type index) { return m_data[index]; }
+        T &operator[](size_type index)
+        {
+            return m_data[index];
+        }
 
         /** @brief Read-only element access.
          *
@@ -130,7 +132,10 @@ namespace rho
          *
          * @return \c const reference to the specified element.
          */
-        const T &operator[](size_type index) const { return m_data[index]; }
+        const T &operator[](size_type index) const
+        {
+            return m_data[index];
+        }
 
         /** @brief Iterator designating first element.
          *

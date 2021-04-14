@@ -67,8 +67,8 @@ using namespace rho;
 #if defined(Win32)
 extern void *Rm_malloc(size_t n);
 extern void *Rm_calloc(size_t n_elements, size_t element_size);
-extern void Rm_free(void * p);
-extern void *Rm_realloc(void * p, size_t n);
+extern void Rm_free(void *p);
+extern void *Rm_realloc(void *p, size_t n);
 #define calloc Rm_calloc
 #define malloc Rm_malloc
 #define realloc Rm_realloc
@@ -92,7 +92,7 @@ static void DEBUG_ADJUST_HEAP_PRINT(double node_occup, double vect_occup)
 {
     R_size_t alloc;
     REprintf("Node occupancy: %.0f%%\nVector occupancy: %.0f%%\n",
-	     100.0 * node_occup, 100.0 * vect_occup);
+             100.0 * node_occup, 100.0 * vect_occup);
     alloc = MemoryBank::bytesAllocated();
     REprintf("Total allocation: %lu\n", alloc);
     REprintf("Ncells %lu\nVcells %lu\n", R_NSize, R_VSize);
@@ -103,23 +103,22 @@ static void DEBUG_ADJUST_HEAP_PRINT(double node_occup, double vect_occup)
 
 /* Finalization and Weak References */
 
-HIDDEN SEXP do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op, RObject* e_, RObject* f_, RObject* onexit_)
+HIDDEN SEXP do_regFinaliz(/*const*/ Expression *call, const BuiltInFunction *op, RObject *e_, RObject *f_, RObject *onexit_)
 {
     int onexit;
 
     if (TYPEOF(e_) != ENVSXP && TYPEOF(e_) != EXTPTRSXP)
-	Rf_error(_("first argument must be environment or external pointer"));
+        Rf_error(_("first argument must be environment or external pointer"));
     if (TYPEOF(f_) != CLOSXP)
-	Rf_error(_("second argument must be a function"));
+        Rf_error(_("second argument must be a function"));
 
     onexit = Rf_asLogical(onexit_);
-    if(onexit == R_NaLog)
-	Rf_error(_("third argument must be 'TRUE' or 'FALSE'"));
+    if (onexit == R_NaLog)
+        Rf_error(_("third argument must be 'TRUE' or 'FALSE'"));
 
     R_RegisterFinalizerEx(e_, f_, Rboolean(onexit));
     return nullptr;
 }
-
 
 /* The Generational Collector. */
 
@@ -129,32 +128,38 @@ HIDDEN SEXP do_regFinaliz(/*const*/ Expression* call, const BuiltInFunction* op,
 void R_gc_torture(int gap, int wait, Rboolean inhibit)
 {
     if (gap != R_NaInt && gap >= 0)
-	gc_force_wait = gc_force_gap = gap;
-    if (gap > 0) {
-	if (wait != R_NaInt && wait > 0)
-	    gc_force_wait = wait;
+        gc_force_wait = gc_force_gap = gap;
+    if (gap > 0)
+    {
+        if (wait != R_NaInt && wait > 0)
+            gc_force_wait = wait;
     }
 }
 
-HIDDEN SEXP do_gctorture(/*const*/ Expression* call, const BuiltInFunction* op, RObject* on_)
+HIDDEN SEXP do_gctorture(/*const*/ Expression *call, const BuiltInFunction *op, RObject *on_)
 {
     int gap;
     SEXP old = Rf_ScalarLogical(gc_force_wait > 0);
 
-    if (Rf_isLogical(on_)) {
-	Rboolean on = Rboolean(Rf_asLogical(on_));
-	if (on == R_NaLog) gap = R_NaInt;
-	else if (on) gap = 1;
-	else gap = 0;
+    if (Rf_isLogical(on_))
+    {
+        Rboolean on = Rboolean(Rf_asLogical(on_));
+        if (on == R_NaLog)
+            gap = R_NaInt;
+        else if (on)
+            gap = 1;
+        else
+            gap = 0;
     }
-    else gap = Rf_asInteger(on_);
+    else
+        gap = Rf_asInteger(on_);
 
     R_gc_torture(gap, 0, FALSE);
 
     return old;
 }
 
-HIDDEN SEXP do_gctorture2(/*const*/ Expression* call, const BuiltInFunction* op, RObject* step_, RObject* wait_, RObject* inhibit_release_)
+HIDDEN SEXP do_gctorture2(/*const*/ Expression *call, const BuiltInFunction *op, RObject *step_, RObject *wait_, RObject *inhibit_release_)
 {
     int gap, wait;
     Rboolean inhibit;
@@ -168,34 +173,33 @@ HIDDEN SEXP do_gctorture2(/*const*/ Expression* call, const BuiltInFunction* op,
     return old;
 }
 
-HIDDEN SEXP do_gcinfo(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_)
+HIDDEN SEXP do_gcinfo(/*const*/ Expression *call, const BuiltInFunction *op, RObject *verbose_)
 {
-    std::ostream* report_os = GCManager::setReporting(nullptr);
+    std::ostream *report_os = GCManager::setReporting(nullptr);
     int want_reporting = Rf_asLogical(verbose_);
     if (want_reporting != R_NaLog)
-	GCManager::setReporting(want_reporting ? &std::cerr : nullptr);
+        GCManager::setReporting(want_reporting ? &std::cerr : nullptr);
     else
-	GCManager::setReporting(report_os);
+        GCManager::setReporting(report_os);
     return Rf_ScalarLogical(report_os != nullptr);
 }
 
 /* reports memory use to profiler in eval.cpp */
 
 HIDDEN void get_current_mem(size_t *smallvsize,
-				      size_t *largevsize,
-				      size_t *nodes)
+                            size_t *largevsize,
+                            size_t *nodes)
 {
     // All subject to change in rho:
     *smallvsize = 0;
-    *largevsize = MemoryBank::bytesAllocated()/sizeof(VECREC);
+    *largevsize = MemoryBank::bytesAllocated() / sizeof(VECREC);
     *nodes = GCNode::numNodes();
     return;
 }
 
-HIDDEN SEXP do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject* verbose_, RObject* reset_, RObject* full_)
+HIDDEN SEXP do_gc(/*const*/ Expression *call, const BuiltInFunction *op, RObject *verbose_, RObject *reset_, RObject *full_)
 {
-    std::ostream* report_os
-	= GCManager::setReporting(Rf_asLogical(verbose_) ? &std::cerr : nullptr);
+    std::ostream *report_os = GCManager::setReporting(Rf_asLogical(verbose_) ? &std::cerr : nullptr);
     bool reset_max = Rf_asLogical(reset_);
     bool full = Rf_asLogical(full_);
     GCManager::gc(full);
@@ -206,25 +210,26 @@ HIDDEN SEXP do_gc(/*const*/ Expression* call, const BuiltInFunction* op, RObject
     REAL(value)[1] = R_NaReal;
     REAL(value)[2] = GCManager::maxNodes();
     /* next four are in 0.1MB, rounded up */
-    REAL(value)[3] = 0.1*ceil(10. * MemoryBank::bytesAllocated()/Mega);
-    REAL(value)[4] = 0.1*ceil(10. * GCManager::triggerLevel()/Mega);
-    REAL(value)[5] = 0.1*ceil(10. * GCManager::maxBytes()/Mega);
-    if (reset_max) GCManager::resetMaxTallies();
+    REAL(value)[3] = 0.1 * ceil(10. * MemoryBank::bytesAllocated() / Mega);
+    REAL(value)[4] = 0.1 * ceil(10. * GCManager::triggerLevel() / Mega);
+    REAL(value)[5] = 0.1 * ceil(10. * GCManager::maxBytes() / Mega);
+    if (reset_max)
+        GCManager::resetMaxTallies();
     return value;
 }
-
 
 static double gctimes[5], gcstarttimes[5];
 static Rboolean gctime_enabled = FALSE;
 
-HIDDEN SEXP do_gctime(/*const*/ Expression* call, const BuiltInFunction* op, int num_args, ...)
+HIDDEN SEXP do_gctime(/*const*/ Expression *call, const BuiltInFunction *op, int num_args, ...)
 {
     SEXP ans;
     if (num_args == 0)
-	gctime_enabled = TRUE;
-    else {
-	UNPACK_VA_ARGS(num_args, (enabled));
-	gctime_enabled = Rboolean(Rf_asLogical(enabled));
+        gctime_enabled = TRUE;
+    else
+    {
+        UNPACK_VA_ARGS(num_args, (enabled));
+        gctime_enabled = Rboolean(Rf_asLogical(enabled));
     }
     ans = Rf_allocVector(REALSXP, 5);
     REAL(ans)[0] = gctimes[0];
@@ -238,25 +243,26 @@ HIDDEN SEXP do_gctime(/*const*/ Expression* call, const BuiltInFunction* op, int
 static void gc_start_timing(void)
 {
     if (gctime_enabled)
-	R_getProcTime(gcstarttimes);
+        R_getProcTime(gcstarttimes);
 }
 
 static void gc_end_timing(void)
 {
-    if (gctime_enabled) {
-	double times[5], delta;
-	R_getProcTime(times);
-	delta = R_getClockIncrement();
+    if (gctime_enabled)
+    {
+        double times[5], delta;
+        R_getProcTime(times);
+        delta = R_getClockIncrement();
 
-	/* add delta to compensate for timer resolution:
+        /* add delta to compensate for timer resolution:
 	   NB: as all current Unix-alike systems use getrusage, 
 	   this may over-compensate.
 	 */
-	gctimes[0] += times[0] - gcstarttimes[0] + delta;
-	gctimes[1] += times[1] - gcstarttimes[1] + delta;
-	gctimes[2] += times[2] - gcstarttimes[2] + delta;
-	gctimes[3] += times[3] - gcstarttimes[3];
-	gctimes[4] += times[4] - gcstarttimes[4];
+        gctimes[0] += times[0] - gcstarttimes[0] + delta;
+        gctimes[1] += times[1] - gcstarttimes[1] + delta;
+        gctimes[2] += times[2] - gcstarttimes[2] + delta;
+        gctimes[3] += times[3] - gcstarttimes[3];
+        gctimes[4] += times[4] - gcstarttimes[4];
     }
 }
 
@@ -271,7 +277,6 @@ void Rf_InitMemory()
 
     ::initializeMemorySubsystem();
 }
-
 
 /*----------------------------------------------------------------------
 
@@ -290,15 +295,16 @@ SEXP Rf_NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
 {
     SEXP v = valuelist;
     SEXP n = namelist;
-    while (v != nullptr && n != nullptr) {
-	SET_TAG(v, TAG(n));
-	v = CDR(v);
-	n = CDR(n);
+    while (v != nullptr && n != nullptr)
+    {
+        SET_TAG(v, TAG(n));
+        v = CDR(v);
+        n = CDR(n);
     }
 
     GCStackRoot<> namelistr(namelist);
-    GCStackRoot<PairList> namevalr(SEXP_downcast<PairList*>(valuelist));
-    GCStackRoot<Environment> rhor(SEXP_downcast<Environment*>(rho));
+    GCStackRoot<PairList> namevalr(SEXP_downcast<PairList *>(valuelist));
+    GCStackRoot<Environment> rhor(SEXP_downcast<Environment *>(rho));
     // +5 to leave some room for local variables:
     GCStackRoot<Frame> frame(Frame::normalFrame(Rf_length(namevalr) + 5));
     frameReadPairList(frame, namevalr);
@@ -308,85 +314,108 @@ SEXP Rf_NewEnvironment(SEXP namelist, SEXP valuelist, SEXP rho)
 /* Allocate a vector object (and also list-like objects).
 */
 
-SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void*)
+SEXP Rf_allocVector3(SEXPTYPE type, R_xlen_t length, void *)
 {
-    SEXP s = nullptr;  // -Wall
+    RObject *s = nullptr;
 
     if (length > R_XLEN_T_MAX)
-	Rf_error(_("vector is too large")); /**** put length into message */
-    else if (length < 0 )
-	Rf_error(_("negative length vectors are not allowed"));
-
+        Rf_error(_("vector is too large")); /**** put length into message */
+    else if (length < 0)
+        Rf_error(_("negative length vectors are not allowed"));
     /* number of vector cells to allocate */
-    switch (type) {
+    switch (type)
+    {
     case NILSXP:
-	return nullptr;
+        return nullptr;
     case RAWSXP:
-	s = RawVector::create(length);
-	break;
-    case CHARSXP:
-	Rf_error("use of Rf_allocVector(CHARSXP ...) is defunct\n");
-	break;
-    case LGLSXP:
-	s = LogicalVector::create(length);
-	break;
-    case INTSXP:
-	s = IntVector::create(length);
-	break;
-    case REALSXP:
-	s = RealVector::create(length);
-	break;
-    case CPLXSXP:
-	s = ComplexVector::create(length);
-	break;
-    case STRSXP:
-	s = StringVector::create(length);
-	break;
-    case EXPRSXP:
-	s = ExpressionVector::create(length);
-	break;
-    case VECSXP:
-	s = ListVector::create(length);
-	break;
-    case LANGSXP:
-	{
-	    if (length == 0)
-		return nullptr;
-#ifdef LONG_VECTOR_SUPPORT
-	    if (length > R_SHORT_LEN_MAX) Rf_error("invalid length for pairlist");
-#endif
-	    GCStackRoot<PairList> tl(PairList::make(length - 1));
-	    s = new CachingExpression(nullptr, tl);
-	    break;
-	}
-    case LISTSXP:
-#ifdef LONG_VECTOR_SUPPORT
-	if (length > R_SHORT_LEN_MAX) Rf_error("invalid length for pairlist");
-#endif
-	return Rf_allocList(int(length));
-    default:
-	Rf_error(_("invalid type/length (%s/%d) in vector allocation"),
-	      Rf_type2char(type), length);
-	return nullptr;  // -Wall
+    {
+        s = RawVector::create(length);
+        break;
     }
+    case CHARSXP:
+        Rf_error(_("use of allocVector(CHARSXP ...) is defunct\n"));
+    case LGLSXP:
+    {
+        s = LogicalVector::create(length);
+        break;
+    }
+    case INTSXP:
+    {
+        s = IntVector::create(length);
+        break;
+    }
+    case REALSXP:
+    {
+        s = RealVector::create(length);
+        break;
+    }
+    case CPLXSXP:
+    {
+        s = ComplexVector::create(length);
+        break;
+    }
+    case STRSXP:
+    {
+        s = StringVector::create(length);
+        break;
+    }
+    case EXPRSXP:
+    {
+        s = ExpressionVector::create(length);
+        break;
+    }
+    case VECSXP:
+    {
+        s = ListVector::create(length);
+        break;
+    }
+    case LANGSXP:
+    {
+        if (length == 0)
+            return nullptr;
+#ifdef LONG_VECTOR_SUPPORT
+        if (length > R_SHORT_LEN_MAX)
+            Rf_error("invalid length for pairlist");
+#endif
+        GCStackRoot<PairList> tl(PairList::make(length - 1));
+        s = new CachingExpression(nullptr, tl);
+        break;
+    }
+    case LISTSXP:
+    {
+#ifdef LONG_VECTOR_SUPPORT
+        if (length > R_SHORT_LEN_MAX)
+            Rf_error(_("invalid length for pairlist"));
+#endif
+        return Rf_allocList(int(length));
+    }
+    default:
+        Rf_error(_("invalid type/length (%s/%d) in vector allocation"),
+                 Rf_type2char(type), length);
+        return nullptr; // -Wall
+    }
+
     return s;
 }
 
-static PairList* allocFormalsList(int nargs, ...) {
-    PairList* res = nullptr;
-    PairList* n;
+static PairList *allocFormalsList(int nargs, ...)
+{
+    PairList *res = nullptr;
+    PairList *n;
     int i;
     va_list syms;
     va_start(syms, nargs);
 
-    for(i = 0; i < nargs; i++) {
+    for (i = 0; i < nargs; i++)
+    {
         res = PairList::cons(nullptr, res);
     }
     R_PreserveObject(res);
 
     n = res;
-    for(i = 0; i < nargs; i++) {
-        SET_TAG(n, (SEXP) va_arg(syms, SEXP));
+    for (i = 0; i < nargs; i++)
+    {
+        SET_TAG(n, (SEXP)va_arg(syms, SEXP));
         MARK_NOT_MUTABLE(n);
         n = n->tail();
     }
@@ -395,24 +424,28 @@ static PairList* allocFormalsList(int nargs, ...) {
     return res;
 }
 
-
-SEXP Rf_allocFormalsList2(SEXP sym1, SEXP sym2) {
+SEXP Rf_allocFormalsList2(SEXP sym1, SEXP sym2)
+{
     return allocFormalsList(2, sym1, sym2);
 }
 
-SEXP Rf_allocFormalsList3(SEXP sym1, SEXP sym2, SEXP sym3) {
+SEXP Rf_allocFormalsList3(SEXP sym1, SEXP sym2, SEXP sym3)
+{
     return allocFormalsList(3, sym1, sym2, sym3);
 }
 
-SEXP Rf_allocFormalsList4(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4) {
+SEXP Rf_allocFormalsList4(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4)
+{
     return allocFormalsList(4, sym1, sym2, sym3, sym4);
 }
 
-SEXP Rf_allocFormalsList5(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5) {
+SEXP Rf_allocFormalsList5(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5)
+{
     return allocFormalsList(5, sym1, sym2, sym3, sym4, sym5);
 }
 
-SEXP Rf_allocFormalsList6(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5, SEXP sym6) {
+SEXP Rf_allocFormalsList6(SEXP sym1, SEXP sym2, SEXP sym3, SEXP sym4, SEXP sym5, SEXP sym6)
+{
     return allocFormalsList(6, sym1, sym2, sym3, sym4, sym5, sym6);
 }
 
@@ -423,17 +456,16 @@ void R_gc(void)
     GCManager::gc();
 }
 
-
-
-HIDDEN SEXP do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* op)
+HIDDEN SEXP do_memoryprofile(/*const*/ Expression *call, const BuiltInFunction *op)
 {
     SEXP ans, nms;
     constexpr int n = 24;
     PROTECT(ans = Rf_allocVector(INTSXP, n));
     PROTECT(nms = Rf_allocVector(STRSXP, n));
-    for (int i = 0; i < n; i++) {
-	INTEGER(ans)[i] = 0;
-	SET_STRING_ELT(nms, i, Rf_type2str(SEXPTYPE(i > LGLSXP ? i + 2 : i)));
+    for (int i = 0; i < n; i++)
+    {
+        INTEGER(ans)[i] = 0;
+        SET_STRING_ELT(nms, i, Rf_type2str(SEXPTYPE(i > LGLSXP ? i + 2 : i)));
     }
     Rf_setAttrib(ans, Symbols::NamesSymbol, nms);
     // Just return a vector of zeroes in rho.
@@ -444,39 +476,42 @@ HIDDEN SEXP do_memoryprofile(/*const*/ Expression* call, const BuiltInFunction* 
 /* S-like wrappers for calloc, realloc and free that check for error
    conditions */
 
-void* R_chk_calloc(std::size_t nelem, std::size_t elsize)
+void *R_chk_calloc(std::size_t nelem, std::size_t elsize)
 {
-    void* p;
+    void *p;
 #ifndef HAVE_WORKING_CALLOC
-    if(nelem == 0)
-	return(NULL);
+    if (nelem == 0)
+        return (NULL);
 #endif
     p = calloc(nelem, elsize);
-    if(!p) /* problem here is that we don't have a format for size_t. */
-	Rf_error(_("'Calloc' could not allocate memory (%.0f of %u bytes)"),
-	      double(nelem), elsize);
-    return(p);
+    if (!p) /* problem here is that we don't have a format for size_t. */
+        Rf_error(_("'Calloc' could not allocate memory (%.0f of %u bytes)"),
+                 double(nelem), elsize);
+    return (p);
 }
 
-void* R_chk_realloc(void* ptr, std::size_t size)
+void *R_chk_realloc(void *ptr, std::size_t size)
 {
-    void* p;
+    void *p;
     /* Protect against broken realloc */
-    if(ptr) p = realloc(ptr, size); else p = malloc(size);
-    if(!p)
-	Rf_error(_("'Realloc' could not re-allocate memory (%.0f bytes)"), 
-	      double(size));
-    return(p);
+    if (ptr)
+        p = realloc(ptr, size);
+    else
+        p = malloc(size);
+    if (!p)
+        Rf_error(_("'Realloc' could not re-allocate memory (%.0f bytes)"),
+                 double(size));
+    return (p);
 }
 
-void R_chk_free(void* ptr)
+void R_chk_free(void *ptr)
 {
     /* S-PLUS warns here, but there seems no reason to do so */
     /* if(!ptr) Rf_warning("attempt to free NULL pointer by Free"); */
-    if(ptr) free(ptr); /* ANSI C says free has no effect on NULL, but
+    if (ptr)
+        free(ptr); /* ANSI C says free has no effect on NULL, but
 			  better to be safe here */
 }
-
 
 /* External Pointer Objects */
 
@@ -484,8 +519,9 @@ void R_chk_free(void* ptr)
    Added to API in R 3.4.0.
    Work around casting issues: works where it is needed.
  */
-typedef union {
-    void* p;
+typedef union
+{
+    void *p;
     DL_FUNC fn;
 } fn_ptr;
 
@@ -499,7 +535,7 @@ SEXP R_MakeExternalPtrFn(DL_FUNC p, SEXP tag, SEXP prot)
 DL_FUNC R_ExternalPtrAddrFn(SEXP s)
 {
     fn_ptr tmp;
-    tmp.p =  EXTPTR_PTR(s);
+    tmp.p = EXTPTR_PTR(s);
     return tmp.fn;
 }
 
@@ -509,28 +545,7 @@ DL_FUNC R_ExternalPtrAddrFn(SEXP s)
    implement the write barrier. */
 
 /* Vector Accessors */
-int (LENGTH)(SEXP x) { return LENGTH(x); } //was { return x == nullptr ? 0 : LENGTH(CHK2(x)); }
-#if RHO_FALSE
-R_xlen_t (XLENGTH)(SEXP x) { return XLENGTH(CHK2(x)); }
-R_xlen_t (TRUELENGTH)(SEXP x) { return TRUELENGTH(CHK2(x)); }
-
-void (SETLENGTH)(SEXP x, R_xlen_t v)
-{
-    if (ALTREP(x))
-	Rf_error("SETLENGTH() cannot be applied to an ALTVEC object.");
-    if (! Rf_isVector(x))
-	Rf_error(_("SETLENGTH() can only be applied to a standard vector, not a '%s'"), Rf_type2char(TYPEOF(x)));
-    SET_STDVEC_LENGTH(CHK2(x), v);
-}
-
-void (SET_TRUELENGTH)(SEXP x, R_xlen_t v) { SET_TRUELENGTH(CHK2(x), v); }
-int  (IS_LONG_VEC)(SEXP x) { return IS_LONG_VEC(CHK2(x)); }
-#ifdef TESTING_WRITE_BARRIER
-R_xlen_t (STDVEC_LENGTH)(SEXP x) { return STDVEC_LENGTH(CHK2(x)); }
-R_xlen_t (STDVEC_TRUELENGTH)(SEXP x) { return STDVEC_TRUELENGTH(CHK2(x)); }
-void (SETALTREP)(SEXP x, int v) { SETALTREP(x, v); }
-#endif
-#endif
+int(LENGTH)(SEXP x) { return LENGTH(x); } //was { return x == nullptr ? 0 : LENGTH(CHK2(x)); }
 
 #ifdef CATCH_ZERO_LENGTH_ACCESS
 /* Attempts to read or write elements of a zero length vector will
@@ -539,147 +554,65 @@ void (SETALTREP)(SEXP x, int v) { SETALTREP(x, v); }
    that even zero-length vectors have non-NULL data pointers, so
    return (void *) 1 instead. Zero-length CHARSXP objects still have a
    trailing zero byte so they are not handled. */
-# define CHKZLN(x) do {					   \
-	CHK(x);						   \
-	if (STDVEC_LENGTH(x) == 0 && TYPEOF(x) != CHARSXP) \
-	    return (void *) 1;				   \
+#define CHKZLN(x)                                          \
+    do                                                     \
+    {                                                      \
+        CHK(x);                                            \
+        if (STDVEC_LENGTH(x) == 0 && TYPEOF(x) != CHARSXP) \
+            return (void *)1;                              \
     } while (0)
 #else
-# define CHKZLN(x) do { } while (0)
+#define CHKZLN(x) \
+    do            \
+    {             \
+    } while (0)
 #endif
 
-#if RHO_FALSE
-void*(STDVEC_DATAPTR)(SEXP x)
+const int *(LOGICAL_RO)(SEXP x)
 {
-    if (ALTREP(x))
-	Rf_error("cannot get STDVEC_DATAPTR from ALTREP object");
-    if (! Rf_isVector(x) && TYPEOF(x) != WEAKREFSXP)
-	Rf_error("STDVEC_DATAPTR can only be applied to a vector, not a '%s'",
-	      Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return STDVEC_DATAPTR(x);
-}
-
-int*(LOGICAL)(SEXP x)
-{
-    if(TYPEOF(x) != LGLSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return LOGICAL(x);
-}
-#endif
-
-const int*(LOGICAL_RO)(SEXP x)
-{
-    if(TYPEOF(x) != LGLSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "LOGICAL",  "logical", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) != LGLSXP)
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "LOGICAL", "logical", Rf_type2char(TYPEOF(x)));
     CHKZLN(x);
     return LOGICAL_RO(x);
 }
 
-/* Maybe this should exclude logicals, but it is widely used */
-#if RHO_FALSE
-int*(INTEGER)(SEXP x)
+const int *(INTEGER_RO)(SEXP x)
 {
-    if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return INTEGER(x);
-}
-#endif
-
-const int*(INTEGER_RO)(SEXP x)
-{
-    if(TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) != INTSXP && TYPEOF(x) != LGLSXP)
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "INTEGER", "integer", Rf_type2char(TYPEOF(x)));
     CHKZLN(x);
     return INTEGER_RO(x);
 }
 
-#if RHO_FALSE
-Rbyte*(RAW)(SEXP x)
+const Rbyte *(RAW_RO)(SEXP x)
 {
-    if(TYPEOF(x) != RAWSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return RAW(x);
-}
-#endif
-
-const Rbyte*(RAW_RO)(SEXP x)
-{
-    if(TYPEOF(x) != RAWSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "RAW", "raw", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) != RAWSXP)
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "RAW", "raw", Rf_type2char(TYPEOF(x)));
     CHKZLN(x);
     return RAW(x);
 }
 
-#if RHO_FALSE
-double *(REAL)(SEXP x) {
-    if(TYPEOF(x) != REALSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return REAL(x);
-}
-#endif
-
-const double*(REAL_RO)(SEXP x)
+const double *(REAL_RO)(SEXP x)
 {
-    if(TYPEOF(x) != REALSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "REAL", "numeric", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) != REALSXP)
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "REAL", "numeric", Rf_type2char(TYPEOF(x)));
     CHKZLN(x);
     return REAL_RO(x);
 }
 
-#if RHO_FALSE
-Rcomplex *(COMPLEX)(SEXP x) {
-    if(TYPEOF(x) != CPLXSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return COMPLEX(x);
-}
-#endif
-
-const Rcomplex*(COMPLEX_RO)(SEXP x)
+const Rcomplex *(COMPLEX_RO)(SEXP x)
 {
-    if(TYPEOF(x) != CPLXSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
+    if (TYPEOF(x) != CPLXSXP)
+        Rf_error("%s() can only be applied to a '%s', not a '%s'",
+                 "COMPLEX", "complex", Rf_type2char(TYPEOF(x)));
     CHKZLN(x);
     return COMPLEX_RO(x);
 }
 
-#if RHO_FALSE
-SEXP *(STRING_PTR)(SEXP x) {
-    if(TYPEOF(x) != STRSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "STRING_PTR", "character", Rf_type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return STRING_PTR(x);
-}
-
-const SEXP *(STRING_PTR_RO)(SEXP x) {
-    if(TYPEOF(x) != STRSXP)
-	Rf_error("%s() can only be applied to a '%s', not a '%s'",
-	      "STRING_PTR_RO", "character", type2char(TYPEOF(x)));
-    CHKZLN(x);
-    return STRING_PTR_RO(x);
-}
-
-NORET SEXP* (VECTOR_PTR)(SEXP x)
-{
-  Rf_error(_("not safe to return vector pointer"));
-}
-#endif
 /*******************************************/
 /* Non-sampling memory use profiler
    reports all large vector heap
@@ -700,16 +633,16 @@ static void R_OutputStackTrace(FILE *file)
 {
     Evaluator::Context *cptr;
 
-    for (cptr = Evaluator::Context::innermost(); cptr; cptr = cptr->nextOut()) {
-	Evaluator::Context::Type type = cptr->type();
-	if (type == Evaluator::Context::FUNCTION
-	    || type == Evaluator::Context::CLOSURE) {
-	    FunctionContext* fctxt = SEXP_downcast<FunctionContext*>(cptr);
-	    SEXP fun = fctxt->call()->car();
-	    fprintf(file, "\"%s\" ",
-		    TYPEOF(fun) == SYMSXP ? R_CHAR(PRINTNAME(fun)) :
-		    "<Anonymous>");
-	}
+    for (cptr = Evaluator::Context::innermost(); cptr; cptr = cptr->nextOut())
+    {
+        Evaluator::Context::Type type = cptr->type();
+        if (type == Evaluator::Context::FUNCTION || type == Evaluator::Context::CLOSURE)
+        {
+            FunctionContext *fctxt = SEXP_downcast<FunctionContext *>(cptr);
+            SEXP fun = fctxt->call()->car();
+            fprintf(file, "\"%s\" ",
+                    TYPEOF(fun) == SYMSXP ? R_CHAR(PRINTNAME(fun)) : "<Anonymous>");
+        }
     }
 }
 
@@ -717,28 +650,30 @@ static void R_ReportAllocation(R_size_t size)
 {
     fprintf(R_MemReportingOutfile, "%lu :", static_cast<unsigned long>(size));
     R_OutputStackTrace(R_MemReportingOutfile);
-	fprintf(R_MemReportingOutfile, "\n");
+    fprintf(R_MemReportingOutfile, "\n");
 }
 
 static void R_EndMemReporting()
 {
-    if(R_MemReportingOutfile != nullptr) {
-	/* does not fclose always flush? */
-	fflush(R_MemReportingOutfile);
-	fclose(R_MemReportingOutfile);
-	R_MemReportingOutfile=NULL;
+    if (R_MemReportingOutfile != nullptr)
+    {
+        /* does not fclose always flush? */
+        fflush(R_MemReportingOutfile);
+        fclose(R_MemReportingOutfile);
+        R_MemReportingOutfile = NULL;
     }
     MemoryBank::setMonitor(0);
     return;
 }
 
 static void R_InitMemReporting(SEXP filename, int append,
-			       R_size_t threshold)
+                               R_size_t threshold)
 {
-    if(R_MemReportingOutfile != nullptr) R_EndMemReporting();
+    if (R_MemReportingOutfile != nullptr)
+        R_EndMemReporting();
     R_MemReportingOutfile = RC_fopen(filename, append ? "a" : "w", TRUE);
     if (R_MemReportingOutfile == nullptr)
-	Rf_error(_("Rprofmem: cannot open output file '%s'"), filename);
+        Rf_error(_("Rprofmem: cannot open output file '%s'"), filename);
     MemoryBank::setMonitor(R_ReportAllocation, threshold);
 }
 
@@ -749,14 +684,14 @@ SEXP do_Rprofmem(SEXP args)
     int append_mode;
 
     if (!Rf_isString(CAR(args)) || (LENGTH(CAR(args))) != 1)
-	Rf_error(_("invalid '%s' argument"), "filename");
+        Rf_error(_("invalid '%s' argument"), "filename");
     append_mode = Rf_asLogical(CADR(args));
     filename = STRING_ELT(CAR(args), 0);
     threshold = R_size_t(REAL(CADDR(args))[0]);
     if (strlen(R_CHAR(filename)))
-	R_InitMemReporting(filename, append_mode, threshold);
+        R_InitMemReporting(filename, append_mode, threshold);
     else
-	R_EndMemReporting();
+        R_EndMemReporting();
     return nullptr;
 }
 
@@ -766,53 +701,59 @@ SEXP do_Rprofmem(SEXP args)
 
 #include "RBufferUtils.h"
 
-void* R_AllocStringBuffer(std::size_t blen, R_StringBuffer* buf)
+void *R_AllocStringBuffer(std::size_t blen, R_StringBuffer *buf)
 {
     std::size_t blen1, bsize = buf->defaultSize;
 
     /* for backwards compatibility, this used to free the buffer */
-    if (blen == std::size_t(-1)) {
-	Rf_error("R_AllocStringBuffer( (size_t)-1 ) is no longer allowed");
+    if (blen == std::size_t(-1))
+    {
+        Rf_error("R_AllocStringBuffer( (size_t)-1 ) is no longer allowed");
     }
 
     if (blen * sizeof(char) < buf->bufsize)
-	return buf->data;
+        return buf->data;
     blen1 = blen = (blen + 1) * sizeof(char);
     blen = (blen / bsize) * bsize;
     if (blen < blen1)
-	blen += bsize;
+        blen += bsize;
 
-    if (buf->data == nullptr) {
-	buf->data = static_cast<char*>(malloc(blen));
-	buf->data[0] = '\0';
-    } else
-	buf->data = static_cast<char*>(realloc(buf->data, blen));
+    if (buf->data == nullptr)
+    {
+        buf->data = static_cast<char *>(malloc(blen));
+        buf->data[0] = '\0';
+    }
+    else
+        buf->data = static_cast<char *>(realloc(buf->data, blen));
     buf->bufsize = blen;
-    if (!buf->data) {
-	buf->bufsize = 0;
-	/* don't translate internal error message */
-	Rf_error("could not allocate memory (%u MB) in C function "
-		 "'R_AllocStringBuffer'",
-	    static_cast<unsigned int>(blen) / 1024 / 1024);
+    if (!buf->data)
+    {
+        buf->bufsize = 0;
+        /* don't translate internal error message */
+        Rf_error("could not allocate memory (%u MB) in C function "
+                 "'R_AllocStringBuffer'",
+                 static_cast<unsigned int>(blen) / 1024 / 1024);
     }
     return buf->data;
 }
 
-void R_FreeStringBuffer(R_StringBuffer* buf)
+void R_FreeStringBuffer(R_StringBuffer *buf)
 {
-    if (buf->data != nullptr) {
-	free(buf->data);
-	buf->bufsize = 0;
-	buf->data = nullptr;
+    if (buf->data != nullptr)
+    {
+        free(buf->data);
+        buf->bufsize = 0;
+        buf->data = nullptr;
     }
 }
 
-HIDDEN void R_FreeStringBufferL(R_StringBuffer* buf)
+HIDDEN void R_FreeStringBufferL(R_StringBuffer *buf)
 {
-    if (buf->bufsize > buf->defaultSize) {
-	free(buf->data);
-	buf->bufsize = 0;
-	buf->data = nullptr;
+    if (buf->bufsize > buf->defaultSize)
+    {
+        free(buf->data);
+        buf->bufsize = 0;
+        buf->data = nullptr;
     }
 }
 
@@ -826,15 +767,16 @@ int Rf_Seql(SEXP a, SEXP b)
       we have two strings in different encodings (which must be
       non-ASCII strings). Note that one of the strings could be marked
       as unknown. */
-    if (a == b) return 1;
+    if (a == b)
+        return 1;
     /* Leave this to compiler to optimize */
     // if (ENC_KNOWN(a) == ENC_KNOWN(b))
-	// return 0;
+    // return 0;
     // else {
-	const void* vmax = vmaxget();
-    	int result = streql(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
-    	vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
-    	return result;
+    const void *vmax = vmaxget();
+    int result = streql(Rf_translateCharUTF8(a), Rf_translateCharUTF8(b));
+    vmaxset(vmax); /* discard any memory used by translateCharUTF8 */
+    return result;
     // }
 }
 

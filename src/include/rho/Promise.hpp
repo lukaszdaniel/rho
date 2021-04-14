@@ -1,7 +1,7 @@
 /*
  *  R : A Computer Language for Statistical Data Analysis
+ *  Copyright (C) 1999-2006   The R Core Team.
  *  Copyright (C) 1995, 1996  Robert Gentleman and Ross Ihaka
- *  Copyright (C) 1999-2006   The R Development Core Team.
  *  Copyright (C) 2008-2014  Andrew R. Runnalls.
  *  Copyright (C) 2014 and onwards the Rho Project Authors.
  *
@@ -60,14 +60,14 @@ namespace rho
     {
     public:
         /**
-     * @param valgen pointer to RObject to be evaluated to provide
-     *          the value of the Promise.  Can be null.
-     *
-     * @param env pointer to the Environment in which \a valgen is
-     *          to be evaluated.  If this pointer is null, the
-     *          value of the Promise is immediately set to be \a
-     *          valgen itself.
-     */
+         * @param valgen pointer to RObject to be evaluated to provide
+         *          the value of the Promise.  Can be null.
+         *
+         * @param env pointer to the Environment in which \a valgen is
+         *          to be evaluated.  If this pointer is null, the
+         *          value of the Promise is immediately set to be \a
+         *          valgen itself.
+         */
         PromiseData(const RObject *valgen, Environment *env);
 
         PromiseData(Promise *value);

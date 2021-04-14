@@ -42,9 +42,9 @@
 namespace rho
 {
 	/** @brief Class implementing CR's 'pointer protection stack'.
-     *
-     * All members of this class are static.
-     */
+	 *
+	 * All members of this class are static.
+	 */
 	class ProtectStack
 	{
 	public:
@@ -197,76 +197,76 @@ extern "C"
 	typedef size_t PROTECT_INDEX;
 
 	/** @brief Push a node pointer onto the C pointer protection stack.
-     *
-     * Push a node pointer onto the C pointer protection stack, and
-     * record the index of the resulting stack cell (for subsequent
-     * use with R_Reprotect).
-     *
-     * @param node Pointer to the node to be protected from the
-     *          garbage collector.
-     *
-     * @param iptr Pointer to a location in which the stack cell index
-     *          is to be stored.
-     */
+	 *
+	 * Push a node pointer onto the C pointer protection stack, and
+	 * record the index of the resulting stack cell (for subsequent
+	 * use with R_Reprotect).
+	 *
+	 * @param node Pointer to the node to be protected from the
+	 *          garbage collector.
+	 *
+	 * @param iptr Pointer to a location in which the stack cell index
+	 *          is to be stored.
+	 */
 	inline void R_ProtectWithIndex(SEXP node, PROTECT_INDEX *iptr)
 	{
 		*iptr = rho::ProtectStack::protect(node);
 	}
 
 	/** @brief Retarget a cell in the C pointer protection stack.
-     *
-     * Change the node that a particular cell in the C pointer
-     * protection stack protects.  As a consistency check, it is
-     * required that the reprotect takes place within the same
-     * ProtectStack::Scope as the original protect.
-     *
-     * @param node Pointer to the node now to be protected from
-     *          the garbage collector by the designated stack
-     *          cell.  (Not necessarily a different node from the
-     *          one currently protected.)
-     *
-     * @param index Index (as returned by R_ProtectWithIndex() ) of
-     *          the stack cell to be retargeted to node.  Must be less
-     *          than the current size of the C pointer protection
-     *          stack.
-     */
+	 *
+	 * Change the node that a particular cell in the C pointer
+	 * protection stack protects.  As a consistency check, it is
+	 * required that the reprotect takes place within the same
+	 * ProtectStack::Scope as the original protect.
+	 *
+	 * @param node Pointer to the node now to be protected from
+	 *          the garbage collector by the designated stack
+	 *          cell.  (Not necessarily a different node from the
+	 *          one currently protected.)
+	 *
+	 * @param index Index (as returned by R_ProtectWithIndex() ) of
+	 *          the stack cell to be retargeted to node.  Must be less
+	 *          than the current size of the C pointer protection
+	 *          stack.
+	 */
 	inline void R_Reprotect(SEXP node, PROTECT_INDEX index)
 	{
 		rho::ProtectStack::reprotect(node, index);
 	}
 
 	/** @brief Restore C pointer protection stack to a previous size.
-     *
-     * Restore the C pointer protection stack to a previous size by
-     * popping elements off the top.
-     *
-     * @param new_size The size to which the stack is to be
-     *          restored.  Must not be greater than the current
-     *          size.
-     *
-     * @deprecated This is an interface for C code to call
-     * rho::ProtectStack::restoreSize(), which may cease to be available
-     * in future.  In C++, use of the ProtectStack::Scope class is
-     * preferable.
-     */
+	 *
+	 * Restore the C pointer protection stack to a previous size by
+	 * popping elements off the top.
+	 *
+	 * @param new_size The size to which the stack is to be
+	 *          restored.  Must not be greater than the current
+	 *          size.
+	 *
+	 * @deprecated This is an interface for C code to call
+	 * rho::ProtectStack::restoreSize(), which may cease to be available
+	 * in future.  In C++, use of the ProtectStack::Scope class is
+	 * preferable.
+	 */
 	void Rf_ppsRestoreSize(size_t new_size);
 
 	/** @brief Current size of C pointer protection stack.
-     *
-     * @return the current size of the C pointer protection stack.
-     *
-     * @deprecated This is an interface for C code to call
-     * rho::ProtectStack::size(), which may cease to be public in
-     * future.
-     */
+	 *
+	 * @return the current size of the C pointer protection stack.
+	 *
+	 * @deprecated This is an interface for C code to call
+	 * rho::ProtectStack::size(), which may cease to be public in
+	 * future.
+	 */
 	size_t Rf_ppsSize();
 
 	/** @brief Push a node pointer onto the C pointer protection stack.
-     *
-     * @param node Pointer to the node to be protected from the
-     *          garbage collector.
-     * @return a copy of \a node .
-     */
+	 *
+	 * @param node Pointer to the node to be protected from the
+	 *          garbage collector.
+	 * @return a copy of \a node .
+	 */
 	inline SEXP Rf_protect(SEXP node)
 	{
 		rho::ProtectStack::protect(node);
@@ -274,31 +274,31 @@ extern "C"
 	}
 
 	/** @brief Pop cells from the C pointer protection stack.
-     *
-     * As a consistency check, it is required that the unprotect takes
-     * place within the same ProtectStack::Scope as the corresponding
-     * protects.
-     *
-     * @param count Number of cells to be popped.  Must not be
-     *          larger than the current size of the C pointer
-     *          protection stack.
-     */
+	 *
+	 * As a consistency check, it is required that the unprotect takes
+	 * place within the same ProtectStack::Scope as the corresponding
+	 * protects.
+	 *
+	 * @param count Number of cells to be popped.  Must not be
+	 *          larger than the current size of the C pointer
+	 *          protection stack.
+	 */
 	inline void Rf_unprotect(int count)
 	{
 		rho::ProtectStack::unprotect(static_cast<unsigned int>(count));
 	}
 
 	/** @brief Remove entry from pointer protection stack.
-     *
-     * Removes from the C pointer protection stack the uppermost stack
-     * cell containing a pointer to a specified node, and drops all
-     * the stack cells above it by one place.
-     *
-     * @param node Pointer to the node whose cell is to be removed
-     *          from the C pointer protection stack.
-     *
-     * @deprecated Utterly.
-     */
+	 *
+	 * Removes from the C pointer protection stack the uppermost stack
+	 * cell containing a pointer to a specified node, and drops all
+	 * the stack cells above it by one place.
+	 *
+	 * @param node Pointer to the node whose cell is to be removed
+	 *          from the C pointer protection stack.
+	 *
+	 * @deprecated Utterly.
+	 */
 	inline void Rf_unprotect_ptr(SEXP node)
 	{
 		rho::ProtectStack::unprotectPtr(node);

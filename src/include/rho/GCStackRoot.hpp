@@ -38,10 +38,10 @@ namespace rho
 	class RObject;
 
 	/** @brief Untemplated utility class for GCStackRoot.
-     *
-     * This class provides static functions useful for working with the set
-     * of active stack roots.
-     */
+	 *
+	 * This class provides static functions useful for working with the set
+	 * of active stack roots.
+	 */
 	class GCStackRootBase
 	{
 	public:

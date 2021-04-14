@@ -380,6 +380,17 @@ namespace rho
 			}
 		}
 
+		// Increment the reference count.  Overflow is handled by the
+		// stickiness of the MSB.
+		static void incRefCount(const GCNode *node)
+		{
+			if (node)
+			{
+				unsigned char &refcount_flags = node->m_refcount_flags;
+				refcount_flags ^= s_decinc_refcount[(refcount_flags & s_refcount_mask) + 1];
+			}
+		}
+
 		void setOnStackBit() const
 		{
 			m_refcount_flags |= s_on_stack_mask;
@@ -411,17 +422,6 @@ namespace rho
 #endif
 		void
 		destruct_aux();
-
-		// Increment the reference count.  Overflow is handled by the
-		// stickiness of the MSB.
-		static void incRefCount(const GCNode *node)
-		{
-			if (node)
-			{
-				unsigned char &refcount_flags = node->m_refcount_flags;
-				refcount_flags ^= s_decinc_refcount[(refcount_flags & s_refcount_mask) + 1];
-			}
-		}
 
 		/** @brief Initialize the entire memory subsystem.
          *

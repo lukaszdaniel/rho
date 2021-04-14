@@ -66,21 +66,21 @@ namespace rho
         {
         public:
             /**
-		 * @param na_last if true, the 'not available' string will
-		 *          come after all other strings in the sort
-		 *          ordering; if false, it will come before all
-		 *          other strings.
-		 */
+             * @param na_last if true, the 'not available' string will
+             *          come after all other strings in the sort
+             *          ordering; if false, it will come before all
+             *          other strings.
+             */
             explicit Comparator(bool na_last = true) : m_na_last(na_last) {}
 
             /** @brief Comparison operation.
-		 *
-		 * @param l non-null pointer to a String.
-		 *
-		 * @param r non-null pointer to a String.
-		 *
-		 * @return true iff \a l < \a r in the defined ordering.
-		 */
+             *
+             * @param l non-null pointer to a String.
+             *
+             * @param r non-null pointer to a String.
+             *
+             * @return true iff \a l < \a r in the defined ordering.
+             */
             bool operator()(const String *l, const String *r) const;
 
         private:
@@ -167,6 +167,7 @@ namespace rho
          * @return true iff the String is encoded in \a t.
          */
         bool encodingEquals(const cetype_t &t) const { return encoding() == t; }
+
         /** @brief Test if 'not available'.
          *
          * @return true iff this is the 'not available' string.
@@ -288,10 +289,8 @@ namespace rho
         bool m_ascii;
 
         // Should only be called by String::create().
-        String(char *character_storage, const std::string &text, cetype_t encoding,
-               bool isAscii);
-        static String *create(
-            const std::string &text, cetype_t encoding, bool isAscii);
+        String(char *character_storage, const std::string &text, cetype_t encoding, bool isAscii);
+        static String *create(const std::string &text, cetype_t encoding, bool isAscii);
         static String *createNA();
 
         String(const String &) = delete;
@@ -380,7 +379,7 @@ extern "C"
      *
      * @param x Pointer to a rho::String.
      *
-     * @return true iff \a x contains only ASCII characters..
+     * @return true iff \a x contains only ASCII characters.
      */
     inline int IS_ASCII(SEXP x)
     {
@@ -430,9 +429,9 @@ extern "C"
 
     /** @brief Access the content of rho::String as a C-style string.
      *
-     * @param x \c non-null pointer to a rho::String .
+     * @param x \c non-null pointer to a rho::String.
      *
-     * @return \c const pointer to character 0 of \a x .
+     * @return \c const pointer to character 0 of \a x.
      */
     inline const char *R_CHAR(SEXP x)
     {

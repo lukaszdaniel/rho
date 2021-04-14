@@ -134,8 +134,7 @@ namespace rho
 		uintptr_t m_previous_stack_limit;
 
 		DisableStackCheckingScope(const DisableStackCheckingScope &) = delete;
-		DisableStackCheckingScope &operator=(
-			const DisableStackCheckingScope &) = delete;
+		DisableStackCheckingScope &operator=(const DisableStackCheckingScope &) = delete;
 	};
 
 } // namespace rho

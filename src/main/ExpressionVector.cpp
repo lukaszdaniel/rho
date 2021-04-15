@@ -31,10 +31,10 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
     namespace ForceNonInline
     {
         const auto &isExpressionptr = Rf_isExpression;
@@ -49,6 +49,26 @@ namespace rho
 } // namespace rho
 
 // ***** C interface *****
+
+Rboolean Rf_isExpression(SEXP s)
+{
+    return Rboolean(s && TYPEOF(s) == EXPRSXP);
+}
+
+SEXP XVECTOR_ELT(SEXP x, R_xlen_t i)
+{
+    using namespace rho;
+    if (x && x->sexptype() == EXPRSXP)
+    {
+        ExpressionVector *ev = SEXP_downcast<ExpressionVector *>(x, false);
+        return (*ev)[VectorBase::size_type(i)];
+    }
+    else
+    {
+        Rf_error("'%s' function can only be applied to an expression vector, not a '%s'",
+                 "XVECTOR_ELT()", Rf_type2char(TYPEOF(x)));
+    }
+}
 
 SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v)
 {

@@ -36,23 +36,23 @@
 namespace rho
 {
 	/** @brief List of Promise objects corresponding to an R ... argument
-     * specification.
-     *
-     * At present the class makes no attempt to enforce the
-     * requirement that it should contain Promise objects.
-     */
+	 * specification.
+	 *
+	 * At present the class makes no attempt to enforce the
+	 * requirement that it should contain Promise objects.
+	 */
 	class DottedArgs : public ConsCell
 	{
 	public:
 		/**
-         * @param cr Pointer to the 'car' of the element to be
-         *           constructed.
-         *
-         * @param tl Pointer to the 'tail' (LISP cdr) of the element
-         *           to be constructed.
-         *
-         * @param tg Pointer to the 'tag' of the element to be constructed.
-         */
+		 * @param cr Pointer to the 'car' of the element to be
+		 *           constructed.
+		 *
+		 * @param tl Pointer to the 'tail' (LISP cdr) of the element
+		 *           to be constructed.
+		 *
+		 * @param tg Pointer to the 'tag' of the element to be constructed.
+		 */
 		explicit DottedArgs(RObject *cr = nullptr, PairList *tl = nullptr,
 							const RObject *tg = nullptr)
 			: ConsCell(DOTSXP, cr, tl, tg)
@@ -60,18 +60,18 @@ namespace rho
 		}
 
 		/** @brief Copy constructor.
-         *
-         * @param pattern DottedArgs to be copied.
-         */
+		 *
+		 * @param pattern DottedArgs to be copied.
+		 */
 		DottedArgs(const DottedArgs &pattern)
 			: ConsCell(pattern)
 		{
 		}
 
 		/** @brief The name by which this type is known in R.
-         *
-         * @return the name by which this type is known in R.
-         */
+		 *
+		 * @return the name by which this type is known in R.
+		 */
 		static const char *staticTypeName()
 		{
 			return "...";

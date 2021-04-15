@@ -190,7 +190,10 @@ namespace rho
          * @return a const pointer to the 'car' of this ConsCell
          * element.
          */
-        RObject *car() const { return m_car; }
+        RObject *car() const
+        {
+            return m_car;
+        }
 
         /** @brief Convert a ConsCell to a (possibly) different
          * ConsCell type.
@@ -210,7 +213,7 @@ namespace rho
         static T *convert(ConsCell *cc)
         {
             if (!cc)
-                return 0;
+                return nullptr;
             if (T *ccc = dynamic_cast<T *>(cc))
                 return ccc;
             T *ans = new T(cc->car(), cc->tail(), cc->tag());
@@ -227,14 +230,20 @@ namespace rho
          * @param cr Pointer to the new car object (or a null
          *           pointer).
          */
-        void setCar(RObject *cr) { m_car = cr; }
+        void setCar(RObject *cr)
+        {
+            m_car = cr;
+        }
 
         /** @brief Set the 'tag' value.
          *
          * @param tg Pointer to the new tag object (or a null
          *           pointer).
          */
-        void setTag(const RObject *tg) { m_tag = tg; }
+        void setTag(const RObject *tg)
+        {
+            m_tag = tg;
+        }
 
         /** @brief Set the 'tail' value.
          *
@@ -248,12 +257,18 @@ namespace rho
          *
          * @return the name by which this type is known in R.
          */
-        static const char *staticTypeName() { return "(pairlist type)"; }
+        static const char *staticTypeName()
+        {
+            return "(pairlist type)";
+        }
 
         /**
          * @return a pointer to the 'tag' of this ConsCell.
          */
-        const RObject *tag() const { return m_tag; }
+        const RObject *tag() const
+        {
+            return m_tag;
+        }
 
         /**
          * @return a const pointer to the 'tail' of this ConsCell
@@ -545,9 +560,15 @@ namespace rho
         m_tag = pattern.tag();
     }
 
-    inline void ConsCell::setTail(PairList *tl) { m_tail = tl; }
+    inline void ConsCell::setTail(PairList *tl)
+    {
+        m_tail = tl;
+    }
 
-    inline const PairList *ConsCell::tail() const { return m_tail; }
+    inline const PairList *ConsCell::tail() const
+    {
+        return m_tail;
+    }
 
     inline PairList *ConsCell::tail() { return m_tail; }
 
@@ -555,7 +576,6 @@ namespace rho
     {
         return m_attrib;
     }
-
 } // namespace rho
 
 extern "C"
@@ -564,6 +584,7 @@ extern "C"
     /** @brief Get car of rho::ConsCell.
      *
      * @param e Pointer to a rho::ConsCell (checked), or a null pointer.
+     *
      * @return Pointer to the value of the list car, or 0 if \a e is
      * a null pointer.
      */
@@ -573,8 +594,7 @@ extern "C"
         return car0(SEXP_downcast<ConsCell *>(e));
     }
 
-    /**
-     * @brief Equivalent to CAR(CAR(e)).
+    /** @brief Equivalent to CAR(CAR(e)).
      */
     inline SEXP CAAR(SEXP e) { return CAR(CAR(e)); }
 
@@ -586,9 +606,10 @@ extern "C"
         return SEXP_downcast<ConsCell *>(x)->m_missing;
     }
 
-    /**
-     * @brief Set the 'car' value of a rho::ConsCell.
+    /** @brief Set the 'car' value of a rho::ConsCell.
+     *
      * @param x Pointer to a rho::ConsCell (checked).
+     *
      * @param y Pointer a rho::RObject representing the new value of the
      *          list car.
      *
@@ -608,6 +629,7 @@ extern "C"
     /** @brief Get tag of rho::ConsCell.
      *
      * @param e Pointer to a rho::ConsCell (checked), or a null pointer.
+     *
      * @return Pointer to the tag of the list element, or 0 if \a e is
      * a null pointer.
      */
@@ -620,10 +642,10 @@ extern "C"
         return const_cast<RObject *>(cc.tag());
     }
 
-    /**
-     * @brief Set the tag of a rho::ConsCell.
+    /** @brief Set the tag of a rho::ConsCell.
      *
      * @param x Pointer to a rho::ConsCell (checked).
+     *
      * @param y Pointer a rho::RObject representing the new tag of
      *          the rho::ConsCell.
      */

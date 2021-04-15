@@ -59,12 +59,10 @@ extern "C"
 {
     /**
      * @param s Pointer to a rho::RObject.
+     *
      * @return TRUE iff the rho::RObject pointed to by \a s is an expression.
      */
-    inline Rboolean Rf_isExpression(SEXP s)
-    {
-        return Rboolean(s && TYPEOF(s) == EXPRSXP);
-    }
+    Rboolean Rf_isExpression(SEXP s);
 
     /** @brief Set element of rho::ExpressionVector.
      *
@@ -79,29 +77,15 @@ extern "C"
      */
     SEXP SET_XVECTOR_ELT(SEXP x, R_xlen_t i, SEXP v);
 
-    /**
- * @brief Examine element of a rho::ExpressionVector.
- *
- * @param x Non-null pointer to a rho::ExpressionVector .
- *
- * @param i Index of the required element.  There is no bounds checking.
- *
- * @return Pointer to extracted \a i 'th element.
- */
-    inline SEXP XVECTOR_ELT(SEXP x, R_xlen_t i)
-    {
-        using namespace rho;
-        if (x && x->sexptype() == EXPRSXP)
-        {
-            ExpressionVector *ev = SEXP_downcast<ExpressionVector *>(x, false);
-            return (*ev)[VectorBase::size_type(i)];
-        }
-        else
-        {
-            Rf_error("'%s' function can only be applied to an expression vector, not a '%s'",
-                     "XVECTOR_ELT()", Rf_type2char(TYPEOF(x)));
-        }
-    }
-}
+    /** @brief Examine element of a rho::ExpressionVector.
+     *
+     * @param x Non-null pointer to a rho::ExpressionVector .
+     *
+     * @param i Index of the required element.  There is no bounds checking.
+     *
+     * @return Pointer to extracted \a i 'th element.
+     */
+    SEXP XVECTOR_ELT(SEXP x, R_xlen_t i);
+} // extern "C"
 
 #endif /* EXPRESSIONVECTOR_HPP */

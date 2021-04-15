@@ -39,29 +39,29 @@
 namespace rho
 {
 	/** @brief rho's extension of CR's Rcomplex.
-     *
-     * This class is a wrapper around the C struct Rcomplex defined by
-     * CR.
-     *
-     * @note Backwards compatibility requires that <tt>sizeof(Complex)
-     * == sizeof(Rcomplex)</tt>.
-     */
+	 *
+	 * This class is a wrapper around the C struct Rcomplex defined by
+	 * CR.
+	 *
+	 * @note Backwards compatibility requires that <tt>sizeof(Complex)
+	 * == sizeof(Rcomplex)</tt>.
+	 */
 	struct Complex : public Rcomplex
 	{
 		/** @brief Default constructor.
-         *
-         * Leaves data fields uninitialised.
-         */
+		 *
+		 * Leaves data fields uninitialised.
+		 */
 		Complex()
 		{
 		}
 
 		/** @brief Primary constructor.
-         *
-         * @param rl Real part.
-         *
-         * @param im Imaginary part.
-         */
+		 *
+		 * @param rl Real part.
+		 *
+		 * @param im Imaginary part.
+		 */
 		Complex(double rl, double im = 0.0)
 		{
 			r = rl;
@@ -71,11 +71,11 @@ namespace rho
 		explicit Complex(Logical l) : Complex(static_cast<double>(l)) {}
 
 		/** @brief Assignment from double.
-         *
-         * @param rhs Value to be assigned.
-         *
-         * @return Reference to this object.
-         */
+		 *
+		 * @param rhs Value to be assigned.
+		 *
+		 * @return Reference to this object.
+		 */
 		Complex &operator=(double rhs)
 		{
 			r = rhs;

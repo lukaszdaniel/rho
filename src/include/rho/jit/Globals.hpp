@@ -24,12 +24,14 @@
 #ifndef RHO_JIT_GLOBALS_HPP
 #define RHO_JIT_GLOBALS_HPP
 
-namespace rho {
-namespace JIT {
+namespace rho
+{
+    namespace JIT
+    {
 
-void EnsureGlobalsInitialized();
+        void EnsureGlobalsInitialized();
 
-} // namespace JIT
+    } // namespace JIT
 } // namespace rho
 
 #endif // RHO_JIT_GLOBALS_HPP

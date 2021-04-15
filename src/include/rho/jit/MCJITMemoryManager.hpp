@@ -37,12 +37,12 @@ namespace rho
     namespace JIT
     {
 
-        /*
- * Memory manager that additionally knows the locations of:
- * - All Symbol objects.
- * - All builtin function objects.
- * - Any objects that have been added with 'addGlobal()'.
- */
+        /**
+         * Memory manager that additionally knows the locations of:
+         * - All Symbol objects.
+         * - All builtin function objects.
+         * - Any objects that have been added with 'addGlobal()'.
+         */
         class MCJITMemoryManager : public llvm::SectionMemoryManager
         {
         public:

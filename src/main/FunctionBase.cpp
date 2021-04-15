@@ -48,11 +48,11 @@ namespace rho
         const auto &SET_RTRACEptr = SET_RTRACE;
     } // namespace ForceNonInline
 
-bool FunctionBase::s_tracing_enabled = true;
+    bool FunctionBase::s_tracing_enabled = true;
 
-void FunctionBase::reportCall(const Expression *call)
-{
-    Rprintf("trace: ");
-    Rf_PrintValue(const_cast<Expression *>(call));
-}
+    void FunctionBase::reportCall(const Expression *call)
+    {
+        Rprintf("trace: ");
+        Rf_PrintValue(const_cast<Expression *>(call));
+    }
 } // namespace rho

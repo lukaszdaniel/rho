@@ -39,125 +39,125 @@
 
 namespace rho
 {
-	/** @brief Housekeeping information on R call stack.
-      *
-      * Evaluator::Context objects must be declared on the processor
-      * stack (i.e. as C++ automatic variables).
-      * 
-      * This class (together with its derived classes) performs two
-      * functions:
-      * <ol>
-      *
-      * <li>The primary function is to maintain an 'Ariadne's thread',
-      * recording information about the stack of R function calls
-      * currently active.  This is to support error reporting,
-      * traceback, and the 'sys' R functions.  As in CR, calls to
-      * 'special' BuiltInFunction objects (SPECIALSXP) are not
-      * recorded; however, unlike CR, calls to other BuiltInFunction
-      * objects (BUILTINSXP) are always recorded.</li>
-      *
-      * <li>Derived classes may also carry out a secondary function,
-      * namely to save and restore information about the evaluation
-      * state.  Certain aspects of the state of the current Evaluator
-      * are saved by the derived class's constructor; the state is then
-      * restored by the class's destructor.  Since Context objects are
-      * allocated on the processor stack, this means that the
-      * evaluation state will automatically be restored both under the
-      * normal flow of control and when the stack is unwound during the
-      * propagation of a C++ exception.  (Beware however that some of
-      * the save/restore functionality that CR's RCNTXT offers is
-      * handled separately in rho via classes such as Browser; this
-      * trend of moving save/restore functionality out of classes
-      * derived from Evaluator::Context is likely to continue.
-      * Moreover, in cases where save/restore functions continue to be
-      * effected by classes inheriting from Evaluator::Context, this is
-      * in some cases achieved by incorporating within a Context object
-      * an object with more specific save/restore role, such as a
-      * ProtectStack::Scope object.</li>
-      *
-      * </ol>
-      */
-	class Evaluator::Context
-	{
-	public:
-		/** @brief Context types.
-           *
-           * Different Context types correspond to different derived
-           * classes.  This base class contains a type field to allow
-           * Context types to be distinguished without the overhead of a
-           * \c dynamic_cast .
-           */
-		enum Type
-		{
-			BAILOUT = 0, /**< Context understanding Bailout objects. */
-			PLAIN,		 /**< Lightweight Context neutralising BailoutContext. */
-			FUNCTION,	 /**< Context corresponding to a BuiltInFunction. */
-			CLOSURE		 /**< Context corresponding to a Closure. */
-		};
+      /** @brief Housekeeping information on R call stack.
+       *
+       * Evaluator::Context objects must be declared on the processor
+       * stack (i.e. as C++ automatic variables).
+       *
+       * This class (together with its derived classes) performs two
+       * functions:
+       * <ol>
+       *
+       * <li>The primary function is to maintain an 'Ariadne's thread',
+       * recording information about the stack of R function calls
+       * currently active.  This is to support error reporting,
+       * traceback, and the 'sys' R functions.  As in CR, calls to
+       * 'special' BuiltInFunction objects (SPECIALSXP) are not
+       * recorded; however, unlike CR, calls to other BuiltInFunction
+       * objects (BUILTINSXP) are always recorded.</li>
+       *
+       * <li>Derived classes may also carry out a secondary function,
+       * namely to save and restore information about the evaluation
+       * state.  Certain aspects of the state of the current Evaluator
+       * are saved by the derived class's constructor; the state is then
+       * restored by the class's destructor.  Since Context objects are
+       * allocated on the processor stack, this means that the
+       * evaluation state will automatically be restored both under the
+       * normal flow of control and when the stack is unwound during the
+       * propagation of a C++ exception.  (Beware however that some of
+       * the save/restore functionality that CR's RCNTXT offers is
+       * handled separately in rho via classes such as Browser; this
+       * trend of moving save/restore functionality out of classes
+       * derived from Evaluator::Context is likely to continue.
+       * Moreover, in cases where save/restore functions continue to be
+       * effected by classes inheriting from Evaluator::Context, this is
+       * in some cases achieved by incorporating within a Context object
+       * an object with more specific save/restore role, such as a
+       * ProtectStack::Scope object.</li>
+       *
+       * </ol>
+       */
+      class Evaluator::Context
+      {
+      public:
+            /** @brief Context types.
+             *
+             * Different Context types correspond to different derived
+             * classes.  This base class contains a type field to allow
+             * Context types to be distinguished without the overhead of a
+             * \c dynamic_cast .
+             */
+            enum Type
+            {
+                  BAILOUT = 0, /**< Context understanding Bailout objects. */
+                  PLAIN,       /**< Lightweight Context neutralising BailoutContext. */
+                  FUNCTION,    /**< Context corresponding to a BuiltInFunction. */
+                  CLOSURE      /**< Context corresponding to a Closure. */
+            };
 
-		~Context()
-		{
-			Evaluator::current()->m_innermost_context = m_next_out;
-		}
+            ~Context()
+            {
+                  Evaluator::current()->m_innermost_context = m_next_out;
+            }
 
-		/** @brief The innermost Context.
-           *
-           * @return Pointer to the innermost Context belonging to the
-           * current Evaluator.
-           */
-		static Context *innermost()
-		{
-			return Evaluator::current()->innermostContext();
-		}
+            /** @brief The innermost Context.
+             *
+             * @return Pointer to the innermost Context belonging to the
+             * current Evaluator.
+             */
+            static Context *innermost()
+            {
+                  return Evaluator::current()->innermostContext();
+            }
 
-		/** @brief Next Context out.
-           *
-           * @return pointer to the Context object most narrowly
-           * enclosing this Context, or a null pointer if this is the
-           * outermost Context of the current Evaluator.
-           */
-		Context *nextOut() const
-		{
-			return m_next_out;
-		}
+            /** @brief Next Context out.
+             *
+             * @return pointer to the Context object most narrowly
+             * enclosing this Context, or a null pointer if this is the
+             * outermost Context of the current Evaluator.
+             */
+            Context *nextOut() const
+            {
+                  return m_next_out;
+            }
 
-		/** @brief Type of the Context.
-           *
-           * @return The Context's Type.
-           */
-		Type type() const
-		{
-			return m_type;
-		}
+            /** @brief Type of the Context.
+             *
+             * @return The Context's Type.
+             */
+            Type type() const
+            {
+                  return m_type;
+            }
 
-	protected:
-		Context()
-			: m_next_out(innermost())
-		{
-			Evaluator::current()->m_innermost_context = this;
-		}
+      protected:
+            Context()
+                : m_next_out(innermost())
+            {
+                  Evaluator::current()->m_innermost_context = this;
+            }
 
-		/** @brief Set the type of the Context.
-           *
-           * @param the_type The desired Type of the Context.
-           */
-		void setType(Type the_type)
-		{
-			m_type = the_type;
-		}
+            /** @brief Set the type of the Context.
+             *
+             * @param the_type The desired Type of the Context.
+             */
+            void setType(Type the_type)
+            {
+                  m_type = the_type;
+            }
 
-	private:
-		Context *m_next_out;
-		Type m_type;
+      private:
+            Context *m_next_out;
+            Type m_type;
 
-		Context(Context &) = delete;
-		Context &operator=(const Context &) = delete;
-	};
+            Context(Context &) = delete;
+            Context &operator=(const Context &) = delete;
+      };
 } // namespace rho
 
 extern "C"
 {
-	void Rf_jump_to_toplevel(void);
+      void Rf_jump_to_toplevel(void);
 }
 
 #endif // CONTEXT_HPP

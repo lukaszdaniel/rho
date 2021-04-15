@@ -57,12 +57,13 @@
 #endif
 
 #if (LLVM_VERSION < 306)
-namespace llvm {
-inline
-std::unique_ptr<Module> parseIRFile(StringRef filename, SMDiagnostic& err,
-                                    LLVMContext& context) {
-  return std::unique_ptr<Module>(ParseIRFile(filename, err, context));
-}
+namespace llvm
+{
+  inline std::unique_ptr<Module> parseIRFile(StringRef filename, SMDiagnostic &err,
+                                             LLVMContext &context)
+  {
+    return std::unique_ptr<Module>(ParseIRFile(filename, err, context));
+  }
 }
 #endif
 

@@ -41,26 +41,26 @@
 
 namespace rho
 {
-  /*
- * Special-purpose hashtable implementation for tracking medium and large
- * allocations.
- *
- * The table uses open addressing with quadratic probing to resolve
- * collisions. This hashtable differs from dense_hash_table by
- * allowing asymmetric insertion and searching - allocation ranges are
- * inserted but the lookup function searches on a pointer so the search
- * will look for a range covering the pointer.
- *
- * Another difference from most other types of generic maps is that this
- * hashtable will map a single allocation to multiple hash buckets - the
- * reason being that each hash bucket represents addresses that hash into
- * that bucket, and all internal pointers of an allocation must be able
- * to be found via the search() function.
- *
- * For hashing pointers, we shift away LOW_BITS bits from the pointer before
- * hashing, and this limits the range of hash keys one allocation can hash
- * to.
- */
+  /**
+   * Special-purpose hashtable implementation for tracking medium and large
+   * allocations.
+   *
+   * The table uses open addressing with quadratic probing to resolve
+   * collisions. This hashtable differs from dense_hash_table by
+   * allowing asymmetric insertion and searching - allocation ranges are
+   * inserted but the lookup function searches on a pointer so the search
+   * will look for a range covering the pointer.
+   *
+   * Another difference from most other types of generic maps is that this
+   * hashtable will map a single allocation to multiple hash buckets - the
+   * reason being that each hash bucket represents addresses that hash into
+   * that bucket, and all internal pointers of an allocation must be able
+   * to be found via the search() function.
+   *
+   * For hashing pointers, we shift away LOW_BITS bits from the pointer before
+   * hashing, and this limits the range of hash keys one allocation can hash
+   * to.
+   */
   class AllocationTable
   {
   public:
@@ -78,7 +78,8 @@ namespace rho
     class Allocation
     {
     public:
-      /** Initializes to an empty hash bucket. */
+      /** @brief Initializes to an empty hash bucket.
+       */
       Allocation() : m_data(s_empty_key), m_size_log2(0) {}
 
       /** @brief Creates a new hash bucket for a superblock.
@@ -89,14 +90,13 @@ namespace rho
       Allocation(AllocatorSuperblock *superblock, unsigned size_log2) : m_data(reinterpret_cast<uintptr_t>(superblock) | s_superblock_flag),
                                                                         m_size_log2(size_log2) {}
 
-      /**
-       * @brief Creates a new hash bucket for a large allocation
+      /** @brief Creates a new hash bucket for a large allocation
        * (non-superblock).
        */
       Allocation(void *allocation, unsigned size_log2) : m_data(reinterpret_cast<uintptr_t>(allocation)),
                                                          m_size_log2(size_log2) {}
 
-      /** @breif Returns true if this allocation represents a superblock. */
+      /** @brief Returns true if this allocation represents a superblock. */
       bool isSuperblock() const
       {
         return (m_data & s_superblock_flag) == s_superblock_flag;
@@ -114,14 +114,14 @@ namespace rho
         return m_size_log2;
       }
 
-      /** Returns the size class for this allocation. */
+      /** @brief Returns the size class for this allocation.
+       */
       unsigned sizeClass() const
       {
         return AllocatorSuperblock::sizeClassFromSizeLog2(m_size_log2);
       }
 
-      /**
-       * Returns the data pointer as a superblock pointer.
+      /** @brief Returns the data pointer as a superblock pointer.
        */
       AllocatorSuperblock *asSuperblock()
       {
@@ -140,12 +140,12 @@ namespace rho
       /** @brief The flag bit indicating the first bucket of an allocation. */
       static constexpr int s_first_flag = 1;
 
-      /** @breif The flag bit indicating that the allocation is a superblock. */
+      /** @brief The flag bit indicating that the allocation is a superblock. */
       static constexpr int s_superblock_flag = 2;
 
       uintptr_t m_data;
 
-      /** @breif The 2-log of the allocation size. */
+      /** @brief The 2-log of the allocation size. */
       unsigned m_size_log2;
 
       /** @brief Returns the pointer to the allocation.
@@ -157,7 +157,7 @@ namespace rho
         return m_data & ~uintptr_t{3};
       }
 
-      /** @breif Returns true if this hash bucket represents a deleted
+      /** @brief Returns true if this hash bucket represents a deleted
        * allocation.
        */
       bool isDeleted() const
@@ -220,7 +220,7 @@ namespace rho
      */
     void applyToAllAllocations(std::function<void(void *)> fun) const;
 
-    /** @breif Erases all hashtable entries for an allocation.
+    /** @brief Erases all hashtable entries for an allocation.
      *
      * @param size_log2 the 2-log of the allocation size. Determines how many
      * hash buckets are removed.

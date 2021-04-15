@@ -237,14 +237,14 @@ namespace rho
     /** @brief Helper function for redzone address calculations. */
     static void *offsetPointer(void *pointer, std::size_t bytes);
 
-    /** @breif Adds an object to the quarantine freelist.
+    /** @brief Adds an object to the quarantine freelist.
      *
      * The size class is identical to a superlbock size class, or the 2-log
      * of the allocation size plus s_num_small_pools.
      */
     static void addToQuarantine(FreeListNode *free_node, unsigned size_class);
 
-    /** @breif Remove all free nodes from quarantine and insert in corresponding
+    /** @brief Remove all free nodes from quarantine and insert in corresponding
      * freelist.
      */
     static void clearQuarantine();

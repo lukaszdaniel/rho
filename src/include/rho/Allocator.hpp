@@ -23,10 +23,9 @@
 #include <limits>
 #include <rho/MemoryBank.hpp>
 
-
 namespace rho
 {
-	/** @brief STL-compatible allocator front-ending rho::MemoryBank.
+    /** @brief STL-compatible allocator front-ending rho::MemoryBank.
 	 *
 	 * This templated class enables container classes within the C++
 	 * standard library to allocate their memory via rho::MemoryBank.

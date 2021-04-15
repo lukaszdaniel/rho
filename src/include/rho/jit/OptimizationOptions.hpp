@@ -24,38 +24,41 @@
 #ifndef RHO_JIT_OPTIMIZATION_OPTIONS_HPP
 #define RHO_JIT_OPTIMIZATION_OPTIONS_HPP
 
-namespace rho {
-namespace JIT {
+namespace rho
+{
+    namespace JIT
+    {
 
-struct OptimizationOptions {
-    OptimizationOptions()
-	: AssumeSaneControlFlowOperators(true),
-	  AssumeSaneAssignmentOperators(true) { }
+        struct OptimizationOptions
+        {
+            OptimizationOptions()
+                : AssumeSaneControlFlowOperators(true),
+                  AssumeSaneAssignmentOperators(true) {}
 
-    /*
-     * These options affect the semantics of R.
-     */
+            /*
+             * These options affect the semantics of R.
+             */
 
-    // May assume that the following operators have their usual meaning unless
-    // they are shadowed by function arguments, local assignments, definitions
-    // in the enclosing package or package imports.
-    //  {, (, if, for, while, repeat, next, break, return, ||, &&
-    bool AssumeSaneControlFlowOperators;
+            // May assume that the following operators have their usual meaning unless
+            // they are shadowed by function arguments, local assignments, definitions
+            // in the enclosing package or package imports.
+            //  {, (, if, for, while, repeat, next, break, return, ||, &&
+            bool AssumeSaneControlFlowOperators;
 
-    // May assume that <- and = have their normal meanings unless shadowed.
-    bool AssumeSaneAssignmentOperators;
+            // May assume that <- and = have their normal meanings unless shadowed.
+            bool AssumeSaneAssignmentOperators;
 
-    /* ------------------------------------------------------------------------
-     * These options do not change the semantics of R, but merely optimize more
-     * aggressively.
-     */
+            /* ------------------------------------------------------------------------
+             * These options do not change the semantics of R, but merely optimize more
+             * aggressively.
+             */
 
-    // TODO(kmillar): add optimization options here.
+            // TODO(kmillar): add optimization options here.
 
-    // TODO(kmillar): add LLVM optimization options.
-};
+            // TODO(kmillar): add LLVM optimization options.
+        };
 
-}  // namespace JIT
-}  // namespace rho
+    } // namespace JIT
+} // namespace rho
 
-#endif  // RHO_JIT_OPTIMIZATION_OPTIONS_HPP
+#endif // RHO_JIT_OPTIMIZATION_OPTIONS_HPP

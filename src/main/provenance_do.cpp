@@ -60,11 +60,11 @@ HIDDEN SEXP do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
     if ((n = Rf_length(args)) != 1)
-	Rf_errorcall(
-	    call, _("%d arguments passed to 'castestfun' which requires 1"), n);
+        Rf_errorcall(
+            call, _("%d arguments passed to 'castestfun' which requires 1"), n);
 
     if (TYPEOF(CAR(args)) != SYMSXP)
-	Rf_errorcall(call, _("castestfun expects Symbol argument"));
+        Rf_errorcall(call, _("castestfun expects Symbol argument"));
     /*GCStackRoot<IntVector> v(IntVector::create(3));
     (*v)[0]=1;
     (*v)[1]=2;
@@ -77,12 +77,12 @@ HIDDEN SEXP do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
     else
 	    (*v)[0]=false;
     return v;*/
-    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = SEXP_downcast<Environment*>(rho);
+    Symbol *sym = SEXP_downcast<Symbol *>(CAR(args));
+    Environment *env = SEXP_downcast<Environment *>(rho);
     // Let's try to get the binding for given symbol...
-    Frame::Binding* binding = env->findBinding(sym);
+    Frame::Binding *binding = env->findBinding(sym);
     if (binding != nullptr)
-	printf("Binding located :-)\n");
+        printf("Binding located :-)\n");
     GCStackRoot<IntVector> inv(IntVector::create(3));
     (*inv)[0] = 1;
     (*inv)[1] = 2;
@@ -92,8 +92,8 @@ HIDDEN SEXP do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
     (*inv2)[1] = 5;
 
     GCStackRoot<StringVector> str(StringVector::create(2));
-    (*str)[0] = const_cast<String*>(String::obtain("ivOne"));
-    (*str)[1] = const_cast<String*>(String::obtain("ivTwo"));
+    (*str)[0] = const_cast<String *>(String::obtain("ivOne"));
+    (*str)[1] = const_cast<String *>(String::obtain("ivTwo"));
 
     GCStackRoot<ListVector> rc(ListVector::create(2));
     (*rc)[0] = inv;
@@ -103,20 +103,20 @@ HIDDEN SEXP do_castestfun(SEXP call, SEXP op, SEXP args, SEXP rho)
     return rc;
 }
 
-HIDDEN SEXP do_hasProvenance (SEXP call, SEXP op, SEXP args, SEXP rho)
+HIDDEN SEXP do_hasProvenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 {
     int n;
     if ((n = Rf_length(args)) != 1)
-	Rf_errorcall(call,_("%d arguments passed to 'hasProvenance' which requires 1"),n);
+        Rf_errorcall(call, _("%d arguments passed to 'hasProvenance' which requires 1"), n);
 
-    if (TYPEOF(CAR(args))!=SYMSXP)
-	Rf_errorcall(call,_("hasProvenance expects Symbol argument"));
+    if (TYPEOF(CAR(args)) != SYMSXP)
+        Rf_errorcall(call, _("hasProvenance expects Symbol argument"));
 
     GCStackRoot<LogicalVector> v(LogicalVector::create(1));
 #ifdef PROVENANCE_TRACKING
-    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = SEXP_downcast<Environment*>(rho);
-    Frame::Binding* bdg = env->findBinding(sym);
+    Symbol *sym = SEXP_downcast<Symbol *>(CAR(args));
+    Environment *env = SEXP_downcast<Environment *>(rho);
+    Frame::Binding *bdg = env->findBinding(sym);
     (*v)[0] = (bdg->provenance() != 0);
 #else
     (*v)[0] = false;
@@ -133,60 +133,63 @@ HIDDEN SEXP do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
     const int nfields = 5;
     int n;
     if ((n = Rf_length(args)) != 1)
-	Rf_errorcall(
-	    call, _("%d arguments passed to 'provenance' which requires 1"), n);
+        Rf_errorcall(
+            call, _("%d arguments passed to 'provenance' which requires 1"), n);
 
     if (TYPEOF(CAR(args)) != SYMSXP)
-	Rf_errorcall(call, _("provenance expects Symbol argument"));
-    Symbol* sym = SEXP_downcast<Symbol*>(CAR(args));
-    Environment* env = SEXP_downcast<Environment*>(rho);
-    Frame::Binding* bdg = env->findBinding(sym);
+        Rf_errorcall(call, _("provenance expects Symbol argument"));
+    Symbol *sym = SEXP_downcast<Symbol *>(CAR(args));
+    Environment *env = SEXP_downcast<Environment *>(rho);
+    Frame::Binding *bdg = env->findBinding(sym);
     if (!bdg)
-	Rf_errorcall(call, _("invalid Symbol passed to 'provenance'"));
-    Provenance* provenance = const_cast<Provenance*>(bdg->provenance());
+        Rf_errorcall(call, _("invalid Symbol passed to 'provenance'"));
+    Provenance *provenance = const_cast<Provenance *>(bdg->provenance());
     if (!provenance)
-	Rf_errorcall(call, _("object does not have any provenance"));
-    const Provenance::Set& children = provenance->children();
+        Rf_errorcall(call, _("object does not have any provenance"));
+    const Provenance::Set &children = provenance->children();
 
     GCStackRoot<ListVector> list(ListVector::create(nfields));
     GCStackRoot<StringVector> timestamp(StringVector::create(1));
     GCStackRoot<StringVector> names(StringVector::create(nfields));
 
-    (*timestamp)[0] = const_cast<String*>(provenance->getTime());
+    (*timestamp)[0] = const_cast<String *>(provenance->getTime());
 
-    (*names)[0] = const_cast<String*>(String::obtain("command"));
-    (*names)[1] = const_cast<String*>(String::obtain("symbol"));
-    (*names)[2] = const_cast<String*>(String::obtain("timestamp"));
-    (*names)[3] = const_cast<String*>(String::obtain("parents"));
-    (*names)[4] = const_cast<String*>(String::obtain("children"));
+    (*names)[0] = const_cast<String *>(String::obtain("command"));
+    (*names)[1] = const_cast<String *>(String::obtain("symbol"));
+    (*names)[2] = const_cast<String *>(String::obtain("timestamp"));
+    (*names)[3] = const_cast<String *>(String::obtain("parents"));
+    (*names)[4] = const_cast<String *>(String::obtain("children"));
 
-    (*list)[0] = const_cast<RObject*>(provenance->command());
-    (*list)[1] = const_cast<Symbol*>(provenance->symbol());
+    (*list)[0] = const_cast<RObject *>(provenance->command());
+    (*list)[1] = const_cast<Symbol *>(provenance->symbol());
     (*list)[2] = timestamp;
     // Handle parents:
     {
-	std::pair<CommandChronicle::ParentVector::const_iterator,
-	    CommandChronicle::ParentVector::const_iterator>
-	    pr = provenance->parents();
-	size_t sz = pr.second - pr.first;
-	StringVector* sv = StringVector::create(sz);
-	(*list)[3] = sv;
-	unsigned int i = 0;
-	for (CommandChronicle::ParentVector::const_iterator it = pr.first;
-	     it != pr.second; ++it) {
-	    const Provenance* p = *it;
-	    (*sv)[i++] = const_cast<String*>(p->symbol()->name());
-	}
+        std::pair<CommandChronicle::ParentVector::const_iterator,
+                  CommandChronicle::ParentVector::const_iterator>
+            pr = provenance->parents();
+        size_t sz = pr.second - pr.first;
+        StringVector *sv = StringVector::create(sz);
+        (*list)[3] = sv;
+        unsigned int i = 0;
+        for (CommandChronicle::ParentVector::const_iterator it = pr.first;
+             it != pr.second; ++it)
+        {
+            const Provenance *p = *it;
+            (*sv)[i++] = const_cast<String *>(p->symbol()->name());
+        }
     }
-    if (!children.empty()) {
-	StringVector* sv = StringVector::create(children.size());
-	(*list)[4] = sv;
-	unsigned int i = 0;
-	for (Provenance::Set::const_iterator it = children.begin();
-	     it != children.end(); ++it) {
-	    const Provenance* p = *it;
-	    (*sv)[i++] = const_cast<String*>(p->symbol()->name());
-	}
+    if (!children.empty())
+    {
+        StringVector *sv = StringVector::create(children.size());
+        (*list)[4] = sv;
+        unsigned int i = 0;
+        for (Provenance::Set::const_iterator it = children.begin();
+             it != children.end(); ++it)
+        {
+            const Provenance *p = *it;
+            (*sv)[i++] = const_cast<String *>(p->symbol()->name());
+        }
     }
 
     Rf_setAttrib(list, Symbols::NamesSymbol, names);
@@ -195,9 +198,9 @@ HIDDEN SEXP do_provenance(SEXP call, SEXP op, SEXP args, SEXP rho)
 #endif // PROVENANCE_TRACKING
 }
 
-HIDDEN SEXP do_provCommand(/*const*/ Expression* call,
-    const BuiltInFunction* op, Environment* rho, RObject* /* const* */ args,
-    int num_args, const PairList* tags)
+HIDDEN SEXP do_provCommand(/*const*/ Expression *call,
+                           const BuiltInFunction *op, Environment *rho, RObject * /* const* */ args,
+                           int num_args, const PairList *tags)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
@@ -205,22 +208,22 @@ HIDDEN SEXP do_provCommand(/*const*/ Expression* call,
 #else
     int n;
     if ((n = num_args) != 1)
-	Rf_errorcall(call,
-	    _("%d arguments passed to 'provCommand' which requires 1"), n);
+        Rf_errorcall(call,
+                     _("%d arguments passed to 'provCommand' which requires 1"), n);
 
     if (TYPEOF(args[0]) != SYMSXP)
-	Rf_errorcall(call, _("provCommand expects Symbol argument"));
+        Rf_errorcall(call, _("provCommand expects Symbol argument"));
 
-    Symbol* sym = SEXP_downcast<Symbol*>(args[0]);
-    Environment* env = SEXP_downcast<Environment*>(rho);
-    Frame::Binding* bdg = env->findBinding(sym);
-    return const_cast<RObject*>(bdg->provenance()->command());
+    Symbol *sym = SEXP_downcast<Symbol *>(args[0]);
+    Environment *env = SEXP_downcast<Environment *>(rho);
+    Frame::Binding *bdg = env->findBinding(sym);
+    return const_cast<RObject *>(bdg->provenance()->command());
 #endif // PROVENANCE_TRACKING
 }
 
-HIDDEN SEXP do_provenance_graph(/*const*/ Expression* call,
-    const BuiltInFunction* op, Environment* rho, RObject* const* args,
-    int num_args, const PairList* tags)
+HIDDEN SEXP do_provenance_graph(/*const*/ Expression *call,
+                                const BuiltInFunction *op, Environment *rho, RObject *const *args,
+                                int num_args, const PairList *tags)
 {
 #ifndef PROVENANCE_TRACKING
     Rf_error(_("provenance tracking not implemented in this build"));
@@ -228,110 +231,117 @@ HIDDEN SEXP do_provenance_graph(/*const*/ Expression* call,
 #else
     int nargs = num_args;
     if (nargs != 1)
-	Rf_error(
-	    _("%d arguments passed to 'provenance.graph' which requires 1"),
-	    nargs);
+        Rf_error(
+            _("%d arguments passed to 'provenance.graph' which requires 1"),
+            nargs);
     // SEXP arg1 = CAR((RObject*) args);
-    const RObject* arg1 = args[0];
+    const RObject *arg1 = args[0];
     if (!arg1 || arg1->sexptype() != STRSXP)
-	Rf_error(_("invalid 'names' argument"));
+        Rf_error(_("invalid 'names' argument"));
 
-    Environment* env = SEXP_downcast<Environment*>(rho);
+    Environment *env = SEXP_downcast<Environment *>(rho);
     Provenance::Set provs;
-    const StringVector* sv = static_cast<const StringVector*>(arg1);
-    for (size_t i = 0; i < sv->size(); i++) {
-	const char* name = (*sv)[i]->c_str();
-	Symbol* sym = Symbol::obtain(name);
-	Frame::Binding* bdg = env->findBinding(sym);
-	if (!bdg)
-	    Rf_error(_("symbol '%s' not found"), name);
-	else {
-	    Provenance* prov = const_cast<Provenance*>(bdg->provenance());
-	    if (!prov)
-		Rf_warning(
-		    _("'%s' does not have provenance information"), name);
-	    else
-		provs.insert(prov);
-	}
+    const StringVector *sv = static_cast<const StringVector *>(arg1);
+    for (size_t i = 0; i < sv->size(); i++)
+    {
+        const char *name = (*sv)[i]->c_str();
+        Symbol *sym = Symbol::obtain(name);
+        Frame::Binding *bdg = env->findBinding(sym);
+        if (!bdg)
+            Rf_error(_("symbol '%s' not found"), name);
+        else
+        {
+            Provenance *prov = const_cast<Provenance *>(bdg->provenance());
+            if (!prov)
+                Rf_warning(
+                    _("'%s' does not have provenance information"), name);
+            else
+                provs.insert(prov);
+        }
     }
 
-    Provenance::Set* ancestors = Provenance::ancestors(provs);
+    Provenance::Set *ancestors = Provenance::ancestors(provs);
 
     GCStackRoot<ListVector> ans(ListVector::create(7));
-    std::map<const Provenance*, unsigned int> ancestor_index;
-    std::vector<std::pair<unsigned int, const RObject*>> xenogenous_bdgs;
+    std::map<const Provenance *, unsigned int> ancestor_index;
+    std::vector<std::pair<unsigned int, const RObject *>> xenogenous_bdgs;
 
     // Assemble information on graph nodes:
     {
-	size_t n = ancestors->size();
-	GCStackRoot<ListVector> symbols(ListVector::create(n));
-	GCStackRoot<ListVector> commands(ListVector::create(n));
-	GCStackRoot<RealVector> timestamps(RealVector::create(n));
-	size_t i = 0;
-	for (Provenance::Set::iterator it = ancestors->begin();
-	     it != ancestors->end(); ++it) {
-	    const Provenance* p = *it;
-	    (*symbols)[i] = const_cast<Symbol*>(p->symbol());
-	    (*commands)[i] = const_cast<RObject*>(p->command());
-	    (*timestamps)[i] = p->timestamp();
-	    ++i;
-	    ancestor_index[p] = i;
-	    if (p->isXenogenous())
-		xenogenous_bdgs.push_back(std::make_pair(i, p->value()));
-	}
+        size_t n = ancestors->size();
+        GCStackRoot<ListVector> symbols(ListVector::create(n));
+        GCStackRoot<ListVector> commands(ListVector::create(n));
+        GCStackRoot<RealVector> timestamps(RealVector::create(n));
+        size_t i = 0;
+        for (Provenance::Set::iterator it = ancestors->begin();
+             it != ancestors->end(); ++it)
+        {
+            const Provenance *p = *it;
+            (*symbols)[i] = const_cast<Symbol *>(p->symbol());
+            (*commands)[i] = const_cast<RObject *>(p->command());
+            (*timestamps)[i] = p->timestamp();
+            ++i;
+            ancestor_index[p] = i;
+            if (p->isXenogenous())
+                xenogenous_bdgs.push_back(std::make_pair(i, p->value()));
+        }
 
-	(*ans)[0] = symbols;
-	(*ans)[1] = commands;
-	(*ans)[2] = timestamps;
+        (*ans)[0] = symbols;
+        (*ans)[1] = commands;
+        (*ans)[2] = timestamps;
     }
 
     // Record information on xenogenous bindings:
     {
-	size_t xn = xenogenous_bdgs.size();
-	GCStackRoot<IntVector> xenogenous(IntVector::create(xn));
-	GCStackRoot<ListVector> values(ListVector::create(xn));
-	for (unsigned int i = 0; i < xn; ++i) {
-	    std::pair<unsigned int, const RObject*>& pr = xenogenous_bdgs[i];
-	    (*xenogenous)[i] = pr.first;
-	    (*values)[i] = const_cast<RObject*>(pr.second);
-	}
-	(*ans)[3] = xenogenous;
-	(*ans)[4] = values;
+        size_t xn = xenogenous_bdgs.size();
+        GCStackRoot<IntVector> xenogenous(IntVector::create(xn));
+        GCStackRoot<ListVector> values(ListVector::create(xn));
+        for (unsigned int i = 0; i < xn; ++i)
+        {
+            std::pair<unsigned int, const RObject *> &pr = xenogenous_bdgs[i];
+            (*xenogenous)[i] = pr.first;
+            (*values)[i] = const_cast<RObject *>(pr.second);
+        }
+        (*ans)[3] = xenogenous;
+        (*ans)[4] = values;
     }
 
     // Assemble information on graph edges:
     {
-	typedef std::set<std::pair<unsigned int, unsigned int>> EdgeSet;
-	EdgeSet edges;
-	for (Provenance::Set::iterator it = ancestors->begin();
-	     it != ancestors->end(); ++it) {
-	    const Provenance* child = *it;
-	    unsigned int child_idx = ancestor_index[child];
-	    std::pair<CommandChronicle::ParentVector::const_iterator,
-		CommandChronicle::ParentVector::const_iterator>
-		pr = child->parents();
-	    for (CommandChronicle::ParentVector::const_iterator it = pr.first;
-		 it != pr.second; ++it) {
-		const Provenance* parent = *it;
-		unsigned int parent_idx = ancestor_index[parent];
-		edges.insert(std::make_pair(parent_idx, child_idx));
-	    }
-	}
+        typedef std::set<std::pair<unsigned int, unsigned int>> EdgeSet;
+        EdgeSet edges;
+        for (Provenance::Set::iterator it = ancestors->begin();
+             it != ancestors->end(); ++it)
+        {
+            const Provenance *child = *it;
+            unsigned int child_idx = ancestor_index[child];
+            std::pair<CommandChronicle::ParentVector::const_iterator,
+                      CommandChronicle::ParentVector::const_iterator>
+                pr = child->parents();
+            for (CommandChronicle::ParentVector::const_iterator it = pr.first;
+                 it != pr.second; ++it)
+            {
+                const Provenance *parent = *it;
+                unsigned int parent_idx = ancestor_index[parent];
+                edges.insert(std::make_pair(parent_idx, child_idx));
+            }
+        }
 
-	size_t en = edges.size();
-	GCStackRoot<IntVector> parents(IntVector::create(en));
-	GCStackRoot<IntVector> children(IntVector::create(en));
-	unsigned int i = 0;
-	for (EdgeSet::const_iterator it = edges.begin(); it != edges.end();
-	     ++it) {
-	    const std::pair<unsigned int, unsigned int>& edge = *it;
-	    (*parents)[i] = edge.first;
-	    (*children)[i] = edge.second;
-	    ++i;
-	}
+        size_t en = edges.size();
+        GCStackRoot<IntVector> parents(IntVector::create(en));
+        GCStackRoot<IntVector> children(IntVector::create(en));
+        unsigned int i = 0;
+        for (EdgeSet::const_iterator it = edges.begin(); it != edges.end();
+             ++it)
+        {
+            const std::pair<unsigned int, unsigned int> &edge = *it;
+            (*parents)[i] = edge.first;
+            (*children)[i] = edge.second;
+            ++i;
+        }
 
-	(*ans)[5] = parents;
-	(*ans)[6] = children;
+        (*ans)[5] = parents;
+        (*ans)[6] = children;
     }
     delete ancestors;
     return ans;

@@ -29,19 +29,22 @@
 #ifndef RHO_JIT_COMPILATION_EXCEPTION_HPP
 #define RHO_JIT_COMPILATION_EXCEPTION_HPP
 
-namespace rho {
+namespace rho
+{
 
-namespace JIT {
-    /** @brief Exception thrown when compilation fails.
-     *
-     * An exception of this class is thrown when an attempt to compile
-     * R code fails, typically because the code uses contructs that the
-     * compiler cannot reason about.
-     */
-    struct CompilationException {
-    };
+    namespace JIT
+    {
+        /** @brief Exception thrown when compilation fails.
+         *
+         * An exception of this class is thrown when an attempt to compile
+         * R code fails, typically because the code uses contructs that the
+         * compiler cannot reason about.
+         */
+        struct CompilationException
+        {
+        };
 
-}  // namespace JIT
-}  // namespace rho
+    } // namespace JIT
+} // namespace rho
 
-#endif  // RHO_JIT_COMPILATION_EXCEPTION_HPP
+#endif // RHO_JIT_COMPILATION_EXCEPTION_HPP

@@ -37,25 +37,29 @@
 #include <rho/Logical.hpp>
 #include <rho/SEXP_downcast.hpp>
 
-namespace rho {
+namespace rho
+{
     /** @brief Vector of truth values.
      */
     typedef rho::FixedVector<Logical, LGLSXP> LogicalVector;
 
-    template<>
-    struct VectorTypeFor<Logical> {
-      typedef LogicalVector type;
+    template <>
+    struct VectorTypeFor<Logical>
+    {
+        typedef LogicalVector type;
     };
 
-    template<>
-    template<typename U>
-    LogicalVector* LogicalVector::createScalar(const U& value) {
-	int value_as_int = static_cast<int>(Logical(value));
-	return static_cast<LogicalVector*>(Rf_ScalarLogical(value_as_int));
+    template <>
+    template <typename U>
+    LogicalVector *LogicalVector::createScalar(const U &value)
+    {
+        int value_as_int = static_cast<int>(Logical(value));
+        return static_cast<LogicalVector *>(Rf_ScalarLogical(value_as_int));
     }
-}  // namespace rho
+} // namespace rho
 
-extern "C" {
+extern "C"
+{
     /**
      * @param s Pointer to a rho::RObject.
      * @return TRUE iff the rho::RObject pointed to by \a s is a
@@ -63,20 +67,19 @@ extern "C" {
      */
     inline Rboolean Rf_isLogical(SEXP s)
     {
-	return Rboolean(s && TYPEOF(s) == LGLSXP);
+        return Rboolean(s && TYPEOF(s) == LGLSXP);
     }
 
-/**
- * @param x Pointer to a rho::LogicalVector (checked).
- *
- * @return Pointer to element 0 of \a x .
- */
-inline int* LOGICAL(SEXP x)
-{
-    using namespace rho;
-    return reinterpret_cast<int*>
-      (&(*SEXP_downcast<LogicalVector*>(x, false))[0]);
-}
+    /**
+     * @param x Pointer to a rho::LogicalVector (checked).
+     *
+     * @return Pointer to element 0 of \a x .
+     */
+    inline int *LOGICAL(SEXP x)
+    {
+        using namespace rho;
+        return reinterpret_cast<int *>(&(*SEXP_downcast<LogicalVector *>(x, false))[0]);
+    }
 
     /** @brief Create a unit-length LogicalVector containing FALSE.
      *

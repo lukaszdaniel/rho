@@ -25,25 +25,29 @@
 
 #include <sstream>
 
-namespace rho {
-namespace internal {
-    inline void strcat_helper(std::ostringstream& stream) { }
+namespace rho
+{
+    namespace internal
+    {
+        inline void strcat_helper(std::ostringstream &stream) {}
 
-    template<typename Arg, typename... Args>
-    inline void strcat_helper(std::ostringstream& stream,
-                              Arg arg, Args... args) {
-        stream << arg;
-        strcat_helper(stream, args...);
+        template <typename Arg, typename... Args>
+        inline void strcat_helper(std::ostringstream &stream,
+                                  Arg arg, Args... args)
+        {
+            stream << arg;
+            strcat_helper(stream, args...);
+        }
     }
-}
 
-template<typename... Args>
-std::string StrCat(Args... args) {
-    std::ostringstream stream;
-    internal::strcat_helper(stream, args...);
-    return stream.str();
-}
+    template <typename... Args>
+    std::string StrCat(Args... args)
+    {
+        std::ostringstream stream;
+        internal::strcat_helper(stream, args...);
+        return stream.str();
+    }
 
-}  // namespace rho
+} // namespace rho
 
-#endif  // RHO_STRUTIL_HPP
+#endif // RHO_STRUTIL_HPP

@@ -53,10 +53,10 @@ namespace rho
     namespace ForceNonInline
     {
         const auto &ENCLOSp = ENCLOS;
-        const auto &ENV_DEBUGp = ENV_DEBUG;
+        const auto &ENV_DEBUGp = ENV_RDEBUG;
         const auto &isEnvironmentptr = Rf_isEnvironment;
         const auto &FRAMEp = FRAME;
-        const auto &SET_ENV_DEBUGp = SET_ENV_DEBUG;
+        const auto &SET_ENV_DEBUGp = SET_ENV_RDEBUG;
         const auto &SET_SYMVALUEp = SET_SYMVALUE;
         const auto &SYMVALUEp = SYMVALUE;
     } // namespace ForceNonInline

@@ -231,16 +231,17 @@ SEXP Rf_deparse1(SEXP call, Rboolean abbrev, int opts)
 
 // Utility intended to be called from a debugger.  Prints out the
 // deparse of an RObject.
-namespace rho {
-    void DEPARSE(SEXP s)
-    {
-	GCManager::GCInhibitor gci;
-	GCStackRoot<> srt(s);
-	GCStackRoot<StringVector>
-	    sv(static_cast<StringVector*>(Rf_deparse1(s, FALSE, DEFAULTDEPARSE)));
-	for (unsigned int i = 0; i < sv->size(); ++i)
-	    cout << (*sv)[i]->c_str() << '\n';
-    }
+namespace rho
+{
+	void DEPARSE(SEXP s)
+	{
+		GCManager::GCInhibitor gci;
+		GCStackRoot<> srt(s);
+		GCStackRoot<StringVector>
+			sv(static_cast<StringVector *>(Rf_deparse1(s, FALSE, DEFAULTDEPARSE)));
+		for (size_t i = 0; i < sv->size(); ++i)
+			cout << (*sv)[i]->c_str() << '\n';
+	}
 }
 
 /* used for language objects in print() */

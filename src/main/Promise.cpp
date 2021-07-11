@@ -8,16 +8,16 @@
  *  to the Rho website.
  *
  *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
+ *  it under the terms of the GNU Lesser General Public License as published by
+ *  the Free Software Foundation; either version 2.1 of the License, or
  *  (at your option) any later version.
  *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
  *  https://www.R-project.org/Licenses/
  */
@@ -40,151 +40,149 @@
 
 using namespace rho;
 
-// Force the creation of non-inline embodiments of functions callable
-// from C:
 namespace rho
 {
+    // Force the creation of non-inline embodiments of functions callable
+    // from C:
     namespace ForceNonInline
     {
         const auto &PRCODEp = PRCODE;
         const auto &PRENVp = PRENV;
         const auto &PRVALUEp = PRVALUE;
     } // namespace ForceNonInline
-} // namespace rho
 
-PromiseData::PromiseData(const RObject *valgen, Environment *env)
-    : m_under_evaluation(false), m_interrupted(false),
-      m_is_pointer_to_promise(false)
-{
-    m_value = Symbol::unboundValue();
-    m_valgen = valgen;
-    m_environment = env;
-}
-
-PromiseData::PromiseData(Promise *value)
-    : m_is_pointer_to_promise(true)
-{
-    m_value = value;
-}
-
-PromiseData::~PromiseData() = default;
-PromiseData::PromiseData(PromiseData &&) = default;
-PromiseData &PromiseData::operator=(PromiseData &&other) = default;
-
-Promise *PromiseData::asPromise()
-{
-    Promise *promise = new Promise(std::move(*this));
-    *this = PromiseData(promise);
-    return promise;
-}
-
-void PromiseData::detachReferents()
-{
-    m_value.detach();
-    m_valgen.detach();
-    m_environment.detach();
-}
-
-RObject *PromiseData::evaluate()
-{
-    if (m_is_pointer_to_promise)
+    PromiseData::PromiseData(const RObject *valgen, Environment *env)
+        : m_under_evaluation(false), m_interrupted(false),
+          m_is_pointer_to_promise(false)
     {
-        return getThis()->evaluate();
-    }
-    if (m_value == Symbol::unboundValue())
-    {
-        // Force promise:
-        if (m_interrupted)
-        {
-            Rf_warning(_("restarting interrupted promise evaluation"));
-            m_interrupted = false;
-        }
-        else if (m_under_evaluation)
-            Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
-        m_under_evaluation = true;
-        try
-        {
-            IncrementStackDepthScope scope;
-            PlainContext cntxt;
-            RObject *val = Evaluator::evaluate(
-                const_cast<RObject *>(m_valgen.get()),
-                m_environment.get());
-            setValue(val);
-        }
-        catch (...)
-        {
-            m_interrupted = true;
-            throw;
-        }
-        m_under_evaluation = false;
-    }
-    return m_value;
-}
-
-bool PromiseData::isMissingSymbol() const
-{
-    if (m_is_pointer_to_promise)
-    {
-        return getThis()->isMissingSymbol();
+        m_value = Symbol::unboundValue();
+        m_valgen = valgen;
+        m_environment = env;
     }
 
-    bool ans = false;
-    /* This is wrong but I'm not clear why - arr
-    if (m_value == Symbol::missingArgument())
-     	return true;
-    */
-    if (m_value == Symbol::unboundValue() && m_valgen)
+    PromiseData::PromiseData(Promise *value)
+        : m_is_pointer_to_promise(true)
     {
-        const RObject *prexpr = m_valgen;
-        if (prexpr->sexptype() == SYMSXP)
+        m_value = value;
+    }
+
+    PromiseData::~PromiseData() = default;
+    PromiseData::PromiseData(PromiseData &&) = default;
+    PromiseData &PromiseData::operator=(PromiseData &&other) = default;
+
+    Promise *PromiseData::asPromise()
+    {
+        Promise *promise = new Promise(std::move(*this));
+        *this = PromiseData(promise);
+        return promise;
+    }
+
+    void PromiseData::detachReferents()
+    {
+        m_value.detach();
+        m_valgen.detach();
+        m_environment.detach();
+    }
+
+    void PromiseData::setValue(RObject *val)
+    {
+        m_value = val;
+        ENSURE_NAMEDMAX(val);
+        if (val != Symbol::unboundValue())
+            m_environment = nullptr;
+    }
+
+    const char *Promise::typeName() const
+    {
+        return staticTypeName();
+    }
+
+    void PromiseData::visitReferents(GCNode::const_visitor *v) const
+    {
+        const GCNode *value = m_value;
+        const GCNode *valgen = m_valgen;
+        const GCNode *env = m_environment;
+        if (value)
+            (*v)(value);
+        if (valgen)
+            (*v)(valgen);
+        if (env)
+            (*v)(env);
+    }
+
+    RObject *PromiseData::evaluate()
+    {
+        if (m_is_pointer_to_promise)
         {
-            // According to Luke Tierney's comment to R_isMissing() in CR,
-            // if a cycle is found then a missing argument has been
-            // encountered, so the return value is true.
-            if (m_under_evaluation)
-                return true;
+            return getThis()->evaluate();
+        }
+        if (m_value == Symbol::unboundValue())
+        {
+            // Force promise:
+            if (m_interrupted)
+            {
+                Rf_warning(_("restarting interrupted promise evaluation"));
+                m_interrupted = false;
+            }
+            else if (m_under_evaluation)
+                Rf_error(_("promise already under evaluation: recursive default argument reference or earlier problems?"));
+            m_under_evaluation = true;
             try
             {
-                const Symbol *promsym = static_cast<const Symbol *>(prexpr);
-                m_under_evaluation = true;
-                ans = isMissingArgument(promsym, m_environment->frame());
+                IncrementStackDepthScope scope;
+                PlainContext cntxt;
+                RObject *val = Evaluator::evaluate(const_cast<RObject *>(m_valgen.get()), m_environment.get());
+                setValue(val);
             }
             catch (...)
             {
-                m_under_evaluation = false;
+                m_interrupted = true;
                 throw;
             }
             m_under_evaluation = false;
         }
+        return m_value;
     }
-    return ans;
-}
 
-void PromiseData::setValue(RObject *val)
-{
-    m_value = val;
-    ENSURE_NAMEDMAX(val);
-    if (val != Symbol::unboundValue())
-        m_environment = nullptr;
-}
+    bool PromiseData::isMissingSymbol() const
+    {
+        if (m_is_pointer_to_promise)
+        {
+            return getThis()->isMissingSymbol();
+        }
 
-const char *Promise::typeName() const
-{
-    return staticTypeName();
-}
-
-void PromiseData::visitReferents(GCNode::const_visitor *v) const
-{
-    const GCNode *value = m_value;
-    const GCNode *valgen = m_valgen;
-    const GCNode *env = m_environment;
-    if (value)
-        (*v)(value);
-    if (valgen)
-        (*v)(valgen);
-    if (env)
-        (*v)(env);
-}
+        bool ans = false;
+        /* This is wrong but I'm not clear why - arr
+    if (m_value == Symbol::missingArgument())
+     	return true;
+    */
+        if (m_value == Symbol::unboundValue() && m_valgen)
+        {
+            const RObject *prexpr = m_valgen;
+            if (prexpr->sexptype() == SYMSXP)
+            {
+                // According to Luke Tierney's comment to R_isMissing() in CR,
+                // if a cycle is found then a missing argument has been
+                // encountered, so the return value is true.
+                if (m_under_evaluation)
+                    return true;
+                try
+                {
+                    const Symbol *promsym = static_cast<const Symbol *>(prexpr);
+                    m_under_evaluation = true;
+                    ans = isMissingArgument(promsym, m_environment->frame());
+                }
+                catch (...)
+                {
+                    m_under_evaluation = false;
+                    throw;
+                }
+                m_under_evaluation = false;
+            }
+        }
+        return ans;
+    }
+} // namespace rho
 
 // ***** C interface *****
 
@@ -197,14 +195,33 @@ SEXP Rf_mkPROMISE(SEXP expr, SEXP rho)
 
 SEXP R_mkEVPROMISE(SEXP expr, SEXP value)
 {
-    return Promise::createEvaluatedPromise(
-        SEXP_downcast<Expression *>(expr), value);
+    return Promise::createEvaluatedPromise(SEXP_downcast<Expression *>(expr), value);
 }
 
-void SET_PRVALUE(SEXP x, SEXP v)
+SEXP PRCODE(SEXP x)
 {
+    if (!x)
+        return nullptr;
+    using namespace rho;
+    const Promise *prom = SEXP_downcast<Promise *>(x);
+    return const_cast<RObject *>(prom->valueGenerator());
+}
+
+SEXP PRENV(SEXP x)
+{
+    if (!x)
+        return nullptr;
+    const Promise *prom = SEXP_downcast<Promise *>(x);
+    return prom->environment();
+}
+
+SEXP PRVALUE(SEXP x)
+{
+    if (!x)
+        return nullptr;
+    using namespace rho;
     Promise *prom = SEXP_downcast<Promise *>(x);
-    prom->setValue(v);
+    return prom->value();
 }
 
 int PRSEEN(SEXP x)
@@ -213,8 +230,10 @@ int PRSEEN(SEXP x)
     return prom->m_data.m_under_evaluation || prom->m_data.m_interrupted || prom->m_data.m_environment == nullptr;
 }
 
-SEXP PRENV(SEXP x)
+void SET_PRVALUE(SEXP x, SEXP v)
 {
-    const Promise &prom = *SEXP_downcast<Promise *>(x);
-    return prom.environment();
+    if (!x)
+        return;
+    Promise *prom = SEXP_downcast<Promise *>(x);
+    prom->setValue(v);
 }

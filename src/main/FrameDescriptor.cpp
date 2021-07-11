@@ -23,6 +23,7 @@
 
 #define R_NO_REMAP
 
+#include <algorithm>
 #include <rho/FrameDescriptor.hpp>
 #include <rho/Closure.hpp>
 #include <rho/ConsCell.hpp>
@@ -31,7 +32,6 @@
 #include <rho/PairList.hpp>
 #include <rho/RObject.hpp>
 #include <rho/Symbol.hpp>
-#include <algorithm>
 
 namespace rho
 {
@@ -154,11 +154,9 @@ namespace rho
 	FrameDescriptor::FrameDescriptor(std::initializer_list<const Symbol *> formals,
 									 std::initializer_list<const Symbol *> locals)
 	{
-		m_local_vars.insert(m_local_vars.end(),
-							formals.begin(), formals.end());
+		m_local_vars.insert(m_local_vars.end(), formals.begin(), formals.end());
 		m_num_formals = formals.size();
-		m_local_vars.insert(m_local_vars.end(),
-							locals.begin(), locals.end());
+		m_local_vars.insert(m_local_vars.end(), locals.begin(), locals.end());
 	}
 
 	int FrameDescriptor::getLocation(const Symbol *symbol) const

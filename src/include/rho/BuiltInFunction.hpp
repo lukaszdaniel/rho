@@ -32,11 +32,10 @@
 #define BUILTINFUNCTION_HPP
 
 #include <vector>
-
+#include <rho/FunctionBase.hpp>
 #include <rho/ArgList.hpp>
 #include <rho/Environment.hpp>
 #include <rho/Expression.hpp>
-#include <rho/FunctionBase.hpp>
 #include "sparsehash/dense_hash_map"
 
 extern "C"
@@ -251,7 +250,10 @@ namespace rho
          *
          * @return The names by which this type is known in R.
          */
-        static const char *staticTypeName() { return "(builtin or special)"; }
+        static const char *staticTypeName()
+        {
+            return "(builtin or special)";
+        }
 
         /** @brief Index of variant behaviour.
          *
@@ -287,6 +289,7 @@ namespace rho
             FixedNative,
             VarArgsNative
         };
+
         CallingConvention getCallingConvention() const
         {
             return m_calling_convention;
@@ -364,8 +367,7 @@ namespace rho
             else
             {
                 assert(getCallingConvention() == CallingConvention::VarArgsNative);
-                return (m_function.varargs_native)(
-                    const_cast<Expression *>(call), this, sizeof...(Args), args...);
+                return (m_function.varargs_native)(const_cast<Expression *>(call), this, sizeof...(Args), args...);
             }
         }
 
@@ -457,9 +459,9 @@ namespace rho
         // 'Pretty-print' information:
         struct PPinfo
         {
-            Kind kind;
-            Precedence precedence;
-            unsigned int rightassoc;
+            Kind kind;               /* deparse kind */
+            Precedence precedence;   /* operator precedence */
+            unsigned int rightassoc; /* right associative? */
         };
 
         BuiltInFunction(const char *, CCODE, unsigned int, unsigned int, int, PPinfo,
@@ -635,11 +637,11 @@ extern "C"
     }
 
     /** @brief Get offset of a rho::BuiltInFunction.
- *
- * @param x Pointer to a rho::BuiltInFunction.
- *
- * @return The offset of this function within the function table.
- */
+     *
+     * @param x Pointer to a rho::BuiltInFunction.
+     *
+     * @return The offset of this function within the function table.
+     */
     inline int PRIMOFFSET(SEXP x)
     {
         using namespace rho;

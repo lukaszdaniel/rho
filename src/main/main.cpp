@@ -1240,7 +1240,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	const char *expr = R_CHAR(PRINTNAME(CExpr));
 	if (streql(expr, "c") || streql(expr, "cont")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, FALSE);
+	    SET_ENV_RDEBUG(rho, FALSE);
 #if 0
 	} else if (streql(expr, "f")) {
 	    rval = 1;
@@ -1250,7 +1250,7 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 		cntxt = cntxt->nextcontext;
 	    }
 	    cntxt->browserfinish = 1;
-	    SET_ENV_DEBUG(rho, TRUE);
+	    SET_ENV_RDEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 'f';
 #endif
 	} else if (streql(expr, "help")) {
@@ -1258,22 +1258,22 @@ static int ParseBrowser(SEXP CExpr, SEXP rho)
 	    printBrowserHelp();
 	} else if (streql(expr, "n")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, TRUE);
+	    SET_ENV_RDEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 'n';
 	} else if (streql(expr, "Q")) {
 
 	    /* this is really dynamic state that should be managed as such */
-	    SET_ENV_DEBUG(rho, FALSE); /*PR#1721*/
+	    SET_ENV_RDEBUG(rho, FALSE); /*PR#1721*/
 
 	    jump_to_toplevel();
 	} else if (streql(expr, "s")) {
 	    rval = 1;
-	    SET_ENV_DEBUG(rho, TRUE);
+	    SET_ENV_RDEBUG(rho, TRUE);
 	    R_BrowserLastCommand = 's';
 	} else if (streql(expr, "where")) {
 	    rval = 2;
 	    printwhere();
-	    /* SET_ENV_DEBUG(rho, TRUE); */
+	    /* SET_ENV_RDEBUG(rho, TRUE); */
 	} else if (streql(expr, "r")) {
 	    SEXP hooksym = Rf_install(".tryResumeInterrupt");
 	    if (SYMVALUE(hooksym) != R_UnboundValue) {
@@ -1341,12 +1341,12 @@ HIDDEN SEXP do_browser(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     savestack = int(ProtectStack::size());
 
-    if (!ENV_DEBUG(rho)) {
+    if (!ENV_RDEBUG(rho)) {
 	ClosureContext* cptr = R_GlobalContext();
 	Rprintf("Called from: ");
 	if( cptr ) {
 	    PrintCall(const_cast<Expression*>(cptr->call()), rho);
- 	    SET_ENV_DEBUG(cptr->workingEnvironment(), TRUE);
+ 	    SET_ENV_RDEBUG(cptr->workingEnvironment(), TRUE);
 	} else
 	    Rprintf("top level \n");
 

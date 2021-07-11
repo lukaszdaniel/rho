@@ -865,7 +865,7 @@ namespace {
 
     inline void DO_LOOP_RDEBUG(SEXP call, SEXP op, SEXP args, SEXP rho, int bgn)
     {
-	if (bgn && ENV_DEBUG(rho)) {
+	if (bgn && ENV_RDEBUG(rho)) {
 	    Rf_SrcrefPrompt("debug", R_Srcref);
 	    Rf_PrintValue(CAR(args));
 	    do_browser(nullptr, nullptr, nullptr, rho);
@@ -908,7 +908,7 @@ HIDDEN SEXP do_if(SEXP call, SEXP op, SEXP args, SEXP rho)
 	else
 	   vis = 1;
     }
-    if( ENV_DEBUG(rho) && !BodyHasBraces(Stmt)) {
+    if( ENV_RDEBUG(rho) && !BodyHasBraces(Stmt)) {
 	Rf_SrcrefPrompt("debug", R_Srcref);
 	Rf_PrintValue(Stmt);
 	do_browser(nullptr, nullptr, nullptr, rho);
@@ -953,7 +953,7 @@ HIDDEN SEXP do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 
     if ( !Rf_isSymbol(sym) ) Rf_errorcall(call, _("non-symbol loop variable"));
 
-    dbg = ENV_DEBUG(rho);
+    dbg = ENV_RDEBUG(rho);
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
@@ -1067,12 +1067,12 @@ HIDDEN SEXP do_for_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    continue;
 		else break;
 	    } else {  // This must be a ReturnBailout:
-		SET_ENV_DEBUG(rho, dbg);
+		SET_ENV_RDEBUG(rho, dbg);
 		return propagateBailout(ans.get());
 	    }
 	}
     }
-    SET_ENV_DEBUG(rho, dbg);
+    SET_ENV_RDEBUG(rho, dbg);
     return nullptr;
 }
 
@@ -1091,7 +1091,7 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;
     volatile SEXP body;
 
-    dbg = ENV_DEBUG(rho);
+    dbg = ENV_RDEBUG(rho);
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
@@ -1129,12 +1129,12 @@ static SEXP do_while_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    continue;
 		else break;
 	    } else {  // This must be a ReturnBailout:
-		SET_ENV_DEBUG(rho, dbg);
+		SET_ENV_RDEBUG(rho, dbg);
 		return propagateBailout(ans);
 	    }
 	}
     }
-    SET_ENV_DEBUG(rho, dbg);
+    SET_ENV_RDEBUG(rho, dbg);
     return nullptr;
 }
 
@@ -1153,7 +1153,7 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
     GCStackRoot<> t;
     volatile SEXP body;
 
-    dbg = ENV_DEBUG(rho);
+    dbg = ENV_RDEBUG(rho);
     /* rho FIXME
     if (R_jit_enabled > 2 && !dbg && ! R_PendingPromises) {
 	R_compileAndExecute(call, rho);
@@ -1190,13 +1190,13 @@ static SEXP do_repeat_impl(SEXP call, SEXP op, SEXP args, SEXP rho)
 		    continue;
 		else break;
 	    } else {  // This must be a ReturnBailout:
-		SET_ENV_DEBUG(rho, dbg);
+		SET_ENV_RDEBUG(rho, dbg);
 		return propagateBailout(ans);
 	    }
 	}
     }
 
-    SET_ENV_DEBUG(rho, dbg);
+    SET_ENV_RDEBUG(rho, dbg);
     return nullptr;
 }
 
@@ -1235,7 +1235,7 @@ HIDDEN SEXP do_begin(SEXP call, SEXP op, SEXP args, SEXP rho)
 	int i = 1;
 	while (args != nullptr) {
 	    R_Srcref = getSrcref(srcrefs, i++);
-	    if (ENV_DEBUG(rho)) {
+	    if (ENV_RDEBUG(rho)) {
 		Rf_SrcrefPrompt("debug", R_Srcref);
 		Rf_PrintValue(CAR(args));
 		do_browser(nullptr, nullptr, nullptr, rho);

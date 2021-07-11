@@ -9,8 +9,8 @@
  *  not be reported via r-bugs or other R project channels; instead refer
  *  to the Rho website.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
+ *  This header file is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU Lesser General Public License as published by
  *  the Free Software Foundation; either version 2.1 of the License, or
  *  (at your option) any later version.
  *
@@ -19,9 +19,9 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
+ *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program; if not, a copy is available at
- *  http://www.r-project.org/Licenses/
+ *  https://www.R-project.org/Licenses/
  */
 
 /** @file Promise.hpp
@@ -75,9 +75,11 @@ namespace rho
         PromiseData();
         ~PromiseData();
 
-        //* @brief Move constructor.
+        /** @brief Move constructor.
+         */
         PromiseData(PromiseData &&);
-        // @brief Move assignment operator.
+        /** @brief Move assignment operator.
+         */
         PromiseData &operator=(PromiseData &&other);
 
         // PromiseData objects cannot be copied, only moved.  This helps
@@ -85,8 +87,7 @@ namespace rho
         PromiseData(const PromiseData &) = delete;
         PromiseData &operator=(const PromiseData &) = delete;
 
-        static PromiseData createEvaluatedPromise(
-            const RObject *expression, RObject *evaluated_value)
+        static PromiseData createEvaluatedPromise(const RObject *expression, RObject *evaluated_value)
         {
             PromiseData result(expression, nullptr);
             result.m_value = evaluated_value;
@@ -115,7 +116,8 @@ namespace rho
          */
         RObject *evaluate();
 
-        //* @brief Has this promise been evaluated yet?
+        /** @brief Has this promise been evaluated yet?
+         */
         bool evaluated() const { return getThis()->m_environment == nullptr; }
 
         /** @brief Not for general use.
@@ -128,6 +130,7 @@ namespace rho
          */
         bool isMissingSymbol() const;
 
+        // Virtual function of GCNode:
         void visitReferents(GCNode::const_visitor *v) const;
         void detachReferents();
 
@@ -202,11 +205,9 @@ namespace rho
         {
         }
 
-        static Promise *createEvaluatedPromise(
-            const RObject *expression, RObject *evaluated_value)
+        static Promise *createEvaluatedPromise(const RObject *expression, RObject *evaluated_value)
         {
-            return new Promise(
-                PromiseData::createEvaluatedPromise(expression, evaluated_value));
+            return new Promise(PromiseData::createEvaluatedPromise(expression, evaluated_value));
         }
 
         /** @brief Force the Promise.
@@ -222,7 +223,10 @@ namespace rho
          * @return The value of the Promise, i.e. the result of
          * evaluating the value generator.
          */
-        RObject *force() { return m_data.evaluate(); }
+        RObject *force()
+        {
+            return m_data.evaluate();
+        }
 
         /** @brief Not for general use.
          *
@@ -238,14 +242,16 @@ namespace rho
          *
          * @return The name by which this type is known in R.
          */
-        static const char *staticTypeName() { return "promise"; }
+        static const char *staticTypeName()
+        {
+            return "promise";
+        }
 
         RObject *evaluate(Environment *) override { return m_data.evaluate(); }
 
-        //* @brief Has this promise been evaluated yet?
+        /** @brief Has this promise been evaluated yet?
+         */
         bool evaluated() const { return m_data.evaluated(); }
-
-        const char *typeName() const override;
 
         // Virtual function of GCNode:
         void visitReferents(GCNode::const_visitor *v) const override
@@ -306,6 +312,8 @@ namespace rho
         friend void ::SET_PRVALUE(SEXP x, SEXP v); // Needs setValue().
         friend int ::PRSEEN(SEXP x);
 
+        // Virtual function of RObject:
+        const char *typeName() const override;
         // Declared private to ensure that Promise objects are
         // created only using 'new':
         ~Promise() {}
@@ -371,12 +379,7 @@ extern "C"
      * @return Pointer to the expression to be evaluated by the
      *         rho::Promise.
      */
-    inline SEXP PRCODE(SEXP x)
-    {
-        using namespace rho;
-        const Promise &prom = *SEXP_downcast<Promise *>(x);
-        return const_cast<RObject *>(prom.valueGenerator());
-    }
+    SEXP PRCODE(SEXP x);
 
     /** @brief Access the value of a rho::Promise.
      *
@@ -385,12 +388,7 @@ extern "C"
      * @return Pointer to the value of the rho::Promise, or to
      *         R_UnboundValue if it has not yet been evaluated..
      */
-    inline SEXP PRVALUE(SEXP x)
-    {
-        using namespace rho;
-        Promise &prom = *SEXP_downcast<Promise *>(x);
-        return prom.value();
-    }
+    SEXP PRVALUE(SEXP x);
 
     /** @brief Set the value of a rho::Promise.
      *

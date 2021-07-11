@@ -337,7 +337,7 @@ extern "C"
     *         function should run under the browser.
     *
     * @note In rho, RDEBUG() is applicable only to closures; use
-    * ENV_DEBUG() to query the debugging (single-stepping) state
+    * ENV_RDEBUG() to query the debugging (single-stepping) state
     * for environments.
     */
    inline Rboolean RDEBUG(SEXP x)
@@ -373,7 +373,7 @@ extern "C"
     * @param v The new debugging state.
     *
     * @note In rho, SET_RDEBUG() is applicable only to closures; use
-    * SET_ENV_DEBUG() to set the debugging (single-stepping) state
+    * SET_ENV_RDEBUG() to set the debugging (single-stepping) state
     * for environments.
     */
    inline void SET_RDEBUG(SEXP x, Rboolean v)

@@ -137,18 +137,20 @@ static void setActiveValue(SEXP fun, SEXP val)
     expr->evaluate(Environment::global());
 }
 
-void Frame::Binding::assignSlow(RObject* new_value, Origin origin)
+void Frame::Binding::assignSlow(RObject *new_value, Origin origin)
 {
     if (isLocked())
-	Rf_error(_("cannot change value of locked binding for '%s'"),
-		 symbol()->name()->c_str());
+        Rf_error(_("cannot change value of locked binding for '%s'"), symbol()->name()->c_str());
     m_origin = origin;
-    if (isActive()) {
-	setActiveValue(m_value, new_value);
-	m_frame->monitorRead(*this);
-    } else {
-	m_value = new_value;
-	m_frame->monitorWrite(*this);
+    if (isActive())
+    {
+        setActiveValue(m_value, new_value);
+        m_frame->monitorRead(*this);
+    }
+    else
+    {
+        m_value = new_value;
+        m_frame->monitorWrite(*this);
     }
 }
 
@@ -384,31 +386,35 @@ SEXP Rf_findVar(SEXP symbol, SEXP rho)
 
 */
 
-namespace {
+namespace
+{
     // Predicate used to test whether a Binding's value is of a
     // specified type.
-    class TypeTester : public std::unary_function<RObject*, bool> {
+    class TypeTester : public std::unary_function<RObject *, bool>
+    {
     public:
-	TypeTester(SEXPTYPE type)
-	    : m_type(type)
-	{}
+        TypeTester(SEXPTYPE type)
+            : m_type(type)
+        {
+        }
 
-	bool operator()(const RObject* obj);
+        bool operator()(const RObject *obj);
+
     private:
-	SEXPTYPE m_type;
+        SEXPTYPE m_type;
     };
 
-    bool TypeTester::operator()(const RObject* obj)
+    bool TypeTester::operator()(const RObject *obj)
     {
-	if (m_type == ANYSXP)
-	    return true;
-	if (!obj)
-	    return m_type == NILSXP;
-	if (obj->sexptype() == m_type)
-	    return true;
-	if (m_type == FUNSXP && FunctionBase::isA(obj))
-	    return true;
-	return false;
+        if (m_type == ANYSXP)
+            return true;
+        if (!obj)
+            return m_type == NILSXP;
+        if (obj->sexptype() == m_type)
+            return true;
+        if (m_type == FUNSXP && FunctionBase::isA(obj))
+            return true;
+        return false;
     }
 }
 
@@ -1406,30 +1412,32 @@ SEXP R_lsInternal(SEXP env, Rboolean all)
 
 HIDDEN SEXP do_env2list(/*const*/ Expression* call, const BuiltInFunction* op, RObject* x_, RObject* all_names_, RObject* sorted_)
 {
-    Environment* env = simple_as_environment(x_);
-    if(!env)
-	Rf_error(_("argument must be an environment"));
+    Environment *env = simple_as_environment(x_);
+    if (!env)
+        Rf_error(_("argument must be an environment"));
 
     int all = Rf_asLogical(all_names_); /* all.names = TRUE/FALSE */
-    if (all == R_NaLog) all = 0;
+    if (all == R_NaLog)
+        all = 0;
 
     int sort_nms = Rf_asLogical(sorted_); /* sorted = TRUE/FALSE */
-    if (sort_nms == R_NaLog) sort_nms = 0;
+    if (sort_nms == R_NaLog)
+        sort_nms = 0;
 
     GCStackRoot<Frame> frame(env->frame());
-    std::vector<const Symbol*> syms = frame->symbols(all, sort_nms);
+    std::vector<const Symbol *> syms = frame->symbols(all, sort_nms);
 
-    ListVector* result = ListVector::create(syms.size());
-    StringVector* names = StringVector::create(syms.size());
+    ListVector *result = ListVector::create(syms.size());
+    StringVector *names = StringVector::create(syms.size());
     for (size_t i = 0; i < syms.size(); ++i)
     {
-	const Symbol* symbol = syms[i];
-	(*names)[i] = const_cast<String*>(symbol->name());
-	(*result)[i] = frame->binding(symbol)->forcedValue();
+        const Symbol *symbol = syms[i];
+        (*names)[i] = const_cast<String *>(symbol->name());
+        (*result)[i] = frame->binding(symbol)->forcedValue();
     }
     if (syms.size() > 0)
-	Rf_setAttrib(result, Symbols::NamesSymbol, names);
-    return(result);
+        Rf_setAttrib(result, Symbols::NamesSymbol, names);
+    return (result);
 }
 
 /*
@@ -2174,14 +2182,14 @@ void findFunctionForBodyInNamespace(SEXP body, SEXP nsenv, SEXP nsname) {
 
 /*  findFunctionForBody - for a given function body, try to find a closure and
     the name of its binding (and the name of the package). For debugging. */
-HIDDEN void findFunctionForBody(SEXP body) {
+HIDDEN void Rf_findFunctionForBody(SEXP body) {
     SEXP nstable = HASHTAB(R_NamespaceRegistry);
     //CHECK_HASH_TABLE(nstable);
     int n = Rf_length(nstable);
     int i;
     for(i = 0; i < n; i++) {
 	SEXP frame = VECTOR_ELT(nstable, i);
-	while (frame != nullptr) {
+	while (frame) {
 	    findFunctionForBodyInNamespace(body, CAR(frame), TAG(frame));
 	    frame = CDR(frame);
 	}

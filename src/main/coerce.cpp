@@ -2790,23 +2790,25 @@ HIDDEN SEXP do_storage_mode(/*const*/ Expression* call, const BuiltInFunction* o
 
 #include <rho/ArgList.hpp>
 
-const Symbol* ArgList::coerceTag(const RObject* tag)
+const Symbol *ArgList::coerceTag(const RObject *tag)
 {
 	assert(tag);
-    const char* symname = nullptr;
-    if (tag->sexptype() == STRSXP) {
-	const StringVector* strv = static_cast<const StringVector*>(tag);
-	if (strv->size() >= 1) {
-	    const String* strv0 = (*strv)[0];
-	    if (strv0 && strv0->size() >= 1)
-		symname = Rf_translateChar(const_cast<String*>(strv0));
+	const char *symname = nullptr;
+	if (tag->sexptype() == STRSXP)
+	{
+		const StringVector *strv = static_cast<const StringVector *>(tag);
+		if (strv->size() >= 1)
+		{
+			const String *strv0 = (*strv)[0];
+			if (strv0 && strv0->size() >= 1)
+				symname = Rf_translateChar(const_cast<String *>(strv0));
+		}
 	}
-    }
-    if (!symname) {
-	StringVector* strv
-	    = static_cast<StringVector*>(Rf_deparse1(const_cast<RObject*>(tag),
-						     TRUE, SIMPLEDEPARSE));
-	symname = (*strv)[0]->c_str();
-    }
-    return Symbol::obtain(symname);
+	if (!symname)
+	{
+		StringVector *strv = static_cast<StringVector *>(Rf_deparse1(const_cast<RObject *>(tag),
+																	 TRUE, SIMPLEDEPARSE));
+		symname = (*strv)[0]->c_str();
+	}
+	return Symbol::obtain(symname);
 }

@@ -1,14 +1,19 @@
 var searchData=
 [
-  ['s3launcher_2ecpp',['S3Launcher.cpp',['../da/d7c/S3Launcher_8cpp.html',1,'']]],
-  ['s4object_2ecpp',['S4Object.cpp',['../d0/d64/S4Object_8cpp.html',1,'']]],
-  ['scan_2ecpp',['scan.cpp',['../d0/df1/scan_8cpp.html',1,'']]],
-  ['sexp_5fdowncast_2ecpp',['SEXP_downcast.cpp',['../d1/d4b/SEXP__downcast_8cpp.html',1,'']]],
-  ['sexp_5fdowncast_2ehpp',['SEXP_downcast.hpp',['../d6/d55/SEXP__downcast_8hpp.html',1,'']]],
-  ['stackchecker_2ehpp',['StackChecker.hpp',['../d2/d9c/StackChecker_8hpp.html',1,'']]],
-  ['string_2ecpp',['String.cpp',['../d7/db3/String_8cpp.html',1,'']]],
-  ['stringvector_2ecpp',['StringVector.cpp',['../d2/d01/StringVector_8cpp.html',1,'']]],
-  ['subscripting_2ecpp',['Subscripting.cpp',['../de/df1/Subscripting_8cpp.html',1,'']]],
-  ['subscripting_2ehpp',['Subscripting.hpp',['../db/d29/Subscripting_8hpp.html',1,'']]],
-  ['symbol_2ecpp',['Symbol.cpp',['../d8/d0b/Symbol_8cpp.html',1,'']]]
+  ['s3launcher_2ecpp_1383',['S3Launcher.cpp',['../da/d7c/S3Launcher_8cpp.html',1,'']]],
+  ['s3launcher_2ehpp_1384',['S3Launcher.hpp',['../db/d28/S3Launcher_8hpp.html',1,'']]],
+  ['s4object_2ecpp_1385',['S4Object.cpp',['../d0/d64/S4Object_8cpp.html',1,'']]],
+  ['s4object_2ehpp_1386',['S4Object.hpp',['../d7/d9e/S4Object_8hpp.html',1,'']]],
+  ['scan_2ecpp_1387',['scan.cpp',['../d0/df1/scan_8cpp.html',1,'']]],
+  ['sexp_5fdowncast_2ecpp_1388',['SEXP_downcast.cpp',['../d1/d4b/SEXP__downcast_8cpp.html',1,'']]],
+  ['sexp_5fdowncast_2ehpp_1389',['SEXP_downcast.hpp',['../d6/d55/SEXP__downcast_8hpp.html',1,'']]],
+  ['stackchecker_2ehpp_1390',['StackChecker.hpp',['../d2/d9c/StackChecker_8hpp.html',1,'']]],
+  ['string_2ecpp_1391',['String.cpp',['../d7/db3/String_8cpp.html',1,'']]],
+  ['string_2ehpp_1392',['String.hpp',['../d8/d32/String_8hpp.html',1,'']]],
+  ['stringvector_2ecpp_1393',['StringVector.cpp',['../d2/d01/StringVector_8cpp.html',1,'']]],
+  ['stringvector_2ehpp_1394',['StringVector.hpp',['../dc/dd7/StringVector_8hpp.html',1,'']]],
+  ['subscripting_2ecpp_1395',['Subscripting.cpp',['../de/df1/Subscripting_8cpp.html',1,'']]],
+  ['subscripting_2ehpp_1396',['Subscripting.hpp',['../db/d29/Subscripting_8hpp.html',1,'']]],
+  ['symbol_2ecpp_1397',['Symbol.cpp',['../d8/d0b/Symbol_8cpp.html',1,'']]],
+  ['symbol_2ehpp_1398',['Symbol.hpp',['../dc/dce/Symbol_8hpp.html',1,'']]]
 ];
